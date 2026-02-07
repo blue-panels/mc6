@@ -17,6 +17,7 @@ SKINS = \
 	julia256.ini \
 	julia256root.ini \
 	kanagawa256.ini \
+	mashdark256.ini \
 	matte-black256.ini \
 	mc46.ini \
 	modarcon16-defbg.ini \
