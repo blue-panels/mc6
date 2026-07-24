@@ -1,5 +1,5 @@
 /*
-   XML provider for mctree: a non-validating well-formedness parser.
+   XML provider for mctree
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -21,8 +21,11 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-   The parser is organized in three layers, mirroring the JSON provider:
+/*
+   A non-validating well-formedness parser, organized in three layers like
+   the JSON provider:
      - a micro-lexer over the input buffer (peek / consume / skip_ws);
      - token parsers producing C strings (name, attribute value, text), which
        set the error exactly once at the failure position;
