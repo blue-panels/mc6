@@ -22,39 +22,6 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-   Supported subset (also stated in doc/man/mc.1.in):
-
-     document       = nested-block at any indent
-     block(I)       = mapping(I) | sequence(I)
-     mapping(I)     = one or more "key: value" entries at indent I
-     sequence(I)    = one or more "- value" items at indent I; an item may
-                      start an inline mapping ("- key: value") whose other
-                      entries continue at the column of the item content,
-                      i.e. where an "&anchor" prefix sits, if present
-     value          = plain scalar | quoted scalar | *alias | "|" or ">"
-                      block scalar | empty (nested block on deeper lines;
-                      a mapping value may also be a sequence at the SAME
-                      indent as its key)
-     "&name" before a value anchors it; "*name" copies the anchored value.
-     A cyclic alias, and expansion past the parse-wide node budget
-     (config max_alias_nodes), is shown as a *name reference instead.
-     Text that merely starts with '*' but contains spaces is a plain
-     scalar, not an alias.
-
-   Not supported: tags and flow collections ({} and []) are not parsed
-   and remain part of the plain scalar text; multi-line plain scalars
-   and escape processing inside quoted scalars are not supported.
-   "---" and "..." lines are ignored, so multiple documents are merged
-   into one tree.  A tab character in indentation is a parse error.
-
-   Layers, mirroring the JSON provider:
-     - a line scanner classifying every raw line once (indent, content
-       with comments stripped, ignorable flag) behind a cursor;
-     - shared value handling used by mapping entries and sequence items;
-     - block grammar rules recursing per nesting level (depth-capped).
-   Every parse function returns TRUE on success and FALSE with the
-   GError set exactly once at the failing line.
  */
 
 #include <config.h>
