@@ -38,7 +38,11 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#define MCTREE_DEFAULT_MAX_PARSE_SIZE (2 * 1024 * 1024)
+/* The real cost of a tree is its node count, not the file size: a sparse
+ * document is cheap per byte while a dense one is not.  Keep the byte limit
+ * generous and let MCTREE_DEFAULT_MAX_NODES bound the memory. */
+#define MCTREE_DEFAULT_MAX_PARSE_SIZE (64 * 1024 * 1024)
+#define MCTREE_DEFAULT_MAX_NODES      1000000
 /* Both the parsers and the model walkers recurse per nesting level, so the
  * depth must be capped independently of the file size. */
 #define MCTREE_DEFAULT_MAX_DEPTH 200
@@ -258,6 +262,7 @@ mctree_resolver_config_init (mctree_resolver_config_t *config)
     config->use_probe = TRUE;
     config->max_parse_size = MCTREE_DEFAULT_MAX_PARSE_SIZE;
     config->max_depth = MCTREE_DEFAULT_MAX_DEPTH;
+    config->max_nodes = MCTREE_DEFAULT_MAX_NODES;
     config->max_alias_nodes = MCTREE_DEFAULT_MAX_ALIAS_NODES;
     config->default_expand_depth = MCTREE_DEFAULT_EXPAND_DEPTH;
     config->scalar_preview_limit = MCTREE_DEFAULT_SCALAR_PREVIEW_LIMIT;

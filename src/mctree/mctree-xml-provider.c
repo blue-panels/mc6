@@ -1,9 +1,5 @@
 /*
-   Midnight Commander - mctree XML provider.
-
-   Parses XML into an mctree model with a built-in, non-validating
-   well-formedness parser: elements, attributes, text, CDATA, comments,
-   processing instructions and character or predefined entity references.
+   XML provider for mctree: a non-validating well-formedness parser.
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -27,21 +23,6 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** \file mctree-xml-provider.c
- *  \brief Source: mctree XML provider
- *
- *  Organized in three layers like the JSON provider:
- *    - a micro-lexer over the input buffer (peek / consume / skip_ws);
- *    - token parsers producing C strings (name, attribute value, text), which
- *      set the error exactly once at the failure position;
- *    - grammar rules (element, content, document) attaching nodes to the model.
- *  Every parse function returns TRUE on success and FALSE with the GError set;
- *  the caller never sets an error on behalf of a callee.
- *
- *  There is no DTD processing, so an undefined named entity is kept verbatim
- *  rather than rejected - a viewer should still show the document.
- */
-
 #include <config.h>
 
 #include <string.h>
@@ -61,6 +42,7 @@ typedef struct
     gsize pos;
     gsize depth;
     gsize max_depth;
+    gsize max_nodes;
     GError **error;
 } mctree_xml_parser_t;
 
@@ -545,6 +527,12 @@ mctree_xml_parse_element (mctree_xml_parser_t *parser, mctree_model_t *model, mc
         return mctree_xml_fail (parser, _ ("nesting is too deep"));
     }
 
+    if (parser->max_nodes != 0 && model->nodes->len > parser->max_nodes)
+    {
+        parser->depth--;
+        return mctree_xml_fail (parser, _ ("too many nodes"));
+    }
+
     if (!mctree_xml_parse_name (parser, &name))
     {
         parser->depth--;
@@ -679,6 +667,7 @@ mctree_xml_parse (const unsigned char *data, gsize len, const mctree_resolver_co
         .data = (const char *) data,
         .len = len,
         .max_depth = config->max_depth,
+        .max_nodes = config->max_nodes,
         .error = error,
     };
     mctree_model_t *model;
@@ -704,17 +693,32 @@ mctree_xml_parse (const unsigned char *data, gsize len, const mctree_resolver_co
     model = mctree_model_new (config->scalar_preview_limit);
     root = mctree_model_add_node (model, NULL, MCTREE_NODE_ROOT, MCTREE_XML_ROOT_LABEL, NULL);
 
-    if (!mctree_xml_skip_misc (&parser, TRUE) || !mctree_xml_parse_element (&parser, model, root)
-        || !mctree_xml_skip_misc (&parser, FALSE))
+    /* Log streams concatenate whole documents, each with its own declaration.
+       Like the YAML provider, merge every document into one tree instead of
+       stopping at the first root. */
+    while (TRUE)
     {
-        mctree_model_free (model);
-        g_free (converted);
-        return NULL;
+        if (!mctree_xml_skip_misc (&parser, TRUE))
+        {
+            mctree_model_free (model);
+            g_free (converted);
+            return NULL;
+        }
+
+        if (mctree_xml_at_end (&parser))
+            break;
+
+        if (!mctree_xml_parse_element (&parser, model, root))
+        {
+            mctree_model_free (model);
+            g_free (converted);
+            return NULL;
+        }
     }
 
-    if (!mctree_xml_at_end (&parser))
+    if (mctree_node_child_count (root) == 0)
     {
-        mctree_xml_fail (&parser, _ ("trailing data after the root element"));
+        mctree_xml_fail (&parser, _ ("no element found"));
         mctree_model_free (model);
         g_free (converted);
         return NULL;
