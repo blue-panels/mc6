@@ -1,5 +1,9 @@
 /*
-   XML provider for mctree
+   Midnight Commander - mctree XML provider.
+
+   Parses XML into an mctree model with a built-in, non-validating
+   well-formedness parser: elements, attributes, text, CDATA, comments,
+   processing instructions and character or predefined entity references.
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -23,20 +27,19 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
-   A non-validating well-formedness parser, organized in three layers like
-   the JSON provider:
-     - a micro-lexer over the input buffer (peek / consume / skip_ws);
-     - token parsers producing C strings (name, attribute value, text), which
-       set the error exactly once at the failure position;
-     - grammar rules (element, content, document) attaching nodes to the model.
-   Every parse function returns TRUE on success and FALSE with the GError
-   set; the caller never sets an error on behalf of a callee.
-
-   Scope is what the tree view needs: elements, attributes, text, CDATA,
-   comments, processing instructions and character/predefined entities.
-   There is no DTD processing, so an undefined named entity is kept verbatim
-   rather than rejected - a viewer should still show the document.
+/** \file mctree-xml-provider.c
+ *  \brief Source: mctree XML provider
+ *
+ *  Organized in three layers like the JSON provider:
+ *    - a micro-lexer over the input buffer (peek / consume / skip_ws);
+ *    - token parsers producing C strings (name, attribute value, text), which
+ *      set the error exactly once at the failure position;
+ *    - grammar rules (element, content, document) attaching nodes to the model.
+ *  Every parse function returns TRUE on success and FALSE with the GError set;
+ *  the caller never sets an error on behalf of a callee.
+ *
+ *  There is no DTD processing, so an undefined named entity is kept verbatim
+ *  rather than rejected - a viewer should still show the document.
  */
 
 #include <config.h>
