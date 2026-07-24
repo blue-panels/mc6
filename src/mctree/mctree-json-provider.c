@@ -21,14 +21,6 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-   The parser is organized in three layers:
-     - a micro-lexer over the input buffer (peek / consume / skip_ws);
-     - token parsers producing C strings (string, number, literal), which
-       set the error exactly once at the failure position;
-     - grammar rules (value, object, array) attaching nodes to the model.
-   Every parse function returns TRUE on success and FALSE with the GError
-   set; the caller never sets an error on behalf of a callee.
  */
 
 #include <config.h>
@@ -46,6 +38,7 @@ typedef struct
     gsize pos;
     gsize depth;
     gsize max_depth;
+    gsize max_nodes;
     GError **error;
 } mctree_json_parser_t;
 
@@ -438,6 +431,12 @@ mctree_json_parse_container (mctree_json_parser_t *parser, mctree_model_t *model
         return mctree_json_fail (parser, _ ("nesting is too deep"));
     }
 
+    if (parser->max_nodes != 0 && model->nodes->len > parser->max_nodes)
+    {
+        parser->depth--;
+        return mctree_json_fail (parser, _ ("too many nodes"));
+    }
+
     wrapper =
         key != NULL ? mctree_model_add_node (model, parent, MCTREE_NODE_FIELD, key, NULL) : parent;
     container = mctree_model_add_node (
@@ -516,6 +515,7 @@ mctree_json_parse (const unsigned char *data, gsize len, const mctree_resolver_c
         .data = (const char *) data,
         .len = len,
         .max_depth = config->max_depth,
+        .max_nodes = config->max_nodes,
         .error = error,
     };
     mctree_model_t *model;

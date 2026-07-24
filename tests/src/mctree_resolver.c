@@ -871,6 +871,9 @@ static const char *const xml_valid_inputs[] = {
     "<?xml version=\"1.0\"?><!DOCTYPE r SYSTEM \"r.dtd\"><r/>",
     "<!DOCTYPE r [<!ELEMENT r EMPTY>]><r/>",
     "<r><?target data?></r>",
+    // log streams concatenate whole documents; all of them land in one tree
+    "<r/><s/>",
+    "<?xml version=\"1.0\"?><r>1</r>\n<?xml version=\"1.0\"?><r>2</r>\n",
     // a leading UTF-8 BOM is ignored
     "\xef\xbb\xbf"
     "<r/>",
@@ -883,8 +886,7 @@ static const char *const xml_invalid_inputs[] = {
     "just some notes",
     "<r>",
     "</r>",
-    "<r></s>",   // mismatched end tag
-    "<r/><s/>",  // more than one root
+    "<r></s>",  // mismatched end tag
     "<r/>trailing",
     "<>",
     "<1r/>",
@@ -981,6 +983,37 @@ START_TEST (test_xml_entities_cdata_and_comments_reach_the_model)
 
     mctree_model_free (model);
     mctree_resolver_result_clear (&result);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_xml_node_budget_is_enforced)
+{
+    const mctree_provider_t *provider;
+    mctree_resolver_config_t config;
+    mctree_model_t *model;
+    GError *error = NULL;
+    GString *wide;
+    gsize i;
+
+    provider = mctree_provider_for_type (MCTREE_CONTENT_XML);
+    mctree_resolver_config_init (&config);
+    config.max_nodes = 100;
+
+    // flat but node-dense: the depth cap cannot catch this, only the budget
+    wide = g_string_new ("<r>");
+    for (i = 0; i < 500; i++)
+        g_string_append (wide, "<i/>");
+    g_string_append (wide, "</r>");
+
+    model = provider->parse ((const unsigned char *) wide->str, wide->len, &config, &error);
+
+    mctest_assert_null (model);
+    mctest_assert_not_null (error);
+
+    g_clear_error (&error);
+    g_string_free (wide, TRUE);
 }
 END_TEST
 
@@ -1295,6 +1328,7 @@ main (void)
     tcase_add_test (tc_core, test_xml_grammar_conformance);
     tcase_add_test (tc_core, test_xml_entities_cdata_and_comments_reach_the_model);
     tcase_add_test (tc_core, test_xml_deep_nesting_is_rejected_with_diagnostic);
+    tcase_add_test (tc_core, test_xml_node_budget_is_enforced);
     tcase_add_test (tc_core, test_json_file_resolves_with_builtin_provider);
     tcase_add_test (tc_core, test_yaml_file_resolves_with_builtin_provider);
     tcase_add_test (tc_core, test_yaml_grammar_conformance);

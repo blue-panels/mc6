@@ -34,6 +34,7 @@ typedef struct
     gboolean use_probe;
     gsize max_parse_size;
     gsize max_depth;
+    gsize max_nodes;        // total node budget for the whole tree
     gsize max_alias_nodes;  // total node budget for YAML alias expansion
     int default_expand_depth;
     gsize scalar_preview_limit;

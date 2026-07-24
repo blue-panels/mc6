@@ -230,12 +230,18 @@ mctree_model_add_node (mctree_model_t *model, mctree_node_t *parent, mctree_node
                                         &node->original_value_len, &node->value_truncated);
     node->expanded = FALSE;
     node->parent = parent;
-    node->children = g_ptr_array_new ();
+    /* Leaves are the bulk of a tree, so the child array is allocated on demand;
+       every reader treats a NULL children as "no children". */
+    node->children = NULL;
 
     g_ptr_array_add (model->nodes, node);
 
     if (parent != NULL)
+    {
+        if (parent->children == NULL)
+            parent->children = g_ptr_array_new ();
         g_ptr_array_add (parent->children, node);
+    }
     else if (model->root == NULL)
         model->root = node;
 
