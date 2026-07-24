@@ -65,6 +65,13 @@ static gboolean mctree_yaml_parse_nested (mctree_yaml_parser_t *parser, mctree_m
                                           mctree_node_t *parent, int entry_indent,
                                           gboolean allow_sequence_at_entry_indent,
                                           mctree_node_t **container_out);
+static gboolean mctree_yaml_parse_sequence (mctree_yaml_parser_t *parser, mctree_model_t *model,
+                                            mctree_node_t *container, int indent);
+static gboolean mctree_yaml_parse_sequence_item (mctree_yaml_parser_t *parser,
+                                                 mctree_model_t *model, mctree_node_t *container,
+                                                 const char *item_key, const char *rest,
+                                                 char *anchor, int content_col, int indent,
+                                                 gsize line);
 
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -394,6 +401,28 @@ mctree_yaml_block_line_ends (mctree_yaml_parser_t *parser, gsize i, int parent_i
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A block scalar header is "|" or ">" followed by an optional explicit
+ * indentation digit and/or a chomping indicator: "|-", ">+", "|2-".  The
+ * content indent is detected from the block itself, so a digit is accepted
+ * and ignored. */
+
+static gboolean
+mctree_yaml_is_block_header (const char *text)
+{
+    gsize i;
+
+    if (text[0] != '|' && text[0] != '>')
+        return FALSE;
+
+    for (i = 1; text[i] != '\0'; i++)
+        if (text[i] != '-' && text[i] != '+' && !g_ascii_isdigit (text[i]))
+            return FALSE;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static char *
 mctree_yaml_collect_block (mctree_yaml_parser_t *parser, int parent_indent, gboolean folded)
 {
@@ -617,13 +646,21 @@ mctree_yaml_parse_value (mctree_yaml_parser_t *parser, mctree_model_t *model, mc
         return TRUE;
     }
 
-    if (strcmp (text, "|") == 0 || strcmp (text, ">") == 0)
+    if (mctree_yaml_is_block_header (text))
     {
         char *block;
 
         /* The entry line is already consumed: the cursor is on the first
            potential block line. */
         block = mctree_yaml_collect_block (parser, entry_indent, text[0] == '>');
+        if (strchr (text, '-') != NULL)
+        {
+            // "|-" and ">-" strip the trailing line breaks
+            gsize n = strlen (block);
+
+            while (n > 0 && block[n - 1] == '\n')
+                block[--n] = '\0';
+        }
         node = mctree_model_add_node (model, parent, node_type, key, block);
         g_free (block);
         mctree_yaml_register_anchor (parser, anchor, node);
@@ -682,32 +719,9 @@ mctree_yaml_parse_sequence (mctree_yaml_parser_t *parser, mctree_model_t *model,
 
         item_key = g_strdup_printf ("[%u]", mctree_node_child_count (container));
 
-        if (rest[0] != '\0' && mctree_yaml_find_key_separator (rest) != NULL)
-        {
-            /* "- key: value": the item is a mapping whose first entry is on
-               this line; its other entries continue at the column of the
-               item content (where a "&anchor" prefix sits, if present). */
-            mctree_node_t *item;
-            mctree_node_t *object;
-
-            item = mctree_model_add_node (model, container, MCTREE_NODE_ITEM, item_key, NULL);
-            object = mctree_model_add_node (model, item, MCTREE_NODE_OBJECT, NULL, NULL);
-            mctree_yaml_register_anchor (parser, anchor, object);
-            anchor = NULL;
-
-            if (++parser->depth > parser->max_depth)
-                ok = mctree_yaml_fail (parser, line, _ ("nesting is too deep"));
-            else
-                ok = mctree_yaml_parse_mapping (parser, model, object, content_col, (char *) rest,
-                                                line);
-            parser->depth--;
-        }
-        else
-        {
-            ok = mctree_yaml_parse_value (parser, model, container, MCTREE_NODE_ITEM, item_key,
-                                          rest, anchor, indent, FALSE);
-            anchor = NULL;  // ownership passed to parse_value
-        }
+        ok = mctree_yaml_parse_sequence_item (parser, model, container, item_key, rest, anchor,
+                                              content_col, indent, line);
+        anchor = NULL;  // ownership passed to the item parser
 
         g_free (item_key);
         if (!ok)
@@ -715,6 +729,79 @@ mctree_yaml_parse_sequence (mctree_yaml_parser_t *parser, mctree_model_t *model,
     }
 
     return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Parse the body of one sequence item: the text following "- ", which starts
+ * at content_col.  The body may itself open a sequence ("- - x") or a mapping
+ * ("- k: v"), both of which continue on the following lines at content_col.
+ * Takes ownership of anchor. */
+
+static gboolean
+mctree_yaml_parse_sequence_item (mctree_yaml_parser_t *parser, mctree_model_t *model,
+                                 mctree_node_t *container, const char *item_key, const char *rest,
+                                 char *anchor, int content_col, int indent, gsize line)
+{
+    mctree_node_t *item;
+    gboolean ok;
+
+    if (mctree_yaml_is_sequence_item (rest))
+    {
+        /* "- - value": the item is itself a sequence whose first item sits on
+           this line; the remaining items continue at the inner marker. */
+        mctree_node_t *array;
+        const char *inner = rest + 1;
+        char *inner_anchor = NULL;
+        char *inner_key;
+        int inner_col;
+
+        while (g_ascii_isspace (*inner))
+            inner++;
+        inner_col = content_col + (int) (inner - rest);
+        inner = mctree_yaml_skip_anchor (inner, &inner_anchor);
+
+        item = mctree_model_add_node (model, container, MCTREE_NODE_ITEM, item_key, NULL);
+        array = mctree_model_add_node (model, item, MCTREE_NODE_ARRAY, NULL, NULL);
+        mctree_yaml_register_anchor (parser, anchor, array);
+
+        if (++parser->depth > parser->max_depth)
+            ok = mctree_yaml_fail (parser, line, _ ("nesting is too deep"));
+        else
+        {
+            inner_key = g_strdup_printf ("[%u]", mctree_node_child_count (array));
+            ok = mctree_yaml_parse_sequence_item (parser, model, array, inner_key, inner,
+                                                  inner_anchor, inner_col, content_col, line);
+            g_free (inner_key);
+            if (ok)
+                ok = mctree_yaml_parse_sequence (parser, model, array, content_col);
+        }
+        parser->depth--;
+        return ok;
+    }
+
+    if (rest[0] != '\0' && mctree_yaml_find_key_separator (rest) != NULL)
+    {
+        /* "- key: value": the item is a mapping whose first entry is on this
+           line; its other entries continue at the column of the item content
+           (where a "&anchor" prefix sits, if present). */
+        mctree_node_t *object;
+
+        item = mctree_model_add_node (model, container, MCTREE_NODE_ITEM, item_key, NULL);
+        object = mctree_model_add_node (model, item, MCTREE_NODE_OBJECT, NULL, NULL);
+        mctree_yaml_register_anchor (parser, anchor, object);
+
+        if (++parser->depth > parser->max_depth)
+            ok = mctree_yaml_fail (parser, line, _ ("nesting is too deep"));
+        else
+            ok =
+                mctree_yaml_parse_mapping (parser, model, object, content_col, (char *) rest, line);
+        parser->depth--;
+        return ok;
+    }
+
+    return mctree_yaml_parse_value (parser, model, container, MCTREE_NODE_ITEM, item_key, rest,
+                                    anchor, indent, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
