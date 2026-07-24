@@ -988,6 +988,82 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_yaml_block_scalar_header_accepts_indicators)
+{
+    mctree_resolver_result_t result = { 0 };
+    mctree_model_t *model;
+    GError *error = NULL;
+    const mctree_node_t *node;
+
+    // "|" and ">" may carry a chomping and/or an explicit indentation indicator
+    model = resolve_content ("mctree-XXXXXX.yaml",
+                             "strip: |-\n"
+                             "    one\n"
+                             "    two\n"
+                             "keep: |+\n"
+                             "    three\n"
+                             "folded: >-\n"
+                             "    four\n"
+                             "digits: |2-\n"
+                             "    five\n",
+                             &result, &error);
+
+    mctest_assert_null (error);
+    mctest_assert_not_null (model);
+
+    node = find_node_by_key (model->root, "strip");
+    mctest_assert_not_null (node);
+    ck_assert_str_eq (node->value, "one\ntwo");
+
+    node = find_node_by_key (model->root, "folded");
+    mctest_assert_not_null (node);
+    ck_assert_str_eq (node->value, "four");
+
+    node = find_node_by_key (model->root, "digits");
+    mctest_assert_not_null (node);
+    ck_assert_str_eq (node->value, "five");
+
+    mctree_model_free (model);
+    mctree_resolver_result_clear (&result);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_yaml_sequence_item_may_open_a_sequence)
+{
+    mctree_resolver_result_t result = { 0 };
+    mctree_model_t *model;
+    GError *error = NULL;
+    const mctree_node_t *node;
+
+    // "- - key:" nests a sequence inside a sequence item on one line
+    model = resolve_content ("mctree-XXXXXX.yaml",
+                             "select:\n"
+                             "    - - params:\n"
+                             "            - Year\n"
+                             "        type: column\n"
+                             "    - literal\n",
+                             &result, &error);
+
+    mctest_assert_null (error);
+    mctest_assert_not_null (model);
+
+    node = find_node_by_key (model->root, "params");
+    mctest_assert_not_null (node);
+    ck_assert_uint_ge (mctree_node_child_count (node), 1);
+
+    node = find_node_by_key (model->root, "type");
+    mctest_assert_not_null (node);
+    ck_assert_str_eq (node->value, "column");
+
+    mctree_model_free (model);
+    mctree_resolver_result_clear (&result);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_xml_node_budget_is_enforced)
 {
     const mctree_provider_t *provider;
@@ -1329,6 +1405,8 @@ main (void)
     tcase_add_test (tc_core, test_xml_entities_cdata_and_comments_reach_the_model);
     tcase_add_test (tc_core, test_xml_deep_nesting_is_rejected_with_diagnostic);
     tcase_add_test (tc_core, test_xml_node_budget_is_enforced);
+    tcase_add_test (tc_core, test_yaml_block_scalar_header_accepts_indicators);
+    tcase_add_test (tc_core, test_yaml_sequence_item_may_open_a_sequence);
     tcase_add_test (tc_core, test_json_file_resolves_with_builtin_provider);
     tcase_add_test (tc_core, test_yaml_file_resolves_with_builtin_provider);
     tcase_add_test (tc_core, test_yaml_grammar_conformance);
