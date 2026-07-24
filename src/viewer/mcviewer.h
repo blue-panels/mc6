@@ -69,6 +69,11 @@ typedef struct
 
     /* Optional controller-owned key handling. */
     mcv_key_result_t (*handle_key) (void *ctx, int key);
+
+    /* Optional plugin help for this source. On TRUE, *filename and *node
+       select the help page shown for F1 instead of the viewer default;
+       either may be left NULL to keep the corresponding default. */
+    gboolean (*get_help_info) (void *ctx, const char **filename, const char **node);
 } mcview_source_controller_t;
 
 /* Spec helpers. clone() deep-copies all string fields. */

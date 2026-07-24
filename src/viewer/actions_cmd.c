@@ -368,7 +368,21 @@ mcview_help (const WView *view)
 {
     ev_help_t event_data = { NULL, "[Internal File Viewer]" };
 
-    (void) view;
+    /* A plugin-driven source (docker/k8s logs, ...) may point F1 at its own
+       help page instead of the generic viewer help. */
+    if (view->source_controller != NULL && view->source_controller->get_help_info != NULL)
+    {
+        const char *filename = NULL;
+        const char *node = NULL;
+
+        if (view->source_controller->get_help_info (view->source_ctx, &filename, &node))
+        {
+            if (filename != NULL)
+                event_data.filename = filename;
+            if (node != NULL)
+                event_data.node = node;
+        }
+    }
 
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
 }

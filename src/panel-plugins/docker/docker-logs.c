@@ -469,6 +469,18 @@ docker_logs_handle_key (void *ctx, int key)
     return MCV_KEY_PASS;
 }
 
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+docker_logs_get_help_info (void *ctx, const char **filename, const char **node)
+{
+    docker_logs_ctx_t *c = (docker_logs_ctx_t *) ctx;
+
+    *filename = c->help_file;
+    *node = "[Container logs source]";
+    return TRUE;
+}
+
 /*** controller vtable ***************************************************************************/
 
 static const mcview_source_controller_t docker_logs_controller = {
@@ -478,6 +490,7 @@ static const mcview_source_controller_t docker_logs_controller = {
     .rollback = docker_logs_rollback,
     .free = docker_logs_free,
     .handle_key = docker_logs_handle_key,
+    .get_help_info = docker_logs_get_help_info,
 };
 
 /*** public entry ********************************************************************************/

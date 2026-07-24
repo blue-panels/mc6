@@ -162,6 +162,10 @@
   Container logs source dialog (Alt-o in the log viewer, configurable
   via hotkey_logs_options in panels.docker.ini)
 
+  This page opens with F1 while viewing container logs.  For the generic
+  viewer keys (search, movement, hex), press Esc and then F1 on any
+  ordinary file to reach the "Internal File Viewer" help.
+
   Controls the "docker logs" invocation that feeds the viewer.  Closing
   the dialog with OK triggers a re-fetch with the new parameters; the
   filter (F6) and viewing position are preserved across the swap.  This

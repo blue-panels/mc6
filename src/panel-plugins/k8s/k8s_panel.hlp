@@ -225,6 +225,10 @@
 
   Pod logs source dialog (Alt-O in viewer, configurable)
 
+  This page opens with F1 while viewing pod logs.  For the generic
+  viewer keys (search, movement, hex), press Esc and then F1 on any
+  ordinary file to reach the "Internal File Viewer" help.
+
   Controls the kubectl invocation that feeds the viewer.  Closing the
   dialog with OK triggers a re-fetch with the new parameters; filter
   and viewing position are preserved across the swap.  This dialog
