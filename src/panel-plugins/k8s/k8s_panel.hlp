@@ -86,9 +86,11 @@
   F3 on the "logs" pseudo-file in a pod folder opens the internal viewer
   in source-controller mode.  Inside that viewer:
 
-    Alt-S         Open "Pod logs source" dialog: re-fetch with different
+    Alt-O         Open "Pod logs source" dialog: re-fetch with different
                   --since / --tail / container / pipe-through formatter.
                   Filter and follow flag are preserved across the swap.
+                  The key is configurable via hotkey_logs_options in
+                  panels.k8s.ini.
     F6            Line filter (substring / regex) applied to the displayed
                   text.  Press F6 again to edit.  Esc clears.
     Ctrl-T        Toggle follow mode: scroll to new matches automatically.
@@ -221,7 +223,7 @@
 
 [Pod logs source]
 
-  Pod logs source dialog (Alt-S in viewer)
+  Pod logs source dialog (Alt-O in viewer, configurable)
 
   Controls the kubectl invocation that feeds the viewer.  Closing the
   dialog with OK triggers a re-fetch with the new parameters; filter

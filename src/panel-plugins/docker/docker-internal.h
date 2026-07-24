@@ -11,6 +11,13 @@
 #include "src/panel-plugins/docker/docker-cp-stream.h"
 #include "src/panel-plugins/docker/docker-tar.h"
 
+/*** Configurable hotkeys (shared loader, same as k8s) ***/
+
+#define DOCKER_PANEL_CONFIG_FILE           "panels.docker.ini"
+#define DOCKER_PANEL_CONFIG_GROUP          "docker-panel"
+#define DOCKER_PANEL_KEY_LOGS_OPTS         "hotkey_logs_options"
+#define DOCKER_PANEL_KEY_LOGS_OPTS_DEFAULT "alt-o"
+
 /*** Connection model ***/
 
 typedef enum

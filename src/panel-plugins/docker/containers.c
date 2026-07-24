@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include "lib/tty/key.h"  // ALT
+#include "lib/plugin-prefs.h"
 
 #include "src/panel-plugins/docker/docker-internal.h"
 #include "src/panel-plugins/docker/docker-logs.h"
@@ -729,7 +730,9 @@ docker_containers_view_logs (docker_data_t *data, const char *fname)
         id.container_id = data->current_container_id;
         id.container_name = data->current_container_name;
         id.help_file = data->help_filename;
-        id.options_key = ALT ('s');
+        id.options_key = mc_plugin_prefs_load_hotkey (
+            DOCKER_PANEL_CONFIG_FILE, DOCKER_PANEL_CONFIG_GROUP, DOCKER_PANEL_KEY_LOGS_OPTS,
+            DOCKER_PANEL_KEY_LOGS_OPTS_DEFAULT, ALT ('o'), NULL);
         id.initial_tail = 1000; /* preserve the previous default amount */
 
         (void) docker_logs_open (&id);

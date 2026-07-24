@@ -336,7 +336,7 @@ k8s_pods_view (k8s_data_t *data, const char *fname)
         id.pod = data->selected_pod;
         id.help_file = data->help_filename;
         id.options_key =
-            k8s_load_hotkey (K8S_PANEL_KEY_LOGS_OPTS, K8S_PANEL_KEY_LOGS_OPTS_DEFAULT, ALT ('s'));
+            k8s_load_hotkey (K8S_PANEL_KEY_LOGS_OPTS, K8S_PANEL_KEY_LOGS_OPTS_DEFAULT, ALT ('o'));
         id.initial_since = (char *) "5m";
         id.initial_tail = 0;
         id.initial_follow = FALSE;

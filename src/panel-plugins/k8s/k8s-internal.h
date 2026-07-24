@@ -50,7 +50,7 @@
 #define K8S_PANEL_KEY_REFRESH_DEFAULT   "ctrl-r"
 #define K8S_PANEL_KEY_FAV_ADD_DEFAULT   "ctrl-b"
 #define K8S_PANEL_KEY_NS_SWITCH_DEFAULT "ctrl-n"
-#define K8S_PANEL_KEY_LOGS_OPTS_DEFAULT "alt-s"
+#define K8S_PANEL_KEY_LOGS_OPTS_DEFAULT "alt-o"
 #define K8S_PANEL_CONFIG_KUBECTL        "kubectl"
 #define K8S_PANEL_CONFIG_KUBECONFIG     "kubeconfig"
 
