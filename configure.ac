@@ -216,9 +216,6 @@ dnl Check for main libraries
 dnl ############################################################################
 
 mc_CHECK_GLIB
-PKG_CHECK_MODULES([MCTREE_MAGIC], [libmagic],
-    [AC_DEFINE([HAVE_MCTREE_MAGIC], [1], [Define if libmagic is available for mctree])],
-    [:])
 mc_G_MODULE_SUPPORTED
 mc_WITH_SCREEN
 dnl X11 support. Used to read keyboard modifiers when running under X11.
@@ -572,12 +569,62 @@ AM_CONDITIONAL(CONS_SAVER, [test -n "$cons_saver"])
 dnl Enable GModule when available (used for X11, aspell, and dynamic VFS plugins)
 AM_CONDITIONAL([HAVE_GMODULE], [test -n "$g_module_supported"])
 
+dnl Optional libmagic for mctree content detection
+have_mctree_magic=no
+
+AC_ARG_ENABLE([mctree-magic],
+    AS_HELP_STRING([--enable-mctree-magic@<:@=auto/yes/no@:>@],
+                   [Use libmagic for mctree content detection (default: auto)]),
+    [enable_mctree_magic="$enableval"],
+    [enable_mctree_magic=auto])
+
+AS_CASE([$enable_mctree_magic],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_mctree_magic' for --enable-mctree-magic (use auto, yes, or no)])])
+
+if test "x$enable_mctree_magic" != xno; then
+    PKG_CHECK_MODULES([MCTREE_MAGIC], [libmagic],
+        [have_mctree_magic=yes
+         AC_DEFINE([HAVE_MCTREE_MAGIC], [1], [Define if libmagic is available for mctree])],
+        [:])
+fi
+
+if test "x$enable_mctree_magic" = xyes && test "x$have_mctree_magic" != xyes; then
+    AC_MSG_ERROR([mctree libmagic support requested but libmagic was not found.
+Install libmagic development package (for example: libmagic-dev) or use --enable-mctree-magic=auto/no.])
+fi
+
+if test "x$enable_mctree_magic" = xauto && test "x$have_mctree_magic" != xyes; then
+    AC_MSG_WARN([mctree libmagic support disabled: libmagic was not found.])
+fi
+
 dnl Optional libsmbclient for Samba panel plugin
 SMBCLIENT_CFLAGS=""
 SMBCLIENT_LIBS=""
 have_panel_plugin_samba=no
 
-PKG_CHECK_MODULES([SMBCLIENT], [smbclient], [have_panel_plugin_samba=yes], [have_panel_plugin_samba=no])
+AC_ARG_ENABLE([panel-plugin-samba],
+    AS_HELP_STRING([--enable-panel-plugin-samba@<:@=auto/yes/no@:>@],
+                   [Build Samba panel plugin (default: auto)]),
+    [enable_panel_plugin_samba="$enableval"],
+    [enable_panel_plugin_samba=auto])
+
+AS_CASE([$enable_panel_plugin_samba],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_panel_plugin_samba' for --enable-panel-plugin-samba (use auto, yes, or no)])])
+
+if test "x$enable_panel_plugin_samba" != xno; then
+    PKG_CHECK_MODULES([SMBCLIENT], [smbclient], [have_panel_plugin_samba=yes], [:])
+fi
+
+if test "x$enable_panel_plugin_samba" = xyes && test "x$have_panel_plugin_samba" != xyes; then
+    AC_MSG_ERROR([Samba panel plugin requested but libsmbclient was not found.
+Install libsmbclient development package (for example: libsmbclient-dev) or use --enable-panel-plugin-samba=auto/no.])
+fi
+
+if test "x$enable_panel_plugin_samba" = xauto && test "x$have_panel_plugin_samba" != xyes; then
+    AC_MSG_WARN([Samba panel plugin disabled: libsmbclient was not found.])
+fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SAMBA], [test x"$have_panel_plugin_samba" = xyes])
 
