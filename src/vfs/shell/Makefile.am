@@ -14,4 +14,8 @@ libvfs_shell_la_SOURCES = \
 	shell_ssh2.c shell_ssh2.h \
 	shelldef.h
 
-libvfs_shell_la_LIBADD = $(LIBSSH_LIBS)
+libvfs_shell_la_LIBADD =
+
+if ENABLE_SHELL_SSH2
+libvfs_shell_la_LIBADD += $(LIBSSH_LIBS)
+endif
