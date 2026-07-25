@@ -585,7 +585,6 @@ dnl Optional libcurl for FTP/FTPS panel plugin
 LIBCURL_CFLAGS=""
 LIBCURL_LIBS=""
 have_panel_plugin_ftp=no
-enable_panel_plugin_ftp=auto
 
 AC_ARG_ENABLE([panel-plugin-ftp],
     AS_HELP_STRING([--enable-panel-plugin-ftp@<:@=auto/yes/no@:>@],
@@ -625,7 +624,6 @@ fi
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_FTP], [test x"$have_panel_plugin_ftp" = xyes])
 
 dnl arcmc — archive browser panel plugin (libarchive)
-enable_panel_plugin_arcmc=auto
 
 AC_ARG_ENABLE([panel-plugin-arcmc],
     AS_HELP_STRING([--enable-panel-plugin-arcmc@<:@=auto/yes/no@:>@],
@@ -671,7 +669,6 @@ dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
 LIBCURL_S3_LIBS=""
 have_panel_plugin_s3=no
-enable_panel_plugin_s3=auto
 
 AC_ARG_ENABLE([panel-plugin-s3],
     AS_HELP_STRING([--enable-panel-plugin-s3@<:@=auto/yes/no@:>@],
@@ -712,7 +709,6 @@ AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_S3], [test x"$have_panel_plugin_s3" = xyes])
 
 dnl mongo -- MongoDB browser panel plugin (libmongoc + libbson)
 have_panel_plugin_mongo=no
-enable_panel_plugin_mongo=auto
 
 AC_ARG_ENABLE([panel-plugin-mongo],
     AS_HELP_STRING([--enable-panel-plugin-mongo@<:@=auto/yes/no@:>@],
