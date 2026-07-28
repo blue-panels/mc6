@@ -1,0 +1,56 @@
+# shfs-helper: cksumrange 1
+LC_ALL=C
+export LC_ALL
+FILENAME="/${SHELL_FILENAME}"
+OFFSET=${SHELL_START_OFFSET}
+LENGTH=${SHELL_LENGTH}
+
+# Emit LENGTH bytes of FILENAME starting at OFFSET.
+# Same three-way choice the get helper makes, for the same reason: perl where
+# it exists, then the coreutils pair, then dd as the portable last resort.
+shfs_slice ()
+{
+    if [ -n "${SHELL_HAVE_PERL}" ]; then
+        perl -e '
+my ($f, $off, $len) = @ARGV;
+open(F, $f) or exit 1;
+binmode(F);
+seek(F, $off, 0);
+my $left = $len;
+my $buf;
+while ($left > 0) {
+    my $want = $left > 65536 ? 65536 : $left;
+    my $got = read(F, $buf, $want);
+    last if !defined($got) || $got == 0;
+    print $buf;
+    $left -= $got;
+}
+close(F);
+' "$1" "$2" "$3"
+    elif [ -n "${SHELL_HAVE_TAIL}" ] && [ -n "${SHELL_HAVE_HEAD}" ]; then
+        start=`expr $2 + 1`
+        tail -c +${start} "$1" | head -c $3
+    else
+        dd if="$1" bs=1 skip=$2 count=$3 2>/dev/null
+    fi
+}
+
+echo "### 001"
+if [ -r "${FILENAME}" ]; then
+    case "${SHELL_DIGEST}" in
+    sha256)
+        shfs_slice "${FILENAME}" ${OFFSET} ${LENGTH} | sha256sum | cut -d' ' -f1
+        ;;
+    md5)
+        shfs_slice "${FILENAME}" ${OFFSET} ${LENGTH} | md5sum | cut -d' ' -f1
+        ;;
+    *)
+        # cksum is the POSIX floor: weaker, but present everywhere. Its two
+        # fields are the checksum and the byte count; take the checksum.
+        shfs_slice "${FILENAME}" ${OFFSET} ${LENGTH} | cksum | cut -d' ' -f1
+        ;;
+    esac
+    echo "### 200"
+else
+    echo "### 500"
+fi

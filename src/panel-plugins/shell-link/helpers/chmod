@@ -1,0 +1,6 @@
+# shfs-helper: chmod 1
+if chmod ${SHELL_FILEMODE} "/${SHELL_FILENAME}" 2>/dev/null; then
+    echo "### 000"
+else
+    echo "### 500"
+fi
