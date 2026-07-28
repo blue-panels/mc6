@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 8
+#define MC_PANEL_PLUGIN_API_VERSION 9
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -42,13 +42,15 @@ typedef enum
     MC_PPF_GET_FILES = 1 << 1, /* can extract files */
     MC_PPF_DELETE = 1 << 2,    /* can delete items */
     MC_PPF_CUSTOM_TITLE = 1 << 3,
-    MC_PPF_CREATE = 1 << 4,             /* supports Shift+F4 (create item) */
+    MC_PPF_CREATE = 1 << 4,             /* supports F7 (create item) */
     MC_PPF_PUT_FILES = 1 << 5,          /* can accept files (put_file/save_file) */
     MC_PPF_SHOW_IN_MENU = 1 << 6,       /* add entry to left/right panel menu */
     MC_PPF_SHOW_IN_DRIVE_MENU = 1 << 7, /* show in Alt-F1/Alt-F2 drive menu */
     MC_PPF_LOCAL_FILES = 1 << 8,        /* entries are real local paths;
                                            core uses them directly for view/edit/
                                            copy/move, bypassing get_local_copy */
+    MC_PPF_NO_MOVE = 1 << 10,           /* plugin refuses F6: move deletes the source,
+                                           set this when the copy cannot be confirmed */
     MC_PPF_ACCEPTS_FILE_LIST = 1 << 9   /* plugin implements open_file_list(),
                                            i.e. can be a destination for Find
                                            results and similar list producers */
@@ -191,6 +193,59 @@ typedef struct mc_panel_plugin_t
        paths it keeps. Return NULL to leave the current panel unchanged. */
     void *(*open_file_list) (struct mc_panel_host_t *host, const char *const *paths, size_t count,
                              const char *label);
+
+    /* Optional: stat an entry, and digest a byte range of it without fetching
+       it. @algo is one of "sha256", "md5" or "cksum"; the digest is the text
+       that algorithm normally prints, so that digests from different plugins
+       are comparable. NULL for an algo the plugin cannot do, which is the
+       caller's cue to try another. Caller frees the digest. */
+    gboolean (*stat_entry) (void *plugin_data, const char *name, struct stat *st);
+    char *(*digest_range) (void *plugin_data, const char *name, gint64 offset, gint64 length,
+                           const char *algo);
+
+    /* Optional: where this panel is, in the form open() accepts back: the same
+       string the plugin puts in the directory history. Caller frees.
+       NULL when the plugin has no such notion. */
+    char *(*get_location) (void *plugin_data);
+
+    /* Optional: does an entry of this name already exist here?
+       NULL means "cannot say"; the core then writes without asking. */
+    gboolean (*exists) (void *plugin_data, const char *name);
+
+    /* Optional: continue a transfer that stopped part way.
+       resume_offset returns how many bytes of the existing destination are a
+       verified prefix of the source (possibly 0), or -1 when the transfer
+       cannot be continued. @dest_local: TRUE when @dest is a local path, FALSE
+       when @dest is inside the plugin.
+       A plugin that cannot verify the prefix must leave these NULL.
+       Neither call may truncate or delete anything. */
+    gint64 (*resume_offset) (void *plugin_data, const char *src, const char *dest,
+                             gboolean dest_local);
+    mc_pp_result_t (*resume_copy) (void *plugin_data, const char *src, const char *dest,
+                                   gboolean dest_local, gint64 offset);
+
+    /* Optional: copy a file to another name inside the plugin's own space,
+       for a relative destination, which means "here" and not the other panel.
+       NULL: the core falls back to fetching the file out. */
+    mc_pp_result_t (*copy_within) (void *plugin_data, const char *fname, const char *dest_name);
+
+    /* Optional streaming transfer: moves a file from one plugin panel to
+       another without a local temporary, which get_local_copy()/put_file()
+       cannot do. Leaving these NULL keeps the get_local_copy()/put_file() path.
+       read_open() returns a handle and reports the size through @size, or NULL
+       on failure. read_chunk() returns the byte count, 0 at end of stream and
+       -1 on error. read_close() releases the handle and, when @digest is not
+       NULL, may store there a checksum of what was read; NULL digest means the
+       plugin cannot produce one. The caller frees it. */
+    void *(*read_open) (void *plugin_data, const char *fname, gint64 offset, gint64 *size);
+    gssize (*read_chunk) (void *plugin_data, void *handle, void *buf, gsize size);
+    gboolean (*read_close) (void *plugin_data, void *handle, char **digest);
+
+    /* write_open() is told the final @size for protocols that must announce it
+       up front. @offset is where writing starts; 0 means the beginning. */
+    void *(*write_open) (void *plugin_data, const char *fname, gint64 size, gint64 offset);
+    gboolean (*write_chunk) (void *plugin_data, void *handle, const void *buf, gsize size);
+    gboolean (*write_close) (void *plugin_data, void *handle, char **digest);
 
     /* Optional: open the plugin's standalone settings/preferences dialog.
        Invoked from the Manage Plugins dialog (Enter or F4 on the plugin row).
