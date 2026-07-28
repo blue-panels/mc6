@@ -1,0 +1,36 @@
+# shfs-helper: putat 1
+LC_ALL=C
+export LC_ALL
+FILENAME="/${SHELL_FILENAME}"
+OFFSET=${SHELL_START_OFFSET}
+
+# Write SHELL_FILESIZE bytes into FILENAME starting at OFFSET, leaving whatever
+# lies beyond untouched. This is what makes resuming possible without ever
+# shortening the destination: the only helper that truncates is send, and it
+# does so because a human asked to start over.
+echo "### 001"
+{
+    if [ -n "${SHELL_HAVE_PERL}" ]; then
+        perl -e '
+my ($f, $off, $len) = @ARGV;
+open(F, "+<", $f) or open(F, ">", $f) or exit 1;
+binmode(F);
+binmode(STDIN);
+seek(F, $off, 0);
+my $left = $len;
+my $buf;
+while ($left > 0) {
+    my $want = $left > 65536 ? 65536 : $left;
+    my $got = read(STDIN, $buf, $want);
+    last if !defined($got) || $got == 0;
+    print F $buf;
+    $left -= $got;
+}
+close(F);
+' "${FILENAME}" ${OFFSET} ${SHELL_FILESIZE}
+    else
+        # conv=notrunc is the point: without it dd would cut the file at the
+        # end of what we write.
+        dd of="${FILENAME}" bs=1 seek=${OFFSET} count=${SHELL_FILESIZE} conv=notrunc 2>/dev/null
+    fi
+}; echo "### 200"

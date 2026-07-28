@@ -1,0 +1,276 @@
+
+                    FIles transferred over SSH
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This protocol was designed for transferring files over a remote shell
+connection (rsh and compatibles). It can be as well used for transfers over
+rsh, and there may be other uses.
+
+Since version 4.8.31 Midnight Commander doesn't support FISH commands with form
+
+#FISH_COMMAND [arg1] [arg2] ... [argN]
+
+and sends requests as shell scripts only.
+
+A host-specific override in the per-user directory wins; failing that the
+set installed with the plugin is used; failing that the copy compiled into
+the plugin. The places searched, in the order they are tried:
+
+    ~/.local/share/mc/shell/<hostname>/
+    /usr/lib/mc/panel-plugins/shell-link/helpers/
+
+Which one is actually in effect can be asked for, rather than guessed at:
+
+    shfs-tool --host <hostname> --helpers
+    shfs-tool --host <hostname> --helper ls --dump
+
+and inside mc the same list is a panel mode, Shift-F7 by default.
+
+                     Exercising this without a host
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The library reaches the far side by running "ssh <host> 'echo SHELL:; /bin/sh'"
+and talking to that shell. Nothing about that requires the shell to be on
+another machine. A stand-in named ssh, early in PATH, that drops its options
+and runs the last argument locally:
+
+    #!/bin/sh
+    cmd=""
+    for a in "$@"; do cmd="$a"; done
+    exec /bin/sh -c "$cmd"
+
+makes the whole protocol - the helpers, the reply codes, the digests, the
+resume search - run against the local filesystem with no network and no
+password:
+
+    PATH=/somewhere/fake:$PATH shfs-tool --host anything -l /tmp
+    PATH=/somewhere/fake:$PATH shfs-tool --host anything \
+        --resume-probe /tmp/source --local /tmp/partial-copy
+
+Put a "perl" beside it that exits non-zero to see the paths taken by hosts
+that have no perl; they are different code and worth testing separately.
+
+                            Script revisions
+                            ~~~~~~~~~~~~~~~~
+
+Every script shipped here starts with a line naming itself and the protocol
+revision it was written against:
+
+    # shfs-helper: info 2
+
+An override is checked against that number when a connection is opened. A
+script that declares an older revision, or that has no such line at all, is
+reported once with its path, because the failure it causes is silent: an old
+script does not break, it answers with less than it should. An old "info"
+omits the newer digest algorithms and integrity checking quietly weakens; an
+old "ls" produces output the parser reads wrongly.
+
+Keep the line when copying a script to modify it, and raise the number only
+if the script is genuinely rewritten for a newer revision - it is a claim
+about what the script implements, not a version of your changes.
+
+Server's reply is multiline, but always ends with
+
+### 000<optional text>
+
+line. ### is prefix to mark this line, 000 is return code. Return
+codes are superset to those used in ftp.
+
+There are few new exit codes defined:
+
+000 don't know; if there were no previous lines, this marks COMPLETE
+success, if they were, it marks failure.
+
+001 don't know; if there were no previous lines, this marks
+PRELIMinary success, if they were, it marks failure
+
+                                Connecting
+                                ~~~~~~~~~~
+MC uses "echo SHELL:;/bin/sh" as command executed on remote machine.
+
+                                 Actions
+                                 ~~~~~~~
+
+Get info about host into $result
+
+    echo $result
+    echo '### 200'
+
+Script: info
+
+--------------------------------------------------------------------------------
+
+List directory or get status information about single file.
+
+    ls -lLa $1 | grep '^[^cbt]' | ( while read p x u g s m d y n; do echo "P$p $u.$g
+    S$s
+    d$m $d $y
+    :$n
+    "; done )
+    ls -lLa $1 | grep '^[cb]' | ( while read p x u g a i m d y n; do echo "P$p $u.$g
+    E$a$i
+    dD$m $d $y
+    :$n
+    "; done )
+    echo '### 200'
+
+Output is in following form (any line except :<filename> may be omitted):
+
+P<unix permissions> <owner>.<group>
+S<size>
+d<3-letters month name> <day> <year or HH:MM>
+D<year> <month> <day> <hour> <minute> <second>[.1234]
+E<major-of-device>,<minor>
+:<filename>
+L<filename symlink points to>
+<blank line to separate items>
+
+Unix permissions are of form X---------
+where X is type of file:
+    '-' a regular file
+    'd' a directory
+    'c' a character device
+    'b' a block device
+    'l' a symbolic link
+    'p' a FIFO
+    's' a socket.
+
+'d' has three fields:
+    month (one of strings Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+    day of month
+    single number indicating year, or HH:MM field (assume current year in such
+        case). As you've probably noticed, this is pretty broken; it is for
+        compatibility with ls listing.
+
+Script: ls
+
+--------------------------------------------------------------------------------
+
+Get file
+
+    ls -l /some/name | ( read a b c d x e; echo $x ); echo '### 100'; cat /some/name; echo '### 200'
+
+Server sends line with filesize on it, followed by line with ### 100
+indicating partial success, then it sends binary data (exactly filesize bytes)
+and follows them with (with no preceding newline) ### 200.
+
+Note that there's no way to abort running RETR command - except closing
+the connection.
+
+Script: get
+
+--------------------------------------------------------------------------------
+
+Put file
+
+    > /file/name; echo '### 001'; ( dd bs=4096 count=<size/4096>; dd bs=<size%4096> count=1 ) 2>/dev/null | ( cat > %s; cat > /dev/null ); echo '### 200'
+
+This command is for storing /file/name, which is exactly size bytes big.
+You probably think I went crazy. Well, I did not: that strange cat > /dev/null
+has purpose to discard any extra data which was not written to disk (due to for
+example out of space condition).
+
+[Why? Imagine uploading file with "rm -rf /" line in it.]
+
+Script: send
+
+--------------------------------------------------------------------------------
+
+Change directory
+
+    cd /somewhere; echo '### 000'
+
+It is specified here, but I'm not sure how wise idea is to use this one:
+it breaks stateless-ness of the protocol.
+
+--------------------------------------------------------------------------------
+
+Change mode
+
+    chmod 1234 file; echo '### 000'
+
+Script: chmod
+
+--------------------------------------------------------------------------------
+
+Change own
+
+    chown user /file/name; echo '### 000'
+
+Script: chown
+
+--------------------------------------------------------------------------------
+
+Remove file
+
+    rm -f /some/path; echo '### 000'
+
+Sctipt: unlink
+
+--------------------------------------------------------------------------------
+
+Make directory:
+
+    mkdir /some/path; echo '### 000'
+
+Script: mkdir
+
+--------------------------------------------------------------------------------
+
+Remove directory
+
+    rmdir /some/path; echo '### 000'
+
+Script: rmdir
+
+--------------------------------------------------------------------------------
+
+Rename/move file
+
+    mv /path/a /path/b; echo '### 000'
+
+Script: mv
+
+--------------------------------------------------------------------------------
+
+Make link
+
+    ln /path/a /path/b; echo '### 000'
+
+Script: hardlink
+
+--------------------------------------------------------------------------------
+
+Make symbolic link:
+
+    ln -s /path/a /path/b; echo '### 000'
+
+Script: ln
+
+--------------------------------------------------------------------------------
+
+You can use following parameters:
+SHELL_FILESIZE
+SHELL_FILENAME
+SHELL_FILEMODE
+SHELL_FILEOWNER
+SHELL_FILEGROUPE
+SHELL_FILEFROM
+SHELL_FILETO
+
+NB:
+'SHELL_FILESIZE' is used if we operate with single file name in 'unlink', 'rmdir', 'chmod', etc...
+'SHELL_FILEFROM','SHELL_FILETO' are used if we operate with two files in 'ln', 'hardlink', 'mv' etc...
+'SHELL_FILEOWNER', 'SHELL_FILEGROUPE' are a new user/group in chown
+
+and flags:
+SHELL_HAVE_HEAD
+SHELL_HAVE_SED
+SHELL_HAVE_AWK
+SHELL_HAVE_PERL
+SHELL_HAVE_LSQ
+SHELL_HAVE_DATE_MDYT
+
+That's all, folks!
+                                             pavel@ucw.cz
+                                             aborodin@vmail.ru

@@ -1,0 +1,86 @@
+# shfs-helper: blockdigests 1
+LC_ALL=C
+export LC_ALL
+FILENAME="/${SHELL_FILENAME}"
+OFFSET=${SHELL_START_OFFSET}
+LENGTH=${SHELL_LENGTH}
+BLOCK=${SHELL_BLOCKSIZE}
+
+# One digest per block, in order, so that a partially written file can be
+# compared against its source in a single pass instead of by repeated probing.
+
+# Portable path: one process pair per block, so the caller is expected to ask
+# for few, large blocks when this is what runs.
+shfs_blocks_shell ()
+{
+    pos=${OFFSET}
+    left=${LENGTH}
+    while [ ${left} -gt 0 ]; do
+        want=${BLOCK}
+        if [ ${left} -lt ${BLOCK} ]; then
+            want=${left}
+        fi
+        case "${SHELL_DIGEST}" in
+        sha256)
+            dd if="${FILENAME}" bs=1 skip=${pos} count=${want} 2>/dev/null | sha256sum | cut -d' ' -f1
+            ;;
+        md5)
+            dd if="${FILENAME}" bs=1 skip=${pos} count=${want} 2>/dev/null | md5sum | cut -d' ' -f1
+            ;;
+        *)
+            dd if="${FILENAME}" bs=1 skip=${pos} count=${want} 2>/dev/null | cksum | cut -d' ' -f1
+            ;;
+        esac
+        pos=`expr ${pos} + ${want}`
+        left=`expr ${left} - ${want}`
+    done
+}
+
+echo "### 001"
+if [ -r "${FILENAME}" ]; then
+    done_by_perl=no
+    if [ -n "${SHELL_HAVE_PERL}" ]; then
+        # Exits non-zero when it cannot produce the algorithm that was asked
+        # for, so the shell path takes over instead of the caller silently
+        # receiving a digest of the wrong kind.
+        if perl -e '
+my ($f, $off, $len, $blk, $algo) = @ARGV;
+my $ctor;
+if ($algo eq "sha256") {
+    eval { require Digest::SHA; 1 } or exit 2;
+    $ctor = sub { Digest::SHA->new(256) };
+} elsif ($algo eq "md5") {
+    eval { require Digest::MD5; 1 } or exit 2;
+    $ctor = sub { Digest::MD5->new };
+} else {
+    exit 2;
+}
+open(F, $f) or exit 1;
+binmode(F);
+seek(F, $off, 0);
+my $left = $len;
+while ($left > 0) {
+    my $want = $left > $blk ? $blk : $left;
+    my $buf;
+    my $got = read(F, $buf, $want);
+    last if !defined($got) || $got == 0;
+    my $ctx = $ctor->();
+    $ctx->add($buf);
+    print $ctx->hexdigest, "\n";
+    $left -= $got;
+}
+close(F);
+exit 0
+' "${FILENAME}" ${OFFSET} ${LENGTH} ${BLOCK} "${SHELL_DIGEST}"; then
+            done_by_perl=yes
+        fi
+    fi
+
+    if [ "${done_by_perl}" = no ]; then
+        shfs_blocks_shell
+    fi
+
+    echo "### 200"
+else
+    echo "### 500"
+fi
