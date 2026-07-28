@@ -47,6 +47,9 @@
 #define VFS_SHELL_SEND_FILE             "send"
 #define VFS_SHELL_APPEND_FILE           "append"
 #define VFS_SHELL_INFO_FILE             "info"
+#define VFS_SHELL_PUTAT_FILE            "putat"
+#define VFS_SHELL_CKSUMRANGE_FILE       "cksumrange"
+#define VFS_SHELL_BLOCKDIGESTS_FILE     "blockdigests"
 
 #define MC_EXTFS_DIR                    "extfs.d"
 

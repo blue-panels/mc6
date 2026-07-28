@@ -63,9 +63,6 @@ static const char *const vfs_supported[] = {
 #ifdef ENABLE_VFS_EXTFS
     "extfs",
 #endif
-#ifdef ENABLE_VFS_SHELL
-    "shell",
-#endif
     NULL
 };
 #endif
@@ -262,14 +259,9 @@ show_datadirs_extended (void)
 
     PRINTF_SECTION (_ ("File extension handlers:"), EXTHELPERSDIR);
 
-#if defined ENABLE_VFS_EXTFS || defined ENABLE_VFS_SHELL
-    PRINTF_SECTION (_ ("VFS plugins and scripts:"), LIBEXECDIR);
 #ifdef ENABLE_VFS_EXTFS
+    PRINTF_SECTION (_ ("VFS plugins and scripts:"), LIBEXECDIR);
     PRINTF2 ("extfs.d:", LIBEXECDIR, MC_EXTFS_DIR PATH_SEP_STR);
-#endif
-#ifdef ENABLE_VFS_SHELL
-    PRINTF2 ("shell:", LIBEXECDIR, VFS_SHELL_PREFIX PATH_SEP_STR);
-#endif
 #endif
 
 #ifdef MC_PANEL_PLUGINS_DIR
@@ -287,9 +279,6 @@ show_datadirs_extended (void)
     PRINTF ("skins:", mc_config_get_data_path (), MC_SKINS_DIR PATH_SEP_STR);
 #ifdef ENABLE_VFS_EXTFS
     PRINTF ("extfs.d:", mc_config_get_data_path (), MC_EXTFS_DIR PATH_SEP_STR);
-#endif
-#ifdef ENABLE_VFS_SHELL
-    PRINTF ("shell:", mc_config_get_data_path (), VFS_SHELL_PREFIX PATH_SEP_STR);
 #endif
 #ifdef USE_INTERNAL_EDIT
     PRINTF ("mcedit macros:", mc_config_get_data_path (), MC_MACRO_FILE);
