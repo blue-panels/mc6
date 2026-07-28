@@ -96,20 +96,6 @@ vfs ---- direntry ---- cpio   } archives
    |---- extfs ---- extfs archives
    |---- localfs ---- sfs ---- sfs archives
 
-Dynamic plugins
-===============
-
-Some VFS modules are built as shared objects (.so) and loaded at
-runtime from the VFS plugins directory (see --with-vfs-plugins-dir
-configure option).  Each plugin exports the mc_vfs_plugin_init symbol
-which is called by the plugin loader after dlopen.  This lets
-distributions package optional VFS modules (and their dependencies)
-separately from the core mc binary.
-
-Currently built as dynamic plugins:
-  sftpfs  - SFTP filesystem (requires libssh2)
-
-
 Properties of classes
 =====================
 

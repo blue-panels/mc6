@@ -19,15 +19,14 @@ is the source of truth.
 1. Plugin Types
 ---------------
 
-mc supports three plugin families:
+mc supports two plugin families:
 
-- VFS plugins (virtual filesystems)
 - Panel plugins (content providers for filemanager panels)
 - Editor plugins (extensions for mcedit)
 
-VFS plugins use mc_vfs_plugin_init() and are not the preferred starting
-point for new UI-oriented features.  This guide focuses on panel and
-editor plugins.
+Filesystems that are not built into the binary are reached through a
+panel plugin: the shell link plugin, for instance, carries the whole of
+the FISH protocol.  There is no separate VFS plugin family.
 
 
 2. Common Rules
@@ -771,10 +770,3 @@ Editor plugins:
     implement open_file_list().  When no such plugin is loaded the
     button is hidden by design.
 
-
-9. Notes on VFS Plugins
------------------------
-
-The VFS plugin mechanism uses mc_vfs_plugin_init().  If you are
-implementing UI features, panel/editor plugins are usually a better fit
-than adding a new VFS class.
