@@ -469,15 +469,12 @@ mc_SUBSHELL
 mc_BACKGROUND
 
 mc_MCTERM
+dnl libssh2 is looked for once; the sftp and shell link plugins share the result
+m4_include([m4.include/plugins/mc-libssh2.m4])
+mc_LIBSSH2
+
 mc_EXT2FS_ATTR
 mc_VFS_CHECKS
-
-AC_ARG_WITH([vfs-plugins-dir],
-    AS_HELP_STRING([--with-vfs-plugins-dir=DIR],
-        [Directory for dynamic VFS plugins [LIBDIR/mc/vfs-plugins]]),
-    [vfs_plugins_dir="$withval"],
-    [vfs_plugins_dir='${libdir}/mc/vfs-plugins'])
-AC_SUBST([vfs_plugins_dir])
 
 AC_ARG_WITH([panel-plugins-dir],
     AS_HELP_STRING([--with-panel-plugins-dir=DIR],
@@ -627,6 +624,51 @@ if test "x$enable_panel_plugin_samba" = xauto && test "x$have_panel_plugin_samba
 fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SAMBA], [test x"$have_panel_plugin_samba" = xyes])
+
+dnl Shell link panel plugin (sh:// connection manager)
+AC_ARG_ENABLE([panel-plugin-shell-link],
+    AS_HELP_STRING([--enable-panel-plugin-shell-link@<:@=auto/yes/no@:>@],
+                   [Build Shell link panel plugin (default: auto)]),
+    [enable_panel_plugin_shell_link="$enableval"],
+    [enable_panel_plugin_shell_link=auto])
+
+AS_CASE([$enable_panel_plugin_shell_link],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_panel_plugin_shell_link' for --enable-panel-plugin-shell-link (use auto, yes, or no)])])
+
+have_panel_plugin_shell_link=no
+if test "x$enable_panel_plugin_shell_link" != xno; then
+    have_panel_plugin_shell_link=yes
+fi
+
+AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SHELL_LINK],
+               [test x"$have_panel_plugin_shell_link" = xyes])
+
+dnl libssh2 transport for the shell link plugin. Optional: without it the
+dnl plugin talks to an external ssh, which cannot do password authentication
+dnl but handles keys, the agent and host key confirmation on the terminal.
+have_shell_ssh2=no
+AC_ARG_ENABLE([shell-ssh2],
+    AS_HELP_STRING([--enable-shell-ssh2@<:@=auto/yes/no@:>@],
+                   [Use libssh2 as Shell link transport (default: auto)]),
+    [enable_shell_ssh2="$enableval"],
+    [enable_shell_ssh2=auto])
+
+AS_CASE([$enable_shell_ssh2],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_shell_ssh2' for --enable-shell-ssh2 (use auto, yes, or no)])])
+
+if test x"$have_panel_plugin_shell_link" = xyes -a x"$enable_shell_ssh2" != xno; then
+    if test x"$have_libssh2" = xyes; then
+        AC_DEFINE([ENABLE_SHELL_SSH2], [1], [Use libssh2 as Shell link transport])
+        have_shell_ssh2=yes
+    elif test x"$enable_shell_ssh2" = xyes; then
+        AC_MSG_ERROR([Shell link libssh2 transport requested but libssh2 >= 1.2.8 was not found.
+Install the libssh2 development package (for example: libssh2-1-dev) or use --enable-shell-ssh2=auto/no.])
+    fi
+fi
+
+AM_CONDITIONAL([ENABLE_SHELL_SSH2], [test x"$have_shell_ssh2" = xyes])
 
 dnl Optional libcurl for FTP/FTPS panel plugin
 LIBCURL_CFLAGS=""
@@ -839,6 +881,7 @@ src/panel-plugins/docker/Makefile
 src/panel-plugins/git/Makefile
 src/panel-plugins/k8s/Makefile
 src/panel-plugins/shell-link/Makefile
+src/panel-plugins/shell-link/helpers/Makefile
 src/panel-plugins/arcmc/Makefile
 src/panel-plugins/s3/Makefile
 src/panel-plugins/mongo/Makefile
@@ -882,8 +925,6 @@ src/vfs/extfs/helpers/uwim
 src/vfs/extfs/helpers/uzip
 src/vfs/extfs/helpers/uzoo
 
-src/vfs/shell/Makefile
-src/vfs/shell/helpers/Makefile
 
 src/vfs/local/Makefile
 
