@@ -43,10 +43,6 @@
 #include "lib/util.h"
 #include "lib/charsets.h"
 
-#ifdef ENABLE_VFS_SHELL
-#include "src/vfs/shell/shell.h"
-#endif
-
 #include "filemanager/dir.h"
 #include "filemanager/filemanager.h"
 #include "filemanager/tree.h"     // xtree_mode
@@ -374,9 +370,6 @@ static const struct
 
 #ifdef ENABLE_VFS
     { "vfs_timeout", &vfs_timeout },
-#ifdef ENABLE_VFS_SHELL
-    { "shell_directory_timeout", &shell_directory_timeout },
-#endif
 #endif
 
     // option_tab_spacing is used in internal viewer
