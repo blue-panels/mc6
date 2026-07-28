@@ -52,7 +52,6 @@ ScreenList = alt-prime
 # EditExtensionsFile =
 # EditFileHighlightFile =
 # Filter =
-# ConnectShell =
 # ConnectFtp =
 PluginDriveLeft = alt-f1
 PluginDriveRight = alt-f2

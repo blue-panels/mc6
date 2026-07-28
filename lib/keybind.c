@@ -175,9 +175,6 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (LinkSymbolicEdit, N_ ("Edit symbolic link")),
     ADD_KEYMAP_NAME_DESC (ExternalPanelize, N_ ("External panelize")),
     ADD_KEYMAP_NAME_DESC (Filter, N_ ("Filter view")),
-#ifdef ENABLE_VFS_SHELL
-    ADD_KEYMAP_NAME_DESC (ConnectShell, N_ ("Shell link connection")),
-#endif
     ADD_KEYMAP_NAME_DESC (PanelInfo, N_ ("Info panel")),
 #ifdef ENABLE_BACKGROUND
     ADD_KEYMAP_NAME_DESC (Jobs, N_ ("Background jobs")),

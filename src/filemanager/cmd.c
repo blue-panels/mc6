@@ -39,9 +39,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef ENABLE_VFS_NET
-#include <netdb.h>
-#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <pwd.h>
@@ -57,6 +54,7 @@
 #include "lib/fileloc.h"
 #include "lib/strutil.h"
 #include "lib/file-entry.h"
+#include "lib/timefmt.h"  // file_date()
 #include "lib/util.h"
 #include "lib/widget.h"
 #include "lib/keybind.h"  // CK_Down, CK_History
@@ -88,7 +86,8 @@
 #include "boxes.h"        // cd_box()
 #include "dir.h"
 #include "cd.h"
-#include "ioblksize.h"  // IO_BUFSIZE
+#include "ioblksize.h"         // IO_BUFSIZE
+#include "panel_plugin_ops.h"  // plugin_panel_create_cmd()
 
 #include "lib/panel-plugin.h"
 
@@ -110,10 +109,6 @@ enum CompareMode
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
-
-#ifdef ENABLE_VFS_NET
-static const char *machine_str = N_ ("Enter machine name (F1 for details):");
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -465,65 +460,6 @@ cleanup:
 
 /* --------------------------------------------------------------------------------------------- */
 
-#if defined(ENABLE_VFS_NET)
-static void
-nice_cd (const char *text, const char *xtext, const char *help, const char *history_name,
-         const char *prefix, int to_home, gboolean strip_password)
-{
-    char *machine;
-    char *cd_path;
-
-    machine = input_dialog_help (text, xtext, help, history_name, INPUT_LAST_TEXT, strip_password,
-                                 INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD
-                                     | INPUT_COMPLETE_HOSTNAMES | INPUT_COMPLETE_USERNAMES);
-    if (machine == NULL)
-        return;
-
-    to_home = 0; /* FIXME: how to solve going to home nicely? /~/ is
-                    ugly as hell and leads to problems in vfs layer */
-
-    if (strncmp (prefix, machine, strlen (prefix)) == 0)
-        cd_path = g_strconcat (machine, to_home ? "/~/" : (char *) NULL, (char *) NULL);
-    else
-        cd_path = g_strconcat (prefix, machine, to_home ? "/~/" : (char *) NULL, (char *) NULL);
-
-    g_free (machine);
-
-    if (!IS_PATH_SEP (*cd_path))
-    {
-        char *tmp = cd_path;
-
-        cd_path = g_strconcat (PATH_SEP_STR, tmp, (char *) NULL);
-        g_free (tmp);
-    }
-
-    {
-        panel_view_mode_t save_type;
-        vfs_path_t *cd_vpath;
-
-        save_type = get_panel_type (MENU_PANEL_IDX);
-
-        if (save_type != view_listing)
-            create_panel (MENU_PANEL_IDX, view_listing);
-
-        cd_vpath = vfs_path_from_str_flags (cd_path, VPF_NO_CANON);
-        if (!panel_do_cd (MENU_PANEL, cd_vpath, cd_parse_command))
-        {
-            cd_error_message (cd_path);
-
-            if (save_type != view_listing)
-                create_panel (MENU_PANEL_IDX, save_type);
-        }
-        vfs_path_free (cd_vpath, TRUE);
-    }
-    g_free (cd_path);
-
-    // In case of passive panel, restore current VFS directory that was changed in panel_do_cd()
-    if (MENU_PANEL != current_panel)
-        (void) mc_chdir (current_panel->cwd_vpath);
-}
-#endif
-
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -765,7 +701,7 @@ edit_file_at_line (const vfs_path_t *what_vpath, gboolean internal, long start_l
    (internal when @force_internal), and push it back via save_file if it
    changed. The entry name is copied before opening the editor. */
 static void
-edit_plugin_panel_file (const WPanel *panel, const char *fname, gboolean force_internal)
+edit_plugin_panel_file (const WPanel *panel, const file_entry_t *fe, gboolean force_internal)
 {
     char *plugin_fname;
     char *local_path = NULL;
@@ -780,7 +716,15 @@ edit_plugin_panel_file (const WPanel *panel, const char *fname, gboolean force_i
         return;
     }
 
-    plugin_fname = g_strdup (fname);
+    /* A remote helper asked for a directory may announce a size and then send
+       nothing, leaving the fetch waiting for bytes that never arrive. */
+    if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
+    {
+        message (D_ERROR, MSG_ERROR, _ ("%s\nis not a regular file"), fe->fname->str);
+        return;
+    }
+
+    plugin_fname = g_strdup (fe->fname->str);
     if (panel->plugin->get_local_copy (panel->plugin_data, plugin_fname, &local_path) != MC_PPR_OK
         || local_path == NULL)
     {
@@ -842,7 +786,7 @@ edit_cmd (const WPanel *panel)
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
         && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
     {
-        edit_plugin_panel_file (panel, fe->fname->str, FALSE);
+        edit_plugin_panel_file (panel, fe, FALSE);
         return;
     }
 
@@ -868,7 +812,7 @@ edit_cmd_force_internal (const WPanel *panel)
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
         && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
     {
-        edit_plugin_panel_file (panel, fe->fname->str, TRUE);
+        edit_plugin_panel_file (panel, fe, TRUE);
         return;
     }
 
@@ -1331,17 +1275,6 @@ help_cmd (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-#ifdef ENABLE_VFS_SHELL
-void
-shelllink_cmd (void)
-{
-    nice_cd (_ ("Shell link to machine"), _ (machine_str), "[FIle transfer over SHell filesystem]",
-             ":fishlink_cmd: Shell link to machine ", "sh://", 1, TRUE);
-}
-#endif
-
-/* --------------------------------------------------------------------------------------------- */
-
 void
 quick_cd_cmd (WPanel *panel)
 {
@@ -1584,538 +1517,6 @@ encoding_cmd (void)
 {
     if (SELECTED_IS_PANEL)
         panel_change_encoding (MENU_PANEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/**
- * Copy a local file using POSIX read/write, preserving permissions.
- *
- * @param src source path (temp file from plugin)
- * @param dest destination path
- * @return TRUE on success
- */
-
-static gboolean
-copy_local_file (const char *src, const char *dest)
-{
-    struct stat st;
-    int fd_src, fd_dest;
-    char buf[IO_BUFSIZE];
-    ssize_t nread;
-    gboolean ok = TRUE;
-
-    fd_src = open (src, O_RDONLY);
-    if (fd_src == -1)
-        return FALSE;
-
-    if (fstat (fd_src, &st) != 0)
-        st.st_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-
-    fd_dest = open (dest, O_WRONLY | O_CREAT | O_TRUNC, st.st_mode & 0777);
-    if (fd_dest == -1)
-    {
-        close (fd_src);
-        return FALSE;
-    }
-
-    while ((nread = read (fd_src, buf, sizeof (buf))) > 0)
-    {
-        const char *p = buf;
-        ssize_t remaining = nread;
-
-        while (remaining > 0)
-        {
-            ssize_t nw = write (fd_dest, p, remaining);
-            if (nw == -1)
-            {
-                ok = FALSE;
-                goto done;
-            }
-            p += nw;
-            remaining -= nw;
-        }
-    }
-
-    if (nread == -1)
-        ok = FALSE;
-
-done:
-    close (fd_src);
-    close (fd_dest);
-    return ok;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/**
- * Collect names of marked files into a GPtrArray.
- * If no files are marked, adds the current file name.
- *
- * @return newly allocated GPtrArray with g_strdup'd names (caller frees with g_ptr_array_free)
- */
-
-static GPtrArray *
-plugin_panel_collect_names (WPanel *panel)
-{
-    GPtrArray *names;
-
-    names = g_ptr_array_new_with_free_func (g_free);
-
-    if (panel->marked > 0)
-    {
-        int idx = 0;
-        const GString *fname;
-
-        while ((fname = panel_find_marked_file (panel, &idx)) != NULL)
-        {
-            g_ptr_array_add (names, g_strdup (fname->str));
-            idx++;
-        }
-    }
-    else
-    {
-        const file_entry_t *fe = panel_current_entry (panel);
-
-        if (fe != NULL)
-            g_ptr_array_add (names, g_strdup (fe->fname->str));
-    }
-
-    return names;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_copy_cmd (WPanel *panel)
-{
-    char *dest_dir;
-    const char *default_dest;
-    GPtrArray *names;
-    guint i;
-
-    if (panel->plugin == NULL || panel->plugin_data == NULL)
-        return;
-
-    if (panel->plugin->copy_to_local == NULL && panel->plugin->get_local_copy == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support copying files"));
-        return;
-    }
-
-    default_dest = vfs_path_as_str (other_panel->cwd_vpath);
-    dest_dir = input_expand_dialog (_ ("Copy"), _ ("Copy to:"), MC_HISTORY_FM_PLUGIN_COPY,
-                                    default_dest, INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD);
-    if (dest_dir == NULL || dest_dir[0] == '\0')
-    {
-        g_free (dest_dir);
-        return;
-    }
-
-    names = plugin_panel_collect_names (panel);
-
-    for (i = 0; i < names->len; i++)
-    {
-        const char *name = (const char *) g_ptr_array_index (names, i);
-        char *base_name;
-        char *dest_path;
-        mc_pp_result_t r;
-
-        base_name = g_path_get_basename (name);
-        dest_path = mc_build_filename (dest_dir, base_name, (char *) NULL);
-
-        if (panel->plugin->copy_to_local != NULL)
-        {
-            r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
-            if (r != MC_PPR_OK && r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-        }
-        else
-        {
-            char *local_path = NULL;
-
-            r = panel->plugin->get_local_copy (panel->plugin_data, name, &local_path);
-            if (r == MC_PPR_OK && local_path != NULL)
-            {
-                if (!copy_local_file (local_path, dest_path))
-                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-                unlink (local_path);
-                g_free (local_path);
-            }
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot get local copy of %s"), name);
-        }
-
-        g_free (dest_path);
-        g_free (base_name);
-    }
-
-    g_ptr_array_free (names, TRUE);
-    g_free (dest_dir);
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_delete_cmd (WPanel *panel)
-{
-    GPtrArray *names;
-    mc_pp_result_t r;
-
-    if (panel->plugin == NULL || panel->plugin_data == NULL)
-        return;
-
-    if (panel->plugin->delete_items == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support deleting files"));
-        return;
-    }
-
-    names = plugin_panel_collect_names (panel);
-
-    if (names->len == 0)
-    {
-        g_ptr_array_free (names, TRUE);
-        return;
-    }
-
-    /* Confirmation */
-    if (confirm_delete)
-    {
-        int result;
-
-        if (names->len == 1)
-            result = query_dialog (_ ("Delete"), _ ("Delete file from plugin panel?"), D_ERROR, 2,
-                                   _ ("&Yes"), _ ("&No"));
-        else
-            result = query_dialog (_ ("Delete"), _ ("Delete tagged files from plugin panel?"),
-                                   D_ERROR, 2, _ ("&Yes"), _ ("&No"));
-
-        if (result != 0)
-        {
-            g_ptr_array_free (names, TRUE);
-            return;
-        }
-    }
-
-    r = panel->plugin->delete_items (panel->plugin_data, (const char **) names->pdata,
-                                     (int) names->len);
-    if (r != MC_PPR_OK)
-        message (D_ERROR, MSG_ERROR, _ ("Delete failed"));
-
-    g_ptr_array_free (names, TRUE);
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_create_cmd (WPanel *panel)
-{
-    mc_pp_result_t r;
-
-    if (panel->plugin == NULL || panel->plugin_data == NULL)
-        return;
-
-    if (panel->plugin->create_item == NULL || (panel->plugin->flags & MC_PPF_CREATE) == 0)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support creating items"));
-        return;
-    }
-
-    r = panel->plugin->create_item (panel->plugin_data);
-    if (r == MC_PPR_OK)
-        update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static gboolean
-plugin_panel_confirm_put (const WPanel *panel, gboolean move_op)
-{
-    int result;
-    const char *title = move_op ? _ ("Move") : _ ("Copy");
-
-    if (panel->marked <= 0)
-        result = query_dialog (
-            title, move_op ? _ ("Move file to plugin panel?") : _ ("Copy file to plugin panel?"),
-            D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
-    else
-        result = query_dialog (title,
-                               move_op ? _ ("Move tagged files to plugin panel?")
-                                       : _ ("Copy tagged files to plugin panel?"),
-                               D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
-
-    return (result == 0);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_move_cmd (WPanel *panel)
-{
-    char *dest_dir;
-    const char *default_dest;
-    GPtrArray *names;
-    GPtrArray *moved_names;
-    guint i;
-
-    if (panel->plugin == NULL || panel->plugin_data == NULL)
-        return;
-
-    if ((panel->plugin->copy_to_local == NULL && panel->plugin->get_local_copy == NULL)
-        || panel->plugin->delete_items == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support moving files"));
-        return;
-    }
-
-    default_dest = vfs_path_as_str (other_panel->cwd_vpath);
-    dest_dir = input_expand_dialog (_ ("Move"), _ ("Move to:"), MC_HISTORY_FM_PLUGIN_MOVE,
-                                    default_dest, INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD);
-    if (dest_dir == NULL || dest_dir[0] == '\0')
-    {
-        g_free (dest_dir);
-        return;
-    }
-
-    names = plugin_panel_collect_names (panel);
-    moved_names = g_ptr_array_new_with_free_func (g_free);
-
-    for (i = 0; i < names->len; i++)
-    {
-        const char *name = (const char *) g_ptr_array_index (names, i);
-        char *base_name;
-        char *dest_path;
-        mc_pp_result_t r;
-        gboolean ok = FALSE;
-
-        base_name = g_path_get_basename (name);
-        dest_path = mc_build_filename (dest_dir, base_name, (char *) NULL);
-
-        if (panel->plugin->copy_to_local != NULL)
-        {
-            r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
-            if (r == MC_PPR_OK)
-                ok = TRUE;
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-        }
-        else
-        {
-            char *local_path = NULL;
-
-            r = panel->plugin->get_local_copy (panel->plugin_data, name, &local_path);
-            if (r == MC_PPR_OK && local_path != NULL)
-            {
-                if (copy_local_file (local_path, dest_path))
-                    ok = TRUE;
-                else
-                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-                unlink (local_path);
-                g_free (local_path);
-            }
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot get local copy of %s"), name);
-        }
-
-        g_free (dest_path);
-        g_free (base_name);
-
-        if (ok)
-            g_ptr_array_add (moved_names, g_strdup (name));
-    }
-
-    /* Delete successfully moved files from the plugin */
-    if (moved_names->len > 0)
-    {
-        mc_pp_result_t r;
-
-        r = panel->plugin->delete_items (panel->plugin_data, (const char **) moved_names->pdata,
-                                         (int) moved_names->len);
-        if (r != MC_PPR_OK)
-            message (D_ERROR, MSG_ERROR, _ ("Move succeeded but delete from plugin failed"));
-    }
-
-    g_ptr_array_free (names, TRUE);
-    g_ptr_array_free (moved_names, TRUE);
-    g_free (dest_dir);
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_put_cmd (WPanel *panel)
-{
-    const WPanel *dest;
-    int i;
-
-    dest = other_panel;
-
-    if (!dest->is_plugin_panel || dest->plugin == NULL || dest->plugin_data == NULL)
-        return;
-
-    if (dest->plugin->put_file == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support receiving files"));
-        return;
-    }
-
-    /* validate before confirmation: single-file case may have nothing to copy */
-    if (panel->marked == 0)
-    {
-        const file_entry_t *fe;
-
-        fe = panel_current_entry (panel);
-        if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
-            return;
-    }
-
-    if (!plugin_panel_confirm_put (panel, FALSE))
-        return;
-
-    if (panel->marked > 0)
-    {
-        for (i = 0; i < panel->dir.len; i++)
-        {
-            const file_entry_t *fe = &panel->dir.list[i];
-            char *full_path;
-            mc_pp_result_t r;
-
-            if (!fe->f.marked)
-                continue;
-
-            if (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
-                continue;
-
-            full_path = mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str,
-                                           (char *) NULL);
-            r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
-            if (r != MC_PPR_OK)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s to plugin"), fe->fname->str);
-
-            g_free (full_path);
-        }
-    }
-    else
-    {
-        const file_entry_t *fe;
-        char *full_path;
-        mc_pp_result_t r;
-
-        fe = panel_current_entry (panel);
-        /* already validated above, but keep the guard */
-        if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
-            return;
-
-        full_path =
-            mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str, (char *) NULL);
-        r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
-        if (r != MC_PPR_OK)
-            message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s to plugin"), fe->fname->str);
-
-        g_free (full_path);
-    }
-
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-plugin_panel_put_move_cmd (WPanel *panel)
-{
-    const WPanel *dest;
-    int i;
-
-    dest = other_panel;
-
-    if (!dest->is_plugin_panel || dest->plugin == NULL || dest->plugin_data == NULL)
-        return;
-
-    if (dest->plugin->put_file == NULL)
-    {
-        message (D_ERROR, MSG_ERROR, _ ("This plugin does not support receiving files"));
-        return;
-    }
-
-    /* validate before confirmation: single-file case may have nothing to move */
-    if (panel->marked == 0)
-    {
-        const file_entry_t *fe;
-
-        fe = panel_current_entry (panel);
-        if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
-            return;
-    }
-
-    if (!plugin_panel_confirm_put (panel, TRUE))
-        return;
-
-    if (panel->marked > 0)
-    {
-        for (i = 0; i < panel->dir.len; i++)
-        {
-            const file_entry_t *fe = &panel->dir.list[i];
-            char *full_path;
-            mc_pp_result_t r;
-
-            if (!fe->f.marked)
-                continue;
-
-            if (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
-                continue;
-
-            full_path = mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str,
-                                           (char *) NULL);
-            r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
-            if (r != MC_PPR_OK)
-            {
-                message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
-                g_free (full_path);
-                continue;
-            }
-
-            if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && unlink (full_path) != 0)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
-
-            g_free (full_path);
-        }
-    }
-    else
-    {
-        const file_entry_t *fe;
-        char *full_path;
-        mc_pp_result_t r;
-
-        fe = panel_current_entry (panel);
-        /* already validated above, but keep the guard */
-        if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
-            return;
-
-        full_path =
-            mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str, (char *) NULL);
-        r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
-        if (r != MC_PPR_OK)
-        {
-            message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
-            g_free (full_path);
-            return;
-        }
-
-        if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && unlink (full_path) != 0)
-            message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
-
-        g_free (full_path);
-    }
-
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
