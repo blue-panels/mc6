@@ -2,12 +2,13 @@
    Interface to the terminal controlling library.
    Slang wrapper.
 
-   Copyright (C) 2005-2025
+   Copyright (C) 2005-2026
    Free Software Foundation, Inc.
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2009
    Egmont Koblinger <egmont@gmail.com>, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 
@@ -445,6 +446,14 @@ tty_lowlevel_getch (void)
     }
 
     return c;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+tty_lowlevel_input_pending (void)
+{
+    return SLang_input_pending (0) != 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */

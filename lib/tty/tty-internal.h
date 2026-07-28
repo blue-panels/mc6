@@ -42,6 +42,11 @@ char *mc_tty_normalize_from_utf8 (const char *str);
 void tty_init_xterm_support (gboolean is_xterm);
 int tty_lowlevel_getch (void);
 
+/* TRUE when the screen library still holds input of its own. A read from the
+   terminal fills that buffer in one go, so an empty file descriptor does not
+   mean there is nothing left to process. */
+gboolean tty_lowlevel_input_pending (void);
+
 void tty_colorize_area (int y, int x, int rows, int cols, int color);
 
 /*** inline functions ****************************************************************************/

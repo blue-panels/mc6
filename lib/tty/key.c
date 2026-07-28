@@ -1,7 +1,7 @@
 /*
    Keyboard support routines.
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -12,6 +12,7 @@
    Denys Vlasenko <vda.linux@googlemail.com>, 2013
    Slava Zanko <slavazanko@gmail.com>, 2013
    Egmont Koblinger <egmont@gmail.com>, 2013
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 
@@ -220,6 +221,10 @@ const key_code_name_t key_name_conv_tab[] = {
 /*** file scope macro definitions ****************************************************************/
 
 #define MC_USEC_PER_MSEC 1000
+
+/* Shortest gap between screen redraws while input is still coming in, in
+   microseconds. Ten a second is enough to show that something is happening. */
+#define MC_BURST_REFRESH_INTERVAL (100 * MC_USEC_PER_MSEC)
 
 /* The maximum sequence length (32 + null terminator) */
 #define SEQ_BUFFER_LEN 33
@@ -1847,6 +1852,13 @@ is_idle (void)
     fd_set select_set;
     struct timeval time_out;
 
+    /* A read from the terminal empties the file descriptor into the screen
+       library's buffer in one go, and mc decodes escape sequences into a queue
+       of its own. Either can hold a paste worth of keys while select() below
+       reports nothing left to read. */
+    if (pending_keys != NULL || tty_lowlevel_input_pending ())
+        return FALSE;
+
     FD_ZERO (&select_set);
     FD_SET (input_fd, &select_set);
     nfd = MAX (0, input_fd) + 1;
@@ -2099,15 +2111,28 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
 #endif
     struct timeval time_out;
     struct timeval *time_addr = NULL;
-    static int dirty = 3;
+    static gint64 last_refresh = 0;
 
-    if ((dirty == 3) || is_idle ())
+    /* With nothing waiting, draw and be done. While input is still arriving,
+       draw on a time budget instead: a paste hands us thousands of keys at
+       once, and redrawing every few of them buries the terminal in escape
+       sequences faster than it can consume them. mc then blocks in write()
+       until the consumer catches up, which on a slow one is forever. */
+    if (is_idle ())
     {
         mc_refresh ();
-        dirty = 1;
+        last_refresh = 0;
     }
     else
-        dirty++;
+    {
+        const gint64 now = g_get_monotonic_time ();
+
+        if (last_refresh == 0 || now - last_refresh >= MC_BURST_REFRESH_INTERVAL)
+        {
+            mc_refresh ();
+            last_refresh = now;
+        }
+    }
 
     vfs_timeout_handler ();
 

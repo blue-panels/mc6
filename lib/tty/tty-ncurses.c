@@ -2,12 +2,12 @@
    Interface to the terminal controlling library.
    Ncurses wrapper.
 
-   Copyright (C) 2005-2025
+   Copyright (C) 2005-2026
    Free Software Foundation, Inc.
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2009.
-   Ilia Maslakov <il.smind@gmail.com>, 2009.
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2026.
 
    This file is part of the Midnight Commander.
 
@@ -463,6 +463,26 @@ int
 tty_lowlevel_getch (void)
 {
     return getch ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+tty_lowlevel_input_pending (void)
+{
+    int c;
+
+    /* ncurses has no way to ask, so take a character and put it back. Both
+       halves are buffer operations; nothing reaches the terminal. */
+    nodelay (stdscr, TRUE);
+    c = getch ();
+    nodelay (stdscr, FALSE);
+
+    if (c == ERR)
+        return FALSE;
+
+    ungetch (c);
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
