@@ -79,10 +79,12 @@ mc_panel_plugin_try_load (const gchar *so_path, const gchar *filename)
     mc_panel_plugin_register_fn register_fn;
     const mc_panel_plugin_t *plugin;
 
-    module = g_module_open (so_path, G_MODULE_BIND_LAZY);
+    /* Eager binding: a plugin from an older install may reference a symbol this
+       build no longer exports; lazy binding would crash mc later instead. */
+    module = g_module_open (so_path, 0);
     if (module == NULL)
     {
-        fprintf (stderr, "Panel plugin %s: %s\n", filename, g_module_error ());
+        fprintf (stderr, "Panel plugin %s not loaded: %s\n", filename, g_module_error ());
         return;
     }
 
@@ -203,10 +205,10 @@ mc_editor_plugins_load_from_dir (const gchar *plugins_dir)
             continue;
 
         path = g_build_filename (plugins_dir, filename, (char *) NULL);
-        module = g_module_open (path, G_MODULE_BIND_LAZY);
+        module = g_module_open (path, 0);
         if (module == NULL)
         {
-            fprintf (stderr, "Editor plugin %s: %s\n", filename, g_module_error ());
+            fprintf (stderr, "Editor plugin %s not loaded: %s\n", filename, g_module_error ());
             g_free (path);
             continue;
         }
