@@ -24,6 +24,7 @@ libmcfilemanager_la_SOURCES = \
 	mountlist.c mountlist.h \
 	panel.c panel.h \
 	panel_modes.c panel_modes.h \
+	panel_plugin_ops.c panel_plugin_ops.h \
 	panel_plugin_ui.c \
 	tree.c tree.h \
 	treestore.c treestore.h

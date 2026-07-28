@@ -50,7 +50,6 @@ ScreenList = alt-prime
 # EditExtensionsFile =
 # EditFileHighlightFile =
 # Filter =
-# ConnectShell =
 # ConnectFtp =
 EditorViewerHistory = alt-shift-e
 ExtendedKeyMap = ctrl-x

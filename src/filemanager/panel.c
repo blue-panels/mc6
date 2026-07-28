@@ -79,6 +79,7 @@
 
 #include "panel.h"
 #include "panel_modes.h"
+#include "panel_plugin_ops.h"
 
 /*** global variables ****************************************************************************/
 
@@ -1561,6 +1562,30 @@ directory_history_add (WPanel *panel, const vfs_path_t *vpath)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Strip the leading slash from a history entry like "/sh://user@host/dir":
+ * plugin paths read as relative names got stored resolved against the root and
+ * cannot be changed to. Repaired at load time, so the fixed form is written back.
+ */
+static char *
+directory_history_repair (char *entry)
+{
+    char *fixed;
+
+    if (entry == NULL || entry[0] != PATH_SEP || entry[1] == '\0')
+        return entry;
+
+    if (panel_plugin_find_by_path (entry + 1) == NULL)
+        return entry;
+
+    fixed = g_strdup (entry + 1);
+    g_free (entry);
+
+    return fixed;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 panel_directory_history_add_path (WPanel *panel, const char *path)
 {
@@ -1608,10 +1633,15 @@ panel_load_history (const gchar *event_group_name, const gchar *event_name, gpoi
 
     if (ev->receiver == NULL || ev->receiver == WIDGET (p))
     {
+        GList *iter;
+
         if (ev->cfg != NULL)
             p->dir_history.list = mc_config_history_load (ev->cfg, p->dir_history.name);
         else
             p->dir_history.list = mc_config_history_get (p->dir_history.name);
+
+        for (iter = g_list_first (p->dir_history.list); iter != NULL; iter = g_list_next (iter))
+            iter->data = directory_history_repair ((char *) iter->data);
 
         directory_history_add (p, p->cwd_vpath);
     }
@@ -3545,6 +3575,7 @@ chdir_other_panel (WPanel *panel)
     vfs_path_t *new_dir_vpath;
     const char *curr_entry = NULL;
     WPanel *p;
+    char *location = NULL;
 
     entry = panel_current_entry (panel);
     if (entry == NULL)
@@ -3552,6 +3583,40 @@ chdir_other_panel (WPanel *panel)
 
     if (get_other_type () != view_listing)
         create_panel (get_other_index (), view_listing);
+
+    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
+        && panel->plugin->get_location != NULL)
+        location = panel->plugin->get_location (panel->plugin_data);
+
+    if (location != NULL)
+    {
+        /* On a file the branch below goes to the parent directory. Here it
+           stays where it is: taking ".." off a plugin location would mean
+           parsing a path syntax only the plugin knows. */
+        if (S_ISDIR (entry->st.st_mode) || link_isdir (entry))
+        {
+            char *joined;
+
+            joined = g_str_has_suffix (location, PATH_SEP_STR)
+                ? g_strconcat (location, entry->fname->str, (char *) NULL)
+                : g_strconcat (location, PATH_SEP_STR, entry->fname->str, (char *) NULL);
+            g_free (location);
+            location = joined;
+        }
+        else
+            curr_entry = entry->fname->str;
+
+        p = change_panel ();
+        panel_navigate_to_path (p, location, TRUE, TRUE);
+        g_free (location);
+
+        if (curr_entry != NULL)
+            panel_set_current_by_name (p, curr_entry);
+        (void) change_panel ();
+
+        move_down (panel);
+        return;
+    }
 
     if (S_ISDIR (entry->st.st_mode) || link_isdir (entry))
         new_dir_vpath = vfs_path_append_new (panel->cwd_vpath, entry->fname->str, (char *) NULL);
@@ -3583,10 +3648,22 @@ chdir_other_panel (WPanel *panel)
 static void
 panel_sync_other (const WPanel *panel)
 {
+    char *location = NULL;
+
     if (get_other_type () != view_listing)
         create_panel (get_other_index (), view_listing);
 
-    panel_do_cd (other_panel, panel->cwd_vpath, cd_exact);
+    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
+        && panel->plugin->get_location != NULL)
+        location = panel->plugin->get_location (panel->plugin_data);
+
+    if (location == NULL)
+        location = g_strdup (vfs_path_as_str (panel->cwd_vpath));
+
+    /* Not panel_do_cd: the navigator tells a plugin path from a filesystem one
+       and closes a plugin on the other panel for an ordinary directory. */
+    panel_navigate_to_path (other_panel, location, TRUE, TRUE);
+    g_free (location);
 
     // try to set current filename on the other panel
     if (!panel->is_panelized)
@@ -4139,13 +4216,13 @@ panel_execute_cmd (WPanel *panel, long command)
     case CK_CopySingle:
         if (panel->is_plugin_panel && panel->plugin != NULL
             && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
-            plugin_panel_copy_cmd (panel);
+            plugin_panel_copy_cmd (panel, TRUE);
         else
             copy_cmd_local (panel);
         break;
     case CK_DeleteSingle:
         if (panel->is_plugin_panel)
-            plugin_panel_delete_cmd (panel);
+            plugin_panel_delete_cmd (panel, TRUE);
         else
             delete_cmd_local (panel);
         break;
@@ -4157,14 +4234,14 @@ panel_execute_cmd (WPanel *panel, long command)
         break;
     case CK_EditNew:
         if (panel->is_plugin_panel)
-            plugin_panel_create_cmd (panel);
+            plugin_panel_edit_new_cmd (panel);
         else
             edit_cmd_new ();
         break;
     case CK_MoveSingle:
         if (panel->is_plugin_panel && panel->plugin != NULL
             && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
-            plugin_panel_move_cmd (panel);
+            plugin_panel_move_cmd (panel, TRUE);
         else
             rename_cmd_local (panel);
         break;

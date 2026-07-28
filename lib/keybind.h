@@ -161,7 +161,6 @@ enum
        (currently the "panelize" plugin). */
     CK_ExternalPanelize,
     CK_Filter,
-    CK_ConnectShell,
     CK_PanelInfo,
     CK_Jobs,
     CK_OptionsLayout,

@@ -29,9 +29,6 @@ typedef enum
 
 /*** declarations of public functions ************************************************************/
 
-#ifdef ENABLE_VFS_SHELL
-void shelllink_cmd (void);
-#endif
 void help_cmd (void);
 void smart_dirsize_cmd (WPanel *panel);
 void single_dirsize_cmd (WPanel *panel);
@@ -87,14 +84,6 @@ const char *chattr_get_as_str (unsigned long attr);
 #endif
 /* find.c */
 void find_cmd (WPanel *panel);
-
-/* plugin panel file operations */
-void plugin_panel_copy_cmd (WPanel *panel);
-void plugin_panel_move_cmd (WPanel *panel);
-void plugin_panel_delete_cmd (WPanel *panel);
-void plugin_panel_create_cmd (WPanel *panel);
-void plugin_panel_put_cmd (WPanel *panel);
-void plugin_panel_put_move_cmd (WPanel *panel);
 
 /* --------------------------------------------------------------------------------------------- */
 /*** inline functions ****************************************************************************/

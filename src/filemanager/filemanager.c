@@ -91,7 +91,8 @@
 #include "src/file_history.h"         // show_file_history()
 
 #include "filemanager.h"
-#include "panel_modes.h"  // panel_modes_cmd
+#include "panel_modes.h"       // panel_modes_cmd
+#include "panel_plugin_ops.h"  // plugin_panel_copy_cmd()
 #include "mcterm_overlay.h"
 
 /*** global variables ****************************************************************************/
@@ -1161,7 +1162,7 @@ midnight_execute_cmd (Widget *sender, long command)
                 update_panels (UP_OPTIMIZE, UP_KEEPSEL);
                 return MSG_HANDLED;
             }
-            plugin_panel_copy_cmd (current_panel);
+            plugin_panel_copy_cmd (current_panel, FALSE);
             return MSG_HANDLED;
         case CK_Move:
             if (local_files)
@@ -1173,13 +1174,13 @@ midnight_execute_cmd (Widget *sender, long command)
                 update_panels (UP_OPTIMIZE, UP_KEEPSEL);
                 return MSG_HANDLED;
             }
-            plugin_panel_move_cmd (current_panel);
+            plugin_panel_move_cmd (current_panel, FALSE);
             return MSG_HANDLED;
         case CK_Delete:
             /* Delete on a plugin panel = remove from list (FAR TmpPanel style),
                including for LOCAL_FILES plugins. Native rm-from-disk would
                require a separate explicit action. */
-            plugin_panel_delete_cmd (current_panel);
+            plugin_panel_delete_cmd (current_panel, FALSE);
             return MSG_HANDLED;
         case CK_Edit:
             if (current_panel->plugin != NULL && current_panel->plugin->handle_key != NULL)
