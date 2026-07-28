@@ -46,10 +46,6 @@
 #include "extfs/extfs.h"
 #endif
 
-#ifdef ENABLE_VFS_SHELL
-#include "shell/shell.h"
-#endif
-
 #ifdef ENABLE_VFS_SFS
 #include "sfs/sfs.h"
 #endif
@@ -93,12 +89,6 @@ vfs_plugins_init (void)
 #ifdef ENABLE_VFS_EXTFS
     vfs_init_extfs ();
 #endif
-
-#ifdef ENABLE_VFS_SHELL
-    vfs_init_shell ();
-#endif
-
-    vfs_plugins_load_dynamic ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -106,7 +96,7 @@ vfs_plugins_init (void)
 void
 vfs_plugins_done (void)
 {
-    vfs_plugins_unload_dynamic ();
+    // Nothing to undo: all filesystems above are statically linked.
 }
 
 /* --------------------------------------------------------------------------------------------- */
