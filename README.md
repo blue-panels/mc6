@@ -54,6 +54,28 @@ sudo make install
 
 `mc --version` identifies this fork.
 
+## Packages
+
+This fork is packaged as **`mc6`**, while its commands deliberately remain
+`mc`, `mcedit`, `mcview`, `mcdiff` and `mctree`.  It replaces the distribution
+`mc` package rather than coexisting with it.
+
+There is no public package repository yet.  Each release builds `.deb`, `.rpm`
+and `.pkg.tar.zst` and attaches them to its GitHub release; to build them
+yourself, see [`packaging/README.md`](packaging/README.md).  The recipes carry
+no version of their own: `packaging/prepare.sh <version>` generates the
+version-bearing files from the release tag, and every build starts with it.
+
+- Debian/Ubuntu: `sudo apt install ./mc6_*.deb ./mc6-data_*.deb ./mc6-plugins_*.deb`
+- RHEL/Fedora: `sudo dnf swap mc mc6`, then `sudo dnf install ./mc6-plugins-*.rpm`
+- Arch: `sudo pacman -U ./mc6-*.pkg.tar.zst ./mc6-plugins-*.pkg.tar.zst`
+- Gentoo: copy `packaging/gentoo` into a local overlay as `app-misc/mc6`,
+  then `emerge app-misc/mc6`
+
+Install downloaded packages through the package manager -- `apt install
+./file.deb` and `dnf install ./file.rpm` -- never `dpkg -i` or `rpm -i`, which
+skip the dependency and replacement handling.
+
 ## Documentation
 
 - [Wiki](https://github.com/ilia-maslakov/mcdev/wiki)

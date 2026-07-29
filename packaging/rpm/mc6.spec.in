@@ -1,0 +1,102 @@
+Name:           mc6
+Epoch:          2
+Version:         @VERSION@
+Release:         1%{?dist}
+Summary:         Midnight Commander fork with plugin support
+License:         GPL-3.0-or-later
+URL:             https://github.com/ilia-maslakov/mcdev
+Source0:         https://github.com/ilia-maslakov/mcdev/releases/download/v%{version}/mc6-%{version}.tar.gz
+
+BuildRequires:   autoconf
+BuildRequires:   automake
+BuildRequires:   check-devel
+BuildRequires:   gcc
+BuildRequires:   gettext
+BuildRequires:   glib2-devel
+BuildRequires:   gpm-devel
+BuildRequires:   libarchive-devel
+BuildRequires:   libcurl-devel
+BuildRequires:   libssh2-devel
+BuildRequires:   libtool
+BuildRequires:   make
+BuildRequires:   mongo-c-driver-devel
+BuildRequires:   e2fsprogs-devel
+BuildRequires:   file-devel
+BuildRequires:   pkgconf-pkg-config
+BuildRequires:   samba-client-devel
+BuildRequires:   slang-devel
+
+# The distribution mc has epoch 1.  Keep the bound at 2:0: it remains valid
+# across all future distro rebuilds and does not conflict with our Provides.
+Provides:        mc = %{epoch}:%{version}-%{release}
+Provides:        mc%{?_isa} = %{epoch}:%{version}-%{release}
+Conflicts:        mc < 2:0
+Conflicts:        mc-python < 2:0
+
+%description
+mc6 is a fork of GNU Midnight Commander with dynamically loaded panel
+plugins.  It replaces the distribution mc only when explicitly selected.
+
+%package plugins
+Summary:         Panel plugins for mc6
+Requires:        %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description plugins
+Dynamic panel plugins for mc6: Git, Docker, Kubernetes, MongoDB, S3, FTP,
+SFTP, Samba, systemd, shell links, panelize and archive management.
+
+%prep
+%autosetup -n %{name}-%{version}
+
+%build
+printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
+    '#define MC_CURRENT_VERSION "v%{version}"' '#endif' > mc-version.h
+autoreconf -fiv
+%configure \
+    --disable-static \
+    --with-screen=slang \
+    --with-panel-plugins-dir=%{_libdir}/mc/panel-plugins \
+    --with-editor-plugins-dir=%{_libdir}/mc/editor-plugins \
+    --enable-mcterm=yes \
+    --enable-mctree-magic=yes \
+    --enable-panel-plugin-samba=yes \
+    --enable-panel-plugin-ftp=yes \
+    --enable-panel-plugin-arcmc=yes \
+    --enable-panel-plugin-s3=yes \
+    --enable-panel-plugin-mongo=yes \
+    --enable-vfs-sftp=yes \
+    --enable-panel-plugin-shell-link=yes \
+    --enable-shell-ssh2=yes
+%make_build
+
+%install
+%make_install
+find %{buildroot} -name '*.la' -delete
+# The gettext domain is mc, not mc6.
+%find_lang mc
+
+%check
+%make_build check
+
+%files -f mc.lang
+%license COPYING
+%doc README.md
+%{_bindir}/mc
+%{_bindir}/mcedit
+%{_bindir}/mcview
+%{_bindir}/mcdiff
+%{_bindir}/mctree
+%{_libexecdir}/mc/
+%{_datadir}/mc/
+%config(noreplace) %{_sysconfdir}/mc/*
+%{_mandir}/man1/*
+# Translated manuals: mc.1 in six languages, mcedit.1 and mcdiff.1 in Serbian.
+%{_mandir}/*/man1/
+# Owned here so that the directory does not depend on the plugins subpackage.
+%dir %{_libdir}/mc/
+
+%files plugins
+%{_libdir}/mc/panel-plugins/
+
+%changelog
+@CHANGELOG@

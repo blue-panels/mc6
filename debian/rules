@@ -1,0 +1,36 @@
+#!/usr/bin/make -f
+
+# mc-version.h is not written here: the release archive carries it, and a Git
+# checkout generates it through version.sh. Writing it from the Debian version
+# would put a series suffix such as ~ubuntu24.04.1 into the version banner and
+# would modify a file shipped by the orig tarball.
+
+%:
+	dh $@ --with autoreconf
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--libexecdir=/usr/lib \
+		--disable-static \
+		--with-screen=slang \
+		--with-panel-plugins-dir=/usr/lib/mc/panel-plugins \
+		--with-editor-plugins-dir=/usr/lib/mc/editor-plugins \
+		--enable-mcterm=yes \
+		--enable-mctree-magic=yes \
+		--enable-panel-plugin-samba=yes \
+		--enable-panel-plugin-ftp=yes \
+		--enable-panel-plugin-arcmc=yes \
+		--enable-panel-plugin-s3=yes \
+		--enable-panel-plugin-mongo=yes \
+		--enable-vfs-sftp=yes \
+		--enable-panel-plugin-shell-link=yes \
+		--enable-shell-ssh2=yes
+
+override_dh_auto_install:
+	dh_auto_install
+	find debian/tmp -name '*.la' -delete
+
+override_dh_missing:
+	dh_missing --fail-missing
