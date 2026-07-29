@@ -1,0 +1,8 @@
+usr/bin/mc
+usr/bin/mcedit
+usr/bin/mcview
+usr/bin/mcdiff
+usr/bin/mctree
+usr/lib/mc/ext.d/
+usr/lib/mc/extfs.d/
+etc/mc/

@@ -1,0 +1,80 @@
+# Maintainer: Ilia Maslakov <il.smind@gmail.com>
+
+pkgname=(mc6 mc6-plugins)
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc='Midnight Commander fork with plugin support'
+arch=('x86_64' 'aarch64')
+url='https://github.com/ilia-maslakov/mcdev'
+license=('GPL-3.0-or-later')
+makedepends=('autoconf' 'automake' 'libtool' 'make' 'pkgconf'
+             'glib2' 'slang' 'gpm' 'libssh2' 'curl' 'samba'
+             'libarchive' 'file' 'mongo-c-driver')
+source=("mc6-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mc6-${pkgver}.tar.gz")
+# Filled in by packaging/prepare.sh from the release archive; SKIP when no
+# archive was given to it.
+b2sums=('@B2SUMS@')
+
+prepare() {
+  cd "${srcdir}/mc6-${pkgver}"
+  printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
+    "#define MC_CURRENT_VERSION \"v${pkgver}\"" '#endif' > mc-version.h
+  autoreconf -fiv
+}
+
+build() {
+  cd "${srcdir}/mc6-${pkgver}"
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --libexecdir=/usr/lib \
+    --libdir=/usr/lib \
+    --disable-static \
+    --with-screen=slang \
+    --with-panel-plugins-dir=/usr/lib/mc/panel-plugins \
+    --with-editor-plugins-dir=/usr/lib/mc/editor-plugins \
+    --enable-mcterm=yes \
+    --enable-mctree-magic=yes \
+    --enable-panel-plugin-samba=yes \
+    --enable-panel-plugin-ftp=yes \
+    --enable-panel-plugin-arcmc=yes \
+    --enable-panel-plugin-s3=yes \
+    --enable-panel-plugin-mongo=yes \
+    --enable-vfs-sftp=yes \
+    --enable-panel-plugin-shell-link=yes \
+    --enable-shell-ssh2=yes
+  make
+}
+
+package_mc6() {
+  pkgdesc='Midnight Commander fork with plugin support'
+  depends=('glib2' 'slang' 'gpm')
+  provides=('mc')
+  conflicts=('mc')
+  replaces=('mc')
+  backup=('etc/mc/ctags.keymap' 'etc/mc/edit.indent.rc'
+          'etc/mc/filehighlight.ini' 'etc/mc/mc.default.keymap'
+          'etc/mc/mc.emacs.keymap' 'etc/mc/mc.ext.ini' 'etc/mc/mc.keymap'
+          'etc/mc/mc.menu' 'etc/mc/mc.vim.keymap' 'etc/mc/mcedit.menu'
+          'etc/mc/panels.ftp.ini' 'etc/mc/panels.git.ini' 'etc/mc/sfs.ini'
+          'etc/mc/spell.keymap')
+
+  cd "${srcdir}/mc6-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  rm -rf "${pkgdir}/usr/lib/mc/panel-plugins"
+  find "${pkgdir}" -name '*.la' -delete
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6/COPYING"
+}
+
+package_mc6-plugins() {
+  pkgdesc='Panel plugins for mc6'
+  depends=("mc6=${pkgver}-${pkgrel}" 'glib2' 'libssh2' 'curl' 'samba'
+           'libarchive' 'file' 'mongo-c-driver')
+
+  cd "${srcdir}/mc6-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin" "${pkgdir}/usr/share" \
+    "${pkgdir}/usr/lib/mc/ext.d" "${pkgdir}/usr/lib/mc/extfs.d"
+  find "${pkgdir}" -name '*.la' -delete
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6-plugins/COPYING"
+}

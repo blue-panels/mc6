@@ -1,0 +1,58 @@
+Source: mc6
+Section: utils
+Priority: optional
+Maintainer: Ilia Maslakov <il.smind@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-autoreconf,
+               autoconf,
+               automake,
+               libtool,
+               gettext,
+               libcheck-dev,
+               pkgconf,
+               libglib2.0-dev,
+               libslang2-dev,
+               libssh2-1-dev,
+               libgpm-dev [linux-any],
+               libext2fs-dev,
+               libmagic-dev,
+               libsmbclient-dev,
+               libcurl4-openssl-dev,
+               libarchive-dev,
+               libmongoc-dev,
+               libbson-dev
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/ilia-maslakov/mcdev
+
+Package: mc6
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         mc6-data (= ${source:Version})
+Recommends: mailcap, perl, sensible-utils, unzip
+Suggests: mc6-plugins
+Provides: mc (= ${binary:Version})
+Conflicts: mc
+Replaces: mc
+Description: Midnight Commander fork with plugin support
+ Drop-in replacement for GNU Midnight Commander.  It installs /usr/bin/mc
+ and the mcedit, mcview, mcdiff and mctree symlinks.
+
+Package: mc6-data
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Provides: mc-data (= ${binary:Version})
+Conflicts: mc-data
+Replaces: mc-data
+Description: Midnight Commander fork -- data files
+ Architecture-independent data, manuals and translations for mc6.
+
+Package: mc6-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         mc6 (= ${binary:Version})
+Enhances: mc6
+Description: Midnight Commander fork -- panel plugins
+ Dynamic panel plugins for Git, Docker, Kubernetes, MongoDB, S3, FTP,
+ SFTP, Samba, systemd, shell links, panelize and archive management.

@@ -1,1 +1,7 @@
 po/*.po -diff
+
+# Packaging recipes are consumed from the repository, not from the release
+# archive. Keeping debian/ out of it also keeps the Debian orig tarball free
+# of a debian directory.
+debian/ export-ignore
+packaging/ export-ignore

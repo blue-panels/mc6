@@ -1,0 +1,85 @@
+# Copyright 2026 Ilia Maslakov
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+inherit autotools
+
+DESCRIPTION="Midnight Commander fork with dynamically loaded panel plugins"
+HOMEPAGE="https://github.com/ilia-maslakov/mcdev"
+SRC_URI="https://github.com/ilia-maslakov/mcdev/releases/download/v${PV}/mc6-${PV}.tar.gz"
+S="${WORKDIR}/mc6-${PV}"
+
+LICENSE="GPL-3+"
+SLOT="0"
+KEYWORDS="~amd64 ~arm64"
+IUSE="+arcmc +ftp +gpm +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
+REQUIRED_USE="shell-ssh2? ( shell-link )"
+
+# A strong blocker deliberately requires an explicit migration from the
+# distribution package; the two packages own the same executable and data.
+COMMON_DEPEND="
+	dev-libs/glib:2
+	slang? ( sys-libs/slang )
+	!slang? ( sys-libs/ncurses:0= )
+	gpm? ( sys-libs/gpm )
+	magic? ( sys-apps/file )
+	samba? ( net-fs/samba )
+	ftp? ( net-misc/curl )
+	arcmc? ( app-arch/libarchive )
+	s3? ( net-misc/curl )
+	mongo? ( dev-libs/mongo-c-driver )
+	sftp? ( net-libs/libssh2 )
+	shell-ssh2? ( net-libs/libssh2 )
+"
+RDEPEND="
+	!!app-misc/mc
+	${COMMON_DEPEND}
+"
+DEPEND="${COMMON_DEPEND}"
+BDEPEND="
+	sys-devel/autoconf
+	sys-devel/automake
+	sys-devel/libtool
+	sys-devel/gettext
+	virtual/pkgconfig
+"
+
+src_prepare() {
+	default
+	printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
+		"#define MC_CURRENT_VERSION \"v${PV}\"" '#endif' > mc-version.h || die
+	eautoreconf
+}
+
+src_configure() {
+	local myconf=(
+		--disable-static
+		--with-screen="$(usex slang slang ncurses)"
+		--with-panel-plugins-dir="/usr/$(get_libdir)/mc/panel-plugins"
+		--with-editor-plugins-dir="/usr/$(get_libdir)/mc/editor-plugins"
+		--enable-mcterm=yes
+		$(use_with gpm gpm-mouse)
+		$(use_enable magic mctree-magic)
+		$(use_enable samba panel-plugin-samba)
+		$(use_enable ftp panel-plugin-ftp)
+		$(use_enable arcmc panel-plugin-arcmc)
+		$(use_enable s3 panel-plugin-s3)
+		$(use_enable mongo panel-plugin-mongo)
+		$(use_enable sftp vfs-sftp)
+		$(use_enable shell-link panel-plugin-shell-link)
+		$(use_enable shell-ssh2 shell-ssh2)
+	)
+	econf "${myconf[@]}"
+}
+
+src_install() {
+	emake DESTDIR="${D}" install
+	find "${D}" -name '*.la' -delete || die
+	einstalldocs
+}
+
+pkg_postinst() {
+	elog "mc6 deliberately blocks app-misc/mc because both packages install /usr/bin/mc."
+	elog "Install mc6 explicitly after removing the distribution package."
+}
