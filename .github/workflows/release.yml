@@ -1,0 +1,213 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.repository == 'ilia-maslakov/mcdev'
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          # release-source.sh reads the tag object; prepare.sh reads every tag.
+          fetch-depth: 0
+
+      - name: Build the release archive
+        id: build
+        run: |
+          version="${TAG#v}"
+          packaging/release-source.sh "$version" "$TAG" "dist/mc6-$version.tar.gz"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source-archive
+          path: dist/*.tar.gz
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # A draft: the notes are written by hand. The archive is attached now
+          # so that its download link, and its checksum, are settled.
+          version="${{ steps.build.outputs.version }}"
+          gh release create "$TAG" "dist/mc6-$version.tar.gz" --draft --title "$TAG" \
+              --notes "Release notes pending. b2: $(b2sum "dist/mc6-$version.tar.gz" | cut -d' ' -f1)"
+
+  debian:
+    needs: archive
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Install the build tooling
+        # git first: without it actions/checkout downloads a tarball and
+        # prepare.sh has no tags to read.
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+              git ca-certificates build-essential devscripts equivs lintian dpkg-dev
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Build the source and binary packages
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
+
+          # Built from the release archive with debian/ copied in, not from the
+          # checkout: that keeps the source package free of patches, since the
+          # archive carries mc-version.h and no debian directory of its own.
+          build=$(mktemp -d)
+          cp "dist/mc6-$VERSION.tar.gz" "$build/mc6_$VERSION.orig.tar.gz"
+          tar -xf "dist/mc6-$VERSION.tar.gz" -C "$build"
+          cp -r debian "$build/mc6-$VERSION/"
+
+          cd "$build/mc6-$VERSION"
+          mk-build-deps -ir -t 'apt-get -y --no-install-recommends'
+          dpkg-buildpackage -us -uc
+          cd ..
+          lintian --fail-on error --profile debian ./*.changes || lintian_failed=1
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp ./*.deb ./*.dsc ./*.debian.tar.* ./*.changes "$GITHUB_WORKSPACE/out/"
+          test -z "${lintian_failed:-}"
+
+      # Also on failure: a lintian error fails the step above, and the packages
+      # it produced are what one looks at to understand why.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debian-packages
+          path: out/*
+          if-no-files-found: warn
+
+  fedora:
+    needs: archive
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+
+    steps:
+      - name: Install the build tooling
+        run: dnf install -y git rpm-build rpmlint 'dnf-command(builddep)'
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Build the RPMs
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
+          mkdir -p ~/rpmbuild/SOURCES
+          cp "dist/mc6-$VERSION.tar.gz" ~/rpmbuild/SOURCES/
+          dnf builddep -y packaging/rpm/mc6.spec
+          rpmbuild -ba packaging/rpm/mc6.spec
+          rpmlint ~/rpmbuild/RPMS/*/*.rpm || true
+          mkdir -p out
+          cp ~/rpmbuild/RPMS/*/*.rpm ~/rpmbuild/SRPMS/*.rpm out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fedora-packages
+          path: out/*
+
+  arch:
+    needs: archive
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+
+    steps:
+      - name: Install the build tooling
+        run: pacman -Syu --noconfirm git
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Build the packages
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
+
+          # makepkg refuses to run as root, and finds the archive next to the
+          # PKGBUILD instead of downloading it.
+          cp "dist/mc6-$VERSION.tar.gz" packaging/arch/
+          useradd -m build
+          chown -R build packaging/arch
+          su build -c 'cd packaging/arch && makepkg -s --noconfirm'
+          mkdir -p out
+          cp packaging/arch/*.pkg.tar.* out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arch-packages
+          path: out/*
+
+  publish:
+    needs: [debian, fedora, arch]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+          pattern: '*-packages'
+          merge-multiple: true
+
+      - name: Attach the packages to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" packages/* --clobber --repo "$GITHUB_REPOSITORY"
