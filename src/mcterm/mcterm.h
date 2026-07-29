@@ -25,6 +25,7 @@ Widget *mcterm_widget (WMcTerm *t);
 gboolean mcterm_send_line (WMcTerm *t, const char *line);
 gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
 gboolean mcterm_shell_at_prompt (const WMcTerm *t);
+gboolean mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec);
 const char *mcterm_osc7_raw (const WMcTerm *t);
 void mcterm_set_prompt_callback (WMcTerm *t, void (*cb) (void *), void *data);
 void mcterm_set_after_redraw_callback (WMcTerm *t, void (*cb) (void *), void *data);
@@ -83,6 +84,13 @@ static inline gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
 {
     (void) t;
+    return FALSE;
+}
+static inline gboolean
+mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec)
+{
+    (void) t;
+    (void) timeout_msec;
     return FALSE;
 }
 static inline const char *
