@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <termios.h>
@@ -324,6 +325,26 @@ mcterm_write_silent (int master, const char *data, size_t len)
     if (echo_was_on)
         (void) tcsetattr (master, TCSANOW, &tt);
     return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup, size_t setup_len)
+{
+    t->osc7_capable = TRUE;
+    t->shell_at_prompt = FALSE;
+    t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
+    t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
+    t->pending_internal_sync = TRUE;
+    if (!mcterm_write_silent (master, setup, setup_len))
+    {
+        t->osc7_capable = FALSE;
+        t->shell_at_prompt = TRUE;
+        t->pending_internal_sync = FALSE;
+        mcview_terminal_buffer_free (t->sync_snapshot_buf);
+        t->sync_snapshot_buf = NULL;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -669,24 +690,62 @@ mcterm_new (const WRect *r, const char *start_dir)
                 "printf '\\033]7;file://%s\\007'"
                 " \\\"\\$(__mc_pe \\\"\\$PWD\\\")\\\"\"; \\\n"
                 " fi\r";
-            t->osc7_capable = TRUE;
-            t->shell_at_prompt = FALSE; /* wait for the first real OSC 7 before allowing send */
-            t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
-            t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
-            t->pending_internal_sync = TRUE;
-            if (!mcterm_write_silent (master, osc7_setup, sizeof (osc7_setup) - 1))
-            {
-                /* Write failed: demote to dumb mode so the terminal stays usable. */
-                t->osc7_capable = FALSE;
-                t->shell_at_prompt = TRUE;
-                t->pending_internal_sync = FALSE;
-                mcview_terminal_buffer_free (t->sync_snapshot_buf);
-                t->sync_snapshot_buf = NULL;
-            }
+            mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
+        }
+        else if (base != NULL && strcmp (base, "zsh") == 0)
+        {
+            static const char osc7_setup[] =
+                " __mc_pe(){local s=$1 o='' c i;for (( i=1; i<=${#s}; i++ )); do c=${s[i]};"
+                "case $c in [a-zA-Z0-9/_~.-])o+=$c;;*)printf -v o '%s%%%02X' \"$o\" \"'$c\";"
+                ";esac;done;printf %s \"$o\";}; \\\n"
+                " __mc_first=1;__mc_osc7_precmd(){if (( __mc_first ));then printf "
+                "'\\033[2J\\033[H';"
+                "__mc_first=0;fi;printf '\\033]7;file://%s\\007' \"$(__mc_pe \"$PWD\")\";};"
+                "precmd_functions+=(__mc_osc7_precmd)\r";
+
+            mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
         }
     }
 
     return t;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec)
+{
+    const gint64 deadline = g_get_monotonic_time () + (gint64) timeout_msec * 1000;
+
+    while (t != NULL && !t->child_dead && t->pty_master >= 0 && !t->shell_at_prompt)
+    {
+        fd_set read_set;
+        struct timeval timeout;
+        const gint64 remaining = deadline - g_get_monotonic_time ();
+        int rc;
+
+        if (remaining <= 0)
+            break;
+
+        FD_ZERO (&read_set);
+        FD_SET (t->pty_master, &read_set);
+        timeout.tv_sec = (time_t) (remaining / G_USEC_PER_SEC);
+        timeout.tv_usec = (suseconds_t) (remaining % G_USEC_PER_SEC);
+        rc = select (t->pty_master + 1, &read_set, NULL, NULL, &timeout);
+        if (rc < 0)
+        {
+            if (errno == EINTR)
+                continue;
+            break;
+        }
+        if (rc == 0)
+            break;
+
+        if (FD_ISSET (t->pty_master, &read_set))
+            mcterm_pty_ready_cb (t->pty_master, t);
+    }
+
+    return (t != NULL && !t->child_dead && t->shell_at_prompt && t->osc7_capable);
 }
 
 /* --------------------------------------------------------------------------------------------- */

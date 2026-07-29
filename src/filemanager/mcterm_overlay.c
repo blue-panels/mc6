@@ -57,6 +57,8 @@
 static WMcTerm *mcterm_panel = NULL;
 static gboolean mcterm_mode = FALSE;
 
+#define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -256,6 +258,39 @@ mcterm_overlay_panel_focused (Widget *focused)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+mcterm_overlay_create_terminal (void)
+{
+    WRect r;
+    const char *start_dir;
+
+    mcterm_overlay_discard_dead_terminal ();
+    if (mcterm_panel != NULL)
+        return TRUE;
+
+    mcterm_overlay_rect (&CONST_WIDGET (filemanager)->rect, &r);
+
+    start_dir = (current_panel != NULL && vfs_file_is_local (current_panel->cwd_vpath))
+        ? vfs_path_as_str (current_panel->cwd_vpath)
+        : NULL;
+
+    mcterm_panel = mcterm_new (&r, start_dir);
+    if (mcterm_panel == NULL)
+        return FALSE;
+
+    mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
+    mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
+    mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
+    group_add_widget (GROUP (filemanager), mcterm_overlay_widget ());
+    /* Stays hidden until the overlay is switched on, so a terminal created
+       for a command does not paint over the panels. */
+    widget_hide (mcterm_overlay_widget ());
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -270,7 +305,6 @@ mcterm_overlay_active (void)
 void
 mcterm_overlay_toggle (void)
 {
-    WGroup *g = GROUP (filemanager);
     const WRect *mwr = &CONST_WIDGET (filemanager)->rect;
 
     if (!mcterm_mode)
@@ -280,33 +314,17 @@ mcterm_overlay_toggle (void)
         mcterm_overlay_rect (mwr, &r);
         mcterm_overlay_discard_dead_terminal ();
 
-        if (mcterm_panel == NULL)
+        if (!mcterm_overlay_create_terminal ())
         {
-            const char *start_dir =
-                (current_panel != NULL && vfs_file_is_local (current_panel->cwd_vpath))
-                ? vfs_path_as_str (current_panel->cwd_vpath)
-                : NULL;
-
-            mcterm_panel = mcterm_new (&r, start_dir);
-            if (mcterm_panel == NULL)
-            {
-                toggle_subshell ();
-                return;
-            }
-
-            mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
-            mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
-            mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
-            group_add_widget (g, mcterm_overlay_widget ());
+            toggle_subshell ();
+            return;
         }
-        else
-        {
-            widget_set_size_rect (mcterm_overlay_widget (), &r);
-            widget_show (mcterm_overlay_widget ());
-            mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
-            mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
-            mcterm_overlay_sync_shell_to_panel ();
-        }
+
+        widget_set_size_rect (mcterm_overlay_widget (), &r);
+        widget_show (mcterm_overlay_widget ());
+        mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
+        mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
+        mcterm_overlay_sync_shell_to_panel ();
 
         widget_hide (get_panel_widget (0));
         widget_hide (get_panel_widget (1));
@@ -636,11 +654,25 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
 mcterm_overlay_cmdline_result_t
 mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
 {
-    if ((is_cd && !mcterm_mode) || (is_exit && !mcterm_mode) || !mcterm_overlay_ready ())
+    if ((is_cd && !mcterm_mode) || (is_exit && !mcterm_mode))
         return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
+
+    if (!mcterm_overlay_ready ())
+    {
+        if (mcterm_mode)
+            return MCTERM_OVERLAY_CMDLINE_HANDLED;
+
+        if (!mcterm_overlay_create_terminal ()
+            || !mcterm_wait_for_prompt (mcterm_panel, MCTERM_INITIAL_PROMPT_TIMEOUT_MS))
+            return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
+    }
 
     if (!mcterm_mode)
         mcterm_overlay_toggle ();
+
+    if (!mcterm_overlay_ready ()
+        && !mcterm_wait_for_prompt (mcterm_panel, MCTERM_INITIAL_PROMPT_TIMEOUT_MS))
+        return MCTERM_OVERLAY_CMDLINE_HANDLED;
 
     if (!mcterm_overlay_live ())
         return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
