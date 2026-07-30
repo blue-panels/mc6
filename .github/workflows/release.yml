@@ -51,6 +51,7 @@ jobs:
         with:
           name: source-archive
           path: dist/*.tar.gz
+          overwrite: true
 
       - name: Create the draft release
         env:
@@ -59,8 +60,16 @@ jobs:
           # A draft: the notes are written by hand. The archive is attached now
           # so that its download link, and its checksum, are settled.
           version="${{ steps.build.outputs.version }}"
-          gh release create "$TAG" "dist/mc6-$version.tar.gz" --draft --title "$TAG" \
-              --notes "Release notes pending. b2: $(b2sum "dist/mc6-$version.tar.gz" | cut -d' ' -f1)"
+          archive="dist/mc6-$version.tar.gz"
+          notes="Release notes pending. b2: $(b2sum "$archive" | cut -d' ' -f1)"
+
+          # A rerun, after a failure in one of the builds, must not stop here.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "release $TAG exists: replacing the archive"
+              gh release upload "$TAG" "$archive" --clobber
+          else
+              gh release create "$TAG" "$archive" --draft --title "$TAG" --notes "$notes"
+          fi
 
   debian:
     needs: archive
@@ -122,6 +131,7 @@ jobs:
           name: debian-packages
           path: out/*
           if-no-files-found: warn
+          overwrite: true
 
   fedora:
     needs: archive
@@ -160,6 +170,7 @@ jobs:
         with:
           name: fedora-packages
           path: out/*
+          overwrite: true
 
   arch:
     needs: archive
@@ -202,6 +213,7 @@ jobs:
         with:
           name: arch-packages
           path: out/*
+          overwrite: true
 
   ppa:
     needs: archive
@@ -262,14 +274,19 @@ jobs:
         with:
           name: ppa-source
           path: dist/ppa/*
+          overwrite: true
 
   publish:
     needs: [debian, fedora, arch]
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Runs even when a distribution failed: what did get built is still worth
+    # attaching, and rerunning the failed job afterwards adds the rest.
+    if: always()
 
     steps:
       - uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: packages
           pattern: '*-packages'
@@ -278,4 +295,9 @@ jobs:
       - name: Attach the packages to the draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$TAG" packages/* --clobber --repo "$GITHUB_REPOSITORY"
+        run: |
+          if ! ls packages/* >/dev/null 2>&1; then
+              echo "nothing was built: nothing to attach"
+              exit 0
+          fi
+          gh release upload "$TAG" packages/* --clobber --repo "$GITHUB_REPOSITORY"
