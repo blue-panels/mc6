@@ -47,6 +47,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Which model answers, and where. Left unset, the scripts fall back to
+          # GitHub Models on the built-in token -- which GitHub retired on
+          # 2026-07-30, so in practice these are what makes the rewriting work.
+          # Any endpoint that speaks the OpenAI shape will do; Cloudflare Workers
+          # AI does, at
+          # https://api.cloudflare.com/client/v4/accounts/<id>/ai/v1/chat/completions
+          MODELS_ENDPOINT: ${{ vars.MODELS_ENDPOINT }}
+          MODELS_MODEL: ${{ vars.MODELS_MODEL }}
+          MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
           # Through the environment, not through ${{ }} inside the script: a
           # milestone name is typed by hand and would otherwise be pasted into
           # the shell as it stands.

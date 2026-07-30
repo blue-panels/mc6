@@ -20,7 +20,9 @@
 # Environment:
 #   MODELS_TOKEN     token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   MODELS_MODEL     model to ask (default: openai/gpt-4.1)
-#   MODELS_ENDPOINT  where to ask it
+#   MODELS_ENDPOINT  where to ask it. Any endpoint of the OpenAI shape does,
+#                    such as Cloudflare Workers AI at
+#                    .../client/v4/accounts/<id>/ai/v1/chat/completions
 set -eu
 
 die() {
