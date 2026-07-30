@@ -37,14 +37,7 @@ output=${2:-}
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 width=${WIDTH:-79}
 
-model=${MODELS_MODEL:-openai/gpt-4.1}
-max_tokens=${MODELS_MAX_TOKENS:-1500}
-endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
-token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
-test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
 
-command -v curl >/dev/null || die "curl is missing"
-command -v jq >/dev/null || die "jq is missing"
 
 work=$(mktemp -d) || die "cannot create a temporary directory"
 trap 'rm -rf "$work"' EXIT HUP INT TERM
@@ -58,22 +51,9 @@ ascii_only() {
 
 # ask <system-prompt> <user-content> -- prints the answer
 ask() {
-    jq -n --arg model "$model" --arg system "$1" --arg user "$2" \
-        --argjson max_tokens "$max_tokens" \
-        '{model: $model, temperature: 0.2, max_tokens: $max_tokens,
-          messages: [{role: "system", content: $system},
-                     {role: "user", content: $user}]}' > "$work/request.json"
-
-    curl -sS --max-time 180 -X POST "$endpoint" \
-        -H "Authorization: Bearer $token" \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -d @"$work/request.json" > "$work/response.json" ||
-        die "the request to $endpoint failed"
-
-    jq -r '.choices[0].message.content // empty' "$work/response.json" 2>/dev/null |
-        ascii_only ||
-        die "the model returned nothing usable"
+    printf '%s\n' "$1" > "$work/system"
+    printf '%s\n' "$2" > "$work/user"
+    "$here/models_ask.sh" "$work/system" "$work/user"
 }
 
 "$here/release_notes.sh" "$version" --milestone --raw > "$work/prs.json"
