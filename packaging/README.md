@@ -34,6 +34,15 @@ Faster paste into the editor."
 A version with no tag of its own is a test build.  Its Debian entry is marked
 `UNRELEASED`, which stops `dput` from taking it by accident.
 
+Only release versions are accepted, `6.0.3` and the like.  A pre-release has to
+sort *below* the release it leads to, and the only character that does that is a
+tilde, which Git does not allow in a tag name.  Mapping `6.0.2-rc1` to
+`6.0.2~rc1` would also mean renaming the orig tarball and its directory to
+match, and Arch allows neither the tilde nor the hyphen in `pkgver`.  Until that
+is built, `prepare.sh` refuses such a version rather than quietly producing a
+package that outranks the release.  To rehearse the release workflow, run it
+from Actions against a tag that already exists.
+
 The build dependency lists intentionally enable every shipped panel plugin.
 Do not replace their exact core-version dependencies with `>=`: the plugin ABI
 is not stable.
@@ -86,6 +95,39 @@ records.  For a PPA, set the target series and a series suffix:
 DEB_DISTRIBUTION=noble DEB_VERSION_SUFFIX='~ubuntu24.04.1' \
     packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
 ```
+
+## Launchpad PPA
+
+A PPA builds the binaries itself, so what it takes is a signed **source**
+package per Ubuntu series.  `packaging/ppa-source.sh` builds them:
+
+```sh
+packaging/release-source.sh 6.0.3 v6.0.3
+packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04 jammy:22.04
+UPLOAD=yes packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04
+```
+
+`NOSIGN=yes` builds unsigned packages for a dry run, `SIGN_KEY` picks the key,
+`PPA` the target (default `ppa:il-smind/mc6`).
+
+`PPA_REVISION` is the number after the series, `1` by default.  A PPA keeps
+every version it has ever accepted, so an upload that was rejected or turned out
+broken comes back as `~ubuntu24.04.2`; the same version is never accepted twice.
+
+Each series is named with its Ubuntu version, because that version is what
+orders the uploads: `~ubuntu24.04.1` sorts above `~ubuntu22.04.1`, so moving to
+a newer series is an upgrade.  Codenames cannot do that, having wrapped the
+alphabet in 2017.
+
+The series lives in the Debian revision, not in the upstream version, so all
+series of a release share one `mc6_<version>.orig.tar.gz`.  Only the first
+upload carries it; the rest refer to the one already in the PPA.  Since
+`release-source.sh` is reproducible, that tarball is identical whenever it is
+rebuilt, which is what lets Launchpad accept the later uploads.
+
+Before the first upload: register the OpenPGP key with Launchpad and confirm it
+through the encrypted mail it sends, then create the PPA.  `debhelper-compat
+(= 13)` needs the series to be 22.04 or newer.
 
 RPM.  Put the archive in the RPM source directory:
 
