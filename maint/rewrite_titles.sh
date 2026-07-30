@@ -73,6 +73,10 @@ and never guess at what a change might also do. Leave out function names, file
 names and other internal identifiers unless the person at the keyboard types or
 sees them. Plain sentences, no markdown, no bullet, no trailing whitespace.
 
+Write plain ASCII: straight quotes, plain hyphens, no typographic dashes,
+no ellipsis character. The text goes into a package changelog, where a hyphen
+that is not a hyphen cannot be searched for.
+
 Answer with a JSON object and nothing else: the pull request number as a
 string, mapped to its sentence. No code fence, no commentary.'
 

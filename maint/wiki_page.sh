@@ -102,7 +102,11 @@ a benefit. Leave out file names, function names and internal identifiers unless
 the reader meets them.
 
 Answer with the paragraph and nothing else: no bullet, no heading, no code
-fence, no line breaks. The page is wrapped afterwards.'
+fence, no line breaks. The page is wrapped afterwards.
+
+Write plain ASCII: straight quotes, plain hyphens, no typographic dashes,
+no ellipsis character. The text goes into a package changelog, where a hyphen
+that is not a hyphen cannot be searched for.'
 
 # One request per entry. Asked for all of them at once, the answer is cut off
 # part way through and the whole page is lost with it; asked one at a time, each

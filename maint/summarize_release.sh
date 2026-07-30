@@ -95,7 +95,11 @@ groundwork should say so, rather than advertise whichever small visible change
 came along with it.
 
 No markdown, no bullet, no heading, no version number, no praise of the
-project. Work strictly from what you are given: never name a theme it does not
+project.
+
+Write plain ASCII: straight quotes, plain hyphens, no typographic dashes,
+no ellipsis character. The text goes into a package changelog, where a hyphen
+that is not a hyphen cannot be searched for. Work strictly from what you are given: never name a theme it does not
 support. Answer with the line and nothing else.'
 
 user=$(cat "$input")
