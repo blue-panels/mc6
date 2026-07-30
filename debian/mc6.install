@@ -5,4 +5,11 @@ usr/bin/mcdiff
 usr/bin/mctree
 usr/lib/mc/ext.d/
 usr/lib/mc/extfs.d/
+usr/lib/mc/cons.saver
+usr/lib/mc/mc.csh
+usr/lib/mc/mc.fish
+usr/lib/mc/mc.sh
+usr/lib/mc/mc-wrapper.csh
+usr/lib/mc/mc-wrapper.fish
+usr/lib/mc/mc-wrapper.sh
 etc/mc/
