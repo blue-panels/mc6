@@ -49,6 +49,13 @@ command -v jq >/dev/null || die "jq is missing"
 work=$(mktemp -d) || die "cannot create a temporary directory"
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 
+# Models write typography -- curly quotes, non-breaking hyphens -- and this text
+# ends up in CHANGELOG.md, in a Debian changelog and in an RPM one. A hyphen
+# that is not a hyphen is invisible to the eye and absent from a search.
+ascii_only() {
+    iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || cat
+}
+
 # ask <system-prompt> <user-content> -- prints the answer
 ask() {
     jq -n --arg model "$model" --arg system "$1" --arg user "$2" \
@@ -64,7 +71,8 @@ ask() {
         -d @"$work/request.json" > "$work/response.json" ||
         die "the request to $endpoint failed"
 
-    jq -r '.choices[0].message.content // empty' "$work/response.json" 2>/dev/null ||
+    jq -r '.choices[0].message.content // empty' "$work/response.json" 2>/dev/null |
+        ascii_only ||
         die "the model returned nothing usable"
 }
 
