@@ -1,16 +1,18 @@
 #!/bin/sh
-# Reduce release notes to the two or three lines that describe the release.
+# Reduce release notes to the one line that names the release.
 #
-# usage: summarize_release.sh <notes.md> [<summary.txt>]
-#   maint/summarize_release.sh notes.md summary.txt
+# usage: summarize_release.sh <notes.md> [<summary.txt>] [--context <prs.json>]
+#   maint/summarize_release.sh notes.md summary.txt --context prs.json
 #
 # The long form goes to the release page and the wiki, where there is room for
-# it. The short form goes where there is not: the tag message, which is what
-# debian/changelog and the RPM %changelog are made of, and the description of
-# the milestone.
+# it. This is the other end: a headline for the tag message and the description
+# of the milestone, saying what the release is about rather than what is in it.
 #
-# The summary is made from the notes, not from the pull requests again, so the
-# two cannot describe different releases.
+# The notes leave out the work labelled infra, because a reader of a release
+# page does not care for it. A headline is the one place that does: a release
+# can be mostly groundwork, and saying so is more honest than naming whichever
+# small visible change happened to come with it. So --context takes the full
+# list of pull requests, and the headline may draw on those as well.
 #
 # In GitHub Actions the built-in token is enough, with "models: read" among the
 # workflow permissions. Elsewhere, pass a token in MODELS_TOKEN.
@@ -26,8 +28,27 @@ die() {
     exit 1
 }
 
-input=${1:?usage: summarize_release.sh <notes.md> [<summary.txt>]}
-output=${2:-}
+input=""
+output=""
+context=""
+
+while test $# -gt 0; do
+    case "$1" in
+        --context)
+            context=${2:?--context needs a file}
+            shift
+            ;;
+        -*)
+            die "unknown option: $1"
+            ;;
+        *)
+            if test -z "$input"; then input=$1; else output=$1; fi
+            ;;
+    esac
+    shift
+done
+
+test -n "$input" || die "usage: summarize_release.sh <notes.md> [<summary.txt>] [--context <prs.json>]"
 
 test -s "$input" || die "no notes to summarise: $input"
 
@@ -43,23 +64,45 @@ system='You are given the release notes of mc6, a fork of GNU Midnight
 Commander: a terminal file manager with a built-in editor, viewer and panel
 plugins.
 
-Write two or three lines saying what this release is, for someone deciding
-whether to update. Name what they will notice; where a release is mostly
-groundwork, say that plainly rather than dressing it up.
+Write ONE line naming what this release is about. Fifteen words at most, and
+fewer is better.
 
-Put each sentence on a line of its own: two or three lines, one sentence each,
-twenty words at most per line. No markdown, no bullets, no heading, no version
-number, no closing flourish about the project.
+Name the theme, not the changes. Do not enumerate what happened; the notes
+already do that, and whoever wants the detail reads them. Weigh the themes by
+how much of the release each accounts for -- count the pull requests -- and
+name at most two, the largest first.
 
-Work strictly from the notes. Do not add a change they do not mention, and do
-not promise an effect they do not claim. Answer with the lines and nothing
-else.'
+Name things, not qualities. Write packaging, plugins, the editor, the viewer,
+the build, Debian, Fedora, Arch. Never write improvements, enhancements,
+updates, internalization, refactoring, overhaul, or across components: they
+say nothing and fill the fifteen words with air.
 
-request=$(jq -n --arg model "$model" --arg system "$system" \
-    --rawfile notes "$input" \
+This is the form to aim for, as an example of length and register only, not of
+content:
+
+    Project cleanup and automated packaging for Debian, Fedora, and Arch Linux.
+
+You may be given, after the notes, the full list of merged pull requests --
+including the ones kept out of the notes as infrastructure: packaging, build
+and repository work. Those count towards the theme. A release that is mostly
+groundwork should say so, rather than advertise whichever small visible change
+came along with it.
+
+No markdown, no bullet, no heading, no version number, no praise of the
+project. Work strictly from what you are given: never name a theme it does not
+support. Answer with the line and nothing else.'
+
+user=$(cat "$input")
+if test -n "$context"; then
+    test -f "$context" || die "no such file: $context"
+    user=$(printf '%s\n\n# Every pull request in the release, notes or not\n\n%s\n' \
+        "$user" "$(jq -r '.[] | "- [\(.labels | join(", "))] \(.title)"' "$context")")
+fi
+
+request=$(jq -n --arg model "$model" --arg system "$system" --arg user "$user" \
     '{model: $model, temperature: 0.2,
       messages: [{role: "system", content: $system},
-                 {role: "user", content: $notes}]}')
+                 {role: "user", content: $user}]}')
 
 response=$(mktemp) || die "cannot create a temporary file"
 trap 'rm -f "$response"' EXIT HUP INT TERM
@@ -85,12 +128,9 @@ summary=$(printf '%s\n' "$summary" |
     sed -e 's/^[[:space:]]*[-*][[:space:]]*//' -e '/^[[:space:]]*#/d' \
         -e '/^[[:space:]]*$/d' -e 's/[[:space:]]*$//')
 
-# Each line becomes an entry of its own in the package changelogs, so a summary
-# that came back as one paragraph is broken back into sentences.
-if test "$(printf '%s\n' "$summary" | wc -l)" -eq 1 &&
-   test "$(printf '%s' "$summary" | wc -c)" -gt 120; then
-    summary=$(printf '%s\n' "$summary" | sed -e 's/\([.!?]\) \([A-Z]\)/\1\n\2/g')
-fi
+# One line, whatever came back: the first is the headline, and anything after it
+# is the model carrying on.
+summary=$(printf '%s\n' "$summary" | head -n 1)
 
 test -n "$summary" || die "nothing left of the summary after tidying it"
 
