@@ -22,9 +22,11 @@
 #   MODELS_TOKEN       token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   MODELS_MODEL       model to ask (default: openai/gpt-4.1)
 #   MODELS_ENDPOINT    where to ask it
-#   MODELS_MAX_TOKENS  room for the answer (default: 1500). A reasoning model
+#   MODELS_MAX_TOKENS  room for the answer (default: 4000). A reasoning model
 #                      spends this on its thinking before it writes anything, so
-#                      too little leaves the answer empty rather than short.
+#                      too little leaves the answer empty rather than short. It
+#                      is a ceiling and not a reservation: what is not used is
+#                      not paid for, which is why the default is generous.
 set -eu
 
 die() {
@@ -41,7 +43,7 @@ test -f "$user" || die "no such file: $user"
 model=${MODELS_MODEL:-openai/gpt-4.1}
 endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
 token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
-max_tokens=${MODELS_MAX_TOKENS:-1500}
+max_tokens=${MODELS_MAX_TOKENS:-4000}
 
 test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
 command -v curl >/dev/null || die "curl is missing"
