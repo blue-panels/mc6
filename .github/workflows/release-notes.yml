@@ -1,0 +1,62 @@
+name: release-notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      milestone:
+        description: 'Milestone to describe, for example v6.0.2'
+        required: true
+      update_release:
+        description: 'Also put the notes into the release of that name'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.repository == 'ilia-maslakov/mcdev'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gawk
+        # The notes are grouped with asorti, which mawk, the default awk on
+        # Ubuntu, does not have.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gawk
+
+      - name: Write the notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Through the environment, not through ${{ }} inside the script: a
+          # milestone name is typed by hand and would otherwise be pasted into
+          # the shell as it stands.
+          MILESTONE: ${{ inputs.milestone }}
+        run: |
+          maint/release_notes.sh "$MILESTONE" --milestone -o notes.md
+          # The summary is what you read straight after the run.
+          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: notes.md
+          overwrite: true
+
+      - name: Put them into the release
+        if: inputs.update_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MILESTONE: ${{ inputs.milestone }}
+        run: |
+          if ! gh release view "$MILESTONE" >/dev/null 2>&1; then
+              echo "there is no release $MILESTONE yet; run the release workflow first" >&2
+              exit 1
+          fi
+          # A draft stays a draft: this only fills in its body.
+          gh release edit "$MILESTONE" --notes-file notes.md
