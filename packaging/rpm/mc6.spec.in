@@ -23,7 +23,7 @@ BuildRequires:   mongo-c-driver-devel
 BuildRequires:   e2fsprogs-devel
 BuildRequires:   file-devel
 BuildRequires:   pkgconf-pkg-config
-BuildRequires:   samba-client-devel
+BuildRequires:   libsmbclient-devel
 BuildRequires:   slang-devel
 
 # The distribution mc has epoch 1.  Keep the bound at 2:0: it remains valid

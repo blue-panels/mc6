@@ -78,7 +78,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-              git ca-certificates build-essential devscripts equivs lintian dpkg-dev
+              git ca-certificates build-essential dpkg-dev lintian
 
       - uses: actions/checkout@v4
         with:
@@ -103,7 +103,10 @@ jobs:
           cp -r debian "$build/mc6-$VERSION/"
 
           cd "$build/mc6-$VERSION"
-          mk-build-deps -ir -t 'apt-get -y --no-install-recommends'
+          # build-dep reads debian/control directly and names a dependency it
+          # cannot satisfy. mk-build-deps went through equivs, where apt simply
+          # removed its stub package again and said nothing about the cause.
+          apt-get build-dep -y --no-install-recommends ./
           dpkg-buildpackage -us -uc
           cd ..
           lintian --fail-on error --profile debian ./*.changes || lintian_failed=1
@@ -168,7 +171,7 @@ jobs:
 
     steps:
       - name: Install the build tooling
-        run: pacman -Syu --noconfirm git
+        run: pacman -Syu --noconfirm git sudo
 
       - uses: actions/checkout@v4
         with:
@@ -185,9 +188,11 @@ jobs:
           packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
 
           # makepkg refuses to run as root, and finds the archive next to the
-          # PKGBUILD instead of downloading it.
+          # PKGBUILD instead of downloading it. Its -s installs the dependencies
+          # through sudo, so that user needs to use it without a password.
           cp "dist/mc6-$VERSION.tar.gz" packaging/arch/
           useradd -m build
+          echo 'build ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/build
           chown -R build packaging/arch
           su build -c 'cd packaging/arch && makepkg -s --noconfirm'
           mkdir -p out
