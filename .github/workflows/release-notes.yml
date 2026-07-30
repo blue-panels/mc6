@@ -14,6 +14,10 @@ on:
         description: 'Also commit the CHANGELOG.md section to the default branch'
         type: boolean
         default: false
+      publish_wiki:
+        description: 'Also publish the page to the wiki'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -131,6 +135,22 @@ jobs:
           # Straight onto the branch: the section is generated, and it was read
           # in this run's summary before this step was asked for.
           git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Publish the page to the wiki
+        if: inputs.publish_wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MILESTONE: ${{ inputs.milestone }}
+        run: |
+          if test ! -f "Release-$MILESTONE.md"; then
+              echo "::warning::there is no page to publish"
+              exit 0
+          fi
+          # The page is in the artifact either way, so a wiki that will not take
+          # it is a warning and not a failed run.
+          if ! maint/publish_wiki.sh "$MILESTONE" "Release-$MILESTONE.md" summary.txt; then
+              echo "::warning::the page was not published; it is in the artifact"
+          fi
 
       - name: Put them where they belong
         if: inputs.update_release
