@@ -22,7 +22,8 @@
 # Environment:
 #   DEB_DISTRIBUTION   target suite of the leading entry (default: unstable;
 #                      a PPA wants the series, e.g. noble)
-#   DEB_VERSION_SUFFIX appended to the leading version, e.g. ~ubuntu24.04.1
+#   DEB_VERSION_SUFFIX appended to the Debian revision of the leading entry,
+#                      e.g. ~ubuntu24.04.1 for 3:6.0.3-1~ubuntu24.04.1
 #
 # Given the release archive, the Arch checksum is computed from it. Without
 # one the recipe keeps SKIP, and makepkg then says so instead of failing on a
@@ -39,9 +40,15 @@ archive=${2:-}
 distribution=${DEB_DISTRIBUTION:-unstable}
 suffix=${DEB_VERSION_SUFFIX:-}
 
+# Only release versions. A pre-release has to sort below the release it leads
+# to, and the only character that does that is a tilde, which Git does not
+# allow in a tag name. Mapping 6.0.2-rc1 to 6.0.2~rc1 is not enough either: the
+# orig tarball and its directory would have to be renamed to match, and Arch
+# allows neither the tilde nor the hyphen in pkgver. Until that is built, a
+# name like 6.0.2rc1 must not pass: it would quietly outrank 6.0.2.
 case "$version" in
-    *[!0-9A-Za-z.+~]* | '')
-        die "invalid version: $version"
+    *[!0-9.]* | '' | .* | *. | *..*)
+        die "not a release version: $version (expected something like 6.0.3)"
         ;;
 esac
 
@@ -72,9 +79,12 @@ tag_body() {
 }
 
 deb_entry() {
-    printf 'mc6 (%s:%s-1) %s; urgency=medium\n\n' "$deb_epoch" "$1" "$3"
-    if test -n "$4"; then
-        printf '%s\n' "$4" | sed 's/^/  * /'
+    # The suffix belongs to the Debian revision, not to the upstream version:
+    # 3:6.0.3-1~ubuntu24.04.1 keeps the orig tarball named mc6_6.0.3.orig.tar.gz,
+    # so every series of a release shares one archive.
+    printf 'mc6 (%s:%s-1%s) %s; urgency=medium\n\n' "$deb_epoch" "$1" "$4" "$3"
+    if test -n "$5"; then
+        printf '%s\n' "$5" | sed 's/^/  * /'
     else
         printf '  * Release v%s.\n' "$1"
     fi
@@ -99,16 +109,18 @@ untagged=yes
 printf '%s\n' $tags | grep -qx "v$version" && untagged=no
 
 {
-    test "$untagged" = no || deb_entry "$version$suffix" "$(date -R)" UNRELEASED ''
+    test "$untagged" = no || deb_entry "$version" "$(date -R)" UNRELEASED "$suffix" ''
 
     for tag in $tags; do
         tag_date=$(git for-each-ref --format='%(creatordate:rfc2822)' "refs/tags/$tag")
         test -n "$tag_date" || tag_date=$(date -R)
 
         if test "$tag" = "v$version"; then
-            deb_entry "$version$suffix" "$tag_date" "$distribution" "$(tag_body "$tag")"
+            deb_entry "$version" "$tag_date" "$distribution" "$suffix" "$(tag_body "$tag")"
         else
-            deb_entry "${tag#v}" "$tag_date" unstable "$(tag_body "$tag")"
+            # Older releases keep the plain revision: only the entry being
+            # prepared is aimed at a series.
+            deb_entry "${tag#v}" "$tag_date" unstable '' "$(tag_body "$tag")"
         fi
     done
 } > debian/changelog
