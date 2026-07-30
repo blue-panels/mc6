@@ -39,6 +39,7 @@ RANGE=""
 MILESTONE=""
 OUTPUT=""
 RAW=""
+FLAT=""
 TITLES=""
 
 while [ $# -gt 0 ]; do
@@ -60,6 +61,9 @@ while [ $# -gt 0 ]; do
         --raw)
             RAW=1
             ;;
+        --flat)
+            FLAT=1
+            ;;
         --titles-from)
             TITLES="$2"
             shift
@@ -78,6 +82,7 @@ done
 if [ -z "$VERSION" ]; then
     echo "usage: $0 <version> [<git-range>] [--milestone[=NAME]] [-o FILE]" >&2
     echo "       $0 <version> --milestone --raw            # the pull requests as JSON" >&2
+    echo "       $0 <version> --milestone --flat           # one line per entry, no links" >&2
     echo "       $0 <version> --milestone --titles-from F  # rewritten titles from F" >&2
     exit 1
 fi
@@ -133,6 +138,19 @@ if [ -n "$TITLES" ]; then
     test -f "$TITLES" || { echo "no such file: $TITLES" >&2; exit 1; }
     prs=$(echo "$prs" | jq --slurpfile t "$TITLES" \
         '[.[] | .title = (($t[0][(.number | tostring)]) // .title)]')
+fi
+
+# Plain lines, features first, for the changelog a package manager shows: there
+# are no headings there, and a markdown link would be read out as it stands.
+if [ -n "$FLAT" ]; then
+    # Labels are objects here, not the names --raw hands out, so take the names.
+    echo "$prs" | jq -r '
+        [.[] | . + {names: [.labels[].name]} | select((.names | index("infra")) | not)]
+        | sort_by((if (.names | index("Feature")) then 0
+                   elif (.names | index("Bug fix")) then 1
+                   else 2 end), -.number)
+        | .[] | "- " + .title'
+    exit 0
 fi
 
 notes=$(echo "$prs" | jq -r '.[] | [.number, ([.labels[].name] | join("|")), (.title | gsub("\\s+"; " "))] | @tsv' |

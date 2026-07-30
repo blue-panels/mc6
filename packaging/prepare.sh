@@ -71,11 +71,28 @@ fi
 
 tags=$(git tag --list 'v*' --sort=-version:refname 2>/dev/null || true)
 
-# What the release says is written once, in the signed tag; both changelogs
-# then quote it.
+# What a release says is written once and read from there by both changelogs:
+# from CHANGELOG.md when it has a section for the version, and from the tag
+# message otherwise -- which is all the releases made before that file existed
+# have to offer.
 tag_body() {
     git tag --list --format='%(contents:subject)%0a%(contents:body)' "$1" 2>/dev/null |
         sed -e '/^[[:space:]]*$/d'
+}
+
+changelog_body() {
+    test -f CHANGELOG.md || return 0
+    awk -v version="$1" '
+        $0 ~ "^## " version "([^0-9.]|$)" { inside = 1; next }
+        inside && /^## / { exit }
+        inside && /^- / { sub(/^-[[:space:]]*/, ""); print }
+    ' CHANGELOG.md
+}
+
+entry_body() {
+    body=$(changelog_body "$1")
+    test -n "$body" || body=$(tag_body "$2")
+    printf '%s' "$body"
 }
 
 deb_entry() {
@@ -109,18 +126,21 @@ untagged=yes
 printf '%s\n' $tags | grep -qx "v$version" && untagged=no
 
 {
-    test "$untagged" = no || deb_entry "$version" "$(date -R)" UNRELEASED "$suffix" ''
+    test "$untagged" = no ||
+        deb_entry "$version" "$(date -R)" UNRELEASED "$suffix" \
+            "$(entry_body "$version" "v$version")"
 
     for tag in $tags; do
         tag_date=$(git for-each-ref --format='%(creatordate:rfc2822)' "refs/tags/$tag")
         test -n "$tag_date" || tag_date=$(date -R)
 
         if test "$tag" = "v$version"; then
-            deb_entry "$version" "$tag_date" "$distribution" "$suffix" "$(tag_body "$tag")"
+            deb_entry "$version" "$tag_date" "$distribution" "$suffix" \
+                "$(entry_body "$version" "$tag")"
         else
             # Older releases keep the plain revision: only the entry being
             # prepared is aimed at a series.
-            deb_entry "${tag#v}" "$tag_date" unstable '' "$(tag_body "$tag")"
+            deb_entry "${tag#v}" "$tag_date" unstable '' "$(entry_body "${tag#v}" "$tag")"
         fi
     done
 } > debian/changelog
@@ -128,12 +148,13 @@ printf '%s\n' $tags | grep -qx "v$version" && untagged=no
 test -s debian/changelog || die "generated an empty debian/changelog"
 
 {
-    test "$untagged" = no || rpm_entry "$version" "$(date -R)" ''
+    test "$untagged" = no ||
+        rpm_entry "$version" "$(date -R)" "$(entry_body "$version" "v$version")"
 
     for tag in $tags; do
         tag_date=$(git for-each-ref --format='%(creatordate:rfc2822)' "refs/tags/$tag")
         test -n "$tag_date" || tag_date=$(date -R)
-        rpm_entry "${tag#v}" "$tag_date" "$(tag_body "$tag")"
+        rpm_entry "${tag#v}" "$tag_date" "$(entry_body "${tag#v}" "$tag")"
     done
 } > "$tmpdir/rpm-changelog"
 

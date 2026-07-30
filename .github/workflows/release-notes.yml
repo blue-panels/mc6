@@ -10,6 +10,10 @@ on:
         description: 'Also publish: notes into the release, summary onto the milestone'
         type: boolean
         default: false
+      commit_changelog:
+        description: 'Also commit the CHANGELOG.md section to the default branch'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -49,13 +53,22 @@ jobs:
           # A model turns each description into a sentence for a reader. If it
           # is unavailable, or answers with something else, the notes are still
           # written -- with the titles as their authors typed them.
+          titles=""
           if maint/rewrite_titles.sh prs.json titles.json; then
-              maint/release_notes.sh "$MILESTONE" --milestone \
-                  --titles-from titles.json -o notes.md
+              titles="--titles-from titles.json"
           else
               echo "::warning::the entries were not rewritten; using the pull request titles"
-              maint/release_notes.sh "$MILESTONE" --milestone -o notes.md
           fi
+
+          # Unquoted on purpose: either an option and its file, or nothing.
+          maint/release_notes.sh "$MILESTONE" --milestone $titles -o notes.md
+
+          # The same sentences without headings or links, which is the form the
+          # package changelogs take. prepare.sh reads the section back out of
+          # CHANGELOG.md when it builds them, so what a .deb says is what was
+          # committed here rather than whatever a model answered that day.
+          maint/release_notes.sh "$MILESTONE" --milestone $titles --flat > entries.txt
+          maint/update_changelog.sh "$MILESTONE" entries.txt
 
           # Two or three lines for the places with no room for the list: the
           # tag message, which the package changelogs are made of, and the
@@ -85,7 +98,25 @@ jobs:
           path: |
             notes.md
             summary.txt
+            CHANGELOG.md
           overwrite: true
+
+      - name: Commit the changelog
+        if: inputs.commit_changelog
+        env:
+          MILESTONE: ${{ inputs.milestone }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          if git diff --cached --quiet; then
+              echo "CHANGELOG.md already says this; nothing to commit"
+              exit 0
+          fi
+          git commit -m "changelog: $MILESTONE"
+          # Straight onto the branch: the section is generated, and it was read
+          # in this run's summary before this step was asked for.
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Put them where they belong
         if: inputs.update_release
