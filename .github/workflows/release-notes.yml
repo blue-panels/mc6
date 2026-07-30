@@ -70,6 +70,14 @@ jobs:
           maint/release_notes.sh "$MILESTONE" --milestone $titles --flat > entries.txt
           maint/update_changelog.sh "$MILESTONE" entries.txt
 
+          # And the long form for the wiki: a paragraph per change, written from
+          # the same descriptions. One request per entry, so this is the slow
+          # part; the rest of the run stands without it.
+          if ! maint/wiki_page.sh "$MILESTONE" "Release-$MILESTONE.md"; then
+              echo "::warning::the wiki page was not written"
+              rm -f "Release-$MILESTONE.md"
+          fi
+
           # Two or three lines for the places with no room for the list: the
           # tag message, which the package changelogs are made of, and the
           # description of the milestone.
@@ -90,6 +98,10 @@ jobs:
                   echo
               fi
               cat notes.md
+              if test -f "Release-$MILESTONE.md"; then
+                  echo
+                  echo "The page for the wiki is in the release-notes artifact."
+              fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
@@ -99,7 +111,9 @@ jobs:
             notes.md
             summary.txt
             CHANGELOG.md
+            Release-*.md
           overwrite: true
+          if-no-files-found: warn
 
       - name: Commit the changelog
         if: inputs.commit_changelog

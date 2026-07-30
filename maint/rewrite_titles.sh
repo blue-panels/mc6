@@ -94,8 +94,13 @@ if test -z "$content"; then
     exit 1
 fi
 
-# A fenced block is the one liberty models take with "no code fence".
-printf '%s\n' "$content" | sed -e '/^[[:space:]]*```/d' > "$response.body"
+# A fenced block is the one liberty models take with "no code fence". Read from
+# the first brace rather than cutting the fence lines out: a model that opens
+# both on one line would lose the brace along with the fence.
+printf '%s\n' "$content" |
+    awk 'started { print; next }
+         { i = index($0, "{"); if (i) { started = 1; print substr($0, i) } }' |
+    sed -e '/^[[:space:]]*```/d' > "$response.body"
 
 jq -e 'type == "object" and length > 0
        and (to_entries | all(.value | type == "string" and length > 0))' \
