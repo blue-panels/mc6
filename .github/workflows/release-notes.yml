@@ -56,11 +56,19 @@ jobs:
           MODELS_ENDPOINT: ${{ vars.MODELS_ENDPOINT }}
           MODELS_MODEL: ${{ vars.MODELS_MODEL }}
           MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+          CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
           # Through the environment, not through ${{ }} inside the script: a
           # milestone name is typed by hand and would otherwise be pasted into
           # the shell as it stands.
           MILESTONE: ${{ inputs.milestone }}
         run: |
+          # The endpoint is kept as a template, so that the account id is written
+          # once in a variable of its own rather than buried in a URL.
+          if test -n "${CF_ACCOUNT_ID:-}"; then
+              MODELS_ENDPOINT=${MODELS_ENDPOINT//<CF_ACCOUNT_ID>/$CF_ACCOUNT_ID}
+              export MODELS_ENDPOINT
+          fi
+
           maint/release_notes.sh "$MILESTONE" --milestone --raw > prs.json
 
           # A model turns each description into a sentence for a reader. If it
