@@ -505,7 +505,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
     line_s *p = line;
     off_t q;
     off_t first_visible;
-    off_t col;
+    long col;
     long start_col_real;
     int abn_style;
     int book_mark = 0;
@@ -540,7 +540,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
         const long target_col = MAX (0, start_col - edit->start_col);
 
         q = MIN (edit->buffer.size, b + (off_t) target_col);
-        col = q - b;
+        col = (long) (q - b);
     }
     else
     {
@@ -623,7 +623,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
                     else
                     {
                         // col is this cell's absolute visual column
-                        const long x = (long) col;
+                        const long x = col;
                         long cl;
 
                         cl = MIN (edit->column1, edit->column2);
