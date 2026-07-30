@@ -9,6 +9,10 @@ on:
       tag:
         description: 'Existing tag to build'
         required: true
+      upload_to_ppa:
+        description: 'Upload to the PPA as well'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -194,6 +198,67 @@ jobs:
         with:
           name: arch-packages
           path: out/*
+
+  ppa:
+    needs: archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Set the PPA_SERIES variable to switch this on, as a space separated list
+    # of series with their Ubuntu versions: "noble:24.04 jammy:22.04".
+    if: vars.PPA_SERIES != ''
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Install dput
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dput
+
+      - name: Import the upload key
+        env:
+          PPA_GPG_KEY: ${{ secrets.PPA_GPG_KEY }}
+        run: |
+          test -n "$PPA_GPG_KEY" || { echo "PPA_GPG_KEY is not set" >&2; exit 1; }
+          printf '%s\n' "$PPA_GPG_KEY" | gpg --batch --quiet --import
+          # This key exists only to sign PPA uploads, so it is the only one here.
+          key=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr:/ { print $10; exit }')
+          test -n "$key" || { echo "no secret key was imported" >&2; exit 1; }
+          echo "SIGN_KEY=$key" >> "$GITHUB_ENV"
+
+      - name: Build and upload the source packages
+        env:
+          PPA: ${{ vars.PPA_TARGET || 'ppa:il-smind/mc6' }}
+          SERIES: ${{ vars.PPA_SERIES }}
+          # A tag push publishes. A manual run is a rehearsal unless it asks to
+          # publish: a PPA keeps every version it has ever accepted, so an
+          # accidental upload cannot be taken back.
+          REQUESTED: ${{ github.event_name != 'workflow_dispatch' || inputs.upload_to_ppa }}
+        run: |
+          if test "$REQUESTED" = true; then
+              upload=yes
+          else
+              upload=no
+              echo "rehearsal: building and signing, not uploading to $PPA"
+          fi
+
+          UPLOAD="$upload" packaging/ppa-source.sh \
+              "$VERSION" "dist/mc6-$VERSION.tar.gz" $SERIES
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppa-source
+          path: dist/ppa/*
 
   publish:
     needs: [debian, fedora, arch]
