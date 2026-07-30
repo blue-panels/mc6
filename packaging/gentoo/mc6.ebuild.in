@@ -61,6 +61,8 @@ src_configure() {
 	econf "${myconf[@]}"
 }
 
+DOCS=( CHANGELOG.md README.md )
+
 src_install() {
 	emake DESTDIR="${D}" install
 	find "${D}" -name '*.la' -delete || die

@@ -57,6 +57,7 @@ package_mc6() {
   rm -rf "${pkgdir}/usr/lib/mc/panel-plugins"
   find "${pkgdir}" -name '*.la' -delete
   install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6/COPYING"
+  install -Dm644 CHANGELOG.md "${pkgdir}/usr/share/doc/mc6/CHANGELOG.md"
 }
 
 package_mc6-plugins() {

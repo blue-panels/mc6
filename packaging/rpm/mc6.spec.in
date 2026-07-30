@@ -78,7 +78,7 @@ find %{buildroot} -name '*.la' -delete
 
 %files -f mc.lang
 %license COPYING
-%doc README.md
+%doc README.md CHANGELOG.md
 %{_bindir}/mc
 %{_bindir}/mcedit
 %{_bindir}/mcview
