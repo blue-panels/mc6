@@ -13,6 +13,9 @@ on:
 
 permissions:
   contents: write
+  # Lets the built-in token reach GitHub Models, so rewriting the entries needs
+  # no key of its own.
+  models: read
 
 jobs:
   notes:
@@ -33,12 +36,25 @@ jobs:
       - name: Write the notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Through the environment, not through ${{ }} inside the script: a
           # milestone name is typed by hand and would otherwise be pasted into
           # the shell as it stands.
           MILESTONE: ${{ inputs.milestone }}
         run: |
-          maint/release_notes.sh "$MILESTONE" --milestone -o notes.md
+          maint/release_notes.sh "$MILESTONE" --milestone --raw > prs.json
+
+          # A model turns each description into a sentence for a reader. If it
+          # is unavailable, or answers with something else, the notes are still
+          # written -- with the titles as their authors typed them.
+          if maint/rewrite_titles.sh prs.json titles.json; then
+              maint/release_notes.sh "$MILESTONE" --milestone \
+                  --titles-from titles.json -o notes.md
+          else
+              echo "::warning::the entries were not rewritten; using the pull request titles"
+              maint/release_notes.sh "$MILESTONE" --milestone -o notes.md
+          fi
+
           # The summary is what you read straight after the run.
           cat notes.md >> "$GITHUB_STEP_SUMMARY"
 

@@ -38,18 +38,30 @@ shift || true
 RANGE=""
 MILESTONE=""
 OUTPUT=""
+RAW=""
+TITLES=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --milestone)
-            MILESTONE="${2:-$VERSION}"
-            case "${2:-}" in -*|"") ;; *) shift ;; esac
+            # A bare --milestone means the milestone named like the version.
+            case "${2:-}" in
+                ""|-*) MILESTONE="$VERSION" ;;
+                *)     MILESTONE="$2"; shift ;;
+            esac
             ;;
         --milestone=*)
             MILESTONE="${1#--milestone=}"
             ;;
         -o|--output)
             OUTPUT="$2"
+            shift
+            ;;
+        --raw)
+            RAW=1
+            ;;
+        --titles-from)
+            TITLES="$2"
             shift
             ;;
         -*)
@@ -65,6 +77,8 @@ done
 
 if [ -z "$VERSION" ]; then
     echo "usage: $0 <version> [<git-range>] [--milestone[=NAME]] [-o FILE]" >&2
+    echo "       $0 <version> --milestone --raw            # the pull requests as JSON" >&2
+    echo "       $0 <version> --milestone --titles-from F  # rewritten titles from F" >&2
     exit 1
 fi
 
@@ -73,7 +87,8 @@ if [ -n "$RANGE" ] && [ -n "$MILESTONE" ]; then
     exit 1
 fi
 
-prs=$(gh pr list -R "$REPO" --state merged --limit 500 --json number,title,labels,milestone)
+prs=$(gh pr list -R "$REPO" --state merged --limit 500 \
+    --json number,title,labels,milestone,body)
 
 # A milestone is the release as you curated it; a git range is the commits that
 # happened to land. They differ: a commit pushed without a PR is in the range
@@ -94,6 +109,30 @@ if [ -n "$RANGE" ]; then
     fi
     keep=$(printf '%s\n' $nums | jq -Rs '[split("\n")[] | select(length > 0) | tonumber]')
     prs=$(echo "$prs" | jq --argjson keep "$keep" '[.[] | select(.number as $n | $keep | index($n))]')
+fi
+
+# The description a human wrote, without the generated part that lists commits
+# and files: that is what a model has to work from, and the rest is noise.
+if [ -n "$RAW" ]; then
+    echo "$prs" | jq '[.[] | {
+        number,
+        title,
+        labels: [.labels[].name],
+        summary: ((.body // "")
+            | split("<!-- pr-summary:start -->")[0] as $b
+            | ($b | split("## Summary")) as $p
+            | (if ($p | length) > 1 then ($p[1] | split("\n## ")[0]) else $b end)
+            | gsub("\r"; "") | gsub("^\\s+"; "") | gsub("\\s+$"; ""))
+    }]'
+    exit 0
+fi
+
+# Titles rewritten elsewhere, keyed by pull request number. What is missing
+# keeps the title it had, so nothing can go astray on the way.
+if [ -n "$TITLES" ]; then
+    test -f "$TITLES" || { echo "no such file: $TITLES" >&2; exit 1; }
+    prs=$(echo "$prs" | jq --slurpfile t "$TITLES" \
+        '[.[] | .title = (($t[0][(.number | tostring)]) // .title)]')
 fi
 
 notes=$(echo "$prs" | jq -r '.[] | [.number, ([.labels[].name] | join("|")), (.title | gsub("\\s+"; " "))] | @tsv' |
