@@ -93,7 +93,14 @@ if ! curl -sS --max-time 120 -X POST "$endpoint" \
     die "the request to $endpoint failed"
 fi
 
-content=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null || true)
+# Models write typography -- curly quotes, non-breaking hyphens -- and this text
+# ends up in CHANGELOG.md, in a Debian changelog and in an RPM one. A hyphen
+# that is not a hyphen is invisible to the eye and absent from a search.
+ascii_only() {
+    iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || cat
+}
+
+content=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null | ascii_only || true)
 if test -z "$content"; then
     echo "the model returned no text; the answer was:" >&2
     head -c 500 "$response" >&2

@@ -20,7 +20,7 @@
 # Environment:
 #   MODELS_TOKEN     token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   MODELS_MODEL     model to ask (default: openai/gpt-4.1)
-#   MODELS_MAX_TOKENS  room for the answer (default: 600). A reasoning model
+#   MODELS_MAX_TOKENS  room for the answer (default: 1500). A reasoning model
 #                    spends this on its thinking before it writes anything, so
 #                    too little leaves the answer empty rather than short.
 #   MODELS_ENDPOINT  where to ask it. Any endpoint of the OpenAI shape does,
@@ -58,7 +58,7 @@ test -n "$input" || die "usage: summarize_release.sh <notes.md> [<summary.txt>] 
 test -s "$input" || die "no notes to summarise: $input"
 
 model=${MODELS_MODEL:-openai/gpt-4.1}
-max_tokens=${MODELS_MAX_TOKENS:-600}
+max_tokens=${MODELS_MAX_TOKENS:-1500}
 endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
 token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
 test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
@@ -122,7 +122,14 @@ if ! curl -sS --max-time 120 -X POST "$endpoint" \
     die "the request to $endpoint failed"
 fi
 
-summary=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null || true)
+# Models write typography -- curly quotes, non-breaking hyphens -- and this text
+# ends up in CHANGELOG.md, in a Debian changelog and in an RPM one. A hyphen
+# that is not a hyphen is invisible to the eye and absent from a search.
+ascii_only() {
+    iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || cat
+}
+
+summary=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null | ascii_only || true)
 if test -z "$summary"; then
     echo "the model returned no text; the answer was:" >&2
     head -c 500 "$response" >&2
