@@ -810,19 +810,29 @@ AS_CASE([$enable_panel_plugin_mongo],
     [AC_MSG_ERROR([bad value '$enable_panel_plugin_mongo' for --enable-panel-plugin-mongo (use auto, yes, or no)])])
 
 if test "x$enable_panel_plugin_mongo" != xno; then
+    dnl Driver 2 renamed its pkg-config modules to mongoc2 and bson2, and ships
+    dnl them as one package on some distributions. The plugin calls nothing that
+    dnl 2 dropped, so either generation will do.
     PKG_CHECK_MODULES([MONGOC],
         [libmongoc-1.0 >= 1.21 libbson-1.0 >= 1.21],
         [have_panel_plugin_mongo=yes],
-        [:])
+        [PKG_CHECK_MODULES([MONGOC2],
+            [mongoc2 >= 2.0 bson2 >= 2.0],
+            [have_panel_plugin_mongo=yes
+             MONGOC_CFLAGS="$MONGOC2_CFLAGS"
+             MONGOC_LIBS="$MONGOC2_LIBS"],
+            [:])])
 fi
 
 if test "x$enable_panel_plugin_mongo" = xyes && test "x$have_panel_plugin_mongo" != xyes; then
-    AC_MSG_ERROR([MongoDB panel plugin requested but libmongoc-1.0 >= 1.21 and libbson-1.0 >= 1.21 were not found.
-Install the MongoDB C driver development packages (for example: libmongoc-dev libbson-dev) or use --enable-panel-plugin-mongo=auto/no.])
+    AC_MSG_ERROR([MongoDB panel plugin requested but no MongoDB C driver was found:
+neither libmongoc-1.0 >= 1.21 with libbson-1.0 >= 1.21, nor mongoc2 >= 2.0 with bson2 >= 2.0.
+Install the MongoDB C driver development package (for example: libmongoc-dev and
+libbson-dev, or mongo-c-driver) or use --enable-panel-plugin-mongo=auto/no.])
 fi
 
 if test "x$enable_panel_plugin_mongo" = xauto && test "x$have_panel_plugin_mongo" != xyes; then
-    AC_MSG_WARN([MongoDB panel plugin disabled: libmongoc-1.0 / libbson-1.0 not found.])
+    AC_MSG_WARN([MongoDB panel plugin disabled: no MongoDB C driver found (libmongoc-1.0 or mongoc2).])
 fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_MONGO], [test x"$have_panel_plugin_mongo" = xyes])
