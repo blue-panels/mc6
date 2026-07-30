@@ -8,6 +8,8 @@ URL:             https://github.com/ilia-maslakov/mcdev
 Source0:         https://github.com/ilia-maslakov/mcdev/releases/download/v%{version}/mc6-%{version}.tar.gz
 
 BuildRequires:   check-devel
+BuildRequires:   perl
+BuildRequires:   python3
 BuildRequires:   gcc
 BuildRequires:   gettext
 BuildRequires:   glib2-devel

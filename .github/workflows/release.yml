@@ -124,7 +124,14 @@ jobs:
           # cannot satisfy. mk-build-deps went through equivs, where apt simply
           # removed its stub package again and said nothing about the cause.
           apt-get build-dep -y --no-install-recommends ./
-          dpkg-buildpackage -us -uc
+
+          # Not as root: the extfs helper tests print <<uid>> for a file owned
+          # by the current user, and half their expected outputs assume that is
+          # not uid 0. Rules-Requires-Root is no, so nothing here wants root.
+          useradd -m build
+          chown -R build "$build"
+          su build -c "cd '$build/mc6-$VERSION' && dpkg-buildpackage -us -uc"
+
           cd ..
           lintian --fail-on error --profile debian ./*.changes || lintian_failed=1
           mkdir -p "$GITHUB_WORKSPACE/out"
@@ -166,13 +173,20 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
-          mkdir -p ~/rpmbuild/SOURCES
-          cp "dist/mc6-$VERSION.tar.gz" ~/rpmbuild/SOURCES/
           dnf builddep -y packaging/rpm/mc6.spec
-          rpmbuild -ba packaging/rpm/mc6.spec
-          rpmlint ~/rpmbuild/RPMS/*/*.rpm || true
+
+          # Not as root: the extfs helper tests print <<uid>> for a file owned
+          # by the current user, and half their expected outputs assume that is
+          # not uid 0. rpmbuild as root is discouraged in any case.
+          useradd -m build
+          su build -c 'mkdir -p ~/rpmbuild/SOURCES'
+          install -o build -g build "dist/mc6-$VERSION.tar.gz" /home/build/rpmbuild/SOURCES/
+          install -o build -g build packaging/rpm/mc6.spec /home/build/mc6.spec
+          su build -c 'rpmbuild -ba ~/mc6.spec'
+
+          rpmlint /home/build/rpmbuild/RPMS/*/*.rpm || true
           mkdir -p out
-          cp ~/rpmbuild/RPMS/*/*.rpm ~/rpmbuild/SRPMS/*.rpm out/
+          cp /home/build/rpmbuild/RPMS/*/*.rpm /home/build/rpmbuild/SRPMS/*.rpm out/
 
       - uses: actions/upload-artifact@v4
         with:
