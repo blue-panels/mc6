@@ -33,14 +33,58 @@ set -e
 
 REPO="ilia-maslakov/mcdev"
 VERSION="$1"
-RANGE="$2"
+shift || true
+
+RANGE=""
+MILESTONE=""
+OUTPUT=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --milestone)
+            MILESTONE="${2:-$VERSION}"
+            case "${2:-}" in -*|"") ;; *) shift ;; esac
+            ;;
+        --milestone=*)
+            MILESTONE="${1#--milestone=}"
+            ;;
+        -o|--output)
+            OUTPUT="$2"
+            shift
+            ;;
+        -*)
+            echo "unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            RANGE="$1"
+            ;;
+    esac
+    shift
+done
 
 if [ -z "$VERSION" ]; then
-    echo "usage: $0 <version> [<git-range>]" >&2
+    echo "usage: $0 <version> [<git-range>] [--milestone[=NAME]] [-o FILE]" >&2
     exit 1
 fi
 
-prs=$(gh pr list -R "$REPO" --state merged --limit 500 --json number,title,labels)
+if [ -n "$RANGE" ] && [ -n "$MILESTONE" ]; then
+    echo "give either a git range or --milestone, not both" >&2
+    exit 1
+fi
+
+prs=$(gh pr list -R "$REPO" --state merged --limit 500 --json number,title,labels,milestone)
+
+# A milestone is the release as you curated it; a git range is the commits that
+# happened to land. They differ: a commit pushed without a PR is in the range
+# and not in the milestone.
+if [ -n "$MILESTONE" ]; then
+    prs=$(echo "$prs" | jq --arg ms "$MILESTONE" '[.[] | select(.milestone.title == $ms)]')
+    if [ "$(echo "$prs" | jq 'length')" = 0 ]; then
+        echo "no merged pull requests in milestone $MILESTONE" >&2
+        exit 1
+    fi
+fi
 
 if [ -n "$RANGE" ]; then
     nums=$(git log --pretty='%s%n%b' "$RANGE" | grep -oE '#[0-9]+' | tr -d '#' | sort -un)
@@ -52,11 +96,11 @@ if [ -n "$RANGE" ]; then
     prs=$(echo "$prs" | jq --argjson keep "$keep" '[.[] | select(.number as $n | $keep | index($n))]')
 fi
 
-echo "$prs" | jq -r '.[] | [.number, ([.labels[].name] | join("|")), (.title | gsub("\\s+"; " "))] | @tsv' |
+notes=$(echo "$prs" | jq -r '.[] | [.number, ([.labels[].name] | join("|")), (.title | gsub("\\s+"; " "))] | @tsv' |
 gawk -F'\t' -v version="$VERSION" -v date="$(date +%Y-%m-%d)" -v repo="$REPO" '
 function plugin_group(title,   lt, i, n, words) {
     lt = tolower(title)
-    n = split("git docker k8s mongodb s3 sftp ftp samba arcmc ctags panelize hello", words, " ")
+    n = split("git docker k8s mongodb s3 sftp ftp samba arcmc ctags panelize shell-link hello", words, " ")
     for (i = 1; i <= n; i++)
         if (index(lt, words[i]) > 0)
             return words[i]
@@ -90,6 +134,7 @@ function has_label(labels, name,   i, n, parts) {
     else if (labels ~ /Plugin/)       area = "Plugins"
     else if (labels ~ /mcedit/)       area = "mcedit"
     else if (labels ~ /mcview/)       area = "mcview"
+    else if (labels ~ /mcterm/)       area = "mcterm"
     else if (labels ~ /panel/)        area = "Panel"
     else if (labels ~ /vfs/)          area = "VFS"
     else                              area = "Core"
@@ -107,7 +152,7 @@ function has_label(labels, name,   i, n, parts) {
 END {
     printf "# mcdev %s (%s)\n", version, date
 
-    na = split("mcedit mcview Panel VFS Core", areas, " ")
+    na = split("mcedit mcview mcterm Panel VFS Core", areas, " ")
     ng = asorti(pgroups, gkeys)
     nt = split("Features Fixes", types, " ")
 
@@ -139,4 +184,12 @@ END {
 
     if (dropped > 0)
         printf "note: %d PR(s) labelled \"infra\" left out of the notes\n", dropped > "/dev/stderr"
-}'
+}')
+
+if [ -n "$OUTPUT" ]; then
+    mkdir -p "$(dirname -- "$OUTPUT")"
+    printf '%s\n' "$notes" > "$OUTPUT"
+    echo "written to $OUTPUT" >&2
+else
+    printf '%s\n' "$notes"
+fi
