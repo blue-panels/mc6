@@ -17,6 +17,9 @@
 # Environment:
 #   MODELS_TOKEN     token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   MODELS_MODEL     model to ask (default: openai/gpt-4.1)
+#   MODELS_MAX_TOKENS  room for the answer (default: 1500). A reasoning model
+#                    spends this on its thinking before it writes anything, so
+#                    too little leaves the answer empty rather than short.
 #   MODELS_ENDPOINT  where to ask it. Any endpoint of the OpenAI shape does,
 #                    such as Cloudflare Workers AI at
 #                    .../client/v4/accounts/<id>/ai/v1/chat/completions
@@ -35,6 +38,7 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 width=${WIDTH:-79}
 
 model=${MODELS_MODEL:-openai/gpt-4.1}
+max_tokens=${MODELS_MAX_TOKENS:-1500}
 endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
 token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
 test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
@@ -48,7 +52,8 @@ trap 'rm -rf "$work"' EXIT HUP INT TERM
 # ask <system-prompt> <user-content> -- prints the answer
 ask() {
     jq -n --arg model "$model" --arg system "$1" --arg user "$2" \
-        '{model: $model, temperature: 0.2,
+        --argjson max_tokens "$max_tokens" \
+        '{model: $model, temperature: 0.2, max_tokens: $max_tokens,
           messages: [{role: "system", content: $system},
                      {role: "user", content: $user}]}' > "$work/request.json"
 

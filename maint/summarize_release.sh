@@ -20,6 +20,9 @@
 # Environment:
 #   MODELS_TOKEN     token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   MODELS_MODEL     model to ask (default: openai/gpt-4.1)
+#   MODELS_MAX_TOKENS  room for the answer (default: 600). A reasoning model
+#                    spends this on its thinking before it writes anything, so
+#                    too little leaves the answer empty rather than short.
 #   MODELS_ENDPOINT  where to ask it. Any endpoint of the OpenAI shape does,
 #                    such as Cloudflare Workers AI at
 #                    .../client/v4/accounts/<id>/ai/v1/chat/completions
@@ -55,6 +58,7 @@ test -n "$input" || die "usage: summarize_release.sh <notes.md> [<summary.txt>] 
 test -s "$input" || die "no notes to summarise: $input"
 
 model=${MODELS_MODEL:-openai/gpt-4.1}
+max_tokens=${MODELS_MAX_TOKENS:-600}
 endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
 token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
 test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
@@ -102,7 +106,8 @@ if test -n "$context"; then
 fi
 
 request=$(jq -n --arg model "$model" --arg system "$system" --arg user "$user" \
-    '{model: $model, temperature: 0.2,
+    --argjson max_tokens "$max_tokens" \
+    '{model: $model, temperature: 0.2, max_tokens: $max_tokens,
       messages: [{role: "system", content: $system},
                  {role: "user", content: $user}]}')
 
