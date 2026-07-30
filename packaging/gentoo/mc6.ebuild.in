@@ -3,8 +3,8 @@
 
 EAPI=8
 
-DESCRIPTION="Midnight Commander fork with dynamically loaded panel plugins"
-HOMEPAGE="https://github.com/ilia-maslakov/mcdev"
+DESCRIPTION="Midnight Commander with Plugins, a fork of GNU Midnight Commander"
+HOMEPAGE="https://github.com/ilia-maslakov/mcdev/wiki"
 SRC_URI="https://github.com/ilia-maslakov/mcdev/releases/download/v${PV}/mc6-${PV}.tar.gz"
 S="${WORKDIR}/mc6-${PV}"
 

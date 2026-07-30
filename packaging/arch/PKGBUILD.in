@@ -3,9 +3,9 @@
 pkgname=(mc6 mc6-plugins)
 pkgver=@VERSION@
 pkgrel=1
-pkgdesc='Midnight Commander fork with plugin support'
+pkgdesc='Midnight Commander with Plugins'
 arch=('x86_64' 'aarch64')
-url='https://github.com/ilia-maslakov/mcdev'
+url='https://github.com/ilia-maslakov/mcdev/wiki'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'libssh2' 'curl' 'samba'
@@ -40,7 +40,7 @@ build() {
 }
 
 package_mc6() {
-  pkgdesc='Midnight Commander fork with plugin support'
+  pkgdesc='Midnight Commander with Plugins'
   depends=('glib2' 'slang' 'gpm')
   provides=('mc')
   conflicts=('mc')

@@ -5,9 +5,14 @@ dnl
 dnl 2.64 is required at least for m4_esyscmd_s()
 AC_PREREQ([2.64])
 
-AC_INIT([GNU Midnight Commander], m4_esyscmd_s([./version.sh .]),
-        [https://github.com/MidnightCommander/mc/issues], [mc],
-        [https://midnight-commander.org])
+dnl The name is what PACKAGE_NAME becomes, and that lands in the middle of
+dnl sentences such as "Type 'exit' to return to the %s", so it stays a short
+dnl noun phrase. The full title of the fork belongs where it reads as a title.
+dnl The fourth argument is PACKAGE and must remain mc: the gettext domain and
+dnl the data paths are built from it.
+AC_INIT([Midnight Commander], m4_esyscmd_s([./version.sh .]),
+        [https://github.com/ilia-maslakov/mcdev/issues], [mc],
+        [https://github.com/ilia-maslakov/mcdev/wiki])
 
 m4_pattern_forbid(MC_)
 AC_CONFIG_MACRO_DIR([m4])

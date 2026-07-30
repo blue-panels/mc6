@@ -21,7 +21,7 @@ Build-Depends: debhelper-compat (= 13),
                libbson-dev
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://github.com/ilia-maslakov/mcdev
+Homepage: https://github.com/ilia-maslakov/mcdev/wiki
 
 Package: mc6
 Architecture: any
@@ -33,9 +33,9 @@ Suggests: mc6-plugins
 Provides: mc (= ${binary:Version})
 Conflicts: mc
 Replaces: mc
-Description: Midnight Commander fork with plugin support
- Drop-in replacement for GNU Midnight Commander.  It installs /usr/bin/mc
- and the mcedit, mcview, mcdiff and mctree symlinks.
+Description: Midnight Commander with Plugins
+ A fork of GNU Midnight Commander with dynamically loaded panel plugins.  It
+ installs /usr/bin/mc and the mcedit, mcview, mcdiff and mctree symlinks.
 
 Package: mc6-data
 Architecture: all
@@ -44,7 +44,7 @@ Depends: ${misc:Depends}
 Provides: mc-data (= ${binary:Version})
 Conflicts: mc-data
 Replaces: mc-data
-Description: Midnight Commander fork -- data files
+Description: Midnight Commander with Plugins -- data files
  Architecture-independent data, manuals and translations for mc6.
 
 Package: mc6-plugins
@@ -52,6 +52,6 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
          mc6 (= ${binary:Version})
 Enhances: mc6
-Description: Midnight Commander fork -- panel plugins
+Description: Midnight Commander with Plugins -- panel plugins
  Dynamic panel plugins for Git, Docker, Kubernetes, MongoDB, S3, FTP,
  SFTP, Samba, systemd, shell links, panelize and archive management.

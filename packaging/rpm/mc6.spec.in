@@ -2,9 +2,9 @@ Name:           mc6
 Epoch:          2
 Version:         @VERSION@
 Release:         1%{?dist}
-Summary:         Midnight Commander fork with plugin support
+Summary:         Midnight Commander with Plugins
 License:         GPL-3.0-or-later
-URL:             https://github.com/ilia-maslakov/mcdev
+URL:             https://github.com/ilia-maslakov/mcdev/wiki
 Source0:         https://github.com/ilia-maslakov/mcdev/releases/download/v%{version}/mc6-%{version}.tar.gz
 
 BuildRequires:   check-devel
@@ -33,8 +33,9 @@ Conflicts:        mc < 2:0
 Conflicts:        mc-python < 2:0
 
 %description
-mc6 is a fork of GNU Midnight Commander with dynamically loaded panel
-plugins.  It replaces the distribution mc only when explicitly selected.
+mc6 is Midnight Commander with Plugins: a fork of GNU Midnight Commander with
+dynamically loaded panel plugins.  It replaces the distribution mc only when
+explicitly selected.
 
 %package plugins
 Summary:         Panel plugins for mc6

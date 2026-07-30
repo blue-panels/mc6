@@ -1,6 +1,6 @@
-# Midnight Commander (fork)
+# Midnight Commander with Plugins
 
-A modified fork of [GNU Midnight Commander](https://midnight-commander.org),
+`mc6` -- a fork of [GNU Midnight Commander](https://midnight-commander.org),
 based on version 4.8.33.
 
 Midnight Commander (MC) is a text-mode, full-screen file manager: two panels,
