@@ -223,6 +223,54 @@ jobs:
           path: out/*
           overwrite: true
 
+  macos:
+    needs: archive
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+
+    # A portability check, not a package: it says whether the release still
+    # builds on macOS. The archive is self contained, so nothing else is needed
+    # here, not even a checkout.
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Install the libraries
+        # The heavy optional ones, Samba and the Mongo driver, are left out:
+        # their plugins are not what this check is about.
+        run: brew install glib s-lang pkgconf gettext libssh2 libarchive libmagic
+
+      - name: Build from the release archive
+        run: |
+          brew_prefix=$(brew --prefix)
+          gettext_prefix=$(brew --prefix gettext)
+
+          # Homebrew is not on the default search paths of the compiler, and
+          # gettext is keg-only, so libintl has to be pointed at by hand.
+          export CPPFLAGS="-I$brew_prefix/include -I$gettext_prefix/include"
+          export LDFLAGS="-L$brew_prefix/lib -L$gettext_prefix/lib"
+          export PKG_CONFIG_PATH="$brew_prefix/lib/pkgconfig:$(brew --prefix libarchive)/lib/pkgconfig"
+
+          tar -xf "dist/mc6-$VERSION.tar.gz"
+          cd "mc6-$VERSION"
+          ./configure --prefix="$brew_prefix" --disable-static \
+              --with-screen=slang --enable-mcterm=yes
+          make -j"$(sysctl -n hw.ncpu)"
+          ./src/mc --version
+
+      - name: Keep the configure log of a failed build
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-config-log
+          path: mc6-*/config.log
+          if-no-files-found: warn
+          overwrite: true
+
   ppa:
     needs: archive
     runs-on: ubuntu-latest
