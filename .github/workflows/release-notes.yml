@@ -60,7 +60,10 @@ jobs:
           # Two or three lines for the places with no room for the list: the
           # tag message, which the package changelogs are made of, and the
           # description of the milestone.
-          if ! maint/summarize_release.sh notes.md summary.txt; then
+          # With prs.json as well: the headline has to know about the work the
+          # notes leave out as infrastructure, or a release made mostly of
+          # packaging will advertise a small fix instead.
+          if ! maint/summarize_release.sh notes.md summary.txt --context prs.json; then
               echo "::warning::no summary was written"
               : > summary.txt
           fi
