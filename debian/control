@@ -25,7 +25,8 @@ Homepage: https://github.com/ilia-maslakov/mcdev
 
 Package: mc6
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends},
+         python3:any,
          mc6-data (= ${source:Version})
 Recommends: mailcap, perl, sensible-utils, unzip
 Suggests: mc6-plugins
