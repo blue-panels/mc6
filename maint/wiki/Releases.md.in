@@ -1,0 +1,37 @@
+# Releases
+
+Release numbering: own `vMAJOR.MINOR.PATCH` line starting at v6.0.1,
+independent of upstream GNU Midnight Commander versions. MINOR is
+bumped for feature releases, PATCH for fix-only releases.
+
+Each release is described three times over, from one source: the pull
+requests of its milestone, and the summary each author wrote in them.
+The `release-notes` workflow writes all three. The tag gets a headline of
+one line. `CHANGELOG.md` in the repository gets a line per change, and
+that is what the package changelogs are built from, so `apt changelog
+mc6` says the same as this wiki. The page here gets a paragraph per
+change, grouped by type (Features, Fixes, Internal) and, inside each
+type, by area (mcedit, mcview, mcterm, Panel, VFS, Core, Plugins — the
+latter split per plugin).
+
+Pull requests labelled `infra` are left out of the notes: packaging,
+build and repository work is not what a release delivers to whoever
+installs it.
+
+This page is generated. Its wording lives in `maint/wiki/Releases.md.in`
+in the source repository and is rendered here on every publish, so an
+edit made in the wiki is overwritten by the next release; the release
+pages themselves are written once and left alone.
+
+Browsing PRs by label:
+[Feature](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3AFeature),
+[Bug fix](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3A%22Bug+fix%22),
+[Plugin](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3APlugin),
+[mcedit](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcedit),
+[mcview](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcview),
+[mcterm](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcterm),
+[panel](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Apanel)
+
+## Release list
+
+@RELEASE_LIST@
