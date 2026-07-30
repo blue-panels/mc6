@@ -3,8 +3,6 @@
 
 EAPI=8
 
-inherit autotools
-
 DESCRIPTION="Midnight Commander fork with dynamically loaded panel plugins"
 HOMEPAGE="https://github.com/ilia-maslakov/mcdev"
 SRC_URI="https://github.com/ilia-maslakov/mcdev/releases/download/v${PV}/mc6-${PV}.tar.gz"
@@ -38,19 +36,9 @@ RDEPEND="
 "
 DEPEND="${COMMON_DEPEND}"
 BDEPEND="
-	sys-devel/autoconf
-	sys-devel/automake
-	sys-devel/libtool
 	sys-devel/gettext
 	virtual/pkgconfig
 "
-
-src_prepare() {
-	default
-	printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
-		"#define MC_CURRENT_VERSION \"v${PV}\"" '#endif' > mc-version.h || die
-	eautoreconf
-}
 
 src_configure() {
 	local myconf=(

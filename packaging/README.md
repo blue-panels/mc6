@@ -56,11 +56,19 @@ and that is uploaded as the GitHub release asset `mc6-<version>.tar.gz`:
 packaging/release-source.sh 6.0.3 v6.0.3
 ```
 
-It adds the generated `mc-version.h`, so a build outside a Git checkout reports
-the correct fork version, and it refuses to overwrite an existing archive.  The
-output is reproducible: the same tag always gives the same bytes, hence the same
-checksum.  Every recipe runs autotools again, because Git archives do not
-contain the generated `configure` files.
+The archive is **bootstrapped**: `autogen.sh` runs inside it, so it carries
+`configure`, the `Makefile.in` files, `po/Makefile.in.in` and `po/POTFILES.in`.
+None of those is in Git, and no recipe can produce them all for itself:
+`autoreconf` needs `autopoint` for `po/Makefile.in.in`, and `po/POTFILES.in`
+comes from the `xgettext` pass in `autogen.sh`.  What is published is a release
+tarball, not a snapshot of the tree, and the recipes only configure and build.
+The script also adds the generated `mc-version.h`, so a build outside a Git
+checkout reports the correct fork version, and it refuses to overwrite an
+existing archive.
+
+Because the bootstrap ran, the bytes depend on the autoconf, automake, libtool
+and gettext versions that produced them.  Take a checksum from the archive that
+was published, not from one rebuilt elsewhere.
 
 `debian/` and `packaging/` carry `export-ignore` in `.gitattributes` and are
 absent from the archive: the recipes are used from the repository, and a Debian
@@ -121,9 +129,9 @@ alphabet in 2017.
 
 The series lives in the Debian revision, not in the upstream version, so all
 series of a release share one `mc6_<version>.orig.tar.gz`.  Only the first
-upload carries it; the rest refer to the one already in the PPA.  Since
-`release-source.sh` is reproducible, that tarball is identical whenever it is
-rebuilt, which is what lets Launchpad accept the later uploads.
+upload carries it; the rest refer to the one already in the PPA.  Use one
+archive for every series of a release, the published one: Launchpad compares
+what a later upload refers to against the copy it already has.
 
 Before the first upload: register the OpenPGP key with Launchpad and confirm it
 through the encrypted mail it sends, then create the PPA.  `debhelper-compat

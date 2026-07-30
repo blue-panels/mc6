@@ -3,10 +3,6 @@ Section: utils
 Priority: optional
 Maintainer: Ilia Maslakov <il.smind@gmail.com>
 Build-Depends: debhelper-compat (= 13),
-               dh-autoreconf,
-               autoconf,
-               automake,
-               libtool,
                gettext,
                check,
                pkgconf | pkg-config,

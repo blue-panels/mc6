@@ -1,12 +1,12 @@
 #!/usr/bin/make -f
 
-# mc-version.h is not written here: the release archive carries it, and a Git
-# checkout generates it through version.sh. Writing it from the Debian version
-# would put a series suffix such as ~ubuntu24.04.1 into the version banner and
-# would modify a file shipped by the orig tarball.
+# Neither mc-version.h nor autoreconf is run here: the release archive is
+# bootstrapped and carries both that header and the configure script. Writing
+# the header from the Debian version would also put a series suffix such as
+# ~ubuntu24.04.1 into the version banner.
 
 %:
-	dh $@ --with autoreconf
+	dh $@
 
 override_dh_auto_configure:
 	dh_auto_configure -- \

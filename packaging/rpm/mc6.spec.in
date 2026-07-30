@@ -7,8 +7,6 @@ License:         GPL-3.0-or-later
 URL:             https://github.com/ilia-maslakov/mcdev
 Source0:         https://github.com/ilia-maslakov/mcdev/releases/download/v%{version}/mc6-%{version}.tar.gz
 
-BuildRequires:   autoconf
-BuildRequires:   automake
 BuildRequires:   check-devel
 BuildRequires:   gcc
 BuildRequires:   gettext
@@ -17,7 +15,6 @@ BuildRequires:   gpm-devel
 BuildRequires:   libarchive-devel
 BuildRequires:   libcurl-devel
 BuildRequires:   libssh2-devel
-BuildRequires:   libtool
 BuildRequires:   make
 BuildRequires:   mongo-c-driver-devel
 BuildRequires:   e2fsprogs-devel
@@ -49,9 +46,7 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
 %autosetup -n %{name}-%{version}
 
 %build
-printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
-    '#define MC_CURRENT_VERSION "v%{version}"' '#endif' > mc-version.h
-autoreconf -fiv
+# The archive is bootstrapped: it carries configure and mc-version.h.
 %configure \
     --disable-static \
     --with-screen=slang \

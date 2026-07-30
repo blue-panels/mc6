@@ -7,20 +7,13 @@ pkgdesc='Midnight Commander fork with plugin support'
 arch=('x86_64' 'aarch64')
 url='https://github.com/ilia-maslakov/mcdev'
 license=('GPL-3.0-or-later')
-makedepends=('autoconf' 'automake' 'libtool' 'make' 'pkgconf'
+makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'libssh2' 'curl' 'samba'
              'libarchive' 'file' 'mongo-c-driver')
 source=("mc6-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mc6-${pkgver}.tar.gz")
 # Filled in by packaging/prepare.sh from the release archive; SKIP when no
 # archive was given to it.
 b2sums=('@B2SUMS@')
-
-prepare() {
-  cd "${srcdir}/mc6-${pkgver}"
-  printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
-    "#define MC_CURRENT_VERSION \"v${pkgver}\"" '#endif' > mc-version.h
-  autoreconf -fiv
-}
 
 build() {
   cd "${srcdir}/mc6-${pkgver}"

@@ -40,6 +40,14 @@ jobs:
           # release-source.sh reads the tag object; prepare.sh reads every tag.
           fetch-depth: 0
 
+      - name: Install the bootstrap tooling
+        # autogen.sh inside the archive needs these; autopoint in particular is
+        # a package of its own on Debian and Ubuntu, only suggested by gettext.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+              autoconf automake libtool gettext autopoint
+
       - name: Build the release archive
         id: build
         run: |
