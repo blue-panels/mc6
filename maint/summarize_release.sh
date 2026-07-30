@@ -57,14 +57,8 @@ test -n "$input" || die "usage: summarize_release.sh <notes.md> [<summary.txt>] 
 
 test -s "$input" || die "no notes to summarise: $input"
 
-model=${MODELS_MODEL:-openai/gpt-4.1}
-max_tokens=${MODELS_MAX_TOKENS:-1500}
-endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
-token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
-test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-command -v curl >/dev/null || die "curl is missing"
-command -v jq >/dev/null || die "jq is missing"
 
 system='You are given the release notes of mc6, a fork of GNU Midnight
 Commander: a terminal file manager with a built-in editor, viewer and panel
@@ -109,37 +103,14 @@ if test -n "$context"; then
         "$user" "$(jq -r '.[] | "- [\(.labels | join(", "))] \(.title)"' "$context")")
 fi
 
-request=$(jq -n --arg model "$model" --arg system "$system" --arg user "$user" \
-    --argjson max_tokens "$max_tokens" \
-    '{model: $model, temperature: 0.2, max_tokens: $max_tokens,
-      messages: [{role: "system", content: $system},
-                 {role: "user", content: $user}]}')
+work=$(mktemp -d) || die "cannot create a temporary directory"
+trap 'rm -rf "$work"' EXIT HUP INT TERM
 
-response=$(mktemp) || die "cannot create a temporary file"
-trap 'rm -f "$response"' EXIT HUP INT TERM
+printf '%s\n' "$system" > "$work/system"
+printf '%s\n' "$user" > "$work/user"
 
-if ! curl -sS --max-time 120 -X POST "$endpoint" \
-        -H "Authorization: Bearer $token" \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -d "$request" > "$response"; then
-    die "the request to $endpoint failed"
-fi
-
-# Models write typography -- curly quotes, non-breaking hyphens -- and this text
-# ends up in CHANGELOG.md, in a Debian changelog and in an RPM one. A hyphen
-# that is not a hyphen is invisible to the eye and absent from a search.
-ascii_only() {
-    iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || cat
-}
-
-summary=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null | ascii_only || true)
-if test -z "$summary"; then
-    echo "the model returned no text; the answer was:" >&2
-    head -c 500 "$response" >&2
-    echo >&2
-    exit 1
-fi
+summary=$("$here/models_ask.sh" "$work/system" "$work/user") ||
+    die "the model did not answer"
 
 # Markdown creeps in however plainly it is forbidden.
 summary=$(printf '%s\n' "$summary" |

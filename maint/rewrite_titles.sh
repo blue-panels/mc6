@@ -38,14 +38,7 @@ output=${2:?usage: rewrite_titles.sh <prs.json> <titles.json>}
 
 test -f "$input" || die "no such file: $input"
 
-model=${MODELS_MODEL:-openai/gpt-4.1}
-max_tokens=${MODELS_MAX_TOKENS:-1500}
-endpoint=${MODELS_ENDPOINT:-https://models.github.ai/inference/chat/completions}
-token=${MODELS_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}
-test -n "$token" || die "no token: set MODELS_TOKEN, or GITHUB_TOKEN in a workflow"
-
-command -v curl >/dev/null || die "curl is missing"
-command -v jq >/dev/null || die "jq is missing"
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
 # Entries labelled infra never reach the notes, so they are not worth rewriting.
 payload=$(jq '[.[] | select((.labels | index("infra")) | not)]' "$input")
@@ -80,37 +73,14 @@ that is not a hyphen cannot be searched for.
 Answer with a JSON object and nothing else: the pull request number as a
 string, mapped to its sentence. No code fence, no commentary.'
 
-request=$(jq -n --arg model "$model" --arg system "$system" --arg user "$payload" \
-    --argjson max_tokens "$max_tokens" \
-    '{model: $model, temperature: 0.2, max_tokens: $max_tokens,
-      messages: [{role: "system", content: $system},
-                 {role: "user", content: $user}]}')
+work=$(mktemp -d) || die "cannot create a temporary directory"
+trap 'rm -rf "$work"' EXIT HUP INT TERM
 
-response=$(mktemp) || die "cannot create a temporary file"
-trap 'rm -f "$response" "$response.body"' EXIT HUP INT TERM
+printf '%s\n' "$system" > "$work/system"
+printf '%s\n' "$payload" > "$work/user"
 
-if ! curl -sS --max-time 120 -X POST "$endpoint" \
-        -H "Authorization: Bearer $token" \
-        -H "Content-Type: application/json" \
-        -H "Accept: application/json" \
-        -d "$request" > "$response"; then
-    die "the request to $endpoint failed"
-fi
-
-# Models write typography -- curly quotes, non-breaking hyphens -- and this text
-# ends up in CHANGELOG.md, in a Debian changelog and in an RPM one. A hyphen
-# that is not a hyphen is invisible to the eye and absent from a search.
-ascii_only() {
-    iconv -f UTF-8 -t ASCII//TRANSLIT 2>/dev/null || cat
-}
-
-content=$(jq -r '.choices[0].message.content // empty' "$response" 2>/dev/null | ascii_only || true)
-if test -z "$content"; then
-    echo "the model returned no text; the answer was:" >&2
-    head -c 500 "$response" >&2
-    echo >&2
-    exit 1
-fi
+content=$("$here/models_ask.sh" "$work/system" "$work/user") ||
+    die "the model did not answer"
 
 # A fenced block is the one liberty models take with "no code fence". Read from
 # the first brace rather than cutting the fence lines out: a model that opens
@@ -118,15 +88,15 @@ fi
 printf '%s\n' "$content" |
     awk 'started { print; next }
          { i = index($0, "{"); if (i) { started = 1; print substr($0, i) } }' |
-    sed -e '/^[[:space:]]*```/d' > "$response.body"
+    sed -e '/^[[:space:]]*```/d' > "$work/body"
 
 jq -e 'type == "object" and length > 0
        and (to_entries | all(.value | type == "string" and length > 0))' \
-    "$response.body" >/dev/null 2>&1 ||
+    "$work/body" >/dev/null 2>&1 ||
     { echo "the model did not answer with a JSON object of sentences:" >&2
-      head -c 500 "$response.body" >&2
+      head -c 500 "$work/body" >&2
       echo >&2
       exit 1; }
 
-mv "$response.body" "$output"
+mv "$work/body" "$output"
 echo "rewrote $(jq 'length' "$output") title(s) into $output" >&2
