@@ -274,7 +274,10 @@ jobs:
           ./configure --prefix="$brew_prefix" --disable-static \
               --with-screen=slang --enable-mcterm=yes
           make -j"$(sysctl -n hw.ncpu)"
-          ./src/mc --version
+
+          # A runner has no TERM, and mc sets up its terminal before it gets to
+          # printing a version.
+          TERM=xterm ./src/mc --version
 
       - name: Keep the configure log of a failed build
         if: failure()
