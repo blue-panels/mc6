@@ -24,12 +24,16 @@ All four are in `.gitignore`.  Making a release is therefore: tag, and let the
 
 Both changelogs take their entries from the **annotated tag message** and their
 dates from the tag, so the same tag always yields the same source package.
-What a release says is written once, when the tag is signed:
+What a release says is written once, when the tag is made, and it is read by
+whoever installs the package:
 
 ```sh
-git tag -s v6.0.3 -m "Filtered view in mcview.
+git tag -a v6.0.3 -m "Filtered view in mcview.
 Faster paste into the editor."
 ```
+
+Sign it with `-s` instead if you keep a signing key; the packaging reads the
+message and the date, and depends on no signature.
 
 A version with no tag of its own is a test build.  Its Debian entry is marked
 `UNRELEASED`, which stops `dput` from taking it by accident.
