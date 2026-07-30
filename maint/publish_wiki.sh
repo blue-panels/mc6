@@ -5,14 +5,19 @@
 #   maint/publish_wiki.sh v6.0.2 Release-v6.0.2.md summary.txt
 #
 # The wiki is a repository of its own, mcdev.wiki.git, so it is cloned, written
-# to and pushed rather than committed alongside the source. The page goes in
-# under its own name, and the line in Releases.md is added or replaced, taking
-# its date from the page and its description from the release headline.
+# to and pushed rather than committed alongside the source.
+#
+# The release page goes in under its own name and is then left alone. Releases.md
+# is rendered from maint/wiki/Releases.md.in on every publish, with the list of
+# releases carried over from the copy in the wiki: the wording lives in the
+# source repository, where it can be reviewed, and the list accumulates where it
+# is published.
 #
 # Environment:
 #   WIKI_TOKEN  token to authenticate with (default: GITHUB_TOKEN, GH_TOKEN)
 #   WIKI_REPO   owner/name of the source repository (default: from git, then
 #               GITHUB_REPOSITORY)
+#   WIKI_TEMPLATE  the wording of Releases.md (default: maint/wiki/Releases.md.in)
 #   PUSH        no, to stop after committing locally -- for trying it out
 set -eu
 
@@ -36,6 +41,9 @@ if test -z "$repo"; then
         sed -e 's|.*github\.com[:/]||' -e 's|\.git$||')
 fi
 test -n "$repo" || die "cannot tell which repository this is: set WIKI_REPO"
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+template=${WIKI_TEMPLATE:-$here/wiki/Releases.md.in}
 
 page=$(CDPATH= cd -- "$(dirname -- "$page")" && pwd)/$(basename -- "$page")
 if test -n "$summary"; then
@@ -68,25 +76,30 @@ test -z "$summary" || description=$(sed -e '/^[[:space:]]*$/d' -e 's/[[:space:]]
 test -n "$description" || description="see the page"
 
 index=Releases.md
-if test -f "$index"; then
-    line="- [$version](Release-$version) - $date - $description"
-    awk -v version="$version" -v line="$line" '
-        # A line for this version already there is replaced where it stands.
-        index($0, "- [" version "](") == 1 { print line; written = 1; next }
-        { print }
-        # Otherwise it goes at the top of the list, which is newest first.
-        /^## Release list/ && !written {
-            getline blank
-            print blank
-            print line
-            written = 1
+line="- [$version](Release-$version) - $date - $description"
+
+if test -f "$template"; then
+    # Every release line the wiki has, this one replacing its own, newest first.
+    {
+        printf '%s\n' "$line"
+        test ! -f "$index" ||
+            grep -E '^- \[v[0-9]' "$index" | grep -v "^- \[$version\](" || true
+    } | sort -Vr > "$wiki/list"
+
+    awk -v list="$wiki/list" '
+        /^@RELEASE_LIST@$/ {
+            while ((getline entry < list) > 0)
+                print entry
+            close(list)
+            next
         }
-        END { if (!written) print line }
-    ' "$index" > "$index.new"
-    mv "$index.new" "$index"
+        { print }
+    ' "$template" > "$index"
+else
+    echo "no template at $template; leaving $index alone" >&2
 fi
 
-git add "Release-$version.md" ${index:+"$index"}
+git add "Release-$version.md" "$index"
 if git diff --cached --quiet; then
     echo "the wiki already says this; nothing to publish" >&2
     exit 0
