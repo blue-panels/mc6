@@ -7,12 +7,14 @@ on:
         description: 'Milestone to describe, for example v6.0.2'
         required: true
       update_release:
-        description: 'Also put the notes into the release of that name'
+        description: 'Also publish: notes into the release, summary onto the milestone'
         type: boolean
         default: false
 
 permissions:
   contents: write
+  # The summary goes onto the milestone, and a milestone is an issue to the API.
+  issues: write
   # Lets the built-in token reach GitHub Models, so rewriting the entries needs
   # no key of its own.
   models: read
@@ -55,16 +57,34 @@ jobs:
               maint/release_notes.sh "$MILESTONE" --milestone -o notes.md
           fi
 
-          # The summary is what you read straight after the run.
-          cat notes.md >> "$GITHUB_STEP_SUMMARY"
+          # Two or three lines for the places with no room for the list: the
+          # tag message, which the package changelogs are made of, and the
+          # description of the milestone.
+          if ! maint/summarize_release.sh notes.md summary.txt; then
+              echo "::warning::no summary was written"
+              : > summary.txt
+          fi
+
+          # Both are what you read straight after the run.
+          {
+              if test -s summary.txt; then
+                  echo '## Summary, for the tag message'
+                  echo
+                  sed 's/$/  /' summary.txt
+                  echo
+              fi
+              cat notes.md
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
           name: release-notes
-          path: notes.md
+          path: |
+            notes.md
+            summary.txt
           overwrite: true
 
-      - name: Put them into the release
+      - name: Put them where they belong
         if: inputs.update_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,3 +96,16 @@ jobs:
           fi
           # A draft stays a draft: this only fills in its body.
           gh release edit "$MILESTONE" --notes-file notes.md
+
+          # The milestone has a description, and this is what it is for.
+          if test -s summary.txt; then
+              number=$(gh api "repos/$GITHUB_REPOSITORY/milestones" \
+                  --jq ".[] | select(.title == \"$MILESTONE\") | .number")
+              if test -n "$number"; then
+                  gh api -X PATCH "repos/$GITHUB_REPOSITORY/milestones/$number" \
+                      -f description="$(cat summary.txt)" --silent
+                  echo "described milestone $MILESTONE"
+              else
+                  echo "::warning::no milestone named $MILESTONE to describe"
+              fi
+          fi
