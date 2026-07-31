@@ -880,9 +880,7 @@ k8s_command_to_local_copy (const char *cmd, char **local_path)
     if (cmd == NULL || local_path == NULL)
         return MC_PPR_FAILED;
 
-    /* The descriptor g_file_open_tmp() hands out is 0600; g_file_set_contents()
-       would replace the file and leave the mode to the umask, and a pod
-       manifest is not for every local user to read. */
+    /* Written through the 0600 descriptor: a manifest is not world-readable. */
     fd = g_file_open_tmp ("mc-pp-k8s-XXXXXX", local_path, &error);
     if (fd == -1)
     {

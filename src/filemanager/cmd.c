@@ -205,8 +205,7 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
 {
     const file_entry_t *fe;
 
-    /* Whatever the previous entry left behind is of no use now, and nothing
-       else would ever remove it. */
+    /* Nothing else would remove what the previous entry left behind. */
     mcview_remove_tmp_preview ((WView *) view);
 
     fe = panel != NULL ? panel_current_entry (panel) : NULL;
@@ -216,17 +215,14 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
         return;
     }
 
-    /* Plugin entries need a local copy.  The view keeps its own fd, but it is
-       given the path as well: structured mode and the rest reopen by name. */
+    /* Plugin entries need a local copy; the view is given the path to own. */
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
         && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
     {
         char *local_path = NULL;
         mc_pp_result_t r = MC_PPR_NOT_SUPPORTED;
 
-        /* A plugin directory is a node of the plugin's own tree, not a
-           directory on disk: a pod row can still preview its logs. Only the
-           get_local_copy() fallback below needs a real file. */
+        /* A plugin directory is a tree node, not a directory on disk. */
         if (panel->plugin->get_quick_view != NULL)
         {
             gboolean prev_quiet;
