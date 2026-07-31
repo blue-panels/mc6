@@ -1129,8 +1129,7 @@ cmd_failed:
 gboolean
 write_temp_content (const char *prefix, const char *content, char **local_path)
 {
-    /* A single write() could come up short on a long log; the shared helper
-       loops. */
+    /* A single write() can come up short on a long log; the helper loops. */
     return mc_pp_write_temp_file (prefix, content, -1, local_path);
 }
 

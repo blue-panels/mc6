@@ -226,14 +226,12 @@ struct WView
 
     GArray *saved_bookmarks;
 
-    dir_list *dir;           /* List of current directory files
-                              * to handle CK_FileNext and CK_FilePrev commands */
-    int *dir_idx;            /* Index of current file in dir structure.
-                              * Pointer is used here as reference to WPanel::dir::count */
-    vfs_path_t *ext_script;  // Temporary script file created by regex_command_for()
-    vfs_path_t *tmp_preview; /* Temporary file a panel plugin produced for Quick View.
-                              * The view owns it: structured mode and anything else that
-                              * reopens by path needs it to outlive mcview_load(). */
+    dir_list *dir;            /* List of current directory files
+                               * to handle CK_FileNext and CK_FilePrev commands */
+    int *dir_idx;             /* Index of current file in dir structure.
+                               * Pointer is used here as reference to WPanel::dir::count */
+    vfs_path_t *ext_script;   // Temporary script file created by regex_command_for()
+    vfs_path_t *tmp_preview;  // Quick View temp file the view owns
 
     // ANSI terminal replay mode (Alt-F9)
     struct mcview_vterm_struct *vterm;  // non-NULL when terminal mode is active

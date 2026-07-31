@@ -67,11 +67,7 @@ k8s_read_config_string (const char *key, const char *fallback)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-/* Stream the command's stdout straight into @fd instead of collecting it into
-   a string: kubectl output is not guaranteed to be text, and a NUL byte in a
-   pod's log would cut the rest of it off on the way through a char *.  It also
-   keeps a long log out of memory.  stderr goes to /dev/null - mc owns the
-   terminal, and the only caller shows an empty preview on failure anyway. */
+/* Streams stdout: a NUL byte in a char * would cut the log short. */
 gboolean
 k8s_run_cmd_to_fd (const char *cmd, int fd, char **err_text)
 {

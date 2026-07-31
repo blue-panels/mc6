@@ -158,8 +158,7 @@ mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **lo
         left -= (size_t) written;
     }
 
-    /* A write error can be held back until close() on a network file system,
-       so a short file must not be reported as a whole one. */
+    /* A network file system reports a write error only at close(). */
     if (close (fd) != 0 || left > 0)
     {
         unlink (*local_path);

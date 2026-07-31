@@ -253,12 +253,9 @@ typedef struct mc_panel_plugin_t
        config. NULL = the plugin has no settings. */
     void (*configure) (void);
 
-    /* Return a temporary local source for Quick View virtual entries.
-       Read-only preview: unlike get_local_copy() the result never reaches
-       edit/copy, so an entry that is not a file may be rendered here.
-       NOT_SUPPORTED = not a preview entry, core falls back to get_local_copy();
-       FAILED = a preview entry that could not be produced, core leaves the
-       view blank and does not fall back. The core unlinks @local_path. */
+    /* Read-only Quick View source for entries that are not files; the core
+       unlinks @local_path.  NOT_SUPPORTED = try get_local_copy(), FAILED = show
+       nothing. */
     mc_pp_result_t (*get_quick_view) (void *plugin_data, const char *fname, const struct stat *st,
                                       char **local_path);
 } mc_panel_plugin_t;
@@ -281,12 +278,8 @@ void mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, tim
    Does nothing if fname has no extension or if local_path or *local_path is NULL. */
 void mc_pp_rename_with_ext (char **local_path, const char *fname);
 
-/* Write @len bytes of @data (@len < 0 means @data is a C string) into a fresh
-   temporary file made from the g_file_open_tmp() template @tmpl, and return its
-   path through @local_path; the caller frees it.  Writing goes through the
-   descriptor g_file_open_tmp() hands out, so the file keeps the 0600 it was
-   created with - g_file_set_contents() would replace it and leave the mode to
-   the umask.  On failure nothing is left behind and *local_path is NULL. */
+/* Write @len bytes (@len < 0: @data is a C string) into a fresh 0600 temp file
+   from template @tmpl; @local_path is the caller's to free, NULL on failure. */
 gboolean mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path);
 
 /* Registry */
