@@ -2132,7 +2132,7 @@ docker_get_local_copy (void *plugin_data, const char *fname, char **local_path)
 
     if (!ok)
     {
-        if (err_text != NULL && err_text[0] != '\0')
+        if (err_text != NULL && err_text[0] != '\0' && !mc_pp_quiet_messages ())
             message (D_ERROR, MSG_ERROR, "%s", err_text);
         g_free (output);
         g_free (err_text);

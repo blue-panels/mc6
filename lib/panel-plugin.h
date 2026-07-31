@@ -282,6 +282,11 @@ void mc_pp_rename_with_ext (char **local_path, const char *fname);
    from template @tmpl; @local_path is the caller's to free, NULL on failure. */
 gboolean mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path);
 
+/* TRUE while the core calls the plugin for a passive preview (Quick View):
+   report the failure through the return value, do not open a dialog. */
+gboolean mc_pp_quiet_messages (void);
+gboolean mc_pp_set_quiet_messages (gboolean quiet);
+
 /* Registry */
 gboolean mc_panel_plugin_add (const mc_panel_plugin_t *plugin);
 const GSList *mc_panel_plugin_list (void);

@@ -255,8 +255,12 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
         }
         else
         {
-            /* Unsupported previews leave the view blank. */
-            mcview_load ((WView *) view, NULL, "", 0, 0, 0);
+            /* A fetch that failed says so in the panel; nothing to preview is
+               left blank.  Either way the cursor keeps moving. */
+            if (r == MC_PPR_FAILED)
+                mcview_load_text ((WView *) view, _ ("Cannot read the contents"));
+            else
+                mcview_load ((WView *) view, NULL, "", 0, 0, 0);
             if (local_path != NULL)
                 unlink (local_path);
         }
