@@ -932,8 +932,8 @@ shfs_take_digest (shfs_conn_t *conn, shfs_digest_algo_t algo, shfs_digest_t *dig
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-shfs_get_begin (shfs_conn_t *conn, const char *path, gint64 offset, gint64 *remaining,
-                GError **error)
+shfs_get_begin (shfs_conn_t *conn, const char *path, gint64 offset, gint64 max_bytes,
+                gint64 *remaining, GError **error)
 {
     char *rpath;
     int code;
@@ -948,8 +948,9 @@ shfs_get_begin (shfs_conn_t *conn, const char *path, gint64 offset, gint64 *rema
 
     rpath = str_shell_escape (path);
     code = shfs_command_v (conn, TRUE, TRUE, conn->scr_get,
-                           "SHELL_FILENAME=%s SHELL_START_OFFSET=%" G_GINT64_FORMAT ";\n", rpath,
-                           offset);
+                           "SHELL_FILENAME=%s SHELL_START_OFFSET=%" G_GINT64_FORMAT
+                           " SHELL_MAX_BYTES=%" G_GINT64_FORMAT ";\n",
+                           rpath, offset, max_bytes > 0 ? max_bytes : (gint64) 0);
     g_free (rpath);
 
     if (code != SHFS_REPLY_PRELIM)

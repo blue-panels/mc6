@@ -1,30 +1,42 @@
-# shfs-helper: get 2
+# shfs-helper: get 3
 LC_TIME=C
 export LC_TIME
+# SHELL_MAX_BYTES, when above zero, caps both the announced size and what is
+# sent, so a preview does not drag a whole file across the wire. The count is
+# taken from the file itself, never from a pipe: the announced size and the
+# bytes that follow it must agree or the channel goes out of step.
 shell_get_perl ()
 {
 FILENAME=$1
 OFFSET=$2
+MAXB=$3
 perl -e '
 use strict;
 use POSIX;
 use Fcntl;
 my $filename = $ARGV[0];
 my $pos = $ARGV[1];
+my $max = $ARGV[2];
 my $content;
 my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = lstat("$filename");
 my $n;
+my $left;
 if (-f $filename && open IFILE,$filename) {
     if ($size<$pos) {
-        printf("0\n");
+        $size=0;
     } else {
         $size-=$pos;
-        printf("$size\n");
     }
+    if ($max>0 && $size>$max) {
+        $size=$max;
+    }
+    printf("$size\n");
     printf("### 100\n");
     seek (IFILE, $pos, 0);
-    while (($n = read(IFILE,$content,$blksize)) != 0) {
+    $left=$size;
+    while ($left>0 && ($n = read(IFILE,$content,$blksize<$left ? $blksize : $left)) != 0) {
         print $content;
+        $left-=$n;
     }
     close IFILE;
     printf("### 200\n");
@@ -32,13 +44,14 @@ if (-f $filename && open IFILE,$filename) {
     printf("### 500\n");
 }
 exit 0
-' "${FILENAME}" $OFFSET
+' "${FILENAME}" $OFFSET $MAXB
 }
 
 shell_get_tail ()
 {
 FILENAME=$1
 OFFSET=$2
+MAXB=$3
 LC_TIME=C
 export LC_TIME
 if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
@@ -48,16 +61,23 @@ if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
     )`
     if [ $OFFSET -gt 0 ]; then
         file_size=`expr $file_size - $OFFSET`
-        OFFSET=`expr $OFFSET + 1`
     fi
-    if [ $file_size -gt 0 ]; then
-        echo $file_size
-    else
-        echo 0
+    if [ $file_size -lt 0 ]; then
+        file_size=0
     fi
+    if [ $MAXB -gt 0 ] && [ $file_size -gt $MAXB ]; then
+        file_size=$MAXB
+    fi
+    echo $file_size
     echo "### 100"
-    if [ $OFFSET -gt 0 ]; then
-        tail -c +${OFFSET} "${FILENAME}"
+    if [ $file_size -eq 0 ]; then
+        :
+    elif [ $MAXB -gt 0 ] && [ $OFFSET -eq 0 ]; then
+        dd if="${FILENAME}" bs=$file_size count=1 2>/dev/null
+    elif [ $MAXB -gt 0 ]; then
+        dd if="${FILENAME}" bs=1 skip=$OFFSET count=$file_size 2>/dev/null
+    elif [ $OFFSET -gt 0 ]; then
+        tail -c +`expr $OFFSET + 1` "${FILENAME}"
     else
         cat "${FILENAME}"
     fi
@@ -71,6 +91,7 @@ shell_get_dd ()
 {
 FILENAME=$1
 OFFSET=$2
+MAXB=$3
 LC_TIME=C
 export LC_TIME
 if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
@@ -79,13 +100,21 @@ if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
        echo $s
     )`
     file_size=`expr $file_size - $OFFSET`
-    if [ $file_size -gt 0 ]; then
-        echo $file_size
-    else
-        echo 0
+    if [ $file_size -lt 0 ]; then
+        file_size=0
     fi
+    if [ $MAXB -gt 0 ] && [ $file_size -gt $MAXB ]; then
+        file_size=$MAXB
+    fi
+    echo $file_size
     echo "### 100"
-    if [ $OFFSET -gt 0 ]; then
+    if [ $file_size -eq 0 ]; then
+        :
+    elif [ $MAXB -gt 0 ] && [ $OFFSET -eq 0 ]; then
+        dd if="${FILENAME}" bs=$file_size count=1 2>/dev/null
+    elif [ $MAXB -gt 0 ]; then
+        dd if="${FILENAME}" bs=1 skip=$OFFSET count=$file_size 2>/dev/null
+    elif [ $OFFSET -gt 0 ]; then
         dd skip=$OFFSET ibs=1 if="${FILENAME}" 2>/dev/null
     else
         cat "${FILENAME}"
@@ -96,10 +125,14 @@ else
 fi
 }
 
+if [ -z "${SHELL_MAX_BYTES}" ]; then
+    SHELL_MAX_BYTES=0
+fi
+
 if [ -n "${SHELL_HAVE_PERL}" ]; then
-    shell_get_perl "/${SHELL_FILENAME}" ${SHELL_START_OFFSET}
+    shell_get_perl "/${SHELL_FILENAME}" ${SHELL_START_OFFSET} ${SHELL_MAX_BYTES}
 elif [ -n "${SHELL_HAVE_TAIL}" ]; then
-    shell_get_tail "/${SHELL_FILENAME}" ${SHELL_START_OFFSET}
+    shell_get_tail "/${SHELL_FILENAME}" ${SHELL_START_OFFSET} ${SHELL_MAX_BYTES}
 else
-    shell_get_dd "/${SHELL_FILENAME}" ${SHELL_START_OFFSET}
+    shell_get_dd "/${SHELL_FILENAME}" ${SHELL_START_OFFSET} ${SHELL_MAX_BYTES}
 fi
