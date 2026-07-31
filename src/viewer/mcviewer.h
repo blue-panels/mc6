@@ -118,6 +118,9 @@ extern gboolean mcview_viewer_with_controller (mcview_source_spec_t *initial_spe
 
 extern void mcview_clear_mode_flags (mcview_mode_flags_t *flags);
 
+/* Show @text in place of content; in a panel it replaces the Quick View body. */
+extern void mcview_load_text (WView *view, const char *text);
+
 /* Give the view a temp file to own; unlinked on the next one or on destroy. */
 extern void mcview_set_tmp_preview (WView *view, const char *path);
 extern void mcview_remove_tmp_preview (WView *view);

@@ -117,6 +117,29 @@ mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+/* Set while the core previews passively: plugins report failures by return
+   value instead of opening a dialog. */
+static gboolean pp_quiet_messages = FALSE;
+
+gboolean
+mc_pp_set_quiet_messages (gboolean quiet)
+{
+    gboolean prev = pp_quiet_messages;
+
+    pp_quiet_messages = quiet;
+    return prev;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mc_pp_quiet_messages (void)
+{
+    return pp_quiet_messages;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path)
 {

@@ -1778,8 +1778,9 @@ shell_get_local_copy (void *plugin_data, const char *fname, char **local_path)
     {
         unlink (tmp_path);
         g_free (tmp_path);
-        message (D_ERROR, MSG_ERROR, "%s",
-                 error != NULL ? error->message : _ ("shell: cannot fetch the file"));
+        if (!mc_pp_quiet_messages ())
+            message (D_ERROR, MSG_ERROR, "%s",
+                     error != NULL ? error->message : _ ("shell: cannot fetch the file"));
         g_clear_error (&error);
         return MC_PPR_FAILED;
     }
