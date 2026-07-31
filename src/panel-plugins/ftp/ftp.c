@@ -3097,6 +3097,9 @@ ftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gboo
     if (!data->at_root)
         return MC_PPR_NOT_SUPPORTED;
 
+    if (fname == NULL)
+        return MC_PPR_FAILED;
+
     conn = find_connection (data, fname);
     result = ftp_connection_to_local_copy (conn, &tmp_path);
     if (result != MC_PPR_OK)

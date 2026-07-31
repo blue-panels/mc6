@@ -2645,6 +2645,9 @@ sftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gbo
     if (!data->at_root)
         return sftp_view_stream (data, fname);
 
+    if (fname == NULL)
+        return MC_PPR_FAILED;
+
     conn = find_connection (data, fname);
     result = sftp_connection_to_local_copy (conn, &tmp_path);
     if (result != MC_PPR_OK)

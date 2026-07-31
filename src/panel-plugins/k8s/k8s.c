@@ -25,6 +25,7 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -875,6 +876,8 @@ k8s_command_to_local_copy (const char *cmd, char **local_path)
     char *output = NULL;
     char *err_text = NULL;
     GError *error = NULL;
+    const char *buf;
+    size_t left;
     int fd;
 
     if (cmd == NULL || local_path == NULL)
@@ -888,6 +891,9 @@ k8s_command_to_local_copy (const char *cmd, char **local_path)
     }
     g_free (err_text);
 
+    /* Write through the descriptor g_file_open_tmp() returns: it is created
+       with 0600, while g_file_set_contents() replaces the file and drops the
+       mode to the umask. A pod manifest is not for every local user to read. */
     fd = g_file_open_tmp ("mc-pp-k8s-XXXXXX", local_path, &error);
     if (fd == -1)
     {
@@ -896,17 +902,31 @@ k8s_command_to_local_copy (const char *cmd, char **local_path)
         g_free (output);
         return MC_PPR_FAILED;
     }
-    close (fd);
 
-    if (!g_file_set_contents (*local_path, output != NULL ? output : "", -1, NULL))
+    buf = output != NULL ? output : "";
+    left = strlen (buf);
+    while (left > 0)
     {
-        unlink (*local_path);
-        g_free (*local_path);
-        *local_path = NULL;
-        g_free (output);
-        return MC_PPR_FAILED;
+        ssize_t written = write (fd, buf, left);
+
+        if (written <= 0)
+        {
+            if (written == -1 && errno == EINTR)
+                continue;
+
+            close (fd);
+            unlink (*local_path);
+            g_free (*local_path);
+            *local_path = NULL;
+            g_free (output);
+            return MC_PPR_FAILED;
+        }
+
+        buf += written;
+        left -= (size_t) written;
     }
 
+    close (fd);
     g_free (output);
     return MC_PPR_OK;
 }

@@ -182,8 +182,7 @@ do_view_cmd (WPanel *panel, gboolean plain_view)
                 view_file (local_vpath, plain_view, use_internal_view);
                 vfs_path_free (local_vpath, TRUE);
             }
-            if (local_path != NULL)
-                unlink (local_path);
+            unlink (local_path);
             g_free (local_path);
         }
     }
