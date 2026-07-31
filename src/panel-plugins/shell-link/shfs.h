@@ -305,7 +305,9 @@ void shfs_entries_free (GPtrArray *entries);
 
 /**
  * Read @path from @offset. @remaining receives how many bytes will be
- * delivered.
+ * delivered.  @max_bytes above zero caps that at the far end - a preview then
+ * costs one screenful instead of the whole file.  A helper older than get 3
+ * ignores the cap and sends everything; @remaining still says what follows.
  *
  * shfs_get_read() returns the number of bytes read, 0 at end of stream, and
  * -1 on error. shfs_get_finish() may only be called once the stream has ended,
@@ -313,8 +315,8 @@ void shfs_entries_free (GPtrArray *entries);
  * calling it earlier closes the connection, because the channel would be left
  * out of step with the protocol.
  */
-gboolean shfs_get_begin (shfs_conn_t *conn, const char *path, gint64 offset, gint64 *remaining,
-                         GError **error);
+gboolean shfs_get_begin (shfs_conn_t *conn, const char *path, gint64 offset, gint64 max_bytes,
+                         gint64 *remaining, GError **error);
 gssize shfs_get_read (shfs_conn_t *conn, void *buf, gsize size, GError **error);
 gboolean shfs_get_finish (shfs_conn_t *conn, shfs_digest_t *digest, GError **error);
 

@@ -69,6 +69,7 @@ static char *opt_digest = NULL;
 static char *opt_algo = NULL;
 static gint64 opt_offset = 0;
 static gint64 opt_length = -1;
+static gint64 opt_max = 0;
 static char *opt_resume = NULL;
 static char *opt_local = NULL;
 
@@ -90,6 +91,7 @@ usage (const char *argv0)
             "  -D PATH            create a directory\n"
             "  -R PATH            remove a directory\n"
             "  -g PATH            read a file and write it to stdout\n"
+            "  --max N            with -g: ask the far end for at most N bytes\n"
             "\n"
             "  --helpers          list the helper scripts and where each comes from\n"
             "  --helper NAME      act on one helper\n"
@@ -232,6 +234,8 @@ parse_args (int argc, char **argv)
             opt_offset = g_ascii_strtoll (argv[++i], NULL, 10);
         else if (strcmp (a, "--length") == 0)
             opt_length = g_ascii_strtoll (argv[++i], NULL, 10);
+        else if (strcmp (a, "--max") == 0)
+            opt_max = g_ascii_strtoll (argv[++i], NULL, 10);
         else if (strcmp (a, "--resume-probe") == 0)
             opt_resume = argv[++i];
         else if (strcmp (a, "--local") == 0)
@@ -458,7 +462,7 @@ do_get (shfs_conn_t *conn, const char *path)
     gint64 remaining = 0;
     char buf[64 * 1024];
 
-    if (!shfs_get_begin (conn, path, 0, &remaining, &error))
+    if (!shfs_get_begin (conn, path, 0, opt_max, &remaining, &error))
     {
         fprintf (stderr, "get %s: %s\n", path, error != NULL ? error->message : "failed");
         g_clear_error (&error);

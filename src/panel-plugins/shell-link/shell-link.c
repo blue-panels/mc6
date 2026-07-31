@@ -146,6 +146,9 @@ static void shell_configure (void);
 
 /*** file scope variables ************************************************************************/
 
+/* How much of a remote file Quick View asks for. */
+#define SHELL_QUICK_VIEW_MAX            (64 * 1024)
+
 #define SHELL_PANEL_CONFIG_FILE         "panels.shell-link.ini"
 #define SHELL_PANEL_CONFIG_GROUP        "shell-link-panel"
 #define SHELL_PANEL_KEY_EDIT            "hotkey_edit"
@@ -1657,7 +1660,8 @@ shell_remote_path (const shell_data_t *data, const char *name)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-shell_fetch_to_fd (shell_data_t *data, const char *name, int fd, gint64 offset, GError **error)
+shell_fetch_to_fd (shell_data_t *data, const char *name, int fd, gint64 offset, gint64 max_bytes,
+                   GError **error)
 {
     char *rpath;
     char buffer[BUF_8K];
@@ -1667,7 +1671,7 @@ shell_fetch_to_fd (shell_data_t *data, const char *name, int fd, gint64 offset, 
 
     rpath = shell_remote_path (data, name);
 
-    if (!shfs_get_begin (data->conn, rpath, offset, &remaining, error))
+    if (!shfs_get_begin (data->conn, rpath, offset, max_bytes, &remaining, error))
     {
         g_free (rpath);
         return FALSE;
@@ -1731,7 +1735,7 @@ shell_copy_to_local (void *plugin_data, const char *fname, const char *local_pat
     if (fd < 0)
         return MC_PPR_FAILED;
 
-    ok = shell_fetch_to_fd (data, fname, fd, 0, &error);
+    ok = shell_fetch_to_fd (data, fname, fd, 0, 0, &error);
     close (fd);
 
     if (!ok)
@@ -1771,7 +1775,7 @@ shell_get_local_copy (void *plugin_data, const char *fname, char **local_path)
     tmp_path = g_strdup (vfs_path_as_str (tmp_vpath));
     vfs_path_free (tmp_vpath, TRUE);
 
-    ok = shell_fetch_to_fd (data, fname, fd, 0, &error);
+    ok = shell_fetch_to_fd (data, fname, fd, 0, 0, &error);
     close (fd);
 
     if (!ok)
@@ -2056,7 +2060,7 @@ shell_resume_copy (void *plugin_data, const char *src, const char *dest, gboolea
             return MC_PPR_FAILED;
         }
 
-        ok = shell_fetch_to_fd (data, src, fd, offset, &error);
+        ok = shell_fetch_to_fd (data, src, fd, offset, 0, &error);
         close (fd);
     }
     else
@@ -2181,7 +2185,7 @@ shell_read_open (void *plugin_data, const char *fname, gint64 offset, gint64 *si
         return NULL;
 
     rpath = shell_remote_path (data, fname);
-    ok = shfs_get_begin (data->conn, rpath, offset, size, &error);
+    ok = shfs_get_begin (data->conn, rpath, offset, 0, size, &error);
     g_free (rpath);
 
     if (!ok)
@@ -2508,8 +2512,6 @@ shell_get_quick_view (void *plugin_data, const char *fname, const struct stat *s
     shell_data_t *data = (shell_data_t *) plugin_data;
     const shell_connection_t *conn;
 
-    (void) st;
-
     if (fname == NULL || local_path == NULL)
         return MC_PPR_FAILED;
 
@@ -2520,7 +2522,42 @@ shell_get_quick_view (void *plugin_data, const char *fname, const struct stat *s
     }
 
     if (data->conn != NULL)
-        return MC_PPR_NOT_SUPPORTED;
+    {
+        GError *error = NULL;
+        vfs_path_t *tmp_vpath = NULL;
+        char *tmp_path;
+        gboolean ok;
+        int fd;
+
+        if (st != NULL && !S_ISREG (st->st_mode))
+            return MC_PPR_NOT_SUPPORTED;
+
+        fd = mc_mkstemps (&tmp_vpath, "mcshell", NULL);
+        if (fd < 0)
+            return MC_PPR_FAILED;
+
+        tmp_path = g_strdup (vfs_path_as_str (tmp_vpath));
+        vfs_path_free (tmp_vpath, TRUE);
+
+        /* A preview shows the head of the file, so ask for no more than that:
+           the panel would otherwise pull a gigabyte across to fill one screen. */
+        ok = shell_fetch_to_fd (data, fname, fd, 0, SHELL_QUICK_VIEW_MAX, &error);
+        close (fd);
+        g_clear_error (&error);
+
+        if (!ok)
+        {
+            unlink (tmp_path);
+            g_free (tmp_path);
+            return MC_PPR_FAILED;
+        }
+
+        /* The viewer and the editor decide what a file is by its extension. */
+        mc_pp_rename_with_ext (&tmp_path, fname);
+        *local_path = tmp_path;
+
+        return MC_PPR_OK;
+    }
 
     conn = find_connection (data, fname);
     return conn != NULL ? shell_connection_to_local_copy (conn, local_path) : MC_PPR_FAILED;
