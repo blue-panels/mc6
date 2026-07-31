@@ -892,7 +892,9 @@ k8s_command_to_local_copy (const char *cmd, char **local_path)
     }
 
     ok = k8s_run_cmd_to_fd (cmd, fd, &err_text);
-    close (fd);
+    /* A write error can be held back until close() on a network file system. */
+    if (close (fd) != 0)
+        ok = FALSE;
     g_free (err_text);
 
     if (!ok)

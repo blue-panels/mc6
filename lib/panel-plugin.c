@@ -151,18 +151,23 @@ mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **lo
             if (written == -1 && errno == EINTR)
                 continue;
 
-            close (fd);
-            unlink (*local_path);
-            g_free (*local_path);
-            *local_path = NULL;
-            return FALSE;
+            break;
         }
 
         buf += written;
         left -= (size_t) written;
     }
 
-    close (fd);
+    /* A write error can be held back until close() on a network file system,
+       so a short file must not be reported as a whole one. */
+    if (close (fd) != 0 || left > 0)
+    {
+        unlink (*local_path);
+        g_free (*local_path);
+        *local_path = NULL;
+        return FALSE;
+    }
+
     return TRUE;
 }
 
