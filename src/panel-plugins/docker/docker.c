@@ -45,6 +45,8 @@ static mc_pp_result_t docker_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t docker_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t docker_view (void *plugin_data, const char *fname, const struct stat *st,
                                    gboolean plain_view);
+static mc_pp_result_t docker_get_quick_view (void *plugin_data, const char *fname,
+                                             const struct stat *st, char **local_path);
 static mc_pp_result_t docker_get_local_copy (void *plugin_data, const char *fname,
                                              char **local_path);
 static mc_pp_result_t docker_save_file (void *plugin_data, const char *local_path,
@@ -101,6 +103,7 @@ static const mc_panel_plugin_t docker_plugin = {
     .get_column_value = docker_get_column_value,
     .get_default_format = docker_get_default_format,
     .get_focus_name = docker_get_focus_name,
+    .get_quick_view = docker_get_quick_view,
 };
 
 /*** file scope functions ************************************************************************/
@@ -2049,6 +2052,46 @@ docker_view (void *plugin_data, const char *fname, const struct stat *st, gboole
         return MC_PPR_OK;
 
     return MC_PPR_NOT_SUPPORTED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+docker_get_quick_view (void *plugin_data, const char *fname, const struct stat *st,
+                       char **local_path)
+{
+    docker_data_t *data = (docker_data_t *) plugin_data;
+    char *quoted_id;
+    char *cmd;
+    char *output = NULL;
+    char *err_text = NULL;
+    gboolean ok;
+
+    (void) st;
+
+    if (fname == NULL || data->view != DOCKER_VIEW_CONTAINER_DETAILS
+        || strcmp (fname, docker_logs_entry) != 0)
+        return MC_PPR_NOT_SUPPORTED;
+    if (data->current_container_id == NULL)
+        return MC_PPR_FAILED;
+
+    quoted_id = g_shell_quote (data->current_container_id);
+    cmd = g_strdup_printf ("logs --tail 1000 %s", quoted_id);
+    g_free (quoted_id);
+
+    ok = docker_conn_run (data->active_conn, cmd, &output, &err_text);
+    g_free (cmd);
+    if (!ok)
+    {
+        g_free (output);
+        g_free (err_text);
+        return MC_PPR_FAILED;
+    }
+
+    ok = write_temp_content ("mc-pp-docker-logs-XXXXXX", output, local_path);
+    g_free (output);
+    g_free (err_text);
+    return ok ? MC_PPR_OK : MC_PPR_FAILED;
 }
 
 /* --------------------------------------------------------------------------------------------- */

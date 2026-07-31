@@ -182,7 +182,8 @@ do_view_cmd (WPanel *panel, gboolean plain_view)
                 view_file (local_vpath, plain_view, use_internal_view);
                 vfs_path_free (local_vpath, TRUE);
             }
-            unlink (local_path);
+            if (local_path != NULL)
+                unlink (local_path);
             g_free (local_path);
         }
     }
@@ -215,16 +216,34 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
     /* Plugin entries need a local copy; mcview_load keeps its own fd, so the
        temp file can be unlinked right after the load. */
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
-        && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && panel->plugin->get_local_copy != NULL
-        && !S_ISDIR (fe->st.st_mode))
+        && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && !S_ISDIR (fe->st.st_mode))
     {
         char *local_path = NULL;
-        mc_pp_result_t r;
-        gboolean prev_quiet;
+        mc_pp_result_t r = MC_PPR_NOT_SUPPORTED;
 
-        prev_quiet = panel_plugin_set_quiet_messages (TRUE);
-        r = panel->plugin->get_local_copy (panel->plugin_data, fe->fname->str, &local_path);
-        panel_plugin_set_quiet_messages (prev_quiet);
+        if (panel->plugin->get_quick_view != NULL)
+        {
+            gboolean prev_quiet;
+
+            prev_quiet = panel_plugin_set_quiet_messages (TRUE);
+            r = panel->plugin->get_quick_view (panel->plugin_data, fe->fname->str, &fe->st,
+                                               &local_path);
+            panel_plugin_set_quiet_messages (prev_quiet);
+        }
+
+        if (r == MC_PPR_NOT_SUPPORTED && panel->plugin->get_local_copy != NULL)
+        {
+            gboolean prev_quiet;
+
+            if (local_path != NULL)
+                unlink (local_path);
+            g_free (local_path);
+            local_path = NULL;
+
+            prev_quiet = panel_plugin_set_quiet_messages (TRUE);
+            r = panel->plugin->get_local_copy (panel->plugin_data, fe->fname->str, &local_path);
+            panel_plugin_set_quiet_messages (prev_quiet);
+        }
 
         if (r == MC_PPR_OK && local_path != NULL)
         {
@@ -232,8 +251,10 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
             unlink (local_path);
         }
         else
-            /* Synthetic entry or fetch failure: blank the view. */
+            /* Unsupported previews leave the view blank. */
             mcview_load ((WView *) view, NULL, "", 0, 0, 0);
+        if (r != MC_PPR_OK && local_path != NULL)
+            unlink (local_path);
         g_free (local_path);
         return;
     }

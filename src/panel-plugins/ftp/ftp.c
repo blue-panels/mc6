@@ -142,6 +142,10 @@ static const char *ftp_get_title (void *plugin_data);
 static mc_pp_result_t ftp_create_item (void *plugin_data);
 static mc_pp_result_t ftp_view_item (void *plugin_data, const char *fname, const struct stat *st,
                                      gboolean plain_view);
+static mc_pp_result_t ftp_connection_to_local_copy (const ftp_connection_t *conn,
+                                                    char **local_path);
+static mc_pp_result_t ftp_get_quick_view (void *plugin_data, const char *fname,
+                                          const struct stat *st, char **local_path);
 static mc_pp_result_t ftp_handle_key (void *plugin_data, int key);
 
 static void ftp_connect_status_init_cb (status_msg_t *sm);
@@ -294,6 +298,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .get_title = ftp_get_title,
     .handle_key = ftp_handle_key,
     .create_item = ftp_create_item,
+    .get_quick_view = ftp_get_quick_view,
 };
 
 /*** file scope functions ************************************************************************/
@@ -2973,26 +2978,14 @@ ftp_edit_connection (ftp_data_t *data)
 /* --------------------------------------------------------------------------------------------- */
 
 static mc_pp_result_t
-ftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gboolean plain_view)
+ftp_connection_to_local_copy (const ftp_connection_t *conn, char **local_path)
 {
-    ftp_data_t *data = (ftp_data_t *) plugin_data;
-    const ftp_connection_t *conn;
     GString *ini;
     GError *error = NULL;
     char *tmp_path = NULL;
     int fd;
 
-    (void) st;
-    (void) plain_view;
-
-    if (!data->at_root)
-        return MC_PPR_NOT_SUPPORTED;
-
-    if (fname == NULL)
-        return MC_PPR_FAILED;
-
-    conn = find_connection (data, fname);
-    if (conn == NULL)
+    if (conn == NULL || local_path == NULL)
         return MC_PPR_FAILED;
 
     ini = g_string_new ("");
@@ -3067,17 +3060,57 @@ ftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gboo
     }
     g_string_free (ini, TRUE);
 
-    {
-        vfs_path_t *tmp_vpath;
+    *local_path = tmp_path;
+    return MC_PPR_OK;
+}
 
-        tmp_vpath = vfs_path_from_str (tmp_path);
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+ftp_get_quick_view (void *plugin_data, const char *fname, const struct stat *st, char **local_path)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+    const ftp_connection_t *conn;
+
+    (void) st;
+
+    if (!data->at_root || fname == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    conn = find_connection (data, fname);
+    return conn != NULL ? ftp_connection_to_local_copy (conn, local_path) : MC_PPR_FAILED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+ftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gboolean plain_view)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+    const ftp_connection_t *conn;
+    char *tmp_path = NULL;
+    mc_pp_result_t result;
+
+    (void) st;
+    (void) plain_view;
+
+    if (!data->at_root)
+        return MC_PPR_NOT_SUPPORTED;
+
+    conn = find_connection (data, fname);
+    result = ftp_connection_to_local_copy (conn, &tmp_path);
+    if (result != MC_PPR_OK)
+        return result;
+
+    {
+        vfs_path_t *tmp_vpath = vfs_path_from_str (tmp_path);
+
         (void) mcview_viewer (NULL, tmp_vpath, 0, 0, 0);
         vfs_path_free (tmp_vpath, TRUE);
     }
 
     unlink (tmp_path);
     g_free (tmp_path);
-
     return MC_PPR_OK;
 }
 

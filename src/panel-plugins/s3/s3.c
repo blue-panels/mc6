@@ -155,6 +155,9 @@ static const char *s3_get_title (void *plugin_data);
 static mc_pp_result_t s3_create_item (void *plugin_data);
 static mc_pp_result_t s3_view_item (void *plugin_data, const char *fname, const struct stat *st,
                                     gboolean plain_view);
+static mc_pp_result_t s3_connection_to_local_copy (const s3_connection_t *conn, char **local_path);
+static mc_pp_result_t s3_get_quick_view (void *plugin_data, const char *fname,
+                                         const struct stat *st, char **local_path);
 static mc_pp_result_t s3_handle_key (void *plugin_data, int key);
 static mc_pp_result_t s3_get_help_info (void *plugin_data, const char **filename,
                                         const char **node);
@@ -248,6 +251,7 @@ static const mc_panel_plugin_t s3_plugin = {
     .handle_key = s3_handle_key,
     .create_item = s3_create_item,
     .get_focus_name = s3_get_focus_name,
+    .get_quick_view = s3_get_quick_view,
 };
 
 /*** file scope functions ************************************************************************/
@@ -3244,6 +3248,73 @@ s3_view_object_info (s3_data_t *data, const char *fname)
 /* --------------------------------------------------------------------------------------------- */
 
 static mc_pp_result_t
+s3_connection_to_local_copy (const s3_connection_t *conn, char **local_path)
+{
+    GString *info;
+    GError *error = NULL;
+    char *tmp_path = NULL;
+    int fd;
+
+    if (conn == NULL || local_path == NULL)
+        return MC_PPR_FAILED;
+
+    info = g_string_new ("");
+    g_string_append_printf (info, "[%s]\n", conn->label);
+    g_string_append_printf (info, "access_key=%s\n", conn->access_key);
+    if (conn->secret_key != NULL)
+        g_string_append (info, "secret_key=***\n");
+    g_string_append_printf (info, "region=%s\n", conn->region != NULL ? conn->region : "us-east-1");
+    if (conn->endpoint != NULL && conn->endpoint[0] != '\0')
+        g_string_append_printf (info, "endpoint=%s\n", conn->endpoint);
+    g_string_append_printf (info, "use_path_style=%s\n", conn->use_path_style ? "true" : "false");
+    if (conn->timeout > 0)
+        g_string_append_printf (info, "timeout=%d\n", conn->timeout);
+    if (conn->connect_timeout > 0)
+        g_string_append_printf (info, "connect_timeout=%d\n", conn->connect_timeout);
+
+    fd = g_file_open_tmp ("mc-s3-view-XXXXXX", &tmp_path, &error);
+    if (fd == -1)
+    {
+        if (error != NULL)
+            g_error_free (error);
+        g_string_free (info, TRUE);
+        return MC_PPR_FAILED;
+    }
+    close (fd);
+
+    if (!g_file_set_contents (tmp_path, info->str, (gssize) info->len, NULL))
+    {
+        unlink (tmp_path);
+        g_free (tmp_path);
+        g_string_free (info, TRUE);
+        return MC_PPR_FAILED;
+    }
+    g_string_free (info, TRUE);
+
+    *local_path = tmp_path;
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+s3_get_quick_view (void *plugin_data, const char *fname, const struct stat *st, char **local_path)
+{
+    s3_data_t *data = (s3_data_t *) plugin_data;
+    const s3_connection_t *conn;
+
+    (void) st;
+
+    if (data->level != S3_LEVEL_CONNECTIONS || fname == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    conn = s3_find_connection (data, fname);
+    return conn != NULL ? s3_connection_to_local_copy (conn, local_path) : MC_PPR_FAILED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
 s3_view_item (void *plugin_data, const char *fname, const struct stat *st, gboolean plain_view)
 {
     s3_data_t *data = (s3_data_t *) plugin_data;
@@ -3260,56 +3331,18 @@ s3_view_item (void *plugin_data, const char *fname, const struct stat *st, gbool
     {
     case S3_LEVEL_CONNECTIONS:
     {
-        /* Show connection details */
         const s3_connection_t *conn;
-        GString *info;
-        GError *error = NULL;
         char *tmp_path = NULL;
-        int fd;
+        mc_pp_result_t result;
 
         conn = s3_find_connection (data, fname);
-        if (conn == NULL)
-            return MC_PPR_FAILED;
-
-        info = g_string_new ("");
-        g_string_append_printf (info, "[%s]\n", conn->label);
-        g_string_append_printf (info, "access_key=%s\n", conn->access_key);
-        if (conn->secret_key != NULL)
-            g_string_append (info, "secret_key=***\n");
-        g_string_append_printf (info, "region=%s\n",
-                                conn->region != NULL ? conn->region : "us-east-1");
-        if (conn->endpoint != NULL && conn->endpoint[0] != '\0')
-            g_string_append_printf (info, "endpoint=%s\n", conn->endpoint);
-        g_string_append_printf (info, "use_path_style=%s\n",
-                                conn->use_path_style ? "true" : "false");
-        if (conn->timeout > 0)
-            g_string_append_printf (info, "timeout=%d\n", conn->timeout);
-        if (conn->connect_timeout > 0)
-            g_string_append_printf (info, "connect_timeout=%d\n", conn->connect_timeout);
-
-        fd = g_file_open_tmp ("mc-s3-view-XXXXXX", &tmp_path, &error);
-        if (fd == -1)
-        {
-            if (error != NULL)
-                g_error_free (error);
-            g_string_free (info, TRUE);
-            return MC_PPR_FAILED;
-        }
-        close (fd);
-
-        if (!g_file_set_contents (tmp_path, info->str, (gssize) info->len, NULL))
-        {
-            unlink (tmp_path);
-            g_free (tmp_path);
-            g_string_free (info, TRUE);
-            return MC_PPR_FAILED;
-        }
-        g_string_free (info, TRUE);
+        result = s3_connection_to_local_copy (conn, &tmp_path);
+        if (result != MC_PPR_OK)
+            return result;
 
         {
-            vfs_path_t *tmp_vpath;
+            vfs_path_t *tmp_vpath = vfs_path_from_str (tmp_path);
 
-            tmp_vpath = vfs_path_from_str (tmp_path);
             (void) mcview_viewer (NULL, tmp_vpath, 0, 0, 0);
             vfs_path_free (tmp_vpath, TRUE);
         }
