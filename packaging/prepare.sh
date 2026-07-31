@@ -71,6 +71,17 @@ fi
 
 tags=$(git tag --list 'v*' --sort=-version:refname 2>/dev/null || true)
 
+# Only what came before: a source package for 6.0.1 must not lead with the
+# changelog of a release made after it, and dpkg takes the version it is
+# building from the top of that file.
+tags=$(for tag in $tags; do
+    newest=$(printf '%s\n%s\n' "${tag#v}" "$version" | sort -Vr | head -n 1)
+    if test "$newest" = "${tag#v}" && test "${tag#v}" != "$version"; then
+        continue
+    fi
+    printf '%s\n' "$tag"
+done)
+
 # What a release says is written once and read from there by both changelogs:
 # from CHANGELOG.md when it has a section for the version, and from the tag
 # message otherwise -- which is all the releases made before that file existed
