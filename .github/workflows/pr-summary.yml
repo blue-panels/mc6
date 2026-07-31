@@ -155,35 +155,58 @@ jobs:
                 "hyphens."
               ].join("\n");
 
+              // A reasoning model spends this budget on thinking before it
+              // writes anything, and what is left over is the answer. At 900,
+              // with the instructions this prompt now carries, it thought until
+              // there was nothing left and returned an empty message.
+              const budget = 3000;
+
               const body = {
                 model,
-                max_completion_tokens: 900,
+                max_completion_tokens: budget,
                 messages: [
                   { role: "system", content: system },
                   { role: "user", content: messages }
                 ]
               };
 
-              let answer = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-              }).then(r => r.json()).catch(() => null);
+              async function ask(payload) {
+                try {
+                  const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                  });
+                  const json = await response.json().catch(() => null);
+                  if (!response.ok)
+                    core.warning(`the endpoint answered ${response.status}: ` +
+                                 (json?.error?.message ?? JSON.stringify(json)?.slice(0, 300) ?? ""));
+                  return json;
+                } catch (e) {
+                  core.warning(`the endpoint could not be reached: ${e.message}`);
+                  return null;
+                }
+              }
+
+              let answer = await ask(body);
 
               // Older models take max_tokens instead, and say so.
               if (answer?.error?.message?.includes("max_tokens")) {
                 delete body.max_completion_tokens;
-                body.max_tokens = 900;
-                answer = await fetch(endpoint, {
-                  method: "POST",
-                  headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-                  body: JSON.stringify(body)
-                }).then(r => r.json()).catch(() => null);
+                body.max_tokens = budget;
+                answer = await ask(body);
               }
 
-              const text = answer?.choices?.[0]?.message?.content?.trim();
+              const choice = answer?.choices?.[0];
+              const text = choice?.message?.content?.trim();
               if (!text) {
-                core.warning("no summary came back; leaving the body to the commit list");
+                // Say which of the several ways it went wrong: an empty answer
+                // that stopped on "length" is a budget too small for the
+                // prompt, and reads nothing like a refusal or a bad request.
+                core.warning("no summary came back; leaving the body to the commit list" +
+                             ` (finish_reason: ${choice?.finish_reason ?? "none"},` +
+                             ` error: ${answer?.error?.message ?? "none"},` +
+                             ` completion tokens: ${answer?.usage?.completion_tokens ?? "unknown"})`);
                 return "";
               }
               return `${aiStart}\n## Summary\n\n${text}\n${aiEnd}\n`;
