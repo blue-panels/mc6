@@ -14,6 +14,13 @@ jobs:
     steps:
       - name: Update PR body with commit summary
         uses: actions/github-script@v9
+        env:
+          # The same provider the release notes use. Without a token the step
+          # writes the commit list as before and says nothing more.
+          MODELS_ENDPOINT: ${{ vars.MODELS_ENDPOINT }}
+          MODELS_MODEL: ${{ vars.MODELS_MODEL }}
+          MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+          CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
         with:
           script: |
             const owner = context.repo.owner;
@@ -26,6 +33,8 @@ jobs:
 
             const markerStart = "<!-- pr-summary:start -->";
             const markerEnd = "<!-- pr-summary:end -->";
+            const aiStart = "<!-- pr-ai-summary:start -->";
+            const aiEnd = "<!-- pr-ai-summary:end -->";
 
             // 1) Collect commits
             const commits = await github.paginate(github.rest.pulls.listCommits, {
@@ -88,6 +97,83 @@ jobs:
 
             const currentBody = pr.body || "";
 
+            // A summary is written once and then left alone: the author may
+            // rewrite it, and a later push must not undo that. Nor is one
+            // written when the author has already put a Summary of their own.
+            const bodyOutsideAuto = currentBody.split(markerStart)[0];
+            const wantsSummary =
+              !currentBody.includes(aiStart) && !/^##\s+Summary\b/m.test(bodyOutsideAuto);
+
+            async function writeSummary () {
+              const token = process.env.MODELS_TOKEN;
+              let endpoint = process.env.MODELS_ENDPOINT || "";
+              const model = process.env.MODELS_MODEL;
+              const account = process.env.CF_ACCOUNT_ID;
+              if (!token || !endpoint || !model) return "";
+              if (account) endpoint = endpoint.replace("<CF_ACCOUNT_ID>", account);
+
+              // The messages, not the diff: they say why, which a diff cannot,
+              // and they cost a fraction of the tokens.
+              let messages = commits
+                .map(c => (c.commit?.message || "").trim())
+                .join("\n\n---\n\n");
+              if (messages.length > 6000) messages = messages.slice(0, 6000);
+              if (!messages) return "";
+
+              const system = [
+                "You write the summary that opens a pull request in mc6, Midnight Commander",
+                "with Plugins: a terminal file manager with a built-in editor, viewer, embedded",
+                "terminal and panel plugins.",
+                "",
+                "You are given the commit messages of the branch and nothing else. Write what a",
+                "reviewer wants before reading the code: what the change is, and why it was made.",
+                "Two short paragraphs at most, five sentences in all.",
+                "",
+                "Where the messages give a reason, keep it; where they do not, do not invent one.",
+                "Do not list the commits, they are printed below your text, and do not describe",
+                "the making of the change. Prose for someone who knows the program, neither a",
+                "catalogue nor a story for a beginner.",
+                "",
+                "No headings, no bullets, no markdown beyond `backticks` for identifiers the",
+                "reader meets. Plain ASCII: straight quotes, plain hyphens."
+              ].join("\n");
+
+              const body = {
+                model,
+                max_completion_tokens: 900,
+                messages: [
+                  { role: "system", content: system },
+                  { role: "user", content: messages }
+                ]
+              };
+
+              let answer = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+              }).then(r => r.json()).catch(() => null);
+
+              // Older models take max_tokens instead, and say so.
+              if (answer?.error?.message?.includes("max_tokens")) {
+                delete body.max_completion_tokens;
+                body.max_tokens = 900;
+                answer = await fetch(endpoint, {
+                  method: "POST",
+                  headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                  body: JSON.stringify(body)
+                }).then(r => r.json()).catch(() => null);
+              }
+
+              const text = answer?.choices?.[0]?.message?.content?.trim();
+              if (!text) {
+                core.warning("no summary came back; leaving the body to the commit list");
+                return "";
+              }
+              return `${aiStart}\n## Summary\n\n${text}\n${aiEnd}\n`;
+            }
+
+            const aiBlock = wantsSummary ? await writeSummary() : "";
+
             const hasMarkers = currentBody.includes(markerStart) && currentBody.includes(markerEnd);
 
             let newBody;
@@ -99,6 +185,10 @@ jobs:
               // Prepend summary
               newBody = summaryBlock + "\n" + currentBody;
             }
+
+            // The written summary goes above the generated block, where a
+            // reader looks first.
+            if (aiBlock) newBody = aiBlock + "\n" + newBody;
 
             // Avoid unnecessary updates
             if (newBody !== currentBody) {
