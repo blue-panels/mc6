@@ -129,13 +129,30 @@ jobs:
                 "reviewer wants before reading the code: what the change is, and why it was made.",
                 "Two short paragraphs at most, five sentences in all.",
                 "",
-                "Where the messages give a reason, keep it; where they do not, do not invent one.",
+                "Where the messages give a reason, keep it; where they do not, say nothing",
+                "about it. Never mention the commit messages, or what they do or do not",
+                "contain: the reader wants the change, not an account of your sources.",
+                "",
                 "Do not list the commits, they are printed below your text, and do not describe",
                 "the making of the change. Prose for someone who knows the program, neither a",
                 "catalogue nor a story for a beginner.",
                 "",
-                "No headings, no bullets, no markdown beyond `backticks` for identifiers the",
-                "reader meets. Plain ASCII: straight quotes, plain hyphens."
+                "Write sentences with a subject, in the indicative. \"A panel provided by a",
+                "plugin can now be shown in Quick View\", not \"Adds support for Quick View\":",
+                "the second is the language of a commit subject and reads as an instruction.",
+                "",
+                "Name a thing once and keep that name. Coining a second one for the same thing",
+                "-- Quick View in one sentence, the quick-preview facility in the next -- leaves",
+                "the reader wondering whether two things are meant.",
+                "",
+                "Leave out the words that fill a line without carrying anything: support for,",
+                "facility, capability, functionality, participate in, leverage, seamless, and",
+                "the construction enable X to Y where X simply does Y.",
+                "",
+                "No headings, no bullets, no markdown beyond backticks, and those only for what",
+                "the reader types or sees: a file name, a command, an option, a function. Not",
+                "for ordinary words such as CI or PR. Plain ASCII: straight quotes, plain",
+                "hyphens."
               ].join("\n");
 
               const body = {
