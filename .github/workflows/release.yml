@@ -237,6 +237,38 @@ jobs:
           path: out/*
           overwrite: true
 
+  arch-install:
+    needs: [archive, arch]
+    runs-on: ubuntu-latest
+    # The only place the two packages meet: makepkg builds each on its own and
+    # never notices when both claim the same file, and pacman refuses the pair
+    # when they do. A plain image rather than base-devel, so a dependency that
+    # only makepkg -s had pulled in is missed here rather than papered over -
+    # though whatever the base image already carries still hides.
+    container: archlinux:base
+    timeout-minutes: 20
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      TERM: xterm
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: arch-packages
+          path: out
+
+      - name: Install the packages the way a user would
+        run: |
+          pacman -Syu --noconfirm >/dev/null
+          pacman -U --noconfirm \
+            "out/mc6-${VERSION}-"*.pkg.tar.zst \
+            "out/mc6-plugins-${VERSION}-"*.pkg.tar.zst
+          # Grep rather than run and hope: without a usable TERM mc says so and
+          # still exits 0, which would pass on nothing at all.
+          mc --version | grep -q "v${VERSION}"
+          mcedit --version | grep -q "v${VERSION}"
+          test -d /usr/lib/mc/panel-plugins
+
   macos:
     needs: archive
     runs-on: macos-latest
@@ -350,7 +382,7 @@ jobs:
           overwrite: true
 
   publish:
-    needs: [debian, fedora, arch]
+    needs: [debian, fedora, arch, arch-install]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Runs even when a distribution failed: what did get built is still worth
