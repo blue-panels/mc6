@@ -2,12 +2,12 @@
 
 The releases of this fork, newest first.
 
-## 6.0.2 - 2026-07-30
+## 6.0.2 - 2026-07-31
 
-- The shell-link panel plugin now handles FISH protocol directly; the core no longer links libssh2.
-- XML files in mcview are now parsed by a built-in parser; HTML files are no longer supported.
-- Build warnings are fixed; nothing changes in the editor for users.
-- Console output from the first command in mcterm is no longer lost.
-- Pasting large text into the editor no longer freezes the UI.
-- The arcmc plugin's 'Create archive' hotkey can now be reassigned in arcmc.ini.
+- Copying, overwriting and resuming now work between plugin panels.
+- The HTML provider has been removed.
+- Warnings fixed by using long for editor column instead of off_t
+- Commands run before the first Ctrl-O no longer lose their console output.
+- Large pastes no longer freeze the UI; screen repaints are limited while input is arriving.
+- The arcmc 'Create archive' hotkey is now reassignable via arcmc.ini.
 
