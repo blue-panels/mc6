@@ -1,7 +1,8 @@
 k8sdir = $(panel_plugins_dir)/k8s
 k8s_LTLIBRARIES = mc-panel-k8s.la
-k8s_DATA = k8s_panel.hlp klog.sh
-EXTRA_DIST = klog.sh
+k8s_DATA = k8s_panel.hlp
+# klog.sh is meant to be run: install it with the exec bit, not as data.
+dist_k8s_SCRIPTS = klog.sh
 
 mc_panel_k8s_la_SOURCES = \
 	k8s.c \
