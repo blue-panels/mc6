@@ -56,8 +56,11 @@ outdir=$(CDPATH= cd -- "$outdir" && pwd)
 stage=$(mktemp -d "${TMPDIR:-/tmp}/mc6-ppa.XXXXXX")
 trap 'rm -rf "$stage"' EXIT HUP INT TERM
 
-# One shared orig tarball, and one unpacked tree per series next to it.
+# One shared orig tarball, and one unpacked tree per series next to it. The
+# copy in the output directory is made here rather than at the end: dput reads
+# the tarball named in the .changes from beside it, and dput runs per series.
 cp "$archive" "$stage/mc6_$version.orig.tar.gz"
+cp "$archive" "$outdir/mc6_$version.orig.tar.gz"
 
 first=yes
 for pair in "$@"; do
@@ -95,7 +98,6 @@ for pair in "$@"; do
 
     changes=$(ls "$stage"/mc6_*~ubuntu"$ubuntu_version"."$revision"_source.changes)
     cp "$stage"/mc6_*~ubuntu"$ubuntu_version"."$revision"* "$outdir/"
-    test "$first" = no || cp "$stage/mc6_$version.orig.tar.gz" "$outdir/"
 
     echo "built $series: $(basename "$changes")"
 
@@ -104,6 +106,5 @@ for pair in "$@"; do
     fi
 done
 
-cp "$stage/mc6_$version.orig.tar.gz" "$outdir/"
 echo "source packages in $outdir"
 test "${UPLOAD:-}" = yes || echo "not uploaded: run with UPLOAD=yes, target $ppa"
