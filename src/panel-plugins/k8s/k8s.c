@@ -25,7 +25,6 @@
 
 #include <config.h>
 
-#include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -873,61 +872,37 @@ k8s_view (void *plugin_data, const char *fname, const struct stat *st, gboolean 
 static mc_pp_result_t
 k8s_command_to_local_copy (const char *cmd, char **local_path)
 {
-    char *output = NULL;
     char *err_text = NULL;
     GError *error = NULL;
-    const char *buf;
-    size_t left;
+    gboolean ok;
     int fd;
 
     if (cmd == NULL || local_path == NULL)
         return MC_PPR_FAILED;
 
-    if (!k8s_run_cmd (cmd, &output, &err_text))
-    {
-        g_free (output);
-        g_free (err_text);
-        return MC_PPR_FAILED;
-    }
-    g_free (err_text);
-
-    /* Write through the descriptor g_file_open_tmp() returns: it is created
-       with 0600, while g_file_set_contents() replaces the file and drops the
-       mode to the umask. A pod manifest is not for every local user to read. */
+    /* The descriptor g_file_open_tmp() hands out is 0600; g_file_set_contents()
+       would replace the file and leave the mode to the umask, and a pod
+       manifest is not for every local user to read. */
     fd = g_file_open_tmp ("mc-pp-k8s-XXXXXX", local_path, &error);
     if (fd == -1)
     {
         if (error != NULL)
             g_error_free (error);
-        g_free (output);
         return MC_PPR_FAILED;
     }
 
-    buf = output != NULL ? output : "";
-    left = strlen (buf);
-    while (left > 0)
+    ok = k8s_run_cmd_to_fd (cmd, fd, &err_text);
+    close (fd);
+    g_free (err_text);
+
+    if (!ok)
     {
-        ssize_t written = write (fd, buf, left);
-
-        if (written <= 0)
-        {
-            if (written == -1 && errno == EINTR)
-                continue;
-
-            close (fd);
-            unlink (*local_path);
-            g_free (*local_path);
-            *local_path = NULL;
-            g_free (output);
-            return MC_PPR_FAILED;
-        }
-
-        buf += written;
-        left -= (size_t) written;
+        unlink (*local_path);
+        g_free (*local_path);
+        *local_path = NULL;
+        return MC_PPR_FAILED;
     }
 
-    close (fd);
-    g_free (output);
     return MC_PPR_OK;
 }
 

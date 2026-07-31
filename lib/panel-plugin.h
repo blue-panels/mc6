@@ -281,6 +281,14 @@ void mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, tim
    Does nothing if fname has no extension or if local_path or *local_path is NULL. */
 void mc_pp_rename_with_ext (char **local_path, const char *fname);
 
+/* Write @len bytes of @data (@len < 0 means @data is a C string) into a fresh
+   temporary file made from the g_file_open_tmp() template @tmpl, and return its
+   path through @local_path; the caller frees it.  Writing goes through the
+   descriptor g_file_open_tmp() hands out, so the file keeps the 0600 it was
+   created with - g_file_set_contents() would replace it and leave the mode to
+   the umask.  On failure nothing is left behind and *local_path is NULL. */
+gboolean mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path);
+
 /* Registry */
 gboolean mc_panel_plugin_add (const mc_panel_plugin_t *plugin);
 const GSList *mc_panel_plugin_list (void);

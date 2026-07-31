@@ -215,11 +215,14 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
     /* Plugin entries need a local copy; mcview_load keeps its own fd, so the
        temp file can be unlinked right after the load. */
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
-        && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && !S_ISDIR (fe->st.st_mode))
+        && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
     {
         char *local_path = NULL;
         mc_pp_result_t r = MC_PPR_NOT_SUPPORTED;
 
+        /* A plugin directory is a node of the plugin's own tree, not a
+           directory on disk: a pod row can still preview its logs. Only the
+           get_local_copy() fallback below needs a real file. */
         if (panel->plugin->get_quick_view != NULL)
         {
             gboolean prev_quiet;
@@ -230,7 +233,8 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
             panel_plugin_set_quiet_messages (prev_quiet);
         }
 
-        if (r == MC_PPR_NOT_SUPPORTED && panel->plugin->get_local_copy != NULL)
+        if (r == MC_PPR_NOT_SUPPORTED && !S_ISDIR (fe->st.st_mode)
+            && panel->plugin->get_local_copy != NULL)
         {
             gboolean prev_quiet;
 
