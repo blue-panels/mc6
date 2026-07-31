@@ -32,6 +32,9 @@
 set -e
 
 REPO="ilia-maslakov/mcdev"
+# The repository is mcdev; the thing it builds is mc6. A release is named after
+# the program, not after the place its source happens to live.
+PRODUCT="mc6"
 VERSION="$1"
 shift || true
 
@@ -154,7 +157,8 @@ if [ -n "$FLAT" ]; then
 fi
 
 notes=$(echo "$prs" | jq -r '.[] | [.number, ([.labels[].name] | join("|")), (.title | gsub("\\s+"; " "))] | @tsv' |
-gawk -F'\t' -v version="$VERSION" -v date="$(date +%Y-%m-%d)" -v repo="$REPO" '
+gawk -F'\t' -v version="$VERSION" -v date="$(date +%Y-%m-%d)" -v repo="$REPO" \
+    -v product="$PRODUCT" '
 function plugin_group(title,   lt, i, n, words) {
     lt = tolower(title)
     n = split("git docker k8s mongodb s3 sftp ftp samba arcmc ctags panelize shell-link hello", words, " ")
@@ -207,7 +211,7 @@ function has_label(labels, name,   i, n, parts) {
     }
 }
 END {
-    printf "# mcdev %s (%s)\n", version, date
+    printf "# %s %s (%s)\n", product, version, date
 
     na = split("mcedit mcview mcterm Panel VFS Core", areas, " ")
     ng = asorti(pgroups, gkeys)
