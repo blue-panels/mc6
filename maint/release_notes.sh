@@ -130,6 +130,9 @@ if [ -n "$RAW" ]; then
             | split("<!-- pr-summary:start -->")[0] as $b
             | ($b | split("## Summary")) as $p
             | (if ($p | length) > 1 then ($p[1] | split("\n## ")[0]) else $b end)
+            # Markers and any other comment: a summary written by the pull
+            # request workflow is wrapped in them, and they are not prose.
+            | gsub("<!--[^>]*-->"; "")
             | gsub("\r"; "") | gsub("^\\s+"; "") | gsub("\\s+$"; ""))
     }]'
     exit 0
