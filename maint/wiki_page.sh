@@ -206,7 +206,7 @@ date=$(git -C "$here/.." for-each-ref --format='%(creatordate:short)' "refs/tags
 test -n "$date" || date=$(date +%Y-%m-%d)
 
 {
-    printf '# %s (%s)\n\n' "$version" "$date"
+    printf '# mc6 %s (%s)\n\n' "$version" "$date"
     cat "$work/intro.md"
     # Its own heading is dropped: the page has one already, and so are the blank
     # lines that would otherwise pile up before the first rule.
