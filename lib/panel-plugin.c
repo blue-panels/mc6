@@ -30,6 +30,7 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -114,6 +115,57 @@ mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path)
+{
+    GError *error = NULL;
+    const char *buf = (const char *) data;
+    size_t left;
+    int fd;
+
+    if (tmpl == NULL || local_path == NULL)
+        return FALSE;
+
+    *local_path = NULL;
+
+    fd = g_file_open_tmp (tmpl, local_path, &error);
+    if (fd == -1)
+    {
+        if (error != NULL)
+            g_error_free (error);
+        return FALSE;
+    }
+
+    if (buf == NULL)
+        buf = "";
+    left = (len < 0) ? strlen (buf) : (size_t) len;
+
+    while (left > 0)
+    {
+        ssize_t written = write (fd, buf, left);
+
+        if (written <= 0)
+        {
+            if (written == -1 && errno == EINTR)
+                continue;
+
+            close (fd);
+            unlink (*local_path);
+            g_free (*local_path);
+            *local_path = NULL;
+            return FALSE;
+        }
+
+        buf += written;
+        left -= (size_t) written;
+    }
+
+    close (fd);
+    return TRUE;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 void

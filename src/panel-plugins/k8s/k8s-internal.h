@@ -158,6 +158,7 @@ void k8s_set_pending_focus (k8s_data_t *data, const char *name);
 
 /* k8s-cmd.c */
 gboolean k8s_run_cmd (const char *cmd, char **output, char **err_text);
+gboolean k8s_run_cmd_to_fd (const char *cmd, int fd, char **err_text);
 char *k8s_capture_output (const char *cmd);
 char *k8s_load_kubectl_cmd (void);
 char *k8s_load_kubeconfig (void);

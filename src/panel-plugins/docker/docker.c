@@ -1129,31 +1129,9 @@ cmd_failed:
 gboolean
 write_temp_content (const char *prefix, const char *content, char **local_path)
 {
-    GError *error = NULL;
-    int fd;
-
-    fd = g_file_open_tmp (prefix, local_path, &error);
-    if (fd == -1)
-    {
-        if (error != NULL)
-            g_error_free (error);
-        return FALSE;
-    }
-
-    if (content == NULL)
-        content = "";
-
-    if (write (fd, content, strlen (content)) == -1)
-    {
-        close (fd);
-        unlink (*local_path);
-        g_free (*local_path);
-        *local_path = NULL;
-        return FALSE;
-    }
-
-    close (fd);
-    return TRUE;
+    /* A single write() could come up short on a long log; the shared helper
+       loops. */
+    return mc_pp_write_temp_file (prefix, content, -1, local_path);
 }
 
 /* --------------------------------------------------------------------------------------------- */

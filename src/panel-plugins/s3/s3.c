@@ -3251,9 +3251,8 @@ static mc_pp_result_t
 s3_connection_to_local_copy (const s3_connection_t *conn, char **local_path)
 {
     GString *info;
-    GError *error = NULL;
     char *tmp_path = NULL;
-    int fd;
+    gboolean ok;
 
     if (conn == NULL || local_path == NULL)
         return MC_PPR_FAILED;
@@ -3272,24 +3271,12 @@ s3_connection_to_local_copy (const s3_connection_t *conn, char **local_path)
     if (conn->connect_timeout > 0)
         g_string_append_printf (info, "connect_timeout=%d\n", conn->connect_timeout);
 
-    fd = g_file_open_tmp ("mc-s3-view-XXXXXX", &tmp_path, &error);
-    if (fd == -1)
-    {
-        if (error != NULL)
-            g_error_free (error);
-        g_string_free (info, TRUE);
-        return MC_PPR_FAILED;
-    }
-    close (fd);
-
-    if (!g_file_set_contents (tmp_path, info->str, (gssize) info->len, NULL))
-    {
-        unlink (tmp_path);
-        g_free (tmp_path);
-        g_string_free (info, TRUE);
-        return MC_PPR_FAILED;
-    }
+    /* Keeps the 0600 the temp file is created with: it carries the access key. */
+    ok = mc_pp_write_temp_file ("mc-s3-view-XXXXXX", info->str, (gssize) info->len, &tmp_path);
     g_string_free (info, TRUE);
+
+    if (!ok)
+        return MC_PPR_FAILED;
 
     *local_path = tmp_path;
     return MC_PPR_OK;

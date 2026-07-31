@@ -25,7 +25,10 @@
 
 #include <config.h>
 
+#include <errno.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 #include "lib/mcconfig.h"
@@ -62,6 +65,94 @@ k8s_read_config_string (const char *key, const char *fallback)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/* Stream the command's stdout straight into @fd instead of collecting it into
+   a string: kubectl output is not guaranteed to be text, and a NUL byte in a
+   pod's log would cut the rest of it off on the way through a char *.  It also
+   keeps a long log out of memory.  stderr goes to /dev/null - mc owns the
+   terminal, and the only caller shows an empty preview on failure anyway. */
+gboolean
+k8s_run_cmd_to_fd (const char *cmd, int fd, char **err_text)
+{
+    char **argv = NULL;
+    GError *error = NULL;
+    GPid pid;
+    int out_fd = -1;
+    int status = 0;
+    gboolean ok = TRUE;
+
+    if (err_text != NULL)
+        *err_text = NULL;
+
+    if (!g_shell_parse_argv (cmd, NULL, &argv, &error)
+        || !g_spawn_async_with_pipes (NULL, argv, NULL,
+                                      G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD
+                                          | G_SPAWN_STDERR_TO_DEV_NULL,
+                                      NULL, NULL, &pid, NULL, &out_fd, NULL, &error))
+    {
+        if (err_text != NULL)
+            *err_text =
+                g_strdup (error != NULL && error->message != NULL ? error->message
+                                                                  : _ ("Failed to start kubectl"));
+        if (error != NULL)
+            g_error_free (error);
+        g_strfreev (argv);
+        return FALSE;
+    }
+    g_strfreev (argv);
+
+    while (ok)
+    {
+        char buf[16 * 1024];
+        ssize_t got;
+        const char *p = buf;
+        size_t left;
+
+        got = read (out_fd, buf, sizeof (buf));
+        if (got == 0)
+            break;
+        if (got < 0)
+        {
+            if (errno == EINTR)
+                continue;
+            ok = FALSE;
+            break;
+        }
+
+        left = (size_t) got;
+        while (left > 0)
+        {
+            ssize_t written = write (fd, p, left);
+
+            if (written <= 0)
+            {
+                if (written == -1 && errno == EINTR)
+                    continue;
+                ok = FALSE;
+                break;
+            }
+            p += written;
+            left -= (size_t) written;
+        }
+    }
+
+    close (out_fd);
+
+    while (waitpid ((pid_t) pid, &status, 0) == -1 && errno == EINTR)
+        ;
+    g_spawn_close_pid (pid);
+
+    if (!ok)
+        return FALSE;
+
+#if GLIB_CHECK_VERSION(2, 70, 0)
+    return g_spawn_check_wait_status (status, NULL);
+#else
+    return g_spawn_check_exit_status (status, NULL);
+#endif
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean

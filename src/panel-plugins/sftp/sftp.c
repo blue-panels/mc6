@@ -2556,9 +2556,8 @@ static mc_pp_result_t
 sftp_connection_to_local_copy (const sftp_connection_t *conn, char **local_path)
 {
     GString *ini;
-    GError *error = NULL;
     char *tmp_path = NULL;
-    int fd;
+    gboolean ok;
 
     if (conn == NULL || local_path == NULL)
         return MC_PPR_FAILED;
@@ -2589,24 +2588,11 @@ sftp_connection_to_local_copy (const sftp_connection_t *conn, char **local_path)
     if (conn->ip_version != 0)
         g_string_append_printf (ini, "ip_version=%d\n", conn->ip_version);
 
-    fd = g_file_open_tmp ("mc-sftp-view-XXXXXX", &tmp_path, &error);
-    if (fd == -1)
-    {
-        if (error != NULL)
-            g_error_free (error);
-        g_string_free (ini, TRUE);
-        return MC_PPR_FAILED;
-    }
-    close (fd);
-
-    if (!g_file_set_contents (tmp_path, ini->str, (gssize) ini->len, NULL))
-    {
-        unlink (tmp_path);
-        g_free (tmp_path);
-        g_string_free (ini, TRUE);
-        return MC_PPR_FAILED;
-    }
+    ok = mc_pp_write_temp_file ("mc-sftp-view-XXXXXX", ini->str, (gssize) ini->len, &tmp_path);
     g_string_free (ini, TRUE);
+
+    if (!ok)
+        return MC_PPR_FAILED;
 
     *local_path = tmp_path;
     return MC_PPR_OK;

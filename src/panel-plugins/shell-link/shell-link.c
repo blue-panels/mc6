@@ -1081,8 +1081,6 @@ shell_helpers_to_temp (shell_data_t *data, const char *name, gboolean with_heade
     char *content;
     char *tmp_path = NULL;
     GString *out;
-    GError *error = NULL;
-    int fd;
     gboolean ok;
 
     content = shfs_helper_content (data->helpers_host, name, &src);
@@ -1116,26 +1114,10 @@ shell_helpers_to_temp (shell_data_t *data, const char *name, gboolean with_heade
     g_string_append (out, content);
     g_free (content);
 
-    fd = g_file_open_tmp ("mc-shell-helper-XXXXXX", &tmp_path, &error);
-    if (fd == -1)
-    {
-        g_clear_error (&error);
-        g_string_free (out, TRUE);
-        return NULL;
-    }
-    close (fd);
-
-    ok = g_file_set_contents (tmp_path, out->str, (gssize) out->len, NULL);
+    ok = mc_pp_write_temp_file ("mc-shell-helper-XXXXXX", out->str, (gssize) out->len, &tmp_path);
     g_string_free (out, TRUE);
 
-    if (!ok)
-    {
-        unlink (tmp_path);
-        g_free (tmp_path);
-        return NULL;
-    }
-
-    return tmp_path;
+    return ok ? tmp_path : NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2486,9 +2468,8 @@ static mc_pp_result_t
 shell_connection_to_local_copy (const shell_connection_t *conn, char **local_path)
 {
     GString *ini;
-    GError *error = NULL;
     char *tmp_path = NULL;
-    int fd;
+    gboolean ok;
 
     if (conn == NULL || local_path == NULL)
         return MC_PPR_FAILED;
@@ -2506,24 +2487,11 @@ shell_connection_to_local_copy (const shell_connection_t *conn, char **local_pat
         g_string_append_printf (ini, "path=%s\n", conn->path);
     g_string_append_printf (ini, "compressed=%s\n", conn->compressed ? "true" : "false");
 
-    fd = g_file_open_tmp ("mc-shell-view-XXXXXX", &tmp_path, &error);
-    if (fd == -1)
-    {
-        if (error != NULL)
-            g_error_free (error);
-        g_string_free (ini, TRUE);
-        return MC_PPR_FAILED;
-    }
-    close (fd);
-
-    if (!g_file_set_contents (tmp_path, ini->str, (gssize) ini->len, NULL))
-    {
-        unlink (tmp_path);
-        g_free (tmp_path);
-        g_string_free (ini, TRUE);
-        return MC_PPR_FAILED;
-    }
+    ok = mc_pp_write_temp_file ("mc-shell-view-XXXXXX", ini->str, (gssize) ini->len, &tmp_path);
     g_string_free (ini, TRUE);
+
+    if (!ok)
+        return MC_PPR_FAILED;
 
     *local_path = tmp_path;
 
