@@ -28,6 +28,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 #include "lib/widget.h"
@@ -44,6 +45,8 @@ static mc_pp_result_t k8s_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t k8s_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t k8s_view (void *plugin_data, const char *fname, const struct stat *st,
                                 gboolean plain_view);
+static mc_pp_result_t k8s_get_quick_view (void *plugin_data, const char *fname,
+                                          const struct stat *st, char **local_path);
 static mc_pp_result_t k8s_get_help_info (void *plugin_data, const char **filename,
                                          const char **node);
 static mc_pp_result_t k8s_delete_items (void *plugin_data, const char **names, int count);
@@ -96,6 +99,7 @@ static const mc_panel_plugin_t k8s_plugin = {
     .get_footer = k8s_get_footer,
     .get_focus_name = k8s_get_focus_name,
     .get_default_format = k8s_get_default_format,
+    .get_quick_view = k8s_get_quick_view,
 };
 
 /*** file scope functions ************************************************************************/
@@ -861,6 +865,149 @@ k8s_view (void *plugin_data, const char *fname, const struct stat *st, gboolean 
     }
 
     return MC_PPR_NOT_SUPPORTED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+k8s_command_to_local_copy (const char *cmd, char **local_path)
+{
+    char *output = NULL;
+    char *err_text = NULL;
+    GError *error = NULL;
+    int fd;
+
+    if (cmd == NULL || local_path == NULL)
+        return MC_PPR_FAILED;
+
+    if (!k8s_run_cmd (cmd, &output, &err_text))
+    {
+        g_free (output);
+        g_free (err_text);
+        return MC_PPR_FAILED;
+    }
+    g_free (err_text);
+
+    fd = g_file_open_tmp ("mc-pp-k8s-XXXXXX", local_path, &error);
+    if (fd == -1)
+    {
+        if (error != NULL)
+            g_error_free (error);
+        g_free (output);
+        return MC_PPR_FAILED;
+    }
+    close (fd);
+
+    if (!g_file_set_contents (*local_path, output != NULL ? output : "", -1, NULL))
+    {
+        unlink (*local_path);
+        g_free (*local_path);
+        *local_path = NULL;
+        g_free (output);
+        return MC_PPR_FAILED;
+    }
+
+    g_free (output);
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+k8s_get_quick_view (void *plugin_data, const char *fname, const struct stat *st, char **local_path)
+{
+    k8s_data_t *data = (k8s_data_t *) plugin_data;
+    const k8s_item_t *item;
+    const char *pod = NULL;
+    const char *ns = NULL;
+    char *quoted_name = NULL;
+    char *quoted_ns = NULL;
+    char *quoted_ctx = NULL;
+    char *cmd = NULL;
+    mc_pp_result_t result;
+
+    if (data == NULL || fname == NULL || local_path == NULL)
+        return MC_PPR_FAILED;
+
+    (void) st;
+
+    quoted_ctx = g_shell_quote (data->context != NULL ? data->context : "");
+
+    switch (data->view)
+    {
+    case K8S_VIEW_RESOURCE_TYPES:
+        if (strcmp (fname, k8s_version_file) == 0)
+            cmd = g_strdup_printf ("%s version --context %s", data->kubectl_full, quoted_ctx);
+        else if (strcmp (fname, k8s_cluster_info_file) == 0)
+            cmd = g_strdup_printf ("%s cluster-info --context %s", data->kubectl_full, quoted_ctx);
+        break;
+
+    case K8S_VIEW_PODS:
+        item = k8s_find_item (data, fname);
+        pod = fname;
+        ns = item != NULL && item->namespace != NULL
+            ? item->namespace
+            : (data->namespace != NULL ? data->namespace : "default");
+        quoted_name = g_shell_quote (pod);
+        quoted_ns = g_shell_quote (ns);
+        cmd = g_strdup_printf ("%s logs %s -n %s --context %s --since=5m", data->kubectl_full,
+                               quoted_name, quoted_ns, quoted_ctx);
+        break;
+
+    case K8S_VIEW_POD_DETAILS:
+        if (data->selected_pod == NULL)
+            break;
+        pod = data->selected_pod;
+        ns = data->selected_namespace != NULL
+            ? data->selected_namespace
+            : (data->namespace != NULL ? data->namespace : "default");
+        quoted_name = g_shell_quote (pod);
+        quoted_ns = g_shell_quote (ns);
+        if (strcmp (fname, k8s_logs_entry) == 0)
+            cmd = g_strdup_printf ("%s logs %s -n %s --context %s --since=5m", data->kubectl_full,
+                                   quoted_name, quoted_ns, quoted_ctx);
+        else if (strcmp (fname, k8s_describe_entry) == 0)
+            cmd = g_strdup_printf ("%s describe pod %s -n %s --context %s", data->kubectl_full,
+                                   quoted_name, quoted_ns, quoted_ctx);
+        else if (strcmp (fname, k8s_yaml_entry) == 0)
+            cmd = g_strdup_printf ("%s get pod %s -n %s --context %s -o yaml", data->kubectl_full,
+                                   quoted_name, quoted_ns, quoted_ctx);
+        break;
+
+    case K8S_VIEW_DEPLOYMENTS:
+        quoted_name = g_shell_quote (fname);
+        quoted_ns = g_shell_quote (data->namespace != NULL ? data->namespace : "default");
+        cmd = g_strdup_printf ("%s describe deployment %s -n %s --context %s", data->kubectl_full,
+                               quoted_name, quoted_ns, quoted_ctx);
+        break;
+
+    case K8S_VIEW_SERVICES:
+        quoted_name = g_shell_quote (fname);
+        quoted_ns = g_shell_quote (data->namespace != NULL ? data->namespace : "default");
+        cmd = g_strdup_printf ("%s describe service %s -n %s --context %s", data->kubectl_full,
+                               quoted_name, quoted_ns, quoted_ctx);
+        break;
+
+    case K8S_VIEW_NODES:
+        quoted_name = g_shell_quote (fname);
+        cmd = g_strdup_printf ("%s describe node %s --context %s", data->kubectl_full, quoted_name,
+                               quoted_ctx);
+        break;
+
+    default:
+        break;
+    }
+
+    g_free (quoted_name);
+    g_free (quoted_ns);
+    g_free (quoted_ctx);
+
+    if (cmd == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    result = k8s_command_to_local_copy (cmd, local_path);
+    g_free (cmd);
+    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -137,6 +137,10 @@ static const char *shell_get_title (void *plugin_data);
 static mc_pp_result_t shell_create_item (void *plugin_data);
 static mc_pp_result_t shell_view_item (void *plugin_data, const char *fname, const struct stat *st,
                                        gboolean plain_view);
+static mc_pp_result_t shell_get_quick_view (void *plugin_data, const char *fname,
+                                            const struct stat *st, char **local_path);
+static mc_pp_result_t shell_connection_to_local_copy (const shell_connection_t *conn,
+                                                      char **local_path);
 static mc_pp_result_t shell_handle_key (void *plugin_data, int key);
 static void shell_configure (void);
 
@@ -199,6 +203,7 @@ static const mc_panel_plugin_t shell_plugin = {
     .handle_key = shell_handle_key,
     .create_item = shell_create_item,
     .configure = shell_configure,
+    .get_quick_view = shell_get_quick_view,
 };
 
 /*** file scope functions ************************************************************************/
@@ -2478,32 +2483,14 @@ shell_create_item (void *plugin_data)
 /* --------------------------------------------------------------------------------------------- */
 
 static mc_pp_result_t
-shell_view_item (void *plugin_data, const char *fname, const struct stat *st, gboolean plain_view)
+shell_connection_to_local_copy (const shell_connection_t *conn, char **local_path)
 {
-    shell_data_t *data = (shell_data_t *) plugin_data;
-    const shell_connection_t *conn;
     GString *ini;
     GError *error = NULL;
     char *tmp_path = NULL;
     int fd;
 
-    (void) st;
-    (void) plain_view;
-
-    if (fname == NULL)
-        return MC_PPR_FAILED;
-
-    if (data->helpers_mode)
-        return shell_helpers_view (data, fname);
-
-    /* Connected, so the entry under the cursor is a remote file: hand it back
-       and the core fetches a copy and views it the ordinary way. FAILED would
-       count as handled. */
-    if (data->conn != NULL)
-        return MC_PPR_NOT_SUPPORTED;
-
-    conn = find_connection (data, fname);
-    if (conn == NULL)
+    if (conn == NULL || local_path == NULL)
         return MC_PPR_FAILED;
 
     ini = g_string_new ("");
@@ -2537,6 +2524,68 @@ shell_view_item (void *plugin_data, const char *fname, const struct stat *st, gb
         return MC_PPR_FAILED;
     }
     g_string_free (ini, TRUE);
+
+    *local_path = tmp_path;
+
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+shell_get_quick_view (void *plugin_data, const char *fname, const struct stat *st,
+                      char **local_path)
+{
+    shell_data_t *data = (shell_data_t *) plugin_data;
+    const shell_connection_t *conn;
+
+    (void) st;
+
+    if (fname == NULL || local_path == NULL)
+        return MC_PPR_FAILED;
+
+    if (data->helpers_mode)
+    {
+        *local_path = shell_helpers_to_temp (data, fname, TRUE);
+        return *local_path != NULL ? MC_PPR_OK : MC_PPR_FAILED;
+    }
+
+    if (data->conn != NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    conn = find_connection (data, fname);
+    return conn != NULL ? shell_connection_to_local_copy (conn, local_path) : MC_PPR_FAILED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+shell_view_item (void *plugin_data, const char *fname, const struct stat *st, gboolean plain_view)
+{
+    shell_data_t *data = (shell_data_t *) plugin_data;
+    const shell_connection_t *conn;
+    char *tmp_path = NULL;
+    mc_pp_result_t result;
+
+    (void) st;
+    (void) plain_view;
+
+    if (fname == NULL)
+        return MC_PPR_FAILED;
+
+    if (data->helpers_mode)
+        return shell_helpers_view (data, fname);
+
+    /* Connected, so the entry under the cursor is a remote file: hand it back
+       and the core fetches a copy and views it the ordinary way. FAILED would
+       count as handled. */
+    if (data->conn != NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    conn = find_connection (data, fname);
+    result = shell_connection_to_local_copy (conn, &tmp_path);
+    if (result != MC_PPR_OK)
+        return result;
 
     {
         vfs_path_t *tmp_vpath;

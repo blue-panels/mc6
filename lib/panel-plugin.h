@@ -252,6 +252,10 @@ typedef struct mc_panel_plugin_t
        Operates without an open panel instance; the plugin loads/saves its own
        config. NULL = the plugin has no settings. */
     void (*configure) (void);
+
+    /* Return a temporary local source for Quick View virtual entries. */
+    mc_pp_result_t (*get_quick_view) (void *plugin_data, const char *fname, const struct stat *st,
+                                      char **local_path);
 } mc_panel_plugin_t;
 
 typedef const mc_panel_plugin_t *(*mc_panel_plugin_register_fn) (void);
