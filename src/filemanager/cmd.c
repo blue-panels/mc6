@@ -205,6 +205,10 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
 {
     const file_entry_t *fe;
 
+    /* Whatever the previous entry left behind is of no use now, and nothing
+       else would ever remove it. */
+    mcview_remove_tmp_preview ((WView *) view);
+
     fe = panel != NULL ? panel_current_entry (panel) : NULL;
     if (fe == NULL)
     {
@@ -212,8 +216,8 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
         return;
     }
 
-    /* Plugin entries need a local copy; mcview_load keeps its own fd, so the
-       temp file can be unlinked right after the load. */
+    /* Plugin entries need a local copy.  The view keeps its own fd, but it is
+       given the path as well: structured mode and the rest reopen by name. */
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
         && (panel->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
     {
@@ -251,13 +255,15 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
         if (r == MC_PPR_OK && local_path != NULL)
         {
             mcview_load ((WView *) view, NULL, local_path, 0, 0, 0);
-            unlink (local_path);
+            mcview_set_tmp_preview ((WView *) view, local_path);
         }
         else
+        {
             /* Unsupported previews leave the view blank. */
             mcview_load ((WView *) view, NULL, "", 0, 0, 0);
-        if (r != MC_PPR_OK && local_path != NULL)
-            unlink (local_path);
+            if (local_path != NULL)
+                unlink (local_path);
+        }
         g_free (local_path);
         return;
     }

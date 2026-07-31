@@ -231,6 +231,9 @@ struct WView
     int *dir_idx;            /* Index of current file in dir structure.
                               * Pointer is used here as reference to WPanel::dir::count */
     vfs_path_t *ext_script;  // Temporary script file created by regex_command_for()
+    vfs_path_t *tmp_preview; /* Temporary file a panel plugin produced for Quick View.
+                              * The view owns it: structured mode and anything else that
+                              * reopens by path needs it to outlive mcview_load(). */
 
     // ANSI terminal replay mode (Alt-F9)
     struct mcview_vterm_struct *vterm;  // non-NULL when terminal mode is active

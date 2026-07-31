@@ -273,6 +273,30 @@ mcview_init (WView *view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
+mcview_remove_tmp_preview (WView *view)
+{
+    if (view != NULL && view->tmp_preview != NULL)
+    {
+        mc_unlink (view->tmp_preview);
+        vfs_path_free (view->tmp_preview, TRUE);
+        view->tmp_preview = NULL;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_set_tmp_preview (WView *view, const char *path)
+{
+    mcview_remove_tmp_preview (view);
+
+    if (view != NULL && path != NULL)
+        view->tmp_preview = vfs_path_from_str (path);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 mcview_done (WView *view)
 {
     // Save current file position

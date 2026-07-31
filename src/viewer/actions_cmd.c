@@ -876,6 +876,7 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         mcview_stream_stop (view);
         mcview_done (view);
         mcview_remove_ext_script (view);
+        mcview_remove_tmp_preview (view);
         return MSG_HANDLED;
 
     default:
