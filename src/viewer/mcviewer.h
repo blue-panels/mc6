@@ -118,5 +118,12 @@ extern gboolean mcview_viewer_with_controller (mcview_source_spec_t *initial_spe
 
 extern void mcview_clear_mode_flags (mcview_mode_flags_t *flags);
 
+/* Hand the view a temporary file to show and to own: it is unlinked when the
+ * view is given another one or goes away.  Quick View needs this for plugin
+ * entries - the file has no other owner, but structured mode and anything else
+ * that reopens by path must still find it there. */
+extern void mcview_set_tmp_preview (WView *view, const char *path);
+extern void mcview_remove_tmp_preview (WView *view);
+
 /*** inline functions ****************************************************************************/
 #endif
