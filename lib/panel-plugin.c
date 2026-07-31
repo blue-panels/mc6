@@ -117,8 +117,6 @@ mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-/* Set while the core previews passively: plugins report failures by return
-   value instead of opening a dialog. */
 static gboolean pp_quiet_messages = FALSE;
 
 gboolean
