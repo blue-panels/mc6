@@ -146,7 +146,6 @@ static void shell_configure (void);
 
 /*** file scope variables ************************************************************************/
 
-/* How much of a remote file Quick View asks for. */
 #define SHELL_QUICK_VIEW_MAX            (64 * 1024)
 
 #define SHELL_PANEL_CONFIG_FILE         "panels.shell-link.ini"
@@ -2539,8 +2538,7 @@ shell_get_quick_view (void *plugin_data, const char *fname, const struct stat *s
         tmp_path = g_strdup (vfs_path_as_str (tmp_vpath));
         vfs_path_free (tmp_vpath, TRUE);
 
-        /* A preview shows the head of the file, so ask for no more than that:
-           the panel would otherwise pull a gigabyte across to fill one screen. */
+        /* One screenful is the whole point; do not drag the file across. */
         ok = shell_fetch_to_fd (data, fname, fd, 0, SHELL_QUICK_VIEW_MAX, &error);
         close (fd);
         g_clear_error (&error);

@@ -558,7 +558,6 @@ mcview_load_text (WView *view, const char *text)
 {
     mcview_load (view, NULL, "", 0, 0, 0);
     mcview_close_datasource (view);
-    /* In a panel this lands in the view itself rather than in a dialog. */
     mcview_show_error (view, NULL, text);
 }
 

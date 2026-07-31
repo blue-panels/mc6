@@ -255,8 +255,7 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
         }
         else
         {
-            /* A fetch that failed says so in the panel; nothing to preview is
-               left blank.  Either way the cursor keeps moving. */
+            /* Failed says so in the panel; nothing to preview stays blank. */
             if (r == MC_PPR_FAILED)
                 mcview_load_text ((WView *) view, _ ("Cannot read the contents"));
             else
