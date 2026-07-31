@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 9
+#define MC_PANEL_PLUGIN_API_VERSION 10
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -253,7 +253,12 @@ typedef struct mc_panel_plugin_t
        config. NULL = the plugin has no settings. */
     void (*configure) (void);
 
-    /* Return a temporary local source for Quick View virtual entries. */
+    /* Return a temporary local source for Quick View virtual entries.
+       Read-only preview: unlike get_local_copy() the result never reaches
+       edit/copy, so an entry that is not a file may be rendered here.
+       NOT_SUPPORTED = not a preview entry, core falls back to get_local_copy();
+       FAILED = a preview entry that could not be produced, core leaves the
+       view blank and does not fall back. The core unlinks @local_path. */
     mc_pp_result_t (*get_quick_view) (void *plugin_data, const char *fname, const struct stat *st,
                                       char **local_path);
 } mc_panel_plugin_t;
