@@ -39,7 +39,9 @@
 #include "src/editor/editmacros.h"  // edit_load_macro_cmd()
 #include "src/editor/editcomplete.h"
 
-static WGroup owner;
+/* A dialog, not a bare group: the editor reaches its owner as one, and a
+ * WGroup has no room for the fields it reads there. */
+static WDialog owner;
 static WEdit *test_edit;
 
 /* --------------------------------------------------------------------------------------------- */
@@ -169,7 +171,7 @@ my_setup (void)
     edit_arg_init (&arg, vfs_path_from_str ("edit_complete_word_cmd_test_data.txt"), 1);
     test_edit = edit_init (NULL, &r, &arg);
     memset (&owner, 0, sizeof (owner));
-    group_add_widget (&owner, WIDGET (test_edit));
+    group_add_widget (&owner.group, WIDGET (test_edit));
     edit_completion_dialog_show__init ();
 }
 

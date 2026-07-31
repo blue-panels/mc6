@@ -36,7 +36,9 @@
 #include "src/editor/editmacros.h"  // edit_load_macro_cmd()
 #include "src/editor/editsearch.h"
 
-static WGroup owner;
+/* A dialog, not a bare group: the editor reaches its owner as one, and a
+ * WGroup has no room for the fields it reads there. */
+static WDialog owner;
 static WEdit *test_edit;
 static const char **replace_regex__from;
 static const char **replace_regex__to;
@@ -250,7 +252,7 @@ setup (void)
     rect_init (&r, 0, 0, 24, 80);
     test_edit = edit_init (NULL, &r, NULL);
     memset (&owner, 0, sizeof (owner));
-    group_add_widget (&owner, WIDGET (test_edit));
+    group_add_widget (&owner.group, WIDGET (test_edit));
 
     mc_global.source_codepage = 0;
     mc_global.display_codepage = 0;
