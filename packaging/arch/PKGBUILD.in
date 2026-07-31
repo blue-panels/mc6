@@ -8,8 +8,9 @@ arch=('x86_64' 'aarch64')
 url='https://github.com/ilia-maslakov/mcdev/wiki'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
-             'glib2' 'slang' 'gpm' 'libssh2' 'curl' 'samba'
+             'glib2' 'slang' 'gpm' 'e2fsprogs' 'aspell' 'libssh2' 'curl' 'samba'
              'libarchive' 'file' 'mongo-c-driver')
+options=('!emptydirs')
 source=("mc6-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mc6-${pkgver}.tar.gz")
 # Filled in by packaging/prepare.sh from the release archive; SKIP when no
 # archive was given to it.
@@ -24,6 +25,7 @@ build() {
     --libdir=/usr/lib \
     --disable-static \
     --with-screen=slang \
+    --enable-aspell \
     --with-panel-plugins-dir=/usr/lib/mc/panel-plugins \
     --with-editor-plugins-dir=/usr/lib/mc/editor-plugins \
     --enable-mcterm=yes \
@@ -41,7 +43,12 @@ build() {
 
 package_mc6() {
   pkgdesc='Midnight Commander with Plugins'
-  depends=('glib2' 'slang' 'gpm')
+  # libe2p comes in through --enable-ext2fs-attr, which defaults to auto and
+  # always finds the library here; libmagic through --enable-mctree-magic.
+  depends=('glib2' 'slang' 'gpm' 'e2fsprogs' 'file')
+  optdepends=('mc6-plugins: panel plugins for FTP, SFTP, S3, Samba, Docker, k8s, MongoDB'
+              'aspell: spell checking in the editor'
+              'hunspell: spell checking in the editor')
   provides=('mc')
   conflicts=('mc')
   replaces=('mc')
@@ -56,6 +63,12 @@ package_mc6() {
   make DESTDIR="${pkgdir}" install
   rm -rf "${pkgdir}/usr/lib/mc/panel-plugins"
   find "${pkgdir}" -name '*.la' -delete
+
+  # mc.keymap is installed as a symlink to mc.default.keymap, and pacman cannot
+  # keep a symlink through the backup mechanism: the user's edits would be lost
+  # on upgrade. Ship it as a file. (Arch FS#50889)
+  rm "${pkgdir}/etc/mc/mc.keymap"
+  cp "${pkgdir}"/etc/mc/mc{.default,}.keymap
   install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6/COPYING"
   install -Dm644 CHANGELOG.md "${pkgdir}/usr/share/doc/mc6/CHANGELOG.md"
 }
@@ -67,8 +80,12 @@ package_mc6-plugins() {
 
   cd "${srcdir}/mc6-${pkgver}"
   make DESTDIR="${pkgdir}" install
-  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin" "${pkgdir}/usr/share" \
-    "${pkgdir}/usr/lib/mc/ext.d" "${pkgdir}/usr/lib/mc/extfs.d"
+  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin" "${pkgdir}/usr/share"
+  # Keep the plugin modules and nothing else: naming what to drop instead left
+  # cons.saver and the shell wrappers in both packages, and pacman refuses to
+  # install two packages that own the same file.
+  find "${pkgdir}/usr/lib/mc" -mindepth 1 -maxdepth 1 ! -name panel-plugins \
+    -exec rm -rf {} +
   find "${pkgdir}" -name '*.la' -delete
   install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6-plugins/COPYING"
 }
