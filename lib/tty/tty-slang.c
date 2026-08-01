@@ -453,7 +453,8 @@ tty_lowlevel_getch (void)
 gboolean
 tty_lowlevel_input_pending (void)
 {
-    return SLang_input_pending (0) != 0;
+    // not SLang_input_pending(): it reads the waiting bytes into this buffer
+    return SLang_Input_Buffer_Len != 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
