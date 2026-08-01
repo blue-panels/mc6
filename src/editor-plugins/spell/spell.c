@@ -84,12 +84,13 @@ typedef struct hunspell_struct
 } hunspell_t;
 
 /*** forward declarations (file scope functions) *************************************************/
-static void spell_debug_log (const char *fmt, ...) G_GNUC_PRINTF (1, 2);
+static gboolean hunspell_language_available (char *reason, size_t reason_size);
 
 /*** file scope variables ************************************************************************/
 
 static GModule *spell_module = NULL;
 static GModule *hunspell_module = NULL;
+static gboolean hunspell_probed = FALSE;
 static spell_t *global_speller = NULL;
 static hunspell_t *global_hunspell = NULL;
 static GHashTable *spell_check_cache = NULL;
@@ -193,7 +194,7 @@ static struct
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
-static void
+void
 spell_debug_log (const char *fmt, ...)
 {
     char *msg;
@@ -205,6 +206,25 @@ spell_debug_log (const char *fmt, ...)
 
     if (msg == NULL)
         return;
+
+    /* MC_SPELL_LOG=<file> turns the trail on in a release build: which engine
+       was chosen, which dictionary was looked for and what came of it. */
+    {
+        const char *path;
+
+        path = g_getenv ("MC_SPELL_LOG");
+        if (path != NULL && *path != '\0')
+        {
+            FILE *fp;
+
+            fp = fopen (path, "a");
+            if (fp != NULL)
+            {
+                fprintf (fp, "%s\n", msg);
+                fclose (fp);
+            }
+        }
+    }
 
 #ifdef USE_MAINTAINER_MODE
     mc_log ("%s", msg);
@@ -262,8 +282,15 @@ spell_config_load (void)
     if (spell_config_loaded)
         return;
 
-    /* Hunspell support removed: keep aspell as the only runtime engine. */
-    plugin_spell_engine = g_strdup (SPELL_ENGINE_ASPELL);
+    plugin_spell_engine = mc_config_get_string (mc_global.main_config, SPELL_PLUGIN_SECTION,
+                                                SPELL_PLUGIN_ENGINE_KEY, SPELL_ENGINE_ASPELL);
+    if (plugin_spell_engine == NULL
+        || (strcmp (plugin_spell_engine, SPELL_ENGINE_ASPELL) != 0
+            && strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) != 0))
+    {
+        g_free (plugin_spell_engine);
+        plugin_spell_engine = g_strdup (SPELL_ENGINE_ASPELL);
+    }
 
     plugin_spell_language = mc_config_get_string (mc_global.main_config, SPELL_PLUGIN_SECTION,
                                                   SPELL_PLUGIN_LANGUAGE_KEY, "en");
@@ -285,12 +312,12 @@ spell_config_save (void)
     if (!spell_config_loaded)
         return;
 
-    g_free (plugin_spell_engine);
-    plugin_spell_engine = g_strdup (SPELL_ENGINE_ASPELL);
     mc_config_set_string (mc_global.main_config, SPELL_PLUGIN_SECTION, SPELL_PLUGIN_ENGINE_KEY,
                           plugin_spell_engine);
     mc_config_set_string (mc_global.main_config, SPELL_PLUGIN_SECTION, SPELL_PLUGIN_LANGUAGE_KEY,
                           plugin_spell_language);
+    spell_debug_log ("spell: config saved engine=%s lang=%s", plugin_spell_engine,
+                     plugin_spell_language);
     spell_state_cache_invalidate ();
     spell_check_cache_reset ();
 }
@@ -299,7 +326,6 @@ spell_config_save (void)
 static gboolean
 hunspell_available (void)
 {
-    static gboolean initialized = FALSE;
     const char *names[] = { "libhunspell-1.7.so.0",
                             "libhunspell-1.7",
                             "libhunspell-1.6.so.0",
@@ -309,9 +335,9 @@ hunspell_available (void)
                             NULL };
     int i;
 
-    if (initialized)
+    if (hunspell_probed)
         return hunspell_module != NULL;
-    initialized = TRUE;
+    hunspell_probed = TRUE;
 
     for (i = 0; names[i] != NULL && hunspell_module == NULL; i++)
         hunspell_module = g_module_open (names[i], G_MODULE_BIND_LAZY);
@@ -411,7 +437,7 @@ hunspell_find_dict (const char *lang, char **aff, char **dic)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-static gboolean G_GNUC_UNUSED
+static gboolean
 hunspell_open_for_language (const char *lang)
 {
     char *aff = NULL;
@@ -452,6 +478,145 @@ hunspell_open_for_language (const char *lang)
     global_hunspell->dict_dic = dic;
     spell_debug_log ("spell: hunspell opened aff=%s dic=%s", aff, dic);
     return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The hunspell C API takes NUL terminated words; the editor hands over a
+ * pointer into the line and a length.
+ */
+
+static char *
+hunspell_word_dup (const char *word, int word_size)
+{
+    return (word_size >= 0) ? g_strndup (word, (gsize) word_size) : g_strdup (word);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Collect the dictionaries hunspell can open, by file name: that name is what
+ * the plugin's Language holds and what the packages install.
+ */
+
+static unsigned int
+hunspell_get_lang_list (GPtrArray *lang_list)
+{
+    const char *dirs[] = { "/usr/share/hunspell", "/usr/local/share/hunspell", "/usr/share/myspell",
+                           "/usr/share/myspell/dicts", NULL };
+    GHashTable *seen;
+    unsigned int count = 0;
+    int i;
+
+    if (lang_list == NULL)
+        return 0;
+
+    seen = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+    for (i = 0; dirs[i] != NULL; i++)
+    {
+        GDir *dir;
+        const char *name;
+
+        dir = g_dir_open (dirs[i], 0, NULL);
+        if (dir == NULL)
+            continue;
+
+        while ((name = g_dir_read_name (dir)) != NULL)
+        {
+            char *base;
+            char *aff;
+            gboolean has_aff;
+
+            if (!g_str_has_suffix (name, ".dic"))
+                continue;
+
+            base = g_strndup (name, strlen (name) - 4);
+            aff = g_strdup_printf ("%s/%s.aff", dirs[i], base);
+            has_aff = g_file_test (aff, G_FILE_TEST_EXISTS);
+            g_free (aff);
+
+            if (!has_aff || g_hash_table_contains (seen, base))
+            {
+                g_free (base);
+                continue;
+            }
+
+            g_hash_table_insert (seen, g_strdup (base), NULL);
+            g_ptr_array_add (lang_list, base);
+            count++;
+        }
+
+        g_dir_close (dir);
+    }
+
+    g_hash_table_destroy (seen);
+
+    return count;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+hunspell_check (const char *word, const int word_size)
+{
+    char *w;
+    int res;
+
+    if (word == NULL || global_hunspell == NULL || global_hunspell->speller == NULL)
+        return TRUE;
+
+    w = hunspell_word_dup (word, word_size);
+    res = mc_Hunspell_spell (global_hunspell->speller, w);
+    g_free (w);
+
+    return res != 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static unsigned int
+hunspell_suggest (GPtrArray *suggest, const char *word, const int word_size)
+{
+    char *w;
+    char **list = NULL;
+    int count, i;
+
+    if (word == NULL || global_hunspell == NULL || global_hunspell->speller == NULL)
+        return 0;
+
+    w = hunspell_word_dup (word, word_size);
+    count = mc_Hunspell_suggest (global_hunspell->speller, &list, w);
+    g_free (w);
+
+    if (count <= 0 || list == NULL)
+        return 0;
+
+    for (i = 0; i < count; i++)
+        g_ptr_array_add (suggest, g_strdup (list[i]));
+
+    mc_Hunspell_free_list (global_hunspell->speller, &list, count);
+
+    return (unsigned int) count;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+hunspell_add_to_dict (const char *word, int word_size)
+{
+    char *w;
+    int res;
+
+    if (word == NULL || global_hunspell == NULL || global_hunspell->speller == NULL)
+        return FALSE;
+
+    w = hunspell_word_dup (word, word_size);
+    /* The library has nowhere of its own to save a word: it keeps it for this
+       session and answers 0 when it took it. */
+    res = mc_Hunspell_add (global_hunspell->speller, w);
+    g_free (w);
+
+    return res == 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -876,7 +1041,10 @@ spell_pick_lang_button_cb (WButton *button, int action)
     lang_input = INPUT (lang_input_widget);
     lang_list = g_ptr_array_new_with_free_func (g_free);
     g_ptr_array_add (lang_list, g_strdup ("NONE"));
-    (void) aspell_get_lang_list (lang_list);
+    if (strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0)
+        (void) hunspell_get_lang_list (lang_list);
+    else
+        (void) aspell_get_lang_list (lang_list);
 
     lang = spell_dialog_lang_list_show (lang_list);
     if (lang != NULL)
@@ -909,23 +1077,89 @@ spell_set_lang (const char *lang)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+static const char *
+spell_backend_name (void)
+{
+    switch (spell_backend)
+    {
+    case SPELL_BACKEND_ASPELL:
+        return SPELL_ENGINE_ASPELL;
+    case SPELL_BACKEND_HUNSPELL:
+        return SPELL_ENGINE_HUNSPELL;
+    default:
+        return "none";
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** One log record is one line, so the word must not carry its own newlines. */
+static char *
+spell_log_word (const char *word, int word_size)
+{
+    char *copy;
+
+    copy = g_strndup (word != NULL ? word : "", word_size > 0 ? (gsize) word_size : 0);
+    return g_strdelimit (copy, "\n\r\t", ' ');
+}
+
+/* --------------------------------------------------------------------------------------------- */
 static gboolean
 spell_check (const char *word, int word_size)
 {
-    if (spell_backend == SPELL_BACKEND_ASPELL)
-        return aspell_check (word, word_size);
+    gboolean ok = TRUE;
+    char *shown;
 
-    return TRUE;
+    if (spell_backend == SPELL_BACKEND_ASPELL)
+        ok = aspell_check (word, word_size);
+    else if (spell_backend == SPELL_BACKEND_HUNSPELL)
+        ok = hunspell_check (word, word_size);
+
+    spell_config_load ();
+    shown = spell_log_word (word, word_size);
+    spell_debug_log ("spell: check word=\"%s\" engine=%s lang=%s result=%s", shown,
+                     spell_backend_name (), plugin_spell_language, ok ? "known" : "misspelled");
+    g_free (shown);
+
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 static unsigned int
 spell_suggest (GPtrArray *suggest, const char *word, int word_size)
 {
-    if (spell_backend == SPELL_BACKEND_ASPELL)
-        return aspell_suggest (suggest, word, word_size);
+    unsigned int res = 0;
+    char *shown;
 
-    return 0;
+    if (spell_backend == SPELL_BACKEND_ASPELL)
+        res = aspell_suggest (suggest, word, word_size);
+    else if (spell_backend == SPELL_BACKEND_HUNSPELL)
+        res = hunspell_suggest (suggest, word, word_size);
+
+    shown = spell_log_word (word, word_size);
+
+    if (res == 0)
+        spell_debug_log ("spell: suggest word=\"%s\" engine=%s: nothing", shown,
+                         spell_backend_name ());
+    else
+    {
+        GString *list;
+        guint i;
+
+        list = g_string_new ("");
+        for (i = 0; i < suggest->len && i < 10; i++)
+            g_string_append_printf (list, i == 0 ? "%s" : ", %s",
+                                    (const char *) g_ptr_array_index (suggest, i));
+        if (suggest->len > 10)
+            g_string_append (list, ", ...");
+
+        spell_debug_log ("spell: suggest word=\"%s\" engine=%s count=%u: %s", shown,
+                         spell_backend_name (), res, list->str);
+        g_string_free (list, TRUE);
+    }
+
+    g_free (shown);
+
+    return res;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -934,6 +1168,8 @@ spell_add_to_dict (const char *word, int word_size)
 {
     if (spell_backend == SPELL_BACKEND_ASPELL)
         return aspell_add_to_dict (word, word_size);
+    if (spell_backend == SPELL_BACKEND_HUNSPELL)
+        return hunspell_add_to_dict (word, word_size);
     return FALSE;
 }
 
@@ -943,10 +1179,120 @@ spell_backend_reason (char *buf, size_t bufsize)
 {
     if (buf == NULL || bufsize == 0)
         return;
-    g_snprintf (buf, bufsize,
-                "Aspell is not installed.\n"
-                "Ubuntu/Debian: sudo apt install aspell aspell-<lang>\n"
-                "RHEL/Fedora: sudo dnf install aspell aspell-<lang>");
+    if (strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0)
+    {
+        if (!hunspell_available ())
+            g_snprintf (buf, bufsize, "%s",
+                        _ ("The hunspell library is not installed.\n"
+                           "Install it, and a dictionary for the language you write in."));
+        else
+            (void) hunspell_language_available (buf, bufsize);
+        return;
+    }
+
+    if (!spell_available ())
+    {
+        g_snprintf (buf, bufsize, "%s",
+                    _ ("The aspell library is not installed.\n"
+                       "Install it, and a dictionary for the language you write in."));
+        return;
+    }
+
+    {
+        GPtrArray *dicts;
+        char *names;
+
+        dicts = g_ptr_array_new_with_free_func (g_free);
+        if (aspell_get_lang_list (dicts) == 0)
+            names = g_strdup (_ ("none"));
+        else
+        {
+            GPtrArray *codes;
+            GHashTable *seen;
+            guint i;
+
+            /* aspell lists every variant it has - en, en-variant_0, en_GB-ise
+               and thirty more - which fills the dialog and tells the reader
+               nothing. Keep what comes before the first dash. */
+            codes = g_ptr_array_new_with_free_func (g_free);
+            seen = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+            for (i = 0; i < dicts->len; i++)
+            {
+                const char *name = (const char *) g_ptr_array_index (dicts, i);
+                const char *dash = strchr (name, '-');
+                char *code;
+
+                code = dash != NULL ? g_strndup (name, (gsize) (dash - name)) : g_strdup (name);
+                if (g_hash_table_contains (seen, code))
+                    g_free (code);
+                else
+                {
+                    g_hash_table_add (seen, g_strdup (code));
+                    g_ptr_array_add (codes, code);
+                }
+            }
+
+            g_ptr_array_add (codes, NULL);
+            names = g_strjoinv (", ", (char **) codes->pdata);
+            g_ptr_array_free (codes, TRUE);
+            g_hash_table_destroy (seen);
+        }
+
+        g_snprintf (buf, bufsize,
+                    _ ("Aspell has no dictionary for \"%s\".\n"
+                       "Installed: %s\n"
+                       "Install a dictionary, then set Language to the name it goes by."),
+                    plugin_spell_language, names);
+
+        g_free (names);
+        g_ptr_array_free (dicts, TRUE);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Whether aspell has a dictionary for @lang. It lists them by code, and a code
+ * carrying a country - ru_RU - is answered by a plain ru as well.
+ */
+
+static gboolean
+aspell_has_dict (const char *lang)
+{
+    GPtrArray *dicts;
+    char *bare;
+    gboolean found = FALSE;
+    guint i;
+
+    if (lang == NULL || *lang == '\0')
+        return FALSE;
+
+    dicts = g_ptr_array_new_with_free_func (g_free);
+    if (aspell_get_lang_list (dicts) == 0)
+    {
+        g_ptr_array_free (dicts, TRUE);
+        return FALSE;
+    }
+
+    bare = g_strdup (lang);
+    {
+        char *sep = strchr (bare, '_');
+
+        if (sep != NULL)
+            *sep = '\0';
+    }
+
+    for (i = 0; i < dicts->len && !found; i++)
+    {
+        const char *name = (const char *) g_ptr_array_index (dicts, i);
+
+        found = strcmp (name, lang) == 0 || strcmp (name, bare) == 0;
+    }
+
+    g_free (bare);
+    g_ptr_array_free (dicts, TRUE);
+
+    return found;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -956,11 +1302,33 @@ spell_backend_selected_available (void)
     if (strcmp (plugin_spell_language, "NONE") == 0)
         return FALSE;
 
-    return spell_available ();
+    if (strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0)
+    {
+        char *aff = NULL;
+        char *dic = NULL;
+        gboolean ok;
+
+        if (!hunspell_available ())
+            return FALSE;
+
+        ok = hunspell_find_dict (plugin_spell_language, &aff, &dic);
+        g_free (aff);
+        g_free (dic);
+        return ok;
+    }
+
+    {
+        gboolean lib = spell_available ();
+        gboolean dict = lib && aspell_has_dict (plugin_spell_language);
+
+        spell_debug_log ("spell: aspell library=%s dict for %s=%s", lib ? "yes" : "no",
+                         plugin_spell_language, dict ? "yes" : "no");
+        return dict;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
-static gboolean G_GNUC_UNUSED
+static gboolean
 hunspell_language_available (char *reason, size_t reason_size)
 {
     char *aff = NULL;
@@ -968,16 +1336,35 @@ hunspell_language_available (char *reason, size_t reason_size)
     gboolean ok;
 
     ok = hunspell_find_dict (plugin_spell_language, &aff, &dic);
+    spell_debug_log ("spell: hunspell dict for %s: %s", plugin_spell_language,
+                     ok ? "found" : "missing");
     g_free (aff);
     g_free (dic);
 
     if (!ok && reason != NULL && reason_size > 0)
+    {
+        GPtrArray *installed;
+        char *names;
+
+        installed = g_ptr_array_new_with_free_func (g_free);
+        if (hunspell_get_lang_list (installed) == 0)
+            names = g_strdup (_ ("none"));
+        else
+        {
+            g_ptr_array_add (installed, NULL);
+            names = g_strjoinv (", ", (char **) installed->pdata);
+            g_ptr_array_remove_index (installed, installed->len - 1);
+        }
+
         g_snprintf (reason, reason_size,
-                    "Hunspell dictionary for language \"%s\" is not installed.\n"
-                    "Ubuntu/Debian: sudo apt install hunspell-%s\n"
-                    "RHEL/Fedora: sudo dnf install hunspell-%s\n"
-                    "Then set Language in Spell plugin settings to an installed code.",
-                    plugin_spell_language, plugin_spell_language, plugin_spell_language);
+                    _ ("Hunspell has no dictionary for \"%s\".\n"
+                       "Installed: %s\n"
+                       "Install a dictionary, then set Language to the name it goes by."),
+                    plugin_spell_language, names);
+
+        g_free (names);
+        g_ptr_array_free (installed, TRUE);
+    }
 
     return ok;
 }
@@ -1004,6 +1391,20 @@ spell_runtime_init (void)
 
     if (spell_backend != SPELL_BACKEND_NONE)
         return;
+
+    if (strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0)
+    {
+        if (hunspell_open_for_language (plugin_spell_language))
+        {
+            spell_backend = SPELL_BACKEND_HUNSPELL;
+            spell_debug_log ("spell: runtime init backend=hunspell lang=%s", plugin_spell_language);
+        }
+        else
+            spell_debug_log ("spell: hunspell has no dictionary for %s", plugin_spell_language);
+
+        spell_state_cache_invalidate ();
+        return;
+    }
 
     global_speller = g_try_malloc (sizeof (spell_t));
     if (global_speller == NULL)
@@ -1046,6 +1447,7 @@ spell_runtime_init (void)
 void
 spell_runtime_shutdown (void)
 {
+    spell_debug_log ("spell: runtime shutdown (was %s)", spell_backend_name ());
     spell_backend = SPELL_BACKEND_NONE;
     spell_state_cache_invalidate ();
 
@@ -1085,6 +1487,9 @@ spell_runtime_shutdown (void)
     {
         g_module_close (hunspell_module);
         hunspell_module = NULL;
+        /* The library is looked for once and the answer kept; closing it here
+           without saying so left every later question answered with "missing". */
+        hunspell_probed = FALSE;
     }
 }
 
@@ -1116,7 +1521,9 @@ spell_query_state (mc_ep_state_t *state)
     reason[0] = '\0';
 
     if (!enabled)
-        g_strlcpy (reason, _ ("Spell plugin is disabled (language is set to NONE)."),
+        g_strlcpy (reason,
+                   _ ("Spell checking is off.\n"
+                      "Set a language in the Spell plugin settings to turn it on."),
                    sizeof (reason));
     else if (!available)
     {
@@ -1164,7 +1571,10 @@ edit_suggest_current_word (WEdit *edit)
         g_string_free (match_word, TRUE);
         match_word = tmp_word;
     }
-    if (match_word != NULL)
+    if (match_word == NULL)
+        spell_debug_log ("spell: word at cursor lost in codepage conversion (source=%d display=%d)",
+                         mc_global.source_codepage, mc_global.display_codepage);
+    else
     {
         if (!spell_check (match_word->str, (int) word_len))
         {
@@ -1278,7 +1688,14 @@ edit_set_spell_lang (void)
 
         lang_list = g_ptr_array_new_with_free_func (g_free);
         g_ptr_array_add (lang_list, g_strdup ("NONE"));
-        if (aspell_get_lang_list (lang_list) != 0 || lang_list->len > 0)
+        if (strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0)
+            (void) hunspell_get_lang_list (lang_list);
+        else
+            (void) aspell_get_lang_list (lang_list);
+
+        spell_debug_log ("spell: language list for engine=%s: %u entries", plugin_spell_engine,
+                         lang_list->len - 1);
+
         {
             const char *lang;
 
@@ -1299,12 +1716,13 @@ edit_spell_plugin_settings (void)
     char *lang_input;
     const char *engine_names[] = {
         _ ("Aspell"),
+        _ ("Hunspell"),
     };
 
     quick_widget_t quick_widgets[] = {
         QUICK_START_COLUMNS,
         QUICK_START_GROUPBOX (_ ("Engine")),
-        QUICK_RADIO (1, engine_names, &selected_engine, NULL),
+        QUICK_RADIO (2, engine_names, &selected_engine, NULL),
         QUICK_STOP_GROUPBOX,
         QUICK_NEXT_COLUMN,
         QUICK_START_GROUPBOX (_ ("Spell")),
@@ -1328,16 +1746,50 @@ edit_spell_plugin_settings (void)
     };
 
     spell_config_load ();
-    selected_engine = 0;
+    selected_engine = strcmp (plugin_spell_engine, SPELL_ENGINE_HUNSPELL) == 0 ? 1 : 0;
     lang_input = g_strdup (plugin_spell_language);
     spell_settings_lang_input_id = 0;
 
-    if (quick_dialog (&qdlg) != B_CANCEL)
+    if (quick_dialog (&qdlg) == B_CANCEL)
+        spell_debug_log ("spell: settings cancelled, engine=%s lang=%s", plugin_spell_engine,
+                         plugin_spell_language);
+    else
     {
+        const char *engine;
+        char *old_engine;
+        char *old_lang;
+
+        engine = selected_engine == 1 ? SPELL_ENGINE_HUNSPELL : SPELL_ENGINE_ASPELL;
+        old_engine = g_strdup (plugin_spell_engine);
+        old_lang = g_strdup (plugin_spell_language);
+
+        if (strcmp (plugin_spell_engine, engine) != 0)
+        {
+            g_free (plugin_spell_engine);
+            plugin_spell_engine = g_strdup (engine);
+            spell_config_save ();
+        }
+
         if (lang_input != NULL && *lang_input != '\0')
             (void) spell_set_lang (lang_input);
+
+        spell_debug_log ("spell: settings applied engine %s -> %s, lang %s -> %s", old_engine,
+                         plugin_spell_engine, old_lang, plugin_spell_language);
+        g_free (old_engine);
+        g_free (old_lang);
+
         spell_runtime_shutdown ();
         spell_runtime_init ();
+        spell_debug_log ("spell: settings restart done, backend=%s", spell_backend_name ());
+
+        // the language just picked may have no dictionary; say so now, not at the first Ctrl-P
+        if (spell_backend == SPELL_BACKEND_NONE && strcmp (plugin_spell_language, "NONE") != 0)
+        {
+            char reason[BUF_MEDIUM];
+
+            spell_backend_reason (reason, sizeof (reason));
+            message (D_ERROR, _ ("Spell"), "%s", reason);
+        }
     }
 
     g_free (lang_input);

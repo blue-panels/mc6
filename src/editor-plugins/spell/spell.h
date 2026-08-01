@@ -14,6 +14,8 @@
 
 /*** declarations of public functions ************************************************************/
 
+void spell_debug_log (const char *fmt, ...) G_GNUC_PRINTF (1, 2);
+
 void spell_runtime_init (void);
 void spell_runtime_shutdown (void);
 mc_ep_result_t spell_query_state (mc_ep_state_t *state);
