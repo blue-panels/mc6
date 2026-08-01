@@ -280,7 +280,10 @@ mc_shell_init (void)
     if (mc_shell->type == SHELL_NONE)
         mc_shell_recognize_path (mc_shell);
 
-    if (mc_shell->type == SHELL_NONE)
+    /* A subshell is driven through the prompt, and a plain sh offers nothing to
+       hook into: the BSD one does not even expand a command substitution in
+       PS1. Run without a subshell rather than hang waiting for one. */
+    if (mc_shell->type == SHELL_NONE || mc_shell->type == SHELL_SH)
         mc_global.tty.use_subshell = FALSE;
 
     mc_global.shell = mc_shell;
