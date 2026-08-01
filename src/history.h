@@ -17,6 +17,7 @@
 #define MC_HISTORY_EDIT_SORT          "mc.edit.sort"
 #define MC_HISTORY_EDIT_PASTE_EXTCMD  "mc.edit.paste-extcmd"
 #define MC_HISTORY_EDIT_REPEAT        "mc.edit.repeat-action"
+#define MC_HISTORY_EDIT_SPELL_ADD     "mc.edit.spell-add-word"
 
 #define MC_HISTORY_FM_VIEW_FILE       "mc.fm.view-file"
 #define MC_HISTORY_FM_MKDIR           "mc.fm.mkdir"
