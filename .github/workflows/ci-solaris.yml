@@ -20,7 +20,7 @@ jobs:
           release: "11.4-gcc"  # autoconf automake developer/gcc/gcc-c libtool pkg-config
           prepare: |
             pkg install --no-backup-be --no-refresh --accept -v \
-              aspell check glib2 libssh2 libx11
+              check glib2 libssh2 libx11
 
           run: |
             ./autogen.sh
@@ -35,7 +35,6 @@ jobs:
                 --prefix="$(pwd)/install-prefix" \
                 --with-screen=ncurses \
                 --enable-mclib \
-                --enable-aspell \
                 --enable-werror \
                 && \
               \

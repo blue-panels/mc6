@@ -8,7 +8,7 @@ arch=('x86_64' 'aarch64')
 url='https://github.com/ilia-maslakov/mcdev/wiki'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
-             'glib2' 'slang' 'gpm' 'e2fsprogs' 'aspell' 'libssh2' 'curl' 'samba'
+             'glib2' 'slang' 'gpm' 'e2fsprogs' 'libssh2' 'curl' 'samba'
              'libarchive' 'file' 'mongo-c-driver')
 options=('!emptydirs')
 source=("mc6-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mc6-${pkgver}.tar.gz")
@@ -25,7 +25,6 @@ build() {
     --libdir=/usr/lib \
     --disable-static \
     --with-screen=slang \
-    --enable-aspell \
     --with-panel-plugins-dir=/usr/lib/mc/panel-plugins \
     --with-editor-plugins-dir=/usr/lib/mc/editor-plugins \
     --enable-mcterm=yes \

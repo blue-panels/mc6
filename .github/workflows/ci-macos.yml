@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew install autoconf automake gettext check libtool pkg-config
-          brew install aspell e2fsprogs glib libssh2 openssl s-lang
+          brew install e2fsprogs glib libssh2 openssl s-lang
 
           # unzip is part of the base system
 
@@ -36,8 +36,7 @@ jobs:
 
           ./configure \
             --prefix="$(pwd)/install-prefix" \
-            --enable-mclib \
-            --enable-aspell=/opt/homebrew
+            --enable-mclib
 
           make -j$(sysctl -n hw.logicalcpu)
           make check

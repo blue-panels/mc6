@@ -98,13 +98,11 @@ incomplete, use `configure --help' to get the full list):
      built-in file editor.  The built-in editor is compiled in by
      default.
 
-`--enable-aspell[=prefix]'
-     This option adds spell check support to the internal editor using
-     libaspell and optionally sets path to libaspell installation prefix
-     [default=/usr]. Disabled by default.
-     When enabled, spell-check commands are handled by the built-in
-     editor plugin named `spell'.
-     The spell plugin settings dialog allows selecting the language.
+     Spell checking needs no configure option.  It is built into the
+     internal editor whenever gmodule is available, and is handled by
+     the built-in editor plugin named `spell'.  The plugin opens
+     libaspell or libhunspell at run time, so neither library is needed
+     to build; the settings dialog selects the engine and the language.
 
 `--without-gpm-mouse'
      Use this flag to disable gpm mouse support (e.g. if you want to
