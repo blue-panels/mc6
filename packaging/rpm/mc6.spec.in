@@ -51,6 +51,8 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
 %build
 # The archive is bootstrapped: it carries configure and mc-version.h.
 %configure \
+    PERL=%{__perl} \
+    PYTHON=%{__python3} \
     --disable-static \
     --with-screen=slang \
     --with-panel-plugins-dir=%{_libdir}/mc/panel-plugins \
