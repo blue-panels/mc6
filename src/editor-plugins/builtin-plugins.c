@@ -1,8 +1,5 @@
 #include <config.h>
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #include "lib/global.h"
 #include "lib/mcconfig.h"
 #include "lib/editor-plugin.h"
@@ -26,31 +23,7 @@ typedef struct
     int key;
 } spell_keybind_t;
 
-#define SPELL_KEYMAP_FILE    "spell.keymap"
-#define SPELL_DEBUG_LOG_PATH "/tmp/mc-spell.log"
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void spell_plugin_debug_log (const char *fmt, ...) G_GNUC_PRINTF (1, 2);
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-spell_plugin_debug_log (const char *fmt, ...)
-{
-    FILE *fp;
-    va_list ap;
-
-    fp = fopen (SPELL_DEBUG_LOG_PATH, "a");
-    if (fp == NULL)
-        return;
-
-    va_start (ap, fmt);
-    vfprintf (fp, fmt, ap);
-    va_end (ap);
-    fputc ('\n', fp);
-    fclose (fp);
-}
+#define SPELL_KEYMAP_FILE "spell.keymap"
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -116,8 +89,8 @@ spell_keymap_add_binding (GArray *keymap, long command, const char *keybind)
 
     bind.command = command;
     g_array_append_val (keymap, bind);
-    spell_plugin_debug_log ("spell: keymap bind %s -> key=%d command=%ld", keybind, bind.key,
-                            bind.command);
+    spell_debug_log ("spell: keymap bind %s -> key=%d command=%ld", keybind, bind.key,
+                     bind.command);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -173,17 +146,17 @@ spell_keymap_load_file (GArray *keymap, const char *fname)
 
     if (!exist_file (fname))
     {
-        spell_plugin_debug_log ("spell: keymap file not found: %s", fname);
+        spell_debug_log ("spell: keymap file not found: %s", fname);
         return;
     }
 
     if (!g_file_get_contents (fname, &contents, &len, NULL))
     {
-        spell_plugin_debug_log ("spell: keymap read failed: %s", fname);
+        spell_debug_log ("spell: keymap read failed: %s", fname);
         return;
     }
 
-    spell_plugin_debug_log ("spell: loading keymap file: %s", fname);
+    spell_debug_log ("spell: loading keymap file: %s", fname);
     lines = g_strsplit (contents, "\n", -1);
     for (it = lines; it != NULL && *it != NULL; it++)
         spell_keymap_parse_line (keymap, *it);
@@ -208,7 +181,7 @@ spell_keymap_load (void)
         g_free (fname);
     }
     else
-        spell_plugin_debug_log ("spell: share_data_dir is NULL, skip system keymap");
+        spell_debug_log ("spell: share_data_dir is NULL, skip system keymap");
 
     if (mc_global.sysconfig_dir != NULL)
     {
@@ -217,13 +190,13 @@ spell_keymap_load (void)
         g_free (fname);
     }
     else
-        spell_plugin_debug_log ("spell: sysconfig_dir is NULL, skip sysconfig keymap");
+        spell_debug_log ("spell: sysconfig_dir is NULL, skip sysconfig keymap");
 
     fname = mc_config_get_full_path (SPELL_KEYMAP_FILE);
     spell_keymap_load_file (keymap, fname);
     g_free (fname);
 
-    spell_plugin_debug_log ("spell: keymap loaded total binds=%u", keymap->len);
+    spell_debug_log ("spell: keymap loaded total binds=%u", keymap->len);
     return keymap;
 }
 
@@ -380,15 +353,19 @@ spell_plugin_handle_action (void *plugin_data, long command, void *edit)
     editor_builtin_plugin_data_t *data = (editor_builtin_plugin_data_t *) plugin_data;
     mc_ep_state_t state = { TRUE, TRUE, NULL };
 
+    // every editor command passes through here; take ours before saying anything
+    if (command != CK_SpellCheck && command != CK_SpellCheckSelectLang)
+        return MC_EPR_NOT_SUPPORTED;
+
+    if (edit == NULL && command != CK_SpellCheckSelectLang)
+        return MC_EPR_NOT_SUPPORTED;
+
     if (spell_query_state (&state) != MC_EPR_OK || !state.available || !state.enabled)
     {
         message (D_ERROR, _ ("Spell"), "%s",
                  state.reason != NULL ? state.reason : _ ("Spell backend is unavailable."));
         return MC_EPR_NOT_SUPPORTED;
     }
-
-    if (edit == NULL && command != CK_SpellCheckSelectLang)
-        return MC_EPR_NOT_SUPPORTED;
 
     switch (command)
     {
@@ -417,24 +394,19 @@ spell_plugin_handle_key (void *plugin_data, int key, void *edit)
     long command;
 
     if (edit == NULL || data == NULL)
-    {
-        spell_plugin_debug_log ("spell: key event ignored key=%d (no edit/data)", key);
         return MC_EPR_NOT_SUPPORTED;
-    }
 
+    // every keystroke in the editor lands here; only ours is worth a line
     command = spell_keymap_lookup_command (data->spell_keymap, key);
     if (command == CK_IgnoreKey)
-    {
-        spell_plugin_debug_log ("spell: key=%d not mapped in spell.keymap", key);
         return MC_EPR_NOT_SUPPORTED;
-    }
 
-    spell_plugin_debug_log ("spell: key=%d resolved command=%ld", key, command);
+    spell_debug_log ("spell: key=%d resolved command=%ld", key, command);
 
     if (spell_query_state (&state) != MC_EPR_OK || !state.available || !state.enabled)
     {
-        spell_plugin_debug_log ("spell: key command rejected by state, reason=%s",
-                                state.reason != NULL ? state.reason : "unavailable");
+        spell_debug_log ("spell: key command rejected by state, reason=%s",
+                         state.reason != NULL ? state.reason : "unavailable");
         message (D_ERROR, _ ("Spell"), "%s",
                  state.reason != NULL ? state.reason : _ ("Spell backend is unavailable."));
         return MC_EPR_NOT_SUPPORTED;
@@ -452,11 +424,11 @@ spell_plugin_handle_key (void *plugin_data, int key, void *edit)
         edit_set_spell_lang ();
         break;
     default:
-        spell_plugin_debug_log ("spell: key command %ld not supported", command);
+        spell_debug_log ("spell: key command %ld not supported", command);
         return MC_EPR_NOT_SUPPORTED;
     }
 
-    spell_plugin_debug_log ("spell: key command handled command=%ld", command);
+    spell_debug_log ("spell: key command handled command=%ld", command);
 
     if (data != NULL && data->host != NULL && data->host->redraw != NULL)
         (data->host->redraw) (data->host);

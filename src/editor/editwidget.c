@@ -571,15 +571,9 @@ edit_plugin_handle_key (WDialog *edit_dlg, int key, WEdit *edit)
         if (plugin == NULL || plugin->handle_key == NULL)
             continue;
 
-        if (plugin->query_state != NULL)
-        {
-            mc_ep_state_t state = { TRUE, TRUE, NULL };
-
-            if (plugin->query_state (inst->plugin_data, edit, &state) == MC_EPR_OK
-                && (!state.available || !state.enabled))
-                continue;
-        }
-
+        /* No state gate here: only the plugin knows whether the key is one of
+           its own, and a disabled plugin still has to explain itself when the
+           user presses that key. */
         if (plugin->handle_key (inst->plugin_data, key, edit) == MC_EPR_OK)
             return TRUE;
     }
