@@ -575,10 +575,15 @@ hunspell_add_to_dict (const char *word, int word_size)
 static gboolean
 spell_available (void)
 {
+    // the bare name resolves to libaspell.so, which ships in the -dev package
+    const char *names[] = { "libaspell.so.15", "libaspell", NULL };
+    int i;
+
     if (spell_module != NULL)
         return TRUE;
 
-    spell_module = g_module_open ("libaspell", G_MODULE_BIND_LAZY);
+    for (i = 0; names[i] != NULL && spell_module == NULL; i++)
+        spell_module = g_module_open (names[i], G_MODULE_BIND_LAZY);
 
     if (spell_module == NULL)
         return FALSE;
