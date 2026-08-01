@@ -2218,6 +2218,10 @@ tty_get_event (struct Gpm_Event *event, gboolean redo_event, gboolean block)
             time_out.tv_usec = 0;
         }
 
+        // select() does not see input already buffered by the screen library
+        if (tty_lowlevel_input_pending ())
+            break;
+
         tty_enable_interrupt_key ();
         flag = select (nfd, &select_set, NULL, NULL, time_addr);
         tty_disable_interrupt_key ();
