@@ -41,6 +41,8 @@
 #include "lib/util.h"     // MC_PTR_FREE()
 #include "lib/tty/tty.h"  // COLS, LINES
 
+#include "src/history.h"
+
 #include "editwidget.h"
 
 #include "spell.h"
@@ -85,6 +87,7 @@ typedef struct hunspell_struct
 
 /*** forward declarations (file scope functions) *************************************************/
 static gboolean hunspell_language_available (char *reason, size_t reason_size);
+static const char *spell_backend_name (void);
 
 /*** file scope variables ************************************************************************/
 
@@ -156,41 +159,6 @@ static int (*mc_Hunspell_suggest) (Hunhandle *pHunspell, char ***slst, const cha
 static void (*mc_Hunspell_free_list) (Hunhandle *pHunspell, char ***slst, int n);
 static int (*mc_Hunspell_add) (Hunhandle *pHunspell, const char *word);
 
-static struct
-{
-    const char *code;
-    const char *name;
-} spell_codes_map[] = {
-    { "br", N_ ("Breton") },
-    { "cs", N_ ("Czech") },
-    { "cy", N_ ("Welsh") },
-    { "da", N_ ("Danish") },
-    { "de", N_ ("German") },
-    { "el", N_ ("Greek") },
-    { "en", N_ ("English") },
-    { "en_GB", N_ ("British English") },
-    { "en_CA", N_ ("Canadian English") },
-    { "en_US", N_ ("American English") },
-    { "eo", N_ ("Esperanto") },
-    { "es", N_ ("Spanish") },
-    { "fo", N_ ("Faroese") },
-    { "fr", N_ ("French") },
-    { "it", N_ ("Italian") },
-    { "nl", N_ ("Dutch") },
-    { "no", N_ ("Norwegian") },
-    { "pl", N_ ("Polish") },
-    { "pt", N_ ("Portuguese") },
-    { "ro", N_ ("Romanian") },
-    { "ru", N_ ("Russian") },
-    { "sk", N_ ("Slovak") },
-    { "sv", N_ ("Swedish") },
-    { "uk", N_ ("Ukrainian") },
-    {
-        NULL,
-        NULL,
-    },
-};
-
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -251,28 +219,6 @@ spell_state_cache_invalidate (void)
     spell_state_cache_available = FALSE;
     spell_state_cache_reason[0] = '\0';
     spell_state_cache_ts_us = 0;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Found the language name by language code. For example: en_US -> American English.
- *
- * @param code Short name of the language (ru, en, pl, uk, etc...)
- * @return language name
- */
-
-static const char *
-spell_decode_lang (const char *code)
-{
-    size_t i;
-
-    for (i = 0; spell_codes_map[i].code != NULL; i++)
-    {
-        if (strcmp (spell_codes_map[i].code, code) == 0)
-            return _ (spell_codes_map[i].name);
-    }
-
-    return code;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -678,13 +624,10 @@ spell_available (void)
 static const char *
 aspell_get_lang (void)
 {
-    const char *code;
-
     if (global_speller == NULL || global_speller->config == NULL)
-        return spell_decode_lang (plugin_spell_language);
+        return plugin_spell_language;
 
-    code = mc_aspell_config_retrieve (global_speller->config, "lang");
-    return spell_decode_lang (code);
+    return mc_aspell_config_retrieve (global_speller->config, "lang");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -696,7 +639,7 @@ spell_get_lang (void)
     if (spell_backend == SPELL_BACKEND_ASPELL)
         return aspell_get_lang ();
 
-    return spell_decode_lang (plugin_spell_language);
+    return plugin_spell_language;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -821,6 +764,24 @@ aspell_set_lang (const char *lang)
  * @return code of pressed button
  */
 
+static cb_ret_t
+spell_suggest_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    // Enter on the suggestion list means "replace with this one"
+    if (msg == MSG_NOTIFY && parm == CK_Enter)
+    {
+        WDialog *d = DIALOG (w);
+
+        d->ret_value = B_ENTER;
+        dlg_close (d);
+        return MSG_HANDLED;
+    }
+
+    return dlg_default_callback (w, sender, msg, parm, data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 spell_dialog_spell_suggest_show (WEdit *edit, const char *word, char **new_word,
                                  const GPtrArray *suggest)
@@ -845,6 +806,7 @@ spell_dialog_spell_suggest_show (WEdit *edit, const char *word, char **new_word,
     WButton *skip_btn;
     WButton *cancel_button;
     int word_label_len;
+    const gboolean have_suggest = suggest->len != 0;
 
     // calculate the dialog metrics
     xpos = (COLS - sug_dlg_w) / 2;
@@ -855,25 +817,41 @@ spell_dialog_spell_suggest_show (WEdit *edit, const char *word, char **new_word,
         ypos -= sug_dlg_h;
 
     add_btn = button_new (5, 28, B_ADD_WORD, NORMAL_BUTTON, _ ("&Add word"), 0);
-    replace_btn = button_new (7, 28, B_ENTER, NORMAL_BUTTON, _ ("&Replace"), 0);
-    replace_width = button_get_width (replace_btn);
-    skip_btn = button_new (9, 28, B_SKIP_WORD, NORMAL_BUTTON, _ ("&Skip"), 0);
+
+    if (have_suggest)
+    {
+        replace_btn = button_new (7, 28, B_ENTER, NORMAL_BUTTON, _ ("&Replace"), 0);
+        replace_width = button_get_width (replace_btn);
+        skip_btn = button_new (9, 28, B_SKIP_WORD, NORMAL_BUTTON, _ ("&Skip"), 0);
+        cancel_button = button_new (11, 28, B_CANCEL, NORMAL_BUTTON, _ ("&Cancel"), 0);
+    }
+    else
+    {
+        // nothing to replace the word with; close the gap the button leaves
+        replace_btn = NULL;
+        replace_width = 0;
+        skip_btn = button_new (7, 28, B_SKIP_WORD, NORMAL_BUTTON, _ ("&Skip"), 0);
+        cancel_button = button_new (9, 28, B_CANCEL, NORMAL_BUTTON, _ ("&Cancel"), 0);
+    }
+
     skip_width = button_get_width (skip_btn);
-    cancel_button = button_new (11, 28, B_CANCEL, NORMAL_BUTTON, _ ("&Cancel"), 0);
     cancel_width = button_get_width (cancel_button);
 
-    max_btn_width = MAX (replace_width, skip_width);
+    max_btn_width = MAX (button_get_width (add_btn), replace_width);
+    max_btn_width = MAX (max_btn_width, skip_width);
     max_btn_width = MAX (max_btn_width, cancel_width);
 
-    lang_label = g_strdup_printf ("%s: %s", _ ("Language"), spell_get_lang ());
+    lang_label =
+        g_strdup_printf ("%s: %s (%s)", _ ("Language"), spell_get_lang (), spell_backend_name ());
     word_label = g_strdup_printf ("%s: %s", _ ("Misspelled"), word);
-    word_label_len = str_term_width1 (word_label) + 5;
+    word_label_len = MAX (str_term_width1 (word_label), str_term_width1 (lang_label)) + 5;
 
     sug_dlg_w += max_btn_width;
     sug_dlg_w = MAX (sug_dlg_w, word_label_len) + 1;
 
-    sug_dlg = dlg_create (TRUE, ypos, xpos, sug_dlg_h, sug_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
-                          dialog_colors, NULL, NULL, "[Spell]", _ ("Check word"));
+    sug_dlg =
+        dlg_create (TRUE, ypos, xpos, sug_dlg_h, sug_dlg_w, WPOS_KEEP_DEFAULT, TRUE, dialog_colors,
+                    spell_suggest_dlg_callback, NULL, "[Spell]", _ ("Check word"));
     g = GROUP (sug_dlg);
 
     group_add_widget (g, label_new (1, 2, lang_label));
@@ -882,18 +860,27 @@ spell_dialog_spell_suggest_show (WEdit *edit, const char *word, char **new_word,
     group_add_widget (g, groupbox_new (4, 2, sug_dlg_h - 5, 25, _ ("Suggest")));
 
     sug_list = listbox_new (5, 2, sug_dlg_h - 7, 24, FALSE, NULL);
-    for (i = 0; i < suggest->len; i++)
-        listbox_add_item (sug_list, LISTBOX_APPEND_AT_END, 0, g_ptr_array_index (suggest, i), NULL,
-                          FALSE);
+    if (!have_suggest)
+        listbox_add_item (sug_list, LISTBOX_APPEND_AT_END, 0, _ ("(no suggestions)"), NULL, FALSE);
+    else
+        for (i = 0; i < suggest->len; i++)
+            listbox_add_item (sug_list, LISTBOX_APPEND_AT_END, 0, g_ptr_array_index (suggest, i),
+                              NULL, FALSE);
     group_add_widget (g, sug_list);
 
     group_add_widget (g, add_btn);
-    group_add_widget (g, replace_btn);
+    if (replace_btn != NULL)
+        group_add_widget (g, replace_btn);
     group_add_widget (g, skip_btn);
     group_add_widget (g, cancel_button);
 
+    // the list is what the user came for; Cancel was getting the focus
+    widget_select (have_suggest ? WIDGET (sug_list) : WIDGET (add_btn));
+
     res = dlg_run (sug_dlg);
-    if (res == B_ENTER)
+    if (res == B_ENTER && !have_suggest)
+        res = B_SKIP_WORD;  // the only list item is the "nothing found" notice
+    else if (res == B_ENTER)
     {
         char *curr = NULL;
 
@@ -1579,13 +1566,13 @@ edit_suggest_current_word (WEdit *edit)
         if (!spell_check (match_word->str, (int) word_len))
         {
             GPtrArray *suggest;
-            unsigned int res;
             guint i;
 
             suggest = g_ptr_array_new_with_free_func (g_free);
 
-            res = spell_suggest (suggest, match_word->str, (int) word_len);
-            if (res != 0)
+            // no suggestions is not nothing to say: the word is still wrong,
+            // and it may be a name the user wants in their dictionary
+            (void) spell_suggest (suggest, match_word->str, (int) word_len);
             {
                 char *new_word = NULL;
 
@@ -1621,7 +1608,18 @@ edit_suggest_current_word (WEdit *edit)
                     }
                 }
                 else if (retval == B_ADD_WORD)
-                    spell_add_to_dict (match_word->str, (int) word_len);
+                {
+                    char *to_add;
+
+                    // what the cursor caught is not always what belongs in the
+                    // dictionary: a case, an ending or a stray character
+                    to_add = input_dialog (_ ("Add word"), _ ("Word to add to the dictionary:"),
+                                           MC_HISTORY_EDIT_SPELL_ADD, match_word->str,
+                                           INPUT_COMPLETE_NONE);
+                    if (to_add != NULL && *to_add != '\0')
+                        spell_add_to_dict (to_add, (int) strlen (to_add));
+                    g_free (to_add);
+                }
             }
 
             g_ptr_array_free (suggest, TRUE);
