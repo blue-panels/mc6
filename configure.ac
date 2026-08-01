@@ -731,7 +731,17 @@ AS_CASE([$enable_panel_plugin_arcmc],
 if test "x$enable_panel_plugin_arcmc" != xno; then
     PKG_CHECK_MODULES([LIBARCHIVE], [libarchive >= 3.0], [
         have_panel_plugin_arcmc=yes
-    ], [:])
+    ], [
+        dnl FreeBSD carries libarchive in the base system and ships no
+        dnl pkg-config file for it. archive_read_free arrived in 3.0.
+        AC_CHECK_HEADER([archive.h], [
+            AC_CHECK_LIB([archive], [archive_read_free], [
+                LIBARCHIVE_CFLAGS=""
+                LIBARCHIVE_LIBS="-larchive"
+                have_panel_plugin_arcmc=yes
+            ])
+        ])
+    ])
 fi
 
 dnl Optional libmagic support for arcmc content-based archive detection
