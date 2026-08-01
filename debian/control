@@ -29,7 +29,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends},
          python3:any,
          mc6-data (= ${source:Version})
 Recommends: mailcap, perl, sensible-utils, unzip
-Suggests: mc6-plugins
+Suggests: mc6-plugins, aspell, hunspell
 Provides: mc (= ${binary:Version})
 Conflicts: mc
 Replaces: mc
