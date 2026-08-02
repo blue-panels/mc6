@@ -36,6 +36,7 @@ typedef enum
     VTERM_ERASE_CHARS,       /* param1=count; erase from cursor_col, cursor stays */
     VTERM_DCH,               /* param1=count; delete chars at cursor, shift left, fill right */
     VTERM_RI,                /* ESC M: reverse index -- scroll region down, cursor up */
+    VTERM_REPLY,             /* the program asked what the terminal is; ev.reply is the answer */
     VTERM_CONSUMED,
 } vterm_result_t;
 
@@ -47,6 +48,7 @@ typedef struct
     int param1;
     int param2;
     gunichar ch;
+    const char *reply;  // VTERM_REPLY: static string to write back to the program
     mcview_ansi_state_t ansi;
 } vterm_event_t;
 

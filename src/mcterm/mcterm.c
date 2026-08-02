@@ -121,6 +121,15 @@ mcterm_pty_ready_cb (int fd, void *info)
 
             ev = mcview_vterm_feed (t->vterm, buf[i]);
             mcview_vterm_apply_event (t->vterm, &ev);
+
+            // the shell asked what the terminal is; the emulator wrote the answer
+            if (ev.type == VTERM_REPLY && ev.reply != NULL && t->pty_master >= 0)
+            {
+                ssize_t ignored;
+
+                ignored = write (t->pty_master, ev.reply, strlen (ev.reply));
+                (void) ignored;
+            }
             mcterm_handle_osc7_generation (t);
         }
 
