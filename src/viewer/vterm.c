@@ -54,6 +54,9 @@ struct mcview_vterm_struct
     gboolean csi_private;
     gboolean in_osc;
     gboolean in_osc_esc;
+    gboolean in_dcs;
+    gboolean in_dcs_esc;
+    gboolean csi_gt;
     gboolean in_esc_char;
 
     int params[MCVIEW_VTERM_MAX_PARAMS];
@@ -67,6 +70,8 @@ struct mcview_vterm_struct
 
     char osc_buf[2048];
     int osc_len;
+    char dcs_buf[64];
+    int dcs_len;
     char *osc7_raw;
     guint osc7_generation;
 
@@ -140,6 +145,17 @@ static vterm_event_t
 vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
 {
     int p0, p1;
+
+    /* Device Attributes: CSI c and CSI 0 c ask what the terminal is, CSI > c
+       asks for its version. Answer VT100 with an advanced video option. */
+    if (final_byte == 'c' && !vt->csi_private)
+    {
+        vterm_event_t ev = vterm_make (vt, VTERM_REPLY);
+
+        ev.reply = vt->csi_gt ? ESC_STR "[>0;0;0c" : ESC_STR "[?1;2c";
+        vt->csi_gt = FALSE;
+        return ev;
+    }
 
     if (vt->csi_private)
     {
@@ -442,6 +458,10 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vt->csi_private = FALSE;
     vt->in_osc = FALSE;
     vt->in_osc_esc = FALSE;
+    vt->in_dcs = FALSE;
+    vt->in_dcs_esc = FALSE;
+    vt->dcs_len = 0;
+    vt->csi_gt = FALSE;
     vt->in_esc_char = FALSE;
     vt->param_count = 0;
     vt->current_param = 0;
@@ -502,6 +522,35 @@ mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols)
 vterm_event_t
 mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
 {
+    if (vt->in_dcs)
+    {
+        if (vt->in_dcs_esc)
+        {
+            vt->in_dcs_esc = FALSE;
+            if (byte == '\\')
+            {
+                vt->in_dcs = FALSE;
+                vt->dcs_buf[vt->dcs_len] = '\0';
+
+                /* XTGETTCAP asks which terminfo capabilities exist:
+                   DCS + q <names> ST. Answer that none are known. */
+                if (vt->dcs_len >= 2 && vt->dcs_buf[0] == '+' && vt->dcs_buf[1] == 'q')
+                {
+                    vterm_event_t ev = vterm_make (vt, VTERM_REPLY);
+
+                    ev.reply = ESC_STR "P0+r" ESC_STR "\\";
+                    return ev;
+                }
+            }
+        }
+        else if (byte == ESC_CHAR)
+            vt->in_dcs_esc = TRUE;
+        else if (vt->dcs_len < (int) sizeof (vt->dcs_buf) - 1)
+            vt->dcs_buf[vt->dcs_len++] = (char) byte;
+
+        return vterm_make (vt, VTERM_CONSUMED);
+    }
+
     if (vt->in_osc)
     {
         if (vt->in_osc_esc)
@@ -545,10 +594,17 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
     {
         vt->saw_esc = FALSE;
 
-        if (byte == '[')
+        if (byte == 'P')
+        {
+            vt->in_dcs = TRUE;
+            vt->in_dcs_esc = FALSE;
+            vt->dcs_len = 0;
+        }
+        else if (byte == '[')
         {
             vt->in_csi = TRUE;
             vt->csi_private = FALSE;
+            vt->csi_gt = FALSE;
             vt->param_count = 0;
             vt->current_param = 0;
             vt->has_current = FALSE;
@@ -599,6 +655,12 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         if (byte == '?')
         {
             vt->csi_private = TRUE;
+            return vterm_make (vt, VTERM_CONSUMED);
+        }
+
+        if (byte == '>')
+        {
+            vt->csi_gt = TRUE;
             return vterm_make (vt, VTERM_CONSUMED);
         }
 
