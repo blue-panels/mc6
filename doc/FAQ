@@ -622,33 +622,24 @@ just a clear, screen is blanked.
 
 7.1 How can I see the contents of a tar archive?
 
-   If you use keyboard just move the selection bar on the tar file and
-   press enter.  If you use mouse just double-click on the tar file.
+   If the arcmc panel plugin is available, select the archive and press
+   Enter to browse it.  Otherwise Enter or F3 displays its contents;
+   use an external tar command to extract it.  The utar:// virtual
+   filesystem path is no longer supported.
 
-   The recognized suffixes for tar archives are .tar, .tar.gz and .tgz.
-   You can also enter a tar archive by typing "cd filename/utar://" where
-   filename is the name of the archive.  In this case, the suffix is not
-   important.
-
-7.2 How do I get out of a tar archive?
-
-   Just press enter on the toplevel ".." file or change to a non-tar
-   directory.  Just typing "cd" with no parameters is enough (it will
-   take you to your home directory).
-
-7.3 How do I do anonymous ftp with MC?
+7.2 How do I do anonymous ftp with MC?
 
    Just type "cd ftp://hostname" where hostname is the name of the host
    you want to connect.  Alternatively, select FTP link from the Left or
    Right menu and type the name of the host you want to connect.
 
-7.4 How do I do non-anonymous ftp with MC?
+7.3 How do I do non-anonymous ftp with MC?
 
    Non-anonymous ftp works just like the anonymous ftp but you give the
    login name with the host name.  For example, type "cd
    ftp://username@hostname".
 
-7.5 How do I close an ftp connection?
+7.4 How do I close an ftp connection?
 
    Just change to a non-ftp directory.  Simply typing "cd" with no
    parameters is enough (it will take you to your home directory).
@@ -658,7 +649,7 @@ just a clear, screen is blanked.
    "Command" -> "Active VFS List" in the menu and using the "Free VFSs
    Now" button.
 
-7.6 Why aren't the contents of ftp panel updated?
+7.5 Why aren't the contents of ftp panel updated?
 
    Update is skipped because there would be a serious performance
    penalty.  Constantly updating directory panels through a ftp
@@ -666,7 +657,7 @@ just a clear, screen is blanked.
 
    You can use C-r to force an update.
 
-7.7 What kind of proxy server works with Midnight Commander?
+7.6 What kind of proxy server works with Midnight Commander?
 
    There are two kinds of ftp proxies: proxies for ftp clients and
    proxies for web browsers.

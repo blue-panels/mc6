@@ -116,7 +116,7 @@
 #
 #        %f
 #            Name of the current file. Unlike %p, if the file is located on a non-local
-#            virtual filesystem, that is either tarfs or ftpfs, then the file will be
+#            virtual filesystem, then the file will be
 #            temporarily copied into a local directory and %f will be the full path
 #            to this local temporary file.
 #            If you don't want to get a local copy and want to get the virtual fs path
@@ -218,65 +218,63 @@ Include=tar.gz
 
 [tar.bzip]
 Shell=.tar.bz
-# Open=%cd %p/utar://
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.bzip
 
 [tar.bzip2]
 Regex=\\.t(ar\\.bz2|bz2?|b2)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.bzip2 %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.bzip2
 
 # .tar.lzma, .tlz
 [tar.lzma]
 Regex=\\.t(ar\\.lzma|lz)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.lzma %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.lzma
 
 [tar.lz]
 Shell=.tar.lz
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.lz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.lz
 
 # .tar.lz4, .tlz4
 [tar.lz4]
 Regex=\\.t(ar\\.lz4|lz4)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.lz4 %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.lz4
 
 # .tar.lzo, .tzo
 [tar.lzo]
 Regex=\\.t(ar\\.lzo|zo)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.lzo %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.lzo
 
 # .tar.xz, .txz
 [tar.xz]
 Regex=\\.t(ar\\.xz|xz)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.xz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.xz
 
 # .tar.zst, .tzst
 [tar.zst]
 Regex=\\.t(ar\\.zst|zst)$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.zst %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.zst
 
 # .tar.F - used on QNX
 [tar.F]
 Shell=.tar.F
-# Open=%cd %p/utar://
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.F
 
 # .qpr/.qpk - QNX Neutrino package installer files
 [tar.qpr]
 Regex=\\.qp[rk]$
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.qpr %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.qpr
 
 [tar]
 Shell=.tar
 ShellIgnoreCase=true
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar
 
 [arj]
@@ -1198,7 +1196,7 @@ Open=@EXTHELPERSDIR@/archive.sh open par2
 # Includes should be at end of the bindings
 
 [Include/tar.gz]
-Open=%cd %p/utar://
+Open=@EXTHELPERSDIR@/archive.sh view tar.gz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.gz
 
 [Include/cpio]

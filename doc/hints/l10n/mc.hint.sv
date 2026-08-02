@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Tips: Tab ändrar din nuvarande panel.
 
-Tips: VFS användbarhet: tryck enter på en tar-fil för att se dess innehåll.
-
 Tips: Vi har också en trevlig manualsida.
 
 Tips: Vill du ha navigation i Lynx-stil? Ställ in det i konfigurationsdialogen.

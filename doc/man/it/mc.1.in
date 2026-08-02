@@ -2527,8 +2527,7 @@ file all'interno di un file system non di tipo Unix.
 Attualmente il Midnight Commander viene confezionato con alcuni File 
 System Virtuali (VFS): il file system locale, usato per accedere al 
 normale file system Unix; l'ftpfs, usato per manipolare file su sistemi 
-remoti con il protocollo FTP; il tarfs, usato per manipolare file tar
-e file tar compressi; l'undelfs, usato per recuperare file cancellati
+remoti con il protocollo FTP; l'undelfs, usato per recuperare file cancellati
 su file system di tipo ext2 (il file system predefinito per sistemi
 Unix), fish (per manipolare file su connessioni shell come rsh e ssh) e
 per ultimo l'mcfs (file system del Midnight Commander), un file system
@@ -2586,30 +2585,6 @@ Controllare la finestra di dialogo
 file system virtuale
 .\"Virtual FS"
 per le opzioni ftpfs.
-.\"NODE "  Tar File System"
-.SH "  File system Tar"
-Il file system tar fornisce un accesso in sola lettura ai file tar
-e tar compressi usando il comando chdir. Per cambiare la directory corrente 
-al file tar usare la seguente sintassi:
-.PP
-.I /nomefile.tar/utar://[dir\-dentro\-tar]
-.PP
-Il file mc.ext.ini già fornisce un collegamento per il file tar; ciò
-significa che normalmente basta selezionare un file tar e premere invio
-per entrare nel file tar, vedere la sezione
-.\"LINK2"
-modifica file estensioni
-.\"Edit Extension File"
-per i dettagli su come questo viene fatto.
-.PP
-Esempi:
-.PP
-.nf
-    mc\-3.0.tar.gz/utar://mc\-3.0/vfs
-    /ftp/GCC/gcc\-2.7.0.tar/utar://
-.fi
-.PP
-L'ultima riga, specifica il percorso completo dell'archivio tar.
 .\"NODE "  FIle transfer over SHell filesystem"
 .SH "  Trasferimento di file su FIlesystem di SHell (FISH)"
 Il file system fish è un file system basato sulla rete che permette di
@@ -3047,4 +3022,3 @@ Nel rapporto è necessario fornire una descrizione dettagliata del baco,
 la versione del programma (mc \-v mostra quest'informazione), il sistema 
 operativo su cui si sta facendo girare il programma e, se il programma 
 va in crash, è gradita una traccia dello stack.
-

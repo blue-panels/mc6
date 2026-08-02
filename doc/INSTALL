@@ -163,10 +163,6 @@ VFS options:
      (on by default)
      Support for cpio filesystem
 
-`--enable-vfs-tar'
-     (on by default)
-     Support for tar filesystem
-
 `--enable-panel-plugin-ftp'
      (auto)
      Support for FTP.  Built as a panel plugin (mc-panel-ftp.so).

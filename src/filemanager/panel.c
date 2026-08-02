@@ -1256,8 +1256,7 @@ panel_correct_path_to_show (const WPanel *panel)
 
     if (elements_count > 1
         && (strcmp (path_element->class->name, "cpiofs") == 0
-            || strcmp (path_element->class->name, "extfs") == 0
-            || strcmp (path_element->class->name, "tarfs") == 0))
+            || strcmp (path_element->class->name, "extfs") == 0))
     {
         const char *archive_name;
         const vfs_path_element_t *prev_path_element;

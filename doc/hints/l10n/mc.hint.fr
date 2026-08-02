@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Astuce : La touche Tab permute le panneau courant.
 
-Astuce : VFS : taper Entrée sur une archive tar pour en visualiser son contenu.
-
 Astuce : Une documentation complète est disponible : « man mc ».
 
 Astuce : Vous cherchez une navigation à la Lynx ? Activez-là dans le menu Options/Configuration.

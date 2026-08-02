@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Porada: klawisz Tab zmienia bieżący panel.
 
-Porada: VFS: naciśnięcie klawisza Enter na pliku tar wyświetli jego zawartość.
-
 Porada: warto zajrzeć także na stronę podręcznika.
 
 Porada: nawigację w stylu programu Lynx można ustawić w oknie konfiguracji.

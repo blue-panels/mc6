@@ -2992,9 +2992,6 @@ Midnight Commander incluye actualmente varios Sistemas de Archivos
 Virtuales: el sistema de archivos
 .IR local ,
 utilizado para acceder al sistema de archivos Unix habitual;
-.I tarfs
-para manipular archivos empaquetados con el comando tar y acaso
-comprimidos;
 .I undelfs
 para recuperar archivos borrados en sistemas de archivos de tipo ext2
 (sistema de archivos habitual en Linux);
@@ -3015,31 +3012,6 @@ posibilidades de VFS empleando guiones y programas externos.
 El código VFS interpretará todos los nombres de ruta usados y los dirigirá
 al sistema de archivos correcto. El formato usado para cada uno de los
 sistemas de archivos se describe más adelante en su propia sección.
-.\"NODE "  Tar File System"
-.SH "  Sistema de archivos Tar (tarfs)"
-El sistema de archivos tar y los archivos tar comprimidos pueden consultarse usando
-el comando chdir. Para mostrar en el panel el contenido de un archivo tar, cambiamos
-de directorio empleando la siguiente sintaxis:
-.PP
-.I /archivo.tar/utar://[directorio\-dentro\-tar]
-.PP
-El archivo mc.ext.ini también ofrece un atajo para los archivos tar, esto quiere decir
-que normalmente basta con apuntar a un archivo tar y pulsar Intro para entrar en el
-archivo tar.  Véase la sección
-.\"LINK2"
-Edición del Archivo de Extensiones
-.\"Edit Extension File"
-para obtener más detalles sobre cómo hacer esto.
-.PP
-Ejemplos:
-.PP
-.nf
-    mc\-3.0.tar.gz/utar://mc\-3.0/vfs
-    /ftp/GCC/gcc\-2.7.0.tar/utar://
-.fi
-.PP
-En este último se indica la ruta completa hasta el archivo tar.
-
 .\"NODE "  FTP File System"
 .SH "  Sistema de archivos FTP"
 FTPfs permite manipular archivos en máquinas remotas. Para utilizarlo

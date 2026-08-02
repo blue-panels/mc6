@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Hint: Tab changes your current panel.
 
-Hint: VFS coolness: tap enter on a tar file to examine its contents.
-
 Hint: We also have a nice manual page.
 
 Συμβουλή: Θέλετε περιήγηση στο στυλ του Lynx; Ρυθμίστε το στο διάλογο Ρυθμίσεις.

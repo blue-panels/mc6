@@ -22,7 +22,8 @@ Full notes: **[Releases wiki](https://github.com/ilia-maslakov/mcdev/wiki/Releas
   shell connections, External Panelize, and arcmc. The old built-in `ftpfs` and
   `sftpfs` VFS modules are replaced by the FTP and SFTP plugins.
 - **arcmc** — an archive manager on libarchive: browse, create, pack and extract
-  (zip, 7z, tar.\*, cpio) with progress and cancel.
+  (zip, 7z, tar.\*, cpio) with progress and cancel. The legacy built-in `tarfs`
+  VFS has been removed.
 
   ![arcmc](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/arcmc.gif)
 - **Editor** — code folding, an undo history browser, a macro explorer, and an

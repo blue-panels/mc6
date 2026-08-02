@@ -196,8 +196,8 @@ ideas still waiting for their implementation.
 
   - Allow the program to execute a command even when we are on a vfs, maybe
     a special box, or make subshell code ignore the change directory
-    request. Perhaps each vfs should store a local path attached to it,
-    like in tarfs, extfs it would be the directory which contains the
+    request. Perhaps each vfs should store a local path attached to it;
+    for extfs it would be the directory which contains the
     topmost tararchive, in ftpfs it would be the directory which we entered
     to ftp from.
 
@@ -255,4 +255,3 @@ ideas still waiting for their implementation.
  ++ In the user menu, don't use the entries array, we can now grow
     dynamically.  I should take a look at this one day, it's easy to
     fix.
-
