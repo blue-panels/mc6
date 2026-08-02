@@ -54,11 +54,10 @@ Some features are specific to the POSIX environment MC runs on, some are
 familiar to the users of similar software for other operating systems.
 The features include:
 
-	* Built in Virtual File System: browse the contents of tar, ar,
-	  rpm, zip, cpio, lha and rar archives just like local files, and
-	  connect to remote machines over secure shell.  Remote FTP, SFTP,
-	  S3, Samba and other services are provided by panel plugins (see
-	  "Fork additions").
+	* Virtual File System: browse the contents of ar, rpm, zip, cpio,
+	  lha and rar archives just like local files, and connect to remote
+	  machines over secure shell.  Remote FTP, SFTP, S3, Samba and other
+	  services are provided by panel plugins (see "Fork additions").
 
 	* Almost all operations work with the virtual file system,
 	  enabling you to do complex tasks, like viewing files inside
@@ -120,7 +119,8 @@ See the release notes for the full list:
 
 	* arcmc: an archive manager built on libarchive that browses,
 	  creates, packs and extracts archives (zip, 7z, tar.*, cpio),
-	  with progress and cancel.
+	  with progress and cancel.  It replaces the legacy built-in tarfs
+	  VFS when the optional plugin is available.
 
 	* Editor plugins, plus code folding, an undo history browser and
 	  a macro explorer in the editor.

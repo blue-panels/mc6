@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Tip: Pomocí klávesy Tab přejdete na další panel.
 
-Tip: Stiskem Enter na souboru .tar nebo .tar.gz si prohlédnete jeho obsah.
-
 Tip: Existuje také manuálová stránka [mc(1)].
 
 Tip: Přejete si klávesy stejně jako v prohlížeči Lynx? Přepněte si to v Nastavení.

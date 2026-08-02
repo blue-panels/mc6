@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Hint: Tab verandert focus huidig paneel (links/rechts).
 
-Hint: VFS-coolheid: druk op 'enter' op een tar file om de inhoud ervan te zien.
-
 Hint: We hebben ook een aardige handleiding.
 
 Hint: Wil je Lynx-achtige navigatie? Stel het in bij Configuratie.

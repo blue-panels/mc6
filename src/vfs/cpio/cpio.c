@@ -799,7 +799,7 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t *vpath,
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** Remaining functions are exactly same as for tarfs (and were in fact just copied) */
+/** Remaining functions are shared with the other archive VFS implementations. */
 
 static void *
 cpio_super_check (const vfs_path_t *vpath)

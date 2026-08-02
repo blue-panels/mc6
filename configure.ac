@@ -954,8 +954,6 @@ src/vfs/local/Makefile
 
 src/vfs/sfs/Makefile
 
-src/vfs/tar/Makefile
-
 lib/Makefile
 lib/event/Makefile
 lib/filehighlight/Makefile

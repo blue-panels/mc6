@@ -2128,8 +2128,7 @@ Unixowych.
 Aktualnie Midnight Commander jest wyposażony w niektóre wirtualne systemy
 plików (VFS): lokalny system plików, używany do dostępu do typowych
 systemów plików Unixowych; ftpfs używanego do manipulowania plikami na
-zdalnych systemach na poprzez protokół FTP; tarfs używany do manipulania
-plikami w systemach tar i w skompresowanych systemach tar; undelfs, używany
+zdalnych systemach na poprzez protokół FTP; undelfs, używany
 do odzyskiwania skasowanych plików na systemach typu ext2 (standardowy
 system pracy systemu Linux), fish (do manipulowania plikami poprzez
 połączenia powłok takich jak rsh czy ssh) i w końcu system mcfs (system
@@ -2202,28 +2201,6 @@ użyciu kombinacji C\-r. To jest dobre rozwiązanie (jeśli myślisz, że to jes
 bug, to pomyśl o pracy na zdalnych systemach położonych po drugiej stronie
 Atlantyku przy użyciu ftpfs :) ).
 .PP
-.\"NODE "  Tar File System"
-.SH "  System plików tar (Tar File System)"
-System plików tar pozwala na dostęp w trybie tylko\-do\-odczytu do plików typu
-tar i do skompresowanych plików typu tar, za pomocą komendy chdir. Aby
-zmienić katalog na plik tar, możesz zmienić aktualny katalog używając
-następującej konstrukcji:
-.PP
-.I /nazwa_pliku.tar:utar/[katalogu\-wewnątrza\-archiwum]
-.PP
-Plik mc.ext.ini pozwala już na tworzenie skrótów do plików tar, oznacza to, że
-możesz wybrać jakiś plik tar i nacisnąć enter aby do niego wejść, zobacz
-sekcję Edycja pliku rozszerzeń po więcej szczegółów na temat tego jak
-zostało to pomyślane.
-.PP
-Przykłady
-.PP
-.nf
-    mc\-3.0.tar.gz/utar://mc\-3.0/vfs
-    /ftp/GCC/gcc\-2.7.0.tar/utar://
-.fi
-.PP
-Późniejszy podaje pełną ścieżkę archiwum tar.
 .\"NODE "  FIle transfer over SHell filesystem"
 .SH "  Transfer plików pomiędzy systemami plików (FIle transfer over SHell filesystem)"
 .PP

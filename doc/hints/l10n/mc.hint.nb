@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Hint: Tabulatoren endrer det aktive panelet.
 
-Hint: VFS lar deg trykke Enter på et tar-arkiv for å undersøke innholdet.
-
 Hint: Se også manualsiden.
 
 Hint: Du kan slå på Lynx-lignende navigering i Innstillinger/Oppsett.

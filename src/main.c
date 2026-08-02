@@ -128,8 +128,7 @@ sigchld_handler_no_subshell (int sig)
        the value of mc_global.tty.console_flag never changed, we could simply not install
        this handler at all if (!mc_global.tty.console_flag && !mc_global.tty.use_subshell). */
 
-    /* That comment is no longer true.  We need to wait() on a sigchld
-       handler (that's at least what the tarfs code expects currently). */
+    /* Reap cons.saver from this handler so a stopped process can be restarted. */
 
     pid = waitpid (cons_saver_pid, &status, WUNTRACED | WNOHANG);
 

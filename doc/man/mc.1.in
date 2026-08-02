@@ -3494,8 +3494,6 @@ Systems (VFS): the
 file system, used for accessing the regular Unix file system; the
 .IR ftpfs ,
 used to manipulate files on remote systems with the FTP protocol; the
-.IR tarfs ,
-used to manipulate tar and compressed tar files; the
 .IR undelfs ,
 used to recover deleted files on ext2 file systems (the default file
 system for Linux systems),
@@ -3559,31 +3557,6 @@ Please check the
 Virtual File System
 .\"Virtual FS"
 dialog box for ftpfs options.
-.\"NODE "  Tar File System"
-.SH "  Tar File System"
-The tar file system provides you with read\-only access to your tar
-files and compressed tar files by using the chdir command.  To change
-your directory to a tar file, you change your current directory to the
-tar file by using the following syntax:
-.PP
-.I /filename.tar/utar://[dir\-inside\-tar]
-.PP
-The mc.ext.ini file already provides a shortcut for tar files, this means
-that usually you just point to a tar file and press return to enter
-into the tar file, see the
-.\"LINK2"
-Edit Extension File
-.\"Edit Extension File"
-section for details on how this is done.
-.PP
-Examples:
-.PP
-.nf
-    mc\-3.0.tar.gz/utar://mc\-3.0/vfs
-    /ftp/GCC/gcc\-2.7.0.tar/utar://
-.fi
-.PP
-The latter specifies the full path of the tar archive.
 .\"NODE "  FIle transfer over SHell filesystem"
 .SH "  FIle transfer over SHell filesystem"
 The shell file system is a network based file system that allows you to

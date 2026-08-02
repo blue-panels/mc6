@@ -20,8 +20,6 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Consejo: El tabulador cambia de panel.
 
-Consejo: ¡El mejor VFS! Al «entrar» en un archivo comprimido se ve su contenido.
-
 Consejo: El Midnight Commander tiene manual: «man mc»
 
 Consejo: ¿Desea navegar con las flechas al estilo Lynx? Está en Configuración.

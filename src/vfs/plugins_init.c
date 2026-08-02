@@ -50,10 +50,6 @@
 #include "sfs/sfs.h"
 #endif
 
-#ifdef ENABLE_VFS_TAR
-#include "tar/tar.h"
-#endif
-
 #include "plugins_init.h"
 
 /*** global variables ****************************************************************************/
@@ -79,9 +75,6 @@ vfs_plugins_init (void)
 
 #ifdef ENABLE_VFS_CPIO
     vfs_init_cpiofs ();
-#endif
-#ifdef ENABLE_VFS_TAR
-    vfs_init_tarfs ();
 #endif
 #ifdef ENABLE_VFS_SFS
     vfs_init_sfs ();

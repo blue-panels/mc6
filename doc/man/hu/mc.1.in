@@ -2486,8 +2486,7 @@ is, ha a fájlok nincsenek a UNIX fájlrendszeren.
 Jelenleg a Midnight Commander a következő Csatolt Fájlrendszerekkel
 rendelkezik (VFS): a helyi fájlrendszert a szokásos Unix fájlrendszeren
 lévő fájlokhoz használja; az ftpfs\-t, az FTP protokollal rendelkező
-távoli gépek fájlainak módosítására használja; a tarfs\-t a tar
-és tömörített tar fájlok módosítására használja; az undelfs\-t, a
+távoli gépek fájlainak módosítására használja; az undelfs\-t, a
 törölt fájlok visszaállítására használja az ext2\-es fájlrendszeren
 (az alapértelmezett fájlrendszer Linux rendszereken), a fish (a fájlok
 shellen keresztüli módosításához, mint pl. rsh és ssh) és végül az mcfs
@@ -2571,31 +2570,6 @@ addíg, amíg a cache\-t nem iratod újra a C\-r gombbal. Ez sajátos
 jellegzetesség (amikor tapasztalod ezt a hibát, gondolj arra, hogy az
 ftpfs\-el megváltoztatott fájlok esetleg az Atlanti\-óceán másik oldalán
 vannak).
-.\"NODE "  Tar File System"
-.SH "  Tar fájlrendszer"
-A Tar fájlrendszer gondoskodik arról, hogy csak olvasható módon a chdir
-parancs használatával hozzáférhess a tar fájlaidhoz és tömörített tar
-fájljaidhoz. A könyvtár tar fájlra történő átváltásához a tar fájlodat a
-következő szintaktikájú parancs segítségével tudod átváltani könyvtárrá:
-.PP
-.I /filename.tar:utar/[dir\-inside\-tar]
-.PP
-Az mc.ext.ini fájl már tartalmaz gyorsbillentyűket a tar fájlokhoz, ezért
-csak rá kell mutatnod a tar fájlra és le kell nyomnod az entert ahhoz,
-hogy beléphess a tar fájlba, ehhez nézd meg a
-.\"LINK2"
-Társítások
-.\"Edit Extension File"
-részt, hogy megismerhesd az ezzel kapcsolatos információkat:
-.PP
-Példák:
-.PP
-.nf
-    mc\-3.0.tar.gz/utar://mc\-3.0/vfs
-    /ftp/GCC/gcc\-2.7.0.tar/utar://
-.fi
-.PP
-Az utóbbi meghatározás a tar arhívum teljes elérési útját tartalmazza.
 .\"NODE "  FIle transfer over SHell filesystem"
 .SH "  Fájl áthelyezése a Shell fájlrendszeren túlra"
 A fish fájlrendszer hálózat alapú fájlrendszer, amely lehetővé teszi
