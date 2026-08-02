@@ -19,7 +19,7 @@ if ! xgettext -h 2>&1 | grep -- '--keyword' >/dev/null ; then
   touch po/POTFILES.in
 else
   ${XGETTEXT:-xgettext} --keyword=_ --keyword=N_ --keyword=Q_ --output=- \
-	`find . -name '*.[ch]'` | ${SED-sed} -ne '/^#:/{s/#://;s/:[0-9]*/\
+	`find lib maint src tests -name '*.[ch]'` | ${SED-sed} -ne '/^#:/{s/#://;s/:[0-9]*/\
 /g;s/ //g;p;}' | \
 	grep -v '^$' | sort | uniq >po/POTFILES.in
 fi

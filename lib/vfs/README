@@ -58,11 +58,9 @@ Basics of code organization
 ===========================
 
 VFS code it to a certain extent object oriented.  The code dealing with
-a certain type of data (e.g. tar archives) can be thought
+a certain type of data (e.g. extfs archives) can be thought
 of as a class in the terms of object oriented programming.  They may
-reuse some code from their parent classes.  For instance, tar and cpio
-archives have a common parent class direntry, which contains some common
-code for archives.
+reuse some code from their parent classes.
 
 Individual archives or connections can be considered as instances of
 those classes.  They provide POSIX like interface to their structure,
@@ -86,10 +84,7 @@ a lot of such code in vfs.c.
 Hierarchy of classes
 ====================
 
-vfs ---- direntry ---- cpio   } archives
-   |            | ---- tar    }
-   |            |
-   |            | ---- fish   } remote systems
+vfs ---- direntry ---- fish   } remote systems
    |            | ---- ftpfs  }
    |            | ---- sftpfs } (dynamic plugin, loaded at runtime)
    |
@@ -102,8 +97,6 @@ Properties of classes
                    read only    inode->entry   local cache   full tree
                                 mapping                      loaded
 
-cpio               yes*         yes*           no            yes
-tar                yes*         yes*           no            yes
 fish               no           yes            yes           no
 ftpfs              no           yes            yes           no
 sftpfs             no           yes            yes           no

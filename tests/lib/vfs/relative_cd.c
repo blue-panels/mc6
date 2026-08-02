@@ -26,12 +26,15 @@
 
 #include "tests/mctest.h"
 
+#include <errno.h>
+#include <stdarg.h>
 #include <string.h>  // memset()
 
 #include "lib/strutil.h"
 #include "lib/vfs/xdirentry.h"
 #include "lib/vfs/path.h"
 #include "lib/util.h"
+#include "lib/widget.h"
 
 #include "src/vfs/local/local.c"
 
@@ -39,6 +42,26 @@ static struct vfs_s_subclass vfs_test_subclass1;
 static struct vfs_class *vfs_test_ops1 = VFS_CLASS (&vfs_test_subclass1);
 
 static int test_chdir (const vfs_path_t *vpath);
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @CapturedValue */
+static char *message__text_captured;
+
+/* @Mock */
+void
+message (int flags, const char *title, const char *text, ...)
+{
+    va_list ap;
+
+    (void) flags;
+    (void) title;
+
+    va_start (ap, text);
+    g_free (message__text_captured);
+    message__text_captured = g_strdup_vprintf (text, ap);
+    va_end (ap);
+}
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -87,6 +110,7 @@ setup (void)
     vfs_local_ops->chdir = test_chdir;
 
     test_chdir__init ();
+    g_clear_pointer (&message__text_captured, g_free);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -96,6 +120,7 @@ static void
 teardown (void)
 {
     test_chdir__deinit ();
+    g_free (message__text_captured);
 
     vfs_shut ();
     str_uninit_strings ();
@@ -151,6 +176,47 @@ END_PARAMETRIZED_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @DataSource("test_removed_vfs_path_ds") */
+static const struct test_removed_vfs_path_ds
+{
+    const char *path;
+    const char *message;
+} test_removed_vfs_path_ds[] = {
+    {
+        "/tmp/archive.tar/utar://",
+        "The utar:// virtual filesystem has been removed.\n"
+        "Use the arcmc panel plugin, if installed, or an external tar command.",
+    },
+    {
+        "/tmp/archive.cpio/ucpio://",
+        "The ucpio:// virtual filesystem has been removed.\n"
+        "Use the arcmc panel plugin, if installed, or an external cpio command.",
+    },
+};
+
+/* @Test(dataSource = "test_removed_vfs_path_ds") */
+START_PARAMETRIZED_TEST (test_removed_vfs_path, test_removed_vfs_path_ds)
+{
+    // given
+    vfs_path_t *vpath;
+    int actual_result;
+
+    vpath = vfs_path_from_str (data->path);
+
+    // when
+    actual_result = mc_chdir (vpath);
+
+    // then
+    ck_assert_int_eq (actual_result, -1);
+    ck_assert_int_eq (errno, ENOTSUP);
+    ck_assert_str_eq (message__text_captured, data->message);
+
+    vfs_path_free (vpath, TRUE);
+}
+END_PARAMETRIZED_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Relative to panel_correct_path_to_show()  */
 
 /* @Test */
@@ -200,6 +266,7 @@ main (void)
 
     // Add new tests here: ***************
     mctest_add_parameterized_test (tc_core, test_relative_cd, test_relative_cd_ds);
+    mctest_add_parameterized_test (tc_core, test_removed_vfs_path, test_removed_vfs_path_ds);
     tcase_add_test (tc_core, test_vpath_to_str_filter);
     // ***********************************
 

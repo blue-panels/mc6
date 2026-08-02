@@ -159,10 +159,6 @@ VFS options:
      file access.  If you specify this option, you won't get the
      transparent access to archives and remote directories.
 
-`--enable-vfs-cpio'
-     (on by default)
-     Support for cpio filesystem
-
 `--enable-panel-plugin-ftp'
      (auto)
      Support for FTP.  Built as a panel plugin (mc-panel-ftp.so).

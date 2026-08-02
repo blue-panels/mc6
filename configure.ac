@@ -912,8 +912,6 @@ src/panel-plugins/mongo/Makefile
 
 src/vfs/Makefile
 
-src/vfs/cpio/Makefile
-
 src/vfs/extfs/Makefile
 src/vfs/extfs/helpers/Makefile
 src/vfs/extfs/helpers/a+

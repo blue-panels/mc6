@@ -53,9 +53,25 @@ extern GPtrArray *vfs__classes_list;
 
 /*** file scope type declarations ****************************************************************/
 
+typedef struct
+{
+    const char *prefix;
+    const char *message;
+} removed_vfs_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
+
+static const removed_vfs_t removed_vfs[] = {
+    { "utar",
+      N_ ("The utar:// virtual filesystem has been removed.\n"
+          "Use the arcmc panel plugin, if installed, or an external tar command.") },
+    { "ucpio",
+      N_ ("The ucpio:// virtual filesystem has been removed.\n"
+          "Use the arcmc panel plugin, if installed, or an external cpio command.") },
+    { NULL, NULL },
+};
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -998,6 +1014,35 @@ vfs_prefix_to_class (const char *prefix)
 
         if (vfs->prefix != NULL && strncmp (prefix, vfs->prefix, strlen (vfs->prefix)) == 0)
             return vfs;
+    }
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Return an explanation for a removed VFS referenced by @p vpath.
+ *
+ * @return untranslated error message or NULL if the path does not use a removed VFS.
+ */
+
+const char *
+vfs_path_get_removed_vfs_message (const vfs_path_t *vpath)
+{
+    int element_index;
+
+    for (element_index = 0; element_index < vfs_path_elements_count (vpath); element_index++)
+    {
+        const vfs_path_element_t *element;
+        const removed_vfs_t *removed;
+
+        element = vfs_path_get_by_index (vpath, element_index);
+        if (vfs_path_element_valid (element) || element->vfs_prefix == NULL)
+            continue;
+
+        for (removed = removed_vfs; removed->prefix != NULL; removed++)
+            if (strcmp (element->vfs_prefix, removed->prefix) == 0)
+                return removed->message;
     }
 
     return NULL;

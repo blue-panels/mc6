@@ -11,7 +11,6 @@ m4_include([m4.include/vfs/socket.m4])
 m4_include([m4.include/vfs/mc-vfs-extfs.m4])
 m4_include([m4.include/vfs/mc-vfs-sfs.m4])
 m4_include([m4.include/vfs/mc-vfs-sftp.m4])
-m4_include([m4.include/vfs/mc-vfs-cpiofs.m4])
 
 dnl mc_VFS_CHECKS
 dnl   Check for various functions needed by libvfs.
@@ -62,7 +61,6 @@ AC_DEFUN([mc_VFS_CHECKS],
 	AC_DEFINE(ENABLE_VFS, [1], [Define to enable VFS support])
     fi
 
-    mc_VFS_CPIOFS
     mc_VFS_EXTFS
     mc_VFS_SFS
     mc_VFS_SFTP

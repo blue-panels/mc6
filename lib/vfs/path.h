@@ -76,6 +76,7 @@ vfs_path_element_t *vfs_path_element_clone (const vfs_path_element_t *element);
 void vfs_path_element_free (vfs_path_element_t *element);
 
 struct vfs_class *vfs_prefix_to_class (const char *prefix);
+const char *vfs_path_get_removed_vfs_message (const vfs_path_t *vpath);
 
 char *vfs_get_encoding (const char *path, ssize_t len);
 gboolean vfs_path_element_need_cleanup_converter (const vfs_path_element_t *element);

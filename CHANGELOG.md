@@ -10,4 +10,4 @@ The releases of this fork, newest first.
 - Commands run before the first Ctrl-O no longer lose their console output.
 - Large pastes no longer freeze the UI; screen repaints are limited while input is arriving.
 - The arcmc 'Create archive' hotkey is now reassignable via arcmc.ini.
-- The legacy built-in tarfs VFS has been removed; arcmc handles archive browsing when available.
+- The legacy built-in tarfs and cpiofs VFS modules have been removed; arcmc handles archive browsing when available.
