@@ -1,6 +1,6 @@
 - [ ] Rename the open milestone to `vX.Y.Z`.
 
-- [ ] Actions -> **release-notes** -> **Run workflow**: milestone `vX.Y.Z`, all three
+- [ ] Actions -> **Create release notes** -> **Run workflow**: milestone `vX.Y.Z`, all three
       boxes clear.
 
 - [ ] Read the notes on the Summary page of that run: every merged pull request
@@ -8,7 +8,7 @@
       says what the release is. The same text is in the `release-notes`
       artifact.
 
-- [ ] Actions -> **release-notes** -> **Run workflow**: milestone `vX.Y.Z`, tick
+- [ ] Actions -> **Create release notes** -> **Run workflow**: milestone `vX.Y.Z`, tick
       **Also commit the CHANGELOG.md section to the default branch**.
 
 - [ ] Create the release tag:
@@ -17,7 +17,7 @@
       git tag -a vX.Y.Z -m "vX.Y.Z"
       git push origin vX.Y.Z
 
-- [ ] Actions -> **release-notes** -> **Run workflow**: milestone `vX.Y.Z`, tick
+- [ ] Actions -> **Create release notes** -> **Run workflow**: milestone `vX.Y.Z`, tick
       **Also publish: notes into the release, summary onto the milestone** and
       **Also publish the page to the wiki**.
 

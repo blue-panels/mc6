@@ -1,4 +1,4 @@
-name: release-issue
+name: Prepare release
 
 # The steps of a release, opened as an issue so that the boxes can be ticked.
 # A workflow rather than an issue template: only a person with write access can
