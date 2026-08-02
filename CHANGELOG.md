@@ -4,16 +4,23 @@ The releases of this fork, newest first.
 
 ## 6.0.3 - 2026-08-02
 
-- You can now choose the spell engine (aspell or hunspell) in the spell plugin settings.
-- Panel plugins can now provide Quick View previews shown in the neighbouring panel, like files or command outputs.
-- Embedded terminals now respond to shell queries, preventing the ten-second wait and displayed hex query text.
-- mc no longer hangs when the login shell is plain sh; it starts without a subshell, preserving the command line.
-- Spell checking is built in unconditionally; aspell headers and --enable-aspell are no longer required at build time.
-- The build now enables the arcmc plugin when libarchive is detected without a pkg-config file.
-- Non-ASCII characters now appear immediately in the editor instead of showing up only after the next keypress.
-- Spell checking now locates libaspell by trying a range of sonames, avoiding missing-library errors.
-- Removed the cpio VFS and replaced it with the arcmc backend.
-- The tar virtual filesystem was removed; open tar archives with external tools or other VFS backends.
+- The built-in tar and cpio filesystems are gone. Archives are opened by the
+  arcmc panel plugin, which comes in the mc6-plugins package.
+- The Fedora package could not be installed: it asked for interpreter paths
+  that no package owns. Packages are now installed in a clean image before a
+  release is published.
+- Spell checking finds aspell on a system that has only the library, without
+  the development package.
+- The embedded terminal answers the queries a shell sends, so fish no longer
+  waits ten seconds and leaves the query on the screen.
+- mc starts when the login shell is a plain sh, as it is on FreeBSD.
+- Non-ASCII characters typed in the editor appear at once, not after the next
+  keypress.
+- The spell engine can be switched between aspell and hunspell in the plugin
+  settings.
+- Panel plugins can show a Quick View preview in the other panel.
+- Spell checking is built in and needs no aspell headers to compile.
+- The archive plugin is built where libarchive ships no pkg-config file.
 
 ## 6.0.2 - 2026-07-31
 
