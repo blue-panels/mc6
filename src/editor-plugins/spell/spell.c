@@ -92,6 +92,7 @@ static const char *spell_backend_name (void);
 /*** file scope variables ************************************************************************/
 
 static GModule *spell_module = NULL;
+static gboolean spell_probed = FALSE;
 static GModule *hunspell_module = NULL;
 static gboolean hunspell_probed = FALSE;
 static spell_t *global_speller = NULL;
@@ -113,6 +114,10 @@ typedef enum
 } spell_backend_t;
 static spell_backend_t spell_backend = SPELL_BACKEND_NONE;
 static unsigned long spell_settings_lang_input_id = 0;
+
+/* aspell has used soname 15 since 2004; look above it for the day that changes */
+#define ASPELL_ABI_OLDEST         15
+#define ASPELL_ABI_NEWEST         24
 
 #define SPELL_PLUGIN_SECTION      "EditorPluginSpell"
 #define SPELL_PLUGIN_ENGINE_KEY   "engine"
@@ -575,15 +580,25 @@ hunspell_add_to_dict (const char *word, int word_size)
 static gboolean
 spell_available (void)
 {
-    // the bare name resolves to libaspell.so, which ships in the -dev package
-    const char *names[] = { "libaspell.so.15", "libaspell", NULL };
-    int i;
+    int abi;
 
-    if (spell_module != NULL)
-        return TRUE;
+    if (spell_probed)
+        return spell_module != NULL;
+    spell_probed = TRUE;
 
-    for (i = 0; names[i] != NULL && spell_module == NULL; i++)
-        spell_module = g_module_open (names[i], G_MODULE_BIND_LAZY);
+    // the library file is named after the soname, and the soname changes
+    for (abi = ASPELL_ABI_NEWEST; abi >= ASPELL_ABI_OLDEST && spell_module == NULL; abi--)
+    {
+        char *name;
+
+        name = g_strdup_printf ("libaspell.so.%d", abi);
+        spell_module = g_module_open (name, G_MODULE_BIND_LAZY);
+        g_free (name);
+    }
+
+    // last resort: libaspell.so, from the development package
+    if (spell_module == NULL)
+        spell_module = g_module_open ("libaspell", G_MODULE_BIND_LAZY);
 
     if (spell_module == NULL)
         return FALSE;
@@ -1474,6 +1489,7 @@ spell_runtime_shutdown (void)
         g_module_close (spell_module);
         spell_module = NULL;
     }
+    spell_probed = FALSE;
 
     if (hunspell_module != NULL)
     {
