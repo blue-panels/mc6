@@ -31,8 +31,10 @@ jobs:
           # command line.
           VERSION: ${{ inputs.version }}
         run: |
+          # v6.0.3 and 6.0.3 are the same thing to a person
+          VERSION="${VERSION#v}"
+
           case "$VERSION" in
-              v*) echo "give the version without the leading v" >&2; exit 1 ;;
               *[!0-9.]*) echo "the version takes digits and dots only" >&2; exit 1 ;;
           esac
 
