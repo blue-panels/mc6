@@ -38,10 +38,6 @@
 
 #include "local/local.h"
 
-#ifdef ENABLE_VFS_CPIO
-#include "cpio/cpio.h"
-#endif
-
 #ifdef ENABLE_VFS_EXTFS
 #include "extfs/extfs.h"
 #endif
@@ -73,9 +69,6 @@ vfs_plugins_init (void)
     // localfs needs to be the first one
     vfs_init_localfs ();
 
-#ifdef ENABLE_VFS_CPIO
-    vfs_init_cpiofs ();
-#endif
 #ifdef ENABLE_VFS_SFS
     vfs_init_sfs ();
 #endif

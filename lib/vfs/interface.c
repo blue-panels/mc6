@@ -599,6 +599,7 @@ mc_chdir (const vfs_path_t *vpath)
     struct vfs_class *me;
     const vfs_path_element_t *path_element;
     vfs_path_t *cd_vpath;
+    const char *removed_vfs_message;
 
     if (vpath == NULL)
     {
@@ -610,6 +611,14 @@ mc_chdir (const vfs_path_t *vpath)
         cd_vpath = vfs_path_to_absolute (vpath);
     else
         cd_vpath = vfs_path_clone (vpath);
+
+    removed_vfs_message = vfs_path_get_removed_vfs_message (cd_vpath);
+    if (removed_vfs_message != NULL)
+    {
+        message (D_ERROR, MSG_ERROR, "%s", _ (removed_vfs_message));
+        errno = ENOTSUP;
+        goto error_end;
+    }
 
     me = VFS_CLASS (vfs_path_get_last_path_vfs (cd_vpath));
     if (me == NULL)

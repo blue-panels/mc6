@@ -45,23 +45,6 @@ get_current_type (void)
     return get_current_type__return_value;
 }
 
-/* --------------------------------------------------------------------------------------------- */
-
-/* @CapturedValue */
-static const char *message__text_captured;
-
-/* @Mock */
-void
-message (int flags, const char *title, const char *text, ...)
-{
-    (void) flags;
-    (void) title;
-
-    message__text_captured = text;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 /* @CapturedValue */
 static vfs_path_t *do_cd__new_dir_vpath__captured;
 /* @CapturedValue */
@@ -104,7 +87,6 @@ setup (void)
     vfs_init_localfs ();
     vfs_setup_work_dir ();
     do_cd__new_dir_vpath__captured = NULL;
-    message__text_captured = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -154,27 +136,6 @@ START_PARAMETRIZED_TEST (test_empty_mean_home, test_empty_mean_home_ds)
 }
 END_PARAMETRIZED_TEST
 
-/* --------------------------------------------------------------------------------------------- */
-
-/* @Test */
-START_TEST (test_removed_tarfs_path)
-{
-    // given
-    get_current_type__return_value = view_listing;
-
-    // when
-    cd_to ("/tmp/archive.tar/utar://");
-
-    // then
-    ck_assert_ptr_null (do_cd__new_dir_vpath__captured);
-    ck_assert_str_eq (message__text_captured,
-                      "The utar:// virtual filesystem has been removed.\n"
-                      "Use the arcmc panel plugin, if installed, or an external tar command.");
-}
-END_TEST
-
-/* --------------------------------------------------------------------------------------------- */
-
 int
 main (void)
 {
@@ -186,7 +147,6 @@ main (void)
 
     // Add new tests here: ***************
     mctest_add_parameterized_test (tc_core, test_empty_mean_home, test_empty_mean_home_ds);
-    tcase_add_test (tc_core, test_removed_tarfs_path);
     // ***********************************
 
     return mctest_run_all (tc_core);

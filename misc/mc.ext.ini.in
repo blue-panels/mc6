@@ -310,37 +310,37 @@ View=%view{ascii} @EXTHELPERSDIR@/archive.sh view alz
 
 [cpio.Z]
 Shell=.cpio.Z
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.z %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.z
 
 [cpio.lz]
 Shell=.cpio.lz
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.lz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.lz
 
 [cpio.lz4]
 Shell=.cpio.lz4
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.lz4 %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.lz4
 
 [cpio.lzo]
 Shell=.cpio.lzo
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.lzo %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.lzo
 
 [cpio.xz]
 Shell=.cpio.xz
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.xz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.xz
 
 [cpio.zst]
 Shell=.cpio.zst
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.zst %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.zst
 
 [cpio.gz]
 Shell=.cpio.gz
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio.gz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio.gz
 
 [cpio]
@@ -1200,7 +1200,7 @@ Open=@EXTHELPERSDIR@/archive.sh view tar.gz %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view tar.gz
 
 [Include/cpio]
-Open=%cd %p/ucpio://
+Open=@EXTHELPERSDIR@/archive.sh view cpio %var{PAGER:more}
 View=%view{ascii} @EXTHELPERSDIR@/archive.sh view cpio
 
 [Include/editor]

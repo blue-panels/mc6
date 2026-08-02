@@ -1254,9 +1254,7 @@ panel_correct_path_to_show (const WPanel *panel)
     // get last path element
     path_element = vfs_path_element_clone (vfs_path_get_by_index (panel->cwd_vpath, -1));
 
-    if (elements_count > 1
-        && (strcmp (path_element->class->name, "cpiofs") == 0
-            || strcmp (path_element->class->name, "extfs") == 0))
+    if (elements_count > 1 && strcmp (path_element->class->name, "extfs") == 0)
     {
         const char *archive_name;
         const vfs_path_element_t *prev_path_element;

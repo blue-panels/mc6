@@ -230,15 +230,6 @@ cd_to (const char *path)
        so one could type "cd <tab> M-a <enter>" and it would work. */
     p = g_strstrip (g_strdup (path));
 
-    if (g_strrstr (p, "utar://") != NULL)
-    {
-        message (D_ERROR, MSG_ERROR,
-                 _ ("The utar:// virtual filesystem has been removed.\n"
-                    "Use the arcmc panel plugin, if installed, or an external tar command."));
-        g_free (p);
-        return;
-    }
-
     if (get_current_type () == view_tree)
     {
         vfs_path_t *new_vpath = NULL;
