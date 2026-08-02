@@ -1,0 +1,43 @@
+name: release-issue
+
+# The steps of a release, opened as an issue so that the boxes can be ticked.
+# A workflow rather than an issue template: only a person with write access can
+# start it, so the list does not sit in the New issue window for everyone.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, for example 6.0.3'
+        required: true
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.repository == 'ilia-maslakov/mcdev'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Open the release issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The version is typed by hand and would otherwise be pasted into a
+          # command line.
+          VERSION: ${{ inputs.version }}
+        run: |
+          case "$VERSION" in
+              v*) echo "give the version without the leading v" >&2; exit 1 ;;
+              *[!0-9.]*) echo "the version takes digits and dots only" >&2; exit 1 ;;
+          esac
+
+          sed "s/X\.Y\.Z/$VERSION/g" .github/release-checklist.md > body.md
+          gh issue create \
+              --title "Release v$VERSION" \
+              --label infra \
+              --body-file body.md

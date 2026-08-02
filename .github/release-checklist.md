@@ -1,10 +1,3 @@
----
-name: Release
-about: Steps for making a release
-title: 'Release vX.Y.Z'
-labels: infra
----
-
 - [ ] Rename the open milestone to `vX.Y.Z`.
 
 - [ ] Actions -> **release-notes** -> **Run workflow**: milestone `vX.Y.Z`, all three
