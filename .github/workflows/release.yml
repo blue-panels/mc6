@@ -269,6 +269,63 @@ jobs:
           mcedit --version | grep -q "v${VERSION}"
           test -d /usr/lib/mc/panel-plugins
 
+  fedora-install:
+    needs: [archive, fedora]
+    runs-on: ubuntu-latest
+    # A plain image, not the one that built the packages: a dependency the
+    # build pulled in is missed here rather than papered over.
+    container: fedora:latest
+    timeout-minutes: 20
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      TERM: xterm
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: fedora-packages
+          path: out
+
+      - name: Install the packages the way a user would
+        run: |
+          # The interpreters the extfs helpers are written with are required by
+          # path, and a build that answered /usr/sbin/perl fails right here.
+          dnf install -y \
+            "out/mc6-${VERSION}-"*.rpm \
+            "out/mc6-plugins-${VERSION}-"*.rpm
+          # Grep rather than run and hope: without a usable TERM mc says so and
+          # still exits 0, which would pass on nothing at all.
+          mc --version | grep -q "v${VERSION}"
+          mcedit --version | grep -q "v${VERSION}"
+          test -d /usr/lib64/mc/panel-plugins
+
+  debian-install:
+    needs: [archive, debian]
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    timeout-minutes: 20
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      DEBIAN_FRONTEND: noninteractive
+      TERM: xterm
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: debian-packages
+          path: out
+
+      - name: Install the packages the way a user would
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            "./out/mc6_${VERSION}-"*_amd64.deb \
+            "./out/mc6-data_${VERSION}-"*_all.deb \
+            "./out/mc6-plugins_${VERSION}-"*_amd64.deb
+          mc --version | grep -q "v${VERSION}"
+          mcedit --version | grep -q "v${VERSION}"
+          test -d /usr/lib/mc/panel-plugins
+
   macos:
     needs: archive
     runs-on: macos-latest
@@ -382,7 +439,7 @@ jobs:
           overwrite: true
 
   publish:
-    needs: [debian, fedora, arch, arch-install]
+    needs: [debian, fedora, arch, arch-install, fedora-install, debian-install]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Runs even when a distribution failed: what did get built is still worth
