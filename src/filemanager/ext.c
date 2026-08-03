@@ -91,9 +91,7 @@ typedef char *(*quote_func_t) (const char *name, gboolean quote_percent);
 static mc_config_t *ext_ini = NULL;
 static gchar **ext_ini_groups = NULL;
 static vfs_path_t *localfilecopy_vpath = NULL;
-static char buffer[BUF_1K];
 
-static char *pbuffer = NULL;
 static time_t localmtime = 0;
 static quote_func_t quote_func = name_quote;
 static gboolean run_view = FALSE;
@@ -227,7 +225,7 @@ exec_get_export_variables (const vfs_path_t *filename_vpath)
 /* --------------------------------------------------------------------------------------------- */
 
 static GString *
-exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
+exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath, GString **cd_path)
 {
     GString *shell_string;
     char lc_prompt[80] = "\0";
@@ -235,6 +233,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
     gboolean expand_prefix_found = FALSE;
 
     shell_string = g_string_new ("");
+    *cd_path = NULL;
 
     for (; *lc_data != '\0' && *lc_data != '\n'; lc_data++)
     {
@@ -251,6 +250,11 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
                 {
                     // User canceled
                     g_string_free (shell_string, TRUE);
+                    if (*cd_path != NULL)
+                    {
+                        g_string_free (*cd_path, TRUE);
+                        *cd_path = NULL;
+                    }
                     exec_cleanup_file_name (filename_vpath, FALSE);
                     return NULL;
                 }
@@ -292,7 +296,10 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
                         is_cd = TRUE;
                         quote_func = fake_name_quote;
                         do_local_copy = FALSE;
-                        pbuffer = buffer;
+                        if (*cd_path == NULL)
+                            *cd_path = g_string_new ("");
+                        else
+                            g_string_truncate (*cd_path, 0);
                         lc_data += i - 1;
                     }
                     else
@@ -318,6 +325,11 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
                                 if (text == NULL)
                                 {
                                     g_string_free (shell_string, TRUE);
+                                    if (*cd_path != NULL)
+                                    {
+                                        g_string_free (*cd_path, TRUE);
+                                        *cd_path = NULL;
+                                    }
                                     return NULL;
                                 }
                             }
@@ -327,10 +339,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
                                 if (!is_cd)
                                     g_string_append (shell_string, text);
                                 else
-                                {
-                                    strcpy (pbuffer, text);
-                                    pbuffer = strchr (pbuffer, '\0');
-                                }
+                                    g_string_append (*cd_path, text);
 
                                 g_free (text);
                             }
@@ -348,7 +357,7 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath)
             if (!whitespace (*lc_data))
                 written_nonspace = TRUE;
             if (is_cd)
-                *(pbuffer++) = *lc_data;
+                g_string_append_c (*cd_path, *lc_data);
             else
                 g_string_append_c (shell_string, *lc_data);
         }
@@ -395,21 +404,19 @@ exec_extension_view (void *target, char *cmd, const vfs_path_t *filename_vpath, 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-exec_extension_cd (WPanel *panel)
+exec_extension_cd (WPanel *panel, GString *cd_path)
 {
-    char *q;
+    gsize len;
     vfs_path_t *p_vpath;
 
-    *pbuffer = '\0';
-    pbuffer = buffer;
     /* Search last non-space character. Start search at the end in order
        not to short filenames containing spaces. */
-    q = pbuffer + strlen (pbuffer) - 1;
-    while (q >= pbuffer && whitespace (*q))
-        q--;
-    q[1] = 0;
+    len = cd_path->len;
+    while (len > 0 && whitespace (cd_path->str[len - 1]))
+        len--;
+    g_string_truncate (cd_path, len);
 
-    p_vpath = vfs_path_from_str_flags (pbuffer, VPF_NO_CANON);
+    p_vpath = vfs_path_from_str_flags (cd_path->str, VPF_NO_CANON);
     panel_cd (panel, p_vpath, cd_parse_command);
     vfs_path_free (p_vpath, TRUE);
 }
@@ -420,13 +427,12 @@ static vfs_path_t *
 exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath, const char *lc_data,
                 int start_line)
 {
-    GString *shell_string, *export_variables;
+    GString *shell_string, *export_variables, *cd_path = NULL;
     vfs_path_t *script_vpath = NULL;
     int cmd_file_fd;
     FILE *cmd_file;
     char *cmd = NULL;
 
-    pbuffer = NULL;
     localmtime = 0;
     quote_func = name_quote;
     run_view = FALSE;
@@ -436,13 +442,15 @@ exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath, c
     // Avoid making a local copy if we are doing a cd
     do_local_copy = !vfs_file_is_local (filename_vpath);
 
-    shell_string = exec_make_shell_string (lc_data, filename_vpath);
+    shell_string = exec_make_shell_string (lc_data, filename_vpath, &cd_path);
     if (shell_string == NULL)
         goto ret;
 
     if (is_cd)
     {
-        exec_extension_cd (panel);
+        exec_extension_cd (panel, cd_path);
+        g_string_free (cd_path, TRUE);
+        cd_path = NULL;
         g_string_free (shell_string, TRUE);
         goto ret;
     }

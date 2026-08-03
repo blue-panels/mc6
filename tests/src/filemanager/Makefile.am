@@ -18,6 +18,7 @@ endif
 TESTS = \
 	cd_to \
 	examine_cd \
+	ext__exec_make_shell_string \
 	exec_get_export_variables_ext \
 	filegui_is_wildcarded \
 	get_random_hint \
@@ -32,6 +33,9 @@ cd_to_SOURCES = \
 
 examine_cd_SOURCES = \
 	examine_cd.c
+
+ext__exec_make_shell_string_SOURCES = \
+	ext__exec_make_shell_string.c
 
 exec_get_export_variables_ext_SOURCES = \
 	exec_get_export_variables_ext.c
