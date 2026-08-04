@@ -3,7 +3,15 @@ mandir = @mandir@/$(LANG)
 
 EXTRA_DIST = mc.1.in mcdiff.1.in mcedit.1.in
 
-man_MANS = mc.1 mcdiff.1 mcedit.1
+man_MANS = mc.1
+
+if USE_INTERNAL_EDIT
+man_MANS += mcedit.1
+endif
+
+if USE_DIFF
+man_MANS += mcdiff.1
+endif
 
 CLEANFILES = $(man_MANS)
 
