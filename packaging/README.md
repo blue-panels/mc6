@@ -87,6 +87,9 @@ the package.
 Debian and Ubuntu.  The source package is built from the release archive with
 `debian/` copied into it, not from the Git checkout: that keeps it free of
 patches, since the archive carries `mc-version.h` and no `debian` directory.
+Build a binary package in its target distribution: the MongoDB plugin links to
+the distribution's Mongo C Driver ABI, so a Debian-built `.deb` is not a
+substitute for an Ubuntu-built one.
 
 ```sh
 packaging/release-source.sh 6.0.3 v6.0.3
@@ -115,7 +118,7 @@ package per Ubuntu series.  `packaging/ppa-source.sh` builds them:
 
 ```sh
 packaging/release-source.sh 6.0.3 v6.0.3
-packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04 jammy:22.04
+packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz resolute:26.04 noble:24.04 jammy:22.04
 UPLOAD=yes packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04
 ```
 

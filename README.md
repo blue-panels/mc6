@@ -63,11 +63,13 @@ This fork is packaged as **`mc6`**, while its commands deliberately remain
 
 There is no public package repository yet.  Each release builds `.deb`, `.rpm`
 and `.pkg.tar.zst` and attaches them to its GitHub release; to build them
-yourself, see [`packaging/README.md`](packaging/README.md).  The recipes carry
-no version of their own: `packaging/prepare.sh <version>` generates the
-version-bearing files from the release tag, and every build starts with it.
+yourself, see [`packaging/README.md`](packaging/README.md).  The `.deb` assets
+are built separately for Debian Trixie and Ubuntu 26.04; install only the one
+whose distribution suffix matches your system.  The recipes carry no version
+of their own: `packaging/prepare.sh <version>` generates the version-bearing
+files from the release tag, and every build starts with it.
 
-- Debian/Ubuntu: `sudo apt install ./mc6_*.deb ./mc6-data_*.deb ./mc6-plugins_*.deb`
+- Debian Trixie / Ubuntu 26.04: `sudo apt install ./mc6_*.deb ./mc6-data_*.deb ./mc6-plugins_*.deb`
 - RHEL/Fedora: `sudo dnf swap mc mc6`, then `sudo dnf install ./mc6-plugins-*.rpm`
 - Arch: `sudo pacman -U ./mc6-*.pkg.tar.zst ./mc6-plugins-*.pkg.tar.zst`
 - Gentoo: copy `packaging/gentoo` into a local overlay as `app-misc/mc6`,
