@@ -82,11 +82,30 @@ jobs:
   debian:
     needs: archive
     runs-on: ubuntu-latest
-    container: debian:trixie
     timeout-minutes: 45
+    name: Debian packages (${{ matrix.name }})
+    # No fail-fast: what one distribution builds is attached to the release
+    # even when the other fails, see the publish job.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Debian Trixie
+            container: debian:trixie
+            distribution: trixie
+            suffix: ~debian13.1
+            artifact: debian-trixie-packages
+          - name: Ubuntu 26.04
+            container: ubuntu:26.04
+            distribution: resolute
+            suffix: ~ubuntu26.04.1
+            artifact: ubuntu-resolute-packages
+    container: ${{ matrix.container }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
       DEBIAN_FRONTEND: noninteractive
+      DEB_DISTRIBUTION: ${{ matrix.distribution }}
+      DEB_VERSION_SUFFIX: ${{ matrix.suffix }}
 
     steps:
       - name: Install the build tooling
@@ -143,7 +162,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: debian-packages
+          name: ${{ matrix.artifact }}
           path: out/*
           if-no-files-found: warn
           overwrite: true
@@ -302,8 +321,22 @@ jobs:
   debian-install:
     needs: [archive, debian]
     runs-on: ubuntu-latest
-    container: debian:trixie
     timeout-minutes: 20
+    name: Debian install (${{ matrix.name }})
+    # Each package is installed in the distribution it was built for: the two
+    # differ in the ABI they link to, so one of them passing says nothing about
+    # the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Debian Trixie
+            container: debian:trixie
+            artifact: debian-trixie-packages
+          - name: Ubuntu 26.04
+            container: ubuntu:26.04
+            artifact: ubuntu-resolute-packages
+    container: ${{ matrix.container }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
       DEBIAN_FRONTEND: noninteractive
@@ -312,7 +345,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: debian-packages
+          name: ${{ matrix.artifact }}
           path: out
 
       - name: Install the packages the way a user would
@@ -381,8 +414,8 @@ jobs:
     needs: archive
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Set the PPA_SERIES variable to switch this on, as a space separated list
-    # of series with their Ubuntu versions: "noble:24.04 jammy:22.04".
+    # Set PPA_SERIES to switch this on, as a space separated list of series
+    # with their Ubuntu versions: "resolute:26.04 noble:24.04 jammy:22.04".
     if: vars.PPA_SERIES != ''
     env:
       VERSION: ${{ needs.archive.outputs.version }}

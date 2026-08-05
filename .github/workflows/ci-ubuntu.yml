@@ -4,6 +4,41 @@ on:
   workflow_call:
 
 jobs:
+  build-ubuntu-resolute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    container: ubuntu:26.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git autoconf automake autopoint build-essential gettext libtool pkg-config
+          apt-get install -y e2fslibs-dev libaspell-dev libglib2.0-dev libgpm-dev libncurses-dev libslang2-dev libssh2-1-dev libx11-dev libarchive-dev libcurl4-openssl-dev libsmbclient-dev libmongoc-dev libbson-dev unzip
+
+      - uses: actions/checkout@v7
+
+      - name: Build MongoDB plugin with MongoDB C Driver v2
+        run: |
+          # The checkout belongs to another user than the root this container
+          # runs as, and git refuses to read a repository it finds suspicious.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+          ./autogen.sh
+
+          # Named twice on purpose: this step runs in the shell of the container,
+          # and $_ of the jobs on the runner is a bash thing that sh does not have.
+          mkdir -p build-mongo
+          cd build-mongo
+
+          ../configure --enable-panel-plugin-mongo=yes
+
+          make -j$(nproc)
+          test -f src/panel-plugins/mongo/.libs/mc-panel-mongo.so
+
   build-ubuntu:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -91,4 +126,3 @@ jobs:
         with:
           name: test-suite-logs-ubuntu
           path: build-*/**/test-suite.log
-
