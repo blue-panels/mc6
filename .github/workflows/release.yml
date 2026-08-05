@@ -84,7 +84,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     name: Debian packages (${{ matrix.name }})
+    # No fail-fast: what one distribution builds is attached to the release
+    # even when the other fails, see the publish job.
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: Debian Trixie
@@ -318,8 +321,22 @@ jobs:
   debian-install:
     needs: [archive, debian]
     runs-on: ubuntu-latest
-    container: debian:trixie
     timeout-minutes: 20
+    name: Debian install (${{ matrix.name }})
+    # Each package is installed in the distribution it was built for: the two
+    # differ in the ABI they link to, so one of them passing says nothing about
+    # the other.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Debian Trixie
+            container: debian:trixie
+            artifact: debian-trixie-packages
+          - name: Ubuntu 26.04
+            container: ubuntu:26.04
+            artifact: ubuntu-resolute-packages
+    container: ${{ matrix.container }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
       DEBIAN_FRONTEND: noninteractive
@@ -328,7 +345,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: debian-packages
+          name: ${{ matrix.artifact }}
           path: out
 
       - name: Install the packages the way a user would

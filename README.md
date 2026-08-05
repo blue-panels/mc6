@@ -69,7 +69,8 @@ whose distribution suffix matches your system.  The recipes carry no version
 of their own: `packaging/prepare.sh <version>` generates the version-bearing
 files from the release tag, and every build starts with it.
 
-- Debian Trixie / Ubuntu 26.04: `sudo apt install ./mc6_*.deb ./mc6-data_*.deb ./mc6-plugins_*.deb`
+- Debian Trixie: `sudo apt install ./mc6_*~debian13*.deb ./mc6-data_*~debian13*.deb ./mc6-plugins_*~debian13*.deb`
+- Ubuntu 26.04: `sudo apt install ./mc6_*~ubuntu26*.deb ./mc6-data_*~ubuntu26*.deb ./mc6-plugins_*~ubuntu26*.deb`
 - RHEL/Fedora: `sudo dnf swap mc mc6`, then `sudo dnf install ./mc6-plugins-*.rpm`
 - Arch: `sudo pacman -U ./mc6-*.pkg.tar.zst ./mc6-plugins-*.pkg.tar.zst`
 - Gentoo: copy `packaging/gentoo` into a local overlay as `app-misc/mc6`,

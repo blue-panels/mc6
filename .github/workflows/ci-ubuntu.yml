@@ -23,8 +23,19 @@ jobs:
 
       - name: Build MongoDB plugin with MongoDB C Driver v2
         run: |
+          # The checkout belongs to another user than the root this container
+          # runs as, and git refuses to read a repository it finds suspicious.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
           ./autogen.sh
-          ./configure --enable-panel-plugin-mongo=yes
+
+          # Named twice on purpose: this step runs in the shell of the container,
+          # and $_ of the jobs on the runner is a bash thing that sh does not have.
+          mkdir -p build-mongo
+          cd build-mongo
+
+          ../configure --enable-panel-plugin-mongo=yes
+
           make -j$(nproc)
           test -f src/panel-plugins/mongo/.libs/mc-panel-mongo.so
 
