@@ -103,6 +103,21 @@ table_drawscroll (const WTable *t, int nrows)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Next column the user can act on, `from` when there is none. */
+static int
+table_next_active_col (const WTable *t, int from, int dir)
+{
+    int c;
+
+    for (c = from + dir; c >= 0 && c < t->ncols; c += dir)
+        if (t->col_defs[c].type == TABLE_COL_CHECK || t->col_defs[c].type == TABLE_COL_CHOICE)
+            return c;
+
+    return MAX (from, 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 table_draw (WTable *t, gboolean focused)
 {
@@ -150,7 +165,9 @@ table_draw (WTable *t, gboolean focused)
 
         for (c = 0; c < t->ncols; c++)
         {
-            tty_setcolor (row_color);
+            int cell_color = row_color;
+
+            tty_setcolor (cell_color);
             widget_gotoyx (t, i, col_x);
 
             if (t->col_defs[c].type == TABLE_COL_CHECK && row_idx < nrows
@@ -163,12 +180,23 @@ table_draw (WTable *t, gboolean focused)
             else
             {
                 const char *cell_text = "";
+                int text_width = t->col_defs[c].width;
 
                 if (row_idx < nrows && t->datasource.get_text != NULL)
                     cell_text = t->datasource.get_text (t->datasource.data, row_idx, c);
 
-                tty_print_string (
-                    str_fit_to_term (cell_text, t->col_defs[c].width, t->col_defs[c].align));
+                /* mark the cell space acts on; a character, not a color: the current
+                   cell and the current row may share it */
+                if (t->col_defs[c].type == TABLE_COL_CHOICE)
+                {
+                    gboolean is_current = (focused && !disabled && row_idx == t->current
+                                           && c == t->current_col && row_idx < nrows);
+
+                    tty_print_char (is_current ? '>' : ' ');
+                    text_width--;
+                }
+
+                tty_print_string (str_fit_to_term (cell_text, text_width, t->col_defs[c].align));
             }
 
             col_x += t->col_defs[c].width;
@@ -190,6 +218,16 @@ table_draw (WTable *t, gboolean focused)
     {
         tty_setcolor (scrollbarc);
         table_drawscroll (t, nrows);
+    }
+    else if (t->scrollbar_on_frame)
+    {
+        /* nothing to scroll, but the column belongs to the frame */
+        tty_setcolor (scrollbarc);
+        for (i = 0; i < w->lines; i++)
+        {
+            widget_gotoyx (t, i, w->cols - 1);
+            tty_print_one_vline (TRUE);
+        }
     }
 }
 
@@ -298,9 +336,51 @@ table_key (WTable *t, int key)
     case KEY_NPAGE:
         table_set_current (t, MIN (t->current + (w->lines - 1), nrows - 1));
         return MSG_HANDLED;
+    case '\n':
+    case KEY_ENTER:
+        /* unhandled by the owner, the key falls through to the default button */
+        return send_message (WIDGET (t)->owner, t, MSG_NOTIFY, CK_Enter, NULL);
+    case KEY_LEFT:
+        if (!t->has_choice_cols)
+            return MSG_NOT_HANDLED;
+        t->current_col = table_next_active_col (t, t->current_col, -1);
+        return MSG_HANDLED;
+    case KEY_RIGHT:
+        if (!t->has_choice_cols)
+            return MSG_NOT_HANDLED;
+        t->current_col = table_next_active_col (t, t->current_col, 1);
+        return MSG_HANDLED;
     case ' ':
+        if (t->current >= nrows)
+            return MSG_NOT_HANDLED;
+
+        /* with a column cursor the space acts on the cell it points at */
+        if (t->has_choice_cols)
+        {
+            int c = t->current_col;
+
+            if (c >= 0 && c < t->ncols)
+            {
+                if (t->col_defs[c].type == TABLE_COL_CHOICE && t->datasource.cycle_choice != NULL)
+                {
+                    t->datasource.cycle_choice (t->datasource.data, t->current, c, 1);
+                    return MSG_HANDLED;
+                }
+
+                if (t->col_defs[c].type == TABLE_COL_CHECK && t->datasource.get_checked != NULL
+                    && t->datasource.set_checked != NULL)
+                {
+                    gboolean val = t->datasource.get_checked (t->datasource.data, t->current, c);
+
+                    t->datasource.set_checked (t->datasource.data, t->current, c, !val);
+                    return MSG_HANDLED;
+                }
+            }
+            return MSG_NOT_HANDLED;
+        }
+
         if (t->has_check_cols && t->datasource.get_checked != NULL
-            && t->datasource.set_checked != NULL && t->current < nrows)
+            && t->datasource.set_checked != NULL)
         {
             int c;
 
@@ -355,6 +435,14 @@ table_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
             table_on_change (t);
         return ret_code;
     }
+
+    case MSG_HOTKEY:
+        /* Enter reaches every widget as a hotkey before the focused one gets it as
+           a key, so the default button would grab it */
+        if (parm == '\n' && w->owner != NULL && GROUP (w->owner)->current != NULL
+            && WIDGET (GROUP (w->owner)->current->data) == w)
+            return send_message (w->owner, w, MSG_NOTIFY, CK_Enter, NULL);
+        return MSG_NOT_HANDLED;
 
     case MSG_ACTION:
         return table_execute_cmd (t, parm);
@@ -438,7 +526,8 @@ table_new (int y, int x, int height, int width, int ncols, const table_column_de
     w = WIDGET (t);
     r.lines = height > 0 ? height : 1;
     widget_init (w, &r, table_callback, table_mouse_callback);
-    w->options |= WOP_SELECTABLE;
+    /* WANT_HOTKEY: else the hotkey round skips the table and Enter goes to the button */
+    w->options |= WOP_SELECTABLE | WOP_WANT_HOTKEY;
 
     t->ncols = ncols;
     t->col_defs = g_new (table_column_def_t, ncols);
@@ -446,22 +535,29 @@ table_new (int y, int x, int height, int width, int ncols, const table_column_de
 
     t->top = 0;
     t->current = 0;
+    t->current_col = 0;
     t->cursor_y = 0;
     t->scrollbar = !mc_global.tty.slow_terminal;
+    t->scrollbar_on_frame = FALSE;
     t->color_idx = -1;
 
-    /* detect CHECK columns */
+    /* detect CHECK and CHOICE columns */
     t->has_check_cols = FALSE;
+    t->has_choice_cols = FALSE;
     {
         int c;
 
         for (c = 0; c < ncols; c++)
+        {
             if (col_defs[c].type == TABLE_COL_CHECK)
-            {
                 t->has_check_cols = TRUE;
-                break;
-            }
+            else if (col_defs[c].type == TABLE_COL_CHOICE)
+                t->has_choice_cols = TRUE;
+        }
     }
+
+    if (t->has_choice_cols)
+        t->current_col = table_next_active_col (t, -1, 1);
 
     return t;
 }

@@ -52,7 +52,7 @@ START_TEST (test_table_set_datasource_empty_resets_position)
         { 10, J_LEFT, TABLE_COL_TEXT },
     };
     test_data_t data = { 0 };
-    table_datasource_t ds = { test_get_nrows, NULL, NULL, NULL, &data };
+    table_datasource_t ds = { test_get_nrows, NULL, NULL, NULL, &data, NULL };
     WTable *t;
 
     t = table_new (0, 0, 3, 10, G_N_ELEMENTS (cols), cols);
@@ -76,7 +76,7 @@ START_TEST (test_table_set_datasource_shrink_clamps_current_and_top)
         { 10, J_LEFT, TABLE_COL_TEXT },
     };
     test_data_t data = { 10 };
-    table_datasource_t ds = { test_get_nrows, NULL, NULL, NULL, &data };
+    table_datasource_t ds = { test_get_nrows, NULL, NULL, NULL, &data, NULL };
     WTable *t;
 
     t = table_new (0, 0, 3, 10, G_N_ELEMENTS (cols), cols);

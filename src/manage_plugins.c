@@ -334,7 +334,8 @@ manage_plugins_dialog (void)
     dlg_w = MIN (COLS - 4, 78);
 
     /* columns: check(4) | kind(8) | name(14) | description(rest) */
-    table_w = dlg_w - 2;
+    /* the last column of the table lands on the frame, that is where the scrollbar goes */
+    table_w = dlg_w - 1;
     check_w = 4;
     kind_w = 8;
     name_w = 14;
@@ -361,6 +362,7 @@ manage_plugins_dialog (void)
 
     tbl = table_new (1, 1, table_h, table_w, 4, col_defs);
     tbl->scrollbar = TRUE;
+    tbl->scrollbar_on_frame = TRUE;
 
     ctx.tbl = tbl;
     ctx.rows = rows;
@@ -371,6 +373,7 @@ manage_plugins_dialog (void)
     ds.get_checked = mp_get_checked;
     ds.set_checked = mp_set_checked;
     ds.data = rows;
+    ds.cycle_choice = NULL;
     table_set_datasource (tbl, ds);
 
     group_add_widget (GROUP (dlg), tbl);
@@ -378,6 +381,9 @@ manage_plugins_dialog (void)
     group_add_widget (
         GROUP (dlg),
         button_new (dlg_h - 2, (dlg_w - 10) / 2, B_CANCEL, NORMAL_BUTTON, _ ("&Close"), NULL));
+
+    /* without this the button takes the focus and the table ignores the keys */
+    widget_select (WIDGET (tbl));
 
     dlg_run (dlg);
     widget_destroy (WIDGET (dlg));
