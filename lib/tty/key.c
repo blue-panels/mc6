@@ -1988,7 +1988,7 @@ nodelay_try_again:
     {
         if (c == this->ch)
         {
-            if (this->child == NULL || this->code != 0)
+            if (this->child == NULL || (this->code != 0 && this->action != MCKEY_ESCAPE))
             {
                 if (this->child == NULL)
                 {
