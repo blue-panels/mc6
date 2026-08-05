@@ -601,7 +601,21 @@ arcmc_action_create (mc_panel_host_t *host, const char *open_path)
                     ok = FALSE;
             }
             else
-                ok = arcmc_do_pack (&pack_opts, open_path, files);
+            {
+                char *err_msg = NULL;
+
+                ok = arcmc_do_pack (&pack_opts, open_path, files, &err_msg);
+
+                if (!ok)
+                {
+                    char *emsg =
+                        err_msg != NULL ? err_msg : g_strdup (_ ("Failed to create archive"));
+                    host->message (host, D_ERROR, MSG_ERROR, emsg);
+                    g_free (emsg);
+                }
+                else
+                    g_free (err_msg);
+            }
 
             if (ok)
             {
@@ -610,8 +624,6 @@ arcmc_action_create (mc_panel_host_t *host, const char *open_path)
                 bn = strrchr (pack_opts.archive_path, '/');
                 host->focus_after = g_strdup (bn != NULL ? bn + 1 : pack_opts.archive_path);
             }
-            else if (pack_opts.format < ARCMC_FMT_EXT_BASE)
-                host->message (host, D_ERROR, MSG_ERROR, _ ("Failed to create archive"));
         }
 
         g_ptr_array_free (files, TRUE);
@@ -1301,7 +1313,7 @@ arcmc_put_file (void *plugin_data, const char *local_path, const char *dest_name
     if (data->extfs_helper != NULL)
     {
         ok = arcmc_extfs_run_cmd (data->extfs_helper, " copyin ", data->archive_path, archive_name,
-                                  local_path);
+                                  local_path, data->password);
         g_free (archive_name);
 
         if (!ok)
@@ -1370,7 +1382,7 @@ arcmc_delete_items (void *plugin_data, const char **names, int count)
         for (i = 0; i < count; i++)
         {
             if (!arcmc_extfs_run_cmd (data->extfs_helper, " rm ", data->archive_path, full_paths[i],
-                                      NULL))
+                                      NULL, data->password))
                 any_failed = TRUE;
         }
 

@@ -502,45 +502,57 @@ arcmc_show_pack_dialog (arcmc_pack_opts_t *opts, const char *initial_path)
 
     if (ret == B_ENTER)
     {
-        /* verify passwords match */
-        if (password != NULL && password[0] != '\0')
+        gboolean has_password = (password != NULL && password[0] != '\0');
+        const char *err = NULL;
+        int fmt;
+
+        /* map radio selection to ARCMC_FMT_* */
+        switch (format_radio)
         {
-            if (password_verify == NULL || strcmp (password, password_verify) != 0)
-            {
-                message (D_ERROR, MSG_ERROR, "%s", _ ("Passwords do not match"));
-                g_free (archive_path);
-                g_free (password);
-                g_free (password_verify);
-                return FALSE;
-            }
+        case 0:
+            fmt = ARCMC_FMT_ZIP;
+            break;
+        case 1:
+            fmt = ARCMC_FMT_7Z;
+            break;
+        case 2:
+        default:
+            if (current_other_is_ext)
+                fmt = ARCMC_FMT_EXT_BASE + current_ext_fmt_idx;
+            else
+                fmt = ARCMC_FMT_TAR_GZ + current_other_fmt_idx;
+            break;
+        }
+
+        /* the verify field is disabled while the password is shown, so it stays empty */
+        if (has_password && show_password == 0
+            && (password_verify == NULL || strcmp (password, password_verify) != 0))
+            err = _ ("Passwords do not match");
+        else if (!has_password && (encrypt_files != 0 || encrypt_header != 0))
+            err = _ ("Encryption needs a password");
+        else if (has_password && fmt != ARCMC_FMT_ZIP && fmt != ARCMC_FMT_7Z)
+            err = _ ("This format does not support encryption");
+        else if (encrypt_header != 0 && fmt != ARCMC_FMT_7Z)
+            err = _ ("Only 7z can encrypt archive headers");
+
+        if (err != NULL)
+        {
+            message (D_ERROR, MSG_ERROR, "%s", err);
+            g_free (archive_path);
+            g_free (password);
+            g_free (password_verify);
+            return FALSE;
         }
 
         opts->archive_path = archive_path;
+        opts->format = fmt;
         opts->compression = compression;
         opts->encrypt_files = (encrypt_files != 0);
         opts->encrypt_header = (encrypt_header != 0);
         opts->store_paths = (store_paths != 0);
         opts->delete_after = (delete_after != 0);
 
-        /* map radio selection to ARCMC_FMT_* */
-        switch (format_radio)
-        {
-        case 0:
-            opts->format = ARCMC_FMT_ZIP;
-            break;
-        case 1:
-            opts->format = ARCMC_FMT_7Z;
-            break;
-        case 2:
-        default:
-            if (current_other_is_ext)
-                opts->format = ARCMC_FMT_EXT_BASE + current_ext_fmt_idx;
-            else
-                opts->format = ARCMC_FMT_TAR_GZ + current_other_fmt_idx;
-            break;
-        }
-
-        if (password != NULL && password[0] != '\0')
+        if (has_password)
             opts->password = password;
         else
         {

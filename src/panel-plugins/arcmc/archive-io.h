@@ -53,7 +53,8 @@ gboolean arcmc_archive_add_file (const char *archive_path, const char *local_pat
                                  arcmc_progress_t *p);
 gboolean arcmc_archive_delete (const char *archive_path, const char **del_paths, int del_count,
                                const char *password, arcmc_progress_t *p);
-gboolean arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files);
+gboolean arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files,
+                        char **error_msg);
 
 /* Extraction */
 mc_pp_result_t arcmc_extract_entry (arcmc_data_t *data, const char *target_path, char **local_path,
@@ -61,7 +62,8 @@ mc_pp_result_t arcmc_extract_entry (arcmc_data_t *data, const char *target_path,
 mc_pp_result_t arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path,
                                           char **local_path);
 gboolean arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const char *archive_path,
-                              const char *stored_name, const char *local_name);
+                              const char *stored_name, const char *local_name,
+                              const char *password);
 mc_pp_result_t arcmc_extract_to_temp (arcmc_data_t *data, const char *name, char **local_path);
 mc_pp_result_t arcmc_push_nested (arcmc_data_t *data, char *local_path);
 

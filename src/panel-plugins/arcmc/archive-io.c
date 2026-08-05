@@ -55,6 +55,21 @@
 #include "progress.h"
 #include "archive-io.h"
 
+/*** file scope type declarations ****************************************************************/
+
+/* Outcome of reading the table of contents with libarchive. */
+typedef enum
+{
+    ARCMC_READ_OK = 0,      /* contents read */
+    ARCMC_READ_FAILED,      /* unreadable: not an archive, unknown format, I/O error */
+    ARCMC_READ_ENCRYPTED,   /* encrypted: a password is needed */
+    ARCMC_READ_ENCRYPTED_7Z /* encrypted 7z: only the external 7z program can read it */
+} arcmc_read_result_t;
+
+/* 7z binaries that understand the -p switch, in order of preference.
+   7zr is left out: it cannot handle encrypted archives. */
+static const char *const p7zip_bins[] = { "7z", "7zz", "7za" };
+
 /*** file scope variables ************************************************************************/
 
 /* External archivers table -replaces the old extfs_map[] */
@@ -74,6 +89,11 @@ arcmc_ext_archiver_t ext_archivers[] = {
 };
 
 const size_t ext_archivers_count = G_N_ELEMENTS (ext_archivers);
+
+/*** forward declarations (file scope functions) *************************************************/
+
+static gboolean arcmc_ext_run_with_status (const char *title, const char *cmd_str,
+                                           char **error_msg);
 
 /*** file scope functions ************************************************************************/
 
@@ -548,13 +568,68 @@ is_direct_child (const char *entry_path, const char *dir)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Build a full path to an extfs helper by name, or NULL if it is not installed. */
+static char *
+arcmc_extfs_helper_path (const char *helper_name)
+{
+    char *path;
+
+    if (helper_name == NULL)
+        return NULL;
+
+    /* try user data dir first */
+    path = g_build_filename (mc_config_get_data_path (), "extfs.d", helper_name, NULL);
+    if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
+        return path;
+    g_free (path);
+
+    /* try system libexecdir */
+    path = g_build_filename (LIBEXECDIR, "extfs.d", helper_name, NULL);
+    if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
+        return path;
+    g_free (path);
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check that `path` ends with `ext` (case-insensitive). */
+static gboolean
+arcmc_has_ext (const char *path, const char *ext)
+{
+    size_t plen, elen;
+
+    plen = strlen (path);
+    elen = strlen (ext);
+
+    return (plen >= elen && g_ascii_strcasecmp (path + plen - elen, ext) == 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Find an installed 7z program, or NULL when there is none. */
+static const char *
+arcmc_7z_bin (void)
+{
+    size_t i;
+
+    for (i = 0; i < G_N_ELEMENTS (p7zip_bins); i++)
+        if (arcmc_check_bin_available (p7zip_bins[i]))
+            return p7zip_bins[i];
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Find an extfs helper for the given archive path.
    Returns an allocated full path to the helper executable, or NULL if not found. */
 char *
 arcmc_find_extfs_helper (const char *archive_path)
 {
     const char *basename_ptr;
-    size_t blen, i;
+    size_t i;
 
     basename_ptr = strrchr (archive_path, '/');
     if (basename_ptr != NULL)
@@ -562,36 +637,13 @@ arcmc_find_extfs_helper (const char *archive_path)
     else
         basename_ptr = archive_path;
 
-    blen = strlen (basename_ptr);
+    /* 7z is handled by libarchive, but the helper is needed for encrypted archives */
+    if (arcmc_has_ext (basename_ptr, ".7z"))
+        return arcmc_extfs_helper_path ("u7z");
 
     for (i = 0; i < ext_archivers_count; i++)
-    {
-        size_t elen = strlen (ext_archivers[i].ext);
-
-        if (blen >= elen
-            && g_ascii_strcasecmp (basename_ptr + blen - elen, ext_archivers[i].ext) == 0)
-        {
-            char *path;
-
-            if (ext_archivers[i].extfs_helper == NULL)
-                return NULL;
-
-            /* try user data dir first */
-            path = g_build_filename (mc_config_get_data_path (), "extfs.d",
-                                     ext_archivers[i].extfs_helper, NULL);
-            if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
-                return path;
-            g_free (path);
-
-            /* try system libexecdir */
-            path = g_build_filename (LIBEXECDIR, "extfs.d", ext_archivers[i].extfs_helper, NULL);
-            if (g_file_test (path, G_FILE_TEST_IS_EXECUTABLE))
-                return path;
-            g_free (path);
-
-            return NULL;
-        }
-    }
+        if (arcmc_has_ext (basename_ptr, ext_archivers[i].ext))
+            return arcmc_extfs_helper_path (ext_archivers[i].extfs_helper);
 
     return NULL;
 }
@@ -655,20 +707,66 @@ arcmc_is_archive_by_content (const char *path)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Quote for /bin/sh. Unlike name_quote(), safe for a password starting with '-'. */
+static char *
+arcmc_shell_quote (const char *s)
+{
+    GString *q;
+
+    q = g_string_new ("'");
+
+    for (; *s != '\0'; s++)
+    {
+        if (*s == '\'')
+            g_string_append (q, "'\\''");
+        else
+            g_string_append_c (q, *s);
+    }
+
+    g_string_append_c (q, '\'');
+
+    return g_string_free (q, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Build the environment prefix that passes the archive password to an extfs helper.
+   Returns an allocated string, empty when there is no password. */
+static char *
+arcmc_extfs_env (const char *password)
+{
+    char *quoted;
+    char *env;
+
+    if (password == NULL || password[0] == '\0')
+        return g_strdup ("");
+
+    quoted = arcmc_shell_quote (password);
+    env = g_strconcat ("MC_EXTFS_PASSWORD=", quoted, " ", (char *) NULL);
+    g_free (quoted);
+
+    return env;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Read archive contents using an extfs helper's "list" command.
    Returns TRUE on success, FALSE on error. */
 gboolean
 arcmc_read_archive_extfs (arcmc_data_t *data)
 {
     char *quoted_archive;
+    char *env;
     char *cmd;
     mc_pipe_t *pip;
     GError *error = NULL;
     GString *remain_line = NULL;
 
     quoted_archive = name_quote (data->archive_path, FALSE);
-    cmd = g_strconcat (data->extfs_helper, " list ", quoted_archive, (char *) NULL);
+    env = arcmc_extfs_env (data->password);
+    cmd = g_strconcat (env, data->extfs_helper, " list ", quoted_archive, (char *) NULL);
     g_free (quoted_archive);
+    g_free (env);
 
     pip = mc_popen (cmd, TRUE, TRUE, &error);
     g_free (cmd);
@@ -834,6 +932,7 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
     GError *error = NULL;
     int fd;
     char *quoted_archive, *quoted_file, *quoted_local;
+    char *env;
     char *cmd;
     mc_pipe_t *pip;
     char *tmp_path = NULL;
@@ -853,13 +952,15 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
     quoted_archive = name_quote (data->archive_path, FALSE);
     quoted_file = name_quote (target_path, FALSE);
     quoted_local = name_quote (*local_path, FALSE);
+    env = arcmc_extfs_env (data->password);
 
-    cmd = g_strconcat (data->extfs_helper, " copyout ", quoted_archive, " ", quoted_file, " ",
+    cmd = g_strconcat (env, data->extfs_helper, " copyout ", quoted_archive, " ", quoted_file, " ",
                        quoted_local, (char *) NULL);
 
     g_free (quoted_archive);
     g_free (quoted_file);
     g_free (quoted_local);
+    g_free (env);
 
     pip = mc_popen (cmd, FALSE, TRUE, &error);
     g_free (cmd);
@@ -910,28 +1011,31 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
    Returns TRUE on success (exit code 0). */
 gboolean
 arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const char *archive_path,
-                     const char *stored_name, const char *local_name)
+                     const char *stored_name, const char *local_name, const char *password)
 {
-    char *quoted_archive, *quoted_stored, *cmd;
+    char *quoted_archive, *quoted_stored, *env, *cmd;
     mc_pipe_t *pip;
     GError *error = NULL;
 
     quoted_archive = name_quote (archive_path, FALSE);
     quoted_stored = name_quote (stored_name, FALSE);
+    env = arcmc_extfs_env (password);
 
     if (local_name != NULL)
     {
         char *quoted_local = name_quote (local_name, FALSE);
 
-        cmd = g_strconcat (helper, cmd_name, quoted_archive, " ", quoted_stored, " ", quoted_local,
-                           (char *) NULL);
+        cmd = g_strconcat (env, helper, cmd_name, quoted_archive, " ", quoted_stored, " ",
+                           quoted_local, (char *) NULL);
         g_free (quoted_local);
     }
     else
-        cmd = g_strconcat (helper, cmd_name, quoted_archive, " ", quoted_stored, (char *) NULL);
+        cmd =
+            g_strconcat (env, helper, cmd_name, quoted_archive, " ", quoted_stored, (char *) NULL);
 
     g_free (quoted_archive);
     g_free (quoted_stored);
+    g_free (env);
 
     pip = mc_popen (cmd, FALSE, TRUE, &error);
     g_free (cmd);
@@ -967,12 +1071,13 @@ arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const char *archi
 /* --------------------------------------------------------------------------------------------- */
 
 /* Open the archive and read its table of contents into all_entries.
-   Returns TRUE on success, FALSE on error. */
-gboolean
-arcmc_read_archive (arcmc_data_t *data)
+   Returns the outcome, see arcmc_read_result_t. */
+static arcmc_read_result_t
+arcmc_read_archive_res (arcmc_data_t *data)
 {
     struct archive *a;
     struct archive_entry *entry;
+    arcmc_read_result_t res = ARCMC_READ_OK;
     int r;
 
     a = archive_read_new ();
@@ -986,7 +1091,7 @@ arcmc_read_archive (arcmc_data_t *data)
     if (r != ARCHIVE_OK)
     {
         archive_read_free (a);
-        return FALSE;
+        return ARCMC_READ_FAILED;
     }
 
     if (data->all_entries != NULL)
@@ -1062,14 +1167,29 @@ arcmc_read_archive (arcmc_data_t *data)
         if (err_str != NULL
             && (strstr (err_str, "passphrase") != NULL || strstr (err_str, "password") != NULL
                 || strstr (err_str, "ncrypt") != NULL))
-        {
-            archive_read_free (a);
-            return FALSE;
-        }
+            res = ARCMC_READ_ENCRYPTED;
     }
 
+    /* entries may be listed while their content stays out of reach; a 7z always
+       goes this way, no password given to libarchive ever unlocks it */
+    if (res == ARCMC_READ_OK && archive_read_has_encrypted_entries (a) > 0
+        && (data->password == NULL || archive_format (a) == ARCHIVE_FORMAT_7ZIP))
+        res = ARCMC_READ_ENCRYPTED;
+
+    /* libarchive decrypts neither 7z headers nor 7z content, whatever the password */
+    if (res == ARCMC_READ_ENCRYPTED && archive_format (a) == ARCHIVE_FORMAT_7ZIP)
+        res = ARCMC_READ_ENCRYPTED_7Z;
+
     archive_read_free (a);
-    return TRUE;
+    return res;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+arcmc_read_archive (arcmc_data_t *data)
+{
+    return (arcmc_read_archive_res (data) == ARCMC_READ_OK);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1078,29 +1198,39 @@ arcmc_read_archive (arcmc_data_t *data)
 gboolean
 arcmc_try_open (arcmc_data_t *data)
 {
+    arcmc_read_result_t res;
+
     /* first attempt without password via libarchive */
-    if (arcmc_read_archive (data))
+    res = arcmc_read_archive_res (data);
+    if (res == ARCMC_READ_OK)
         return TRUE;
 
     /* try extfs helper as fallback */
+    data->extfs_helper = arcmc_find_extfs_helper (data->archive_path);
+
+    /* the archive may be named without the .7z extension */
+    if (res == ARCMC_READ_ENCRYPTED_7Z && data->extfs_helper == NULL)
+        data->extfs_helper = arcmc_extfs_helper_path ("u7z");
+
+    if (res == ARCMC_READ_FAILED)
     {
-        char *helper;
+        if (data->extfs_helper != NULL && arcmc_read_archive_extfs (data))
+            return TRUE;
 
-        helper = arcmc_find_extfs_helper (data->archive_path);
-        if (helper != NULL)
-        {
-            data->extfs_helper = helper;
-
-            if (arcmc_read_archive_extfs (data))
-                return TRUE;
-
-            /* extfs helper failed too */
-            g_free (data->extfs_helper);
-            data->extfs_helper = NULL;
-        }
+        /* not an encryption problem, a password would not help */
+        MC_PTR_FREE (data->extfs_helper);
+        return FALSE;
     }
 
-    /* maybe encrypted -ask for password (libarchive only) */
+    /* encrypted 7z can only be read by the external 7z program */
+    if (res == ARCMC_READ_ENCRYPTED_7Z && (data->extfs_helper == NULL || arcmc_7z_bin () == NULL))
+    {
+        MC_PTR_FREE (data->extfs_helper);
+        message (D_ERROR, MSG_ERROR, "%s",
+                 _ ("Encrypted 7z archives need the 7z program to be installed"));
+        return FALSE;
+    }
+
     for (;;)
     {
         char *pw;
@@ -1108,14 +1238,22 @@ arcmc_try_open (arcmc_data_t *data)
         pw = input_dialog (_ ("Archive password"), _ ("Enter password:"), "arcmc-password",
                            INPUT_PASSWORD, INPUT_COMPLETE_NONE);
         if (pw == NULL)
-            return FALSE;
+            break;
 
         g_free (data->password);
         data->password = pw;
 
         if (arcmc_read_archive (data))
             return TRUE;
+
+        if (data->extfs_helper != NULL && arcmc_read_archive_extfs (data))
+            return TRUE;
+
+        message (D_ERROR, MSG_ERROR, "%s", _ ("Wrong password"));
     }
+
+    MC_PTR_FREE (data->extfs_helper);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1409,12 +1547,82 @@ arcmc_archive_delete (const char *archive_path, const char **del_paths, int del_
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Create an encrypted 7z archive with the external 7z program.
+   libarchive accepts a passphrase for 7z but writes the archive unencrypted. */
+static gboolean
+arcmc_7z_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files, char **error_msg)
+{
+    const char *bin;
+    GString *cmd;
+    char *quoted;
+    guint i;
+    gboolean ok;
+
+    bin = arcmc_7z_bin ();
+    if (bin == NULL)
+    {
+        if (error_msg != NULL)
+            *error_msg = g_strdup (_ ("Encrypted 7z archives need the 7z program to be installed"));
+        return FALSE;
+    }
+
+    cmd = g_string_new ("");
+
+    /* -t7z: the format follows the chosen one, not the extension of the archive name */
+    quoted = name_quote (cwd, FALSE);
+    g_string_append_printf (cmd, "cd %s && %s a -y -t7z", quoted, bin);
+    g_free (quoted);
+
+    switch (opts->compression)
+    {
+    case 0:
+        g_string_append (cmd, " -mx=0");
+        break;
+    case 1:
+        g_string_append (cmd, " -mx=1");
+        break;
+    case 3:
+        g_string_append (cmd, " -mx=9");
+        break;
+    default:
+        g_string_append (cmd, " -mx=5");
+        break;
+    }
+
+    quoted = arcmc_shell_quote (opts->password);
+    g_string_append_printf (cmd, " -p%s", quoted);
+    g_free (quoted);
+
+    if (opts->encrypt_header)
+        g_string_append (cmd, " -mhe=on");
+
+    quoted = name_quote (opts->archive_path, FALSE);
+    g_string_append_printf (cmd, " %s", quoted);
+    g_free (quoted);
+
+    for (i = 0; i < files->len; i++)
+    {
+        quoted = name_quote ((const char *) g_ptr_array_index (files, i), FALSE);
+        g_string_append_printf (cmd, " %s", quoted);
+        g_free (quoted);
+    }
+
+    g_string_append (cmd, " 2>&1");
+
+    ok = arcmc_ext_run_with_status (_ ("Creating archive..."), cmd->str, error_msg);
+    g_string_free (cmd, TRUE);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Create an archive from the given file list.
    `cwd` is the current working directory for resolving relative names.
    `files` is an array of file/dir names (relative to cwd).
    Returns TRUE on success. */
 gboolean
-arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files)
+arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files, char **error_msg)
 {
     struct archive *a;
     guint i;
@@ -1422,6 +1630,12 @@ arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files)
     off_t total_size;
     gboolean aborted = FALSE;
     gboolean pack_error = FALSE;
+
+    if (error_msg != NULL)
+        *error_msg = NULL;
+
+    if (opts->format == ARCMC_FMT_7Z && opts->password != NULL && opts->password[0] != '\0')
+        return arcmc_7z_pack (opts, cwd, files, error_msg);
 
     total_size = arcmc_calculate_total_size (cwd, files);
     progress = arcmc_progress_create (_ ("Creating archive..."), opts->archive_path, total_size);
