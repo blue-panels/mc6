@@ -53,6 +53,13 @@ enum
     ARCMC_FMT_TAR_XZ = 4,
     ARCMC_FMT_TAR = 5,
     ARCMC_FMT_CPIO = 6,
+    /* read-only formats, not offered in the pack dialog */
+    ARCMC_FMT_TAR_ZST = 7,
+    ARCMC_FMT_TAR_LZ = 8,
+    ARCMC_FMT_TAR_LZMA = 9,
+    ARCMC_FMT_ISO = 10,
+    ARCMC_FMT_XAR = 11,
+    ARCMC_FMT_CAB = 12,
     ARCMC_FMT_OTHER_COUNT = 5 /* number of "Other" formats (tar.gz .. cpio) */
 };
 
@@ -124,6 +131,37 @@ typedef struct
     gboolean aborted;    /* user pressed Abort/Esc */
     gboolean visible;    /* dlg_init() called */
 } arcmc_progress_t;
+
+/* Which backend serves a builtin format */
+typedef enum
+{
+    ARCMC_BACKEND_OFF = 0, /* format is not handled in this direction */
+    ARCMC_BACKEND_BUILTIN, /* libarchive only */
+    ARCMC_BACKEND_BOTH,    /* libarchive, external tool where libarchive cannot cope */
+    ARCMC_BACKEND_EXTERN,  /* external tool only */
+    ARCMC_BACKEND_COUNT
+} arcmc_backend_t;
+
+/* Builtin (libarchive) format descriptor.
+   The first ARCMC_FMT_COUNT entries are in ARCMC_FMT_* order. */
+typedef struct
+{
+    const char *name;         /* display name, e.g. "7Z" */
+    const char *key;          /* config key, e.g. "7z" */
+    const char *ext;          /* default extension, e.g. ".7z" */
+    gboolean lib_pack;        /* libarchive can write this format */
+    gboolean lib_unpack;      /* libarchive can read this format */
+    const char *pack_bin;     /* external packer, NULL = none wired up */
+    const char *pack_args;    /* arguments of the packer, e.g. "a -y -t7z" */
+    const char *unpack_bin;   /* external unpacker, NULL = none wired up */
+    const char *extfs_helper; /* helper used for browsing with an external tool */
+    arcmc_backend_t pack;     /* current setting */
+    arcmc_backend_t unpack;   /* current setting */
+    gboolean enabled;         /* format handled at all */
+} arcmc_builtin_format_t;
+
+extern arcmc_builtin_format_t arcmc_builtin_formats[];
+extern const size_t arcmc_builtin_formats_count;
 
 /* External archiver tool descriptor */
 typedef struct

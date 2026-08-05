@@ -1184,7 +1184,7 @@ keybind_show_page (void)
     kbd_table = table_new (y, 2, table_height, kbd_dlg_width - 5, KBD_TABLE_COLS, col_defs);
     kbd_table->scrollbar = TRUE;
     {
-        table_datasource_t ds = { kbd_table_get_nrows, kbd_table_get_text, NULL, NULL, NULL };
+        table_datasource_t ds = { kbd_table_get_nrows, kbd_table_get_text, NULL, NULL, NULL, NULL };
 
         table_set_datasource (kbd_table, ds);
     }

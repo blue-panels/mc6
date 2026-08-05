@@ -209,34 +209,25 @@ static const mc_panel_plugin_t arcmc_plugin = {
 static gboolean
 arcmc_is_supported_archive (const char *filename)
 {
-    static const char *const exts[] = {
-        ".tar.gz", ".tgz",    ".tar.bz2",  ".tbz2", ".tar.xz", ".txz", ".tar.zst",
-        ".tzst",   ".tar.lz", ".tar.lzma", ".tlz",  ".tar",    ".zip", ".jar",
-        ".war",    ".ear",    ".7z",       ".cpio", ".iso",    ".xar", ".cab",
-    };
-
+    const arcmc_builtin_format_t *fmt;
     size_t flen, i;
 
     if (filename == NULL)
         return FALSE;
 
-    flen = strlen (filename);
-
-    for (i = 0; i < G_N_ELEMENTS (exts); i++)
-    {
-        size_t elen = strlen (exts[i]);
-
-        if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, exts[i]) == 0)
-            return TRUE;
-    }
+    fmt = arcmc_find_builtin_format (filename);
+    if (fmt != NULL)
+        return (fmt->enabled && fmt->unpack != ARCMC_BACKEND_OFF);
 
     /* also accept extensions handled by external archivers */
+    flen = strlen (filename);
+
     for (i = 0; i < ext_archivers_count; i++)
     {
         size_t elen = strlen (ext_archivers[i].ext);
 
         if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, ext_archivers[i].ext) == 0)
-            return TRUE;
+            return (arcmc_ext_enabled == NULL || arcmc_ext_enabled[i]);
     }
 
     return FALSE;
@@ -369,16 +360,17 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
         size_t i;
         size_t name_len = strlen (base_name);
 
-        for (i = 0; i < G_N_ELEMENTS (format_extensions); i++)
+        for (i = 0; i < ARCMC_FMT_COUNT; i++)
         {
-            size_t ext_len = strlen (format_extensions[i]);
+            size_t ext_len = strlen (arcmc_builtin_formats[i].ext);
 
             if (name_len > ext_len
-                && g_ascii_strcasecmp (base_name + name_len - ext_len, format_extensions[i]) == 0)
+                && g_ascii_strcasecmp (base_name + name_len - ext_len, arcmc_builtin_formats[i].ext)
+                    == 0)
             {
                 char *stripped = g_strndup (base_name, name_len - ext_len);
 
-                result = g_strconcat (stripped, format_extensions[0], NULL);
+                result = g_strconcat (stripped, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
                 g_free (stripped);
                 return result;
             }
@@ -394,14 +386,14 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
             {
                 char *stripped = g_strndup (base_name, name_len - ext_len);
 
-                result = g_strconcat (stripped, format_extensions[0], NULL);
+                result = g_strconcat (stripped, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
                 g_free (stripped);
                 return result;
             }
         }
     }
 
-    result = g_strconcat (base_name, format_extensions[0], NULL);
+    result = g_strconcat (base_name, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
     return result;
 }
 
@@ -601,7 +593,21 @@ arcmc_action_create (mc_panel_host_t *host, const char *open_path)
                     ok = FALSE;
             }
             else
-                ok = arcmc_do_pack (&pack_opts, open_path, files);
+            {
+                char *err_msg = NULL;
+
+                ok = arcmc_do_pack (&pack_opts, open_path, files, &err_msg);
+
+                if (!ok)
+                {
+                    char *emsg =
+                        err_msg != NULL ? err_msg : g_strdup (_ ("Failed to create archive"));
+                    host->message (host, D_ERROR, MSG_ERROR, emsg);
+                    g_free (emsg);
+                }
+                else
+                    g_free (err_msg);
+            }
 
             if (ok)
             {
@@ -610,8 +616,6 @@ arcmc_action_create (mc_panel_host_t *host, const char *open_path)
                 bn = strrchr (pack_opts.archive_path, '/');
                 host->focus_after = g_strdup (bn != NULL ? bn + 1 : pack_opts.archive_path);
             }
-            else if (pack_opts.format < ARCMC_FMT_EXT_BASE)
-                host->message (host, D_ERROR, MSG_ERROR, _ ("Failed to create archive"));
         }
 
         g_ptr_array_free (files, TRUE);
@@ -1301,7 +1305,7 @@ arcmc_put_file (void *plugin_data, const char *local_path, const char *dest_name
     if (data->extfs_helper != NULL)
     {
         ok = arcmc_extfs_run_cmd (data->extfs_helper, " copyin ", data->archive_path, archive_name,
-                                  local_path);
+                                  local_path, data->password);
         g_free (archive_name);
 
         if (!ok)
@@ -1370,7 +1374,7 @@ arcmc_delete_items (void *plugin_data, const char **names, int count)
         for (i = 0; i < count; i++)
         {
             if (!arcmc_extfs_run_cmd (data->extfs_helper, " rm ", data->archive_path, full_paths[i],
-                                      NULL))
+                                      NULL, data->password))
                 any_failed = TRUE;
         }
 

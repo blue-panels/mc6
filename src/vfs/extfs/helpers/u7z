@@ -30,9 +30,29 @@ P7ZIP=`command -v 7z 2>/dev/null` \
     || P7ZIP=`command -v 7zr 2>/dev/null` \
     || P7ZIP=""
 
+# The caller may name the program to use, e.g. a 7z outside PATH:
+P7ZIP=${MC_EXTFS_P7ZIP:-$P7ZIP}
+
 # Let the test framework hook in:
 P7ZIP=${MC_TEST_EXTFS_LIST_CMD:-$P7ZIP}
 STAT=${MC_TEST_EXTFS_U7Z_STAT:-stat}
+
+# Read commands (l, e) always get -p, empty when no password is set: without it
+# 7z asks for the password on the terminal and hangs the caller.
+p7zip_read ()
+{
+        $P7ZIP "$@" -p"$MC_EXTFS_PASSWORD"
+}
+
+# Write commands (a, d) get -p only when set: for them an empty -p means "ask".
+p7zip_write ()
+{
+        if [ -n "$MC_EXTFS_PASSWORD" ]; then
+                $P7ZIP "$@" -p"$MC_EXTFS_PASSWORD"
+        else
+                $P7ZIP "$@"
+        fi
+}
 
 mcu7zip_list ()
 {
@@ -54,7 +74,7 @@ mcu7zip_list ()
         [ "${date_archive}"x = x ] && date_archive=`ls -lan "$1" 2>/dev/null | awk '{print $6, $7, $8}' 2>/dev/null`
         [ "${date_archive}"x = x ] && date_archive="01-01-1970 00:00:00"
 
-        $P7ZIP l "$1" | sed -n "
+        p7zip_read l "$1" | sed -n "
 
                   # If the uncompressed size is missing, we copy the compressed size onto it.
                   #
@@ -79,21 +99,21 @@ mcu7zip_list ()
 mcu7zip_copyout ()
 {
         #first we check if we have old p7zip archive with prefix ./ in filename
-        $P7ZIP l "$1" "$2" | grep -q "0 files, 0 folders" && \
+        p7zip_read l "$1" "$2" | grep -q "0 files, 0 folders" && \
         EXFNAME='*./'"$2" || EXFNAME="$2"
-        $P7ZIP e -so "$1" "$EXFNAME" > "$3" 2>/dev/null
+        p7zip_read e -so "$1" "$EXFNAME" > "$3" 2>/dev/null
 }
 
 mcu7zip_copyin ()
 {
-        $P7ZIP a -si"$2" "$1" <"$3" >/dev/null 2>&1
+        p7zip_write a -si"$2" "$1" <"$3" >/dev/null 2>&1
 }
 
 mcu7zip_mkdir ()
 {
         dir=`mktemp -d "${MC_TMPDIR:-/tmp}/mctmpdir-u7z.XXXXXX"` || exit 1
         mkdir -p "$dir"/"$2"
-        $P7ZIP a "$1" "$dir/${2%%/*}" >/dev/null 2>&1
+        p7zip_write a "$1" "$dir/${2%%/*}" >/dev/null 2>&1
         rm -rf "$dir"
 }
 
@@ -101,18 +121,18 @@ mcu7zip_rm ()
 {
         # NOTE: Version 4.20 fails to delete files in subdirectories
         #first we check if we have old p7zip archive with prefix ./ in filename
-        $P7ZIP l "$1" "$2" | grep -q "0 files, 0 folders" && \
+        p7zip_read l "$1" "$2" | grep -q "0 files, 0 folders" && \
         EXFNAME='*./'"$2" || EXFNAME="$2"
-        $P7ZIP d "$1" "$EXFNAME" 2>&1 | grep -q E_NOTIMPL > /dev/null 2>&1 && \
+        p7zip_write d "$1" "$EXFNAME" 2>&1 | grep -q E_NOTIMPL > /dev/null 2>&1 && \
         { printf "Function not implemented...\n7z cannot delete from solid archive." >&2 ; exit 1 ; }
 }
 
 mcu7zip_rmdir ()
 {
         #first we check if we have old p7zip archive with prefix ./ in filename
-        $P7ZIP l "$1" "$2" | grep -q "0 files, 0 folders" && \
+        p7zip_read l "$1" "$2" | grep -q "0 files, 0 folders" && \
         EXFNAME='*./'"$2" || EXFNAME="$2"
-        $P7ZIP d "$1" "$EXFNAME"/ 2>&1 | grep -q E_NOTIMPL > /dev/null 2>&1 && \
+        p7zip_write d "$1" "$EXFNAME"/ 2>&1 | grep -q E_NOTIMPL > /dev/null 2>&1 && \
         { printf "Function not implemented...\n7z cannot delete from solid archive." >&2 ; exit 1 ; }
 }
 

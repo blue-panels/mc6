@@ -742,6 +742,7 @@ ctags_ui_select_refs (const char *title, GPtrArray *entries)
     ds.get_checked = NULL;
     ds.set_checked = NULL;
     ds.data = NULL;
+    ds.cycle_choice = NULL;
     table_set_datasource (tbl, ds);
 
     group_add_widget (GROUP (dlg), tbl);
@@ -867,6 +868,7 @@ ctags_ui_select_members (const char *scope, GPtrArray *rows)
     ds.get_checked = NULL;
     ds.set_checked = NULL;
     ds.data = NULL;
+    ds.cycle_choice = NULL;
     table_set_datasource (tbl, ds);
 
     group_add_widget (GROUP (dlg), tbl);

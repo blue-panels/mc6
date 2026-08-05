@@ -39,49 +39,96 @@
 
 /*** file scope variables ************************************************************************/
 
-/* ext archivers table widget - used by the dialog callback to identify Enter sender */
+/* table widgets, used by the dialog callback to tell the two tables apart */
 static WTable *settings_tbl_ext = NULL;
-
-/* Builtin libarchive formats for the settings dialog */
-static const struct
-{
-    const char *name;
-    const char *ext;
-    gboolean can_pack;
-    gboolean can_unpack;
-} builtin_formats[] = {
-    /* pack + unpack */
-    { "ZIP", ".zip", TRUE, TRUE },
-    { "7Z", ".7z", TRUE, TRUE },
-    { "TAR.GZ", ".tar.gz", TRUE, TRUE },
-    { "TAR.BZ2", ".tar.bz2", TRUE, TRUE },
-    { "TAR.XZ", ".tar.xz", TRUE, TRUE },
-    { "TAR", ".tar", TRUE, TRUE },
-    { "CPIO", ".cpio", TRUE, TRUE },
-    /* unpack only (libarchive reads but arcmc does not write) */
-    { "TAR.ZST", ".tar.zst", FALSE, TRUE },
-    { "TAR.LZ", ".tar.lz", FALSE, TRUE },
-    { "TAR.LZMA", ".tar.lzma", FALSE, TRUE },
-    { "ISO", ".iso", FALSE, TRUE },
-    { "XAR", ".xar", FALSE, TRUE },
-    { "CAB", ".cab", FALSE, TRUE },
-};
+static WTable *settings_tbl_builtin = NULL;
 
 /*** file scope macro definitions ****************************************************************/
 
-/* Column widths for the settings table: Format(7) | Ext(8) | Pack(9) | Unpack(11) | On(3) */
-#define SETTINGS_TABLE_NCOLS 5
-#define SETTINGS_TABLE_WIDTH 42 /* 7+1+8+1+9+1+11+1+3 = 42 */
+/* Columns: Format(7) | Ext(8) | Pack(8) | Unpack(8) | Tool(10) | On(3).
+   The choice columns spend one character on the cursor mark. */
+#define SETTINGS_TABLE_NCOLS 6
+#define SETTINGS_TABLE_WIDTH 49 /* 7+1+8+1+8+1+8+1+10+1+3 = 49 */
+
+/* Column indices */
+#define SETTINGS_COL_PACK   2
+#define SETTINGS_COL_UNPACK 3
 
 /*** file scope functions ************************************************************************/
 
 /* ---- Table datasource callbacks for the settings dialog ---- */
 
+/* Edited copy of the settings, committed to the format table on OK. Cancel
+   drops it, so nothing the format editor changed survives either. */
+typedef struct
+{
+    arcmc_backend_t pack;
+    arcmc_backend_t unpack;
+    gboolean enabled;
+    char *pack_bin;
+    char *pack_args;
+    char *unpack_bin;
+    char *helper;
+} settings_row_t;
+
+/* working copy shown by the dialog, needed by the callback that opens the editor */
+static settings_row_t *settings_builtin_rows = NULL;
+
+/* labels of the format editor that name a backend, they are highlighted */
+static unsigned long params_lbl_both_id = 0;
+static unsigned long params_lbl_extern_id = 0;
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Paint the two backend names of the format editor in the highlight color. */
+static cb_ret_t
+builtin_params_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    if (msg == MSG_INIT)
+    {
+        cb_ret_t ret;
+        Widget *lw;
+
+        ret = dlg_default_callback (w, sender, msg, parm, data);
+
+        lw = widget_find_by_id (w, params_lbl_both_id);
+        if (lw != NULL)
+            LABEL (lw)->color_idx = DLG_COLOR_HOT_NORMAL;
+
+        lw = widget_find_by_id (w, params_lbl_extern_id);
+        if (lw != NULL)
+            LABEL (lw)->color_idx = DLG_COLOR_HOT_NORMAL;
+
+        return ret;
+    }
+
+    return dlg_default_callback (w, sender, msg, parm, data);
+}
+
+/* Tool name with a marker when the program is not in PATH. */
+static const char *
+settings_tool_text (const char *bin)
+{
+    static char buf[32];
+
+    if (bin == NULL)
+        return "-";
+
+    if (arcmc_check_bin_available (bin))
+        return bin;
+
+    g_snprintf (buf, sizeof (buf), "%s !", bin);
+
+    return buf;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 settings_builtin_get_nrows (const void *data)
 {
     (void) data;
-    return (int) G_N_ELEMENTS (builtin_formats);
+    return (int) arcmc_builtin_formats_count;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -89,24 +136,106 @@ settings_builtin_get_nrows (const void *data)
 static const char *
 settings_builtin_get_text (const void *data, int row, int col)
 {
-    (void) data;
+    const settings_row_t *rows = (const settings_row_t *) data;
+    const arcmc_builtin_format_t *f;
 
-    if (row < 0 || row >= (int) G_N_ELEMENTS (builtin_formats))
+    if (row < 0 || row >= (int) arcmc_builtin_formats_count)
         return "";
+
+    f = &arcmc_builtin_formats[row];
 
     switch (col)
     {
     case 0:
-        return builtin_formats[row].name;
+        return f->name;
     case 1:
-        return builtin_formats[row].ext;
-    case 2:
-        return builtin_formats[row].can_pack ? "builtin" : "-";
-    case 3:
-        return builtin_formats[row].can_unpack ? "builtin" : "-";
+        return f->ext;
+    case SETTINGS_COL_PACK:
+        if (!f->lib_pack && rows[row].pack_bin == NULL)
+            return "-";
+        return arcmc_backend_name (rows[row].pack);
+    case SETTINGS_COL_UNPACK:
+        if (!f->lib_unpack && rows[row].unpack_bin == NULL)
+            return "-";
+        return arcmc_backend_name (rows[row].unpack);
+    case 4:
+        return settings_tool_text (arcmc_resolve_tool (
+            rows[row].pack_bin != NULL ? rows[row].pack_bin : rows[row].unpack_bin));
     default:
         return "";
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+settings_builtin_get_checked (const void *data, int row, int col)
+{
+    const settings_row_t *rows = (const settings_row_t *) data;
+
+    (void) col;
+
+    return rows[row].enabled;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+settings_builtin_set_checked (void *data, int row, int col, gboolean val)
+{
+    settings_row_t *rows = (settings_row_t *) data;
+
+    (void) col;
+
+    rows[row].enabled = val;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Step a Pack/Unpack cell to the next value this build can serve. */
+static void
+settings_builtin_cycle (void *data, int row, int col, int dir)
+{
+    settings_row_t *rows = (settings_row_t *) data;
+    const arcmc_builtin_format_t *f;
+    arcmc_backend_t *val;
+    arcmc_backend_t orig;
+    gboolean lib;
+    const char *bin;
+    int i;
+
+    if (row < 0 || row >= (int) arcmc_builtin_formats_count)
+        return;
+
+    f = &arcmc_builtin_formats[row];
+
+    if (col == SETTINGS_COL_PACK)
+    {
+        val = &rows[row].pack;
+        lib = f->lib_pack;
+        bin = rows[row].pack_bin;
+    }
+    else if (col == SETTINGS_COL_UNPACK)
+    {
+        val = &rows[row].unpack;
+        lib = f->lib_unpack;
+        bin = rows[row].unpack_bin;
+    }
+    else
+        return;
+
+    orig = *val;
+
+    for (i = 0; i < ARCMC_BACKEND_COUNT; i++)
+    {
+        *val = (arcmc_backend_t) (((int) *val + dir + ARCMC_BACKEND_COUNT) % ARCMC_BACKEND_COUNT);
+
+        if (arcmc_backend_possible (*val, lib, bin))
+            return;
+    }
+
+    /* nothing else to offer */
+    *val = orig;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -138,10 +267,12 @@ settings_ext_get_text (const void *data, int row, int col)
         return a->name;
     case 1:
         return a->ext;
-    case 2:
-        return a->pack_bin != NULL ? a->pack_bin : "-";
-    case 3:
-        return a->unpack_bin != NULL ? a->unpack_bin : "-";
+    case SETTINGS_COL_PACK:
+        return a->pack_bin != NULL ? "extern" : "-";
+    case SETTINGS_COL_UNPACK:
+        return a->unpack_bin != NULL ? "extern" : "-";
+    case 4:
+        return settings_tool_text (a->pack_bin != NULL ? a->pack_bin : a->unpack_bin);
     default:
         return "";
     }
@@ -169,6 +300,196 @@ settings_set_checked (void *data, int row, int col, gboolean val)
     (void) col;
 
     checks[row] = val;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Split "7z a -y -t7z" into the program and its arguments. */
+static void
+settings_split_command (const char *cmd, char **bin, char **args)
+{
+    const char *sp;
+
+    *bin = NULL;
+    *args = NULL;
+
+    if (cmd == NULL)
+        return;
+
+    while (*cmd == ' ')
+        cmd++;
+
+    if (*cmd == '\0')
+        return;
+
+    sp = strchr (cmd, ' ');
+    if (sp == NULL)
+    {
+        *bin = g_strdup (cmd);
+        return;
+    }
+
+    *bin = g_strndup (cmd, (gsize) (sp - cmd));
+
+    while (*sp == ' ')
+        sp++;
+
+    if (*sp != '\0')
+        *args = g_strdup (sp);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Backends and tool of one builtin format. `row` is the working copy of the
+   parent dialog, so its Cancel still discards the change. */
+static void
+arcmc_show_builtin_params_dialog (size_t idx, settings_row_t *row)
+{
+    static const char *backend_options[] = {
+        N_ ("&builtin"),
+        N_ ("bo&th"),
+        N_ ("&external"),
+        N_ ("&off"),
+    };
+    static const arcmc_backend_t backend_order[] = {
+        ARCMC_BACKEND_BUILTIN,
+        ARCMC_BACKEND_BOTH,
+        ARCMC_BACKEND_EXTERN,
+        ARCMC_BACKEND_OFF,
+    };
+
+    const arcmc_builtin_format_t *f;
+    const char *tool;
+    char *pack_cmd;
+    char *found;
+    char *found_label;
+    char *new_pack_cmd = NULL;
+    char *new_helper = NULL;
+    int pack_sel;
+    int unpack_sel;
+    int ret;
+
+    if (idx >= arcmc_builtin_formats_count)
+        return;
+
+    f = &arcmc_builtin_formats[idx];
+
+    pack_sel = 0;
+    unpack_sel = 0;
+    {
+        size_t i;
+
+        for (i = 0; i < G_N_ELEMENTS (backend_order); i++)
+        {
+            if (backend_order[i] == row->pack)
+                pack_sel = (int) i;
+            if (backend_order[i] == row->unpack)
+                unpack_sel = (int) i;
+        }
+    }
+
+    pack_cmd =
+        g_strconcat (row->pack_bin != NULL ? row->pack_bin : "", row->pack_args != NULL ? " " : "",
+                     row->pack_args != NULL ? row->pack_args : "", (char *) NULL);
+
+    tool = arcmc_resolve_tool (row->pack_bin != NULL ? row->pack_bin : row->unpack_bin);
+    found = tool != NULL ? g_find_program_in_path (tool) : NULL;
+    found_label = g_strdup_printf (_ ("Found in PATH: %s"), found != NULL ? found : _ ("no"));
+    g_free (found);
+
+    {
+        /* *INDENT-OFF* */
+        quick_widget_t quick_widgets[] = {
+            QUICK_LABEL (f->ext, NULL),
+            QUICK_SEPARATOR (FALSE),
+            QUICK_START_COLUMNS,
+            QUICK_START_GROUPBOX (N_ ("Pack")),
+            QUICK_RADIO (G_N_ELEMENTS (backend_options), backend_options, &pack_sel, NULL),
+            QUICK_STOP_GROUPBOX,
+            QUICK_NEXT_COLUMN,
+            QUICK_START_GROUPBOX (N_ ("Unpack")),
+            QUICK_RADIO (G_N_ELEMENTS (backend_options), backend_options, &unpack_sel, NULL),
+            QUICK_STOP_GROUPBOX,
+            QUICK_STOP_COLUMNS,
+            QUICK_LABEL (N_ ("Both:"), &params_lbl_both_id),
+            QUICK_LABEL (N_ ("use libarchive when possible; fall back to the"), NULL),
+            QUICK_LABEL (N_ ("external tool for unsupported archives."), NULL),
+            QUICK_LABEL (N_ ("For 7z, this applies only to encrypted archives."), NULL),
+            QUICK_SEPARATOR (FALSE),
+            QUICK_LABEL (N_ ("External:"), &params_lbl_extern_id),
+            QUICK_LABEL (N_ ("always use the external tool for this format."), NULL),
+            QUICK_SEPARATOR (FALSE),
+            QUICK_LABELED_INPUT (N_ ("Pack command:"), input_label_left, pack_cmd,
+                                 "arcmc-builtin-pack-cmd", &new_pack_cmd, NULL, FALSE, FALSE,
+                                 INPUT_COMPLETE_FILENAMES),
+            QUICK_LABELED_INPUT (N_ ("Unpack helper:"), input_label_left,
+                                 row->helper != NULL ? row->helper : "", "arcmc-builtin-helper",
+                                 &new_helper, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE),
+            QUICK_LABEL (found_label, NULL),
+            QUICK_BUTTONS_OK_CANCEL,
+            QUICK_END,
+        };
+        /* *INDENT-ON* */
+
+        WRect r = { -1, -1, 0, 64 };
+
+        quick_dialog_t qdlg = {
+            .rect = r,
+            .title = f->name,
+            .help = "[arcmc]",
+            .widgets = quick_widgets,
+            .callback = builtin_params_dlg_callback,
+            .mouse_callback = NULL,
+        };
+
+        ret = quick_dialog (&qdlg);
+    }
+
+    if (ret == B_ENTER)
+    {
+        arcmc_backend_t pack = backend_order[pack_sel];
+        arcmc_backend_t unpack = backend_order[unpack_sel];
+        char *bin = NULL;
+        char *args = NULL;
+
+        settings_split_command (new_pack_cmd, &bin, &args);
+
+        /* the tool of the format may have just been named, judge by the new value */
+        if (!arcmc_backend_possible (pack, f->lib_pack, bin)
+            || !arcmc_backend_possible (unpack, f->lib_unpack, bin != NULL ? bin : row->unpack_bin))
+            message (D_ERROR, MSG_ERROR, "%s", _ ("This backend is not available for the format"));
+        else
+        {
+            row->pack = pack;
+            row->unpack = unpack;
+
+            g_free (row->pack_bin);
+            g_free (row->pack_args);
+            row->pack_bin = bin;
+            row->pack_args = args;
+            bin = NULL;
+            args = NULL;
+
+            /* the same program serves reading, that is what the helper runs */
+            if (row->pack_bin != NULL)
+            {
+                g_free (row->unpack_bin);
+                row->unpack_bin = g_strdup (row->pack_bin);
+            }
+
+            g_free (row->helper);
+            row->helper =
+                (new_helper != NULL && new_helper[0] != '\0') ? g_strdup (new_helper) : NULL;
+        }
+
+        g_free (bin);
+        g_free (args);
+    }
+
+    g_free (new_pack_cmd);
+    g_free (new_helper);
+    g_free (pack_cmd);
+    g_free (found_label);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -302,6 +623,21 @@ settings_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, vo
                 arcmc_show_ext_params_dialog ((size_t) row);
             return MSG_HANDLED;
         }
+
+        if (parm == KEY_F (4) && settings_tbl_builtin != NULL
+            && widget_get_state (WIDGET (settings_tbl_builtin), WST_FOCUSED))
+        {
+            int row = table_get_current (settings_tbl_builtin);
+
+            if (settings_builtin_rows != NULL && row >= 0
+                && row < (int) arcmc_builtin_formats_count)
+            {
+                arcmc_show_builtin_params_dialog ((size_t) row, &settings_builtin_rows[row]);
+                /* the sub-dialog restores the screen it covered, cells included */
+                widget_draw (WIDGET (settings_tbl_builtin));
+            }
+            return MSG_HANDLED;
+        }
         return MSG_NOT_HANDLED;
 
     case MSG_NOTIFY:
@@ -313,6 +649,21 @@ settings_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, vo
 
             if (row >= 0 && row < (int) ext_archivers_count)
                 arcmc_show_ext_params_dialog ((size_t) row);
+            return MSG_HANDLED;
+        }
+
+        if (sender != NULL && settings_tbl_builtin != NULL
+            && sender == WIDGET (settings_tbl_builtin) && parm == CK_Enter)
+        {
+            int row = table_get_current (settings_tbl_builtin);
+
+            if (settings_builtin_rows != NULL && row >= 0
+                && row < (int) arcmc_builtin_formats_count)
+            {
+                arcmc_show_builtin_params_dialog ((size_t) row, &settings_builtin_rows[row]);
+                /* the sub-dialog restores the screen it covered, cells included */
+                widget_draw (WIDGET (settings_tbl_builtin));
+            }
             return MSG_HANDLED;
         }
         return MSG_NOT_HANDLED;
@@ -327,11 +678,21 @@ settings_dlg_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, vo
 void
 arcmc_show_settings_dialog (void)
 {
-    static const table_column_def_t col_defs[SETTINGS_TABLE_NCOLS] = {
+    /* only the builtin table has a backend to choose */
+    static const table_column_def_t col_defs_builtin[SETTINGS_TABLE_NCOLS] = {
         { 7, J_LEFT, TABLE_COL_TEXT },    /* Format */
         { 8, J_LEFT, TABLE_COL_TEXT },    /* Ext */
-        { 9, J_LEFT, TABLE_COL_TEXT },    /* Pack */
-        { 11, J_LEFT, TABLE_COL_TEXT },   /* Unpack */
+        { 8, J_LEFT, TABLE_COL_CHOICE },  /* Pack */
+        { 8, J_LEFT, TABLE_COL_CHOICE },  /* Unpack */
+        { 10, J_LEFT, TABLE_COL_TEXT },   /* Tool */
+        { 3, J_CENTER, TABLE_COL_CHECK }, /* On */
+    };
+    static const table_column_def_t col_defs_ext[SETTINGS_TABLE_NCOLS] = {
+        { 7, J_LEFT, TABLE_COL_TEXT },    /* Format */
+        { 8, J_LEFT, TABLE_COL_TEXT },    /* Ext */
+        { 8, J_LEFT, TABLE_COL_TEXT },    /* Pack */
+        { 8, J_LEFT, TABLE_COL_TEXT },    /* Unpack */
+        { 10, J_LEFT, TABLE_COL_TEXT },   /* Tool */
         { 3, J_CENTER, TABLE_COL_CHECK }, /* On */
     };
 
@@ -339,19 +700,20 @@ arcmc_show_settings_dialog (void)
     WGroup *g;
     WTable *tbl_builtin;
     WTable *tbl_ext;
-    gboolean builtin_checks[G_N_ELEMENTS (builtin_formats)];
+    settings_row_t *builtin_rows;
     gboolean *ext_checks;
-    int dlg_width = 49;
+    int dlg_width = SETTINGS_TABLE_WIDTH + 6;
     int dlg_height;
     int builtin_lines;
     int ext_lines;
     int y;
     size_t i;
 
-    builtin_lines = ((int) G_N_ELEMENTS (builtin_formats) * 2 + 2) / 3;
+    builtin_lines = ((int) arcmc_builtin_formats_count * 2 + 2) / 3;
     ext_lines = ((int) ext_archivers_count * 2 + 2) / 3;
-    /* header(1) + separator(1) + builtins + hline(1) + externals + hline(1) + button(1) */
-    dlg_height = 1 + 1 + builtin_lines + 1 + ext_lines + 1 + 1 + 2;
+    /* header(1) + separator(1) + builtins + hline(1) + externals + hline(1) + hint(1)
+       + hline(1) + button(1) */
+    dlg_height = 1 + 1 + builtin_lines + 1 + ext_lines + 1 + 1 + 1 + 1 + 2;
 
     dlg = dlg_create (TRUE, 0, 0, dlg_height, dlg_width, WPOS_CENTER, TRUE, dialog_colors,
                       settings_dlg_callback, NULL, "[arcmc]", _ ("Archiver settings"));
@@ -363,7 +725,7 @@ arcmc_show_settings_dialog (void)
     {
         WLabel *lbl;
 
-        lbl = label_new (y++, 3, _ ("Format  Ext      Pack      Unpack      On"));
+        lbl = label_new (y++, 3, _ ("Format  Ext       Pack     Unpack   Tool       On"));
         lbl->color_idx = DLG_COLOR_TITLE;
         group_add_widget (g, lbl);
     }
@@ -378,15 +740,35 @@ arcmc_show_settings_dialog (void)
     }
 
     /* builtin libarchive formats */
-    tbl_builtin = table_new (y, 2, builtin_lines, dlg_width - 4, SETTINGS_TABLE_NCOLS, col_defs);
-    for (i = 0; i < G_N_ELEMENTS (builtin_formats); i++)
-        builtin_checks[i] = arcmc_builtin_enabled[i];
+    /* the last column lands on the frame, that is where the scrollbar goes */
+    tbl_builtin =
+        table_new (y, 2, builtin_lines, dlg_width - 2, SETTINGS_TABLE_NCOLS, col_defs_builtin);
+    tbl_builtin->scrollbar_on_frame = TRUE;
+    builtin_rows = g_new (settings_row_t, arcmc_builtin_formats_count);
+    for (i = 0; i < arcmc_builtin_formats_count; i++)
     {
-        table_datasource_t ds = { settings_builtin_get_nrows, settings_builtin_get_text,
-                                  settings_get_checked, settings_set_checked, builtin_checks };
+        const arcmc_builtin_format_t *f = &arcmc_builtin_formats[i];
+
+        builtin_rows[i].pack = f->pack;
+        builtin_rows[i].unpack = f->unpack;
+        builtin_rows[i].enabled = f->enabled;
+        builtin_rows[i].pack_bin = g_strdup (f->pack_bin);
+        builtin_rows[i].pack_args = g_strdup (f->pack_args);
+        builtin_rows[i].unpack_bin = g_strdup (f->unpack_bin);
+        builtin_rows[i].helper = g_strdup (f->extfs_helper);
+    }
+    {
+        table_datasource_t ds = { settings_builtin_get_nrows,
+                                  settings_builtin_get_text,
+                                  settings_builtin_get_checked,
+                                  settings_builtin_set_checked,
+                                  builtin_rows,
+                                  settings_builtin_cycle };
 
         table_set_datasource (tbl_builtin, ds);
     }
+    settings_tbl_builtin = tbl_builtin;
+    settings_builtin_rows = builtin_rows;
     group_add_widget (g, tbl_builtin);
     y += builtin_lines;
 
@@ -400,19 +782,41 @@ arcmc_show_settings_dialog (void)
     }
 
     /* external archivers */
-    tbl_ext = table_new (y, 2, ext_lines, dlg_width - 4, SETTINGS_TABLE_NCOLS, col_defs);
+    tbl_ext = table_new (y, 2, ext_lines, dlg_width - 2, SETTINGS_TABLE_NCOLS, col_defs_ext);
+    tbl_ext->scrollbar_on_frame = TRUE;
     settings_tbl_ext = tbl_ext;
     ext_checks = g_new (gboolean, ext_archivers_count > 0 ? ext_archivers_count : 1);
     for (i = 0; i < ext_archivers_count; i++)
         ext_checks[i] = arcmc_ext_enabled != NULL ? arcmc_ext_enabled[i] : TRUE;
     {
-        table_datasource_t ds = { settings_ext_get_nrows, settings_ext_get_text,
-                                  settings_get_checked, settings_set_checked, ext_checks };
+        table_datasource_t ds = { settings_ext_get_nrows,
+                                  settings_ext_get_text,
+                                  settings_get_checked,
+                                  settings_set_checked,
+                                  ext_checks,
+                                  NULL };
 
         table_set_datasource (tbl_ext, ds);
     }
     group_add_widget (g, tbl_ext);
     y += ext_lines;
+
+    {
+        WHLine *hl;
+
+        hl = hline_new (y++, -1, -1);
+        hl->text_color_idx = DLG_COLOR_TITLE;
+        hline_set_text (hl, _ (" Hint "));
+        group_add_widget (g, hl);
+    }
+
+    {
+        WLabel *lbl;
+
+        lbl = label_new (y++, 3, _ ("Space - change   F4 - tool params   ! - missing"));
+        lbl->color_idx = DLG_COLOR_TITLE;
+        group_add_widget (g, lbl);
+    }
 
     group_add_widget (g, hline_new (y++, -1, -1));
 
@@ -420,11 +824,29 @@ arcmc_show_settings_dialog (void)
         g,
         button_new (dlg_height - 2, (dlg_width - 8) / 2, B_ENTER, DEFPUSH_BUTTON, _ ("&OK"), NULL));
 
+    widget_select (WIDGET (tbl_builtin));
+
     if (dlg_run (dlg) == B_ENTER)
     {
-        /* commit check states */
-        for (i = 0; i < G_N_ELEMENTS (builtin_formats); i++)
-            arcmc_builtin_enabled[i] = builtin_checks[i];
+        for (i = 0; i < arcmc_builtin_formats_count; i++)
+        {
+            arcmc_builtin_format_t *f = &arcmc_builtin_formats[i];
+
+            f->pack = builtin_rows[i].pack;
+            f->unpack = builtin_rows[i].unpack;
+            f->enabled = builtin_rows[i].enabled;
+
+            /* the replaced value is a .rodata literal or a config string of the
+               session, program-lifetime either way, so it is not freed */
+            if (g_strcmp0 (f->pack_bin, builtin_rows[i].pack_bin) != 0)
+                f->pack_bin = g_strdup (builtin_rows[i].pack_bin);
+            if (g_strcmp0 (f->pack_args, builtin_rows[i].pack_args) != 0)
+                f->pack_args = g_strdup (builtin_rows[i].pack_args);
+            if (g_strcmp0 (f->unpack_bin, builtin_rows[i].unpack_bin) != 0)
+                f->unpack_bin = g_strdup (builtin_rows[i].unpack_bin);
+            if (g_strcmp0 (f->extfs_helper, builtin_rows[i].helper) != 0)
+                f->extfs_helper = g_strdup (builtin_rows[i].helper);
+        }
 
         for (i = 0; i < ext_archivers_count; i++)
             if (arcmc_ext_enabled != NULL)
@@ -433,8 +855,19 @@ arcmc_show_settings_dialog (void)
         arcmc_config_save ();
     }
 
+    for (i = 0; i < arcmc_builtin_formats_count; i++)
+    {
+        g_free (builtin_rows[i].pack_bin);
+        g_free (builtin_rows[i].pack_args);
+        g_free (builtin_rows[i].unpack_bin);
+        g_free (builtin_rows[i].helper);
+    }
+
+    g_free (builtin_rows);
     g_free (ext_checks);
     settings_tbl_ext = NULL;
+    settings_tbl_builtin = NULL;
+    settings_builtin_rows = NULL;
     widget_destroy (WIDGET (dlg));
 }
 
