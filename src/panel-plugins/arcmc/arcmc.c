@@ -66,6 +66,7 @@ static void *arcmc_action_extract (mc_panel_host_t *host, const char *open_path)
 static void *arcmc_action_test (mc_panel_host_t *host, const char *open_path);
 static void *arcmc_action_settings (mc_panel_host_t *host, const char *open_path);
 static void arcmc_configure (void);
+static gboolean arcmc_ask_password (arcmc_data_t *data);
 
 /*** file scope functions (helpers) ***************************************************************/
 
@@ -1030,25 +1031,13 @@ arcmc_chdir (void *plugin_data, const char *path)
 
     /* verify target directory exists */
     {
+        const arcmc_entry_t *e;
         char *new_dir;
-        guint i;
-        gboolean found = FALSE;
 
         new_dir = build_child_path (data->current_dir, path);
+        e = arcmc_find_entry (data->all_entries, new_dir);
 
-        for (i = 0; i < data->all_entries->len; i++)
-        {
-            const arcmc_entry_t *e =
-                (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
-
-            if (strcmp (e->full_path, new_dir) == 0 && S_ISDIR (e->mode))
-            {
-                found = TRUE;
-                break;
-            }
-        }
-
-        if (!found)
+        if (e == NULL || !S_ISDIR (e->mode))
         {
             g_free (new_dir);
             return MC_PPR_FAILED;
@@ -1248,35 +1237,18 @@ arcmc_get_local_copy (void *plugin_data, const char *fname, char **local_path)
     }
 
     /* find file size for progress */
-    if (data->all_entries != NULL)
     {
-        for (i = 0; i < data->all_entries->len; i++)
-        {
-            const arcmc_entry_t *e =
-                (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+        const arcmc_entry_t *e = arcmc_find_entry (data->all_entries, target_path);
 
-            if (strcmp (e->full_path, target_path) == 0)
-            {
-                file_size = e->size;
-                break;
-            }
-        }
+        if (e != NULL)
+            file_size = e->size;
     }
 
     progress = arcmc_progress_create (_ ("Extracting..."), data->archive_path, file_size);
     result = arcmc_extract_entry (data, target_path, local_path, progress);
 
-    /* If extraction failed and no password set, try asking for one */
-    while (result != MC_PPR_OK && data->password == NULL && !progress->aborted)
+    if (result != MC_PPR_OK && !progress->aborted && arcmc_ask_password (data))
     {
-        char *pw;
-
-        pw = input_dialog (_ ("Archive password"), _ ("Enter password:"), "arcmc-password",
-                           INPUT_PASSWORD, INPUT_COMPLETE_NONE);
-        if (pw == NULL)
-            break;
-
-        data->password = pw;
         progress->done_bytes = 0;
         progress->written_bytes = 0;
         result = arcmc_extract_entry (data, target_path, local_path, progress);
@@ -1289,128 +1261,46 @@ arcmc_get_local_copy (void *plugin_data, const char *fname, char **local_path)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Extract one entry to a temp file, asking for a password if the archive wants one. */
-static mc_pp_result_t
-arcmc_extract_one (arcmc_data_t *data, const char *path, char **local_path, arcmc_progress_t *p)
-{
-    mc_pp_result_t result;
-
-    if (data->extfs_helper != NULL)
-        return arcmc_extract_entry_extfs (data, path, local_path);
-
-    result = arcmc_extract_entry (data, path, local_path, p);
-
-    while (result != MC_PPR_OK && data->password == NULL && (p == NULL || !p->aborted))
-    {
-        char *pw;
-
-        pw = input_dialog (_ ("Archive password"), _ ("Enter password:"), "arcmc-password",
-                           INPUT_PASSWORD, INPUT_COMPLETE_NONE);
-        if (pw == NULL)
-            break;
-
-        data->password = pw;
-        result = arcmc_extract_entry (data, path, local_path, p);
-    }
-
-    return result;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
+/* Ask for the archive password, once. FALSE if one was set already or the user
+   gave none. */
 static gboolean
-is_under_dir (const char *path, const char *dir, size_t dir_len)
+arcmc_ask_password (arcmc_data_t *data)
 {
-    return strncmp (path, dir, dir_len) == 0 && path[dir_len] == '/';
+    char *pw;
+
+    if (data->password != NULL)
+        return FALSE;
+
+    pw = input_dialog (_ ("Archive password"), _ ("Enter password:"), "arcmc-password",
+                       INPUT_PASSWORD, INPUT_COMPLETE_NONE);
+    if (pw == NULL)
+        return FALSE;
+
+    data->password = pw;
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* A directory whose mode is put back once everything below it is written: a
-   mode of its own could leave us unable to write into it. */
-typedef struct
-{
-    char *path;
-    mode_t mode;
-} arcmc_made_dir_t;
-
-static void
-arcmc_made_dir_free (gpointer data)
-{
-    arcmc_made_dir_t *d = (arcmc_made_dir_t *) data;
-
-    g_free (d->path);
-    g_free (d);
-}
-
-static void
-arcmc_remember_dir (GPtrArray *made, const char *path, mode_t mode)
-{
-    arcmc_made_dir_t *d;
-
-    if ((mode & 0777) == 0)
-        return;
-
-    d = g_new (arcmc_made_dir_t, 1);
-    d->path = g_strdup (path);
-    d->mode = mode & 0777;
-    g_ptr_array_add (made, d);
-}
-
-/* Innermost first: a parent left without read or search permission would put
-   its children out of reach. */
-static void
-arcmc_apply_dir_modes (GPtrArray *made)
-{
-    guint i;
-
-    for (i = made->len; i > 0; i--)
-    {
-        const arcmc_made_dir_t *d = (const arcmc_made_dir_t *) g_ptr_array_index (made, i - 1);
-
-        chmod (d->path, d->mode);
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* Unpack the subtree rooted at `src_dir` inside the archive into `dest_path` on disk.
-   `dir_mode` is the mode the archive holds for `src_dir` itself. */
+/* Unpack a subtree the way an extfs helper can: one copyout per file. */
 static mc_pp_result_t
-arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *dest_path,
-                         mode_t dir_mode)
+arcmc_copy_dir_extfs (arcmc_data_t *data, const char *src_dir, const char *dest_path,
+                      arcmc_progress_t *p)
 {
-    arcmc_progress_t *progress;
-    GPtrArray *made_dirs;
     mc_pp_result_t result = MC_PPR_OK;
-    off_t total = 0;
     size_t dir_len;
     guint i;
 
     dir_len = strlen (src_dir);
 
-    for (i = 0; i < data->all_entries->len; i++)
+    for (i = 0; i < data->all_entries->len && result == MC_PPR_OK && !p->aborted; i++)
     {
         const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
-
-        if (is_under_dir (e->full_path, src_dir, dir_len) && !S_ISDIR (e->mode))
-            total += e->size;
-    }
-
-    if (g_mkdir_with_parents (dest_path, 0755) != 0)
-        return MC_PPR_FAILED;
-
-    made_dirs = g_ptr_array_new_with_free_func (arcmc_made_dir_free);
-    arcmc_remember_dir (made_dirs, dest_path, dir_mode);
-
-    progress = arcmc_progress_create (_ ("Extracting..."), data->archive_path, total);
-
-    for (i = 0; i < data->all_entries->len && result == MC_PPR_OK; i++)
-    {
-        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+        char *local_path = NULL;
         char *out_path;
 
-        if (!is_under_dir (e->full_path, src_dir, dir_len))
+        if (!is_under_dir (e->full_path, src_dir))
             continue;
 
         out_path = g_build_filename (dest_path, e->full_path + dir_len + 1, (char *) NULL);
@@ -1419,19 +1309,16 @@ arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *de
         {
             if (g_mkdir_with_parents (out_path, 0755) != 0)
                 result = MC_PPR_FAILED;
-            else
-                arcmc_remember_dir (made_dirs, out_path, e->mode);
         }
         else
         {
-            char *local_path = NULL;
             char *out_dir;
 
             out_dir = g_path_get_dirname (out_path);
             g_mkdir_with_parents (out_dir, 0755);
             g_free (out_dir);
 
-            if (arcmc_extract_one (data, e->full_path, &local_path, progress) != MC_PPR_OK
+            if (arcmc_extract_entry_extfs (data, e->full_path, &local_path) != MC_PPR_OK
                 || local_path == NULL)
                 result = MC_PPR_FAILED;
             else
@@ -1447,41 +1334,79 @@ arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *de
         }
 
         g_free (out_path);
-
-        if (progress->aborted)
-            result = MC_PPR_FAILED;
     }
-
-    arcmc_progress_destroy (progress);
-
-    if (result == MC_PPR_OK)
-        arcmc_apply_dir_modes (made_dirs);
-
-    g_ptr_array_free (made_dirs, TRUE);
 
     return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The entry `path` names inside the archive, or NULL if the archive has no such entry. */
-static const arcmc_entry_t *
-arcmc_find_entry (arcmc_data_t *data, const char *path)
+/* Unpack the subtree rooted at `src_dir` inside the archive into `dest_path` on
+   disk. `dir_mode` is the mode the archive holds for `src_dir` itself. */
+static mc_pp_result_t
+arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *dest_path,
+                         mode_t dir_mode)
 {
+    arcmc_progress_t *progress;
+    mc_pp_result_t result;
+    off_t total = 0;
+    size_t dir_len;
     guint i;
 
-    if (data->all_entries == NULL)
-        return NULL;
+    dir_len = strlen (src_dir);
 
     for (i = 0; i < data->all_entries->len; i++)
     {
         const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
 
-        if (strcmp (e->full_path, path) == 0)
-            return e;
+        if (is_under_dir (e->full_path, src_dir) && !S_ISDIR (e->mode))
+            total += e->size;
     }
 
-    return NULL;
+    if (g_mkdir_with_parents (dest_path, 0755) != 0)
+        return MC_PPR_FAILED;
+
+    progress = arcmc_progress_create (_ ("Extracting..."), data->archive_path, total);
+
+    if (data->extfs_helper != NULL)
+        result = arcmc_copy_dir_extfs (data, src_dir, dest_path, progress);
+    else
+    {
+        result = arcmc_extract_subtree (data, src_dir, dest_path, progress);
+
+        if (result != MC_PPR_OK && !progress->aborted && arcmc_ask_password (data))
+            result = arcmc_extract_subtree (data, src_dir, dest_path, progress);
+    }
+
+    if (progress->aborted)
+        result = MC_PPR_FAILED;
+
+    arcmc_progress_destroy (progress);
+
+    /* Directories get their modes only now: one that keeps us out of it cannot
+       be filled first. Innermost first, or a closed parent hides its children. */
+    if (result == MC_PPR_OK)
+    {
+        for (i = data->all_entries->len; i > 0; i--)
+        {
+            const arcmc_entry_t *e =
+                (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i - 1);
+            char *out_path;
+
+            if (!S_ISDIR (e->mode) || (e->mode & 0777) == 0
+                || !is_under_dir (e->full_path, src_dir))
+                continue;
+
+            out_path = g_build_filename (dest_path, e->full_path + dir_len + 1, (char *) NULL);
+            chmod (out_path, e->mode & 0777);
+            g_free (out_path);
+        }
+
+        if ((dir_mode & 0777) != 0)
+            chmod (dest_path, dir_mode & 0777);
+    }
+
+    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1500,7 +1425,7 @@ arcmc_copy_to_local (void *plugin_data, const char *fname, const char *dest_path
     mc_pp_result_t result;
 
     src = build_child_path (data->current_dir, fname);
-    e = arcmc_find_entry (data, src);
+    e = arcmc_find_entry (data->all_entries, src);
 
     if (e != NULL && S_ISDIR (e->mode))
     {

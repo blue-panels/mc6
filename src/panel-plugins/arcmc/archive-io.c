@@ -186,21 +186,23 @@ strip_trailing_slashes (char *path)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Check whether a virtual directory entry already exists in all_entries. */
-static gboolean
-has_entry (GPtrArray *entries, const char *full_path)
+const arcmc_entry_t *
+arcmc_find_entry (GPtrArray *entries, const char *full_path)
 {
     guint i;
+
+    if (entries == NULL)
+        return NULL;
 
     for (i = 0; i < entries->len; i++)
     {
         const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (entries, i);
 
         if (strcmp (e->full_path, full_path) == 0)
-            return TRUE;
+            return e;
     }
 
-    return FALSE;
+    return NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -223,7 +225,7 @@ ensure_parent_dirs (GPtrArray *entries, const char *full_path)
         saved = *slash;
         *slash = '\0';
 
-        if (tmp[0] == '\0' || has_entry (entries, tmp))
+        if (tmp[0] == '\0' || arcmc_find_entry (entries, tmp) != NULL)
         {
             *slash = saved;
             continue;
@@ -578,6 +580,23 @@ build_child_path (const char *current_dir, const char *name)
         return g_strdup (name);
 
     return g_strdup_printf ("%s/%s", current_dir, name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check if `entry_path` lies anywhere below `dir`. An empty `dir` is the root,
+   which holds everything. */
+gboolean
+is_under_dir (const char *entry_path, const char *dir)
+{
+    size_t dir_len;
+
+    if (dir == NULL || dir[0] == '\0')
+        return TRUE;
+
+    dir_len = strlen (dir);
+
+    return strncmp (entry_path, dir, dir_len) == 0 && entry_path[dir_len] == '/';
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1071,7 +1090,7 @@ arcmc_read_archive_extfs (arcmc_data_t *data)
                     clean = g_strdup (clean);
                     strip_trailing_slashes (clean);
 
-                    if (clean[0] != '\0' && !has_entry (data->all_entries, clean))
+                    if (clean[0] != '\0' && arcmc_find_entry (data->all_entries, clean) == NULL)
                     {
                         ensure_parent_dirs (data->all_entries, clean);
 
@@ -1142,29 +1161,6 @@ mc_pclose_get_status (mc_pipe_t *p)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Size the listing gives for `path`, or -1 when the archive was not listed or
-   holds no such entry. */
-static off_t
-entry_size_in_archive (const arcmc_data_t *data, const char *path)
-{
-    guint i;
-
-    if (data->all_entries == NULL)
-        return -1;
-
-    for (i = 0; i < data->all_entries->len; i++)
-    {
-        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
-
-        if (strcmp (e->full_path, path) == 0)
-            return e->size;
-    }
-
-    return -1;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 /* Extract a file from the archive using extfs helper's "copyout" command.
    Returns MC_PPR_OK on success. */
 mc_pp_result_t
@@ -1177,6 +1173,7 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
     char *cmd;
     mc_pipe_t *pip;
     char *tmp_path = NULL;
+    gboolean failed;
 
     fd = g_file_open_tmp ("mc-arcmc-XXXXXX", &tmp_path, &error);
     if (fd == -1)
@@ -1221,33 +1218,28 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
 
     mc_pread (pip, &error);
 
-    mc_pclose (pip, NULL);
-
+    failed = error != NULL || pip->err.len > 0;
     if (error != NULL)
-    {
         g_error_free (error);
+
+    // The helper scripts answer 0 even where copyout gave up, so check the file too.
+    if (mc_pclose_get_status (pip) != 0)
+        failed = TRUE;
+    else if (!failed)
+    {
+        const arcmc_entry_t *e;
+        struct stat st;
+
+        e = arcmc_find_entry (data->all_entries, target_path);
+        failed = stat (*local_path, &st) != 0 || (e != NULL && e->size > 0 && st.st_size == 0);
+    }
+
+    if (failed)
+    {
         unlink (*local_path);
         g_free (*local_path);
         *local_path = NULL;
         return MC_PPR_FAILED;
-    }
-
-    /* mc_pclose() drops the exit code of the helper, so a copyout that failed
-       without an I/O error of its own is only visible in what it left behind:
-       nothing, where the listing promised bytes. */
-    {
-        struct stat st;
-        off_t expected;
-
-        expected = entry_size_in_archive (data, target_path);
-
-        if (stat (*local_path, &st) != 0 || (expected > 0 && st.st_size == 0))
-        {
-            unlink (*local_path);
-            g_free (*local_path);
-            *local_path = NULL;
-            return MC_PPR_FAILED;
-        }
     }
 
     return MC_PPR_OK;
@@ -1376,7 +1368,7 @@ arcmc_read_archive_res (arcmc_data_t *data)
         }
 
         /* skip if duplicate */
-        if (has_entry (data->all_entries, clean_path))
+        if (arcmc_find_entry (data->all_entries, clean_path) != NULL)
         {
             g_free (clean_path);
             continue;
@@ -2292,6 +2284,171 @@ arcmc_extract_to_temp (arcmc_data_t *data, const char *name, char **local_path)
 
     g_free (target_path);
     return r;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Write the entry the reader stands on into `out_path`.
+   `p` is an optional progress context (may be NULL). */
+static gboolean
+extract_current_to (struct archive *a, struct archive_entry *entry, const char *out_path,
+                    arcmc_progress_t *p)
+{
+    off_t entry_size, done = 0;
+    int fd;
+
+    entry_size = archive_entry_size (entry);
+
+    fd = open (out_path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd == -1)
+        return FALSE;
+
+    for (;;)
+    {
+        const void *buff;
+        size_t len, block_len;
+        la_int64_t offset;
+        const char *wbuf;
+        int r;
+
+        r = archive_read_data_block (a, &buff, &len, &offset);
+        if (r == ARCHIVE_EOF)
+            break;
+        if (r != ARCHIVE_OK)
+        {
+            close (fd);
+            return FALSE;
+        }
+
+        block_len = len;
+
+        for (wbuf = (const char *) buff; len > 0;)
+        {
+            ssize_t nw = write (fd, wbuf, len);
+
+            if (nw <= 0)
+            {
+                close (fd);
+                return FALSE;
+            }
+            wbuf += nw;
+            len -= (size_t) nw;
+            done += (off_t) nw;
+        }
+
+        if (p != NULL)
+        {
+            p->done_bytes += (off_t) block_len;
+            p->written_bytes += (off_t) block_len;
+
+            if (!arcmc_progress_update (p, archive_entry_pathname (entry), entry_size, done,
+                                        p->done_bytes, p->written_bytes))
+            {
+                close (fd);
+                return FALSE;
+            }
+        }
+    }
+
+    close (fd);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Unpack everything below `src_dir` into `dest_path` in one pass over the
+   archive. Entry by entry costs a fresh read of the archive each time, which on
+   a compressed one means decompressing it again. Directories are left at 0755:
+   the caller puts their modes back once the files are in place.
+   `p` is an optional progress context (may be NULL). */
+mc_pp_result_t
+arcmc_extract_subtree (arcmc_data_t *data, const char *src_dir, const char *dest_path,
+                       arcmc_progress_t *p)
+{
+    struct archive *a;
+    struct archive_entry *entry;
+    size_t dir_len;
+    char *last_dir = NULL;
+    mc_pp_result_t result = MC_PPR_OK;
+
+    a = archive_read_new ();
+    archive_read_support_filter_all (a);
+    archive_read_support_format_all (a);
+
+    if (data->password != NULL)
+        archive_read_add_passphrase (a, data->password);
+
+    if (archive_read_open_filename (a, data->archive_path, 10240) != ARCHIVE_OK)
+    {
+        archive_read_free (a);
+        return MC_PPR_FAILED;
+    }
+
+    dir_len = strlen (src_dir);
+
+    while (result == MC_PPR_OK && archive_read_next_header (a, &entry) == ARCHIVE_OK)
+    {
+        const char *pathname;
+        char *clean, *out_path;
+        mode_t mode;
+
+        pathname = archive_entry_pathname (entry);
+        if (pathname == NULL)
+            continue;
+
+        clean = g_strdup (pathname);
+        strip_trailing_slashes (clean);
+
+        if (!is_under_dir (clean, src_dir))
+        {
+            g_free (clean);
+            archive_read_data_skip (a);
+            continue;
+        }
+
+        mode = archive_entry_mode (entry);
+        out_path =
+            g_build_filename (dest_path, clean + (dir_len == 0 ? 0 : dir_len + 1), (char *) NULL);
+
+        if (S_ISDIR (mode))
+        {
+            if (g_mkdir_with_parents (out_path, 0755) != 0)
+                result = MC_PPR_FAILED;
+        }
+        else
+        {
+            char *out_dir;
+
+            /* Listings are grouped by directory, so the same parent repeats. */
+            out_dir = g_path_get_dirname (out_path);
+            if (last_dir == NULL || strcmp (last_dir, out_dir) != 0)
+            {
+                if (g_mkdir_with_parents (out_dir, 0755) != 0)
+                    result = MC_PPR_FAILED;
+                g_free (last_dir);
+                last_dir = out_dir;
+            }
+            else
+                g_free (out_dir);
+
+            if (result == MC_PPR_OK)
+            {
+                if (!extract_current_to (a, entry, out_path, p))
+                    result = MC_PPR_FAILED;
+                else if ((mode & 0777) != 0)
+                    chmod (out_path, mode & 0777);
+            }
+        }
+
+        g_free (out_path);
+        g_free (clean);
+    }
+
+    g_free (last_dir);
+    archive_read_free (a);
+
+    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */

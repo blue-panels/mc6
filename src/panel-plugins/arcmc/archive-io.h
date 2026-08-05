@@ -44,6 +44,8 @@ const char *arcmc_resolve_tool (const char *bin);
 char *get_parent_dir (const char *current_dir);
 char *build_child_path (const char *current_dir, const char *name);
 const char *is_direct_child (const char *entry_path, const char *dir);
+gboolean is_under_dir (const char *entry_path, const char *dir);
+const arcmc_entry_t *arcmc_find_entry (GPtrArray *entries, const char *full_path);
 
 /* Reading */
 char *arcmc_find_extfs_helper (const char *archive_path);
@@ -68,6 +70,8 @@ gboolean arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArra
 /* Extraction */
 mc_pp_result_t arcmc_extract_entry (arcmc_data_t *data, const char *target_path, char **local_path,
                                     arcmc_progress_t *p);
+mc_pp_result_t arcmc_extract_subtree (arcmc_data_t *data, const char *src_dir,
+                                      const char *dest_path, arcmc_progress_t *p);
 mc_pp_result_t arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path,
                                           char **local_path);
 gboolean arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const char *archive_path,

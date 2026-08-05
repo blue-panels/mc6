@@ -140,12 +140,19 @@ is_direct_child (const char *entry_path, const char *dir)
     return rest;
 }
 
-/* ---- is_under_dir (arcmc.c) ---- */
+/* ---- is_under_dir (archive-io.c) ---- */
 
 static gboolean
-is_under_dir (const char *path, const char *dir, size_t dir_len)
+is_under_dir (const char *entry_path, const char *dir)
 {
-    return strncmp (path, dir, dir_len) == 0 && path[dir_len] == '/';
+    size_t dir_len;
+
+    if (dir == NULL || dir[0] == '\0')
+        return TRUE;
+
+    dir_len = strlen (dir);
+
+    return strncmp (entry_path, dir, dir_len) == 0 && entry_path[dir_len] == '/';
 }
 
 /* ---- arcmc_is_supported_archive (arcmc.c) ---- */
@@ -335,6 +342,8 @@ static const struct test_is_under_dir_ds
     { "dir", "dir", FALSE },         /* 2: the directory itself */
     { "dirty/file", "dir", FALSE },  /* 3: name only starts the same */
     { "other/file", "dir", FALSE },  /* 4: elsewhere */
+    { "anything", "", TRUE },        /* 5: root holds everything */
+    { "a/b/c", NULL, TRUE },         /* 6: root as NULL */
 };
 
 /* ---- arcmc_is_supported_archive ---- */
@@ -460,7 +469,7 @@ START_PARAMETRIZED_TEST (test_is_under_dir, test_is_under_dir_ds)
 {
     gboolean result;
 
-    result = is_under_dir (data->path, data->dir, strlen (data->dir));
+    result = is_under_dir (data->path, data->dir);
     ck_assert_int_eq (result, data->expected);
 }
 END_PARAMETRIZED_TEST
