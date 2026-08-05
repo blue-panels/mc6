@@ -53,6 +53,8 @@ static mc_pp_result_t arcmc_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t arcmc_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t arcmc_get_local_copy (void *plugin_data, const char *fname,
                                             char **local_path);
+static mc_pp_result_t arcmc_copy_to_local (void *plugin_data, const char *fname,
+                                           const char *dest_path);
 static mc_pp_result_t arcmc_put_file (void *plugin_data, const char *local_path,
                                       const char *dest_name);
 static mc_pp_result_t arcmc_delete_items (void *plugin_data, const char **names, int count);
@@ -191,6 +193,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .enter = arcmc_enter,
     .view = NULL,
     .get_local_copy = arcmc_get_local_copy,
+    .copy_to_local = arcmc_copy_to_local,
     .put_file = arcmc_put_file,
     .save_file = NULL,
     .delete_items = arcmc_delete_items,
@@ -1281,6 +1284,186 @@ arcmc_get_local_copy (void *plugin_data, const char *fname, char **local_path)
 
     arcmc_progress_destroy (progress);
     g_free (target_path);
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Extract one entry to a temp file, asking for a password if the archive wants one. */
+static mc_pp_result_t
+arcmc_extract_one (arcmc_data_t *data, const char *path, char **local_path, arcmc_progress_t *p)
+{
+    mc_pp_result_t result;
+
+    if (data->extfs_helper != NULL)
+        return arcmc_extract_entry_extfs (data, path, local_path);
+
+    result = arcmc_extract_entry (data, path, local_path, p);
+
+    while (result != MC_PPR_OK && data->password == NULL && (p == NULL || !p->aborted))
+    {
+        char *pw;
+
+        pw = input_dialog (_ ("Archive password"), _ ("Enter password:"), "arcmc-password",
+                           INPUT_PASSWORD, INPUT_COMPLETE_NONE);
+        if (pw == NULL)
+            break;
+
+        data->password = pw;
+        result = arcmc_extract_entry (data, path, local_path, p);
+    }
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+is_under_dir (const char *path, const char *dir, size_t dir_len)
+{
+    return strncmp (path, dir, dir_len) == 0 && path[dir_len] == '/';
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Unpack the subtree rooted at `src_dir` inside the archive into `dest_path` on disk. */
+static mc_pp_result_t
+arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *dest_path)
+{
+    arcmc_progress_t *progress;
+    mc_pp_result_t result = MC_PPR_OK;
+    off_t total = 0;
+    size_t dir_len;
+    guint i;
+
+    dir_len = strlen (src_dir);
+
+    for (i = 0; i < data->all_entries->len; i++)
+    {
+        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+
+        if (is_under_dir (e->full_path, src_dir, dir_len) && !S_ISDIR (e->mode))
+            total += e->size;
+    }
+
+    if (g_mkdir_with_parents (dest_path, 0755) != 0)
+        return MC_PPR_FAILED;
+
+    progress = arcmc_progress_create (_ ("Extracting..."), data->archive_path, total);
+
+    for (i = 0; i < data->all_entries->len && result == MC_PPR_OK; i++)
+    {
+        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+        char *out_path;
+
+        if (!is_under_dir (e->full_path, src_dir, dir_len))
+            continue;
+
+        out_path = g_build_filename (dest_path, e->full_path + dir_len + 1, (char *) NULL);
+
+        if (S_ISDIR (e->mode))
+        {
+            if (g_mkdir_with_parents (out_path, 0755) != 0)
+                result = MC_PPR_FAILED;
+        }
+        else
+        {
+            char *local_path = NULL;
+            char *out_dir;
+
+            out_dir = g_path_get_dirname (out_path);
+            g_mkdir_with_parents (out_dir, 0755);
+            g_free (out_dir);
+
+            if (arcmc_extract_one (data, e->full_path, &local_path, progress) != MC_PPR_OK
+                || local_path == NULL)
+                result = MC_PPR_FAILED;
+            else
+            {
+                if (!move_file_cross_fs (local_path, out_path))
+                    result = MC_PPR_FAILED;
+                else if ((e->mode & 0777) != 0)
+                    chmod (out_path, e->mode & 0777);
+
+                unlink (local_path);
+                g_free (local_path);
+            }
+        }
+
+        g_free (out_path);
+
+        if (progress->aborted)
+            result = MC_PPR_FAILED;
+    }
+
+    arcmc_progress_destroy (progress);
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The entry `path` names inside the archive, or NULL if the archive has no such entry. */
+static const arcmc_entry_t *
+arcmc_find_entry (arcmc_data_t *data, const char *path)
+{
+    guint i;
+
+    if (data->all_entries == NULL)
+        return NULL;
+
+    for (i = 0; i < data->all_entries->len; i++)
+    {
+        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+
+        if (strcmp (e->full_path, path) == 0)
+            return e;
+    }
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Copy an item out of the archive to a local path. A directory is unpacked with
+ * everything below it; get_local_copy cannot serve one, as it hands back a
+ * single file.
+ */
+static mc_pp_result_t
+arcmc_copy_to_local (void *plugin_data, const char *fname, const char *dest_path)
+{
+    arcmc_data_t *data = (arcmc_data_t *) plugin_data;
+    const arcmc_entry_t *e;
+    char *src, *local_path = NULL;
+    mc_pp_result_t result;
+
+    src = build_child_path (data->current_dir, fname);
+    e = arcmc_find_entry (data, src);
+
+    if (e != NULL && S_ISDIR (e->mode))
+    {
+        result = arcmc_copy_dir_to_local (data, src, dest_path);
+        g_free (src);
+        return result;
+    }
+
+    g_free (src);
+
+    result = arcmc_get_local_copy (plugin_data, fname, &local_path);
+    if (result != MC_PPR_OK)
+        return result;
+    if (local_path == NULL)
+        return MC_PPR_FAILED;
+
+    if (!move_file_cross_fs (local_path, dest_path))
+        result = MC_PPR_FAILED;
+    else if (e != NULL && (e->mode & 0777) != 0)
+        chmod (dest_path, e->mode & 0777);
+
+    unlink (local_path);
+    g_free (local_path);
+
     return result;
 }
 

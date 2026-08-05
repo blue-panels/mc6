@@ -140,6 +140,14 @@ is_direct_child (const char *entry_path, const char *dir)
     return rest;
 }
 
+/* ---- is_under_dir (arcmc.c) ---- */
+
+static gboolean
+is_under_dir (const char *path, const char *dir, size_t dir_len)
+{
+    return strncmp (path, dir, dir_len) == 0 && path[dir_len] == '/';
+}
+
 /* ---- arcmc_is_supported_archive (arcmc.c) ---- */
 
 static gboolean
@@ -313,6 +321,22 @@ static const struct test_is_direct_child_ds
     { "other/file", "dir", NULL },   /* 4: wrong prefix */
 };
 
+/* ---- is_under_dir ---- */
+
+/* @DataSource("test_is_under_dir_ds") */
+static const struct test_is_under_dir_ds
+{
+    const char *path;
+    const char *dir;
+    gboolean expected;
+} test_is_under_dir_ds[] = {
+    { "dir/file", "dir", TRUE },     /* 0: direct child */
+    { "dir/sub/file", "dir", TRUE }, /* 1: deeper below */
+    { "dir", "dir", FALSE },         /* 2: the directory itself */
+    { "dirty/file", "dir", FALSE },  /* 3: name only starts the same */
+    { "other/file", "dir", FALSE },  /* 4: elsewhere */
+};
+
 /* ---- arcmc_is_supported_archive ---- */
 
 /* @DataSource("test_is_supported_ds") */
@@ -431,6 +455,18 @@ END_PARAMETRIZED_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @Test(dataSource = "test_is_under_dir_ds") */
+START_PARAMETRIZED_TEST (test_is_under_dir, test_is_under_dir_ds)
+{
+    gboolean result;
+
+    result = is_under_dir (data->path, data->dir, strlen (data->dir));
+    ck_assert_int_eq (result, data->expected);
+}
+END_PARAMETRIZED_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* @Test(dataSource = "test_is_supported_ds") */
 START_PARAMETRIZED_TEST (test_is_supported_archive, test_is_supported_ds)
 {
@@ -499,6 +535,7 @@ main (void)
     mctest_add_parameterized_test (tc_core, test_get_parent_dir, test_get_parent_dir_ds);
     mctest_add_parameterized_test (tc_core, test_build_child_path, test_build_child_path_ds);
     mctest_add_parameterized_test (tc_core, test_is_direct_child, test_is_direct_child_ds);
+    mctest_add_parameterized_test (tc_core, test_is_under_dir, test_is_under_dir_ds);
 
     /* archive detection */
     mctest_add_parameterized_test (tc_core, test_is_supported_archive, test_is_supported_ds);
