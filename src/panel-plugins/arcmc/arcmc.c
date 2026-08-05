@@ -1326,11 +1326,62 @@ is_under_dir (const char *path, const char *dir, size_t dir_len)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Unpack the subtree rooted at `src_dir` inside the archive into `dest_path` on disk. */
+/* A directory whose mode is put back once everything below it is written: a
+   mode of its own could leave us unable to write into it. */
+typedef struct
+{
+    char *path;
+    mode_t mode;
+} arcmc_made_dir_t;
+
+static void
+arcmc_made_dir_free (gpointer data)
+{
+    arcmc_made_dir_t *d = (arcmc_made_dir_t *) data;
+
+    g_free (d->path);
+    g_free (d);
+}
+
+static void
+arcmc_remember_dir (GPtrArray *made, const char *path, mode_t mode)
+{
+    arcmc_made_dir_t *d;
+
+    if ((mode & 0777) == 0)
+        return;
+
+    d = g_new (arcmc_made_dir_t, 1);
+    d->path = g_strdup (path);
+    d->mode = mode & 0777;
+    g_ptr_array_add (made, d);
+}
+
+/* Innermost first: a parent left without read or search permission would put
+   its children out of reach. */
+static void
+arcmc_apply_dir_modes (GPtrArray *made)
+{
+    guint i;
+
+    for (i = made->len; i > 0; i--)
+    {
+        const arcmc_made_dir_t *d = (const arcmc_made_dir_t *) g_ptr_array_index (made, i - 1);
+
+        chmod (d->path, d->mode);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Unpack the subtree rooted at `src_dir` inside the archive into `dest_path` on disk.
+   `dir_mode` is the mode the archive holds for `src_dir` itself. */
 static mc_pp_result_t
-arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *dest_path)
+arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *dest_path,
+                         mode_t dir_mode)
 {
     arcmc_progress_t *progress;
+    GPtrArray *made_dirs;
     mc_pp_result_t result = MC_PPR_OK;
     off_t total = 0;
     size_t dir_len;
@@ -1349,6 +1400,9 @@ arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *de
     if (g_mkdir_with_parents (dest_path, 0755) != 0)
         return MC_PPR_FAILED;
 
+    made_dirs = g_ptr_array_new_with_free_func (arcmc_made_dir_free);
+    arcmc_remember_dir (made_dirs, dest_path, dir_mode);
+
     progress = arcmc_progress_create (_ ("Extracting..."), data->archive_path, total);
 
     for (i = 0; i < data->all_entries->len && result == MC_PPR_OK; i++)
@@ -1365,6 +1419,8 @@ arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *de
         {
             if (g_mkdir_with_parents (out_path, 0755) != 0)
                 result = MC_PPR_FAILED;
+            else
+                arcmc_remember_dir (made_dirs, out_path, e->mode);
         }
         else
         {
@@ -1397,6 +1453,11 @@ arcmc_copy_dir_to_local (arcmc_data_t *data, const char *src_dir, const char *de
     }
 
     arcmc_progress_destroy (progress);
+
+    if (result == MC_PPR_OK)
+        arcmc_apply_dir_modes (made_dirs);
+
+    g_ptr_array_free (made_dirs, TRUE);
 
     return result;
 }
@@ -1443,7 +1504,7 @@ arcmc_copy_to_local (void *plugin_data, const char *fname, const char *dest_path
 
     if (e != NULL && S_ISDIR (e->mode))
     {
-        result = arcmc_copy_dir_to_local (data, src, dest_path);
+        result = arcmc_copy_dir_to_local (data, src, dest_path, e->mode);
         g_free (src);
         return result;
     }

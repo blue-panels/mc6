@@ -1142,6 +1142,29 @@ mc_pclose_get_status (mc_pipe_t *p)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Size the listing gives for `path`, or -1 when the archive was not listed or
+   holds no such entry. */
+static off_t
+entry_size_in_archive (const arcmc_data_t *data, const char *path)
+{
+    guint i;
+
+    if (data->all_entries == NULL)
+        return -1;
+
+    for (i = 0; i < data->all_entries->len; i++)
+    {
+        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+
+        if (strcmp (e->full_path, path) == 0)
+            return e->size;
+    }
+
+    return -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Extract a file from the archive using extfs helper's "copyout" command.
    Returns MC_PPR_OK on success. */
 mc_pp_result_t
@@ -1209,14 +1232,21 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
         return MC_PPR_FAILED;
     }
 
-    /* verify the temp file has content */
+    /* mc_pclose() drops the exit code of the helper, so a copyout that failed
+       without an I/O error of its own is only visible in what it left behind:
+       nothing, where the listing promised bytes. */
     {
         struct stat st;
+        off_t expected;
 
-        if (stat (*local_path, &st) != 0 || st.st_size == 0)
+        expected = entry_size_in_archive (data, target_path);
+
+        if (stat (*local_path, &st) != 0 || (expected > 0 && st.st_size == 0))
         {
-            /* zero-size might be ok for empty files, check if the entry had size 0 */
-            /* just return OK -zero-byte files are valid */
+            unlink (*local_path);
+            g_free (*local_path);
+            *local_path = NULL;
+            return MC_PPR_FAILED;
         }
     }
 
