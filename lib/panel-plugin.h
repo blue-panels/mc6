@@ -148,13 +148,18 @@ typedef struct mc_panel_plugin_t
        filename may be NULL to use default help file; node may be NULL for default node. */
     mc_pp_result_t (*get_help_info) (void *plugin_data, const char **filename, const char **node);
     mc_pp_result_t (*get_local_copy) (void *plugin_data, const char *fname, char **local_path);
-    /* Download remote file directly to the given local path.
-       Plugin should handle overwrite confirmation internally.
+    /* Download an item directly to the given local path. The core asks about
+       overwriting before calling this.
+       @fname may name a directory, which the plugin is free to serve as a whole
+       subtree; MC_PPR_NOT_SUPPORTED sends the core to walk it item by item.
        If NULL, core falls back to get_local_copy + copy. */
     mc_pp_result_t (*copy_to_local) (void *plugin_data, const char *fname, const char *local_path);
     mc_pp_result_t (*put_file) (void *plugin_data, const char *local_path, const char *dest_name);
     mc_pp_result_t (*save_file) (void *plugin_data, const char *local_path,
                                  const char *remote_name);
+    /* Remove the named items. A name may be a directory, which goes with
+       everything below it; a plugin that cannot do that says so, and the core
+       leaves the source where it is after a move. */
     mc_pp_result_t (*delete_items) (void *plugin_data, const char **names, int count);
     const char *(*get_title) (void *plugin_data);
     mc_pp_result_t (*handle_key) (void *plugin_data, int key);

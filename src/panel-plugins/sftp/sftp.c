@@ -2043,15 +2043,6 @@ sftp_copy_to_local (void *plugin_data, const char *fname, const char *local_path
     if (data->at_root || data->sftp_session == NULL || data->current_path == NULL)
         return MC_PPR_FAILED;
 
-    /* Check if destination exists and ask for overwrite */
-    if (g_file_test (local_path, G_FILE_TEST_EXISTS))
-    {
-        if (query_dialog (_ ("Copy"), _ ("Local file already exists. Overwrite?"), D_NORMAL, 2,
-                          _ ("&Yes"), _ ("&No"))
-            != 0)
-            return MC_PPR_NOT_SUPPORTED;
-    }
-
     remote_path = mc_pp_join_path (data->current_path, fname);
     fileh = libssh2_sftp_open (data->sftp_session, remote_path, LIBSSH2_FXF_READ, 0);
 
