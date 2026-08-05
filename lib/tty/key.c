@@ -792,7 +792,8 @@ getch_with_delay (void)
        so we need to do the select check :-( */
     while (TRUE)
     {
-        if (pending_keys == NULL)
+        // select() does not see input already buffered by the screen library
+        if (pending_keys == NULL && !tty_lowlevel_input_pending ())
             try_channels (FALSE);
 
         // Try to get a character
@@ -1988,7 +1989,7 @@ nodelay_try_again:
     {
         if (c == this->ch)
         {
-            if (this->child == NULL || this->code != 0)
+            if (this->child == NULL || (this->code != 0 && this->action != MCKEY_ESCAPE))
             {
                 if (this->child == NULL)
                 {
