@@ -30,6 +30,9 @@ P7ZIP=`command -v 7z 2>/dev/null` \
     || P7ZIP=`command -v 7zr 2>/dev/null` \
     || P7ZIP=""
 
+# The caller may name the program to use, e.g. a 7z outside PATH:
+P7ZIP=${MC_EXTFS_P7ZIP:-$P7ZIP}
+
 # Let the test framework hook in:
 P7ZIP=${MC_TEST_EXTFS_LIST_CMD:-$P7ZIP}
 STAT=${MC_TEST_EXTFS_U7Z_STAT:-stat}

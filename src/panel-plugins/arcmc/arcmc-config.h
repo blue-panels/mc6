@@ -28,13 +28,8 @@
 
 #include "lib/global.h"
 
-/*** constants *********************************************************************************/
-
-#define ARCMC_BUILTIN_COUNT 13
-
 /*** global variables **************************************************************************/
 
-extern gboolean arcmc_builtin_enabled[ARCMC_BUILTIN_COUNT];
 extern gboolean *arcmc_ext_enabled;
 
 /* "Create archive" hotkey, loaded from arcmc.ini ([arcmc]/hotkey_create).

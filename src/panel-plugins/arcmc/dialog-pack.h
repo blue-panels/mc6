@@ -30,8 +30,6 @@
 
 /*** declarations (variables) *********************************************************************/
 
-extern const char *const format_extensions[ARCMC_FMT_COUNT];
-
 /*** declarations (functions)
  * **********************************************************************/
 

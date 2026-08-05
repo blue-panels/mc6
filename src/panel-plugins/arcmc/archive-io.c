@@ -52,6 +52,7 @@
 #include "lib/mcconfig.h"    /* mc_config_get_data_path */
 
 #include "arcmc-types.h"
+#include "arcmc-config.h"
 #include "progress.h"
 #include "archive-io.h"
 
@@ -70,7 +71,55 @@ typedef enum
    7zr is left out: it cannot handle encrypted archives. */
 static const char *const p7zip_bins[] = { "7z", "7zz", "7za" };
 
+/*** global variables ****************************************************************************/
+
+/* First ARCMC_FMT_COUNT rows are in ARCMC_FMT_* order. Only 7z has an external
+   tool: libarchive cannot do its encryption, see arcmc_7z_pack(). */
+arcmc_builtin_format_t arcmc_builtin_formats[] = {
+    /* name, key, ext, lib pack/unpack, pack bin, pack args, unpack bin, helper, pack, unpack, on */
+    { "ZIP", "zip", ".zip", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "7Z", "7z", ".7z", TRUE, TRUE, "7z", "a -y -t7z", "7z", "u7z", ARCMC_BACKEND_BOTH,
+      ARCMC_BACKEND_BOTH, TRUE },
+    { "TAR.GZ", "tar.gz", ".tar.gz", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "TAR.BZ2", "tar.bz2", ".tar.bz2", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "TAR.XZ", "tar.xz", ".tar.xz", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "TAR", "tar", ".tar", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "CPIO", "cpio", ".cpio", TRUE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_BUILTIN,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    /* libarchive reads these but arcmc does not write them */
+    { "TAR.ZST", "tar.zst", ".tar.zst", FALSE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "TAR.LZ", "tar.lz", ".tar.lz", FALSE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "TAR.LZMA", "tar.lzma", ".tar.lzma", FALSE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "ISO", "iso", ".iso", FALSE, TRUE, NULL, NULL, "7z", "u7z", ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "XAR", "xar", ".xar", FALSE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+    { "CAB", "cab", ".cab", FALSE, TRUE, NULL, NULL, NULL, NULL, ARCMC_BACKEND_OFF,
+      ARCMC_BACKEND_BUILTIN, TRUE },
+};
+
+const size_t arcmc_builtin_formats_count = G_N_ELEMENTS (arcmc_builtin_formats);
+
 /*** file scope variables ************************************************************************/
+
+/* Extensions that name the same format as a row in arcmc_builtin_formats[] */
+static const struct
+{
+    const char *ext;
+    int fmt;
+} builtin_ext_aliases[] = {
+    { ".tgz", ARCMC_FMT_TAR_GZ },   { ".tbz2", ARCMC_FMT_TAR_BZ2 }, { ".txz", ARCMC_FMT_TAR_XZ },
+    { ".jar", ARCMC_FMT_ZIP },      { ".war", ARCMC_FMT_ZIP },      { ".ear", ARCMC_FMT_ZIP },
+    { ".tzst", ARCMC_FMT_TAR_ZST }, { ".tlz", ARCMC_FMT_TAR_LZ },
+};
 
 /* External archivers table -replaces the old extfs_map[] */
 arcmc_ext_archiver_t ext_archivers[] = {
@@ -608,6 +657,109 @@ arcmc_has_ext (const char *path, const char *ext)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Find the builtin format that owns the given file name, or NULL. */
+arcmc_builtin_format_t *
+arcmc_find_builtin_format (const char *path)
+{
+    const char *base;
+    size_t i;
+
+    if (path == NULL)
+        return NULL;
+
+    base = strrchr (path, '/');
+    base = base != NULL ? base + 1 : path;
+
+    for (i = 0; i < arcmc_builtin_formats_count; i++)
+        if (arcmc_has_ext (base, arcmc_builtin_formats[i].ext))
+            return &arcmc_builtin_formats[i];
+
+    for (i = 0; i < G_N_ELEMENTS (builtin_ext_aliases); i++)
+        if (arcmc_has_ext (base, builtin_ext_aliases[i].ext))
+            return &arcmc_builtin_formats[builtin_ext_aliases[i].fmt];
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Whether the pack dialog may offer this builtin format. */
+gboolean
+arcmc_builtin_can_pack (int fmt)
+{
+    const arcmc_builtin_format_t *f;
+
+    if (fmt < 0 || fmt >= (int) arcmc_builtin_formats_count)
+        return FALSE;
+
+    f = &arcmc_builtin_formats[fmt];
+
+    return (f->enabled && f->pack != ARCMC_BACKEND_OFF);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Name of a backend value as shown in the settings dialog. */
+const char *
+arcmc_backend_name (arcmc_backend_t b)
+{
+    switch (b)
+    {
+    case ARCMC_BACKEND_BUILTIN:
+        return "builtin";
+    case ARCMC_BACKEND_BOTH:
+        return "both";
+    case ARCMC_BACKEND_EXTERN:
+        return "extern";
+    default:
+        return "off";
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Parse a backend value written by arcmc_config_save(). */
+arcmc_backend_t
+arcmc_backend_from_name (const char *s, arcmc_backend_t def)
+{
+    if (s == NULL || s[0] == '\0')
+        return def;
+    if (strcmp (s, "builtin") == 0)
+        return ARCMC_BACKEND_BUILTIN;
+    if (strcmp (s, "both") == 0)
+        return ARCMC_BACKEND_BOTH;
+    if (strcmp (s, "extern") == 0)
+        return ARCMC_BACKEND_EXTERN;
+    if (strcmp (s, "off") == 0)
+        return ARCMC_BACKEND_OFF;
+
+    return def;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check whether a backend value can be used for one direction of a format.
+   `lib` tells whether libarchive handles it, `bin` is the external tool. */
+gboolean
+arcmc_backend_possible (arcmc_backend_t b, gboolean lib, const char *bin)
+{
+    switch (b)
+    {
+    case ARCMC_BACKEND_OFF:
+        return (lib || bin != NULL);
+    case ARCMC_BACKEND_BUILTIN:
+        return lib;
+    case ARCMC_BACKEND_BOTH:
+        return (lib && bin != NULL);
+    case ARCMC_BACKEND_EXTERN:
+        return (bin != NULL);
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Find an installed 7z program, or NULL when there is none. */
 static const char *
 arcmc_7z_bin (void)
@@ -623,13 +775,67 @@ arcmc_7z_bin (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Resolve a configured tool name to the program to run, NULL when there is none. */
+const char *
+arcmc_resolve_tool (const char *bin)
+{
+    if (bin == NULL)
+        return NULL;
+
+    /* p7zip is shipped under several names */
+    if (strcmp (bin, "7z") == 0)
+    {
+        const char *found = arcmc_7z_bin ();
+
+        if (found != NULL)
+            return found;
+    }
+
+    return bin;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const char *
+arcmc_builtin_tool (const arcmc_builtin_format_t *f)
+{
+    return arcmc_resolve_tool (f->pack_bin != NULL ? f->pack_bin : f->unpack_bin);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Program that reads this format, NULL when none of the candidates is installed. */
+static const char *
+arcmc_unpack_tool (const arcmc_builtin_format_t *f)
+{
+    const char *bin;
+
+    bin = arcmc_resolve_tool (f->unpack_bin);
+
+    return (bin != NULL && arcmc_check_bin_available (bin)) ? bin : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Find an extfs helper for the given archive path.
    Returns an allocated full path to the helper executable, or NULL if not found. */
 char *
 arcmc_find_extfs_helper (const char *archive_path)
 {
+    const arcmc_builtin_format_t *fmt;
     const char *basename_ptr;
     size_t i;
+
+    /* a builtin format uses a helper only when its settings allow the external tool */
+    fmt = arcmc_find_builtin_format (archive_path);
+    if (fmt != NULL)
+    {
+        if (!fmt->enabled
+            || (fmt->unpack != ARCMC_BACKEND_BOTH && fmt->unpack != ARCMC_BACKEND_EXTERN))
+            return NULL;
+
+        return arcmc_extfs_helper_path (fmt->extfs_helper);
+    }
 
     basename_ptr = strrchr (archive_path, '/');
     if (basename_ptr != NULL)
@@ -637,13 +843,14 @@ arcmc_find_extfs_helper (const char *archive_path)
     else
         basename_ptr = archive_path;
 
-    /* 7z is handled by libarchive, but the helper is needed for encrypted archives */
-    if (arcmc_has_ext (basename_ptr, ".7z"))
-        return arcmc_extfs_helper_path ("u7z");
-
     for (i = 0; i < ext_archivers_count; i++)
         if (arcmc_has_ext (basename_ptr, ext_archivers[i].ext))
+        {
+            if (arcmc_ext_enabled != NULL && !arcmc_ext_enabled[i])
+                return NULL;
+
             return arcmc_extfs_helper_path (ext_archivers[i].extfs_helper);
+        }
 
     return NULL;
 }
@@ -730,22 +937,33 @@ arcmc_shell_quote (const char *s)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Build the environment prefix that passes the archive password to an extfs helper.
-   Returns an allocated string, empty when there is no password. */
+/* Environment prefix for an extfs helper: password and program to run.
+   Returns an allocated string, empty when there is nothing to pass. */
 static char *
-arcmc_extfs_env (const char *password)
+arcmc_extfs_env (const char *password, const char *archive_path)
 {
+    const arcmc_builtin_format_t *fmt;
+    GString *env;
     char *quoted;
-    char *env;
 
-    if (password == NULL || password[0] == '\0')
-        return g_strdup ("");
+    env = g_string_new ("");
 
-    quoted = arcmc_shell_quote (password);
-    env = g_strconcat ("MC_EXTFS_PASSWORD=", quoted, " ", (char *) NULL);
-    g_free (quoted);
+    if (password != NULL && password[0] != '\0')
+    {
+        quoted = arcmc_shell_quote (password);
+        g_string_append_printf (env, "MC_EXTFS_PASSWORD=%s ", quoted);
+        g_free (quoted);
+    }
 
-    return env;
+    fmt = arcmc_find_builtin_format (archive_path);
+    if (fmt != NULL && fmt->unpack_bin != NULL && strcmp (fmt->unpack_bin, "7z") != 0)
+    {
+        quoted = arcmc_shell_quote (fmt->unpack_bin);
+        g_string_append_printf (env, "MC_EXTFS_P7ZIP=%s ", quoted);
+        g_free (quoted);
+    }
+
+    return g_string_free (env, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -763,7 +981,7 @@ arcmc_read_archive_extfs (arcmc_data_t *data)
     GString *remain_line = NULL;
 
     quoted_archive = name_quote (data->archive_path, FALSE);
-    env = arcmc_extfs_env (data->password);
+    env = arcmc_extfs_env (data->password, data->archive_path);
     cmd = g_strconcat (env, data->extfs_helper, " list ", quoted_archive, (char *) NULL);
     g_free (quoted_archive);
     g_free (env);
@@ -952,7 +1170,7 @@ arcmc_extract_entry_extfs (arcmc_data_t *data, const char *target_path, char **l
     quoted_archive = name_quote (data->archive_path, FALSE);
     quoted_file = name_quote (target_path, FALSE);
     quoted_local = name_quote (*local_path, FALSE);
-    env = arcmc_extfs_env (data->password);
+    env = arcmc_extfs_env (data->password, data->archive_path);
 
     cmd = g_strconcat (env, data->extfs_helper, " copyout ", quoted_archive, " ", quoted_file, " ",
                        quoted_local, (char *) NULL);
@@ -1019,7 +1237,7 @@ arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const char *archi
 
     quoted_archive = name_quote (archive_path, FALSE);
     quoted_stored = name_quote (stored_name, FALSE);
-    env = arcmc_extfs_env (password);
+    env = arcmc_extfs_env (password, archive_path);
 
     if (local_name != NULL)
     {
@@ -1198,19 +1416,32 @@ arcmc_read_archive (arcmc_data_t *data)
 gboolean
 arcmc_try_open (arcmc_data_t *data)
 {
+    const arcmc_builtin_format_t *fmt;
     arcmc_read_result_t res;
 
-    /* first attempt without password via libarchive */
-    res = arcmc_read_archive_res (data);
+    fmt = arcmc_find_builtin_format (data->archive_path);
+
+    /* first attempt without password via libarchive, unless it is switched off */
+    if (fmt != NULL && fmt->unpack == ARCMC_BACKEND_EXTERN)
+        res = ARCMC_READ_FAILED;
+    else
+        res = arcmc_read_archive_res (data);
+
     if (res == ARCMC_READ_OK)
         return TRUE;
 
     /* try extfs helper as fallback */
     data->extfs_helper = arcmc_find_extfs_helper (data->archive_path);
 
-    /* the archive may be named without the .7z extension */
-    if (res == ARCMC_READ_ENCRYPTED_7Z && data->extfs_helper == NULL)
-        data->extfs_helper = arcmc_extfs_helper_path ("u7z");
+    /* the archive may be a 7z named without the .7z extension */
+    if (res == ARCMC_READ_ENCRYPTED_7Z && data->extfs_helper == NULL && fmt == NULL)
+    {
+        const arcmc_builtin_format_t *sevenzip = &arcmc_builtin_formats[ARCMC_FMT_7Z];
+
+        if (sevenzip->enabled
+            && (sevenzip->unpack == ARCMC_BACKEND_BOTH || sevenzip->unpack == ARCMC_BACKEND_EXTERN))
+            data->extfs_helper = arcmc_extfs_helper_path (sevenzip->extfs_helper);
+    }
 
     if (res == ARCMC_READ_FAILED)
     {
@@ -1223,7 +1454,15 @@ arcmc_try_open (arcmc_data_t *data)
     }
 
     /* encrypted 7z can only be read by the external 7z program */
-    if (res == ARCMC_READ_ENCRYPTED_7Z && (data->extfs_helper == NULL || arcmc_7z_bin () == NULL))
+    if (res == ARCMC_READ_ENCRYPTED_7Z && data->extfs_helper == NULL)
+    {
+        message (D_ERROR, MSG_ERROR, "%s",
+                 _ ("Encrypted 7z needs the external tool, it is off in the archiver settings"));
+        return FALSE;
+    }
+
+    if (res == ARCMC_READ_ENCRYPTED_7Z
+        && arcmc_unpack_tool (fmt != NULL ? fmt : &arcmc_builtin_formats[ARCMC_FMT_7Z]) == NULL)
     {
         MC_PTR_FREE (data->extfs_helper);
         message (D_ERROR, MSG_ERROR, "%s",
@@ -1552,25 +1791,33 @@ arcmc_archive_delete (const char *archive_path, const char **del_paths, int del_
 static gboolean
 arcmc_7z_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files, char **error_msg)
 {
+    const arcmc_builtin_format_t *fmt = &arcmc_builtin_formats[ARCMC_FMT_7Z];
     const char *bin;
+    const char *args;
     GString *cmd;
     char *quoted;
     guint i;
     gboolean ok;
 
-    bin = arcmc_7z_bin ();
-    if (bin == NULL)
+    /* the configured program wins; "7z" is looked up under its other names too */
+    bin = fmt->pack_bin;
+    if (bin == NULL || strcmp (bin, "7z") == 0)
+        bin = arcmc_7z_bin ();
+
+    if (bin == NULL || !arcmc_check_bin_available (bin))
     {
         if (error_msg != NULL)
             *error_msg = g_strdup (_ ("Encrypted 7z archives need the 7z program to be installed"));
         return FALSE;
     }
 
+    /* -t7z: the format follows the chosen one, not the extension of the name */
+    args = fmt->pack_args != NULL ? fmt->pack_args : "a -y -t7z";
+
     cmd = g_string_new ("");
 
-    /* -t7z: the format follows the chosen one, not the extension of the archive name */
     quoted = name_quote (cwd, FALSE);
-    g_string_append_printf (cmd, "cd %s && %s a -y -t7z", quoted, bin);
+    g_string_append_printf (cmd, "cd %s && %s %s", quoted, bin, args);
     g_free (quoted);
 
     switch (opts->compression)
@@ -1589,12 +1836,16 @@ arcmc_7z_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files,
         break;
     }
 
-    quoted = arcmc_shell_quote (opts->password);
-    g_string_append_printf (cmd, " -p%s", quoted);
-    g_free (quoted);
+    /* the tool also packs without a password when it is the chosen backend */
+    if (opts->password != NULL && opts->password[0] != '\0')
+    {
+        quoted = arcmc_shell_quote (opts->password);
+        g_string_append_printf (cmd, " -p%s", quoted);
+        g_free (quoted);
 
-    if (opts->encrypt_header)
-        g_string_append (cmd, " -mhe=on");
+        if (opts->encrypt_header)
+            g_string_append (cmd, " -mhe=on");
+    }
 
     quoted = name_quote (opts->archive_path, FALSE);
     g_string_append_printf (cmd, " %s", quoted);
@@ -1634,8 +1885,27 @@ arcmc_do_pack (const arcmc_pack_opts_t *opts, const char *cwd, GPtrArray *files,
     if (error_msg != NULL)
         *error_msg = NULL;
 
-    if (opts->format == ARCMC_FMT_7Z && opts->password != NULL && opts->password[0] != '\0')
-        return arcmc_7z_pack (opts, cwd, files, error_msg);
+    /* the tool packs when it is the only backend, or when libarchive cannot
+       do what was asked - 7z encryption */
+    if (opts->format >= 0 && opts->format < (int) arcmc_builtin_formats_count)
+    {
+        const arcmc_builtin_format_t *fmt = &arcmc_builtin_formats[opts->format];
+        gboolean has_password = (opts->password != NULL && opts->password[0] != '\0');
+
+        if (opts->format == ARCMC_FMT_7Z
+            && (fmt->pack == ARCMC_BACKEND_EXTERN
+                || (fmt->pack == ARCMC_BACKEND_BOTH && has_password)))
+            return arcmc_7z_pack (opts, cwd, files, error_msg);
+
+        if (has_password && fmt->pack == ARCMC_BACKEND_BUILTIN && opts->format == ARCMC_FMT_7Z)
+        {
+            if (error_msg != NULL)
+                *error_msg =
+                    g_strdup (_ ("7z encryption needs the external tool, it is off in the archiver "
+                                 "settings"));
+            return FALSE;
+        }
+    }
 
     total_size = arcmc_calculate_total_size (cwd, files);
     progress = arcmc_progress_create (_ ("Creating archive..."), opts->archive_path, total_size);
@@ -2090,19 +2360,29 @@ arcmc_find_ext_archiver (const char *archive_path)
 gboolean
 arcmc_check_bin_available (const char *bin_name)
 {
+    /* the settings dialog asks per row per redraw, and a miss walks the whole PATH */
+    static GHashTable *cache = NULL;
+    gpointer known;
     char *full_path;
+    gboolean found;
 
     if (bin_name == NULL || bin_name[0] == '\0')
         return FALSE;
 
-    full_path = g_find_program_in_path (bin_name);
-    if (full_path != NULL)
-    {
-        g_free (full_path);
-        return TRUE;
-    }
+    if (cache == NULL)
+        cache = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
-    return FALSE;
+    known = g_hash_table_lookup (cache, bin_name);
+    if (known != NULL)
+        return (GPOINTER_TO_INT (known) > 0);
+
+    full_path = g_find_program_in_path (bin_name);
+    found = (full_path != NULL);
+    g_free (full_path);
+
+    g_hash_table_insert (cache, g_strdup (bin_name), GINT_TO_POINTER (found ? 1 : -1));
+
+    return found;
 }
 
 /* --------------------------------------------------------------------------------------------- */

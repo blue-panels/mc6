@@ -32,14 +32,9 @@
 
 #include "arcmc-types.h"
 #include "arcmc-config.h"
+#include "archive-io.h"
 
 /*** file scope variables ************************************************************************/
-
-/* Config key names for builtin formats (must match builtin_formats[] order in dialog-settings.c) */
-static const char *const builtin_keys[ARCMC_BUILTIN_COUNT] = {
-    "zip",     "7z",     "tar.gz",   "tar.bz2", "tar.xz", "tar", "cpio",
-    "tar.zst", "tar.lz", "tar.lzma", "iso",     "xar",    "cab",
-};
 
 #define ARCMC_CONFIG_FILE       "arcmc.ini"
 #define ARCMC_SECTION_BUILTIN   "arcmc-builtin"
@@ -74,6 +69,53 @@ load_ext_param_str (mc_config_t *cfg, const char *section, const char *key, cons
     *field = val;
 }
 
+/* Read a builtin format string stored as "<key><suffix>", e.g. "7z_pack_bin". */
+static void
+load_builtin_str (mc_config_t *cfg, const char *key, const char *suffix, const char **field)
+{
+    char name[64];
+
+    g_snprintf (name, sizeof (name), "%s%s", key, suffix);
+    load_ext_param_str (cfg, ARCMC_SECTION_BUILTIN, name, field);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Read a backend setting stored as "<key><suffix>", e.g. "7z_pack". */
+static arcmc_backend_t
+load_backend (mc_config_t *cfg, const char *key, const char *suffix, arcmc_backend_t def)
+{
+    char name[64];
+    char *val;
+    arcmc_backend_t b;
+
+    g_snprintf (name, sizeof (name), "%s%s", key, suffix);
+    val = mc_config_get_string (cfg, ARCMC_SECTION_BUILTIN, name, NULL);
+    b = arcmc_backend_from_name (val, def);
+    g_free (val);
+
+    return b;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Write a builtin format string, dropping the key when the field was cleared:
+   leaving the old key behind would bring the value back on the next load. */
+static void
+save_builtin_str (mc_config_t *cfg, const char *key, const char *suffix, const char *value)
+{
+    char name[64];
+
+    g_snprintf (name, sizeof (name), "%s%s", key, suffix);
+
+    if (value != NULL)
+        mc_config_set_string (cfg, ARCMC_SECTION_BUILTIN, name, value);
+    else
+        mc_config_del_key (cfg, ARCMC_SECTION_BUILTIN, name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Save a string config key if the field is non-NULL. */
 static void
 save_ext_param_str (mc_config_t *cfg, const char *section, const char *key, const char *value)
@@ -86,7 +128,6 @@ save_ext_param_str (mc_config_t *cfg, const char *section, const char *key, cons
 
 /*** global variables ****************************************************************************/
 
-gboolean arcmc_builtin_enabled[ARCMC_BUILTIN_COUNT];
 gboolean *arcmc_ext_enabled = NULL;
 
 int arcmc_hotkey_create = 0;
@@ -105,10 +146,6 @@ arcmc_config_load (void)
     mc_config_t *cfg;
     char *cfg_path;
     size_t i;
-
-    /* default: all enabled */
-    for (i = 0; i < ARCMC_BUILTIN_COUNT; i++)
-        arcmc_builtin_enabled[i] = TRUE;
 
     g_free (arcmc_ext_enabled);
     arcmc_ext_enabled = g_new (gboolean, ext_archivers_count);
@@ -141,9 +178,25 @@ arcmc_config_load (void)
     if (cfg == NULL)
         return;
 
-    for (i = 0; i < ARCMC_BUILTIN_COUNT; i++)
-        arcmc_builtin_enabled[i] =
-            mc_config_get_bool (cfg, ARCMC_SECTION_BUILTIN, builtin_keys[i], TRUE);
+    for (i = 0; i < arcmc_builtin_formats_count; i++)
+    {
+        arcmc_builtin_format_t *f = &arcmc_builtin_formats[i];
+
+        f->enabled = mc_config_get_bool (cfg, ARCMC_SECTION_BUILTIN, f->key, TRUE);
+        f->pack = load_backend (cfg, f->key, "_pack", f->pack);
+        f->unpack = load_backend (cfg, f->key, "_unpack", f->unpack);
+
+        load_builtin_str (cfg, f->key, "_pack_bin", &f->pack_bin);
+        load_builtin_str (cfg, f->key, "_pack_args", &f->pack_args);
+        load_builtin_str (cfg, f->key, "_unpack_bin", &f->unpack_bin);
+        load_builtin_str (cfg, f->key, "_helper", &f->extfs_helper);
+
+        /* a setting the build cannot serve falls back to what it can do */
+        if (!arcmc_backend_possible (f->pack, f->lib_pack, f->pack_bin))
+            f->pack = f->lib_pack ? ARCMC_BACKEND_BUILTIN : ARCMC_BACKEND_OFF;
+        if (!arcmc_backend_possible (f->unpack, f->lib_unpack, f->unpack_bin))
+            f->unpack = f->lib_unpack ? ARCMC_BACKEND_BUILTIN : ARCMC_BACKEND_OFF;
+    }
 
     for (i = 0; i < ext_archivers_count; i++)
         arcmc_ext_enabled[i] =
@@ -195,8 +248,24 @@ arcmc_config_save (void)
                           arcmc_hotkey_create_text != NULL ? arcmc_hotkey_create_text
                                                            : ARCMC_KEY_CREATE_DEFAULT);
 
-    for (i = 0; i < ARCMC_BUILTIN_COUNT; i++)
-        mc_config_set_bool (cfg, ARCMC_SECTION_BUILTIN, builtin_keys[i], arcmc_builtin_enabled[i]);
+    for (i = 0; i < arcmc_builtin_formats_count; i++)
+    {
+        const arcmc_builtin_format_t *f = &arcmc_builtin_formats[i];
+        char name[64];
+
+        mc_config_set_bool (cfg, ARCMC_SECTION_BUILTIN, f->key, f->enabled);
+
+        g_snprintf (name, sizeof (name), "%s_pack", f->key);
+        mc_config_set_string (cfg, ARCMC_SECTION_BUILTIN, name, arcmc_backend_name (f->pack));
+
+        g_snprintf (name, sizeof (name), "%s_unpack", f->key);
+        mc_config_set_string (cfg, ARCMC_SECTION_BUILTIN, name, arcmc_backend_name (f->unpack));
+
+        save_builtin_str (cfg, f->key, "_pack_bin", f->pack_bin);
+        save_builtin_str (cfg, f->key, "_pack_args", f->pack_args);
+        save_builtin_str (cfg, f->key, "_unpack_bin", f->unpack_bin);
+        save_builtin_str (cfg, f->key, "_helper", f->extfs_helper);
+    }
 
     for (i = 0; i < ext_archivers_count; i++)
         mc_config_set_bool (cfg, ARCMC_SECTION_EXT, ext_archivers[i].name, arcmc_ext_enabled[i]);

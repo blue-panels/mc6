@@ -209,34 +209,25 @@ static const mc_panel_plugin_t arcmc_plugin = {
 static gboolean
 arcmc_is_supported_archive (const char *filename)
 {
-    static const char *const exts[] = {
-        ".tar.gz", ".tgz",    ".tar.bz2",  ".tbz2", ".tar.xz", ".txz", ".tar.zst",
-        ".tzst",   ".tar.lz", ".tar.lzma", ".tlz",  ".tar",    ".zip", ".jar",
-        ".war",    ".ear",    ".7z",       ".cpio", ".iso",    ".xar", ".cab",
-    };
-
+    const arcmc_builtin_format_t *fmt;
     size_t flen, i;
 
     if (filename == NULL)
         return FALSE;
 
-    flen = strlen (filename);
-
-    for (i = 0; i < G_N_ELEMENTS (exts); i++)
-    {
-        size_t elen = strlen (exts[i]);
-
-        if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, exts[i]) == 0)
-            return TRUE;
-    }
+    fmt = arcmc_find_builtin_format (filename);
+    if (fmt != NULL)
+        return (fmt->enabled && fmt->unpack != ARCMC_BACKEND_OFF);
 
     /* also accept extensions handled by external archivers */
+    flen = strlen (filename);
+
     for (i = 0; i < ext_archivers_count; i++)
     {
         size_t elen = strlen (ext_archivers[i].ext);
 
         if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, ext_archivers[i].ext) == 0)
-            return TRUE;
+            return (arcmc_ext_enabled == NULL || arcmc_ext_enabled[i]);
     }
 
     return FALSE;
@@ -369,16 +360,17 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
         size_t i;
         size_t name_len = strlen (base_name);
 
-        for (i = 0; i < G_N_ELEMENTS (format_extensions); i++)
+        for (i = 0; i < ARCMC_FMT_COUNT; i++)
         {
-            size_t ext_len = strlen (format_extensions[i]);
+            size_t ext_len = strlen (arcmc_builtin_formats[i].ext);
 
             if (name_len > ext_len
-                && g_ascii_strcasecmp (base_name + name_len - ext_len, format_extensions[i]) == 0)
+                && g_ascii_strcasecmp (base_name + name_len - ext_len, arcmc_builtin_formats[i].ext)
+                    == 0)
             {
                 char *stripped = g_strndup (base_name, name_len - ext_len);
 
-                result = g_strconcat (stripped, format_extensions[0], NULL);
+                result = g_strconcat (stripped, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
                 g_free (stripped);
                 return result;
             }
@@ -394,14 +386,14 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
             {
                 char *stripped = g_strndup (base_name, name_len - ext_len);
 
-                result = g_strconcat (stripped, format_extensions[0], NULL);
+                result = g_strconcat (stripped, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
                 g_free (stripped);
                 return result;
             }
         }
     }
 
-    result = g_strconcat (base_name, format_extensions[0], NULL);
+    result = g_strconcat (base_name, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
     return result;
 }
 

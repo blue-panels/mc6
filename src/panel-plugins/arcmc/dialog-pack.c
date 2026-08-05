@@ -44,17 +44,6 @@ static const char *const other_format_names[] = {
 
 #define OTHER_FMT_DISPLAY_LEN 16
 
-/* extensions for each ARCMC_FMT_* value */
-const char *const format_extensions[ARCMC_FMT_COUNT] = {
-    ".zip",     /* ARCMC_FMT_ZIP */
-    ".7z",      /* ARCMC_FMT_7Z */
-    ".tar.gz",  /* ARCMC_FMT_TAR_GZ */
-    ".tar.bz2", /* ARCMC_FMT_TAR_BZ2 */
-    ".tar.xz",  /* ARCMC_FMT_TAR_XZ */
-    ".tar",     /* ARCMC_FMT_TAR */
-    ".cpio",    /* ARCMC_FMT_CPIO */
-};
-
 /* currently selected "Other" format index (0-based within other_format_names) */
 static int current_other_fmt_idx = 0;
 
@@ -79,12 +68,12 @@ pack_strip_known_ext (char *base, size_t base_len)
 {
     size_t i;
 
-    for (i = 0; i < G_N_ELEMENTS (format_extensions); i++)
+    for (i = 0; i < ARCMC_FMT_COUNT; i++)
     {
-        size_t ext_len = strlen (format_extensions[i]);
+        size_t ext_len = strlen (arcmc_builtin_formats[i].ext);
 
         if (base_len >= ext_len
-            && g_ascii_strcasecmp (base + base_len - ext_len, format_extensions[i]) == 0)
+            && g_ascii_strcasecmp (base + base_len - ext_len, arcmc_builtin_formats[i].ext) == 0)
         {
             base[base_len - ext_len] = '\0';
             return;
@@ -164,7 +153,7 @@ pack_update_extension (Widget *dlg_w, int fmt)
 
     path_input = INPUT (path_w);
     old_text = path_input->buffer->str;
-    ext = format_extensions[fmt];
+    ext = arcmc_builtin_formats[fmt].ext;
 
     /* strip known extensions from the end */
     {
@@ -173,12 +162,12 @@ pack_update_extension (Widget *dlg_w, int fmt)
 
         base = g_strdup (old_text);
 
-        for (i = 0; i < G_N_ELEMENTS (format_extensions); i++)
+        for (i = 0; i < ARCMC_FMT_COUNT; i++)
         {
-            size_t ext_len = strlen (format_extensions[i]);
+            size_t ext_len = strlen (arcmc_builtin_formats[i].ext);
 
             if (old_len >= ext_len
-                && g_ascii_strcasecmp (base + old_len - ext_len, format_extensions[i]) == 0)
+                && g_ascii_strcasecmp (base + old_len - ext_len, arcmc_builtin_formats[i].ext) == 0)
             {
                 base[old_len - ext_len] = '\0';
                 break;
@@ -286,9 +275,9 @@ sel_other_format_button (WButton *button, int action)
 
     (void) action;
 
-    /* count enabled builtin "Other" formats */
+    /* count builtin "Other" formats that are on and can be packed */
     for (i = 0; i < ARCMC_FMT_OTHER_COUNT; i++)
-        if (arcmc_builtin_enabled[2 + i])
+        if (arcmc_builtin_can_pack (ARCMC_FMT_TAR_GZ + i))
             count++;
 
     /* count enabled external archivers with pack support */
@@ -322,7 +311,7 @@ sel_other_format_button (WButton *button, int action)
     /* builtin "Other" formats first */
     for (i = 0; i < ARCMC_FMT_OTHER_COUNT; i++)
     {
-        if (!arcmc_builtin_enabled[2 + i])
+        if (!arcmc_builtin_can_pack (ARCMC_FMT_TAR_GZ + i))
             continue;
 
         listbox_add_item (fmt_list, LISTBOX_APPEND_AT_END, 0, other_format_names[i], NULL, FALSE);
@@ -534,6 +523,8 @@ arcmc_show_pack_dialog (arcmc_pack_opts_t *opts, const char *initial_path)
             err = _ ("This format does not support encryption");
         else if (encrypt_header != 0 && fmt != ARCMC_FMT_7Z)
             err = _ ("Only 7z can encrypt archive headers");
+        else if (fmt < ARCMC_FMT_EXT_BASE && !arcmc_builtin_can_pack (fmt))
+            err = _ ("This format is turned off in the archiver settings");
 
         if (err != NULL)
         {

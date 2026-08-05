@@ -31,6 +31,15 @@
 /*** declarations (functions)
  * **********************************************************************/
 
+/* Builtin format table */
+arcmc_builtin_format_t *arcmc_find_builtin_format (const char *path);
+gboolean arcmc_builtin_can_pack (int fmt);
+const char *arcmc_backend_name (arcmc_backend_t b);
+arcmc_backend_t arcmc_backend_from_name (const char *s, arcmc_backend_t def);
+gboolean arcmc_backend_possible (arcmc_backend_t b, gboolean lib, const char *bin);
+const char *arcmc_builtin_tool (const arcmc_builtin_format_t *f);
+const char *arcmc_resolve_tool (const char *bin);
+
 /* Path utilities */
 char *get_parent_dir (const char *current_dir);
 char *build_child_path (const char *current_dir, const char *name);
