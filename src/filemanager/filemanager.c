@@ -206,6 +206,9 @@ create_panel_menu (gboolean is_right)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Encoding..."), CK_SelectCodepage));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Rescan"), CK_Reread));
+    entries = g_list_prepend (
+        entries,
+        menu_entry_new (_ ("Change &drive"), is_right ? CK_PluginDriveRight : CK_PluginDriveLeft));
 
     return g_list_reverse (entries);
 }
