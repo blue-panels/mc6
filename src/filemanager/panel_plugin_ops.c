@@ -62,6 +62,14 @@
 
 /*** file scope type declarations ****************************************************************/
 
+/** A panel item to work on: the name as the plugin knows it, and enough of the
+    stat to tell a directory from a file. */
+typedef struct
+{
+    char *name;
+    mode_t mode;
+} plugin_panel_item_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
@@ -761,42 +769,256 @@ plugin_panel_dest_path (const char *dest, const char *name, gboolean only_one)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+plugin_panel_item_free (gpointer data)
+{
+    plugin_panel_item_t *item = (plugin_panel_item_t *) data;
+
+    g_free (item->name);
+    g_free (item);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+plugin_panel_item_add (GPtrArray *items, const file_entry_t *fe)
+{
+    plugin_panel_item_t *item;
+
+    item = g_new (plugin_panel_item_t, 1);
+    item->name = g_strdup (fe->fname->str);
+    item->mode = fe->st.st_mode;
+    g_ptr_array_add (items, item);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /**
- * Collect names of marked files into a GPtrArray.
- * If no files are marked, adds the current file name.
+ * Collect the marked items, or the one under the cursor when none are marked.
+ * The mode comes along: without it a directory cannot be told from a file, and
+ * asking a plugin for a local copy of a directory yields an empty file.
  *
- * @return newly allocated GPtrArray with g_strdup'd names (caller frees with g_ptr_array_free)
+ * @return newly allocated GPtrArray of plugin_panel_item_t (caller frees with g_ptr_array_free)
  */
 
 static GPtrArray *
-plugin_panel_collect_names (WPanel *panel, gboolean single)
+plugin_panel_collect_items (WPanel *panel, gboolean single)
 {
-    GPtrArray *names;
+    GPtrArray *items;
 
-    names = g_ptr_array_new_with_free_func (g_free);
+    items = g_ptr_array_new_with_free_func (plugin_panel_item_free);
 
     /* The Single variants of Copy/Move/Delete act on the item under the cursor
        whatever is marked. */
     if (!single && panel->marked > 0)
     {
-        int idx = 0;
-        const GString *fname;
+        int i;
 
-        while ((fname = panel_find_marked_file (panel, &idx)) != NULL)
-        {
-            g_ptr_array_add (names, g_strdup (fname->str));
-            idx++;
-        }
+        for (i = 0; i < panel->dir.len; i++)
+            if (panel->dir.list[i].f.marked != 0 && !DIR_IS_DOTDOT (panel->dir.list[i].fname->str))
+                plugin_panel_item_add (items, &panel->dir.list[i]);
     }
     else
     {
         const file_entry_t *fe = panel_current_entry (panel);
 
-        if (fe != NULL)
-            g_ptr_array_add (names, g_strdup (fe->fname->str));
+        /* ".." is a way back, not an item: copying it would take in the whole
+           directory above. */
+        if (fe != NULL && !DIR_IS_DOTDOT (fe->fname->str))
+            plugin_panel_item_add (items, fe);
     }
 
-    return names;
+    return items;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** How deep a plugin tree is followed. A listing that points back at itself
+    would otherwise never end. */
+#define PP_COPY_MAX_DEPTH 32
+
+/** Copy one item out of the plugin to @dest_path. Files go through the plugin
+    callbacks; a directory is handed to the plugin when it can take one, and
+    walked here when it cannot. */
+static mc_pp_result_t plugin_panel_copy_item (WPanel *panel, const char *name, mode_t mode,
+                                              const char *dest_path,
+                                              plugin_panel_overwrite_state_t *overwrite, int depth);
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Can the core walk a directory of this plugin on its own? */
+static gboolean
+plugin_panel_can_walk (const WPanel *panel)
+{
+    return panel->plugin->chdir != NULL && panel->plugin->get_items != NULL
+        && (panel->plugin->flags & MC_PPF_NAVIGATE) != 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Copy a single file out of the plugin to @dest_path. */
+static mc_pp_result_t
+plugin_panel_copy_file (WPanel *panel, const char *name, const char *dest_path)
+{
+    mc_pp_result_t r = MC_PPR_NOT_SUPPORTED;
+
+    if (panel->plugin->copy_to_local != NULL)
+        r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
+
+    /* An item the plugin will not take is left to the local copy path. */
+    if (r == MC_PPR_NOT_SUPPORTED && panel->plugin->get_local_copy != NULL)
+    {
+        char *local_path = NULL;
+
+        r = panel->plugin->get_local_copy (panel->plugin_data, name, &local_path);
+        if (r == MC_PPR_OK && local_path != NULL)
+        {
+            if (!copy_local_file (local_path, dest_path))
+                r = MC_PPR_FAILED;
+        }
+        else if (r == MC_PPR_OK)
+            r = MC_PPR_FAILED;
+
+        if (local_path != NULL)
+        {
+            unlink (local_path);
+            g_free (local_path);
+        }
+    }
+
+    return r;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Walk a directory of the plugin and copy what is in it. The plugin is left
+    standing where it stood. */
+static mc_pp_result_t
+plugin_panel_walk_dir (WPanel *panel, const char *name, const char *dest_path,
+                       plugin_panel_overwrite_state_t *overwrite, int depth)
+{
+    dir_list list = { NULL, 0, 0, NULL };
+    char *start_loc = NULL;
+    mc_pp_result_t result = MC_PPR_OK;
+    int i;
+
+    if (depth >= PP_COPY_MAX_DEPTH)
+        return MC_PPR_FAILED;
+
+    if (panel->plugin->get_location != NULL)
+        start_loc = panel->plugin->get_location (panel->plugin_data);
+
+    if (panel->plugin->chdir (panel->plugin_data, name) != MC_PPR_OK)
+    {
+        g_free (start_loc);
+        return MC_PPR_FAILED;
+    }
+
+    if (!dir_list_init (&list))
+        result = MC_PPR_FAILED;
+    else if (panel->plugin->get_items (panel->plugin_data, &list) != MC_PPR_OK)
+        result = MC_PPR_FAILED;
+
+    for (i = 0; i < list.len && result == MC_PPR_OK; i++)
+    {
+        const file_entry_t *fe = &list.list[i];
+        const char *child = fe->fname->str;
+        char *child_dest;
+
+        /* The host puts ".." at the top, and a name with a separator in it
+           would write outside the destination. Neither can be copied, and
+           neither may pass for a complete job. */
+        if (DIR_IS_DOT (child) || DIR_IS_DOTDOT (child))
+            continue;
+
+        if (strchr (child, PATH_SEP) != NULL)
+        {
+            result = MC_PPR_FAILED;
+            break;
+        }
+
+        child_dest = mc_build_filename (dest_path, child, (char *) NULL);
+        result =
+            plugin_panel_copy_item (panel, child, fe->st.st_mode, child_dest, overwrite, depth + 1);
+        g_free (child_dest);
+    }
+
+    dir_list_free_list (&list);
+
+    if (panel->plugin->chdir (panel->plugin_data, "..") != MC_PPR_OK)
+        result = MC_PPR_FAILED;
+    else if (start_loc != NULL)
+    {
+        char *end_loc;
+
+        /* Going up is not always the way back: a plugin that keeps connections
+           in its top listing lands somewhere else entirely. Say so rather than
+           report a copy that took in more than the user pointed at. */
+        end_loc = panel->plugin->get_location (panel->plugin_data);
+        if (end_loc == NULL || strcmp (start_loc, end_loc) != 0)
+            result = MC_PPR_FAILED;
+        g_free (end_loc);
+    }
+
+    g_free (start_loc);
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+plugin_panel_copy_item (WPanel *panel, const char *name, mode_t mode, const char *dest_path,
+                        plugin_panel_overwrite_state_t *overwrite, int depth)
+{
+    mc_pp_result_t r;
+
+    if (!S_ISDIR (mode))
+    {
+        /* Below the top level nothing has asked about an existing name yet. */
+        if (depth > 0)
+            switch (plugin_panel_local_action (panel, name, dest_path, overwrite))
+            {
+            case PP_ACT_SKIP:
+                return MC_PPR_OK;
+            case PP_ACT_ABORT:
+                return MC_PPR_SKIPPED;
+            default:
+                break;
+            }
+
+        r = plugin_panel_copy_file (panel, name, dest_path);
+
+        /* The listing knows the mode; a temp file on the way here does not.
+           Only a plain file gets it: the 0777 of a symbolic link would land on
+           the copy of what it points at. */
+        if (r == MC_PPR_OK && S_ISREG (mode) && (mode & 0777) != 0)
+            chmod (dest_path, mode & 0777);
+
+        return r;
+    }
+
+    /* A plugin that can hand over a whole subtree does it in one go. */
+    if (panel->plugin->copy_to_local != NULL && (panel->plugin->flags & MC_PPF_COPY_TREE) != 0)
+    {
+        r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
+        if (r != MC_PPR_NOT_SUPPORTED)
+            return r;
+    }
+
+    if (!plugin_panel_can_walk (panel))
+        return MC_PPR_NOT_SUPPORTED;
+
+    if (g_mkdir_with_parents (dest_path, 0755) != 0)
+        return MC_PPR_FAILED;
+
+    r = plugin_panel_walk_dir (panel, name, dest_path, overwrite, depth);
+
+    /* The mode goes on last: a directory that keeps us out cannot be filled. */
+    if (r == MC_PPR_OK && (mode & 0777) != 0)
+        chmod (dest_path, mode & 0777);
+
+    return r;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -808,7 +1030,7 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
 {
     char *dest_dir;
     const char *default_dest;
-    GPtrArray *names;
+    GPtrArray *items;
     plugin_panel_overwrite_state_t overwrite = { PP_OVERWRITE_ASK };
     guint i;
 
@@ -830,11 +1052,13 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
         return;
     }
 
-    names = plugin_panel_collect_names (panel, single);
+    items = plugin_panel_collect_items (panel, single);
 
-    for (i = 0; i < names->len; i++)
+    for (i = 0; i < items->len; i++)
     {
-        const char *name = (const char *) g_ptr_array_index (names, i);
+        const plugin_panel_item_t *item =
+            (const plugin_panel_item_t *) g_ptr_array_index (items, i);
+        const char *name = item->name;
         char *dest_path;
         plugin_panel_action_t act;
         mc_pp_result_t r;
@@ -848,7 +1072,7 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
         {
             char *dest_name;
 
-            dest_name = (names->len == 1) ? g_strdup (dest_dir)
+            dest_name = (items->len == 1) ? g_strdup (dest_dir)
                                           : mc_build_filename (dest_dir, name, (char *) NULL);
 
             /* Both ends are inside the plugin, so there is no local file to
@@ -864,7 +1088,7 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
             continue;
         }
 
-        dest_path = plugin_panel_dest_path (dest_dir, name, names->len == 1);
+        dest_path = plugin_panel_dest_path (dest_dir, name, items->len == 1);
 
         act = plugin_panel_local_action (panel, name, dest_path, &overwrite);
 
@@ -887,32 +1111,14 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
             continue;
         }
 
-        if (panel->plugin->copy_to_local != NULL)
-        {
-            r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
-            if (r != MC_PPR_OK && r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-        }
-        else
-        {
-            char *local_path = NULL;
-
-            r = panel->plugin->get_local_copy (panel->plugin_data, name, &local_path);
-            if (r == MC_PPR_OK && local_path != NULL)
-            {
-                if (!copy_local_file (local_path, dest_path))
-                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-                unlink (local_path);
-                g_free (local_path);
-            }
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot get local copy of %s"), name);
-        }
+        r = plugin_panel_copy_item (panel, name, item->mode, dest_path, &overwrite, 0);
+        if (r != MC_PPR_OK && r != MC_PPR_SKIPPED)
+            message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
 
         g_free (dest_path);
     }
 
-    g_ptr_array_free (names, TRUE);
+    g_ptr_array_free (items, TRUE);
     g_free (dest_dir);
     update_panels (UP_OPTIMIZE, UP_KEEPSEL);
 }
@@ -922,8 +1128,9 @@ plugin_panel_copy_cmd (WPanel *panel, gboolean single)
 void
 plugin_panel_delete_cmd (WPanel *panel, gboolean single)
 {
-    GPtrArray *names;
+    GPtrArray *items, *names;
     mc_pp_result_t r;
+    guint i;
 
     if (panel->plugin == NULL || panel->plugin_data == NULL)
         return;
@@ -934,13 +1141,17 @@ plugin_panel_delete_cmd (WPanel *panel, gboolean single)
         return;
     }
 
-    names = plugin_panel_collect_names (panel, single);
+    items = plugin_panel_collect_items (panel, single);
 
-    if (names->len == 0)
+    if (items->len == 0)
     {
-        g_ptr_array_free (names, TRUE);
+        g_ptr_array_free (items, TRUE);
         return;
     }
+
+    names = g_ptr_array_new ();
+    for (i = 0; i < items->len; i++)
+        g_ptr_array_add (names, ((plugin_panel_item_t *) g_ptr_array_index (items, i))->name);
 
     /* Confirmation */
     if (confirm_delete)
@@ -957,6 +1168,7 @@ plugin_panel_delete_cmd (WPanel *panel, gboolean single)
         if (result != 0)
         {
             g_ptr_array_free (names, TRUE);
+            g_ptr_array_free (items, TRUE);
             return;
         }
     }
@@ -967,6 +1179,7 @@ plugin_panel_delete_cmd (WPanel *panel, gboolean single)
         message (D_ERROR, MSG_ERROR, _ ("Delete failed"));
 
     g_ptr_array_free (names, TRUE);
+    g_ptr_array_free (items, TRUE);
     update_panels (UP_OPTIMIZE, UP_KEEPSEL);
 }
 
@@ -1121,7 +1334,7 @@ plugin_panel_move_cmd (WPanel *panel, gboolean single)
 {
     char *dest_dir;
     const char *default_dest;
-    GPtrArray *names;
+    GPtrArray *items;
     GPtrArray *moved_names;
     plugin_panel_overwrite_state_t overwrite = { PP_OVERWRITE_ASK };
     guint i;
@@ -1148,12 +1361,14 @@ plugin_panel_move_cmd (WPanel *panel, gboolean single)
         return;
     }
 
-    names = plugin_panel_collect_names (panel, single);
+    items = plugin_panel_collect_items (panel, single);
     moved_names = g_ptr_array_new_with_free_func (g_free);
 
-    for (i = 0; i < names->len; i++)
+    for (i = 0; i < items->len; i++)
     {
-        const char *name = (const char *) g_ptr_array_index (names, i);
+        const plugin_panel_item_t *item =
+            (const plugin_panel_item_t *) g_ptr_array_index (items, i);
+        const char *name = item->name;
         char *dest_path;
         mc_pp_result_t r;
         gboolean ok = FALSE;
@@ -1161,7 +1376,7 @@ plugin_panel_move_cmd (WPanel *panel, gboolean single)
         if (overwrite.mode == PP_OVERWRITE_ABORT)
             break;
 
-        dest_path = plugin_panel_dest_path (dest_dir, name, names->len == 1);
+        dest_path = plugin_panel_dest_path (dest_dir, name, items->len == 1);
 
         /* No resume: the source is deleted afterwards, and a continued
            transfer is verified only up to the join. */
@@ -1171,31 +1386,11 @@ plugin_panel_move_cmd (WPanel *panel, gboolean single)
             continue;
         }
 
-        if (panel->plugin->copy_to_local != NULL)
-        {
-            r = panel->plugin->copy_to_local (panel->plugin_data, name, dest_path);
-            if (r == MC_PPR_OK)
-                ok = TRUE;
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-        }
-        else
-        {
-            char *local_path = NULL;
-
-            r = panel->plugin->get_local_copy (panel->plugin_data, name, &local_path);
-            if (r == MC_PPR_OK && local_path != NULL)
-            {
-                if (copy_local_file (local_path, dest_path))
-                    ok = TRUE;
-                else
-                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
-                unlink (local_path);
-                g_free (local_path);
-            }
-            else if (r != MC_PPR_NOT_SUPPORTED)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot get local copy of %s"), name);
-        }
+        r = plugin_panel_copy_item (panel, name, item->mode, dest_path, &overwrite, 0);
+        if (r == MC_PPR_OK)
+            ok = TRUE;
+        else if (r != MC_PPR_SKIPPED)
+            message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s"), name);
 
         g_free (dest_path);
 
@@ -1214,7 +1409,7 @@ plugin_panel_move_cmd (WPanel *panel, gboolean single)
             message (D_ERROR, MSG_ERROR, _ ("Move succeeded but delete from plugin failed"));
     }
 
-    g_ptr_array_free (names, TRUE);
+    g_ptr_array_free (items, TRUE);
     g_ptr_array_free (moved_names, TRUE);
     g_free (dest_dir);
     update_panels (UP_OPTIMIZE, UP_KEEPSEL);
