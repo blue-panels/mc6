@@ -289,6 +289,9 @@ mongo_handle_key (void *plugin_data, int key)
     if (key == CK_Edit && data->level == MONGO_LEVEL_CLUSTERS)
         return mongo_edit_connection (data);
 
+    if (key == CK_EditNew && data->level == MONGO_LEVEL_CLUSTERS)
+        return mongo_create_connection (data);
+
     if (key == CK_Move)
     {
         if (data->level == MONGO_LEVEL_COLLS)

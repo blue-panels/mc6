@@ -2799,6 +2799,9 @@ git_handle_key (void *plugin_data, int key)
     git_debug_log ("git: key=%d view=%s current='%s'", key, git_view_name (data->view),
                    current != NULL && current->str != NULL ? current->str : "(null)");
 
+    if (key == CK_EditNew && (git_view_t) data->view == GIT_VIEW_FAVORITES)
+        return git_create_item (data);
+
     if ((data->key_diff != 0 && key == data->key_diff)
         || (data->key_diff_alt != 0 && key == data->key_diff_alt))
     {
@@ -2857,7 +2860,7 @@ git_handle_key (void *plugin_data, int key)
         return MC_PPR_FAILED;
     }
 
-    return MC_PPR_FAILED;
+    return MC_PPR_NOT_SUPPORTED;  // not our key
 }
 
 /* --------------------------------------------------------------------------------------------- */

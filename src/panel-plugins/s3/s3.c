@@ -2885,7 +2885,7 @@ s3_create_item (void *plugin_data)
         if (!s3_show_connection_dialog (conn, data->help_filename))
         {
             s3_connection_free (conn);
-            return MC_PPR_FAILED;
+            return MC_PPR_SKIPPED;
         }
 
         if (conn->label == NULL || conn->label[0] == '\0' || conn->access_key == NULL
@@ -3397,6 +3397,9 @@ s3_handle_key (void *plugin_data, int key)
 
     if (key == CK_Edit || (data->key_edit != S3_KEY_NONE && key == data->key_edit))
         return s3_edit_connection (data);
+
+    if (key == CK_EditNew && data->level == S3_LEVEL_CONNECTIONS)
+        return s3_create_item (data);
 
     if (data->level == S3_LEVEL_CONNECTIONS
         && (key == CK_Copy || key == CK_CopySingle || key == CK_Move || key == CK_MoveSingle))
