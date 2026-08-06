@@ -32,7 +32,8 @@ typedef enum
     MC_PPR_OK = 0,
     MC_PPR_FAILED = -1,
     MC_PPR_NOT_SUPPORTED = -2,
-    MC_PPR_CLOSE = -3
+    MC_PPR_CLOSE = -3,
+    MC_PPR_SKIPPED = -4 /* the user turned it down */
 } mc_pp_result_t;
 
 typedef enum
