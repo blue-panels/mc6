@@ -2374,6 +2374,9 @@ docker_handle_key (void *plugin_data, int key)
 {
     docker_data_t *data = (docker_data_t *) plugin_data;
 
+    if (key == CK_EditNew && data->view == DOCKER_VIEW_PROFILES)
+        return docker_create_item (data);
+
     if (data->view == DOCKER_VIEW_PROFILES && (key == CK_Move || key == CK_MoveSingle))
         return MC_PPR_NOT_SUPPORTED;
 

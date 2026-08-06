@@ -1106,6 +1106,9 @@ k8s_handle_key (void *plugin_data, int key)
 {
     k8s_data_t *data = (k8s_data_t *) plugin_data;
 
+    if (key == CK_EditNew && data->view == K8S_VIEW_FAVORITES)
+        return k8s_create_item (data);
+
     if (data->key_refresh != 0 && key == data->key_refresh)
     {
         k8s_clear_items (data);
@@ -1230,7 +1233,7 @@ k8s_handle_key (void *plugin_data, int key)
     }
 
     if (data->view == K8S_VIEW_FAVORITES)
-        return MC_PPR_FAILED;
+        return MC_PPR_NOT_SUPPORTED;
 
     if (data->key_ns_switch != 0 && key == data->key_ns_switch)
     {
@@ -1238,7 +1241,7 @@ k8s_handle_key (void *plugin_data, int key)
         return MC_PPR_OK;
     }
 
-    return MC_PPR_FAILED;
+    return MC_PPR_NOT_SUPPORTED;  // not our key
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1254,7 +1257,7 @@ k8s_create_item (void *plugin_data)
         return MC_PPR_NOT_SUPPORTED;
 
     if (!k8s_ui_show_add_context_dialog (&ctx))
-        return MC_PPR_FAILED;
+        return MC_PPR_SKIPPED;
 
     for (i = 0; i < data->fav_contexts->len; i++)
         if (strcmp ((const char *) data->fav_contexts->pdata[i], ctx) == 0)

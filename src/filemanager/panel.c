@@ -4410,7 +4410,7 @@ panel_key (WPanel *panel, int key)
             mc_pp_result_t r;
 
             r = panel->plugin->handle_key (panel->plugin_data, command);
-            if (r != MC_PPR_OK && key != (int) command)
+            if (r == MC_PPR_NOT_SUPPORTED && key != (int) command)
             {
                 /* Fallback for plugin-local hotkeys that are stored as raw terminal keys
                    (e.g. KEY_F(13)) rather than command ids (CK_*). */
@@ -4422,6 +4422,9 @@ panel_key (WPanel *panel, int key)
                     panel_plugin_reload (panel);
                 return MSG_HANDLED;
             }
+            // A cancelled dialog is an answer; a failure of the plugin's own is not.
+            if (r == MC_PPR_SKIPPED)
+                return MSG_HANDLED;
         }
         return panel_execute_cmd (panel, command);
     }

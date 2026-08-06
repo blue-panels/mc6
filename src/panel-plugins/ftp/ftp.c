@@ -2913,7 +2913,7 @@ ftp_create_item (void *plugin_data)
     if (!show_connection_dialog (conn))
     {
         ftp_connection_free (conn);
-        return MC_PPR_FAILED;
+        return MC_PPR_SKIPPED;
     }
 
     if (conn->label == NULL || conn->label[0] == '\0' || conn->host == NULL
@@ -3169,6 +3169,9 @@ ftp_handle_key (void *plugin_data, int key)
 
     if (key == CK_Edit || (data->key_edit != 0 && key == data->key_edit))
         return ftp_edit_connection (data);
+
+    if (key == CK_EditNew && data->at_root)
+        return ftp_create_item (data);
 
     if (key == CK_Copy || key == CK_CopySingle || key == CK_Move || key == CK_MoveSingle)
     {

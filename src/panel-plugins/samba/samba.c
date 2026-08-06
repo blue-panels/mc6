@@ -1513,6 +1513,9 @@ samba_handle_key (void *plugin_data, int key)
     if (key == CK_Edit)
         return samba_edit_connection (data);
 
+    if (key == CK_EditNew && data->at_root)
+        return samba_create_item (data);
+
     if (key == CK_Copy || key == CK_CopySingle || key == CK_Move || key == CK_MoveSingle)
     {
         if (data->at_root)

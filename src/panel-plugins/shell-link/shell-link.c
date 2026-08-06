@@ -2440,7 +2440,7 @@ shell_create_item (void *plugin_data)
     if (!show_connection_dialog (conn))
     {
         shell_connection_free (conn);
-        return MC_PPR_FAILED;
+        return MC_PPR_SKIPPED;
     }
 
     if (conn->label == NULL || conn->label[0] == '\0' || conn->host == NULL
@@ -2698,6 +2698,9 @@ shell_handle_key (void *plugin_data, int key)
        and move files, so leave them to the core. */
     if (data->conn != NULL)
         return MC_PPR_NOT_SUPPORTED;
+
+    if (key == CK_EditNew)
+        return shell_create_item (data);
 
     if (key == CK_Edit || (data->key_edit != SHELL_KEY_NONE && key == data->key_edit))
         return shell_edit_connection (data);
