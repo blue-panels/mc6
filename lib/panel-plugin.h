@@ -52,9 +52,12 @@ typedef enum
                                            copy/move, bypassing get_local_copy */
     MC_PPF_NO_MOVE = 1 << 10,           /* plugin refuses F6: move deletes the source,
                                            set this when the copy cannot be confirmed */
-    MC_PPF_ACCEPTS_FILE_LIST = 1 << 9   /* plugin implements open_file_list(),
+    MC_PPF_ACCEPTS_FILE_LIST = 1 << 9,  /* plugin implements open_file_list(),
                                            i.e. can be a destination for Find
                                            results and similar list producers */
+    MC_PPF_COPY_TREE = 1 << 11          /* copy_to_local() takes a directory and
+                                           writes everything below it; without
+                                           this the core walks the tree itself */
 } mc_pp_flags_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -150,8 +153,9 @@ typedef struct mc_panel_plugin_t
     mc_pp_result_t (*get_local_copy) (void *plugin_data, const char *fname, char **local_path);
     /* Download an item directly to the given local path. The core asks about
        overwriting before calling this.
-       @fname may name a directory, which the plugin is free to serve as a whole
-       subtree; MC_PPR_NOT_SUPPORTED sends the core to walk it item by item.
+       @fname names a directory only when the plugin sets MC_PPF_COPY_TREE, and
+       then everything below it is expected at @local_path; MC_PPR_NOT_SUPPORTED
+       sends the core to walk it item by item.
        If NULL, core falls back to get_local_copy + copy. */
     mc_pp_result_t (*copy_to_local) (void *plugin_data, const char *fname, const char *local_path);
     mc_pp_result_t (*put_file) (void *plugin_data, const char *local_path, const char *dest_name);
