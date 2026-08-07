@@ -602,6 +602,35 @@ fi
 dnl Optional libsmbclient for Samba panel plugin
 SMBCLIENT_CFLAGS=""
 SMBCLIENT_LIBS=""
+dnl sftp -- SFTP browser panel plugin (libssh2)
+have_panel_plugin_sftp=no
+
+AC_ARG_ENABLE([panel-plugin-sftp],
+    AS_HELP_STRING([--enable-panel-plugin-sftp@<:@=auto/yes/no@:>@],
+                   [Build SFTP panel plugin (default: auto)]),
+    [enable_panel_plugin_sftp="$enableval"],
+    [enable_panel_plugin_sftp=auto])
+
+AS_CASE([$enable_panel_plugin_sftp],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_panel_plugin_sftp' for --enable-panel-plugin-sftp (use auto, yes, or no)])])
+
+if test "x$enable_panel_plugin_sftp" != xno && test x"$have_libssh2" = xyes; then
+    have_panel_plugin_sftp=yes
+fi
+
+if test "x$enable_panel_plugin_sftp" = xyes && test "x$have_panel_plugin_sftp" != xyes; then
+    AC_MSG_ERROR([SFTP panel plugin requested but libssh2 >= 1.2.8 was not found.
+Install the libssh2 development package (for example: libssh2-1-dev) or use
+--enable-panel-plugin-sftp=auto/no.])
+fi
+
+if test "x$enable_panel_plugin_sftp" = xauto && test "x$have_panel_plugin_sftp" != xyes; then
+    AC_MSG_WARN([SFTP panel plugin disabled: libssh2 >= 1.2.8 was not found.])
+fi
+
+AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SFTP], [test x"$have_panel_plugin_sftp" = xyes])
+
 have_panel_plugin_samba=no
 
 AC_ARG_ENABLE([panel-plugin-samba],

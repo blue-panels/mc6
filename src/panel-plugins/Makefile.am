@@ -2,7 +2,7 @@ SUBDIRS = systemd
 SUBDIRS += hello
 SUBDIRS += panelize
 
-if ENABLE_VFS_SFTP
+if ENABLE_PANEL_PLUGIN_SFTP
 SUBDIRS += sftp
 endif
 
