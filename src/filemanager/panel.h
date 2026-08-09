@@ -222,8 +222,18 @@ void panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, cons
 gboolean panel_plugin_activate_input_stream (WPanel *panel, const mc_panel_plugin_t *plugin,
                                              const char *display_name,
                                              mc_pp_input_stream_t *stream);
-gboolean panel_plugin_activate_stream_consumer (WPanel *panel, const char *display_name,
-                                                mc_pp_input_stream_t *stream);
+gboolean panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname,
+                                               const char *plugin_name, const char *operation_name,
+                                               char *local_copy);
+gboolean panel_plugin_open_local_file_by_operation (WPanel *panel, const char *display_name,
+                                                    const char *local_path, const char *plugin_name,
+                                                    const char *operation_name);
+gboolean panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname,
+                                               const char *plugin_name, const char *operation_name,
+                                               char *local_copy, char **view_path);
+gboolean panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_name,
+                                                    const char *local_path, const char *plugin_name,
+                                                    const char *operation_name, char **view_path);
 gboolean panel_plugin_restore_stream_source (WPanel *panel);
 gboolean panel_plugin_activate_by_name (WPanel *panel, const char *plugin_name,
                                         const char *open_path);

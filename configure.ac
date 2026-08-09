@@ -797,6 +797,16 @@ fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_ARCMC], [test x"$have_panel_plugin_arcmc" = xyes])
 
+MAGIC_ARCMC_RULES=""
+if test "x$have_panel_plugin_arcmc" = xyes; then
+    MAGIC_ARCMC_RULES='[[arcmc.archive]]
+Regex=\\.(tar|tar\\.gz|tgz|tar\\.bz2|tbz2|tar\\.xz|txz|tar\\.zst|tzst|zip|jar|war|ear|7z|cpio)$
+RegexIgnoreCase=true
+Open=%plugin{arcmc:open}
+View=%plugin{arcmc:view}'
+fi
+AC_SUBST([MAGIC_ARCMC_RULES])
+
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
 LIBCURL_S3_LIBS=""
@@ -911,6 +921,7 @@ misc/ext.d/misc.sh
 misc/ext.d/text.sh
 misc/macros.d/Makefile
 misc/mc.ext.ini
+misc/magic.ini
 
 src/Makefile
 src/consaver/Makefile

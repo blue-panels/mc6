@@ -65,6 +65,7 @@ static const struct
     { &mc_config_str, MC_USERMENU_FILE },
     { &mc_config_str, EDIT_HOME_MENU },
     { &mc_config_str, MC_PANELS_FILE },
+    { &mc_config_str, MC_MAGIC_FILE },
 
     // User should move this file with applying some changes in file
     { &mc_config_str, MC_EXT_FILE },

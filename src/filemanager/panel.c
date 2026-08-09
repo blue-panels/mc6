@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 
@@ -69,7 +70,8 @@
 #include "dir.h"
 #include "boxes.h"
 #include "tree.h"
-#include "ext.h"     // regexp_command
+#include "ext.h"  // regexp_command
+#include "magic.h"
 #include "layout.h"  // Most layout variables are here
 #include "cmd.h"
 #include "command.h"  // cmdline
@@ -98,6 +100,12 @@ typedef enum
     FATTR_MARKED_CURRENT,
     FATTR_STATUS
 } file_attr_t;
+
+typedef struct
+{
+    WPanel *panel;
+    const char *fname;
+} panel_magic_source_data_t;
 
 #define DEFAULT_USER_FORMAT "half type name | size | perm"
 
@@ -3316,6 +3324,119 @@ stop_search (WPanel *panel)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+panel_magic_get_local_copy (void *data, char **local_path)
+{
+    panel_magic_source_data_t *source = (panel_magic_source_data_t *) data;
+
+    if (source == NULL || source->panel == NULL || source->panel->plugin == NULL
+        || source->panel->plugin_data == NULL || source->panel->plugin->get_local_copy == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    return source->panel->plugin->get_local_copy (source->panel->plugin_data, source->fname,
+                                                  local_path);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_magic_error (const char *fname, const mc_magic_action_t *action)
+{
+    if (action != NULL && action->plugin_name != NULL && action->operation_name != NULL)
+        message (D_ERROR, MSG_ERROR, _ ("The magic.ini operation %s:%s cannot open %s"),
+                 action->plugin_name, action->operation_name, fname);
+    else
+        message (D_ERROR, MSG_ERROR, _ ("Invalid magic.ini association for %s"), fname);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath)
+{
+    mc_magic_source_t source = {
+        .display_name = fname,
+        .local_path = vfs_path_as_str (full_name_vpath),
+        .get_local_copy = NULL,
+        .data = NULL,
+    };
+    mc_magic_action_t action = { NULL, NULL };
+    char *local_copy = NULL;
+    mc_magic_action_state_t state;
+    gboolean handled = FALSE;
+
+    state = mc_magic_find_action (&source, "Open", &local_copy, &action);
+    if (state == MC_MAGIC_ACTION_FOUND)
+    {
+        handled = panel_plugin_open_local_file_by_operation (
+            panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_name,
+            action.operation_name);
+        if (!handled)
+            panel_magic_error (fname, &action);
+        handled = TRUE;
+    }
+    else if (state == MC_MAGIC_ACTION_ERROR)
+    {
+        panel_magic_error (fname, NULL);
+        handled = TRUE;
+    }
+
+    if (local_copy != NULL)
+    {
+        unlink (local_copy);
+        g_free (local_copy);
+    }
+    mc_magic_action_clear (&action);
+    return handled;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe)
+{
+    panel_magic_source_data_t source_data = {
+        .panel = panel,
+        .fname = fe->fname->str,
+    };
+    mc_magic_source_t source = {
+        .display_name = fe->fname->str,
+        .local_path = NULL,
+        .get_local_copy = panel_magic_get_local_copy,
+        .data = &source_data,
+    };
+    mc_magic_action_t action = { NULL, NULL };
+    char *local_copy = NULL;
+    mc_magic_action_state_t state;
+    gboolean handled = FALSE;
+
+    state = mc_magic_find_action (&source, "Open", &local_copy, &action);
+    if (state == MC_MAGIC_ACTION_FOUND)
+    {
+        handled = panel_plugin_open_entry_by_operation (panel, fe->fname->str, action.plugin_name,
+                                                        action.operation_name, local_copy);
+        local_copy = NULL; /* consumed or released by the callee */
+        if (!handled)
+            panel_magic_error (fe->fname->str, &action);
+        handled = TRUE;
+    }
+    else if (state == MC_MAGIC_ACTION_ERROR)
+    {
+        panel_magic_error (fe->fname->str, NULL);
+        handled = TRUE;
+    }
+
+    if (local_copy != NULL)
+    {
+        unlink (local_copy);
+        g_free (local_copy);
+    }
+    mc_magic_action_clear (&action);
+    return handled;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Return TRUE if the Enter key has been processed, FALSE otherwise */
 
 static gboolean
@@ -3343,8 +3464,8 @@ do_enter_on_file_entry (WPanel *panel, const file_entry_t *fe)
 
     full_name_vpath = vfs_path_append_new (panel->cwd_vpath, fname, (char *) NULL);
 
-    /* Try arcmc plugin for supported archive formats before falling back to extfs */
-    if (panel_plugin_activate_by_name (panel, "arcmc", vfs_path_as_str (full_name_vpath)))
+    /* magic.ini is a user-controlled overlay for plugin file operations. */
+    if (panel_magic_open_local_file (panel, fname, full_name_vpath))
     {
         vfs_path_free (full_name_vpath, TRUE);
         return TRUE;
@@ -3452,7 +3573,13 @@ do_enter (WPanel *panel)
             focus_name = plugin_title_last_component (title);
         }
 
-        // let plugin handle enter first
+        if (S_ISREG (fe->st.st_mode) && panel_magic_open_plugin_file (panel, fe))
+        {
+            g_free (focus_name);
+            return TRUE;
+        }
+
+        // let plugin handle enter when magic.ini has no association
         if (panel->plugin->enter != NULL)
         {
             enter_result = panel->plugin->enter (panel->plugin_data, fe->fname->str, &fe->st);
@@ -3478,24 +3605,6 @@ do_enter (WPanel *panel)
                     panel_set_current_by_name (panel, focus_name);
                 g_free (focus_name);
                 return TRUE;
-            }
-        }
-
-        if (enter_result == MC_PPR_NOT_SUPPORTED && S_ISREG (fe->st.st_mode)
-            && panel->plugin->get_input_stream != NULL)
-        {
-            mc_pp_input_stream_t *stream = NULL;
-
-            if (panel->plugin->get_input_stream (panel->plugin_data, fe->fname->str, &stream)
-                    == MC_PPR_OK
-                && stream != NULL)
-            {
-                if (panel_plugin_activate_stream_consumer (panel, fe->fname->str, stream))
-                {
-                    g_free (focus_name);
-                    return TRUE;
-                }
-                mc_pp_input_stream_free (stream);
             }
         }
 

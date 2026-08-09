@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 11
+#define MC_PANEL_PLUGIN_API_VERSION 12
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -95,6 +95,27 @@ typedef struct mc_pp_action_t
     void *(*callback) (struct mc_panel_host_t *host, const char *open_path);
 } mc_pp_action_t;
 
+typedef enum
+{
+    MC_PP_FILE_OPERATION_OPEN,
+    MC_PP_FILE_OPERATION_VIEW
+} mc_pp_file_operation_kind_t;
+
+/* A named operation that can be selected by magic.ini for one file.  Separate
+   from actions[], whose callbacks receive a path from the plugin menu rather
+   than file contents from a source panel.  An operation takes @stream only
+   when it succeeds; @local_path is then the core's to view and remove. */
+typedef struct mc_pp_file_operation_t
+{
+    const char *name;
+    mc_pp_file_operation_kind_t kind;
+    gboolean (*may_open_name) (const char *display_name);
+    void *(*open_input_stream) (struct mc_panel_host_t *host, const char *display_name,
+                                mc_pp_input_stream_t *stream);
+    mc_pp_result_t (*view_input_stream) (struct mc_panel_host_t *host, const char *display_name,
+                                         mc_pp_input_stream_t *stream, char **local_path);
+} mc_pp_file_operation_t;
+
 /* Entry added to the Command menu by a plugin. */
 typedef struct mc_pp_cmd_menu_entry_t
 {
@@ -166,6 +187,9 @@ typedef struct mc_panel_plugin_t
        failure it returns NULL and leaves @stream with the caller. */
     void *(*open_input_stream) (mc_panel_host_t *host, const char *display_name,
                                 mc_pp_input_stream_t *stream);
+    /* Named operations selectable from magic.ini. */
+    const mc_pp_file_operation_t *file_operations;
+    int file_operation_count;
 
     /* Optional (NULL = not supported) */
     mc_pp_result_t (*chdir) (void *plugin_data, const char *path);
@@ -331,6 +355,8 @@ gboolean mc_pp_quiet_messages (void);
 gboolean mc_pp_set_quiet_messages (gboolean quiet);
 
 void mc_pp_input_stream_free (mc_pp_input_stream_t *stream);
+/* @own_file unlinks @path when the stream is freed. */
+mc_pp_input_stream_t *mc_pp_input_stream_new_for_file (const char *path, gboolean own_file);
 
 /* Registry */
 gboolean mc_panel_plugin_add (const mc_panel_plugin_t *plugin);

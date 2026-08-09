@@ -35,6 +35,7 @@
 #include "lib/plugin-prefs.h"
 
 #include "src/editor-plugins/builtin-plugins.h"  // editor_plugins_register_all
+#include "src/filemanager/magic.h"
 
 #include "manage_plugins.h"
 
@@ -265,6 +266,9 @@ mp_invoke_settings (const mp_ctx_t *ctx)
     }
 
     r->panel_plugin->configure ();
+
+    /* A panel plugin may have edited its user-owned magic.ini groups. */
+    mc_magic_flush ();
 }
 
 /* --------------------------------------------------------------------------------------------- */

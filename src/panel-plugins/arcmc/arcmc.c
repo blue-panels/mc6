@@ -49,6 +49,8 @@
 static void *arcmc_open (mc_panel_host_t *host, const char *open_path);
 static void *arcmc_open_input_stream (mc_panel_host_t *host, const char *display_name,
                                       mc_pp_input_stream_t *stream);
+static mc_pp_result_t arcmc_view_input_stream (mc_panel_host_t *host, const char *display_name,
+                                               mc_pp_input_stream_t *stream, char **local_path);
 static void arcmc_close (void *plugin_data);
 static mc_pp_result_t arcmc_get_items (void *plugin_data, void *list_ptr);
 static mc_pp_result_t arcmc_chdir (void *plugin_data, const char *path);
@@ -69,6 +71,7 @@ static void *arcmc_action_test (mc_panel_host_t *host, const char *open_path);
 static void *arcmc_action_settings (mc_panel_host_t *host, const char *open_path);
 static void arcmc_configure (void);
 static gboolean arcmc_ask_password (arcmc_data_t *data);
+static gboolean arcmc_is_supported_archive (const char *filename);
 
 /*** file scope functions (helpers) ***************************************************************/
 
@@ -175,6 +178,21 @@ static const mc_pp_action_t arcmc_actions[] = {
     { N_ ("Archiver settings"), arcmc_action_settings },
 };
 
+static const mc_pp_file_operation_t arcmc_file_operations[] = {
+    {
+        .name = "open",
+        .kind = MC_PP_FILE_OPERATION_OPEN,
+        .may_open_name = arcmc_is_supported_archive,
+        .open_input_stream = arcmc_open_input_stream,
+    },
+    {
+        .name = "view",
+        .kind = MC_PP_FILE_OPERATION_VIEW,
+        .may_open_name = arcmc_is_supported_archive,
+        .view_input_stream = arcmc_view_input_stream,
+    },
+};
+
 /* Not const: shortcut/key are patched from arcmc.ini in register(). */
 static mc_pp_cmd_menu_entry_t arcmc_cmd_menu[] = {
     { N_ ("Cre&ate archive"), 1, NULL, 0, NULL },
@@ -193,6 +211,8 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .close = arcmc_close,
     .get_items = arcmc_get_items,
     .open_input_stream = arcmc_open_input_stream,
+    .file_operations = arcmc_file_operations,
+    .file_operation_count = G_N_ELEMENTS (arcmc_file_operations),
 
     .chdir = arcmc_chdir,
     .enter = arcmc_enter,
@@ -500,6 +520,57 @@ arcmc_open_input_stream (mc_panel_host_t *host, const char *display_name,
     }
 
     return data;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Render the archive catalogue as plain text for magic.ini's View operation.
+   This deliberately builds no panel and opens no dialog: the core owns the
+   viewer and its lifetime, while arcmc owns the input stream only while it
+   reads the catalogue. */
+static mc_pp_result_t
+arcmc_view_input_stream (mc_panel_host_t *host, const char *display_name,
+                         mc_pp_input_stream_t *stream, char **local_path)
+{
+    arcmc_data_t *data;
+    GString *listing;
+    guint i;
+    gboolean written;
+
+    if (local_path == NULL)
+        return MC_PPR_FAILED;
+    *local_path = NULL;
+
+    data = arcmc_open_input_stream (host, display_name, stream);
+    if (data == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    listing = g_string_new (NULL);
+    g_string_append_printf (listing, _ ("Archive: %s\n\n"), display_name);
+    for (i = 0; data->all_entries != NULL && i < data->all_entries->len; i++)
+    {
+        const arcmc_entry_t *entry =
+            (const arcmc_entry_t *) g_ptr_array_index (data->all_entries, i);
+
+        g_string_append_printf (listing, "%c %12" G_GINT64_FORMAT "  %s\n",
+                                S_ISDIR (entry->mode) ? 'd' : '-', (gint64) entry->size,
+                                entry->full_path);
+    }
+
+    written = mc_pp_write_temp_file ("mc-arcmc-list-XXXXXX", listing->str, (gssize) listing->len,
+                                     local_path);
+    g_string_free (listing, TRUE);
+
+    if (!written)
+    {
+        /* The caller still owns a rejected stream. */
+        data->input_stream = NULL;
+        arcmc_close (data);
+        return MC_PPR_FAILED;
+    }
+
+    arcmc_close (data);
+    return MC_PPR_OK;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -88,6 +88,7 @@
 #include "cd.h"
 #include "ioblksize.h"         // IO_BUFSIZE
 #include "panel_plugin_ops.h"  // plugin_panel_create_cmd()
+#include "magic.h"
 
 #include "lib/panel-plugin.h"
 
@@ -106,12 +107,155 @@ enum CompareMode
     compare_thourough
 };
 
+typedef struct
+{
+    WPanel *panel;
+    const char *fname;
+} panel_magic_source_data_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+panel_magic_get_local_copy (void *data, char **local_path)
+{
+    panel_magic_source_data_t *source = (panel_magic_source_data_t *) data;
+
+    if (source == NULL || source->panel == NULL || source->panel->plugin == NULL
+        || source->panel->plugin_data == NULL || source->panel->plugin->get_local_copy == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    return source->panel->plugin->get_local_copy (source->panel->plugin_data, source->fname,
+                                                  local_path);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_magic_view_error (const char *fname, const mc_magic_action_t *action)
+{
+    if (action != NULL && action->plugin_name != NULL && action->operation_name != NULL)
+        message (D_ERROR, MSG_ERROR, _ ("The magic.ini operation %s:%s cannot view %s"),
+                 action->plugin_name, action->operation_name, fname);
+    else
+        message (D_ERROR, MSG_ERROR, _ ("Invalid magic.ini association for %s"), fname);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_magic_show_view (char *local_path)
+{
+    vfs_path_t *vpath;
+
+    if (local_path == NULL)
+        return;
+
+    vpath = vfs_path_from_str (local_path);
+    (void) view_file (vpath, FALSE, TRUE);
+    vfs_path_free (vpath, TRUE);
+    unlink (local_path);
+    g_free (local_path);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath)
+{
+    mc_magic_source_t source = {
+        .display_name = fname,
+        .local_path = vfs_path_as_str (full_name_vpath),
+        .get_local_copy = NULL,
+        .data = NULL,
+    };
+    mc_magic_action_t action = { NULL, NULL };
+    char *type_copy = NULL;
+    char *view_path = NULL;
+    mc_magic_action_state_t state;
+    gboolean handled = FALSE;
+
+    state = mc_magic_find_action (&source, "View", &type_copy, &action);
+    if (state == MC_MAGIC_ACTION_FOUND)
+    {
+        handled = panel_plugin_view_local_file_by_operation (
+            panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_name,
+            action.operation_name, &view_path);
+        if (!handled)
+            panel_magic_view_error (fname, &action);
+        else
+            panel_magic_show_view (view_path);
+        handled = TRUE;
+    }
+    else if (state == MC_MAGIC_ACTION_ERROR)
+    {
+        panel_magic_view_error (fname, NULL);
+        handled = TRUE;
+    }
+
+    if (type_copy != NULL)
+    {
+        unlink (type_copy);
+        g_free (type_copy);
+    }
+    mc_magic_action_clear (&action);
+    return handled;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe)
+{
+    panel_magic_source_data_t source_data = {
+        .panel = panel,
+        .fname = fe->fname->str,
+    };
+    mc_magic_source_t source = {
+        .display_name = fe->fname->str,
+        .local_path = NULL,
+        .get_local_copy = panel_magic_get_local_copy,
+        .data = &source_data,
+    };
+    mc_magic_action_t action = { NULL, NULL };
+    char *type_copy = NULL;
+    char *view_path = NULL;
+    mc_magic_action_state_t state;
+    gboolean handled = FALSE;
+
+    state = mc_magic_find_action (&source, "View", &type_copy, &action);
+    if (state == MC_MAGIC_ACTION_FOUND)
+    {
+        handled =
+            panel_plugin_view_entry_by_operation (panel, fe->fname->str, action.plugin_name,
+                                                  action.operation_name, type_copy, &view_path);
+        type_copy = NULL; /* consumed or released by the callee */
+        if (!handled)
+            panel_magic_view_error (fe->fname->str, &action);
+        else
+            panel_magic_show_view (view_path);
+        handled = TRUE;
+    }
+    else if (state == MC_MAGIC_ACTION_ERROR)
+    {
+        panel_magic_view_error (fe->fname->str, NULL);
+        handled = TRUE;
+    }
+
+    if (type_copy != NULL)
+    {
+        unlink (type_copy);
+        g_free (type_copy);
+    }
+    mc_magic_action_clear (&action);
+    return handled;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 /**
  * Run viewer (internal or external) on the current file.
@@ -125,6 +269,28 @@ do_view_cmd (WPanel *panel, gboolean plain_view)
     fe = panel_current_entry (panel);
     if (fe == NULL)
         return;
+
+    if (!plain_view && !S_ISDIR (fe->st.st_mode) && !link_isdir (fe))
+    {
+        gboolean handled;
+
+        if (panel->is_plugin_panel)
+            handled = panel_magic_view_plugin_file (panel, fe);
+        else
+        {
+            vfs_path_t *full_name_vpath =
+                vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
+
+            handled = panel_magic_view_local_file (panel, fe->fname->str, full_name_vpath);
+            vfs_path_free (full_name_vpath, TRUE);
+        }
+
+        if (handled)
+        {
+            repaint_screen ();
+            return;
+        }
+    }
 
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
         && panel->plugin->view != NULL)

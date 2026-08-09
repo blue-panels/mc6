@@ -1,0 +1,14 @@
+# Plugin file-operation associations.
+#
+# This file is an overlay for plugin actions. It never replaces mc.ext.ini:
+# when no rule here matches, Midnight Commander follows its normal extension
+# and panel-plugin handling.
+#
+# A user may add rules in ~/.config/mc/magic.ini. Values have the exact form
+# %plugin{plugin-name:operation}, for example:
+#
+# [archive]
+# Regex=\\.(tar|tar\\.gz|tgz|zip|7z)$
+# Open=%plugin{arcmc:open}
+
+@MAGIC_ARCMC_RULES@
