@@ -7,7 +7,20 @@
 
 #include "lib/panel-plugin.h"
 
+/*** typedefs(not structures) and defined constants **********************************************/
+
 typedef mc_pp_result_t (*mc_magic_get_local_copy_t) (void *data, char **local_path);
+
+/*** enums ***************************************************************************************/
+
+typedef enum
+{
+    MC_MAGIC_ACTION_NONE,
+    MC_MAGIC_ACTION_FOUND,
+    MC_MAGIC_ACTION_ERROR
+} mc_magic_action_state_t;
+
+/*** structures declarations (and typedefs of structures)*****************************************/
 
 /* A file offered to magic.ini matching. @local_path is a borrowed local path;
    @get_local_copy supplies an owned temporary path only when a Type rule needs
@@ -26,12 +39,9 @@ typedef struct
     char *operation_name;
 } mc_magic_action_t;
 
-typedef enum
-{
-    MC_MAGIC_ACTION_NONE,
-    MC_MAGIC_ACTION_FOUND,
-    MC_MAGIC_ACTION_ERROR
-} mc_magic_action_state_t;
+/*** global variables defined in .c file *********************************************************/
+
+/*** declarations of public functions ************************************************************/
 
 /* Find the first magic.ini association for @action (Open or View). @local_copy
    is populated lazily for Type matching and remains the caller's to unlink and

@@ -1,15 +1,26 @@
 /*
-   Plugin file-operation associations from magic.ini.
+   Plugin file-operation associations from magic.ini
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
 
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026
+
    This file is part of the Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by the Free
-   Software Foundation, either version 3 of the License, or (at your option) any
-   later version.
+   The Midnight Commander is free software: you can redistribute it
+   and/or modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
+
+   The Midnight Commander is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /** \file magic.c
@@ -33,6 +44,8 @@
 #endif
 
 #include "magic.h"
+
+/*** global variables ****************************************************************************/
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -62,6 +75,7 @@ typedef struct
 
 static magic_config_t magic_user_config = { NULL, NULL };
 static magic_config_t magic_system_config = { NULL, NULL };
+static mc_search_t *magic_action_regex = NULL;
 
 /*** file scope functions ************************************************************************/
 
@@ -118,19 +132,36 @@ magic_load (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
-magic_identifier_is_valid (const char *value)
+/* The whole grammar of a directive, so that widening it later is a change to
+   this line rather than to the code below.  Compiled once and released by
+   mc_magic_flush() along with the configs. */
+static mc_search_t *
+magic_action_search (void)
 {
-    const char *p;
+    if (magic_action_regex == NULL)
+    {
+        magic_action_regex =
+            mc_search_new ("^%plugin\\{([A-Za-z0-9_-]+):([A-Za-z0-9_-]+)\\}$", NULL);
+        if (magic_action_regex != NULL)
+            magic_action_regex->search_type = MC_SEARCH_T_REGEX;
+    }
 
-    if (value == NULL || value[0] == '\0')
-        return FALSE;
+    return magic_action_regex;
+}
 
-    for (p = value; *p != '\0'; p++)
-        if (!(g_ascii_isalnum (*p) || *p == '_' || *p == '-'))
-            return FALSE;
+/* --------------------------------------------------------------------------------------------- */
 
-    return TRUE;
+static char *
+magic_fetch_group (const mc_search_t *search, const char *subject, int group)
+{
+    gint start = -1;
+    gint end = -1;
+
+    if (!g_match_info_fetch_pos (search->regex_match_info, group, &start, &end) || start < 0
+        || end < start)
+        return NULL;
+
+    return g_strndup (subject + start, (gsize) (end - start));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -138,49 +169,33 @@ magic_identifier_is_valid (const char *value)
 static mc_magic_action_state_t
 magic_parse_action (const char *value, mc_magic_action_t *result)
 {
-    const char *prefix = "%plugin{";
-    char *copy, *closing, *colon;
+    mc_search_t *search;
+    char *stripped;
+    gboolean matched;
 
     if (value == NULL || result == NULL)
         return MC_MAGIC_ACTION_ERROR;
 
-    copy = g_strdup (value);
-    g_strstrip (copy);
-
-    if (!g_str_has_prefix (copy, prefix))
-    {
-        g_free (copy);
+    search = magic_action_search ();
+    if (search == NULL)
         return MC_MAGIC_ACTION_ERROR;
+
+    stripped = g_strstrip (g_strdup (value));
+    matched = mc_search_run (search, stripped, 0, strlen (stripped), NULL)
+        && search->regex_match_info != NULL;
+
+    if (matched)
+    {
+        result->plugin_name = magic_fetch_group (search, stripped, 1);
+        result->operation_name = magic_fetch_group (search, stripped, 2);
+        matched = result->plugin_name != NULL && result->operation_name != NULL;
+        if (!matched)
+            mc_magic_action_clear (result);
     }
 
-    closing = strrchr (copy, '}');
-    if (closing == NULL || closing[1] != '\0')
-    {
-        g_free (copy);
-        return MC_MAGIC_ACTION_ERROR;
-    }
-    *closing = '\0';
+    g_free (stripped);
 
-    colon = strchr (copy + strlen (prefix), ':');
-    if (colon == NULL || strchr (colon + 1, ':') != NULL)
-    {
-        g_free (copy);
-        return MC_MAGIC_ACTION_ERROR;
-    }
-    *colon = '\0';
-
-    if (!magic_identifier_is_valid (copy + strlen (prefix))
-        || !magic_identifier_is_valid (colon + 1))
-    {
-        g_free (copy);
-        return MC_MAGIC_ACTION_ERROR;
-    }
-
-    result->plugin_name = g_strdup (copy + strlen (prefix));
-    result->operation_name = g_strdup (colon + 1);
-    g_free (copy);
-
-    return MC_MAGIC_ACTION_FOUND;
+    return matched ? MC_MAGIC_ACTION_FOUND : MC_MAGIC_ACTION_ERROR;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -443,4 +458,6 @@ mc_magic_flush (void)
 {
     magic_config_clear (&magic_user_config);
     magic_config_clear (&magic_system_config);
+    mc_search_free (magic_action_regex);
+    magic_action_regex = NULL;
 }
