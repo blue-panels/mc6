@@ -1,0 +1,29 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        openssh-server \
+        vsftpd \
+        samba samba-common-bin \
+        libarchive-tools \
+        perl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -s /bin/bash mc \
+    && echo 'mc:mc' | chpasswd \
+    && mkdir -p /run/sshd /var/run/vsftpd/empty /var/log/samba
+
+COPY vsftpd.conf /etc/vsftpd.conf
+COPY smb.conf /etc/samba/smb.conf
+COPY fixtures.sh /usr/local/bin/fixtures.sh
+COPY entrypoint-remote.sh /usr/local/bin/entrypoint-remote.sh
+
+RUN chmod +x /usr/local/bin/fixtures.sh /usr/local/bin/entrypoint-remote.sh \
+    && /usr/local/bin/fixtures.sh /home/mc/archives \
+    && chown -R mc:mc /home/mc \
+    && printf 'mc\nmc\n' | smbpasswd -a -s mc
+
+EXPOSE 21 22 445 21100-21110
+
+CMD ["/usr/local/bin/entrypoint-remote.sh"]
