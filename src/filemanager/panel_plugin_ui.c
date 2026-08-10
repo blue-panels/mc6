@@ -30,6 +30,7 @@
 #include <config.h>
 
 #include <string.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 
@@ -341,6 +342,127 @@ panel_plugin_refresh (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+panel_plugin_suspended_free (gpointer data)
+{
+    panel_plugin_suspended_t *source = (panel_plugin_suspended_t *) data;
+
+    if (source->plugin != NULL && source->data != NULL)
+        source->plugin->close (source->data);
+    if (source->host != NULL)
+        g_free (source->host->focus_after);
+    g_free (source->host);
+    g_free (source);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_plugin_dispose_stream_sources (WPanel *panel)
+{
+    g_slist_free_full (panel->stream_sources, panel_plugin_suspended_free);
+    panel->stream_sources = NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_plugin_suspend_current (WPanel *panel)
+{
+    panel_plugin_suspended_t *source;
+
+    /* An archive opened from inside another one suspends that one in turn, so
+       the panel the outermost came from is still there to go back to. */
+    source = g_new0 (panel_plugin_suspended_t, 1);
+    panel->stream_sources = g_slist_prepend (panel->stream_sources, source);
+
+    source->plugin = panel->plugin;
+    source->data = panel->plugin_data;
+    source->host = panel->plugin_host;
+    source->base_list_format = panel->plugin_base_list_format;
+    source->sort_info = panel->sort_info;
+    source->sort_field = panel->sort_field;
+
+    panel->plugin = NULL;
+    panel->plugin_data = NULL;
+    panel->plugin_host = NULL;
+    panel->is_plugin_panel = FALSE;
+    panel->is_panelized = FALSE;
+
+    /* Restore the normal format while the stream consumer becomes active. */
+    set_panel_formats (panel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_plugin_activate_finish (WPanel *panel, const mc_panel_plugin_t *plugin, mc_panel_host_t *host,
+                              void *new_data, gboolean add_history, gboolean suspend_current)
+{
+    if (panel->is_plugin_panel)
+    {
+        if (suspend_current)
+        {
+            /* The reader reopens its source, so keep that source alive. */
+            panel_plugin_suspend_current (panel);
+        }
+        else
+        {
+            /* Keep pre-plugin cwd while replacing the plugin instance. */
+            vfs_path_t *keep = panel->plugin_pre_cwd_vpath;
+            panel->plugin_pre_cwd_vpath = NULL;
+            panel_plugin_close (panel);
+            panel->plugin_pre_cwd_vpath = keep;
+        }
+    }
+
+    panel->plugin_data = new_data;
+    panel->plugin = plugin;
+    panel->plugin_host = host;
+    panel->is_plugin_panel = TRUE;
+    panel->is_panelized = TRUE;
+    panel->plugin_base_list_format = panel->list_format;
+
+    panel_clean_dir (panel);
+    /* panel_clean_dir() resets these flags. */
+    panel->is_panelized = TRUE;
+    panel->is_plugin_panel = TRUE;
+
+    panel_plugin_apply_default_columns_format (panel);
+
+    if (plugin->default_sort_id != NULL)
+    {
+        const panel_field_t *sf;
+
+        sf = panel_get_field_by_id (plugin->default_sort_id);
+        if (sf != NULL)
+        {
+            panel_set_sort_order (panel, sf);
+            panel->sort_info.reverse = plugin->default_sort_reverse ? 1 : 0;
+        }
+    }
+
+    dir_list_init (&panel->dir);
+    plugin->get_items (panel->plugin_data, &panel->dir);
+
+    panel_re_sort (panel);
+    panel->dirty = TRUE;
+
+    if (add_history && panel->plugin->proto != NULL && panel->plugin->get_title != NULL)
+    {
+        const char *title = panel->plugin->get_title (panel->plugin_data);
+        if (title != NULL)
+        {
+            const char *path_tail = (title[0] != '\0') ? title : "/";
+            char *plugin_path = g_strdup_printf ("%s:%s", panel->plugin->proto, path_tail);
+            panel_directory_history_add_path (panel, plugin_path);
+            g_free (plugin_path);
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, const char *open_path)
 {
@@ -377,58 +499,414 @@ panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, const cha
         (void) saved_pre_cwd;
     }
 
-    if (panel->is_plugin_panel)
+    panel_plugin_activate_finish (panel, plugin, host, new_data, TRUE, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_activate_input_stream (WPanel *panel, const mc_panel_plugin_t *plugin,
+                                    const char *display_name, mc_pp_input_stream_t *stream)
+{
+    mc_panel_host_t *host;
+    void *new_data;
+
+    if (panel == NULL || plugin == NULL || plugin->open_input_stream == NULL || stream == NULL)
+        return FALSE;
+
+    host = g_new0 (mc_panel_host_t, 1);
+    panel_plugin_init_host (host, panel);
+
     {
-        /* Keep pre-plugin cwd while replacing the plugin instance. */
-        vfs_path_t *keep = panel->plugin_pre_cwd_vpath;
-        panel->plugin_pre_cwd_vpath = NULL;
-        panel_plugin_close (panel);
-        panel->plugin_pre_cwd_vpath = keep;
+        vfs_path_t *saved_pre_cwd = panel->plugin_pre_cwd_vpath;
+        gboolean was_plugin = panel->is_plugin_panel;
+        panel->plugin_pre_cwd_vpath =
+            was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+
+        new_data = plugin->open_input_stream (host, display_name, stream);
+        if (new_data == NULL)
+        {
+            if (!was_plugin)
+            {
+                vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
+                panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+            }
+            g_free (host);
+            return FALSE;
+        }
+        (void) saved_pre_cwd;
     }
 
-    panel->plugin_data = new_data;
-    panel->plugin = plugin;
-    panel->plugin_host = host;
+    /* An input stream cannot be reconstructed from a panel-history path. */
+    panel_plugin_activate_finish (panel, plugin, host, new_data, FALSE, TRUE);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_plugin_activate_file_operation (WPanel *panel, const mc_panel_plugin_t *plugin,
+                                      const mc_pp_file_operation_t *operation,
+                                      const char *display_name, mc_pp_input_stream_t *stream)
+{
+    mc_panel_host_t *host;
+    void *new_data;
+
+    if (panel == NULL || plugin == NULL || operation == NULL
+        || operation->kind != MC_PP_FILE_OPERATION_OPEN || operation->open_input_stream == NULL
+        || stream == NULL)
+        return FALSE;
+
+    host = g_new0 (mc_panel_host_t, 1);
+    panel_plugin_init_host (host, panel);
+
+    {
+        vfs_path_t *saved_pre_cwd = panel->plugin_pre_cwd_vpath;
+        gboolean was_plugin = panel->is_plugin_panel;
+        panel->plugin_pre_cwd_vpath =
+            was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+
+        new_data = operation->open_input_stream (host, display_name, stream);
+        if (new_data == NULL)
+        {
+            if (!was_plugin)
+            {
+                vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
+                panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+            }
+            g_free (host);
+            return FALSE;
+        }
+        (void) saved_pre_cwd;
+    }
+
+    panel_plugin_activate_finish (panel, plugin, host, new_data, FALSE, TRUE);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const mc_pp_file_operation_t *
+panel_plugin_find_file_operation (const mc_panel_plugin_t *plugin, const char *operation_name)
+{
+    int i;
+
+    if (plugin == NULL || operation_name == NULL || plugin->file_operations == NULL)
+        return NULL;
+
+    for (i = 0; i < plugin->file_operation_count; i++)
+        if (plugin->file_operations[i].name != NULL
+            && strcmp (plugin->file_operations[i].name, operation_name) == 0)
+            return &plugin->file_operations[i];
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const char *plugin_name,
+                                      const char *operation_name, char *local_copy)
+{
+    const mc_panel_plugin_t *target;
+    const mc_pp_file_operation_t *operation;
+    mc_pp_input_stream_t *stream = NULL;
+
+    if (panel == NULL || fname == NULL || plugin_name == NULL || operation_name == NULL
+        || !panel->is_plugin_panel || panel->plugin == NULL || panel->plugin_data == NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        return FALSE;
+    }
+
+    target = mc_panel_plugin_find_by_name (plugin_name);
+    operation = panel_plugin_find_file_operation (target, operation_name);
+    if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_OPEN
+        || operation->open_input_stream == NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        return FALSE;
+    }
+
+    if (panel->plugin->get_input_stream != NULL
+        && panel->plugin->get_input_stream (panel->plugin_data, fname, &stream) == MC_PPR_OK
+        && stream != NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
+            return TRUE;
+
+        mc_pp_input_stream_free (stream);
+        return FALSE;
+    }
+
+    if (local_copy == NULL)
+    {
+        if (panel->plugin->get_local_copy == NULL || operation->may_open_name == NULL
+            || !operation->may_open_name (fname))
+            return TRUE;
+
+        if (panel->plugin->get_local_copy (panel->plugin_data, fname, &local_copy) != MC_PPR_OK
+            || local_copy == NULL)
+            return FALSE;
+    }
+
+    stream = mc_pp_input_stream_new_for_file (local_copy, TRUE);
+    g_free (local_copy);
+    if (stream == NULL)
+        return FALSE;
+
+    if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_open_local_file_by_operation (WPanel *panel, const char *display_name,
+                                           const char *local_path, const char *plugin_name,
+                                           const char *operation_name)
+{
+    const mc_panel_plugin_t *target;
+    const mc_pp_file_operation_t *operation;
+    mc_pp_input_stream_t *stream;
+
+    if (panel == NULL || display_name == NULL || local_path == NULL || plugin_name == NULL
+        || operation_name == NULL)
+        return FALSE;
+
+    target = mc_panel_plugin_find_by_name (plugin_name);
+    operation = panel_plugin_find_file_operation (target, operation_name);
+    if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_OPEN
+        || operation->open_input_stream == NULL)
+        return FALSE;
+
+    stream = mc_pp_input_stream_new_for_file (local_path, FALSE);
+    if (stream == NULL)
+        return FALSE;
+
+    if (panel_plugin_activate_file_operation (panel, target, operation, display_name, stream))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_plugin_view_file_operation (WPanel *panel, const mc_pp_file_operation_t *operation,
+                                  const char *display_name, mc_pp_input_stream_t *stream,
+                                  char **local_path)
+{
+    mc_panel_host_t *host;
+    mc_pp_result_t result;
+
+    if (panel == NULL || operation == NULL || operation->kind != MC_PP_FILE_OPERATION_VIEW
+        || operation->view_input_stream == NULL || display_name == NULL || stream == NULL
+        || local_path == NULL)
+        return FALSE;
+
+    *local_path = NULL;
+    host = g_new0 (mc_panel_host_t, 1);
+    panel_plugin_init_host (host, panel);
+    result = operation->view_input_stream (host, display_name, stream, local_path);
+
+    g_free (host->focus_after);
+    g_free (host);
+
+    if (result != MC_PPR_OK)
+        return FALSE;
+
+    /* Success took the stream with it, so this is not a rejection to hand
+       back however little the operation left behind. */
+    if (*local_path == NULL)
+        message (D_ERROR, MSG_ERROR, _ ("%s produced nothing to view for %s"), operation->name,
+                 display_name);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname, const char *plugin_name,
+                                      const char *operation_name, char *local_copy,
+                                      char **view_path)
+{
+    const mc_panel_plugin_t *target;
+    const mc_pp_file_operation_t *operation;
+    mc_pp_input_stream_t *stream = NULL;
+
+    if (view_path != NULL)
+        *view_path = NULL;
+
+    if (panel == NULL || fname == NULL || plugin_name == NULL || operation_name == NULL
+        || view_path == NULL || !panel->is_plugin_panel || panel->plugin == NULL
+        || panel->plugin_data == NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        return FALSE;
+    }
+
+    target = mc_panel_plugin_find_by_name (plugin_name);
+    operation = panel_plugin_find_file_operation (target, operation_name);
+    if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_VIEW
+        || operation->view_input_stream == NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        return FALSE;
+    }
+
+    if (panel->plugin->get_input_stream != NULL
+        && panel->plugin->get_input_stream (panel->plugin_data, fname, &stream) == MC_PPR_OK
+        && stream != NULL)
+    {
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
+        if (panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
+            return TRUE;
+
+        mc_pp_input_stream_free (stream);
+        return FALSE;
+    }
+
+    if (local_copy == NULL)
+    {
+        if (panel->plugin->get_local_copy == NULL || operation->may_open_name == NULL
+            || !operation->may_open_name (fname))
+            return TRUE;
+
+        if (panel->plugin->get_local_copy (panel->plugin_data, fname, &local_copy) != MC_PPR_OK
+            || local_copy == NULL)
+            return FALSE;
+    }
+
+    stream = mc_pp_input_stream_new_for_file (local_copy, TRUE);
+    g_free (local_copy);
+    if (stream == NULL)
+        return TRUE;
+
+    if (panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_name,
+                                           const char *local_path, const char *plugin_name,
+                                           const char *operation_name, char **view_path)
+{
+    const mc_panel_plugin_t *target;
+    const mc_pp_file_operation_t *operation;
+    mc_pp_input_stream_t *stream;
+
+    if (view_path != NULL)
+        *view_path = NULL;
+
+    if (panel == NULL || display_name == NULL || local_path == NULL || plugin_name == NULL
+        || operation_name == NULL || view_path == NULL)
+        return FALSE;
+
+    target = mc_panel_plugin_find_by_name (plugin_name);
+    operation = panel_plugin_find_file_operation (target, operation_name);
+    if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_VIEW
+        || operation->view_input_stream == NULL)
+        return FALSE;
+
+    stream = mc_pp_input_stream_new_for_file (local_path, FALSE);
+    if (stream == NULL)
+        return TRUE;
+
+    if (panel_plugin_view_file_operation (panel, operation, display_name, stream, view_path))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_restore_stream_source (WPanel *panel)
+{
+    panel_plugin_suspended_t *top;
+    panel_plugin_suspended_t source;
+
+    if (panel == NULL || panel->stream_sources == NULL)
+        return FALSE;
+
+    top = (panel_plugin_suspended_t *) panel->stream_sources->data;
+    if (top->plugin == NULL || top->data == NULL || top->host == NULL)
+        return FALSE;
+
+    source = *top;
+    g_free (top);
+    panel->stream_sources = g_slist_delete_link (panel->stream_sources, panel->stream_sources);
+
+    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL)
+        panel->plugin->close (panel->plugin_data);
+    if (panel->plugin_host != NULL)
+        g_free (panel->plugin_host->focus_after);
+    g_free (panel->plugin_host);
+
+    panel->plugin = NULL;
+    panel->plugin_data = NULL;
+    panel->plugin_host = NULL;
+    panel->is_plugin_panel = FALSE;
+    panel->is_panelized = FALSE;
+    set_panel_formats (panel);
+
+    panel->plugin = source.plugin;
+    panel->plugin_data = source.data;
+    panel->plugin_host = source.host;
+    panel->plugin_base_list_format = source.base_list_format;
+    panel->sort_info = source.sort_info;
+    panel->sort_field = source.sort_field;
     panel->is_plugin_panel = TRUE;
     panel->is_panelized = TRUE;
-    panel->plugin_base_list_format = panel->list_format;
 
     panel_clean_dir (panel);
-    /* panel_clean_dir() resets these flags. */
     panel->is_panelized = TRUE;
     panel->is_plugin_panel = TRUE;
-
     panel_plugin_apply_default_columns_format (panel);
 
-    if (plugin->default_sort_id != NULL)
-    {
-        const panel_field_t *sf;
-
-        sf = panel_get_field_by_id (plugin->default_sort_id);
-        if (sf != NULL)
-        {
-            panel_set_sort_order (panel, sf);
-            panel->sort_info.reverse = plugin->default_sort_reverse ? 1 : 0;
-        }
-    }
-
     dir_list_init (&panel->dir);
-    plugin->get_items (panel->plugin_data, &panel->dir);
-
+    panel->plugin->get_items (panel->plugin_data, &panel->dir);
     panel_re_sort (panel);
     panel->dirty = TRUE;
 
-    if (panel->plugin->proto != NULL && panel->plugin->get_title != NULL)
-    {
-        const char *title = panel->plugin->get_title (panel->plugin_data);
-        if (title != NULL)
-        {
-            const char *path_tail = (title[0] != '\0') ? title : "/";
-            char *plugin_path = g_strdup_printf ("%s:%s", panel->plugin->proto, path_tail);
-            panel_directory_history_add_path (panel, plugin_path);
-            g_free (plugin_path);
-        }
-    }
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -436,20 +914,25 @@ panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, const cha
 void
 panel_plugin_dispose (WPanel *panel)
 {
-    if (panel == NULL || !panel->is_plugin_panel)
+    if (panel == NULL)
         return;
 
-    if (panel->plugin != NULL && panel->plugin_data != NULL)
-        panel->plugin->close (panel->plugin_data);
+    if (panel->is_plugin_panel)
+    {
+        if (panel->plugin != NULL && panel->plugin_data != NULL)
+            panel->plugin->close (panel->plugin_data);
 
-    panel->plugin = NULL;
-    panel->plugin_data = NULL;
-    panel->is_plugin_panel = FALSE;
+        panel->plugin = NULL;
+        panel->plugin_data = NULL;
+        panel->is_plugin_panel = FALSE;
 
-    if (panel->plugin_host != NULL)
-        g_free (panel->plugin_host->focus_after);
-    g_free (panel->plugin_host);
-    panel->plugin_host = NULL;
+        if (panel->plugin_host != NULL)
+            g_free (panel->plugin_host->focus_after);
+        g_free (panel->plugin_host);
+        panel->plugin_host = NULL;
+    }
+
+    panel_plugin_dispose_stream_sources (panel);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -474,6 +957,8 @@ panel_plugin_close (WPanel *panel)
         g_free (panel->plugin_host->focus_after);
     g_free (panel->plugin_host);
     panel->plugin_host = NULL;
+
+    panel_plugin_dispose_stream_sources (panel);
 
     panel->is_panelized = FALSE;
 

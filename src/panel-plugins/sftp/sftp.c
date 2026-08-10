@@ -160,6 +160,9 @@ static mc_pp_result_t sftp_get_quick_view (void *plugin_data, const char *fname,
                                            const struct stat *st, char **local_path);
 static mc_pp_result_t sftp_handle_key (void *plugin_data, int key);
 static void sftp_disconnect (sftp_data_t *data);
+static gboolean sftp_connect (sftp_data_t *data, sftp_connection_t *conn);
+static mc_pp_result_t sftp_get_input_stream (void *plugin_data, const char *fname,
+                                             mc_pp_input_stream_t **stream);
 
 /*** file scope variables ************************************************************************/
 
@@ -195,6 +198,7 @@ static const mc_panel_plugin_t sftp_plugin = {
     .chdir = sftp_chdir,
     .enter = sftp_enter,
     .get_local_copy = sftp_get_local_copy,
+    .get_input_stream = sftp_get_input_stream,
     .copy_to_local = sftp_copy_to_local,
     .put_file = sftp_put_file,
     .save_file = sftp_put_file,
@@ -2539,6 +2543,192 @@ sftp_view_stream (sftp_data_t *data, const char *fname)
     g_free (ctx.remote_path);
 
     return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* A stream carries its own session: the panel it came from may be closed or
+   replaced while an archive is still being read out of it. */
+typedef struct
+{
+    mc_pp_input_stream_t base;
+    sftp_connection_t *connection;
+    char *path;
+    sftp_data_t link; /* nothing but the socket and the two sessions */
+} sftp_input_stream_t;
+
+static LIBSSH2_SFTP *
+sftp_input_stream_session (sftp_input_stream_t *source, GError **error)
+{
+    if (source->link.sftp_session == NULL && !sftp_connect (&source->link, source->connection))
+    {
+        g_set_error (error, MC_ERROR, 0, _ ("sftp: cannot connect to %s"),
+                     source->connection->host);
+        return NULL;
+    }
+
+    return source->link.sftp_session;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+sftp_input_stream_open (mc_pp_input_stream_t *stream, void **handle, GError **error)
+{
+    sftp_input_stream_t *source = (sftp_input_stream_t *) stream;
+    LIBSSH2_SFTP *session;
+    LIBSSH2_SFTP_HANDLE *fileh;
+
+    if (handle == NULL)
+        return MC_PPR_FAILED;
+
+    *handle = NULL;
+
+    session = sftp_input_stream_session (source, error);
+    if (session == NULL)
+        return MC_PPR_FAILED;
+
+    fileh = libssh2_sftp_open (session, source->path, LIBSSH2_FXF_READ, 0);
+    if (fileh == NULL)
+    {
+        g_set_error (error, MC_ERROR, 0, _ ("sftp: cannot read %s"), source->path);
+        return MC_PPR_FAILED;
+    }
+
+    *handle = fileh;
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gssize
+sftp_input_stream_read (mc_pp_input_stream_t *stream, void *handle, void *buf, gsize size,
+                        GError **error)
+{
+    sftp_input_stream_t *source = (sftp_input_stream_t *) stream;
+    ssize_t bytes;
+
+    bytes = libssh2_sftp_read ((LIBSSH2_SFTP_HANDLE *) handle, buf, size);
+    if (bytes < 0)
+    {
+        g_set_error (error, MC_ERROR, 0, _ ("sftp: cannot read %s"), source->path);
+        return -1;
+    }
+
+    return (gssize) bytes;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gint64
+sftp_input_stream_seek (mc_pp_input_stream_t *stream, void *handle, gint64 offset, int whence,
+                        GError **error)
+{
+    sftp_input_stream_t *source = (sftp_input_stream_t *) stream;
+    LIBSSH2_SFTP_HANDLE *fileh = (LIBSSH2_SFTP_HANDLE *) handle;
+    gint64 target;
+
+    switch (whence)
+    {
+    case SEEK_SET:
+        target = offset;
+        break;
+    case SEEK_CUR:
+        target = (gint64) libssh2_sftp_tell64 (fileh) + offset;
+        break;
+    case SEEK_END:
+    {
+        LIBSSH2_SFTP_ATTRIBUTES attrs;
+
+        if (libssh2_sftp_fstat (fileh, &attrs) != 0 || (attrs.flags & LIBSSH2_SFTP_ATTR_SIZE) == 0)
+        {
+            g_set_error (error, MC_ERROR, 0, _ ("sftp: cannot get the size of %s"), source->path);
+            return -1;
+        }
+        target = (gint64) attrs.filesize + offset;
+        break;
+    }
+    default:
+        g_set_error (error, MC_ERROR, 0, "%s", _ ("sftp: unsupported seek"));
+        return -1;
+    }
+
+    if (target < 0)
+    {
+        g_set_error (error, MC_ERROR, 0, "%s", _ ("sftp: seek before the start of the file"));
+        return -1;
+    }
+
+    libssh2_sftp_seek64 (fileh, (libssh2_uint64_t) target);
+    return target;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+sftp_input_stream_close (mc_pp_input_stream_t *stream, void *handle)
+{
+    (void) stream;
+
+    if (handle != NULL)
+        libssh2_sftp_close ((LIBSSH2_SFTP_HANDLE *) handle);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+sftp_input_stream_free (mc_pp_input_stream_t *stream)
+{
+    sftp_input_stream_t *source = (sftp_input_stream_t *) stream;
+
+    if (source == NULL)
+        return;
+
+    sftp_disconnect (&source->link);
+    sftp_connection_free (source->connection);
+    g_free (source->path);
+    g_free (source);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const mc_pp_input_stream_ops_t sftp_input_stream_ops = {
+    .open = sftp_input_stream_open,
+    .read = sftp_input_stream_read,
+    .seek = sftp_input_stream_seek,
+    .close = sftp_input_stream_close,
+    .free = sftp_input_stream_free,
+};
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+sftp_get_input_stream (void *plugin_data, const char *fname, mc_pp_input_stream_t **stream)
+{
+    sftp_data_t *data = (sftp_data_t *) plugin_data;
+    sftp_input_stream_t *source;
+
+    if (stream != NULL)
+        *stream = NULL;
+
+    if (data == NULL || stream == NULL || fname == NULL || data->at_root
+        || data->active_connection == NULL || data->current_path == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    source = g_new0 (sftp_input_stream_t, 1);
+    source->base.ops = &sftp_input_stream_ops;
+    source->connection = sftp_connection_dup (data->active_connection);
+    source->path = mc_pp_join_path (data->current_path, fname);
+    source->link.socket_handle = LIBSSH2_INVALID_SOCKET;
+
+    if (source->connection == NULL || source->path == NULL)
+    {
+        sftp_input_stream_free (&source->base);
+        return MC_PPR_FAILED;
+    }
+
+    *stream = &source->base;
+    return MC_PPR_OK;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -602,6 +602,35 @@ fi
 dnl Optional libsmbclient for Samba panel plugin
 SMBCLIENT_CFLAGS=""
 SMBCLIENT_LIBS=""
+dnl sftp -- SFTP browser panel plugin (libssh2)
+have_panel_plugin_sftp=no
+
+AC_ARG_ENABLE([panel-plugin-sftp],
+    AS_HELP_STRING([--enable-panel-plugin-sftp@<:@=auto/yes/no@:>@],
+                   [Build SFTP panel plugin (default: auto)]),
+    [enable_panel_plugin_sftp="$enableval"],
+    [enable_panel_plugin_sftp=auto])
+
+AS_CASE([$enable_panel_plugin_sftp],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_panel_plugin_sftp' for --enable-panel-plugin-sftp (use auto, yes, or no)])])
+
+if test "x$enable_panel_plugin_sftp" != xno && test x"$have_libssh2" = xyes; then
+    have_panel_plugin_sftp=yes
+fi
+
+if test "x$enable_panel_plugin_sftp" = xyes && test "x$have_panel_plugin_sftp" != xyes; then
+    AC_MSG_ERROR([SFTP panel plugin requested but libssh2 >= 1.2.8 was not found.
+Install the libssh2 development package (for example: libssh2-1-dev) or use
+--enable-panel-plugin-sftp=auto/no.])
+fi
+
+if test "x$enable_panel_plugin_sftp" = xauto && test "x$have_panel_plugin_sftp" != xyes; then
+    AC_MSG_WARN([SFTP panel plugin disabled: libssh2 >= 1.2.8 was not found.])
+fi
+
+AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SFTP], [test x"$have_panel_plugin_sftp" = xyes])
+
 have_panel_plugin_samba=no
 
 AC_ARG_ENABLE([panel-plugin-samba],
@@ -768,6 +797,16 @@ fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_ARCMC], [test x"$have_panel_plugin_arcmc" = xyes])
 
+MAGIC_ARCMC_RULES=""
+if test "x$have_panel_plugin_arcmc" = xyes; then
+    MAGIC_ARCMC_RULES='[[arcmc.archive]]
+Regex=\\.(tar|tar\\.gz|tgz|tar\\.bz2|tbz2|tar\\.xz|txz|tar\\.zst|tzst|zip|jar|war|ear|7z|cpio)$
+RegexIgnoreCase=true
+Open=%plugin{arcmc:open}
+View=%plugin{arcmc:view}'
+fi
+AC_SUBST([MAGIC_ARCMC_RULES])
+
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
 LIBCURL_S3_LIBS=""
@@ -882,6 +921,7 @@ misc/ext.d/misc.sh
 misc/ext.d/text.sh
 misc/macros.d/Makefile
 misc/mc.ext.ini
+misc/magic.ini
 
 src/Makefile
 src/consaver/Makefile

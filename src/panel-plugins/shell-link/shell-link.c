@@ -98,6 +98,29 @@ typedef struct
     char *cwd;
 } shell_data_t;
 
+/* A stream owns everything it needs to reconnect after the source panel has
+   been replaced.  In particular, it must not borrow shell_data_t::conn or
+   shell_data_t::active. */
+typedef struct
+{
+    mc_pp_input_stream_t base;
+    shell_connection_t *connection;
+    char *path;
+    shfs_conn_t *conn; /* kept between transfers, opened on first use */
+    gint64 size;       /* -1 until asked for */
+} shell_input_stream_t;
+
+/* The protocol cannot abandon a running transfer, so a file is read in windows:
+   between them the connection is idle and the next window may start anywhere. */
+typedef struct
+{
+    shell_input_stream_t *source;
+    gint64 pos;
+    gint64 left;
+    gint64 window;
+    gboolean active;
+} shell_input_stream_handle_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 static void *shell_open (mc_panel_host_t *host, const char *open_path);
@@ -108,6 +131,8 @@ static mc_pp_result_t shell_chdir (void *plugin_data, const char *dir);
 static char *shell_remote_path (const shell_data_t *data, const char *name);
 static mc_pp_result_t shell_get_local_copy (void *plugin_data, const char *fname,
                                             char **local_path);
+static mc_pp_result_t shell_get_input_stream (void *plugin_data, const char *fname,
+                                              mc_pp_input_stream_t **stream);
 static char *shell_get_location (void *plugin_data);
 static gboolean shell_exists (void *plugin_data, const char *name);
 static gboolean shell_connect (shell_data_t *data, const shell_connection_t *conn);
@@ -143,10 +168,27 @@ static mc_pp_result_t shell_connection_to_local_copy (const shell_connection_t *
                                                       char **local_path);
 static mc_pp_result_t shell_handle_key (void *plugin_data, int key);
 static void shell_configure (void);
+static shell_connection_t *shell_connection_clone (const shell_connection_t *conn);
+static mc_pp_result_t shell_input_stream_open (mc_pp_input_stream_t *stream, void **handle,
+                                               GError **error);
+static gssize shell_input_stream_read (mc_pp_input_stream_t *stream, void *handle, void *buf,
+                                       gsize size, GError **error);
+static gint64 shell_input_stream_seek (mc_pp_input_stream_t *stream, void *handle, gint64 offset,
+                                       int whence, GError **error);
+static void shell_input_stream_close (mc_pp_input_stream_t *stream, void *handle);
+static void shell_input_stream_free (mc_pp_input_stream_t *stream);
 
 /*** file scope variables ************************************************************************/
 
-#define SHELL_QUICK_VIEW_MAX            (64 * 1024)
+#define SHELL_QUICK_VIEW_MAX (64 * 1024)
+
+/* A file arrives in windows that grow while it is read in order and start over
+   at the minimum after a seek.  The first one is small because a consumer that
+   only wants to look at the head of a file pays for it. */
+#define SHELL_STREAM_WINDOW_MIN (64 * 1024)
+#define SHELL_STREAM_WINDOW_MAX (32 * 1024 * 1024)
+/* what a seek is allowed to read and throw away rather than reconnect */
+#define SHELL_STREAM_DRAIN_MAX          (1024 * 1024)
 
 #define SHELL_PANEL_CONFIG_FILE         "panels.shell-link.ini"
 #define SHELL_PANEL_CONFIG_GROUP        "shell-link-panel"
@@ -197,6 +239,7 @@ static const mc_panel_plugin_t shell_plugin = {
     .read_open = shell_read_open,
     .read_chunk = shell_read_chunk,
     .read_close = shell_read_close,
+    .get_input_stream = shell_get_input_stream,
     .write_open = shell_write_open,
     .write_chunk = shell_write_chunk,
     .write_close = shell_write_close,
@@ -221,6 +264,28 @@ shell_connection_free (gpointer p)
     g_free (c->password);
     g_free (c->path);
     g_free (c);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static shell_connection_t *
+shell_connection_clone (const shell_connection_t *conn)
+{
+    shell_connection_t *copy;
+
+    if (conn == NULL)
+        return NULL;
+
+    copy = g_new0 (shell_connection_t, 1);
+    copy->label = g_strdup (conn->label);
+    copy->host = g_strdup (conn->host);
+    copy->user = g_strdup (conn->user);
+    copy->password = g_strdup (conn->password);
+    copy->path = g_strdup (conn->path);
+    copy->port = conn->port;
+    copy->compressed = conn->compressed;
+
+    return copy;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1401,13 +1466,13 @@ shell_cb_cancelled (void *user_data)
  * rather than as an error.
  */
 static void
-shell_warn_stale_helpers (shell_data_t *data)
+shell_warn_stale_helpers (const shfs_conn_t *conn)
 {
     const GPtrArray *stale;
     GString *text;
     guint i;
 
-    stale = shfs_conn_stale_helpers (data->conn);
+    stale = shfs_conn_stale_helpers (conn);
     if (stale == NULL || stale->len == 0)
         return;
 
@@ -1488,7 +1553,7 @@ shell_connect (shell_data_t *data, const shell_connection_t *conn)
         return FALSE;
     }
 
-    shell_warn_stale_helpers (data);
+    shell_warn_stale_helpers (data->conn);
 
     data->active = conn;
     g_free (data->cwd);
@@ -1654,6 +1719,367 @@ shell_remote_path (const shell_data_t *data, const char *name)
         return g_strdup (name);
 
     return mc_build_filename (data->cwd, name, (char *) NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+shell_input_stream_drop_conn (shell_input_stream_t *source)
+{
+    if (source->conn != NULL)
+    {
+        shfs_conn_close (source->conn);
+        source->conn = NULL;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static shfs_conn_t *
+shell_input_stream_conn (shell_input_stream_t *source, GError **error)
+{
+    shfs_conn_params_t params;
+    shfs_connect_cb_t cb;
+
+    if (source->conn != NULL && shfs_conn_is_alive (source->conn))
+        return source->conn;
+
+    shell_input_stream_drop_conn (source);
+
+    memset (&params, 0, sizeof (params));
+    params.host = source->connection->host;
+    params.user = source->connection->user;
+    params.password = source->connection->password;
+    params.port = source->connection->port;
+    params.compressed = source->connection->compressed;
+
+    memset (&cb, 0, sizeof (cb));
+    cb.hostkey = shell_cb_hostkey;
+    cb.password = shell_cb_password;
+    cb.passphrase = shell_cb_passphrase;
+    cb.status = shell_cb_status;
+    cb.cancelled = shell_cb_cancelled;
+    cb.terminal_acquire = shell_cb_terminal_acquire;
+    cb.terminal_release = shell_cb_terminal_release;
+
+    tty_enable_interrupt_key ();
+    source->conn = shfs_conn_open (&params, &cb, error);
+    tty_disable_interrupt_key ();
+
+    if (source->conn != NULL)
+        shell_warn_stale_helpers (source->conn);
+
+    return source->conn;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gint64
+shell_input_stream_size (shell_input_stream_t *source, GError **error)
+{
+    if (source->size < 0 && shell_input_stream_conn (source, error) != NULL)
+        source->size = shfs_file_size (source->conn, source->path, error);
+
+    return source->size;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+shell_input_stream_end_window (shell_input_stream_handle_t *handle, GError **error)
+{
+    shell_input_stream_t *source = handle->source;
+    char buffer[64 * 1024];
+
+    if (!handle->active)
+        return TRUE;
+
+    handle->active = FALSE;
+
+    /* A running transfer cannot be cancelled, so a short tail is read and
+       dropped and a long one costs the connection. */
+    if (handle->left > SHELL_STREAM_DRAIN_MAX)
+    {
+        handle->left = 0;
+        shell_input_stream_drop_conn (source);
+        return TRUE;
+    }
+
+    while (TRUE)
+    {
+        gssize bytes = shfs_get_read (source->conn, buffer, sizeof (buffer), error);
+
+        if (bytes < 0)
+        {
+            handle->left = 0;
+            shell_input_stream_drop_conn (source);
+            return FALSE;
+        }
+        if (bytes == 0)
+            break;
+    }
+
+    handle->left = 0;
+    return shfs_get_finish (source->conn, NULL, error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+shell_input_stream_start_window (shell_input_stream_handle_t *handle, GError **error)
+{
+    shell_input_stream_t *source = handle->source;
+
+    if (shell_input_stream_conn (source, error) == NULL)
+        return FALSE;
+
+    if (!shfs_get_begin (source->conn, source->path, handle->pos, handle->window, &handle->left,
+                         error))
+    {
+        shell_input_stream_drop_conn (source);
+        return FALSE;
+    }
+
+    handle->active = TRUE;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+shell_input_stream_open (mc_pp_input_stream_t *stream, void **handle, GError **error)
+{
+    shell_input_stream_t *source = (shell_input_stream_t *) stream;
+    shell_input_stream_handle_t *stream_handle;
+
+    if (handle != NULL)
+        *handle = NULL;
+
+    if (source == NULL || source->connection == NULL || source->path == NULL || handle == NULL)
+    {
+        g_set_error (error, SHFS_ERROR, SHFS_ERR_FAILED, "%s",
+                     _ ("shell: invalid archive input stream"));
+        return MC_PPR_FAILED;
+    }
+
+    if (shell_input_stream_conn (source, error) == NULL)
+        return MC_PPR_FAILED;
+
+    stream_handle = g_new0 (shell_input_stream_handle_t, 1);
+    stream_handle->source = source;
+    stream_handle->window = SHELL_STREAM_WINDOW_MIN;
+    *handle = stream_handle;
+
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gssize
+shell_input_stream_read (mc_pp_input_stream_t *stream, void *handle, void *buf, gsize size,
+                         GError **error)
+{
+    shell_input_stream_handle_t *stream_handle = (shell_input_stream_handle_t *) handle;
+    gssize bytes;
+
+    (void) stream;
+
+    if (stream_handle == NULL)
+    {
+        g_set_error (error, SHFS_ERROR, SHFS_ERR_CLOSED, "%s",
+                     _ ("shell: archive input stream is closed"));
+        return -1;
+    }
+
+    if (!stream_handle->active && !shell_input_stream_start_window (stream_handle, error))
+        return -1;
+
+    /* a window that holds nothing means the file ends here */
+    if (stream_handle->left == 0)
+        return shell_input_stream_end_window (stream_handle, error) ? 0 : -1;
+
+    bytes = shfs_get_read (stream_handle->source->conn, buf,
+                           MIN (size, (gsize) stream_handle->left), error);
+    if (bytes < 0)
+    {
+        stream_handle->active = FALSE;
+        stream_handle->left = 0;
+        shell_input_stream_drop_conn (stream_handle->source);
+        return -1;
+    }
+
+    if (bytes == 0)
+    {
+        /* the far end stopped short of what it announced */
+        stream_handle->left = 0;
+        return shell_input_stream_end_window (stream_handle, error) ? 0 : -1;
+    }
+
+    stream_handle->pos += bytes;
+    stream_handle->left -= bytes;
+
+    if (stream_handle->left == 0)
+    {
+        GError *end_error = NULL;
+
+        if (!shell_input_stream_end_window (stream_handle, &end_error))
+            g_clear_error (&end_error);
+        stream_handle->window = MIN (stream_handle->window * 2, SHELL_STREAM_WINDOW_MAX);
+    }
+
+    return bytes;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gint64
+shell_input_stream_seek (mc_pp_input_stream_t *stream, void *handle, gint64 offset, int whence,
+                         GError **error)
+{
+    shell_input_stream_handle_t *stream_handle = (shell_input_stream_handle_t *) handle;
+    gint64 target;
+
+    (void) stream;
+
+    if (stream_handle == NULL)
+    {
+        g_set_error (error, SHFS_ERROR, SHFS_ERR_CLOSED, "%s",
+                     _ ("shell: archive input stream is closed"));
+        return -1;
+    }
+
+    switch (whence)
+    {
+    case SEEK_SET:
+        target = offset;
+        break;
+    case SEEK_CUR:
+        target = stream_handle->pos + offset;
+        break;
+    case SEEK_END:
+    {
+        gint64 size = shell_input_stream_size (stream_handle->source, error);
+
+        if (size < 0)
+            return -1;
+        target = size + offset;
+        break;
+    }
+    default:
+        g_set_error (error, SHFS_ERROR, SHFS_ERR_FAILED, "%s",
+                     _ ("shell: unsupported seek on an archive input stream"));
+        return -1;
+    }
+
+    if (target < 0)
+    {
+        g_set_error (error, SHFS_ERROR, SHFS_ERR_FAILED, "%s",
+                     _ ("shell: seek before the start of the file"));
+        return -1;
+    }
+
+    if (target == stream_handle->pos)
+        return target;
+
+    /* reading is cheaper than a new transfer as long as the target is close */
+    if (stream_handle->active && target > stream_handle->pos
+        && target - stream_handle->pos <= stream_handle->left)
+    {
+        while (stream_handle->pos < target)
+        {
+            char buffer[64 * 1024];
+            gsize want = (gsize) MIN ((gint64) sizeof (buffer), target - stream_handle->pos);
+            gssize bytes = shell_input_stream_read (stream, handle, buffer, want, error);
+
+            if (bytes <= 0)
+                return -1;
+        }
+
+        return stream_handle->pos;
+    }
+
+    if (!shell_input_stream_end_window (stream_handle, error))
+        return -1;
+
+    stream_handle->pos = target;
+    stream_handle->window = SHELL_STREAM_WINDOW_MIN;
+
+    return target;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+shell_input_stream_close (mc_pp_input_stream_t *stream, void *handle)
+{
+    shell_input_stream_handle_t *stream_handle = (shell_input_stream_handle_t *) handle;
+    GError *error = NULL;
+
+    (void) stream;
+
+    if (stream_handle == NULL)
+        return;
+
+    (void) shell_input_stream_end_window (stream_handle, &error);
+    g_clear_error (&error);
+    g_free (stream_handle);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+shell_input_stream_free (mc_pp_input_stream_t *stream)
+{
+    shell_input_stream_t *source = (shell_input_stream_t *) stream;
+
+    if (source == NULL)
+        return;
+
+    shell_input_stream_drop_conn (source);
+    shell_connection_free (source->connection);
+    g_free (source->path);
+    g_free (source);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const mc_pp_input_stream_ops_t shell_input_stream_ops = {
+    .open = shell_input_stream_open,
+    .read = shell_input_stream_read,
+    .seek = shell_input_stream_seek,
+    .close = shell_input_stream_close,
+    .free = shell_input_stream_free,
+};
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+shell_get_input_stream (void *plugin_data, const char *fname, mc_pp_input_stream_t **stream)
+{
+    shell_data_t *data = (shell_data_t *) plugin_data;
+    shell_input_stream_t *source;
+
+    if (stream != NULL)
+        *stream = NULL;
+
+    if (data == NULL || stream == NULL || fname == NULL || data->helpers_mode || data->conn == NULL
+        || data->active == NULL)
+        return MC_PPR_NOT_SUPPORTED;
+
+    source = g_new0 (shell_input_stream_t, 1);
+    source->base.ops = &shell_input_stream_ops;
+    source->connection = shell_connection_clone (data->active);
+    source->path = shell_remote_path (data, fname);
+    source->size = -1;
+
+    if (source->connection == NULL || source->path == NULL)
+    {
+        shell_input_stream_free (&source->base);
+        return MC_PPR_FAILED;
+    }
+
+    *stream = &source->base;
+    return MC_PPR_OK;
 }
 
 /* --------------------------------------------------------------------------------------------- */

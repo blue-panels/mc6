@@ -68,6 +68,7 @@
 #define MC_CONFIG_FILE                  "ini"
 #define MC_EXT_FILE                     "mc.ext.ini"
 #define MC_EXT_OLD_FILE                 "mc.ext"
+#define MC_MAGIC_FILE                   "magic.ini"
 #define MC_FILEPOS_FILE                 "filepos"
 #define MC_HISTORY_FILE                 "history"
 #define MC_HOTLIST_FILE                 "hotlist"

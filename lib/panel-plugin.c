@@ -31,6 +31,7 @@
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -134,6 +135,137 @@ gboolean
 mc_pp_quiet_messages (void)
 {
     return pp_quiet_messages;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mc_pp_input_stream_free (mc_pp_input_stream_t *stream)
+{
+    if (stream != NULL && stream->ops != NULL && stream->ops->free != NULL)
+        stream->ops->free (stream);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+typedef struct
+{
+    mc_pp_input_stream_t base;
+    char *path;
+    gboolean own_file;
+} mc_pp_file_stream_t;
+
+static mc_pp_result_t
+mc_pp_file_stream_open (mc_pp_input_stream_t *stream, void **handle, GError **error)
+{
+    mc_pp_file_stream_t *source = (mc_pp_file_stream_t *) stream;
+    int fd;
+
+    *handle = NULL;
+
+    fd = open (source->path, O_RDONLY);
+    if (fd == -1)
+    {
+        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno), "%s: %s", source->path,
+                     g_strerror (errno));
+        return MC_PPR_FAILED;
+    }
+
+    *handle = GINT_TO_POINTER (fd);
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gssize
+mc_pp_file_stream_read (mc_pp_input_stream_t *stream, void *handle, void *buf, gsize size,
+                        GError **error)
+{
+    ssize_t bytes;
+
+    (void) stream;
+
+    do
+        bytes = read (GPOINTER_TO_INT (handle), buf, size);
+    while (bytes < 0 && errno == EINTR);
+
+    if (bytes < 0)
+        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno), "%s",
+                     g_strerror (errno));
+
+    return (gssize) bytes;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gint64
+mc_pp_file_stream_seek (mc_pp_input_stream_t *stream, void *handle, gint64 offset, int whence,
+                        GError **error)
+{
+    off_t position;
+
+    (void) stream;
+
+    position = lseek (GPOINTER_TO_INT (handle), (off_t) offset, whence);
+    if (position == (off_t) -1)
+    {
+        g_set_error (error, G_FILE_ERROR, g_file_error_from_errno (errno), "%s",
+                     g_strerror (errno));
+        return -1;
+    }
+
+    return (gint64) position;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mc_pp_file_stream_close (mc_pp_input_stream_t *stream, void *handle)
+{
+    (void) stream;
+
+    close (GPOINTER_TO_INT (handle));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mc_pp_file_stream_free (mc_pp_input_stream_t *stream)
+{
+    mc_pp_file_stream_t *source = (mc_pp_file_stream_t *) stream;
+
+    if (source->own_file)
+        unlink (source->path);
+    g_free (source->path);
+    g_free (source);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const mc_pp_input_stream_ops_t mc_pp_file_stream_ops = {
+    .open = mc_pp_file_stream_open,
+    .read = mc_pp_file_stream_read,
+    .seek = mc_pp_file_stream_seek,
+    .close = mc_pp_file_stream_close,
+    .free = mc_pp_file_stream_free,
+};
+
+/* --------------------------------------------------------------------------------------------- */
+
+mc_pp_input_stream_t *
+mc_pp_input_stream_new_for_file (const char *path, gboolean own_file)
+{
+    mc_pp_file_stream_t *source;
+
+    if (path == NULL)
+        return NULL;
+
+    source = g_new0 (mc_pp_file_stream_t, 1);
+    source->base.ops = &mc_pp_file_stream_ops;
+    source->path = g_strdup (path);
+    source->own_file = own_file;
+
+    return &source->base;
 }
 
 /* --------------------------------------------------------------------------------------------- */

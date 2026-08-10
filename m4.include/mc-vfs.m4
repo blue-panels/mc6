@@ -10,7 +10,6 @@ AC_DEFUN([mc_VFS_ADDNAME],
 m4_include([m4.include/vfs/socket.m4])
 m4_include([m4.include/vfs/mc-vfs-extfs.m4])
 m4_include([m4.include/vfs/mc-vfs-sfs.m4])
-m4_include([m4.include/vfs/mc-vfs-sftp.m4])
 
 dnl mc_VFS_CHECKS
 dnl   Check for various functions needed by libvfs.
@@ -63,7 +62,6 @@ AC_DEFUN([mc_VFS_CHECKS],
 
     mc_VFS_EXTFS
     mc_VFS_SFS
-    mc_VFS_SFTP
 
     AM_CONDITIONAL(ENABLE_VFS, [test x"$enable_vfs" = x"yes"])
 
