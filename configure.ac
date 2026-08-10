@@ -573,6 +573,18 @@ AM_CONDITIONAL([HAVE_GMODULE], [test -n "$g_module_supported"])
 dnl Optional libmagic for mctree content detection
 have_mctree_magic=no
 
+AC_ARG_WITH([magic-file],
+    AS_HELP_STRING([--with-magic-file=PATH],
+                   [Use PATH as the libmagic database (default: libmagic default)]),
+    [case "$withval" in
+        yes|no|'') AC_MSG_ERROR([--with-magic-file requires an absolute path]) ;;
+        /*) AC_DEFINE_UNQUOTED([MC_MAGIC_FILE], ["$withval"],
+                              [Path to the libmagic database, or NULL for its default]) ;;
+        *) AC_MSG_ERROR([--with-magic-file requires an absolute path]) ;;
+     esac],
+    [AC_DEFINE([MC_MAGIC_FILE], [NULL],
+               [Path to the libmagic database, or NULL for its default])])
+
 AC_ARG_ENABLE([mctree-magic],
     AS_HELP_STRING([--enable-mctree-magic@<:@=auto/yes/no@:>@],
                    [Use libmagic for mctree content detection (default: auto)]),
