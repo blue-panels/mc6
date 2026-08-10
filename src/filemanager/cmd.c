@@ -180,6 +180,11 @@ panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     mc_magic_action_state_t state;
     gboolean handled = FALSE;
 
+    /* An operation is handed a path to open(2), which a name inside an mc
+       filesystem is not.  Those keep their mc.ext.ini handling. */
+    if (!vfs_file_is_local (full_name_vpath))
+        return FALSE;
+
     state = mc_magic_find_action (&source, "View", &type_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {

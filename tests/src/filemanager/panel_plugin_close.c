@@ -332,9 +332,19 @@ mock_stream_source_get_input_stream (void *data, const char *fname, mc_pp_input_
     return MC_PPR_OK;
 }
 
+static const mc_pp_file_operation_t mock_rejecting_file_operations[] = {
+    {
+        .name = "open",
+        .kind = MC_PP_FILE_OPERATION_OPEN,
+        .open_input_stream = mock_open_input_stream_reject,
+    },
+};
+
 static const mc_panel_plugin_t mock_input_stream_rejecting_plugin = {
     .name = "rejecting",
     .open_input_stream = mock_open_input_stream_reject,
+    .file_operations = mock_rejecting_file_operations,
+    .file_operation_count = G_N_ELEMENTS (mock_rejecting_file_operations),
 };
 
 /* --------------------------------------------------------------------------------------------- */
@@ -556,6 +566,25 @@ suspended_plugin (const WPanel *panel, guint depth)
 /* --------------------------------------------------------------------------------------------- */
 
 /* @Test */
+START_TEST (test_named_operation_reports_a_file_it_could_not_open)
+{
+    WPanel panel;
+
+    memset (&panel, 0, sizeof (panel));
+    find_by_name_result = &mock_input_stream_rejecting_plugin;
+
+    /* The caller has to hear about it: a file that quietly does nothing on
+       Enter looks like a broken key, not like a broken archive. */
+    ck_assert (!panel_plugin_open_local_file_by_operation (&panel, "local.tar", "/dev/null",
+                                                           "rejecting", "open"));
+    ck_assert (mock_input_stream_open_called);
+    mctest_assert_null ((const void *) panel.plugin);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
 START_TEST (test_nested_consumers_keep_every_suspended_source)
 {
     WPanel panel;
@@ -707,6 +736,7 @@ main (void)
     tcase_add_test (tc_core, test_named_view_operation_returns_a_local_viewer_source);
     tcase_add_test (tc_core, test_closing_stream_consumer_restores_suspended_source);
     tcase_add_test (tc_core, test_nested_consumers_keep_every_suspended_source);
+    tcase_add_test (tc_core, test_named_operation_reports_a_file_it_could_not_open);
     tcase_add_test (tc_core, test_input_stream_stays_with_caller_when_target_rejects_it);
     tcase_add_test (tc_core, test_plugin_find_by_path_uses_prefix_registry);
     tcase_add_test (tc_core, test_plugin_find_by_path_ignores_unknown_prefix);

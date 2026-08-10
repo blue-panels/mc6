@@ -645,9 +645,11 @@ panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const ch
             unlink (local_copy);
             g_free (local_copy);
         }
-        if (!panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
-            mc_pp_input_stream_free (stream);
-        return TRUE;
+        if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
+            return TRUE;
+
+        mc_pp_input_stream_free (stream);
+        return FALSE;
     }
 
     if (local_copy == NULL)
@@ -658,17 +660,19 @@ panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const ch
 
         if (panel->plugin->get_local_copy (panel->plugin_data, fname, &local_copy) != MC_PPR_OK
             || local_copy == NULL)
-            return TRUE;
+            return FALSE;
     }
 
     stream = mc_pp_input_stream_new_for_file (local_copy, TRUE);
     g_free (local_copy);
     if (stream == NULL)
+        return FALSE;
+
+    if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
         return TRUE;
 
-    if (!panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
-        mc_pp_input_stream_free (stream);
-    return TRUE;
+    mc_pp_input_stream_free (stream);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -694,11 +698,13 @@ panel_plugin_open_local_file_by_operation (WPanel *panel, const char *display_na
 
     stream = mc_pp_input_stream_new_for_file (local_path, FALSE);
     if (stream == NULL)
+        return FALSE;
+
+    if (panel_plugin_activate_file_operation (panel, target, operation, display_name, stream))
         return TRUE;
 
-    if (!panel_plugin_activate_file_operation (panel, target, operation, display_name, stream))
-        mc_pp_input_stream_free (stream);
-    return TRUE;
+    mc_pp_input_stream_free (stream);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -774,9 +780,11 @@ panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname, const ch
             unlink (local_copy);
             g_free (local_copy);
         }
-        if (!panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
-            mc_pp_input_stream_free (stream);
-        return TRUE;
+        if (panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
+            return TRUE;
+
+        mc_pp_input_stream_free (stream);
+        return FALSE;
     }
 
     if (local_copy == NULL)
@@ -787,7 +795,7 @@ panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname, const ch
 
         if (panel->plugin->get_local_copy (panel->plugin_data, fname, &local_copy) != MC_PPR_OK
             || local_copy == NULL)
-            return TRUE;
+            return FALSE;
     }
 
     stream = mc_pp_input_stream_new_for_file (local_copy, TRUE);
@@ -795,9 +803,11 @@ panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname, const ch
     if (stream == NULL)
         return TRUE;
 
-    if (!panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
-        mc_pp_input_stream_free (stream);
-    return TRUE;
+    if (panel_plugin_view_file_operation (panel, operation, fname, stream, view_path))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -828,9 +838,11 @@ panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_na
     if (stream == NULL)
         return TRUE;
 
-    if (!panel_plugin_view_file_operation (panel, operation, display_name, stream, view_path))
-        mc_pp_input_stream_free (stream);
-    return TRUE;
+    if (panel_plugin_view_file_operation (panel, operation, display_name, stream, view_path))
+        return TRUE;
+
+    mc_pp_input_stream_free (stream);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
