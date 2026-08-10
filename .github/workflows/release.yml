@@ -410,6 +410,227 @@ jobs:
           if-no-files-found: warn
           overwrite: true
 
+  macos-package:
+    needs: [archive]
+    name: macOS package (${{ matrix.name }})
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    # Each architecture is built on a native runner: Homebrew libraries are
+    # architecture-bound, so cross-compiling needs a universal copy of every
+    # dependency, which is more machinery than a native build of the same
+    # things. The artifact names end in -packages, matching the publish job.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Apple Silicon
+            suffix: arm64
+            runs-on: macos-latest
+          - name: Intel
+            suffix: x86_64
+            runs-on: macos-15-intel
+    runs-on: ${{ matrix.runs-on }}
+    env:
+      VERSION: ${{ needs.archive.outputs.version }}
+      SUFFIX: ${{ matrix.suffix }}
+      NAME: ${{ matrix.name }}
+
+    # The macOS build: a .pkg installer, and a .dmg carrying it. The check job
+    # above stays fast by leaving Samba and the Mongo driver out; this package
+    # is what a macOS user downloads.
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: source-archive
+          path: dist
+
+      - name: Install the libraries
+        run: brew install glib s-lang pkgconf gettext libssh2 libarchive libmagic samba mongo-c-driver dylibbundler
+
+      - name: Build and stage the package
+        run: |
+          brew_prefix=$(brew --prefix)
+          gettext_prefix=$(brew --prefix gettext)
+
+          # Homebrew is not on the default search paths of the compiler, and
+          # the keg-only formulas have to be pointed at by hand.
+          export CPPFLAGS="-I$brew_prefix/include -I$gettext_prefix/include"
+          export LDFLAGS="-L$brew_prefix/lib -L$gettext_prefix/lib"
+          export PKG_CONFIG_PATH="$brew_prefix/lib/pkgconfig:$(brew --prefix libarchive)/lib/pkgconfig"
+
+          tar -xf "dist/mc6-$VERSION.tar.gz"
+          cd "mc6-$VERSION"
+          # Keep the package out of Homebrew's prefixes on both architectures.
+          # DESTDIR stages the tree; pkgbuild puts stage/opt/mc6 at /opt/mc6.
+          ./configure --prefix=/opt/mc6 --disable-static \
+              --with-screen=slang --enable-mcterm=yes \
+              --enable-mctree-magic=yes \
+              --enable-panel-plugin-samba=yes \
+              --enable-panel-plugin-mongo=yes \
+              --with-magic-file=/opt/mc6/share/misc/magic.mgc
+          make -j"$(sysctl -n hw.ncpu)"
+          make install DESTDIR="$(pwd)/stage"
+
+          # libmagic's compiled database is a runtime dependency too.
+          install -d stage/opt/mc6/share/misc
+          install -m 0644 "$(brew --prefix libmagic)/share/misc/magic.mgc" \
+              stage/opt/mc6/share/misc/magic.mgc
+
+          # These are required package contents, not best-effort plugins.
+          test -f stage/opt/mc6/lib/mc/panel-plugins/samba/mc-panel-samba.so
+          test -f stage/opt/mc6/lib/mc/panel-plugins/mongo/mc-panel-mongo.so
+
+      - name: Bundle and verify runtime dependencies
+        run: |
+          source_dir="mc6-$VERSION"
+          cd "$source_dir"
+          stage_prefix="stage/opt/mc6"
+          bundled_libs="$stage_prefix/lib"
+
+          # Use one install name for every dependency. LC_RPATH is relative to
+          # each Mach-O below, so binaries, plug-ins and dylibs resolve it from
+          # their own locations.
+          bundle_args=(
+            -b -cd -of -ns
+            -d "$bundled_libs"
+            -p '@rpath/'
+            -i /usr/lib
+            -i /System/Library
+            -x "$stage_prefix/bin/mc"
+          )
+          while IFS= read -r -d '' plugin; do
+              bundle_args+=(-x "$plugin")
+          done < <(find "$stage_prefix/lib/mc/panel-plugins" -name '*.so' -type f -print0)
+          if ! dylibbundler "${bundle_args[@]}" > dylibbundler.log 2>&1; then
+              tail -n 200 dylibbundler.log
+              exit 1
+          fi
+          tail -n 20 dylibbundler.log
+
+          add_rpath() {
+              file=$1
+              rpath=$2
+              if ! otool -l "$file" | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
+                  | grep -Fqx "$rpath"; then
+                  install_name_tool -add_rpath "$rpath" "$file"
+              fi
+          }
+
+          # dylibbundler also rewrites pre-existing Homebrew LC_RPATH entries
+          # to its install path. @rpath/ cannot locate anything by itself;
+          # replace it with one loader-relative path per Mach-O class below.
+          while IFS= read -r -d '' file; do
+              if ! file -b "$file" | grep -q 'Mach-O'; then
+                  continue
+              fi
+              while otool -l "$file" \
+                  | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
+                  | grep -Fqx '@rpath/'; do
+                  install_name_tool -delete_rpath '@rpath/' "$file"
+              done
+          done < <(find "$stage_prefix" -type f -print0)
+
+          add_rpath "$stage_prefix/bin/mc" '@loader_path/../lib'
+          while IFS= read -r -d '' plugin; do
+              add_rpath "$plugin" '@loader_path/../../..'
+          done < <(find "$stage_prefix/lib/mc/panel-plugins" -name '*.so' -type f -print0)
+          while IFS= read -r -d '' library; do
+              add_rpath "$library" '@loader_path'
+          done < <(find "$bundled_libs" -maxdepth 1 -name '*.dylib' -type f -print0)
+
+          # install_name_tool invalidates arm64 signatures. Sign every Mach-O
+          # after its final modification, including plug-ins and bundled libs.
+          while IFS= read -r -d '' file; do
+              if file -b "$file" | grep -q 'Mach-O'; then
+                  codesign -f -s - "$file"
+              fi
+          done < <(find "$stage_prefix" -type f -print0)
+
+          # No staged Mach-O may retain a build-host Homebrew dependency or
+          # runpath. Also verify every ad-hoc signature before hiding Homebrew.
+          audit_failed=no
+          while IFS= read -r -d '' file; do
+              if ! file -b "$file" | grep -q 'Mach-O'; then
+                  continue
+              fi
+              echo "Auditing $file"
+              macho_info=$(otool -L "$file"; otool -l "$file")
+              if printf '%s\n' "$macho_info" \
+                  | grep -E '/opt/homebrew|/usr/local/(Cellar|opt|lib)'; then
+                  audit_failed=yes
+              fi
+              if otool -l "$file" \
+                  | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
+                  | grep -Fqx '@rpath/'; then
+                  echo "Unresolved LC_RPATH in $file"
+                  audit_failed=yes
+              fi
+              codesign --verify --strict "$file"
+          done < <(find "$stage_prefix" -type f -print0)
+          test "$audit_failed" = no
+
+          # Prove that dyld does not fall back to the runner's Homebrew tree.
+          brew_prefix=$(brew --prefix)
+          brew_off="${brew_prefix}.mc6-off"
+          test ! -e "$brew_off"
+          restore_brew() {
+              if test -e "$brew_off" && test ! -e "$brew_prefix"; then
+                  sudo /bin/mv "$brew_off" "$brew_prefix"
+              fi
+          }
+          trap restore_brew EXIT HUP INT TERM
+          sudo /bin/mv "$brew_prefix" "$brew_off"
+          TERM=xterm "$stage_prefix/bin/mc" --version
+          restore_brew
+          trap - EXIT HUP INT TERM
+
+      - name: Build the .pkg and .dmg
+        run: |
+          mkdir -p out dmg
+
+          # The installer is not Developer ID signed or notarized. The bundled
+          # Mach-O files carry ad-hoc signatures so arm64 can execute them.
+          pkgbuild \
+            --root "mc6-$VERSION/stage" \
+            --identifier "com.mcdev.mc6" \
+            --version "$VERSION" \
+            "out/mc6-$VERSION-macos-$SUFFIX.pkg"
+
+          cp "out/mc6-$VERSION-macos-$SUFFIX.pkg" dmg/
+          printf '%s\n' \
+            "mc6 $VERSION - $NAME" \
+            '' \
+            'Double-click the .pkg and follow the installer.' \
+            'It installs mc, mcedit, mcview and mcdiff under /opt/mc6.' \
+            'Run /opt/mc6/bin/mc, or add /opt/mc6/bin to your PATH.' \
+            'The package includes its runtime libraries; Homebrew is not required.' \
+            '' \
+            'This package is not Developer ID signed or notarized.' \
+            'macOS may block it until you allow it in Privacy & Security.' \
+            > dmg/README.txt
+          hdiutil create \
+            -volname "mc6-$VERSION-macos-$SUFFIX" \
+            -srcfolder dmg \
+            -ov -format UDZO \
+            "out/mc6-$VERSION-macos-$SUFFIX.dmg"
+
+      - name: Keep the configure log of a failed build
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.suffix }}-config-log
+          path: mc6-*/config.log
+          if-no-files-found: warn
+          overwrite: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.suffix }}-packages
+          path: out/*
+          overwrite: true
+
   ppa:
     needs: archive
     runs-on: ubuntu-latest
@@ -472,7 +693,7 @@ jobs:
           overwrite: true
 
   publish:
-    needs: [debian, fedora, arch, arch-install, fedora-install, debian-install]
+    needs: [debian, fedora, arch, arch-install, fedora-install, debian-install, macos-package]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Runs even when a distribution failed: what did get built is still worth
