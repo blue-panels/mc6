@@ -421,6 +421,11 @@ jobs:
     # architecture-bound, so cross-compiling needs a universal copy of every
     # dependency, which is more machinery than a native build of the same
     # things. The artifact names end in -packages, matching the publish job.
+    #
+    # Intel is left out: macos-15-intel reports the sequoia tag, and
+    # homebrew-core has no Intel bottles for it, so glib, samba, the Mongo
+    # driver and the rest would all be built from source. The matrix keeps its
+    # shape so that a runner with bottles can be added back later.
     strategy:
       fail-fast: false
       matrix:
@@ -428,9 +433,6 @@ jobs:
           - name: Apple Silicon
             suffix: arm64
             runs-on: macos-latest
-          - name: Intel
-            suffix: x86_64
-            runs-on: macos-15-intel
     runs-on: ${{ matrix.runs-on }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
