@@ -45,3 +45,10 @@ indent:
 	    find "$${directory}" -name '*.[ch]' -print0 | \
 	        xargs -0 $(INDENT_CMD); \
 	done
+
+# What the ubuntu job of the CI does, in a container, here. REF names what to
+# build (default HEAD), BUILDCHECK_IMAGE the image to build it in.
+.PHONY: buildcheck
+
+buildcheck:
+	$(top_srcdir)/maint/buildcheck.sh $(REF)

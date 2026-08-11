@@ -788,11 +788,22 @@ fi
 dnl Optional libmagic support for arcmc content-based archive detection
 if test "x$have_panel_plugin_arcmc" = xyes; then
     AC_CHECK_HEADERS([magic.h], [
-        AC_CHECK_LIB([magic], [magic_open], [
-            AC_DEFINE([HAVE_LIBMAGIC], [1], [Define if libmagic is available])
-            LIBMAGIC_LIBS="-lmagic"
-            LIBMAGIC_CFLAGS=""
-        ])
+        dnl Not AC_CHECK_LIB: it declares the function itself and without a
+        dnl prototype, so -Werror=strict-prototypes fails the test before the
+        dnl link is even tried and --enable-werror builds lose libmagic. The
+        dnl header declares it properly, so ask it.
+        mc_saved_LIBS="$LIBS"
+        LIBS="$LIBS -lmagic"
+        AC_MSG_CHECKING([for magic_open in -lmagic])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <magic.h>]],
+                                        [[magic_t cookie = magic_open (0);
+                                          magic_close (cookie);]])],
+            [AC_MSG_RESULT([yes])
+             AC_DEFINE([HAVE_LIBMAGIC], [1], [Define if libmagic is available])
+             LIBMAGIC_LIBS="-lmagic"
+             LIBMAGIC_CFLAGS=""],
+            [AC_MSG_RESULT([no])])
+        LIBS="$mc_saved_LIBS"
     ])
     AC_SUBST([LIBMAGIC_LIBS])
     AC_SUBST([LIBMAGIC_CFLAGS])
