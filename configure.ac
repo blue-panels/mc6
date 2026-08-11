@@ -829,6 +829,8 @@ Open=%plugin{arcmc:open}
 View=%plugin{arcmc:view}'
 fi
 AC_SUBST([MAGIC_ARCMC_RULES])
+dnl Several lines: it belongs in magic.ini, and a Makefile cannot hold it.
+AM_SUBST_NOTMAKE([MAGIC_ARCMC_RULES])
 
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
