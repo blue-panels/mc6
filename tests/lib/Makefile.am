@@ -15,6 +15,7 @@ endif
 EXTRA_DIST = utilunix__my_system-common.c
 
 TESTS = \
+	key \
 	library_independ \
 	mc_build_filename \
 	name_quote \
@@ -30,6 +31,9 @@ TESTS = \
 TESTS += mc_realpath
 
 check_PROGRAMS = $(TESTS)
+
+key_SOURCES = \
+	key.c
 
 library_independ_SOURCES = \
 	library_independ.c
