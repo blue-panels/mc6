@@ -12,3 +12,5 @@
 # Open=%plugin{arcmc:open}
 
 @MAGIC_ARCMC_RULES@
+
+@MAGIC_SQLITE_RULES@

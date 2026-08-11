@@ -357,6 +357,9 @@ gboolean mc_pp_set_quiet_messages (gboolean quiet);
 void mc_pp_input_stream_free (mc_pp_input_stream_t *stream);
 /* @own_file unlinks @path when the stream is freed. */
 mc_pp_input_stream_t *mc_pp_input_stream_new_for_file (const char *path, gboolean own_file);
+/* The file behind @stream, NULL when it has none; @is_temporary: it dies with the stream. */
+const char *mc_pp_input_stream_local_path (const mc_pp_input_stream_t *stream,
+                                           gboolean *is_temporary);
 
 /* Registry */
 gboolean mc_panel_plugin_add (const mc_panel_plugin_t *plugin);
