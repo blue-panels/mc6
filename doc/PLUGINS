@@ -56,6 +56,7 @@ In-tree references (read these before writing your own):
   src/panel-plugins/git/         shell-driven listing, custom columns
   src/panel-plugins/panelize/    list curation; LOCAL_FILES,
                                  open_file_list, menu self-registration
+  src/panel-plugins/sqlite/      read-only SQLite table browser
 
 
 3.0 Lifecycle and Location
@@ -451,6 +452,54 @@ self-registered Command menu + file-list sink); the registry handles
 each independently.
 
 
+3.12 File Operations (magic.ini)
+
+Enter and F3 on a file consult magic.ini before mc.ext.ini.  A rule
+there names a plugin operation and nothing else:
+
+    [sqlite.database]
+    Type=^SQLite 3\\.x database
+    Open=%plugin{sqlite:open}
+    View=%plugin{sqlite:view}
+
+Rules live in $sysconfdir/mc/magic.ini and in ~/.config/mc/magic.ini,
+which is consulted first.  Matching uses the same Regex / Shell / Type
+keys as mc.ext.ini.  A file with no rule follows the ordinary
+mc.ext.ini route.
+
+A plugin publishes the operations by name:
+
+    static const mc_pp_file_operation_t my_file_operations[] = {
+        { .name = "open", .kind = MC_PP_FILE_OPERATION_OPEN,
+          .may_open_name = my_may_open_name,
+          .open_input_stream = my_open_input_stream },
+        { .name = "view", .kind = MC_PP_FILE_OPERATION_VIEW,
+          .may_open_name = my_may_open_name,
+          .view_input_stream = my_view_input_stream },
+    };
+
+An Open operation returns plugin data and the panel becomes the
+plugin's; a View operation writes a temporary file and the core shows
+it in the viewer.  The kinds are not interchangeable: an Open binding
+is never served by a viewer.
+
+The file arrives as an mc_pp_input_stream_t: over its own fd when it
+is local, from the source panel when that panel can supply one, and
+otherwise as a local copy wrapped in a stream.  That copy is only
+fetched once may_open_name() says the name looks like the plugin's
+business, so a plugin should answer it from the name alone.
+
+The operation takes the stream only when it succeeds, and must keep it
+for as long as it reads from it.  A library that wants a path rather
+than bytes asks:
+
+    path = mc_pp_input_stream_local_path (stream, &is_temporary);
+
+which returns NULL when the stream has no file of its own; the plugin
+then writes the bytes out itself.  A temporary file goes away with the
+stream, so a panel built on one has no location to hand back.
+
+
 4. Editor Plugins (mcedit)
 --------------------------
 
@@ -769,4 +818,3 @@ Editor plugins:
   - some panel plugin must advertise MC_PPF_ACCEPTS_FILE_LIST and
     implement open_file_list().  When no such plugin is loaded the
     button is hidden by design.
-

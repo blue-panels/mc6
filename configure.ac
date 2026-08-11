@@ -829,6 +829,8 @@ Open=%plugin{arcmc:open}
 View=%plugin{arcmc:view}'
 fi
 AC_SUBST([MAGIC_ARCMC_RULES])
+dnl Several lines: it belongs in magic.ini, and a Makefile cannot hold it.
+AM_SUBST_NOTMAKE([MAGIC_ARCMC_RULES])
 
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
@@ -913,6 +915,51 @@ fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_MONGO], [test x"$have_panel_plugin_mongo" = xyes])
 
+dnl sqlite -- read-only SQLite database browser panel plugin
+have_panel_plugin_sqlite=no
+
+AC_ARG_ENABLE([panel-plugin-sqlite],
+    AS_HELP_STRING([--enable-panel-plugin-sqlite@<:@=auto/yes/no@:>@],
+                   [Build SQLite database browser panel plugin (default: auto)]),
+    [enable_panel_plugin_sqlite="$enableval"],
+    [enable_panel_plugin_sqlite=auto])
+
+AS_CASE([$enable_panel_plugin_sqlite],
+    [yes|no|auto], [],
+    [AC_MSG_ERROR([bad value '$enable_panel_plugin_sqlite' for --enable-panel-plugin-sqlite (use auto, yes, or no)])])
+
+if test "x$enable_panel_plugin_sqlite" != xno; then
+    PKG_CHECK_MODULES([SQLITE3], [sqlite3 >= 3.26], [have_panel_plugin_sqlite=yes], [:])
+fi
+
+if test "x$enable_panel_plugin_sqlite" = xyes && test "x$have_panel_plugin_sqlite" != xyes; then
+    AC_MSG_ERROR([SQLite panel plugin requested but sqlite3 >= 3.26 development files were not found.
+Install the SQLite development package (for example: libsqlite3-dev) or use
+--enable-panel-plugin-sqlite=auto/no.])
+fi
+
+if test "x$enable_panel_plugin_sqlite" = xauto && test "x$have_panel_plugin_sqlite" != xyes; then
+    AC_MSG_WARN([SQLite panel plugin disabled: sqlite3 >= 3.26 development files were not found.])
+fi
+
+AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SQLITE], [test x"$have_panel_plugin_sqlite" = xyes])
+
+MAGIC_SQLITE_RULES=""
+if test "x$have_panel_plugin_sqlite" = xyes; then
+    MAGIC_SQLITE_RULES='[[sqlite.database]]
+Type=^SQLite 3\\.x database
+Open=%plugin{sqlite:open}
+View=%plugin{sqlite:view}
+
+[[sqlite.database-name]]
+Regex=\\.(sqlite|sqlite3|sqlitedb)$
+RegexIgnoreCase=true
+Open=%plugin{sqlite:open}
+View=%plugin{sqlite:view}'
+fi
+AC_SUBST([MAGIC_SQLITE_RULES])
+AM_SUBST_NOTMAKE([MAGIC_SQLITE_RULES])
+
 AC_ARG_ENABLE([configure-args],
     AS_HELP_STRING([--enable-configure-args], [Embed ./configure arguments into binaries]))
 if test "x$enable_configure_args" != xno; then
@@ -972,6 +1019,7 @@ src/panel-plugins/shell-link/helpers/Makefile
 src/panel-plugins/arcmc/Makefile
 src/panel-plugins/s3/Makefile
 src/panel-plugins/mongo/Makefile
+src/panel-plugins/sqlite/Makefile
 
 src/vfs/Makefile
 
@@ -1085,6 +1133,7 @@ tests/src/panel-plugins/arcmc/Makefile
 tests/src/panel-plugins/samba/Makefile
 tests/src/panel-plugins/docker/Makefile
 tests/src/panel-plugins/mongo/Makefile
+tests/src/panel-plugins/sqlite/Makefile
 tests/src/panel-plugins/pp_common/Makefile
 tests/misc/Makefile
 tests/misc/ext.d/Makefile

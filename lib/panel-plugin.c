@@ -270,6 +270,22 @@ mc_pp_input_stream_new_for_file (const char *path, gboolean own_file)
 
 /* --------------------------------------------------------------------------------------------- */
 
+const char *
+mc_pp_input_stream_local_path (const mc_pp_input_stream_t *stream, gboolean *is_temporary)
+{
+    const mc_pp_file_stream_t *source = (const mc_pp_file_stream_t *) stream;
+
+    if (stream == NULL || stream->ops != &mc_pp_file_stream_ops)
+        return NULL;
+
+    if (is_temporary != NULL)
+        *is_temporary = source->own_file;
+
+    return source->path;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path)
 {
