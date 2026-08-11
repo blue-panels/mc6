@@ -110,6 +110,7 @@
 
 #include "src/filemanager/layout.h"   // setup_cmdline()
 #include "src/filemanager/command.h"  // cmdline
+#include "src/execute.h"              // show_panels_request_pending()
 
 #include "subshell.h"
 #include "internal.h"
@@ -156,6 +157,11 @@ gboolean should_read_new_subshell_prompt;
  * On Solaris it's 256 bytes, see ticket #4480. Shave off a few bytes, just in case. */
 #define COOKED_MODE_BUFFER_SIZE 250
 
+/* A nested mc asked us to show the panels. Wait until the shell goes quiet again:
+ * poll every SHOW_PANELS_POLL_USEC microseconds, give up after SHOW_PANELS_POLL_MAX polls. */
+#define SHOW_PANELS_POLL_USEC 100000
+#define SHOW_PANELS_POLL_MAX  30
+
 /*** file scope type declarations ****************************************************************/
 
 /* For pipes */
@@ -181,6 +187,8 @@ typedef enum
 #define SHELL_BUFFER_KEYBINDING "_"
 
 /*** forward declarations (file scope functions) *************************************************/
+
+static gboolean feed_subshell (int how, gboolean fail_on_error);
 
 /*** file scope variables ************************************************************************/
 
@@ -345,6 +353,18 @@ init_subshell_child (const char *pty_name)
 
         g_snprintf (sid_str, sizeof (sid_str), "MC_SID=%ld", (long) mc_sid);
         putenv (g_strdup (sid_str));
+    }
+
+    /* Tell a nested mc how to reach us, so that it can ask for the panels
+       instead of starting a second copy */
+    {
+        const char *tty_name;
+
+        putenv (g_strdup_printf ("MC_PID=%ld", (long) getppid ()));
+
+        tty_name = ttyname (subshell_pty_slave);
+        if (tty_name != NULL)
+            putenv (g_strdup_printf ("MC_TTY=%s", tty_name));
     }
 
     switch (mc_global.shell->type)
@@ -883,6 +903,37 @@ peek_subshell_switch_key (const char *buffer, size_t len)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/**
+ * Stop feeding the subshell and hand the terminal back to the panels.
+ * The caller must return from feed_subshell() right after this.
+ */
+
+static void
+leave_subshell (void)
+{
+    if (!subshell_ready)
+        return;
+
+    subshell_state = INACTIVE;
+    set_prompt_string ();
+    if (read_command_line_buffer (FALSE))
+        return;
+
+    // If we got here, some unforeseen error must have occurred.
+    if (subshell_initialized && mc_global.shell->type != SHELL_FISH)
+    {
+        write_all (mc_global.tty.subshell_pty, "\003", 1);
+        subshell_state = RUNNING_COMMAND;
+        if (feed_subshell (QUIETLY, TRUE) && read_command_line_buffer (FALSE))
+            return;
+    }
+
+    subshell_state = ACTIVE;
+    flush_subshell (0, VISIBLY);
+    input_assign_text (cmdline, "");
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Feed the subshell our keyboard input until it says it's finished */
 
 static gboolean
@@ -892,6 +943,7 @@ feed_subshell (int how, gboolean fail_on_error)
 
     struct timeval wtime;  // Maximum time we wait for the subshell
     struct timeval *wptr;
+    int polls_left = SHOW_PANELS_POLL_MAX;
 
     should_read_new_subshell_prompt = FALSE;
 
@@ -901,9 +953,17 @@ feed_subshell (int how, gboolean fail_on_error)
     wtime.tv_usec = 0;
     wptr = fail_on_error ? &wtime : NULL;
 
+    /* Drop a request left over from an earlier command: the nested mc that sent it is long
+       gone and the panels have been shown since. */
+    if (how == VISIBLY)
+        show_panels_request_clear ();
+
     while (TRUE)
     {
         int maxfdp;
+        struct timeval poll_time;
+        struct timeval *sel_wptr = wptr;
+        gboolean pending;
 
         if (!subshell_alive)
             return FALSE;
@@ -920,7 +980,19 @@ feed_subshell (int how, gboolean fail_on_error)
             maxfdp = MAX (maxfdp, STDIN_FILENO);
         }
 
-        if (select (maxfdp + 1, &read_set, NULL, NULL, wptr) == -1)
+        /* A nested mc wants us to show the panels. It has already exited, but the shell still
+           has to finish the command and draw a new prompt. Poll until it goes quiet. */
+        pending = how == VISIBLY && show_panels_request_pending ();
+        if (pending)
+        {
+            poll_time.tv_sec = 0;
+            poll_time.tv_usec = SHOW_PANELS_POLL_USEC;
+            sel_wptr = &poll_time;
+        }
+
+        const int nready = select (maxfdp + 1, &read_set, NULL, NULL, sel_wptr);
+
+        if (nready == -1)
         {
             // Despite using SA_RESTART, we still have to check for this
             if (errno == EINTR)
@@ -934,6 +1006,19 @@ feed_subshell (int how, gboolean fail_on_error)
             fprintf (stderr, "select (FD_SETSIZE, &read_set...): %s\r\n",
                      unix_error_string (errno));
             exit (EXIT_FAILURE);
+        }
+
+        if (nready == 0 && pending)
+        {
+            // The shell is quiet now, or it takes too long to become quiet
+            if (subshell_ready || --polls_left <= 0)
+            {
+                show_panels_request_clear ();
+                leave_subshell ();
+                return TRUE;
+            }
+
+            continue;
         }
 
         if (FD_ISSET (mc_global.tty.subshell_pty, &read_set))
@@ -1036,28 +1121,7 @@ feed_subshell (int how, gboolean fail_on_error)
                 if (peek_subshell_switch_key (pty_buffer + i, ubytes - i))
                 {
                     write_all (mc_global.tty.subshell_pty, pty_buffer, i);
-
-                    if (subshell_ready)
-                    {
-                        subshell_state = INACTIVE;
-                        set_prompt_string ();
-                        if (subshell_ready && !read_command_line_buffer (FALSE))
-                        {
-                            // If we got here, some unforeseen error must have occurred.
-                            if (subshell_initialized && mc_global.shell->type != SHELL_FISH)
-                            {
-                                write_all (mc_global.tty.subshell_pty, "\003", 1);
-                                subshell_state = RUNNING_COMMAND;
-                                if (feed_subshell (QUIETLY, TRUE)
-                                    && read_command_line_buffer (FALSE))
-                                    return TRUE;
-                            }
-
-                            subshell_state = ACTIVE;
-                            flush_subshell (0, VISIBLY);
-                            input_assign_text (cmdline, "");
-                        }
-                    }
+                    leave_subshell ();
 
                     return TRUE;
                 }

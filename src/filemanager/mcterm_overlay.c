@@ -242,6 +242,15 @@ mcterm_overlay_after_redraw_cb (void *data)
 
     (void) data;
 
+    /* An mc started in our terminal asked for the panels and exited. The shell has drawn its
+       prompt by now, so this is a good moment to switch back. */
+    if (mcterm_mode && show_panels_request_pending ())
+    {
+        show_panels_request_clear ();
+        mcterm_overlay_toggle ();
+        return;
+    }
+
     mcterm_overlay_draw_visible_panels ();
 
     if (the_menubar != NULL && the_menubar->is_dropped)
@@ -404,6 +413,9 @@ mcterm_overlay_toggle (void)
         if (mc_global.tty.use_subshell)
             delete_select_channel (mc_global.tty.subshell_pty);
 #endif
+
+        // Drop a request left over from an earlier session of the overlay
+        show_panels_request_clear ();
 
         mcterm_set_scroll_allowed (mcterm_panel, TRUE);
         mcterm_mode = TRUE;

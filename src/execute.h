@@ -34,6 +34,11 @@ void shell_execute (const char *command, int flags);
 /* Handle toggling panels by Ctrl-O */
 void toggle_subshell (void);
 
+/* A nested mc asks us to show the panels instead of starting a second copy */
+void show_panels_request_init (void);
+gboolean show_panels_request_pending (void);
+void show_panels_request_clear (void);
+
 /* Handle toggling panels by Ctrl-Z */
 gboolean execute_suspend (const gchar *event_group_name, const gchar *event_name,
                           gpointer init_data, gpointer data);

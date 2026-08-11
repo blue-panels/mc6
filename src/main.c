@@ -70,6 +70,7 @@
 #include "vfs/plugins_init.h"
 
 #include "events_init.h"
+#include "execute.h"  // show_panels_request_init()
 #include "args.h"
 #ifdef ENABLE_SUBSHELL
 #include "subshell/subshell.h"
@@ -215,6 +216,46 @@ check_sid (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/**
+ * Ask the mc we are running in to show its panels again.
+ *
+ * The parent hid the panels and gave the terminal to a shell of its own, and the user typed
+ * "mc" there. Showing the panels is what they want; a second copy of mc is not.
+ *
+ * @return TRUE if the request was sent, FALSE otherwise.
+ */
+
+static gboolean
+request_parent_panels (void)
+{
+    const char *pid_str, *tty_str, *my_tty;
+    pid_t parent_pid;
+
+    if (mc_global.mc_run_mode != MC_RUN_FULL)
+        return FALSE;
+
+    pid_str = getenv ("MC_PID");
+    tty_str = getenv ("MC_TTY");
+    if (pid_str == NULL || tty_str == NULL)
+        return FALSE;
+
+    parent_pid = (pid_t) strtol (pid_str, NULL, 0);
+    if (parent_pid <= 1)
+        return FALSE;
+
+    // We must sit on the parent's pty, not in a terminal of our own
+    my_tty = ttyname (STDIN_FILENO);
+    if (my_tty == NULL || strcmp (my_tty, tty_str) != 0)
+        return FALSE;
+
+    // ... and be the foreground job there, not a background or piped one
+    if (tcgetpgrp (STDIN_FILENO) != getpgrp ())
+        return FALSE;
+
+    return (kill (parent_pid, SIGUSR1) == 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -248,6 +289,13 @@ main (int argc, char *argv[])
         mc_shell_deinit ();
         str_uninit_strings ();
         return exit_code;
+    }
+
+    // Plain "mc" typed at the prompt of a shell started by another mc: bring back its panels
+    if (argc == 1 && request_parent_panels ())
+    {
+        exit_code = EXIT_SUCCESS;
+        goto startup_exit_ok;
     }
 
     /* check terminal type
@@ -348,6 +396,9 @@ main (int argc, char *argv[])
 
     // Install the SIGCHLD handler; must be done before init_subshell()
     init_sigchld ();
+
+    if (mc_global.mc_run_mode == MC_RUN_FULL)
+        show_panels_request_init ();
 
     // We need this, since ncurses endwin () doesn't restore the signals
     save_stop_handler ();

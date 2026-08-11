@@ -2503,6 +2503,13 @@ time with the sequence C\-o and jump back to Midnight Commander, if
 you interrupt an application, you will not be able to run other
 external commands until you quit the application you interrupted.
 .PP
+If you type
+.B mc
+without arguments at the shell prompt behind the hidden panels, the running
+Midnight Commander shows its panels again instead of starting a second copy.
+Pass an argument, a directory name for example, to start a nested Midnight
+Commander as before.
+.PP
 The basic prompt displayed by Midnight Commander is of the form
 "user@host:current_path$ ". When using a capable shell, like Bash, the
 prompt displayed by Midnight Commander will be the same prompt that you

@@ -73,8 +73,21 @@ MC_MOCKABLE char *execute_get_external_cmd_opts_from_config (const char *command
 
 /*** file scope variables ************************************************************************/
 
+/* Raised by the SIGUSR1 handler when a nested mc asks us to show the panels */
+static SIG_ATOMIC_VOLATILE_T show_panels_request = 0;
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+show_panels_request_handler (int sig)
+{
+    (void) sig;
+
+    show_panels_request = 1;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -395,6 +408,41 @@ do_execute (const char *shell, const char *command, int flags)
     do_executev (shell, flags, (char *const *) args_array->pdata);
 
     g_ptr_array_free (args_array, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Start listening for nested mc instances.
+ *
+ * A shell started by us puts our PID into MC_PID. An mc started from that shell sends us
+ * SIGUSR1 instead of running: the user wants the panels back, not a second copy.
+ */
+
+void
+show_panels_request_init (void)
+{
+    struct sigaction sa;
+
+    memset (&sa, 0, sizeof (sa));
+    sa.sa_handler = show_panels_request_handler;
+    sigemptyset (&sa.sa_mask);
+    my_sigaction (SIGUSR1, &sa, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+show_panels_request_pending (void)
+{
+    return (show_panels_request != 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+show_panels_request_clear (void)
+{
+    show_panels_request = 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */

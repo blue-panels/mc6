@@ -289,11 +289,16 @@ static void
 mcterm_exec_shell (int pty_slave, const char *start_dir)
 {
     const char *shell;
+    char tty_name[MC_MAXPATHLEN];
 
     /* exec() preserves SIG_IGN; the child shell needs normal signal handling. */
     signal (SIGINT, SIG_DFL);
     signal (SIGQUIT, SIG_DFL);
     signal (SIGPIPE, SIG_DFL);
+
+    /* Read while the slave fd is still open; it is closed further down. */
+    if (ttyname_r (pty_slave, tty_name, sizeof (tty_name)) != 0)
+        tty_name[0] = '\0';
 
     if (setsid () < 0)
         _exit (1);
@@ -323,6 +328,17 @@ mcterm_exec_shell (int pty_slave, const char *start_dir)
         shell = "/bin/sh";
 
     g_setenv ("TERM", "xterm-256color", TRUE);
+
+    /* Tell an mc started from here how to reach us: it should ask for the panels
+       instead of running a second copy inside our own terminal. */
+    {
+        char pid_str[32];
+
+        g_snprintf (pid_str, sizeof (pid_str), "%ld", (long) getppid ());
+        g_setenv ("MC_PID", pid_str, TRUE);
+        if (tty_name[0] != '\0')
+            g_setenv ("MC_TTY", tty_name, TRUE);
+    }
 
     if (start_dir != NULL && chdir (start_dir) != 0)
     { /* fallback: shell starts in mc's cwd */
