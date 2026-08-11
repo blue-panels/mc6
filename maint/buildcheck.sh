@@ -6,8 +6,14 @@
 #   maint/buildcheck.sh [ref]
 #
 # Environment:
-#   BUILDCHECK_IMAGE  container image (default: ubuntu:24.04, what ubuntu-latest is)
-#   BUILDCHECK_JOBS   parallel make jobs (default: all cores)
+#   BUILDCHECK_IMAGE        image of the build job (default: ubuntu:24.04, what
+#                           ubuntu-latest is)
+#   BUILDCHECK_MONGO_IMAGE  image of the mongo plugin job (default: ubuntu:26.04,
+#                           the container that job asks for)
+#   BUILDCHECK_JOBS         parallel make jobs (default: all cores)
+#
+# The CI builds the mongo plugin in a job of its own, on a newer Ubuntu that
+# carries the MongoDB C driver v2, so this uses two containers as well.
 #
 # The build runs as an unprivileged user: the extfs helper tests compare uid and
 # gid against the ones of the process, and root makes them print differently.
@@ -16,38 +22,86 @@ set -eu
 
 REF=${1:-HEAD}
 IMAGE=${BUILDCHECK_IMAGE:-ubuntu:24.04}
+MONGO_IMAGE=${BUILDCHECK_MONGO_IMAGE:-ubuntu:26.04}
 NAME=mc-buildcheck-$$
+MONGO_NAME=mc-buildcheck-mongo-$$
 
 srcdir=$(cd "$(dirname "$0")/.." && pwd)
 test -d "$srcdir/.git" || { echo "buildcheck: $srcdir is not a git checkout" >&2; exit 1; }
 command -v docker >/dev/null || { echo "buildcheck: docker not found" >&2; exit 1; }
 
 sha=$(git -C "$srcdir" rev-parse "$REF")
-echo "buildcheck: $IMAGE, $(git -C "$srcdir" log --oneline -1 "$sha")"
+echo "buildcheck: $MONGO_IMAGE and $IMAGE, $(git -C "$srcdir" log --oneline -1 "$sha")"
 
-cleanup() { docker rm -f "$NAME" >/dev/null 2>&1 || true; }
+cleanup() { docker rm -f "$NAME" "$MONGO_NAME" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
+
+fail=0
+
+docker run -d --name "$MONGO_NAME" -v "$srcdir":/repo:ro "$MONGO_IMAGE" sleep infinity >/dev/null
+
+docker exec -i -e SHA="$sha" -e JOBS="${BUILDCHECK_JOBS:-}" "$MONGO_NAME" sh -s <<'INNER' || fail=1
+set -eu
+
+JOBS=${JOBS:-}; test -n "$JOBS" || JOBS=$(nproc)
+step() { printf '\n=== %s\n' "$1"; }
+
+export DEBIAN_FRONTEND=noninteractive
+step "install dependencies"
+apt-get update -qq >/dev/null
+apt-get install -y -qq --no-install-recommends \
+    git autoconf automake autopoint build-essential gettext libtool pkg-config unzip \
+    e2fslibs-dev libglib2.0-dev libgpm-dev libncurses-dev libslang2-dev \
+    libssh2-1-dev libx11-dev libarchive-dev libcurl4-openssl-dev libsmbclient-dev \
+    libmongoc-dev libbson-dev >/dev/null 2>&1 || { printf 'FAIL dependencies\n'; exit 1; }
+
+id -u build >/dev/null 2>&1 || useradd -m build
+git config --global --add safe.directory '*'
+rm -rf /work
+git clone -q /repo /work
+cd /work
+git checkout -q "$SHA"
+chown -R build /work
+
+as_build() { su build -c "cd $1 && $2"; }
+
+step "bootstrap"
+if ! as_build /work "./autogen.sh >/tmp/autogen.log 2>&1"; then
+    printf 'FAIL bootstrap\n'; tail -8 /tmp/autogen.log; exit 1
+fi
+printf 'PASS bootstrap\n'
+
+step "mongo plugin"
+mkdir -p /work/build-mongo && chown build /work/build-mongo
+if as_build /work/build-mongo "../configure --enable-panel-plugin-mongo=yes >/tmp/cf-mongo.log 2>&1 && make -j$JOBS >/tmp/mk-mongo.log 2>&1" \
+   && test -f /work/build-mongo/src/panel-plugins/mongo/.libs/mc-panel-mongo.so; then
+    printf 'PASS mongo plugin\n'
+else
+    printf 'FAIL mongo plugin\n'
+    tail -5 /tmp/cf-mongo.log 2>/dev/null || true
+    grep -E 'error:' /tmp/mk-mongo.log 2>/dev/null | head -5 || true
+    exit 1
+fi
+INNER
 
 docker run -d --name "$NAME" -v "$srcdir":/repo:ro "$IMAGE" sleep infinity >/dev/null
 
-docker exec -i -e SHA="$sha" -e JOBS="${BUILDCHECK_JOBS:-}" "$NAME" sh -s <<'INNER'
+docker exec -i -e SHA="$sha" -e JOBS="${BUILDCHECK_JOBS:-}" "$NAME" sh -s <<'INNER' || fail=1
 set -eu
 
-nproc_or() { j=${JOBS:-}; test -n "$j" || j=$(nproc); echo "$j"; }
-JOBS=$(nproc_or)
-fail=0
+JOBS=${JOBS:-}; test -n "$JOBS" || JOBS=$(nproc)
+inner_fail=0
 step() { printf '\n=== %s\n' "$1"; }
 ok() { printf 'PASS %s\n' "$1"; }
-bad() { printf 'FAIL %s\n' "$1"; fail=1; }
+bad() { printf 'FAIL %s\n' "$1"; inner_fail=1; }
 
 export DEBIAN_FRONTEND=noninteractive
 step "install dependencies"
 apt-get update -qq >/dev/null
 apt-get install -y -qq --no-install-recommends \
     git autoconf automake autopoint build-essential gettext libtool pkg-config check unzip bzip2 \
-    e2fslibs-dev libaspell-dev libglib2.0-dev libgpm-dev libncurses-dev libslang2-dev \
-    libssh2-1-dev libx11-dev libarchive-dev libcurl4-openssl-dev libsmbclient-dev \
-    libmongoc-dev libbson-dev >/dev/null 2>&1 || { bad "dependencies"; exit 1; }
+    e2fslibs-dev libglib2.0-dev libgpm-dev libncurses-dev libslang2-dev \
+    libssh2-1-dev libx11-dev >/dev/null 2>&1 || { bad "dependencies"; exit 1; }
 
 id -u build >/dev/null 2>&1 || useradd -m build
 git config --global --add safe.directory '*'
@@ -64,16 +118,6 @@ if as_build /work "./autogen.sh >/tmp/autogen.log 2>&1"; then
     ok "bootstrap"
 else
     bad "bootstrap"; tail -8 /tmp/autogen.log; exit 1
-fi
-
-step "mongo plugin"
-mkdir -p /work/build-mongo && chown build /work/build-mongo
-if as_build /work/build-mongo "../configure --enable-panel-plugin-mongo=yes >/tmp/cf-mongo.log 2>&1 && make -j$JOBS >/tmp/mk-mongo.log 2>&1" \
-   && test -f /work/build-mongo/src/panel-plugins/mongo/.libs/mc-panel-mongo.so; then
-    ok "mongo plugin"
-else
-    bad "mongo plugin"; tail -5 /tmp/cf-mongo.log 2>/dev/null || true
-    grep -E 'error:' /tmp/mk-mongo.log 2>/dev/null | head -5 || true
 fi
 
 step "distribution archive"
@@ -114,7 +158,9 @@ configuration minimal --disable-shared --disable-static --disable-maintainer-mod
     --disable-background --disable-vfs --without-x --without-gpm-mouse \
     --without-internal-edit --without-diff-viewer --without-subshell --enable-tests --enable-werror
 
-step "result"
+exit "$inner_fail"
+INNER
+
+printf '\n=== result\n'
 test "$fail" -eq 0 && echo "buildcheck: all green" || echo "buildcheck: something failed"
 exit "$fail"
-INNER
