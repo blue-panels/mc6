@@ -906,7 +906,7 @@ arcmc_is_archive_by_content (const char *path)
     if (mag == NULL)
         return FALSE;
 
-    if (magic_load (mag, MC_MAGIC_FILE) != 0)
+    if (magic_load (mag, MC_LIBMAGIC_FILE) != 0)
     {
         magic_close (mag);
         return FALSE;
