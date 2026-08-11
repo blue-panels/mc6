@@ -101,7 +101,7 @@ mctree_type_from_magic (const char *path)
     if (cookie == NULL)
         return MCTREE_CONTENT_UNKNOWN;
 
-    if (magic_load (cookie, MC_MAGIC_FILE) == 0)
+    if (magic_load (cookie, MC_LIBMAGIC_FILE) == 0)
     {
         mime = magic_file (cookie, path);
         if (mime != NULL)

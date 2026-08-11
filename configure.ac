@@ -578,11 +578,11 @@ AC_ARG_WITH([magic-file],
                    [Use PATH as the libmagic database (default: libmagic default)]),
     [case "$withval" in
         yes|no|'') AC_MSG_ERROR([--with-magic-file requires an absolute path]) ;;
-        /*) AC_DEFINE_UNQUOTED([MC_MAGIC_FILE], ["$withval"],
+        /*) AC_DEFINE_UNQUOTED([MC_LIBMAGIC_FILE], ["$withval"],
                               [Path to the libmagic database, or NULL for its default]) ;;
         *) AC_MSG_ERROR([--with-magic-file requires an absolute path]) ;;
      esac],
-    [AC_DEFINE([MC_MAGIC_FILE], [NULL],
+    [AC_DEFINE([MC_LIBMAGIC_FILE], [NULL],
                [Path to the libmagic database, or NULL for its default])])
 
 AC_ARG_ENABLE([mctree-magic],
