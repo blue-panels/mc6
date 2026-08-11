@@ -1543,8 +1543,10 @@ void
 done_key (void)
 {
     k_dispose (keys);
+    keys = NULL;
     g_clear_pointer (&key_sequences, g_hash_table_destroy);
     g_slist_free_full (select_list, g_free);
+    select_list = NULL;
 
 #ifdef HAVE_TEXTMODE_X11_SUPPORT
     if (x11_display)
