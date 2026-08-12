@@ -65,6 +65,8 @@
 
 #define MCTERM_INTERNAL_SYNC_MAX_STALLED_READS 16
 
+#define MCTERM_WHEEL_ROWS                      3
+
 struct WMcTerm
 {
     Widget base;
@@ -85,11 +87,14 @@ struct WMcTerm
     mcview_terminal_buffer_t *sync_snapshot_buf; /* owned, freed in mcterm_free */
     int sync_snapshot_cursor_row;
     int pending_internal_sync_reads;
+    int scrollback;  // rows above the live screen; 0 follows the output
+    gboolean scroll_allowed;
 };
 
 /*** forward declarations ************************************************************************/
 
 static cb_ret_t mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data);
+static void mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event);
 static gboolean mcterm_handle_osc7_generation (WMcTerm *t);
 static gboolean mcterm_handle_stalled_internal_sync (WMcTerm *t);
 static int mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_terminal_buffer_t *buf,
@@ -114,6 +119,7 @@ mcterm_pty_ready_cb (int fd, void *info)
     if (n > 0)
     {
         ssize_t i;
+        int history_before = mcview_vterm_history_len (t->vterm);
 
         for (i = 0; i < n; i++)
         {
@@ -131,6 +137,15 @@ mcterm_pty_ready_cb (int fd, void *info)
                 (void) ignored;
             }
             mcterm_handle_osc7_generation (t);
+        }
+
+        // New output must not drag the view away from what is being read.
+        if (t->scrollback > 0)
+        {
+            int grown = mcview_vterm_history_len (t->vterm) - history_before;
+
+            if (grown > 0)
+                t->scrollback = MIN (t->scrollback + grown, mcview_vterm_history_len (t->vterm));
         }
 
         suppress_draw = !mcterm_handle_stalled_internal_sync (t);
@@ -358,6 +373,80 @@ mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup, size_t setup_len)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------------------------- */
+
+/* One screen: live rows, history above them, @back rows away from the end. */
+static mcview_terminal_buffer_t *
+mcterm_compose_view (WMcTerm *t, int lines, int live_top, int live_rows, int back)
+{
+    mcview_terminal_buffer_t *view;
+    const mcview_terminal_buffer_t *live;
+    int hist_len;
+    int start;
+    int row;
+
+    live = mcview_vterm_buf (t->vterm);
+    hist_len = mcview_vterm_history_len (t->vterm);
+    view = mcview_terminal_buffer_new ();
+
+    // Where the top of the screen falls in history followed by live rows.
+    start = hist_len + live_rows - lines - back;
+
+    for (row = 0; row < lines; row++)
+    {
+        int v = start + row;
+        GArray *cells = NULL;
+
+        if (v < 0)
+            continue;
+
+        if (v < hist_len)
+        {
+            const GArray *h = mcview_vterm_history_row (t->vterm, v);
+
+            if (h != NULL)
+                mcview_terminal_buffer_set_row (view, row, h);
+            continue;
+        }
+
+        cells = mcview_terminal_buffer_row_copy (live, live_top + v - hist_len);
+        if (cells != NULL)
+        {
+            mcview_terminal_buffer_set_row (view, row, cells);
+            g_array_unref (cells);
+        }
+    }
+
+    return view;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Move the view @delta rows, up when negative. TRUE if it moved. */
+static gboolean
+mcterm_scroll_view (WMcTerm *t, int delta)
+{
+    int back;
+    int max;
+
+    if (t->vterm == NULL || mcview_vterm_in_alt_screen (t->vterm) || !t->scroll_allowed)
+        return FALSE;
+
+    max = mcview_vterm_history_len (t->vterm);
+    back = t->scrollback - delta;
+    back = CLAMP (back, 0, max);
+
+    if (back == t->scrollback)
+        return FALSE;
+
+    t->scrollback = back;
+    widget_draw (WIDGET (t));
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcterm_do_draw (WMcTerm *t)
 {
@@ -404,6 +493,21 @@ mcterm_do_draw (WMcTerm *t)
         int blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && content_rows < r->lines)
             ? (r->lines - content_rows)
             : 0;
+
+        /* The prompt row is drawn on the command line, so a full screen is one row
+           short at the top; that row is the newest one in the history. */
+        gboolean fill_top = blank_above > 0 && cursor_row >= r->lines - 1;
+
+        if (!use_sync_snapshot && !mcview_vterm_in_alt_screen (t->vterm)
+            && (t->scrollback > 0 || fill_top))
+        {
+            mcview_terminal_buffer_t *view;
+
+            view = mcterm_compose_view (t, r->lines, top_row, content_rows, t->scrollback);
+            mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols);
+            mcview_terminal_buffer_free (view);
+            return;
+        }
 
         if (blank_above > 0)
         {
@@ -551,6 +655,53 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         if ((parm == 0x0F || parm == XCTRL ('O'))
             && (t->vterm == NULL || !mcview_vterm_in_alt_screen (t->vterm)))
             return MSG_NOT_HANDLED;
+
+        // An alt-screen application gets these keys itself.
+        if (t->vterm != NULL && !mcview_vterm_in_alt_screen (t->vterm))
+        {
+            const int page = WIDGET (t)->rect.lines - 1;
+
+            switch (parm)
+            {
+            case KEY_PPAGE:
+            case KEY_NPAGE:
+            case KEY_HOME:
+            case KEY_END:
+            case KEY_M_SHIFT | KEY_UP:
+            case KEY_M_SHIFT | KEY_DOWN:
+            {
+                const int hist = mcview_vterm_history_len (t->vterm);
+                int delta = 1;
+
+                if (parm == KEY_PPAGE)
+                    delta = -page;
+                else if (parm == KEY_NPAGE)
+                    delta = page;
+                else if (parm == KEY_HOME)
+                    delta = -hist;
+                else if (parm == KEY_END)
+                    delta = hist;
+                else if (parm == (KEY_M_SHIFT | KEY_UP))
+                    delta = -1;
+
+                /* While the view is held back the key is ours even when it can
+                   go no further: the program below must not see it and answer
+                   with something of its own. */
+                if (mcterm_scroll_view (t, delta) || t->scrollback > 0)
+                    return MSG_HANDLED;
+                break;
+            }
+            default:
+                // Typing returns to the end, the way a terminal does.
+                if (t->scrollback != 0)
+                {
+                    t->scrollback = 0;
+                    widget_draw (WIDGET (t));
+                }
+                break;
+            }
+        }
+
         if (t->child_dead || t->pty_master < 0)
             return MSG_NOT_HANDLED;
         return mcterm_send_encoded_key (t, parm) ? MSG_HANDLED : MSG_NOT_HANDLED;
@@ -644,7 +795,7 @@ mcterm_new (const WRect *r, const char *start_dir)
     t = g_new0 (WMcTerm, 1);
     w = WIDGET (t);
 
-    widget_init (w, r, mcterm_callback, NULL);
+    widget_init (w, r, mcterm_callback, mcterm_mouse_callback);
     w->options |= WOP_SELECTABLE | WOP_WANT_CURSOR | WOP_WANT_HOTKEY;
 
     t->pty_master = master;
@@ -654,6 +805,8 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->last_osc7_gen = 0;
     t->osc7_capable = FALSE;
     t->vterm = mcview_vterm_new ();
+    t->scroll_allowed = TRUE;
+    mcview_vterm_set_keep_history (t->vterm, TRUE);
     mcview_vterm_set_size (t->vterm, r->lines, r->cols);
 
     {
@@ -774,6 +927,53 @@ gboolean
 mcterm_is_alive (const WMcTerm *t)
 {
     return (t != NULL && !t->child_dead);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
+{
+    WMcTerm *t = (WMcTerm *) w;
+
+    (void) event;
+
+    switch (msg)
+    {
+    case MSG_MOUSE_SCROLL_UP:
+        mcterm_scroll_view (t, -MCTERM_WHEEL_ROWS);
+        break;
+    case MSG_MOUSE_SCROLL_DOWN:
+        mcterm_scroll_view (t, MCTERM_WHEEL_ROWS);
+        break;
+    default:
+        break;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed)
+{
+    if (t == NULL)
+        return;
+
+    t->scroll_allowed = allowed;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_scroll_to_end (WMcTerm *t)
+{
+    if (t != NULL && t->scrollback != 0)
+    {
+        t->scrollback = 0;
+        widget_draw (WIDGET (t));
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

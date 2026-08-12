@@ -21,6 +21,8 @@ WMcTerm *mcterm_new (const WRect *r, const char *start_dir);
 void mcterm_free (WMcTerm *t);
 gboolean mcterm_is_alive (const WMcTerm *t);
 gboolean mcterm_in_alt_screen (const WMcTerm *t);
+void mcterm_scroll_to_end (WMcTerm *t);
+void mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed);
 Widget *mcterm_widget (WMcTerm *t);
 gboolean mcterm_send_line (WMcTerm *t, const char *line);
 gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
