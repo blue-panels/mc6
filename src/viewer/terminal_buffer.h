@@ -46,6 +46,12 @@ const mcview_vterm_cell_t *mcview_terminal_buffer_get (const mcview_terminal_buf
 void mcview_terminal_buffer_fill_range (mcview_terminal_buffer_t *buf, int row, int col_from,
                                         int col_to, gunichar ch, const mcview_ansi_state_t *ansi);
 
+GArray *mcview_terminal_buffer_row_copy (const mcview_terminal_buffer_t *buf, int row);
+GArray *mcview_terminal_buffer_row_copy_n (const mcview_terminal_buffer_t *buf, int row,
+                                           int max_cells);
+void mcview_terminal_buffer_set_row (mcview_terminal_buffer_t *buf, int row, const GArray *cells);
+void mcview_terminal_buffer_set_max_row (mcview_terminal_buffer_t *buf, int max_row);
+
 void mcview_terminal_buffer_scroll_up (mcview_terminal_buffer_t *buf, int top, int bottom, int cols,
                                        const mcview_ansi_state_t *ansi);
 

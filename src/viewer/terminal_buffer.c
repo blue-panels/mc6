@@ -201,6 +201,81 @@ mcview_terminal_buffer_fill_range (mcview_terminal_buffer_t *buf, int row, int c
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Cells of @row, or NULL when it is empty. Free with g_array_unref(). */
+GArray *
+mcview_terminal_buffer_row_copy (const mcview_terminal_buffer_t *buf, int row)
+{
+    return mcview_terminal_buffer_row_copy_n (buf, row, -1);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The same, at most @max_cells of the row; negative keeps all of it. */
+GArray *
+mcview_terminal_buffer_row_copy_n (const mcview_terminal_buffer_t *buf, int row, int max_cells)
+{
+    GArray *src;
+    GArray *dst;
+    guint len;
+
+    src = (GArray *) g_hash_table_lookup (buf->rows, GINT_TO_POINTER (row));
+    if (src == NULL || src->len == 0)
+        return NULL;
+
+    len = src->len;
+    if (max_cells >= 0 && len > (guint) max_cells)
+        len = (guint) max_cells;
+    if (len == 0)
+        return NULL;
+
+    dst = g_array_new (FALSE, TRUE, sizeof (mcview_vterm_cell_t));
+    g_array_append_vals (dst, src->data, len);
+
+    return dst;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_terminal_buffer_set_row (mcview_terminal_buffer_t *buf, int row, const GArray *cells)
+{
+    GArray *dst;
+
+    if (row < 0)
+        return;
+
+    g_hash_table_remove (buf->rows, GINT_TO_POINTER (row));
+
+    if (cells == NULL || cells->len == 0)
+        return;
+
+    dst = g_array_new (FALSE, TRUE, sizeof (mcview_vterm_cell_t));
+    g_array_append_vals (dst, cells->data, cells->len);
+    g_hash_table_insert (buf->rows, GINT_TO_POINTER (row), dst);
+
+    if (row > buf->max_row)
+        buf->max_row = row;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Drop what is below @max_row, as a screen made shorter does. */
+void
+mcview_terminal_buffer_set_max_row (mcview_terminal_buffer_t *buf, int max_row)
+{
+    int row;
+
+    if (max_row >= buf->max_row)
+        return;
+
+    for (row = max_row + 1; row <= buf->max_row; row++)
+        g_hash_table_remove (buf->rows, GINT_TO_POINTER (row));
+
+    buf->max_row = (max_row < -1) ? -1 : max_row;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 mcview_terminal_buffer_scroll_up (mcview_terminal_buffer_t *buf, int top, int bottom, int cols,
                                   const mcview_ansi_state_t *ansi)
