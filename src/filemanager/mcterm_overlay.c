@@ -410,7 +410,7 @@ mcterm_overlay_toggle (void)
         }
 
 #ifdef ENABLE_SUBSHELL
-        if (mc_global.tty.use_subshell)
+        if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
             delete_select_channel (mc_global.tty.subshell_pty);
 #endif
 
@@ -450,7 +450,7 @@ mcterm_overlay_toggle (void)
             widget_show (WIDGET (the_prompt));
 
 #ifdef ENABLE_SUBSHELL
-        if (mc_global.tty.use_subshell)
+        if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
             add_select_channel (mc_global.tty.subshell_pty, load_prompt, NULL);
 #endif
 

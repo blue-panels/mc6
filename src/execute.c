@@ -328,7 +328,8 @@ do_executev (const char *shell, int flags, char *const argv[])
         fflush (stdout);
     }
 #ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL)
+    if (mc_global.tty.use_subshell && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL
+        && subshell_ensure_started ())
     {
         do_update_prompt ();
 
@@ -481,7 +482,7 @@ shell_execute (const char *command, int flags)
     }
 
 #ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
+    if (mc_global.tty.use_subshell && subshell_ensure_started ())
     {
         if (subshell_state == INACTIVE)
             do_execute (mc_global.shell->path, cmd != NULL ? cmd : command,
@@ -541,7 +542,7 @@ toggle_subshell (void)
         handle_console (CONSOLE_RESTORE);
 
 #ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
+    if (mc_global.tty.use_subshell && subshell_ensure_started ())
     {
         vfs_path_t **new_dir_p;
 

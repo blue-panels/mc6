@@ -928,7 +928,7 @@ create_file_manager (void)
 #ifdef ENABLE_SUBSHELL
     /* Must be done after creation of cmdline and prompt widgets to avoid potential
        NULL dereference in load_prompt() -> ... -> setup_cmdline() -> label_set_text(). */
-    if (mc_global.tty.use_subshell)
+    if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
         add_select_channel (mc_global.tty.subshell_pty, load_prompt, NULL);
 #endif
 }

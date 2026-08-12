@@ -449,8 +449,12 @@ main (int argc, char *argv[])
         mc_global.tty.use_subshell = FALSE;
     }
 
+#ifndef ENABLE_MCTERM
+    /* With mcterm the commands go to its terminal, and the subshell is only the
+       way out when that terminal cannot be had. Start it when it is asked for. */
     if (mc_global.tty.use_subshell)
         init_subshell ();
+#endif
 #endif
 
     if (!mc_global.midnight_shutdown)

@@ -1756,6 +1756,31 @@ do_subshell_chdir (const vfs_path_t *vpath, gboolean force, gboolean update_prom
  *      quit - Can be set to SUBSHELL_EXIT by the SIGCHLD handler
  */
 
+/* Start the subshell if it has not been started yet. mc no longer starts one at
+   the beginning when mcterm is there to run commands, so whoever needs the
+   subshell asks for it here. Returns FALSE if there is none to be had. */
+gboolean
+subshell_ensure_started (void)
+{
+    if (!mc_global.tty.use_subshell)
+        return FALSE;
+
+    if (mc_global.tty.subshell_pty > 0)
+        return TRUE;
+
+    init_subshell ();
+
+    if (!mc_global.tty.use_subshell || mc_global.tty.subshell_pty <= 0)
+        return FALSE;
+
+    // Started late, so the prompt reader was not put on the list at the beginning.
+    add_select_channel (mc_global.tty.subshell_pty, load_prompt, NULL);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 init_subshell (void)
 {
