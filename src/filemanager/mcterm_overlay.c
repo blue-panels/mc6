@@ -59,6 +59,8 @@ static gboolean mcterm_mode = FALSE;
 
 #define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
 
+static gboolean mcterm_overlay_any_panel_visible (void);
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -217,6 +219,9 @@ mcterm_overlay_mouse_handler (Widget *w, Gpm_Event *event)
 {
     Widget *pw;
 
+    if (mcterm_panel != NULL)
+        mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
+
     pw = get_panel_widget (0);
     if (pw != NULL && widget_get_state (pw, WST_VISIBLE) && mouse_global_in_widget (event, pw))
         return MOU_UNHANDLED;
@@ -242,6 +247,22 @@ mcterm_overlay_discard_dead_terminal (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mcterm_overlay_any_panel_visible (void)
+{
+    Widget *pw;
+
+    pw = get_panel_widget (0);
+    if (pw != NULL && widget_get_state (pw, WST_VISIBLE))
+        return TRUE;
+
+    pw = get_panel_widget (1);
+
+    return (pw != NULL && widget_get_state (pw, WST_VISIBLE));
+}
 
 static gboolean
 mcterm_overlay_panel_focused (Widget *focused)
@@ -340,6 +361,7 @@ mcterm_overlay_toggle (void)
             delete_select_channel (mc_global.tty.subshell_pty);
 #endif
 
+        mcterm_set_scroll_allowed (mcterm_panel, TRUE);
         mcterm_mode = TRUE;
         widget_set_options (WIDGET (filemanager), WOP_WANT_TAB, TRUE);
         widget_select (mcterm_overlay_widget ());
@@ -420,6 +442,9 @@ mcterm_overlay_draw_panel_slot (int idx, const WPanel *active_panel)
 void
 mcterm_overlay_draw_visible_panels (void)
 {
+    if (mcterm_panel != NULL)
+        mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
+
     WPanel *active_panel;
 
     if (!mcterm_mode || mcterm_panel == NULL)
@@ -736,6 +761,9 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     if (!mcterm_mode || mcterm_panel == NULL)
         return MSG_NOT_HANDLED;
 
+    // A panel on screen owns the keys that walk a list.
+    mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
+
     {
         WGroup *g = GROUP (filemanager);
         Widget *focused = g->current != NULL ? WIDGET (g->current->data) : NULL;
@@ -760,6 +788,20 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 
         if ((parm == 0x0F || parm == XCTRL ('O')) && !in_alt)
             return MSG_NOT_HANDLED;
+
+        if (!in_alt && !mcterm_overlay_any_panel_visible ()
+            && (parm == KEY_PPAGE || parm == KEY_NPAGE || parm == (KEY_M_SHIFT | KEY_UP)
+                || parm == (KEY_M_SHIFT | KEY_DOWN)
+                // with something typed these two still walk the command line
+                || ((parm == KEY_HOME || parm == KEY_END) && input_is_empty (cmdline))))
+        {
+            cb_ret_t r = send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+
+            if (r == MSG_HANDLED)
+                return r;
+        }
+        else if (!in_alt)
+            mcterm_scroll_to_end (mcterm_panel);
 
         if (!in_alt && at_prompt && input_is_empty (cmdline))
         {
