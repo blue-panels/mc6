@@ -81,25 +81,42 @@ jobs:
 
   debian:
     needs: archive
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     timeout-minutes: 45
     name: Debian packages (${{ matrix.name }})
     # No fail-fast: what one distribution builds is attached to the release
     # even when the other fails, see the publish job.
+    #
+    # arm64 is built on a native runner. The images are multi-architecture, so
+    # the recipe below is the same one; emulation would not fit the timeout.
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Debian Trixie
+          - name: Debian Trixie amd64
             container: debian:trixie
             distribution: trixie
             suffix: ~debian13.1
-            artifact: debian-trixie-packages
-          - name: Ubuntu 26.04
+            artifact: debian-trixie-amd64-packages
+            runs-on: ubuntu-latest
+          - name: Debian Trixie arm64
+            container: debian:trixie
+            distribution: trixie
+            suffix: ~debian13.1
+            artifact: debian-trixie-arm64-packages
+            runs-on: ubuntu-24.04-arm
+          - name: Ubuntu 26.04 amd64
             container: ubuntu:26.04
             distribution: resolute
             suffix: ~ubuntu26.04.1
-            artifact: ubuntu-resolute-packages
+            artifact: ubuntu-resolute-amd64-packages
+            runs-on: ubuntu-latest
+          - name: Ubuntu 26.04 arm64
+            container: ubuntu:26.04
+            distribution: resolute
+            suffix: ~ubuntu26.04.1
+            artifact: ubuntu-resolute-arm64-packages
+            runs-on: ubuntu-24.04-arm
     container: ${{ matrix.container }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
@@ -169,9 +186,20 @@ jobs:
 
   fedora:
     needs: archive
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
+    name: Fedora packages (${{ matrix.arch }})
     container: fedora:latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            artifact: fedora-amd64-packages
+            runs-on: ubuntu-latest
+          - arch: arm64
+            artifact: fedora-arm64-packages
+            runs-on: ubuntu-24.04-arm
     env:
       VERSION: ${{ needs.archive.outputs.version }}
 
@@ -209,13 +237,16 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: fedora-packages
+          name: ${{ matrix.artifact }}
           path: out/*
           overwrite: true
 
   arch:
     needs: archive
     runs-on: ubuntu-latest
+    # x86_64 only: Arch Linux itself has no aarch64 port, and the image below
+    # is published for x86_64 alone. The PKGBUILD names aarch64 as well, for
+    # Arch Linux ARM, which builds its packages from its own recipes.
     container: archlinux:base-devel
     timeout-minutes: 45
     env:
@@ -290,11 +321,22 @@ jobs:
 
   fedora-install:
     needs: [archive, fedora]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
+    name: Fedora install (${{ matrix.arch }})
     # A plain image, not the one that built the packages: a dependency the
     # build pulled in is missed here rather than papered over.
     container: fedora:latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            artifact: fedora-amd64-packages
+            runs-on: ubuntu-latest
+          - arch: arm64
+            artifact: fedora-arm64-packages
+            runs-on: ubuntu-24.04-arm
     env:
       VERSION: ${{ needs.archive.outputs.version }}
       TERM: xterm
@@ -302,7 +344,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: fedora-packages
+          name: ${{ matrix.artifact }}
           path: out
 
       - name: Install the packages the way a user would
@@ -320,26 +362,41 @@ jobs:
 
   debian-install:
     needs: [archive, debian]
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     timeout-minutes: 20
     name: Debian install (${{ matrix.name }})
-    # Each package is installed in the distribution it was built for: the two
-    # differ in the ABI they link to, so one of them passing says nothing about
-    # the other.
+    # Each package is installed in the distribution and on the architecture it
+    # was built for: they differ in the ABI they link to, so one of them
+    # passing says nothing about the others.
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Debian Trixie
+          - name: Debian Trixie amd64
             container: debian:trixie
-            artifact: debian-trixie-packages
-          - name: Ubuntu 26.04
+            artifact: debian-trixie-amd64-packages
+            arch: amd64
+            runs-on: ubuntu-latest
+          - name: Debian Trixie arm64
+            container: debian:trixie
+            artifact: debian-trixie-arm64-packages
+            arch: arm64
+            runs-on: ubuntu-24.04-arm
+          - name: Ubuntu 26.04 amd64
             container: ubuntu:26.04
-            artifact: ubuntu-resolute-packages
+            artifact: ubuntu-resolute-amd64-packages
+            arch: amd64
+            runs-on: ubuntu-latest
+          - name: Ubuntu 26.04 arm64
+            container: ubuntu:26.04
+            artifact: ubuntu-resolute-arm64-packages
+            arch: arm64
+            runs-on: ubuntu-24.04-arm
     container: ${{ matrix.container }}
     env:
       VERSION: ${{ needs.archive.outputs.version }}
       DEBIAN_FRONTEND: noninteractive
+      DEB_ARCH: ${{ matrix.arch }}
       TERM: xterm
 
     steps:
@@ -352,9 +409,9 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            "./out/mc6_${VERSION}-"*_amd64.deb \
+            "./out/mc6_${VERSION}-"*_"${DEB_ARCH}.deb" \
             "./out/mc6-data_${VERSION}-"*_all.deb \
-            "./out/mc6-plugins_${VERSION}-"*_amd64.deb
+            "./out/mc6-plugins_${VERSION}-"*_"${DEB_ARCH}.deb"
           mc --version | grep -q "v${VERSION}"
           mcedit --version | grep -q "v${VERSION}"
           test -d /usr/lib/mc/panel-plugins
@@ -703,19 +760,28 @@ jobs:
     if: always()
 
     steps:
+      # One directory per artifact, not merged: the source package, the source
+      # RPM and the architecture-independent data package are built on both
+      # architectures and carry the same name on each, so merging would put two
+      # copies of them in one place. The step below keeps the first of each.
       - uses: actions/download-artifact@v4
         continue-on-error: true
         with:
           path: packages
           pattern: '*-packages'
-          merge-multiple: true
 
       - name: Attach the packages to the draft release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ls packages/* >/dev/null 2>&1; then
+          # A release asset is named by its file name alone, so a name may only
+          # be uploaded once. Sorting by name and keeping the first path of
+          # each picks one build of the files that both architectures produce.
+          mkdir -p packages
+          find packages -type f -printf '%f\t%p\n' | sort -u -k1,1 | cut -f2 > files
+          if ! test -s files; then
               echo "nothing was built: nothing to attach"
               exit 0
           fi
-          gh release upload "$TAG" packages/* --clobber --repo "$GITHUB_REPOSITORY"
+          xargs -a files -d '\n' \
+              gh release upload "$TAG" --clobber --repo "$GITHUB_REPOSITORY"
