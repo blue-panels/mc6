@@ -91,13 +91,53 @@ tag_body() {
         sed -e '/^[[:space:]]*$/d'
 }
 
+# One entry per line: an item of CHANGELOG.md is wrapped there, and the lines
+# that continue it belong to the entry rather than starting one of their own.
 changelog_body() {
     test -f CHANGELOG.md || return 0
     awk -v version="$1" '
+        function flush() { if (item != "") { print item; item = "" } }
         $0 ~ "^## " version "([^0-9.]|$)" { inside = 1; next }
         inside && /^## / { exit }
-        inside && /^- / { sub(/^-[[:space:]]*/, ""); print }
+        inside && /^- / {
+            flush()
+            item = $0
+            sub(/^-[[:space:]]*/, "", item)
+            next
+        }
+        inside && item != "" && /^[[:space:]]+[^[:space:]]/ {
+            continuation = $0
+            sub(/^[[:space:]]+/, "", continuation)
+            item = item " " continuation
+            next
+        }
+        inside { flush() }
+        END { flush() }
     ' CHANGELOG.md
+}
+
+# An entry is one line by then, which reads badly in a changelog. Break it at
+# the width below, with the marker on the first line and the rest under it.
+wrap_entries() {
+    awk -v marker="$1" -v indent="$2" -v width=76 '
+        {
+            prefix = marker
+            line = ""
+            count = split($0, word, /[[:space:]]+/)
+            for (i = 1; i <= count; i++) {
+                if (line == "") {
+                    line = prefix word[i]
+                } else if (length(line) + 1 + length(word[i]) <= width) {
+                    line = line " " word[i]
+                } else {
+                    print line
+                    prefix = indent
+                    line = prefix word[i]
+                }
+            }
+            if (line != "")
+                print line
+        }'
 }
 
 entry_body() {
@@ -112,7 +152,7 @@ deb_entry() {
     # so every series of a release shares one archive.
     printf 'mc6 (%s:%s-1%s) %s; urgency=medium\n\n' "$deb_epoch" "$1" "$4" "$3"
     if test -n "$5"; then
-        printf '%s\n' "$5" | sed 's/^/  * /'
+        printf '%s\n' "$5" | wrap_entries '  * ' '    '
     else
         printf '  * Release v%s.\n' "$1"
     fi
@@ -123,7 +163,7 @@ rpm_entry() {
     printf '* %s %s - %s:%s-1\n' \
         "$(LC_ALL=C date -d "$2" '+%a %b %d %Y')" "$maintainer" "$rpm_epoch" "$1"
     if test -n "$3"; then
-        printf '%s\n' "$3" | sed 's/^/- /'
+        printf '%s\n' "$3" | wrap_entries '- ' '  '
     else
         printf -- '- Release v%s.\n' "$1"
     fi
