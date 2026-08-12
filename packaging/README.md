@@ -78,6 +78,21 @@ was published, not from one rebuilt elsewhere.
 absent from the archive: the recipes are used from the repository, and a Debian
 orig tarball must not carry a `debian` directory of its own.
 
+## Architectures
+
+Debian, Ubuntu and Fedora are built for `amd64` and `arm64`, each on a runner of
+its own architecture.  The containers are multi-architecture, so both run the
+same recipe; emulation is far too slow for a full build.  The two produce the
+same source package, source RPM and `mc6-data` package, and only one copy of
+each is attached to the release.
+
+Arch stays `x86_64`.  Arch Linux has no aarch64 port, and the `archlinux` image
+is published for `x86_64` alone; the `PKGBUILD` still names `aarch64` for Arch
+Linux ARM, which builds from its own recipes.  macOS is built for Apple Silicon.
+
+A PPA builds its own binaries, so the architectures it produces are set in the
+Launchpad settings of the PPA and not here.
+
 ## Building by hand
 
 The `release` workflow does all of this on a tag push, in a container per
