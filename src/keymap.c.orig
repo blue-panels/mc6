@@ -444,6 +444,9 @@ static const global_keymap_ini_t default_editor_keymap[] = {
     { "Right", "right" },
     { "Up", "up" },
     { "Down", "down" },
+    // a tab stop at a time, since there are no words to speak of in output
+    { "WordLeft", "ctrl-left" },
+    { "WordRight", "ctrl-right" },
     { "Home", "home" },
     { "End", "end" },
     { "PageUp", "pgup" },

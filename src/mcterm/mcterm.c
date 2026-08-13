@@ -69,6 +69,10 @@
 
 #define MCTERM_WHEEL_ROWS                      3
 
+/* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
+   step the columns of terminal output tend to fall on. */
+#define MCTERM_JUMP_COLS 8
+
 struct WMcTerm
 {
     Widget base;
@@ -715,6 +719,12 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
     case CK_MarkPageDown:
         row += page;
         break;
+    case CK_WordLeft:
+        col -= MCTERM_JUMP_COLS;
+        break;
+    case CK_WordRight:
+        col += MCTERM_JUMP_COLS;
+        break;
     case CK_MarkToHome:
         col = 0;
         break;
@@ -1066,6 +1076,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             case CK_Right:
             case CK_Up:
             case CK_Down:
+            case CK_WordLeft:
+            case CK_WordRight:
                 if (!t->scroll_allowed)
                 {
                     mcterm_follow_end (t);
@@ -1463,6 +1475,8 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_Right:
     case CK_Up:
     case CK_Down:
+    case CK_WordLeft:
+    case CK_WordRight:
         // With nowhere else to type, the arrows are what the shell reads by.
         if (!t->typing_elsewhere)
             return CK_IgnoreKey;
