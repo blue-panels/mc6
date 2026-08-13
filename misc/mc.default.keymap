@@ -527,7 +527,10 @@ SelectCodepage = alt-e
 
 [mcterm]
 # Every key not named here is typed into the shell.
+# The cursor keys and the marking keys work while the terminal holds the focus;
+# the view keys work whoever is typing.
 Store = ctrl-insert
+Unmark = ctrl-shift-u
 MarkLeft = shift-left
 MarkRight = shift-right
 MarkUp = shift-up
@@ -536,9 +539,12 @@ MarkPageUp = shift-pgup
 MarkPageDown = shift-pgdn
 MarkToHome = shift-home
 MarkToEnd = shift-end
-Unmark = ctrl-shift-u
-Up = ctrl-up
-Down = ctrl-down
+Left = left
+Right = right
+Up = up
+Down = down
+ScrollUp = ctrl-up
+ScrollDown = ctrl-down
 PageUp = pgup
 PageDown = pgdn
 Top = home

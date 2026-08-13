@@ -710,13 +710,11 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 #endif
 
 #ifdef ENABLE_MCTERM
-/* embedded terminal
- *
- * Every key not named here is typed into the shell, so this section is kept
- * short: what is bound is taken away from the program below.
- */
+/* embedded terminal: what is bound here is taken from the shell */
 static const global_keymap_ini_t default_mcterm_keymap[] = {
+    // marking the output, and taking it out
     { "Store", "ctrl-insert" },
+    { "Unmark", "ctrl-shift-u" },
     { "MarkLeft", "shift-left" },
     { "MarkRight", "shift-right" },
     { "MarkUp", "shift-up" },
@@ -725,11 +723,15 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "MarkPageDown", "shift-pgdn" },
     { "MarkToHome", "shift-home" },
     { "MarkToEnd", "shift-end" },
-    { "Unmark", "ctrl-shift-u" },
-    /* The view keys reach the shell when the view cannot move: a shell that
-       has no scrollback of its own still gets its Home and End. */
-    { "Up", "ctrl-up" },
-    { "Down", "ctrl-down" },
+    // the cursor over the output, while the terminal holds the focus
+    { "Left", "left" },
+    { "Right", "right" },
+    { "Up", "up" },
+    { "Down", "down" },
+    /* The view alone, which moves whoever is typing. The keys of a line reach
+       the command line when there is something on it. */
+    { "ScrollUp", "ctrl-up" },
+    { "ScrollDown", "ctrl-down" },
     { "PageUp", "pgup" },
     { "PageDown", "pgdn" },
     { "Top", "home" },

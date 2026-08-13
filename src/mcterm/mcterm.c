@@ -92,6 +92,11 @@ struct WMcTerm
     int scrollback;  // rows above the live screen; 0 follows the output
     gboolean scroll_allowed;
     mcterm_sel_t sel;
+    /* Where the terminal is being read, as against where the shell is typing.
+       It exists while the widget has the focus, and the arrows move it. */
+    gboolean cursor_valid;
+    gint64 cursor_row;
+    int cursor_col;
 };
 
 /* Where the rows of the screen fall in the output as a whole. */
@@ -104,6 +109,8 @@ typedef struct
     int content_rows;  // rows of output drawn
     int blank_above;   // empty rows above them
     gint64 first_abs;  // number of the row drawn at @blank_above
+    // The last row it draws: at a prompt the shell's own row is the host's.
+    gint64 newest_abs;
 } mcterm_geom_t;
 
 /*** forward declarations ************************************************************************/
@@ -512,6 +519,8 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
     else
         g->first_abs = mcview_vterm_scrolled_rows (t->vterm) + g->top_row;
 
+    g->newest_abs = mcview_vterm_scrolled_rows (t->vterm) + effective_max;
+
     return TRUE;
 }
 
@@ -581,28 +590,60 @@ mcterm_row_end_col (WMcTerm *t, gint64 row, int cols)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The mark starts where the shell is typing and grows from there, the way it
-   grows from the cursor in the editor. */
+/* The cursor starts where the shell is typing, or on the last row the
+   terminal draws when the shell is typing on the command line. */
 static void
-mcterm_mark_move (WMcTerm *t, long command)
+mcterm_cursor_reset (WMcTerm *t)
+{
+    const gint64 shell_row =
+        mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
+    mcterm_geom_t g;
+
+    t->cursor_valid = TRUE;
+
+    if (!mcterm_geometry (t, &g) || shell_row <= g.newest_abs)
+    {
+        t->cursor_row = shell_row;
+        t->cursor_col = mcview_vterm_cursor_col (t->vterm);
+    }
+    else
+    {
+        t->cursor_row = g.newest_abs;
+        t->cursor_col = 0;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Move the cursor over the output. With @marking the region grows behind it,
+   the way a block grows from the cursor of the editor; without, it is dropped. */
+static void
+mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
 {
     const WRect *r = &WIDGET (t)->rect;
     const int page = (r->lines > 1) ? r->lines - 1 : 1;
     const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
     const gint64 oldest = scrolled - mcview_vterm_history_len (t->vterm);
-    const gint64 newest = scrolled + r->lines - 1;
+    mcterm_geom_t g;
+    gint64 newest;
     gint64 row;
     int col;
 
-    if (!t->sel.anchored)
-        mcterm_sel_start (&t->sel, scrolled + mcview_vterm_cursor_row (t->vterm),
-                          mcview_vterm_cursor_col (t->vterm));
+    if (!mcterm_geometry (t, &g))
+        return;
 
-    row = t->sel.point_row;
-    col = t->sel.point_col;
+    // The cursor stays on what the terminal draws, and off the command line.
+    newest = MAX (g.newest_abs, oldest);
+
+    if (!t->cursor_valid)
+        mcterm_cursor_reset (t);
+
+    row = t->cursor_row;
+    col = t->cursor_col;
 
     switch (command)
     {
+    case CK_Left:
     case CK_MarkLeft:
         if (col > 0)
             col--;
@@ -612,6 +653,7 @@ mcterm_mark_move (WMcTerm *t, long command)
             col = r->cols - 1;
         }
         break;
+    case CK_Right:
     case CK_MarkRight:
         if (col < r->cols - 1)
             col++;
@@ -621,9 +663,11 @@ mcterm_mark_move (WMcTerm *t, long command)
             col = 0;
         }
         break;
+    case CK_Up:
     case CK_MarkUp:
         row--;
         break;
+    case CK_Down:
     case CK_MarkDown:
         row++;
         break;
@@ -646,9 +690,44 @@ mcterm_mark_move (WMcTerm *t, long command)
     row = CLAMP (row, oldest, newest);
     col = CLAMP (col, 0, r->cols - 1);
 
-    mcterm_sel_extend (&t->sel, row, col);
+    if (marking)
+    {
+        if (!t->sel.anchored)
+            mcterm_sel_start (&t->sel, t->cursor_row, t->cursor_col);
+        mcterm_sel_extend (&t->sel, row, col);
+    }
+    else
+        mcterm_sel_clear (&t->sel);
+
+    t->cursor_row = row;
+    t->cursor_col = col;
     mcterm_show_row (t, row);
     widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The view has moved: bring the cursor along, or it would be left off the
+   screen, where it cannot be drawn and the command line takes it over. */
+static void
+mcterm_cursor_into_view (WMcTerm *t)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    const gint64 oldest =
+        mcview_vterm_scrolled_rows (t->vterm) - mcview_vterm_history_len (t->vterm);
+    mcterm_geom_t g;
+    gint64 first, last;
+
+    if (!t->cursor_valid || !mcterm_geometry (t, &g))
+        return;
+
+    first = MAX (g.first_abs, oldest);
+    last = g.first_abs + (g.compose ? r->lines : g.content_rows) - 1;
+    last = MIN (last, g.newest_abs);
+
+    if (last >= first)
+        t->cursor_row = CLAMP (t->cursor_row, first, last);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -811,6 +890,26 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return MSG_HANDLED;
 
     case MSG_CURSOR:
+        /* Focused, the terminal shows where it is being read; the shell has
+           the cursor back as soon as the focus goes to the command line. */
+        if (widget_get_state (w, WST_FOCUSED) && t->cursor_valid && t->vterm != NULL
+            && !mcview_vterm_in_alt_screen (t->vterm))
+        {
+            mcterm_geom_t g;
+
+            if (mcterm_geometry (t, &g))
+            {
+                const WRect *r = &w->rect;
+                const gint64 screen_row = g.blank_above + (t->cursor_row - g.first_abs);
+
+                if (screen_row >= 0 && screen_row < r->lines)
+                {
+                    tty_gotoyx (r->y + (int) screen_row,
+                                r->x + CLAMP (t->cursor_col, 0, r->cols - 1));
+                    return MSG_HANDLED;
+                }
+            }
+        }
         if (t->shell_at_prompt && t->osc7_capable)
             return MSG_NOT_HANDLED;
         if (t->vterm != NULL && !t->child_dead)
@@ -912,11 +1011,20 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 // A panel over the terminal owns these keys, see CK_Store above.
                 if (!t->scroll_allowed)
                     break;
-                mcterm_mark_move (t, command);
+                mcterm_cursor_move (t, command, TRUE);
                 return MSG_HANDLED;
 
+            case CK_Left:
+            case CK_Right:
             case CK_Up:
             case CK_Down:
+                if (!t->scroll_allowed)
+                    break;
+                mcterm_cursor_move (t, command, FALSE);
+                return MSG_HANDLED;
+
+            case CK_ScrollUp:
+            case CK_ScrollDown:
             case CK_PageUp:
             case CK_PageDown:
             case CK_Top:
@@ -925,9 +1033,9 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 const int hist = mcview_vterm_history_len (t->vterm);
                 int delta;
 
-                if (command == CK_Up)
+                if (command == CK_ScrollUp)
                     delta = -1;
-                else if (command == CK_Down)
+                else if (command == CK_ScrollDown)
                     delta = 1;
                 else if (command == CK_PageUp)
                     delta = -page;
@@ -938,10 +1046,15 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 else
                     delta = hist;
 
-                /* While the view is held back the key is ours even when it can
-                   go no further: the program below must not see it and answer
-                   with something of its own. */
-                if (mcterm_scroll_view (t, delta) || t->scrollback > 0)
+                if (mcterm_scroll_view (t, delta))
+                {
+                    mcterm_cursor_into_view (t);
+                    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+                    return MSG_HANDLED;
+                }
+
+                // Held back, the key is ours; at the end, only these two are.
+                if (t->scrollback > 0 || command == CK_ScrollUp || command == CK_ScrollDown)
                     return MSG_HANDLED;
                 break;
             }
@@ -965,6 +1078,23 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         if (t->child_dead || t->pty_master < 0)
             return MSG_NOT_HANDLED;
         return mcterm_send_encoded_key (t, parm) ? MSG_HANDLED : MSG_NOT_HANDLED;
+
+    case MSG_FOCUS:
+        // Reading starts where the shell is typing.
+        if (t->vterm != NULL)
+            mcterm_cursor_reset (t);
+        widget_draw (w);
+        return MSG_HANDLED;
+
+    case MSG_UNFOCUS:
+        // The mark is worked on with the keys of the terminal, which are gone now.
+        t->cursor_valid = FALSE;
+        if (t->sel.anchored)
+        {
+            mcterm_sel_clear (&t->sel);
+            widget_draw (w);
+        }
+        return MSG_HANDLED;
 
     case MSG_DESTROY:
         if (t->pty_master >= 0)
@@ -1214,9 +1344,14 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
             break;
         if (!mcterm_row_at (t, event->y, event->x, &row, &col))
             break;
+        widget_select (w);
         mcterm_sel_clear (&t->sel);
         mcterm_sel_start (&t->sel, row, col);
+        t->cursor_row = row;
+        t->cursor_col = col;
+        t->cursor_valid = TRUE;
         widget_draw (w);
+        send_message (w, NULL, MSG_CURSOR, 0, NULL);
         break;
 
     case MSG_MOUSE_DRAG:
@@ -1230,7 +1365,10 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
         if (!mcterm_row_at (t, event->y, event->x, &row, &col))
             break;
         mcterm_sel_extend (&t->sel, row, col);
+        t->cursor_row = row;
+        t->cursor_col = col;
         widget_draw (w);
+        send_message (w, NULL, MSG_CURSOR, 0, NULL);
         break;
 
     default:
@@ -1243,6 +1381,8 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 long
 mcterm_key_command (const WMcTerm *t, int key)
 {
+    long command;
+
     if (t == NULL || t->vterm == NULL || mcterm_map == NULL)
         return CK_IgnoreKey;
 
@@ -1250,7 +1390,25 @@ mcterm_key_command (const WMcTerm *t, int key)
     if (mcview_vterm_in_alt_screen (t->vterm))
         return CK_IgnoreKey;
 
-    return keybind_lookup_keymap_command (mcterm_map, key);
+    command = keybind_lookup_keymap_command (mcterm_map, key);
+
+    switch (command)
+    {
+    case CK_ScrollUp:
+    case CK_ScrollDown:
+    case CK_PageUp:
+    case CK_PageDown:
+    case CK_Top:
+    case CK_Bottom:
+        // Looking back at the output does not need the focus, typing goes on.
+        return command;
+
+    default:
+        /* The cursor and the mark are the terminal's own, and it only has them
+           while it holds the focus: otherwise the arrows belong to whatever
+           does. */
+        return widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? command : CK_IgnoreKey;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
