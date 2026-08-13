@@ -502,7 +502,9 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
 
     if (g->compose)
     {
-        // Where the top of the screen falls in history followed by live rows.
+        /* Where the top of the screen falls in history followed by live rows.
+           The live window starts at row 0 whenever this path is taken, so one
+           number counts through both. */
         const int hist_len = mcview_vterm_history_len (t->vterm);
         const int start = hist_len + g->content_rows - r->lines - t->scrollback;
 

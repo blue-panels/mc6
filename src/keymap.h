@@ -36,6 +36,9 @@ extern GArray *viewer_struct_keymap;
 #ifdef USE_DIFF_VIEW
 extern GArray *diff_keymap;
 #endif
+#ifdef ENABLE_MCTERM
+extern GArray *mcterm_keymap;
+#endif
 
 extern const global_keymap_t *filemanager_map;
 extern const global_keymap_t *filemanager_x_map;
@@ -54,6 +57,9 @@ extern const global_keymap_t *viewer_hex_map;
 extern const global_keymap_t *viewer_struct_map;
 #ifdef USE_DIFF_VIEW
 extern const global_keymap_t *diff_map;
+#endif
+#ifdef ENABLE_MCTERM
+extern const global_keymap_t *mcterm_map;
 #endif
 
 /*** declarations of public functions ************************************************************/

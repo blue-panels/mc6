@@ -44,7 +44,8 @@ TESTS = \
 if ENABLE_MCTERM
 TESTS += \
 	mcterm_key_encode \
-	mcterm_osc7_parse
+	mcterm_osc7_parse \
+	mcterm_select
 endif
 
 check_PROGRAMS = $(TESTS)
@@ -74,6 +75,9 @@ mcterm_key_encode_SOURCES = \
 
 mcterm_osc7_parse_SOURCES = \
 	mcterm_osc7_parse.c
+
+mcterm_select_SOURCES = \
+	mcterm_select.c
 
 mctree_model_SOURCES = \
 	mctree_model.c

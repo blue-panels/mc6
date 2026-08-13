@@ -97,6 +97,8 @@ struct mcview_vterm_struct
     GPtrArray *history;  // rows that left the top of the main screen, oldest first
     gboolean keep_history;
     gsize history_cells;
+    // Rows that ever left the top; unlike the history, this count does not move.
+    gint64 scrolled_rows;
 
     gboolean new_chars_since_snapshot;
 
@@ -460,8 +462,14 @@ mcview_vterm_history_push (mcview_vterm_t *vt, int row)
 static void
 mcview_vterm_scroll_up (mcview_vterm_t *vt, int top, int bottom, const mcview_ansi_state_t *ansi)
 {
-    if (top == 0 && vt->keep_history && !vt->in_alt_screen)
-        mcview_vterm_history_push (vt, top);
+    if (top == 0 && !vt->in_alt_screen)
+    {
+        /* Counted even when no history is kept: what the count names is the
+           row, not the copy of it. */
+        vt->scrolled_rows++;
+        if (vt->keep_history)
+            mcview_vterm_history_push (vt, top);
+    }
 
     mcview_terminal_buffer_scroll_up (vt->buf, top, bottom, vt->term_cols, ansi);
 }
@@ -504,6 +512,14 @@ int
 mcview_vterm_history_len (const mcview_vterm_t *vt)
 {
     return (vt == NULL || vt->history == NULL) ? 0 : (int) vt->history->len;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gint64
+mcview_vterm_scrolled_rows (const mcview_vterm_t *vt)
+{
+    return (vt == NULL) ? 0 : vt->scrolled_rows;
 }
 
 /* --------------------------------------------------------------------------------------------- */

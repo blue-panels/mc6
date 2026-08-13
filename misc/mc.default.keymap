@@ -524,3 +524,22 @@ Help = f1
 Quit = f10; q; shift-q; esc
 Shell = ctrl-o
 SelectCodepage = alt-e
+
+[mcterm]
+# Every key not named here is typed into the shell.
+Store = ctrl-insert
+MarkLeft = shift-left
+MarkRight = shift-right
+MarkUp = shift-up
+MarkDown = shift-down
+MarkPageUp = shift-pgup
+MarkPageDown = shift-pgdn
+MarkToHome = shift-home
+MarkToEnd = shift-end
+Unmark = ctrl-shift-u
+Up = ctrl-up
+Down = ctrl-down
+PageUp = pgup
+PageDown = pgdn
+Top = home
+Bottom = end
