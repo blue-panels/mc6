@@ -269,12 +269,17 @@ static name_keymap_t command_names[] = {
     // chattr dialog
     ADD_KEYMAP_NAME_DESC (MarkAndDown, N_ ("Toggle attribute and move down")),
 
+    // the embedded terminal, and the editor which named them first
+    ADD_KEYMAP_NAME_DESC (ScrollUp, N_ ("Scroll up")),
+    ADD_KEYMAP_NAME_DESC (ScrollDown, N_ ("Scroll down")),
+    ADD_KEYMAP_NAME_DESC (Unmark, N_ ("Deselect all")),
+    ADD_KEYMAP_NAME_DESC (MarkPageUp, N_ ("Select page up")),
+    ADD_KEYMAP_NAME_DESC (MarkPageDown, N_ ("Select page down")),
+
 #ifdef USE_INTERNAL_EDIT
     ADD_KEYMAP_NAME_DESC (Close, N_ ("Close editor")),
     ADD_KEYMAP_NAME (Tab),
     ADD_KEYMAP_NAME (Undo),
-    ADD_KEYMAP_NAME_DESC (ScrollUp, N_ ("Scroll up")),
-    ADD_KEYMAP_NAME_DESC (ScrollDown, N_ ("Scroll down")),
     ADD_KEYMAP_NAME (Return),
     ADD_KEYMAP_NAME_DESC (ParagraphUp, N_ ("Paragraph up")),
     ADD_KEYMAP_NAME_DESC (ParagraphDown, N_ ("Paragraph down")),
@@ -282,7 +287,6 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (MarkWord, N_ ("Select word")),
     ADD_KEYMAP_NAME_DESC (MarkLine, N_ ("Select line")),
     ADD_KEYMAP_NAME_DESC (MarkAll, N_ ("Select all")),
-    ADD_KEYMAP_NAME_DESC (Unmark, N_ ("Deselect all")),
     ADD_KEYMAP_NAME_DESC (MarkColumn, N_ ("Column selection mode")),
     ADD_KEYMAP_NAME_DESC (BlockSave, N_ ("Save selected block")),
     ADD_KEYMAP_NAME_DESC (InsertFile, N_ ("Insert file")),
@@ -307,8 +311,6 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (BookmarkPrev, N_ ("Previous bookmark")),
     ADD_KEYMAP_NAME_DESC (FoldToggle, N_ ("Toggle code fold")),
     ADD_KEYMAP_NAME_DESC (UnfoldAll, N_ ("Unfold all")),
-    ADD_KEYMAP_NAME_DESC (MarkPageUp, N_ ("Select page up")),
-    ADD_KEYMAP_NAME_DESC (MarkPageDown, N_ ("Select page down")),
     ADD_KEYMAP_NAME_DESC (MarkToFileBegin, N_ ("Select to file start")),
     ADD_KEYMAP_NAME_DESC (MarkToFileEnd, N_ ("Select to file end")),
     ADD_KEYMAP_NAME_DESC (MarkToPageBegin, N_ ("Select to page start")),
