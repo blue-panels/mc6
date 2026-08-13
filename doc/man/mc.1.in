@@ -1478,6 +1478,15 @@ You can start the search by pressing the OK button.
 During the search you can stop from the Stop button and continue from
 the Start button.
 .PP
+The file list shows the modification time, the size and the permissions of
+every found file along with its name. When the file contents are searched, a
+file is shown once: a single match is shown along with the file name as
+"file.c:12", and a file that contains more than one match shows their number
+and is marked with "[+]". The matches of such a file are shown by the Left key
+or by the click on the mark: the number of the line and the line itself. There
+you can press Enter to go to the file, F3 to view or F4 to edit it at the
+chosen match.
+.PP
 You can browse the filelist with the up and down arrow keys. The Chdir
 button will change to the directory of the currently selected
 file. The Again button will ask for the parameters for a new
