@@ -46,6 +46,7 @@
 #include "lib/mcconfig.h"
 #include "lib/vfs/vfs.h"
 #include "lib/strutil.h"
+#include "lib/timefmt.h"  // file_date()
 #include "lib/widget.h"
 #include "lib/util.h"  // canonicalize_pathname()
 
@@ -63,6 +64,18 @@
 
 #define MAX_REFRESH_INTERVAL  (G_USEC_PER_SEC / 20)  // 50 ms
 #define MIN_REFRESH_FILE_SIZE (256 * 1024)           // 256 KB
+
+// widths of the columns of the file list
+#define FIND_SIZE_WIDTH     7
+#define FIND_PERM_WIDTH     10
+#define FIND_NAME_MIN_WIDTH 16
+// space, vertical line and space between the columns
+#define FIND_COL_SEP_WIDTH 3
+
+// how many bytes around a match are read to get the line it's found in
+#define FIND_MATCH_CONTEXT 512
+// how many characters of that line are shown
+#define FIND_MATCH_LINE_MAX 256
 
 /*** file scope type declarations ****************************************************************/
 
@@ -82,6 +95,15 @@ typedef enum
     FIND_SUSPEND,
     FIND_ABORT
 } FindProgressStatus;
+
+/* what to do with the match chosen in the list of the matches of a file */
+typedef enum
+{
+    FIND_HIT_CHDIR = 0,
+    FIND_HIT_VIEW,
+    FIND_HIT_UNPARSED_VIEW,
+    FIND_HIT_EDIT
+} find_hit_action_t;
 
 /* find file options */
 typedef struct
@@ -109,12 +131,37 @@ typedef struct
 
 typedef struct
 {
-    char *dir;
-    gsize start;
+    int line;     // line number of the match
+    gsize start;  // offset of the match in the file
     gsize end;
+} find_match_hit_t;
+
+typedef struct
+{
+    char *dir;       // not owned: text of the directory item in the listbox
+    char *filename;  // file name relative to the dir
+    GArray *hits;    // matches in the file, NULL if content isn't searched
+
+    // file info to be shown in the columns
+    gboolean stat_ok;
+    time_t mtime;
+    off_t size;
+    mode_t mode;
 } find_match_location_t;
 
+/* widths of the columns of the file list; 0 if a column isn't shown */
+typedef struct
+{
+    int date;
+    int size;
+    int perm;
+    int name;
+} find_list_layout_t;
+
 /*** forward declarations (file scope functions) *************************************************/
+
+static void find_adjust_header (WDialog *h);
+static cb_ret_t find_show_hits (void);
 
 /* button callbacks */
 static int start_stop (WButton *button, int action);
@@ -151,6 +198,7 @@ static char *content_pattern = NULL;  // pattern to search inside files; if cont
                                       // true, it contains the regex pattern, else the search string
 static gboolean content_is_empty = TRUE;  // remember content field state; initially is empty
 static unsigned long matches;             // Number of matches
+static unsigned long files_matched;       // Number of files the matches are found in
 static gboolean is_start = FALSE;         // Status of the start/stop toggle button
 static char *old_dir = NULL;
 
@@ -198,7 +246,20 @@ static const size_t quit_button = 4;          // index of "Quit" button
 static const size_t panelize_button = 5;      // index of "Panelize" button
 static gboolean show_panelize_button = TRUE;  // cached at setup_gui time
 
-static WListbox *find_list;  // Listbox with the file list
+static WListbox *find_list;        // Listbox with the file list
+static GPtrArray *find_locations;  // Data of the found items, owns find_match_location_t
+// Default callbacks of the file list
+static widget_cb_fn find_list_default_callback;
+static widget_mouse_cb_fn find_list_default_mouse_callback;
+// Mark of a file that contains more than one match, taken from the skin
+static char *find_mark = NULL;
+static int find_mark_width = 0;
+// Some of the found files contains more than one match
+static gboolean find_have_marks = FALSE;
+// Finished, Stopped etc., shown in the header of the dialog
+static char *find_state = NULL;
+// What to do with the match chosen in the list of the matches of a file
+static find_hit_action_t find_hit_action = FIND_HIT_CHDIR;
 
 static find_file_options_t options = {
     TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NULL,
@@ -341,18 +402,25 @@ find_save_options (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static inline char *
-add_to_list (const char *text, void *data)
+static void
+find_match_location_free (gpointer data)
 {
-    return listbox_add_item (find_list, LISTBOX_APPEND_AT_END, 0, text, data, TRUE);
+    find_match_location_t *location = (find_match_location_t *) data;
+
+    if (location->hits != NULL)
+        g_array_free (location->hits, TRUE);
+    g_free (location->filename);
+    g_free (location);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* the data of items is owned by find_locations, not by the listbox */
+
 static inline char *
-add_to_list_take (char *text, void *data)
+add_to_list (const char *text, void *data)
 {
-    return listbox_add_item_take (find_list, LISTBOX_APPEND_AT_END, 0, text, data, TRUE);
+    return listbox_add_item (find_list, LISTBOX_APPEND_AT_END, 0, text, data, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -376,31 +444,350 @@ status_update (const char *text)
 static inline void
 found_num_update (void)
 {
-    label_set_textv (found_num_label, _ ("Found: %lu"), matches);
+    if (content_pattern == NULL)
+        label_set_textv (found_num_label, _ ("Found: %lu"), matches);
+    else
+        label_set_textv (found_num_label, _ ("Found: %lu in %lu files"), matches, files_matched);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Set the state of the search shown in the header: Finished, Stopped etc. */
+
 static void
-get_list_info (char **file, char **dir, gsize *start, gsize *end)
+find_set_state (const char *text)
+{
+    g_free (find_state);
+    find_state = g_strdup (text);
+
+    find_adjust_header (find_dlg);
+
+    if (text == NULL || !find_have_marks)
+        status_update ("");
+    else
+    {
+        char msg[BUF_SMALL];
+
+        g_snprintf (msg, sizeof (msg), _ ("Press \"Left\" or click %s to show the matches"),
+                    find_mark);
+        status_update (msg);
+    }
+
+    widget_draw (WIDGET (find_dlg));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Draw the state of the search in the right part of the header */
+
+static void
+find_draw_state (const WDialog *h)
+{
+    const Widget *w = CONST_WIDGET (h);
+    const int *colors;
+    int d;
+    int width;
+
+    if (find_state == NULL)
+        return;
+
+    // the frame of a non-compact dialog is drawn with an offset, see frame_draw()
+    d = h->compact ? 0 : 1;
+
+    width = str_term_width1 (find_state) + 2;  // the spaces around the state
+    if (width + 6 > w->rect.cols)
+        return;
+
+    colors = widget_get_colors (w);
+    tty_setcolor (colors[DLG_COLOR_TITLE]);
+    widget_gotoyx (h, d, w->rect.cols - d - 1 - width);
+    tty_printf (" %s ", find_state);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Get the file name and the directory of the current item, the path and NULL for a directory */
+
+static void
+get_list_info (char **file, char **dir)
 {
     find_match_location_t *location;
 
     listbox_get_current (find_list, file, (void **) &location);
     if (location != NULL)
     {
+        if (file != NULL)
+            *file = location->filename;
         if (dir != NULL)
             *dir = location->dir;
-        if (start != NULL)
-            *start = location->start;
-        if (end != NULL)
-            *end = location->end;
     }
-    else
+    else if (dir != NULL)
+        *dir = NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Calculate the widths of the columns; the ones that don't fit into @width are dropped */
+
+static void
+find_list_calc_layout (int width, find_list_layout_t *layout)
+{
+    layout->date = (int) i18n_checktimelength ();
+    layout->size = FIND_SIZE_WIDTH;
+    layout->perm = FIND_PERM_WIDTH;
+
+    while (TRUE)
     {
-        if (dir != NULL)
-            *dir = NULL;
+        int used = 0;
+
+        if (layout->date != 0)
+            used += layout->date + FIND_COL_SEP_WIDTH;
+        if (layout->size != 0)
+            used += layout->size + FIND_COL_SEP_WIDTH;
+        if (layout->perm != 0)
+            used += layout->perm + FIND_COL_SEP_WIDTH;
+
+        layout->name = width - used;
+
+        if (layout->name >= FIND_NAME_MIN_WIDTH)
+            break;
+
+        if (layout->perm != 0)
+            layout->perm = 0;
+        else if (layout->date != 0)
+            layout->date = 0;
+        else if (layout->size != 0)
+            layout->size = 0;
+        else
+        {
+            // the terminal is too narrow even for the file name alone
+            layout->name = width;
+            break;
+        }
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+find_list_print_column (const WListbox *l, int line, int x, const char *text, int width,
+                        align_crt_t just, gboolean last)
+{
+    widget_gotoyx (l, line, x);
+    tty_print_string (str_fit_to_term (text, width, just));
+
+    if (!last)
+    {
+        tty_print_char (' ');
+        tty_print_one_vline (TRUE);
+        tty_print_char (' ');
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+find_list_file_size (const find_match_location_t *location, int width)
+{
+    static char buffer[BUF_TINY];
+
+    if (!location->stat_ok)
+        return "";
+
+    if (S_ISDIR (location->mode))
+        return _ ("SUB-DIR");
+
+    if (S_ISLNK (location->mode))
+        return _ ("SYMLINK");
+
+    size_trunc_len (buffer, (unsigned int) width, location->size, 0, panels_options.kilobyte_si);
+
+    return buffer;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Draw the name column: "file.c:12", or the number of the matches and the mark */
+
+static void
+find_list_draw_name (const WListbox *l, int line, int x, const find_match_location_t *location,
+                     int width)
+{
+    static char buffer[BUF_MEDIUM];
+
+    char count[BUF_TINY];
+    guint n;
+    int count_width;
+
+    n = location->hits == NULL ? 0 : location->hits->len;
+
+    if (n <= 1)
+    {
+        const char *text = location->filename;
+
+        if (n == 1)
+        {
+            g_snprintf (buffer, sizeof (buffer), "%s:%d", location->filename,
+                        g_array_index (location->hits, find_match_hit_t, 0).line);
+            text = buffer;
+        }
+
+        find_list_print_column (l, line, x, text, width, J_LEFT_FIT, TRUE);
+        return;
+    }
+
+    // the mark and the space before it take the rightmost columns of the name column
+    width -= find_mark_width + 1;
+
+    g_snprintf (count, sizeof (count), ngettext ("%u match", "%u matches", n), n);
+    count_width = str_term_width1 (count) + 1;  // including the space before the number
+    if (count_width >= width)
+        count_width = 0;  // the column is too narrow, show the name only
+
+    find_list_print_column (l, line, x, location->filename, width - count_width, J_LEFT_FIT, TRUE);
+    if (count_width != 0)
+        find_list_print_column (l, line, x + width - count_width, count, count_width, J_RIGHT,
+                                TRUE);
+
+    widget_gotoyx (l, line, x + width);
+    tty_print_char (' ');
+    tty_print_string (find_mark);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+find_list_draw_file (const WListbox *l, int line, const find_match_location_t *location,
+                     const find_list_layout_t *layout)
+{
+    int x = 1;
+
+    if (layout->date != 0)
+    {
+        find_list_print_column (l, line, x, location->stat_ok ? file_date (location->mtime) : "",
+                                layout->date, J_LEFT, FALSE);
+        x += layout->date + FIND_COL_SEP_WIDTH;
+    }
+
+    if (layout->size != 0)
+    {
+        find_list_print_column (l, line, x, find_list_file_size (location, layout->size),
+                                layout->size, J_RIGHT, FALSE);
+        x += layout->size + FIND_COL_SEP_WIDTH;
+    }
+
+    if (layout->perm != 0)
+    {
+        find_list_print_column (l, line, x, location->stat_ok ? string_perm (location->mode) : "",
+                                layout->perm, J_LEFT, FALSE);
+        x += layout->perm + FIND_COL_SEP_WIDTH;
+    }
+
+    find_list_draw_name (l, line, x, location, layout->name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Draw the file list: the file info columns and the directories the files belong to */
+
+static void
+find_list_draw (WListbox *l)
+{
+    Widget *wl = WIDGET (l);
+    const WRect *w = &CONST_WIDGET (l)->rect;
+    const int *colors;
+    gboolean disabled;
+    int normalc, selc, dirc;
+    find_list_layout_t layout;
+    int length;
+    GList *le;
+    int pos;
+    int i;
+
+    if (l->list == NULL)
+        return;
+
+    colors = widget_get_colors (wl);
+
+    disabled = widget_get_state (wl, WST_DISABLED);
+    normalc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_NORMAL];
+    selc = disabled ? CORE_DISABLED_COLOR
+                    : colors[widget_get_state (wl, WST_FOCUSED) ? DLG_COLOR_SELECTED_FOCUS
+                                                                : DLG_COLOR_SELECTED_NORMAL];
+    dirc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_TITLE];
+
+    find_list_calc_layout (w->cols - 2, &layout);
+
+    length = g_queue_get_length (l->list);
+    le = g_queue_peek_nth_link (l->list, (guint) l->top);
+    pos = (le == NULL) ? 0 : l->top;
+
+    for (i = 0; i < w->lines && le != NULL && pos < length; i++, le = g_list_next (le), pos++)
+    {
+        WLEntry *e = LENTRY (le->data);
+
+        if (e->data != NULL)
+        {
+            tty_setcolor (pos == l->current ? selc : normalc);
+            find_list_draw_file (l, i, (const find_match_location_t *) e->data, &layout);
+        }
+        else if (pos != l->current)
+        {
+            // a directory the files below belong to
+            tty_setcolor (dirc);
+            widget_gotoyx (l, i, 1);
+            tty_print_string (str_fit_to_term (e->text, w->cols - 2, J_LEFT_FIT));
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static cb_ret_t
+find_list_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    cb_ret_t ret;
+
+    // let the listbox draw the items, the empty lines and the scrollbar itself
+    ret = find_list_default_callback (w, sender, msg, parm, data);
+
+    /* ... and draw the file info over the text of the items.  The listbox redraws itself
+       when the selected item is changed, so the key events are handled here as well. */
+    if (msg == MSG_DRAW || msg == MSG_KEY || msg == MSG_ACTION)
+        find_list_draw (LISTBOX (w));
+
+    return ret;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Check whether the mark of the current file is clicked */
+
+static gboolean
+find_list_mark_clicked (const WListbox *l, const mouse_event_t *event)
+{
+    const WRect *w = &CONST_WIDGET (l)->rect;
+    char *text = NULL;
+    find_match_location_t *location;
+
+    // the mark is drawn at the right edge of the name column, that is the last one
+    if (event->x < w->cols - 1 - find_mark_width || event->x >= w->cols - 1)
+        return FALSE;
+
+    // the click has moved the cursor to the file already
+    listbox_get_current (find_list, &text, (void **) &location);
+
+    return location != NULL && location->hits != NULL && location->hits->len > 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+find_list_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
+{
+    find_list_default_mouse_callback (w, msg, event);
+    // the selected item could be changed, see find_list_callback()
+    find_list_draw (LISTBOX (w));
+
+    if (msg == MSG_MOUSE_CLICK && find_list_mark_clicked (LISTBOX (w), event))
+        find_show_hits ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -863,12 +1250,30 @@ clear_stack (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Get the file info to be shown in the columns of the file list */
+
 static void
-insert_file (const char *dir, const char *file, gsize start, gsize end)
+find_get_file_info (const char *dir, const char *file, find_match_location_t *location)
 {
-    char *tmp_name;
+    struct stat st;
+    vfs_path_t *vpath;
+
+    vpath = vfs_path_build_filename (dir, file, (char *) NULL);
+    location->stat_ok = mc_lstat (vpath, &st) == 0;
+    vfs_path_free (vpath, TRUE);
+
+    location->mtime = location->stat_ok ? st.st_mtime : 0;
+    location->size = location->stat_ok ? st.st_size : 0;
+    location->mode = location->stat_ok ? st.st_mode : 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+insert_file (const char *dir, const char *file, int line, gsize start, gsize end)
+{
     static char *dirname = NULL;
-    find_match_location_t *location;
+    find_match_location_t *location = NULL;
 
     while (IS_PATH_SEP (dir[0]) && IS_PATH_SEP (dir[1]))
         dir++;
@@ -888,20 +1293,54 @@ insert_file (const char *dir, const char *file, gsize start, gsize end)
         dirname = add_to_list (dir, NULL);
     }
 
-    tmp_name = g_strdup_printf ("    %s", file);
-    location = g_malloc (sizeof (*location));
-    location->dir = dirname;
-    location->start = start;
-    location->end = end;
-    add_to_list_take (tmp_name, location);
+    /* all the matches of a file are found in a row, so it's enough to look at the last
+       added item to know whether the file is already in the list */
+    if (line != 0 && find_locations->len != 0)
+    {
+        find_match_location_t *last;
+
+        last =
+            (find_match_location_t *) g_ptr_array_index (find_locations, find_locations->len - 1);
+        if (last->dir == dirname && strcmp (last->filename, file) == 0)
+            location = last;
+    }
+
+    if (location == NULL)
+    {
+        location = g_new (find_match_location_t, 1);
+        location->dir = dirname;
+        location->filename = g_strdup (file);
+        location->hits = NULL;
+        find_get_file_info (dir, file, location);
+        g_ptr_array_add (find_locations, location);
+
+        add_to_list (file, location);
+        files_matched++;
+    }
+
+    if (line != 0)
+    {
+        find_match_hit_t hit;
+
+        hit.line = line;
+        hit.start = start;
+        hit.end = end;
+
+        if (location->hits == NULL)
+            location->hits = g_array_new (FALSE, FALSE, sizeof (find_match_hit_t));
+        g_array_append_val (location->hits, hit);
+
+        if (location->hits->len == 2)
+            find_have_marks = TRUE;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-find_add_match (const char *dir, const char *file, gsize start, gsize end)
+find_add_match (const char *dir, const char *file, int line, gsize start, gsize end)
 {
-    insert_file (dir, file, start, end);
+    insert_file (dir, file, line, start, end);
 
     // Don't scroll
     if (matches == 0)
@@ -1080,10 +1519,9 @@ search_content (WDialog *h, const char *directory, const char *filename)
                     status_updated = TRUE;
                 }
 
-                g_snprintf (result, sizeof (result), "%d:%s", line, filename);
                 found_start =
                     off + search_content_handle->normal_offset + 1;  // off by one: ticket 3280
-                find_add_match (directory, result, found_start, found_start + found_len);
+                find_add_match (directory, filename, line, found_start, found_start + found_len);
                 found = TRUE;
             }
 
@@ -1257,7 +1695,7 @@ do_search (WDialog *h)
                     {
                         running = FALSE;
                         if (ignore_count == 0)
-                            status_update (_ ("Finished"));
+                            find_set_state (_ ("Finished"));
                         else
                         {
                             char msg[BUF_SMALL];
@@ -1267,7 +1705,7 @@ do_search (WDialog *h)
                                                   "Finished (ignored %zu directories)",
                                                   ignore_count),
                                         ignore_count);
-                            status_update (msg);
+                            find_set_state (msg);
                         }
                         if (verbose)
                             find_rotate_dash (h, FALSE);
@@ -1368,7 +1806,7 @@ do_search (WDialog *h)
             if (search_ok)
             {
                 if (content_pattern == NULL)
-                    find_add_match (directory, dp->d_name, 0, 0);
+                    find_add_match (directory, dp->d_name, 0, 0, 0);
                 else if (search_content (h, directory, dp->d_name))
                     return 1;
             }
@@ -1392,6 +1830,8 @@ init_find_vars (void)
 {
     MC_PTR_FREE (old_dir);
     matches = 0;
+    files_matched = 0;
+    find_have_marks = FALSE;
     ignore_count = 0;
 
     // Remove all the items from the stack
@@ -1404,23 +1844,10 @@ init_find_vars (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-find_do_view_edit (gboolean unparsed_view, gboolean edit, char *dir, char *file, off_t search_start,
-                   off_t search_end)
+find_do_view_edit (gboolean unparsed_view, gboolean edit, const char *dir, const char *filename,
+                   int line, off_t search_start, off_t search_end)
 {
-    const char *filename = NULL;
-    int line;
     vfs_path_t *fullname_vpath;
-
-    if (content_pattern != NULL)
-    {
-        filename = strchr (file + 4, ':') + 1;
-        line = atoi (file + 4);
-    }
-    else
-    {
-        filename = file + 4;
-        line = 0;
-    }
 
     fullname_vpath = vfs_path_build_filename (dir, filename, (char *) NULL);
     if (edit)
@@ -1429,6 +1856,197 @@ find_do_view_edit (gboolean unparsed_view, gboolean edit, char *dir, char *file,
         view_file_at_line (fullname_vpath, unparsed_view, use_internal_view, line, search_start,
                            search_end);
     vfs_path_free (fullname_vpath, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** View or edit the file at the @idx-th match found in it */
+
+static void
+find_view_hit (gboolean unparsed_view, gboolean edit, const find_match_location_t *location,
+               guint idx)
+{
+    int line = 0;
+    gsize start = 0;
+    gsize end = 0;
+
+    if (location->hits != NULL && idx < location->hits->len)
+    {
+        const find_match_hit_t *hit;
+
+        hit = &g_array_index (location->hits, find_match_hit_t, idx);
+        line = hit->line;
+        start = hit->start;
+        end = hit->end;
+    }
+
+    find_do_view_edit (unparsed_view, edit, location->dir, location->filename, line, start, end);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Get the line the match at @offset is found in, cut off and cleaned up to be shown */
+
+static void
+find_get_match_line (int fd, gsize offset, GString *line)
+{
+    char buffer[FIND_MATCH_CONTEXT * 2];
+    off_t base;
+    ssize_t size;
+    gsize pos, start, end;
+
+    g_string_set_size (line, 0);
+
+    if (fd == -1)
+        return;
+
+    // the offset of a match is off by one, see search_content()
+    if (offset > 0)
+        offset--;
+
+    base = offset > FIND_MATCH_CONTEXT ? (off_t) (offset - FIND_MATCH_CONTEXT) : 0;
+    if (mc_lseek (fd, base, SEEK_SET) == -1)
+        return;
+
+    size = mc_read (fd, buffer, sizeof (buffer));
+    if (size <= 0)
+        return;
+
+    pos = offset - (gsize) base;
+    if (pos >= (gsize) size)
+        return;
+
+    for (start = pos; start > 0 && buffer[start - 1] != '\n'; start--)
+        ;
+    for (end = pos; end < (gsize) size && buffer[end] != '\n'; end++)
+        ;
+
+    while (start < pos && (buffer[start] == ' ' || buffer[start] == '\t'))
+        start++;
+    end = MIN (end, start + FIND_MATCH_LINE_MAX);
+
+    for (pos = start; pos < end; pos++)
+        g_string_append_c (line, (unsigned char) buffer[pos] < ' ' ? ' ' : buffer[pos]);
+
+    if (!str_is_valid_string (line->str))
+        for (pos = 0; pos < line->len; pos++)
+            if ((unsigned char) line->str[pos] > 0x7f)
+                line->str[pos] = '?';
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Handle F3 and F4 in the list of the matches: view and edit the file at the chosen match */
+
+static cb_ret_t
+find_hits_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    if (msg == MSG_KEY && (parm == KEY_F (3) || parm == KEY_F (13) || parm == KEY_F (4)))
+    {
+        WDialog *h = DIALOG (w);
+
+        if (parm == KEY_F (4))
+            find_hit_action = FIND_HIT_EDIT;
+        else
+            find_hit_action = parm == KEY_F (13) ? FIND_HIT_UNPARSED_VIEW : FIND_HIT_VIEW;
+
+        // close the dialog as Enter does to get the chosen match
+        h->ret_value = B_ENTER;
+        dlg_close (h);
+        return MSG_HANDLED;
+    }
+
+    return dlg_default_callback (w, sender, msg, parm, data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Show the list of the matches found in the currently selected file */
+
+static cb_ret_t
+find_show_hits (void)
+{
+    char *text = NULL;
+    find_match_location_t *location;
+    vfs_path_t *vpath;
+    int fd;
+    GString *line;
+    GPtrArray *items;
+    Listbox *listbox;
+    char *title;
+    int number_width;
+    int width = 0;
+    guint i;
+    int sel;
+
+    listbox_get_current (find_list, &text, (void **) &location);
+
+    if (location == NULL || location->dir == NULL || location->hits == NULL
+        || location->hits->len == 0)
+        return MSG_NOT_HANDLED;
+
+    vpath = vfs_path_build_filename (location->dir, location->filename, (char *) NULL);
+    fd = mc_open (vpath, O_RDONLY);
+    vfs_path_free (vpath, TRUE);
+
+    // the line numbers are aligned by the widest one, that is the last one
+    {
+        char number[BUF_TINY];
+
+        number_width = g_snprintf (
+            number, sizeof (number), "%d",
+            g_array_index (location->hits, find_match_hit_t, location->hits->len - 1).line);
+    }
+
+    line = g_string_sized_new (FIND_MATCH_LINE_MAX);
+    items = g_ptr_array_sized_new (location->hits->len);
+
+    for (i = 0; i < location->hits->len; i++)
+    {
+        const find_match_hit_t *hit;
+        char *item;
+
+        hit = &g_array_index (location->hits, find_match_hit_t, i);
+        find_get_match_line (fd, hit->start, line);
+        item = g_strdup_printf ("%*d %s", number_width, hit->line, line->str);
+        width = max (width, str_term_width1 (item));
+        g_ptr_array_add (items, item);
+    }
+
+    g_string_free (line, TRUE);
+    if (fd != -1)
+        mc_close (fd);
+
+    title = g_strdup_printf (_ ("Matches in %s (%u)"), location->filename, location->hits->len);
+    listbox = listbox_window_new (location->hits->len, width, title, "[Find File]");
+    g_free (title);
+
+    WIDGET (listbox->dlg)->callback = find_hits_callback;
+
+    for (i = 0; i < items->len; i++)
+        listbox_add_item_take (listbox->list, LISTBOX_APPEND_AT_END, 0,
+                               (char *) g_ptr_array_index (items, i), NULL, FALSE);
+    g_ptr_array_free (items, FALSE);
+
+    find_hit_action = FIND_HIT_CHDIR;
+    sel = listbox_run (listbox);
+
+    if (sel >= 0)
+        switch (find_hit_action)
+        {
+        case FIND_HIT_VIEW:
+        case FIND_HIT_UNPARSED_VIEW:
+            find_view_hit (find_hit_action == FIND_HIT_UNPARSED_VIEW, FALSE, location, (guint) sel);
+            break;
+
+        case FIND_HIT_EDIT:
+            find_view_hit (FALSE, TRUE, location, (guint) sel);
+            break;
+
+        default:
+            // go to the file as the Chdir button does
+            find_dlg->ret_value = B_ENTER;
+            dlg_close (find_dlg);
+            break;
+        }
+
+    return MSG_HANDLED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1441,10 +2059,10 @@ view_edit_currently_selected_file (gboolean unparsed_view, gboolean edit)
 
     listbox_get_current (find_list, &text, (void **) &location);
 
-    if ((text == NULL) || (location == NULL) || (location->dir == NULL))
+    if ((location == NULL) || (location->dir == NULL))
         return MSG_NOT_HANDLED;
 
-    find_do_view_edit (unparsed_view, edit, location->dir, text, location->start, location->end);
+    find_view_hit (unparsed_view, edit, location, 0);
     return MSG_HANDLED;
 }
 
@@ -1489,7 +2107,7 @@ static void
 find_adjust_header (WDialog *h)
 {
     char title[BUF_MEDIUM];
-    int title_len;
+    int title_len, max_len;
 
     if (content_pattern != NULL)
         g_snprintf (title, sizeof (title), _ ("Find File: \"%s\". Content: \"%s\""), find_pattern,
@@ -1497,11 +2115,16 @@ find_adjust_header (WDialog *h)
     else
         g_snprintf (title, sizeof (title), _ ("Find File: \"%s\""), find_pattern);
 
+    max_len = WIDGET (h)->rect.cols - 6;
+    // the title is centered, reserve the room for the state at both sides
+    if (find_state != NULL)
+        max_len -= 2 * (str_term_width1 (find_state) + 2);
+
     title_len = str_term_width1 (title);
-    if (title_len > WIDGET (h)->rect.cols - 6)
+    if (title_len > max_len)
     {
         // title is too wide, truncate it
-        title_len = WIDGET (h)->rect.cols - 6;
+        title_len = max_len;
         title_len = str_column_to_pos (title, title_len);
         title_len -= 3;  // reserve space for three dots
         title_len = str_offset_to_pos (title, title_len);
@@ -1566,7 +2189,18 @@ find_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data
         }
         if (parm == KEY_F (4))
             return view_edit_currently_selected_file (FALSE, TRUE);
+        if ((parm == KEY_LEFT || parm == KEY_RIGHT) && GROUP (h)->current->data == find_list)
+            return find_show_hits ();
         return MSG_NOT_HANDLED;
+
+    case MSG_DRAW:
+    {
+        cb_ret_t ret;
+
+        ret = dlg_default_callback (w, sender, msg, parm, data);
+        find_draw_state (h);
+        return ret;
+    }
 
     case MSG_RESIZE:
         return find_resize (h);
@@ -1594,7 +2228,13 @@ start_stop (WButton *button, int action)
     widget_idle (WIDGET (find_dlg), running);
     is_start = !is_start;
 
-    status_update (is_start ? _ ("Stopped") : _ ("Searching"));
+    if (is_start)
+        find_set_state (_ ("Stopped"));
+    else
+    {
+        find_set_state (NULL);
+        status_update (_ ("Searching"));
+    }
     button_set_text (button, fbuts[is_start ? 3 : 2].text);
 
     find_relocate_buttons (DIALOG (w->owner), FALSE);
@@ -1668,8 +2308,24 @@ setup_gui (void)
 
     find_calc_button_locations (find_dlg, TRUE);
 
+    find_locations = g_ptr_array_new_with_free_func (find_match_location_free);
+
+    {
+        char *mark_char;
+
+        mark_char = mc_skin_get ("widget-find", "show-matches-char", "+");
+        find_mark = g_strdup_printf ("[%s]", mark_char);
+        find_mark_width = str_term_width1 (find_mark);
+        g_free (mark_char);
+    }
+
     y = 2;
     find_list = listbox_new (y, 2, lines - 10, cols - 4, FALSE, NULL);
+    // draw the file info columns over the items drawn by the listbox
+    find_list_default_callback = WIDGET (find_list)->callback;
+    WIDGET (find_list)->callback = find_list_callback;
+    find_list_default_mouse_callback = WIDGET (find_list)->mouse_callback;
+    WIDGET (find_list)->mouse_callback = find_list_mouse_callback;
     group_add_widget_autopos (g, find_list, WPOS_KEEP_ALL, NULL);
     y += WIDGET (find_list)->rect.lines;
 
@@ -1747,6 +2403,13 @@ kill_gui (void)
 
     widget_idle (w, FALSE);
     widget_destroy (w);
+
+    // the items of the listbox are destroyed, free their data
+    g_ptr_array_free (find_locations, TRUE);
+    find_locations = NULL;
+
+    MC_PTR_FREE (find_mark);
+    MC_PTR_FREE (find_state);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1770,7 +2433,7 @@ do_find (WPanel *panel, const char *start_dir, ssize_t start_dir_len, const char
     // Clear variables
     init_find_vars ();
 
-    get_list_info (&file_tmp, &dir_tmp, NULL, NULL);
+    get_list_info (&file_tmp, &dir_tmp);
 
     if (dir_tmp != NULL)
         *dirname = g_strdup (dir_tmp);
@@ -1790,19 +2453,14 @@ do_find (WPanel *panel, const char *start_dir, ssize_t start_dir_len, const char
 
         for (entry = listbox_get_first_link (find_list); entry != NULL; entry = g_list_next (entry))
         {
-            const char *lc_filename;
             WLEntry *le = LENTRY (entry->data);
             find_match_location_t *location = le->data;
 
-            if ((le->text == NULL) || (location == NULL) || (location->dir == NULL))
+            if ((location == NULL) || (location->dir == NULL))
                 continue;
 
-            if (!content_is_empty)
-                lc_filename = strchr (le->text + 4, ':') + 1;
-            else
-                lc_filename = le->text + 4;
-
-            g_ptr_array_add (paths, mc_build_filename (location->dir, lc_filename, (char *) NULL));
+            g_ptr_array_add (paths,
+                             mc_build_filename (location->dir, location->filename, (char *) NULL));
 
             if ((paths->len & 15) == 0)
                 rotate_dash (TRUE);
@@ -1879,16 +2537,7 @@ find_cmd (WPanel *panel)
                 vfs_path_free (dirname_vpath, TRUE);
 
                 if (filename != NULL)
-                {
-                    size_t offset;
-
-                    if (content_pattern == NULL)
-                        offset = 4;
-                    else
-                        offset = strchr (filename + 4, ':') - filename + 1;
-
-                    panel_set_current_by_name (panel, filename + offset);
-                }
+                    panel_set_current_by_name (panel, filename);
             }
             else if (filename != NULL)
             {
