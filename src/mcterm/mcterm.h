@@ -34,7 +34,8 @@ void mcterm_set_prompt_callback (WMcTerm *t, void (*cb) (void *), void *data);
 void mcterm_set_after_redraw_callback (WMcTerm *t, void (*cb) (void *), void *data);
 gboolean mcterm_osc7_capable (const WMcTerm *t);
 int mcterm_cursor_col (const WMcTerm *t);
-void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y);
+/* At a prompt the widget leaves the shell's row to the host: draw it with this. */
+void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
 long mcterm_key_command (const WMcTerm *t, int key);
 
@@ -130,10 +131,12 @@ mcterm_cursor_col (const WMcTerm *t)
     return -1;
 }
 static inline void
-mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
+mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color)
 {
     (void) t;
     (void) screen_y;
+    (void) skin_section;
+    (void) color;
 }
 static inline gboolean
 mcterm_send_tab_complete (WMcTerm *t, const char *text)

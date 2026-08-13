@@ -304,6 +304,22 @@ applies individually to each of these three properties.
             Frame (e.g. in panel's "Quick view")
 
 
+    [mcterm]
+        Embedded terminal.
+
+        _default_
+            Default color, and the background the terminal is painted on.
+            Output that carries a color of its own keeps it, and takes the
+            background from here when the program leaves it out.
+
+        mctermselected
+            Marked output
+
+        The shipped skins paint the terminal on black, which is what a
+        terminal looks like. The ones whose name ends in -defbg keep the
+        background of the terminal mc runs in, here as everywhere else.
+
+
     [diffviewer]
         Built-in diff viewer, or mcdiff.
 

@@ -469,6 +469,19 @@ mcterm_scroll_view (WMcTerm *t, int delta)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The colors of the terminal's own skin section, not of the viewer's. */
+static void
+mcterm_canvas_colors (mcview_canvas_colors_t *colors)
+{
+    colors->section = "mcterm";
+    colors->normal = MCTERM_NORMAL_COLOR;
+    colors->bold = -1;
+    colors->underline = -1;
+    colors->bold_underline = -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* FALSE when there is no terminal to draw. */
 static gboolean
 mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
@@ -487,6 +500,7 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
     max_row = mcview_terminal_buffer_max_row (g->buf);
     cursor_row = g->snapshot ? t->sync_snapshot_cursor_row : mcview_vterm_cursor_row (t->vterm);
 
+    // The row the shell types on is the host's, see mcterm_draw_prompt_row().
     if (t->shell_at_prompt && t->osc7_capable && !mcview_vterm_in_alt_screen (t->vterm))
         effective_max = cursor_row - 1;
     else
@@ -742,7 +756,7 @@ mcterm_draw_selection (WMcTerm *t, const mcterm_geom_t *g)
     if (!t->sel.active || g->snapshot)
         return;
 
-    tty_setcolor (VIEWER_SELECTED_COLOR);
+    tty_setcolor (MCTERM_SELECTED_COLOR);
 
     for (row = g->blank_above; row < r->lines; row++)
     {
@@ -773,7 +787,7 @@ mcterm_do_draw (WMcTerm *t)
     {
         int row;
 
-        tty_setcolor (VIEWER_NORMAL_COLOR);
+        tty_setcolor (MCTERM_NORMAL_COLOR);
         for (row = 0; row < r->lines; row++)
         {
             int col;
@@ -789,16 +803,19 @@ mcterm_do_draw (WMcTerm *t)
 
     {
         mcterm_geom_t g;
+        mcview_canvas_colors_t colors;
 
         if (!mcterm_geometry (t, &g))
             return;
+
+        mcterm_canvas_colors (&colors);
 
         if (g.compose)
         {
             mcview_terminal_buffer_t *view;
 
             view = mcterm_compose_view (t, r->lines, g.top_row, g.content_rows, t->scrollback);
-            mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols);
+            mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols, &colors);
             mcview_terminal_buffer_free (view);
         }
         else
@@ -807,7 +824,7 @@ mcterm_do_draw (WMcTerm *t)
             {
                 int row, col;
 
-                tty_setcolor (VIEWER_NORMAL_COLOR);
+                tty_setcolor (MCTERM_NORMAL_COLOR);
                 for (row = 0; row < g.blank_above; row++)
                 {
                     tty_gotoyx (r->y + row, r->x);
@@ -818,7 +835,7 @@ mcterm_do_draw (WMcTerm *t)
 
             if (g.content_rows > 0)
                 mcview_render_terminal_canvas (g.buf, g.top_row, r->y + g.blank_above, r->x,
-                                               g.content_rows, r->cols);
+                                               g.content_rows, r->cols, &colors);
         }
 
         mcterm_draw_selection (t, &g);
@@ -1586,10 +1603,11 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
+mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color)
 {
     const WRect *r;
     mcview_terminal_buffer_t *buf;
+    mcview_canvas_colors_t colors;
     int cursor_row;
 
     if (t == NULL || t->vterm == NULL || t->child_dead)
@@ -1598,5 +1616,14 @@ mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
     r = &CONST_WIDGET (t)->rect;
     buf = mcview_vterm_buf (t->vterm);
     cursor_row = mcview_vterm_cursor_row (t->vterm);
-    mcview_render_terminal_canvas (buf, cursor_row, screen_y, r->x, 1, r->cols);
+
+    /* The row belongs to the host, and so do its colors: it stands next to
+       whatever the host puts on the rest of that row. */
+    colors.section = skin_section;
+    colors.normal = color;
+    colors.bold = -1;
+    colors.underline = -1;
+    colors.bold_underline = -1;
+
+    mcview_render_terminal_canvas (buf, cursor_row, screen_y, r->x, 1, r->cols, &colors);
 }

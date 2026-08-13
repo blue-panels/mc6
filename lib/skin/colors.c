@@ -312,6 +312,9 @@ mc_skin_color_cache_init (void)
     VIEWER_FRAME_COLOR = mc_skin_color_get ("viewer", "viewframe");
     VIEWER_HEADING_COLOR = mc_skin_color_get ("viewer", "viewheading");
 
+    MCTERM_NORMAL_COLOR = mc_skin_color_get ("mcterm", "_default_");
+    MCTERM_SELECTED_COLOR = mc_skin_color_get ("mcterm", "mctermselected");
+
     EDITOR_NORMAL_COLOR = mc_skin_color_get ("editor", "_default_");
     EDITOR_BOLD_COLOR = mc_skin_color_get ("editor", "editbold");
     EDITOR_MARKED_COLOR = mc_skin_color_get ("editor", "editmarked");

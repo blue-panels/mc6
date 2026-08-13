@@ -306,6 +306,7 @@ void mcview_display_text (WView *view);
 void mcview_state_machine_init (mcview_state_machine_t *, off_t);
 void mcview_lcache_flush (WView *view);
 int mcview_ansi_get_color (const mcview_ansi_state_t *ansi);
+int mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_colors_t *colors);
 void mcview_ascii_move_down (WView *view, off_t lines);
 void mcview_ascii_move_up (WView *view, off_t lines);
 void mcview_ascii_moveto_bol (WView *view);

@@ -641,10 +641,11 @@ mcview_get_next_char (WView *view, mcview_state_machine_t *state, int *c)
  * unnecessary color pair allocation.
  */
 int
-mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
+mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_colors_t *colors)
 {
     tty_color_pair_t color;
-    tty_color_pair_t *viewer_skin;
+    tty_color_pair_t *skin;
+    char kname[BUF_TINY];
     char fg_buf[16], bg_buf[16], attr_buf[64];
     const char *fg_name;
     const char *bg_name;
@@ -652,27 +653,30 @@ mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
 
     has_attrs = ansi->bold || ansi->italic || ansi->underline || ansi->blink || ansi->reverse;
 
-    // all defaults -> use the skin's normal viewer color
+    // all defaults -> use the skin's normal color
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
         && !has_attrs)
-        return VIEWER_NORMAL_COLOR;
+        return colors->normal;
 
-    // bold-only and underline-only map to existing skin colors (no other attrs active)
+    /* bold-only and underline-only map to the colors the skin has for them, and
+       are built below by a skin that has none. */
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
         && !ansi->italic && !ansi->blink && !ansi->reverse)
     {
-        if (ansi->bold && ansi->underline)
-            return VIEWER_BOLD_UNDERLINED_COLOR;
-        if (ansi->bold)
-            return VIEWER_BOLD_COLOR;
-        if (ansi->underline)
-            return VIEWER_UNDERLINED_COLOR;
+        if (ansi->bold && ansi->underline && colors->bold_underline >= 0)
+            return colors->bold_underline;
+        if (ansi->bold && !ansi->underline && colors->bold >= 0)
+            return colors->bold;
+        if (ansi->underline && !ansi->bold && colors->underline >= 0)
+            return colors->underline;
     }
 
-    // Retrieve viewer skin colors so that ANSI-colored text inherits the
-    // viewer's fg/bg rather than the terminal's "default" colors.
-    viewer_skin =
-        (tty_color_pair_t *) g_hash_table_lookup (mc_skin__default.colors, "viewer._default_");
+    /* Retrieve the skin colors of the section so that ANSI-colored text
+       inherits its fg/bg rather than the terminal's "default" colors. */
+    g_snprintf (kname, sizeof (kname), "%s._default_", colors->section);
+    skin = (tty_color_pair_t *) g_hash_table_lookup (mc_skin__default.colors, kname);
+    if (skin == NULL)
+        skin = (tty_color_pair_t *) g_hash_table_lookup (mc_skin__default.colors, "core._default_");
 
     // build fg color name
     if (ansi->fg != MCVIEW_ANSI_COLOR_DEFAULT)
@@ -682,7 +686,7 @@ mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
         color.fg = fg_buf;
     }
     else
-        color.fg = (viewer_skin != NULL) ? viewer_skin->fg : NULL;
+        color.fg = (skin != NULL) ? skin->fg : NULL;
 
     // build bg color name
     if (ansi->bg != MCVIEW_ANSI_COLOR_DEFAULT)
@@ -692,7 +696,7 @@ mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
         color.bg = bg_buf;
     }
     else
-        color.bg = (viewer_skin != NULL) ? viewer_skin->bg : NULL;
+        color.bg = (skin != NULL) ? skin->bg : NULL;
 
     // build attributes string dynamically
     if (has_attrs)
@@ -718,6 +722,22 @@ mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
     color.pair_index = 0;
 
     return tty_try_alloc_color_pair (&color, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
+{
+    const mcview_canvas_colors_t colors = {
+        "viewer",
+        VIEWER_NORMAL_COLOR,
+        VIEWER_BOLD_COLOR,
+        VIEWER_UNDERLINED_COLOR,
+        VIEWER_BOLD_UNDERLINED_COLOR,
+    };
+
+    return mcview_ansi_color_of (ansi, &colors);
 }
 
 /* --------------------------------------------------------------------------------------------- */

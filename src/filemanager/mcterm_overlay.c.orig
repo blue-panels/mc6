@@ -35,6 +35,7 @@
 
 #include "lib/global.h"
 #include "lib/keybind.h"
+#include "lib/skin.h"
 #include "lib/tty/key.h"
 #include "lib/tty/tty.h"
 #include "lib/vfs/vfs.h"
@@ -117,7 +118,8 @@ mcterm_overlay_draw_cmdline_row (void)
     if (cursor_col < 0 || cursor_col >= mwr->cols)
         cursor_col = 0;
 
-    mcterm_draw_prompt_row (mcterm_panel, cmdline_y);
+    // The row is the command line's, so it carries the command line's colors.
+    mcterm_draw_prompt_row (mcterm_panel, cmdline_y, "core", CORE_DEFAULT_COLOR);
     widget_set_size (WIDGET (cmdline), cmdline_y, mwr->x + cursor_col, 1, mwr->cols - cursor_col);
 }
 

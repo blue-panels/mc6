@@ -91,9 +91,13 @@ gboolean mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols);
 void mcview_vterm_restore_sync_snapshot (mcview_vterm_t *vt, mcview_terminal_buffer_t *snap_buf,
                                          int snap_cursor_row);
 
-/* Render a terminal buffer region to the TUI screen. */
+/* Render a terminal buffer region to the TUI screen, in the colors of the skin
+   section of whoever is drawing it. */
 void mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row, int screen_y,
-                                    int screen_x, int rows, int cols);
+                                    int screen_x, int rows, int cols,
+                                    const mcview_canvas_colors_t *colors);
+/* The section of the viewer itself, which is what mcview draws with. */
+void mcview_canvas_colors_viewer (mcview_canvas_colors_t *colors);
 
 /*** inline functions ****************************************************************************/
 
