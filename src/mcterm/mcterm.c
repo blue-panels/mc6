@@ -613,21 +613,22 @@ mcterm_show_row (WMcTerm *t, gint64 row)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The last column of @row that carries something. */
+/* The last column of @row that carries something, -1 for a row that carries
+   nothing at all. */
 static int
-mcterm_row_end_col (WMcTerm *t, gint64 row, int cols)
+mcterm_row_last_col (WMcTerm *t, gint64 row, int cols)
 {
     int col;
 
-    for (col = cols - 1; col > 0; col--)
+    for (col = cols - 1; col >= 0; col--)
     {
         const mcview_vterm_cell_t *cell = mcterm_sel_cell_at (t->vterm, row, col);
 
         if (cell != NULL && cell->ch != 0 && cell->ch != ' ')
-            break;
+            return col;
     }
 
-    return col;
+    return -1;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -729,13 +730,16 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
         col = 0;
         break;
     case CK_End:
-        col = mcterm_row_end_col (t, row, r->cols);
+        // Past the text, where the end of a line puts the cursor everywhere else.
+        col = mcterm_row_last_col (t, row, r->cols);
+        col = (col < 0) ? 0 : MIN (col + 1, r->cols - 1);
         break;
     case CK_MarkToHome:
         col = 0;
         break;
     case CK_MarkToEnd:
-        col = mcterm_row_end_col (t, row, r->cols);
+        // On the text, so that what is lit up is the text and nothing besides.
+        col = MAX (mcterm_row_last_col (t, row, r->cols), 0);
         break;
     default:
         break;
