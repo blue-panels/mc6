@@ -277,6 +277,38 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A screen made taller takes rows back from the history; the numbers have to
+   come back with them. */
+START_TEST (test_a_taller_screen_keeps_the_numbers)
+{
+    mcview_vterm_t *vt;
+    mcterm_sel_t sel;
+    char *before, *after;
+
+    vt = term_new ();
+    feed (vt, "r0\r\nr1\r\nr2\r\nr3\r\nr4\r\nr5");
+
+    ck_assert_int_eq ((int) mcview_vterm_scrolled_rows (vt), 2);
+
+    mcterm_sel_clear (&sel);
+    mark (&sel, 0, 0, 1, TERM_COLS - 1);
+    before = mcterm_sel_text (&sel, vt, TERM_COLS);
+
+    // Two rows taller: the two rows of the history are on the screen again.
+    mcview_vterm_set_size (vt, TERM_ROWS + 2, TERM_COLS);
+    after = mcterm_sel_text (&sel, vt, TERM_COLS);
+
+    ck_assert_str_eq (before, "r0\nr1");
+    ck_assert_str_eq (after, "r0\nr1");
+
+    g_free (before);
+    g_free (after);
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_nothing_is_marked)
 {
     mcview_vterm_t *vt;
@@ -348,6 +380,7 @@ main (void)
     tcase_add_test (tc_core, test_a_row_keeps_its_number_after_scrolling);
     tcase_add_test (tc_core, test_new_output_does_not_move_the_region);
     tcase_add_test (tc_core, test_a_row_that_fell_out_of_the_history_reads_as_blank);
+    tcase_add_test (tc_core, test_a_taller_screen_keeps_the_numbers);
     tcase_add_test (tc_core, test_nothing_is_marked);
     tcase_add_test (tc_core, test_the_span_of_a_row);
 

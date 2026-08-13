@@ -643,6 +643,9 @@ mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols)
         if (take > 0)
         {
             vt->cursor_row += take;
+            /* Those rows are on the screen again, and every row below them
+               moved down: what the count names has to move with them. */
+            vt->scrolled_rows -= take;
             mcview_terminal_buffer_set_max_row (vt->buf, used + take - 1);
         }
     }
