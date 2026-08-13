@@ -858,10 +858,6 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         // What the terminal itself acts on: the view, the cursor, and the mark.
         term_cmd = mcterm_key_command (mcterm_panel, parm);
 
-        // With something typed, the keys of a line still walk the command line.
-        if ((term_cmd == CK_Top || term_cmd == CK_Bottom) && !input_is_empty (cmdline))
-            term_cmd = CK_IgnoreKey;
-
         if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey)
         {
             cb_ret_t r = send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);

@@ -725,6 +725,12 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
     case CK_WordRight:
         col += MCTERM_JUMP_COLS;
         break;
+    case CK_Home:
+        col = 0;
+        break;
+    case CK_End:
+        col = mcterm_row_end_col (t, row, r->cols);
+        break;
     case CK_MarkToHome:
         col = 0;
         break;
@@ -1078,6 +1084,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             case CK_Down:
             case CK_WordLeft:
             case CK_WordRight:
+            case CK_Home:
+            case CK_End:
                 if (!t->scroll_allowed)
                 {
                     mcterm_follow_end (t);
@@ -1477,7 +1485,10 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_Down:
     case CK_WordLeft:
     case CK_WordRight:
-        // With nowhere else to type, the arrows are what the shell reads by.
+    case CK_Home:
+    case CK_End:
+        /* With nowhere else to type, these are the keys the shell reads its
+           own line by, and it keeps them. */
         if (!t->typing_elsewhere)
             return CK_IgnoreKey;
         MC_FALLTHROUGH;
