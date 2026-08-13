@@ -188,6 +188,22 @@ clipboard_text_to_file (const gchar *event_group_name, const gchar *event_name, 
 
     fname_vpath = mc_config_get_full_vpath (EDIT_HOME_CLIP_FILE);
     file = mc_open (fname_vpath, clip_open_flags, clip_open_mode);
+
+    if (file == -1)
+    {
+        // The editor makes this directory, and it may never have run.
+        char *dir;
+        vfs_path_t *dir_vpath;
+
+        dir = g_path_get_dirname (vfs_path_as_str (fname_vpath));
+        dir_vpath = vfs_path_from_str (dir);
+        mc_mkdir (dir_vpath, 0700);
+        vfs_path_free (dir_vpath, TRUE);
+        g_free (dir);
+
+        file = mc_open (fname_vpath, clip_open_flags, clip_open_mode);
+    }
+
     vfs_path_free (fname_vpath, TRUE);
 
     if (file == -1)
