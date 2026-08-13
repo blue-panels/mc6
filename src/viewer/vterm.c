@@ -1237,7 +1237,9 @@ mcview_vterm_restore_sync_snapshot (mcview_vterm_t *vt, mcview_terminal_buffer_t
 {
     mcview_ansi_state_t blank_ansi;
 
-    memset (&blank_ansi, 0, sizeof (blank_ansi));
+    /* Initialised, not zeroed: zero is the colour black, and the row wants the
+       colours of whoever draws it, which is what the default stands for. */
+    mcview_ansi_state_init (&blank_ansi);
     mcview_terminal_buffer_erase_line (snap_buf, snap_cursor_row, vt->term_cols, &blank_ansi);
 
     mcview_terminal_buffer_free (vt->buf);
