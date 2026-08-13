@@ -91,6 +91,8 @@ struct WMcTerm
     int pending_internal_sync_reads;
     int scrollback;  // rows above the live screen; 0 follows the output
     gboolean scroll_allowed;
+    // Whether the host types elsewhere; without that the arrows are the shell's.
+    gboolean typing_elsewhere;
     mcterm_sel_t sel;
     /* Where the terminal is being read, as against where the shell is typing.
        It exists while the widget has the focus, and the arrows move it. */
@@ -482,6 +484,19 @@ mcterm_canvas_colors (mcview_canvas_colors_t *colors)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Typing returns to the end, the way a terminal does. */
+static void
+mcterm_follow_end (WMcTerm *t)
+{
+    if (t->scrollback != 0)
+    {
+        t->scrollback = 0;
+        widget_draw (WIDGET (t));
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* FALSE when there is no terminal to draw. */
 static gboolean
 mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
@@ -553,6 +568,15 @@ mcterm_row_at (const WMcTerm *t, int y, int x, gint64 *row, int *col)
     y = CLAMP (y, g.blank_above, r->lines - 1);
     *row = g.first_abs + (y - g.blank_above);
     *col = CLAMP (x, 0, r->cols - 1);
+
+    /* The top of the screen can be filler standing above the oldest row there
+       is; a click there belongs to the first row that exists. */
+    {
+        const gint64 oldest =
+            mcview_vterm_scrolled_rows (t->vterm) - mcview_vterm_history_len (t->vterm);
+
+        *row = CLAMP (*row, MIN (oldest, g.newest_abs), g.newest_abs);
+    }
 
     return TRUE;
 }
@@ -999,10 +1023,12 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             switch (command)
             {
             case CK_Store:
-                /* Nothing is marked while a panel is on the screen, and the
-                   key belongs to whatever the panel does with it. */
-                if (!t->scroll_allowed)
+                // A panel over it, or nothing marked: the key is someone else's.
+                if (!t->scroll_allowed || !t->sel.active)
+                {
+                    mcterm_follow_end (t);
                     break;
+                }
                 // Copied and done with: what is on the clipfile needs no marker.
                 mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols);
                 mcterm_sel_clear (&t->sel);
@@ -1010,11 +1036,13 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 return MSG_HANDLED;
 
             case CK_Unmark:
-                if (t->sel.anchored)
+                if (!t->sel.anchored)
                 {
-                    mcterm_sel_clear (&t->sel);
-                    widget_draw (WIDGET (t));
+                    mcterm_follow_end (t);
+                    break;
                 }
+                mcterm_sel_clear (&t->sel);
+                widget_draw (WIDGET (t));
                 return MSG_HANDLED;
 
             case CK_MarkLeft:
@@ -1027,7 +1055,10 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             case CK_MarkToEnd:
                 // A panel over the terminal owns these keys, see CK_Store above.
                 if (!t->scroll_allowed)
+                {
+                    mcterm_follow_end (t);
                     break;
+                }
                 mcterm_cursor_move (t, command, TRUE);
                 return MSG_HANDLED;
 
@@ -1036,7 +1067,10 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             case CK_Up:
             case CK_Down:
                 if (!t->scroll_allowed)
+                {
+                    mcterm_follow_end (t);
                     break;
+                }
                 mcterm_cursor_move (t, command, FALSE);
                 return MSG_HANDLED;
 
@@ -1077,12 +1111,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             }
 
             default:
-                // Typing returns to the end, the way a terminal does.
-                if (t->scrollback != 0)
-                {
-                    t->scrollback = 0;
-                    widget_draw (WIDGET (t));
-                }
+                mcterm_follow_end (t);
                 if (t->sel.anchored)
                 {
                     mcterm_sel_clear (&t->sel);
@@ -1213,6 +1242,7 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->osc7_capable = FALSE;
     t->vterm = mcview_vterm_new ();
     t->scroll_allowed = TRUE;
+    t->typing_elsewhere = TRUE;
     mcview_vterm_set_keep_history (t->vterm, TRUE);
     mcview_vterm_set_size (t->vterm, r->lines, r->cols);
 
@@ -1395,6 +1425,15 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
+{
+    if (t != NULL)
+        t->typing_elsewhere = elsewhere;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 long
 mcterm_key_command (const WMcTerm *t, int key)
 {
@@ -1420,10 +1459,17 @@ mcterm_key_command (const WMcTerm *t, int key)
         // Looking back at the output does not need the focus, typing goes on.
         return command;
 
+    case CK_Left:
+    case CK_Right:
+    case CK_Up:
+    case CK_Down:
+        // With nowhere else to type, the arrows are what the shell reads by.
+        if (!t->typing_elsewhere)
+            return CK_IgnoreKey;
+        MC_FALLTHROUGH;
+
     default:
-        /* The cursor and the mark are the terminal's own, and it only has them
-           while it holds the focus: otherwise the arrows belong to whatever
-           does. */
+        // The cursor and the mark are its own only while it holds the focus.
         return widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? command : CK_IgnoreKey;
     }
 }

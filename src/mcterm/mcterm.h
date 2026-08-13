@@ -38,6 +38,9 @@ int mcterm_cursor_col (const WMcTerm *t);
 void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
 long mcterm_key_command (const WMcTerm *t, int key);
+/* Whether the host types on a command line of its own. Without one the plain
+   arrows are left to the shell, there being nowhere else for typing to go. */
+void mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere);
 
 #else /* !ENABLE_MCTERM */
 
@@ -151,6 +154,12 @@ mcterm_key_command (const WMcTerm *t, int key)
     (void) t;
     (void) key;
     return CK_IgnoreKey;
+}
+static inline void
+mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
+{
+    (void) t;
+    (void) elsewhere;
 }
 
 #endif /* ENABLE_MCTERM */

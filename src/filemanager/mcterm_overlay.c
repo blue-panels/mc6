@@ -816,18 +816,8 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 
     // A panel on screen owns the keys that walk a list.
     mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
-
-    /* Tab completes what is typed, so the focus needs a key of its own that
-       works with a command line that is not empty. */
-    if (parm == (KEY_M_SHIFT | '\t') && command_prompt)
-    {
-        widget_select (mcterm_overlay_terminal_focused () ? WIDGET (cmdline)
-                                                          : mcterm_overlay_widget ());
-        mcterm_overlay_draw_visible_panels ();
-        mcterm_overlay_place_cursor ();
-        tty_refresh ();
-        return MSG_HANDLED;
-    }
+    // Both can be turned off while the terminal is up, so they are told each time.
+    mcterm_set_typing_elsewhere (mcterm_panel, command_prompt);
 
     {
         WGroup *g = GROUP (filemanager);
@@ -844,6 +834,17 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 
             return MSG_NOT_HANDLED;
         }
+    }
+
+    // Tab completes what is typed, so the focus has a key of its own.
+    if (parm == (KEY_M_SHIFT | '\t') && command_prompt)
+    {
+        widget_select (mcterm_overlay_terminal_focused () ? WIDGET (cmdline)
+                                                          : mcterm_overlay_widget ());
+        mcterm_overlay_draw_visible_panels ();
+        mcterm_overlay_place_cursor ();
+        tty_refresh ();
+        return MSG_HANDLED;
     }
 
     {
