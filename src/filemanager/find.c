@@ -109,8 +109,10 @@ typedef struct
 
 typedef struct
 {
-    char *dir;
-    gsize start;
+    char *dir;       // not owned: text of the directory item in the listbox
+    char *filename;  // file name relative to the dir
+    int line;        // line number of the match, 0 if content isn't searched
+    gsize start;     // offset of the match in the file
     gsize end;
 } find_match_location_t;
 
@@ -198,7 +200,8 @@ static const size_t quit_button = 4;          // index of "Quit" button
 static const size_t panelize_button = 5;      // index of "Panelize" button
 static gboolean show_panelize_button = TRUE;  // cached at setup_gui time
 
-static WListbox *find_list;  // Listbox with the file list
+static WListbox *find_list;         // Listbox with the file list
+static GPtrArray *find_locations;   // Data of the found items, owns find_match_location_t
 
 static find_file_options_t options = {
     TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NULL,
@@ -341,10 +344,23 @@ find_save_options (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+find_match_location_free (gpointer data)
+{
+    find_match_location_t *location = (find_match_location_t *) data;
+
+    g_free (location->filename);
+    g_free (location);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* the data of items is owned by find_locations, not by the listbox */
+
 static inline char *
 add_to_list (const char *text, void *data)
 {
-    return listbox_add_item (find_list, LISTBOX_APPEND_AT_END, 0, text, data, TRUE);
+    return listbox_add_item (find_list, LISTBOX_APPEND_AT_END, 0, text, data, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -352,7 +368,7 @@ add_to_list (const char *text, void *data)
 static inline char *
 add_to_list_take (char *text, void *data)
 {
-    return listbox_add_item_take (find_list, LISTBOX_APPEND_AT_END, 0, text, data, TRUE);
+    return listbox_add_item_take (find_list, LISTBOX_APPEND_AT_END, 0, text, data, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -381,26 +397,27 @@ found_num_update (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Get the file name and the directory of the currently selected item.
+ *
+ * For a directory item the whole path is returned as a file name and the directory is NULL.
+ */
+
 static void
-get_list_info (char **file, char **dir, gsize *start, gsize *end)
+get_list_info (char **file, char **dir)
 {
     find_match_location_t *location;
 
     listbox_get_current (find_list, file, (void **) &location);
     if (location != NULL)
     {
+        if (file != NULL)
+            *file = location->filename;
         if (dir != NULL)
             *dir = location->dir;
-        if (start != NULL)
-            *start = location->start;
-        if (end != NULL)
-            *end = location->end;
     }
-    else
-    {
-        if (dir != NULL)
-            *dir = NULL;
-    }
+    else if (dir != NULL)
+        *dir = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -864,7 +881,7 @@ clear_stack (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-insert_file (const char *dir, const char *file, gsize start, gsize end)
+insert_file (const char *dir, const char *file, int line, gsize start, gsize end)
 {
     char *tmp_name;
     static char *dirname = NULL;
@@ -888,20 +905,27 @@ insert_file (const char *dir, const char *file, gsize start, gsize end)
         dirname = add_to_list (dir, NULL);
     }
 
-    tmp_name = g_strdup_printf ("    %s", file);
-    location = g_malloc (sizeof (*location));
+    location = g_new (find_match_location_t, 1);
     location->dir = dirname;
+    location->filename = g_strdup (file);
+    location->line = line;
     location->start = start;
     location->end = end;
+    g_ptr_array_add (find_locations, location);
+
+    if (line != 0)
+        tmp_name = g_strdup_printf ("    %d:%s", line, file);
+    else
+        tmp_name = g_strdup_printf ("    %s", file);
     add_to_list_take (tmp_name, location);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-find_add_match (const char *dir, const char *file, gsize start, gsize end)
+find_add_match (const char *dir, const char *file, int line, gsize start, gsize end)
 {
-    insert_file (dir, file, start, end);
+    insert_file (dir, file, line, start, end);
 
     // Don't scroll
     if (matches == 0)
@@ -1080,10 +1104,9 @@ search_content (WDialog *h, const char *directory, const char *filename)
                     status_updated = TRUE;
                 }
 
-                g_snprintf (result, sizeof (result), "%d:%s", line, filename);
                 found_start =
                     off + search_content_handle->normal_offset + 1;  // off by one: ticket 3280
-                find_add_match (directory, result, found_start, found_start + found_len);
+                find_add_match (directory, filename, line, found_start, found_start + found_len);
                 found = TRUE;
             }
 
@@ -1368,7 +1391,7 @@ do_search (WDialog *h)
             if (search_ok)
             {
                 if (content_pattern == NULL)
-                    find_add_match (directory, dp->d_name, 0, 0);
+                    find_add_match (directory, dp->d_name, 0, 0, 0);
                 else if (search_content (h, directory, dp->d_name))
                     return 1;
             }
@@ -1404,23 +1427,10 @@ init_find_vars (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-find_do_view_edit (gboolean unparsed_view, gboolean edit, char *dir, char *file, off_t search_start,
-                   off_t search_end)
+find_do_view_edit (gboolean unparsed_view, gboolean edit, const char *dir, const char *filename,
+                   int line, off_t search_start, off_t search_end)
 {
-    const char *filename = NULL;
-    int line;
     vfs_path_t *fullname_vpath;
-
-    if (content_pattern != NULL)
-    {
-        filename = strchr (file + 4, ':') + 1;
-        line = atoi (file + 4);
-    }
-    else
-    {
-        filename = file + 4;
-        line = 0;
-    }
 
     fullname_vpath = vfs_path_build_filename (dir, filename, (char *) NULL);
     if (edit)
@@ -1441,10 +1451,11 @@ view_edit_currently_selected_file (gboolean unparsed_view, gboolean edit)
 
     listbox_get_current (find_list, &text, (void **) &location);
 
-    if ((text == NULL) || (location == NULL) || (location->dir == NULL))
+    if ((location == NULL) || (location->dir == NULL))
         return MSG_NOT_HANDLED;
 
-    find_do_view_edit (unparsed_view, edit, location->dir, text, location->start, location->end);
+    find_do_view_edit (unparsed_view, edit, location->dir, location->filename, location->line,
+                       location->start, location->end);
     return MSG_HANDLED;
 }
 
@@ -1668,6 +1679,8 @@ setup_gui (void)
 
     find_calc_button_locations (find_dlg, TRUE);
 
+    find_locations = g_ptr_array_new_with_free_func (find_match_location_free);
+
     y = 2;
     find_list = listbox_new (y, 2, lines - 10, cols - 4, FALSE, NULL);
     group_add_widget_autopos (g, find_list, WPOS_KEEP_ALL, NULL);
@@ -1747,6 +1760,10 @@ kill_gui (void)
 
     widget_idle (w, FALSE);
     widget_destroy (w);
+
+    // the items of the listbox are destroyed, free their data
+    g_ptr_array_free (find_locations, TRUE);
+    find_locations = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1770,7 +1787,7 @@ do_find (WPanel *panel, const char *start_dir, ssize_t start_dir_len, const char
     // Clear variables
     init_find_vars ();
 
-    get_list_info (&file_tmp, &dir_tmp, NULL, NULL);
+    get_list_info (&file_tmp, &dir_tmp);
 
     if (dir_tmp != NULL)
         *dirname = g_strdup (dir_tmp);
@@ -1790,19 +1807,14 @@ do_find (WPanel *panel, const char *start_dir, ssize_t start_dir_len, const char
 
         for (entry = listbox_get_first_link (find_list); entry != NULL; entry = g_list_next (entry))
         {
-            const char *lc_filename;
             WLEntry *le = LENTRY (entry->data);
             find_match_location_t *location = le->data;
 
-            if ((le->text == NULL) || (location == NULL) || (location->dir == NULL))
+            if ((location == NULL) || (location->dir == NULL))
                 continue;
 
-            if (!content_is_empty)
-                lc_filename = strchr (le->text + 4, ':') + 1;
-            else
-                lc_filename = le->text + 4;
-
-            g_ptr_array_add (paths, mc_build_filename (location->dir, lc_filename, (char *) NULL));
+            g_ptr_array_add (
+                paths, mc_build_filename (location->dir, location->filename, (char *) NULL));
 
             if ((paths->len & 15) == 0)
                 rotate_dash (TRUE);
@@ -1879,16 +1891,7 @@ find_cmd (WPanel *panel)
                 vfs_path_free (dirname_vpath, TRUE);
 
                 if (filename != NULL)
-                {
-                    size_t offset;
-
-                    if (content_pattern == NULL)
-                        offset = 4;
-                    else
-                        offset = strchr (filename + 4, ':') - filename + 1;
-
-                    panel_set_current_by_name (panel, filename + offset);
-                }
+                    panel_set_current_by_name (panel, filename);
             }
             else if (filename != NULL)
             {
