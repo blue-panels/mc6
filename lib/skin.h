@@ -93,6 +93,10 @@
 #define MCTREE_KEY_COLOR             mc_skin_color__cache[80]
 #define MCTREE_VALUE_COLOR           mc_skin_color__cache[81]
 
+// embedded terminal
+#define MCTERM_NORMAL_COLOR   mc_skin_color__cache[82]
+#define MCTERM_SELECTED_COLOR mc_skin_color__cache[83]
+
 /*
  * editor colors - only 4 for normal, search->found, select, and whitespace
  * respectively
@@ -123,7 +127,7 @@
 
 #define FILEHIGHLIGHT_DEFAULT_COLOR  mc_skin_color__cache[78]
 
-#define MC_SKIN_COLOR_CACHE_COUNT    82
+#define MC_SKIN_COLOR_CACHE_COUNT    84
 
 /*** enums ***************************************************************************************/
 

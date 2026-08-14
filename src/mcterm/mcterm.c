@@ -57,15 +57,21 @@
 
 #include "src/viewer/vterm.h"
 #include "src/viewer/terminal_buffer.h"
+#include "src/keymap.h"
 
 #include "mcterm.h"
 #include "mcterm_key.h"
+#include "mcterm_select.h"
 
 /*** file scope variables ************************************************************************/
 
 #define MCTERM_INTERNAL_SYNC_MAX_STALLED_READS 16
 
 #define MCTERM_WHEEL_ROWS                      3
+
+/* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
+   step the columns of terminal output tend to fall on. */
+#define MCTERM_JUMP_COLS 8
 
 struct WMcTerm
 {
@@ -89,7 +95,29 @@ struct WMcTerm
     int pending_internal_sync_reads;
     int scrollback;  // rows above the live screen; 0 follows the output
     gboolean scroll_allowed;
+    // Whether the host types elsewhere; without that the arrows are the shell's.
+    gboolean typing_elsewhere;
+    mcterm_sel_t sel;
+    /* Where the terminal is being read, as against where the shell is typing.
+       It exists while the widget has the focus, and the arrows move it. */
+    gboolean cursor_valid;
+    gint64 cursor_row;
+    int cursor_col;
 };
+
+/* Where the rows of the screen fall in the output as a whole. */
+typedef struct
+{
+    gboolean compose;   // history and live rows are drawn as one view
+    gboolean snapshot;  // a held-back frame is on the screen
+    mcview_terminal_buffer_t *buf;
+    int top_row;       // first live row on the screen
+    int content_rows;  // rows of output drawn
+    int blank_above;   // empty rows above them
+    gint64 first_abs;  // number of the row drawn at @blank_above
+    // The last row it draws: at a prompt the shell's own row is the host's.
+    gint64 newest_abs;
+} mcterm_geom_t;
 
 /*** forward declarations ************************************************************************/
 
@@ -447,6 +475,353 @@ mcterm_scroll_view (WMcTerm *t, int delta)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The colors of the terminal's own skin section, not of the viewer's. */
+static void
+mcterm_canvas_colors (mcview_canvas_colors_t *colors)
+{
+    colors->section = "mcterm";
+    colors->normal = MCTERM_NORMAL_COLOR;
+    colors->bold = -1;
+    colors->underline = -1;
+    colors->bold_underline = -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Typing returns to the end, the way a terminal does. */
+static void
+mcterm_follow_end (WMcTerm *t)
+{
+    if (t->scrollback != 0)
+    {
+        t->scrollback = 0;
+        widget_draw (WIDGET (t));
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* FALSE when there is no terminal to draw. */
+static gboolean
+mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    int max_row, cursor_row, effective_max;
+    gboolean fill_top;
+
+    if (t->vterm == NULL)
+        return FALSE;
+
+    g->snapshot = t->pending_internal_sync && t->sync_snapshot_buf != NULL;
+    g->buf = g->snapshot ? t->sync_snapshot_buf : mcview_vterm_buf (t->vterm);
+    g->top_row = g->snapshot ? mcterm_resolve_top_row_for_buf (t, g->buf, r->lines)
+                             : mcview_vterm_resolve_top_row (t->vterm, r->lines);
+    max_row = mcview_terminal_buffer_max_row (g->buf);
+    cursor_row = g->snapshot ? t->sync_snapshot_cursor_row : mcview_vterm_cursor_row (t->vterm);
+
+    // The row the shell types on is the host's, see mcterm_draw_prompt_row().
+    if (t->shell_at_prompt && t->osc7_capable && !mcview_vterm_in_alt_screen (t->vterm))
+        effective_max = cursor_row - 1;
+    else
+        effective_max = (cursor_row > max_row) ? cursor_row : max_row;
+    if (effective_max >= g->top_row + r->lines)
+        g->top_row = effective_max - r->lines + 1;
+
+    g->content_rows = (effective_max >= g->top_row) ? (effective_max - g->top_row + 1) : 0;
+    if (g->content_rows > r->lines)
+        g->content_rows = r->lines;
+    g->blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && g->content_rows < r->lines)
+        ? (r->lines - g->content_rows)
+        : 0;
+
+    /* The prompt row is drawn on the command line, so a full screen is one row
+       short at the top; that row is the newest one in the history. */
+    fill_top = g->blank_above > 0 && cursor_row >= r->lines - 1;
+    g->compose =
+        !g->snapshot && !mcview_vterm_in_alt_screen (t->vterm) && (t->scrollback > 0 || fill_top);
+
+    if (g->compose)
+    {
+        // Where the top of the screen falls in history followed by live rows.
+        const int hist_len = mcview_vterm_history_len (t->vterm);
+        const int start = hist_len + g->content_rows - r->lines - t->scrollback;
+
+        g->first_abs = mcview_vterm_scrolled_rows (t->vterm) - hist_len + start;
+        g->blank_above = 0;
+    }
+    else
+        g->first_abs = mcview_vterm_scrolled_rows (t->vterm) + g->top_row;
+
+    g->newest_abs = mcview_vterm_scrolled_rows (t->vterm) + effective_max;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The number of the row under @y, and the column under @x. */
+static gboolean
+mcterm_row_at (const WMcTerm *t, int y, int x, gint64 *row, int *col)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    mcterm_geom_t g;
+
+    if (!mcterm_geometry (t, &g))
+        return FALSE;
+
+    y = CLAMP (y, g.blank_above, r->lines - 1);
+    *row = g.first_abs + (y - g.blank_above);
+    *col = CLAMP (x, 0, r->cols - 1);
+
+    /* The top of the screen can be filler standing above the oldest row there
+       is; a click there belongs to the first row that exists. */
+    {
+        const gint64 oldest =
+            mcview_vterm_scrolled_rows (t->vterm) - mcview_vterm_history_len (t->vterm);
+
+        *row = CLAMP (*row, MIN (oldest, g.newest_abs), g.newest_abs);
+    }
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Bring @row onto the screen, scrolling the view as far as it takes. */
+static void
+mcterm_show_row (WMcTerm *t, gint64 row)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    const gint64 hist = mcview_vterm_history_len (t->vterm);
+    mcterm_geom_t g;
+    gint64 screen_row, delta;
+
+    if (!mcterm_geometry (t, &g))
+        return;
+
+    screen_row = g.blank_above + (row - g.first_abs);
+    if (screen_row < 0)
+        delta = screen_row;
+    else if (screen_row >= r->lines)
+        delta = screen_row - r->lines + 1;
+    else
+        return;
+
+    // The view moves within the history and no further, so the step fits there.
+    mcterm_scroll_view (t, (int) CLAMP (delta, -hist, hist));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The last column of @row that carries something, -1 for a row that carries
+   nothing at all. */
+static int
+mcterm_row_last_col (WMcTerm *t, gint64 row, int cols)
+{
+    int col;
+
+    for (col = cols - 1; col >= 0; col--)
+    {
+        const mcview_vterm_cell_t *cell = mcterm_sel_cell_at (t->vterm, row, col);
+
+        if (cell != NULL && cell->ch != 0 && cell->ch != ' ')
+            return col;
+    }
+
+    return -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The cursor starts where the shell is typing, or on the last row the
+   terminal draws when the shell is typing on the command line. */
+static void
+mcterm_cursor_reset (WMcTerm *t)
+{
+    const gint64 shell_row =
+        mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
+    mcterm_geom_t g;
+
+    t->cursor_valid = TRUE;
+
+    if (!mcterm_geometry (t, &g) || shell_row <= g.newest_abs)
+    {
+        t->cursor_row = shell_row;
+        t->cursor_col = mcview_vterm_cursor_col (t->vterm);
+    }
+    else
+    {
+        t->cursor_row = g.newest_abs;
+        t->cursor_col = 0;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Move the cursor over the output. With @marking the region grows behind it,
+   the way a block grows from the cursor of the editor; without, it is dropped. */
+static void
+mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    const int page = (r->lines > 1) ? r->lines - 1 : 1;
+    const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
+    const gint64 oldest = scrolled - mcview_vterm_history_len (t->vterm);
+    mcterm_geom_t g;
+    gint64 newest;
+    gint64 row;
+    int col;
+
+    if (!mcterm_geometry (t, &g))
+        return;
+
+    // The cursor stays on what the terminal draws, and off the command line.
+    newest = MAX (g.newest_abs, oldest);
+
+    if (!t->cursor_valid)
+        mcterm_cursor_reset (t);
+
+    row = t->cursor_row;
+    col = t->cursor_col;
+
+    switch (command)
+    {
+    case CK_Left:
+    case CK_MarkLeft:
+        if (col > 0)
+            col--;
+        else if (row > oldest)
+        {
+            row--;
+            col = r->cols - 1;
+        }
+        break;
+    case CK_Right:
+    case CK_MarkRight:
+        if (col < r->cols - 1)
+            col++;
+        else if (row < newest)
+        {
+            row++;
+            col = 0;
+        }
+        break;
+    case CK_Up:
+    case CK_MarkUp:
+        row--;
+        break;
+    case CK_Down:
+    case CK_MarkDown:
+        row++;
+        break;
+    case CK_MarkPageUp:
+        row -= page;
+        break;
+    case CK_MarkPageDown:
+        row += page;
+        break;
+    case CK_WordLeft:
+        col -= MCTERM_JUMP_COLS;
+        break;
+    case CK_WordRight:
+        col += MCTERM_JUMP_COLS;
+        break;
+    case CK_Home:
+        col = 0;
+        break;
+    case CK_End:
+        // Past the text, where the end of a line puts the cursor everywhere else.
+        col = mcterm_row_last_col (t, row, r->cols);
+        col = (col < 0) ? 0 : MIN (col + 1, r->cols - 1);
+        break;
+    case CK_MarkToHome:
+        col = 0;
+        break;
+    case CK_MarkToEnd:
+        // On the text, so that what is lit up is the text and nothing besides.
+        col = MAX (mcterm_row_last_col (t, row, r->cols), 0);
+        break;
+    default:
+        break;
+    }
+
+    row = CLAMP (row, oldest, newest);
+    col = CLAMP (col, 0, r->cols - 1);
+
+    if (marking)
+    {
+        if (!t->sel.anchored)
+            mcterm_sel_start (&t->sel, t->cursor_row, t->cursor_col);
+        mcterm_sel_extend (&t->sel, row, col);
+    }
+    else
+        mcterm_sel_clear (&t->sel);
+
+    t->cursor_row = row;
+    t->cursor_col = col;
+    mcterm_show_row (t, row);
+    widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The view has moved: bring the cursor along, or it would be left off the
+   screen, where it cannot be drawn and the command line takes it over. */
+static void
+mcterm_cursor_into_view (WMcTerm *t)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    const gint64 oldest =
+        mcview_vterm_scrolled_rows (t->vterm) - mcview_vterm_history_len (t->vterm);
+    mcterm_geom_t g;
+    gint64 first, last;
+
+    if (!t->cursor_valid || !mcterm_geometry (t, &g))
+        return;
+
+    first = MAX (g.first_abs, oldest);
+    last = g.first_abs + (g.compose ? r->lines : g.content_rows) - 1;
+    last = MIN (last, g.newest_abs);
+
+    if (last >= first)
+        t->cursor_row = CLAMP (t->cursor_row, first, last);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Over what was drawn: the marked cells again, in the colour of a selection. */
+static void
+mcterm_draw_selection (WMcTerm *t, const mcterm_geom_t *g)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    int row;
+
+    if (!t->sel.active || g->snapshot)
+        return;
+
+    tty_setcolor (MCTERM_SELECTED_COLOR);
+
+    for (row = g->blank_above; row < r->lines; row++)
+    {
+        const gint64 abs_row = g->first_abs + (row - g->blank_above);
+        int from, to, col;
+
+        if (!mcterm_sel_row_span (&t->sel, abs_row, r->cols, &from, &to))
+            continue;
+
+        for (col = from; col < to; col++)
+        {
+            const mcview_vterm_cell_t *cell = mcterm_sel_cell_at (t->vterm, abs_row, col);
+
+            tty_gotoyx (r->y + row, r->x + col);
+            tty_print_anychar ((cell == NULL || cell->ch == 0) ? ' ' : cell->ch);
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcterm_do_draw (WMcTerm *t)
 {
@@ -456,7 +831,7 @@ mcterm_do_draw (WMcTerm *t)
     {
         int row;
 
-        tty_setcolor (VIEWER_NORMAL_COLOR);
+        tty_setcolor (MCTERM_NORMAL_COLOR);
         for (row = 0; row < r->lines; row++)
         {
             int col;
@@ -470,61 +845,44 @@ mcterm_do_draw (WMcTerm *t)
         return;
     }
 
-    if (t->vterm != NULL)
     {
-        gboolean use_sync_snapshot = t->pending_internal_sync && t->sync_snapshot_buf != NULL;
-        mcview_terminal_buffer_t *buf =
-            use_sync_snapshot ? t->sync_snapshot_buf : mcview_vterm_buf (t->vterm);
-        int top_row = use_sync_snapshot ? mcterm_resolve_top_row_for_buf (t, buf, r->lines)
-                                        : mcview_vterm_resolve_top_row (t->vterm, r->lines);
-        int max_row = mcview_terminal_buffer_max_row (buf);
-        int cursor_row =
-            use_sync_snapshot ? t->sync_snapshot_cursor_row : mcview_vterm_cursor_row (t->vterm);
-        int effective_max;
-        if (t->shell_at_prompt && t->osc7_capable && !mcview_vterm_in_alt_screen (t->vterm))
-            effective_max = cursor_row - 1;
-        else
-            effective_max = (cursor_row > max_row) ? cursor_row : max_row;
-        if (effective_max >= top_row + r->lines)
-            top_row = effective_max - r->lines + 1;
-        int content_rows = (effective_max >= top_row) ? (effective_max - top_row + 1) : 0;
-        if (content_rows > r->lines)
-            content_rows = r->lines;
-        int blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && content_rows < r->lines)
-            ? (r->lines - content_rows)
-            : 0;
+        mcterm_geom_t g;
+        mcview_canvas_colors_t colors;
 
-        /* The prompt row is drawn on the command line, so a full screen is one row
-           short at the top; that row is the newest one in the history. */
-        gboolean fill_top = blank_above > 0 && cursor_row >= r->lines - 1;
+        if (!mcterm_geometry (t, &g))
+            return;
 
-        if (!use_sync_snapshot && !mcview_vterm_in_alt_screen (t->vterm)
-            && (t->scrollback > 0 || fill_top))
+        mcterm_canvas_colors (&colors);
+
+        if (g.compose)
         {
             mcview_terminal_buffer_t *view;
 
-            view = mcterm_compose_view (t, r->lines, top_row, content_rows, t->scrollback);
-            mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols);
+            view = mcterm_compose_view (t, r->lines, g.top_row, g.content_rows, t->scrollback);
+            mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols, &colors);
             mcview_terminal_buffer_free (view);
-            return;
         }
-
-        if (blank_above > 0)
+        else
         {
-            int row, col;
-
-            tty_setcolor (VIEWER_NORMAL_COLOR);
-            for (row = 0; row < blank_above; row++)
+            if (g.blank_above > 0)
             {
-                tty_gotoyx (r->y + row, r->x);
-                for (col = 0; col < r->cols; col++)
-                    tty_print_char (' ');
+                int row, col;
+
+                tty_setcolor (MCTERM_NORMAL_COLOR);
+                for (row = 0; row < g.blank_above; row++)
+                {
+                    tty_gotoyx (r->y + row, r->x);
+                    for (col = 0; col < r->cols; col++)
+                        tty_print_char (' ');
+                }
             }
+
+            if (g.content_rows > 0)
+                mcview_render_terminal_canvas (g.buf, g.top_row, r->y + g.blank_above, r->x,
+                                               g.content_rows, r->cols, &colors);
         }
 
-        if (content_rows > 0)
-            mcview_render_terminal_canvas (buf, top_row, r->y + blank_above, r->x, content_rows,
-                                           r->cols);
+        mcterm_draw_selection (t, &g);
     }
 }
 
@@ -593,6 +951,26 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return MSG_HANDLED;
 
     case MSG_CURSOR:
+        /* Focused, the terminal shows where it is being read; the shell has
+           the cursor back as soon as the focus goes to the command line. */
+        if (widget_get_state (w, WST_FOCUSED) && t->cursor_valid && t->vterm != NULL
+            && !mcview_vterm_in_alt_screen (t->vterm))
+        {
+            mcterm_geom_t g;
+
+            if (mcterm_geometry (t, &g))
+            {
+                const WRect *r = &w->rect;
+                const gint64 screen_row = g.blank_above + (t->cursor_row - g.first_abs);
+
+                if (screen_row >= 0 && screen_row < r->lines)
+                {
+                    tty_gotoyx (r->y + (int) screen_row,
+                                r->x + CLAMP (t->cursor_col, 0, r->cols - 1));
+                    return MSG_HANDLED;
+                }
+            }
+        }
         if (t->shell_at_prompt && t->osc7_capable)
             return MSG_NOT_HANDLED;
         if (t->vterm != NULL && !t->child_dead)
@@ -656,46 +1034,111 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             && (t->vterm == NULL || !mcview_vterm_in_alt_screen (t->vterm)))
             return MSG_NOT_HANDLED;
 
-        // An alt-screen application gets these keys itself.
+        // An alt-screen application gets every key itself.
         if (t->vterm != NULL && !mcview_vterm_in_alt_screen (t->vterm))
         {
             const int page = WIDGET (t)->rect.lines - 1;
+            const long command = mcterm_key_command (t, parm);
 
-            switch (parm)
+            switch (command)
             {
-            case KEY_PPAGE:
-            case KEY_NPAGE:
-            case KEY_HOME:
-            case KEY_END:
-            case KEY_M_SHIFT | KEY_UP:
-            case KEY_M_SHIFT | KEY_DOWN:
+            case CK_Store:
+                // A panel over it, or nothing marked: the key is someone else's.
+                if (!t->scroll_allowed || !t->sel.active)
+                {
+                    mcterm_follow_end (t);
+                    break;
+                }
+                // Copied and done with: what is on the clipfile needs no marker.
+                mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols);
+                mcterm_sel_clear (&t->sel);
+                widget_draw (WIDGET (t));
+                return MSG_HANDLED;
+
+            case CK_Unmark:
+                if (!t->sel.anchored)
+                {
+                    mcterm_follow_end (t);
+                    break;
+                }
+                mcterm_sel_clear (&t->sel);
+                widget_draw (WIDGET (t));
+                return MSG_HANDLED;
+
+            case CK_MarkLeft:
+            case CK_MarkRight:
+            case CK_MarkUp:
+            case CK_MarkDown:
+            case CK_MarkPageUp:
+            case CK_MarkPageDown:
+            case CK_MarkToHome:
+            case CK_MarkToEnd:
+                // A panel over the terminal owns these keys, see CK_Store above.
+                if (!t->scroll_allowed)
+                {
+                    mcterm_follow_end (t);
+                    break;
+                }
+                mcterm_cursor_move (t, command, TRUE);
+                return MSG_HANDLED;
+
+            case CK_Left:
+            case CK_Right:
+            case CK_Up:
+            case CK_Down:
+            case CK_WordLeft:
+            case CK_WordRight:
+            case CK_Home:
+            case CK_End:
+                if (!t->scroll_allowed)
+                {
+                    mcterm_follow_end (t);
+                    break;
+                }
+                mcterm_cursor_move (t, command, FALSE);
+                return MSG_HANDLED;
+
+            case CK_ScrollUp:
+            case CK_ScrollDown:
+            case CK_PageUp:
+            case CK_PageDown:
+            case CK_Top:
+            case CK_Bottom:
             {
                 const int hist = mcview_vterm_history_len (t->vterm);
-                int delta = 1;
+                int delta;
 
-                if (parm == KEY_PPAGE)
-                    delta = -page;
-                else if (parm == KEY_NPAGE)
-                    delta = page;
-                else if (parm == KEY_HOME)
-                    delta = -hist;
-                else if (parm == KEY_END)
-                    delta = hist;
-                else if (parm == (KEY_M_SHIFT | KEY_UP))
+                if (command == CK_ScrollUp)
                     delta = -1;
+                else if (command == CK_ScrollDown)
+                    delta = 1;
+                else if (command == CK_PageUp)
+                    delta = -page;
+                else if (command == CK_PageDown)
+                    delta = page;
+                else if (command == CK_Top)
+                    delta = -hist;
+                else
+                    delta = hist;
 
-                /* While the view is held back the key is ours even when it can
-                   go no further: the program below must not see it and answer
-                   with something of its own. */
-                if (mcterm_scroll_view (t, delta) || t->scrollback > 0)
+                if (mcterm_scroll_view (t, delta))
+                {
+                    mcterm_cursor_into_view (t);
+                    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+                    return MSG_HANDLED;
+                }
+
+                // Held back, the key is ours; at the end, only these two are.
+                if (t->scrollback > 0 || command == CK_ScrollUp || command == CK_ScrollDown)
                     return MSG_HANDLED;
                 break;
             }
+
             default:
-                // Typing returns to the end, the way a terminal does.
-                if (t->scrollback != 0)
+                mcterm_follow_end (t);
+                if (t->sel.anchored)
                 {
-                    t->scrollback = 0;
+                    mcterm_sel_clear (&t->sel);
                     widget_draw (WIDGET (t));
                 }
                 break;
@@ -705,6 +1148,23 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         if (t->child_dead || t->pty_master < 0)
             return MSG_NOT_HANDLED;
         return mcterm_send_encoded_key (t, parm) ? MSG_HANDLED : MSG_NOT_HANDLED;
+
+    case MSG_FOCUS:
+        // Reading starts where the shell is typing.
+        if (t->vterm != NULL)
+            mcterm_cursor_reset (t);
+        widget_draw (w);
+        return MSG_HANDLED;
+
+    case MSG_UNFOCUS:
+        // The mark is worked on with the keys of the terminal, which are gone now.
+        t->cursor_valid = FALSE;
+        if (t->sel.anchored)
+        {
+            mcterm_sel_clear (&t->sel);
+            widget_draw (w);
+        }
+        return MSG_HANDLED;
 
     case MSG_DESTROY:
         if (t->pty_master >= 0)
@@ -806,6 +1266,7 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->osc7_capable = FALSE;
     t->vterm = mcview_vterm_new ();
     t->scroll_allowed = TRUE;
+    t->typing_elsewhere = TRUE;
     mcview_vterm_set_keep_history (t->vterm, TRUE);
     mcview_vterm_set_size (t->vterm, r->lines, r->cols);
 
@@ -935,8 +1396,8 @@ static void
 mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 {
     WMcTerm *t = (WMcTerm *) w;
-
-    (void) event;
+    gint64 row;
+    int col;
 
     switch (msg)
     {
@@ -946,8 +1407,99 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     case MSG_MOUSE_SCROLL_DOWN:
         mcterm_scroll_view (t, MCTERM_WHEEL_ROWS);
         break;
+
+    case MSG_MOUSE_DOWN:
+        /* An alt-screen application draws its own thing, and a panel on the
+           screen hides what would be marked; neither is marked in. */
+        if ((event->buttons & GPM_B_LEFT) == 0 || mcterm_in_alt_screen (t) || !t->scroll_allowed)
+            break;
+        if (!mcterm_row_at (t, event->y, event->x, &row, &col))
+            break;
+        widget_select (w);
+        mcterm_sel_clear (&t->sel);
+        mcterm_sel_start (&t->sel, row, col);
+        t->cursor_row = row;
+        t->cursor_col = col;
+        t->cursor_valid = TRUE;
+        widget_draw (w);
+        send_message (w, NULL, MSG_CURSOR, 0, NULL);
+        break;
+
+    case MSG_MOUSE_DRAG:
+        if (!t->sel.anchored)
+            break;
+        // A drag runs on outside the widget, and the view follows it.
+        if (event->y < 0)
+            mcterm_scroll_view (t, -1);
+        else if (event->y >= WIDGET (t)->rect.lines)
+            mcterm_scroll_view (t, 1);
+        if (!mcterm_row_at (t, event->y, event->x, &row, &col))
+            break;
+        mcterm_sel_extend (&t->sel, row, col);
+        t->cursor_row = row;
+        t->cursor_col = col;
+        widget_draw (w);
+        send_message (w, NULL, MSG_CURSOR, 0, NULL);
+        break;
+
     default:
         break;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
+{
+    if (t != NULL)
+        t->typing_elsewhere = elsewhere;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+long
+mcterm_key_command (const WMcTerm *t, int key)
+{
+    long command;
+
+    if (t == NULL || t->vterm == NULL || mcterm_map == NULL)
+        return CK_IgnoreKey;
+
+    // An alt-screen application is typed at, not scrolled or marked.
+    if (mcview_vterm_in_alt_screen (t->vterm))
+        return CK_IgnoreKey;
+
+    command = keybind_lookup_keymap_command (mcterm_map, key);
+
+    switch (command)
+    {
+    case CK_ScrollUp:
+    case CK_ScrollDown:
+    case CK_PageUp:
+    case CK_PageDown:
+    case CK_Top:
+    case CK_Bottom:
+        // Looking back at the output does not need the focus, typing goes on.
+        return command;
+
+    case CK_Left:
+    case CK_Right:
+    case CK_Up:
+    case CK_Down:
+    case CK_WordLeft:
+    case CK_WordRight:
+    case CK_Home:
+    case CK_End:
+        /* With nowhere else to type, these are the keys the shell reads its
+           own line by, and it keeps them. */
+        if (!t->typing_elsewhere)
+            return CK_IgnoreKey;
+        MC_FALLTHROUGH;
+
+    default:
+        // The cursor and the mark are its own only while it holds the focus.
+        return widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? command : CK_IgnoreKey;
     }
 }
 
@@ -960,6 +1512,14 @@ mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed)
         return;
 
     t->scroll_allowed = allowed;
+
+    /* A panel has come over the terminal: what is marked below it can neither
+       be seen nor added to, so the mark goes. */
+    if (!allowed && t->sel.anchored)
+    {
+        mcterm_sel_clear (&t->sel);
+        widget_draw (WIDGET (t));
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1118,10 +1678,11 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
+mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color)
 {
     const WRect *r;
     mcview_terminal_buffer_t *buf;
+    mcview_canvas_colors_t colors;
     int cursor_row;
 
     if (t == NULL || t->vterm == NULL || t->child_dead)
@@ -1130,5 +1691,14 @@ mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
     r = &CONST_WIDGET (t)->rect;
     buf = mcview_vterm_buf (t->vterm);
     cursor_row = mcview_vterm_cursor_row (t->vterm);
-    mcview_render_terminal_canvas (buf, cursor_row, screen_y, r->x, 1, r->cols);
+
+    /* The row belongs to the host, and so do its colors: it stands next to
+       whatever the host puts on the rest of that row. */
+    colors.section = skin_section;
+    colors.normal = color;
+    colors.bold = -1;
+    colors.underline = -1;
+    colors.bold_underline = -1;
+
+    mcview_render_terminal_canvas (buf, cursor_row, screen_y, r->x, 1, r->cols, &colors);
 }

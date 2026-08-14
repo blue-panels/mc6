@@ -3,6 +3,7 @@
 
 #include "lib/global.h"
 #include "lib/widget.h"
+#include "lib/keybind.h"
 #include "lib/tty/tty.h"
 
 /*** typedefs(not structures) and defined constants **********************************************/
@@ -33,8 +34,13 @@ void mcterm_set_prompt_callback (WMcTerm *t, void (*cb) (void *), void *data);
 void mcterm_set_after_redraw_callback (WMcTerm *t, void (*cb) (void *), void *data);
 gboolean mcterm_osc7_capable (const WMcTerm *t);
 int mcterm_cursor_col (const WMcTerm *t);
-void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y);
+/* At a prompt the widget leaves the shell's row to the host: draw it with this. */
+void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
+long mcterm_key_command (const WMcTerm *t, int key);
+/* Whether the host types on a command line of its own. Without one the plain
+   arrows are left to the shell, there being nowhere else for typing to go. */
+void mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere);
 
 #else /* !ENABLE_MCTERM */
 
@@ -128,10 +134,12 @@ mcterm_cursor_col (const WMcTerm *t)
     return -1;
 }
 static inline void
-mcterm_draw_prompt_row (const WMcTerm *t, int screen_y)
+mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color)
 {
     (void) t;
     (void) screen_y;
+    (void) skin_section;
+    (void) color;
 }
 static inline gboolean
 mcterm_send_tab_complete (WMcTerm *t, const char *text)
@@ -139,6 +147,19 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
     (void) t;
     (void) text;
     return FALSE;
+}
+static inline long
+mcterm_key_command (const WMcTerm *t, int key)
+{
+    (void) t;
+    (void) key;
+    return CK_IgnoreKey;
+}
+static inline void
+mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
+{
+    (void) t;
+    (void) elsewhere;
 }
 
 #endif /* ENABLE_MCTERM */

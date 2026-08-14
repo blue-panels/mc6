@@ -26,6 +26,16 @@ typedef enum
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
+/* Which skin paints a canvas; -1 where it has no colour of its own. */
+typedef struct
+{
+    const char *section;
+    int normal;
+    int bold;
+    int underline;
+    int bold_underline;
+} mcview_canvas_colors_t;
+
 /** ANSI SGR parser state */
 typedef struct
 {

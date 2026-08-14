@@ -61,6 +61,7 @@
 
 #include "command.h"
 #include "filemanager.h"
+#include "mcterm_overlay.h"
 #include "tree.h"
 /* Needed for the extern declarations of integer parameters */
 #include "dir.h"
@@ -1037,6 +1038,10 @@ rotate_dash (gboolean show)
     const Widget *w = CONST_WIDGET (filemanager);
 
     if (!nice_rotating_dash || (ok_to_refresh <= 0))
+        return;
+
+    // What it puts back is a panel frame's corner, and there is no frame here.
+    if (mcterm_overlay_active ())
         return;
 
     if (show && !mc_time_elapsed (&timestamp, delay))

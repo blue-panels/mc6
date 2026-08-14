@@ -319,12 +319,25 @@ mcview_update (WView *view)
 
 /* --------------------------------------------------------------------------------------------- */
 void
+mcview_canvas_colors_viewer (mcview_canvas_colors_t *colors)
+{
+    colors->section = "viewer";
+    colors->normal = VIEWER_NORMAL_COLOR;
+    colors->bold = VIEWER_BOLD_COLOR;
+    colors->underline = VIEWER_UNDERLINED_COLOR;
+    colors->bold_underline = VIEWER_BOLD_UNDERLINED_COLOR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row, int screen_y,
-                               int screen_x, int rows, int cols)
+                               int screen_x, int rows, int cols,
+                               const mcview_canvas_colors_t *colors)
 {
     int row, col;
 
-    tty_setcolor (VIEWER_NORMAL_COLOR);
+    tty_setcolor (colors->normal);
 
     for (row = 0; row < rows; row++)
     {
@@ -354,12 +367,12 @@ mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row,
                 tmp.underline = a->underline;
                 tmp.blink = a->blink;
                 tmp.reverse = a->reverse;
-                tty_setcolor (mcview_ansi_get_color (&tmp));
+                tty_setcolor (mcview_ansi_color_of (&tmp, colors));
                 tty_print_anychar (cell->ch);
             }
             else
             {
-                tty_setcolor (VIEWER_NORMAL_COLOR);
+                tty_setcolor (colors->normal);
                 tty_print_char (' ');
             }
         }
@@ -373,6 +386,7 @@ mcview_display_terminal (WView *view)
     mcview_vterm_t *vt = view->vterm;
     mcview_terminal_buffer_t *buf;
     const WRect *r = &view->data_area;
+    mcview_canvas_colors_t colors;
     off_t filesize, pos;
     int top_row;
 
@@ -405,8 +419,9 @@ mcview_display_terminal (WView *view)
     buf = mcview_vterm_buf (vt);
 
     top_row = mcview_vterm_resolve_top_row (vt, r->lines);
+    mcview_canvas_colors_viewer (&colors);
     mcview_render_terminal_canvas (buf, top_row, WIDGET (view)->rect.y + r->y,
-                                   WIDGET (view)->rect.x + r->x, r->lines, r->cols);
+                                   WIDGET (view)->rect.x + r->x, r->lines, r->cols, &colors);
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -66,6 +66,9 @@ GArray *viewer_struct_keymap = NULL;
 #ifdef USE_DIFF_VIEW
 GArray *diff_keymap = NULL;
 #endif
+#ifdef ENABLE_MCTERM
+GArray *mcterm_keymap = NULL;
+#endif
 
 const global_keymap_t *filemanager_map = NULL;
 const global_keymap_t *filemanager_x_map = NULL;
@@ -84,6 +87,9 @@ const global_keymap_t *viewer_hex_map = NULL;
 const global_keymap_t *viewer_struct_map = NULL;
 #ifdef USE_DIFF_VIEW
 const global_keymap_t *diff_map = NULL;
+#endif
+#ifdef ENABLE_MCTERM
+const global_keymap_t *mcterm_map = NULL;
 #endif
 
 /*** file scope macro definitions ****************************************************************/
@@ -438,6 +444,11 @@ static const global_keymap_ini_t default_editor_keymap[] = {
     { "Right", "right" },
     { "Up", "up" },
     { "Down", "down" },
+    // a tab stop at a time, since there are no words to speak of in output
+    { "WordLeft", "ctrl-left" },
+    { "WordRight", "ctrl-right" },
+    { "Home", "home" },
+    { "End", "end" },
     { "Home", "home" },
     { "End", "end" },
     { "PageUp", "pgup" },
@@ -703,6 +714,40 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 };
 #endif
 
+#ifdef ENABLE_MCTERM
+/* embedded terminal: what is bound here is taken from the shell */
+static const global_keymap_ini_t default_mcterm_keymap[] = {
+    // marking the output, and taking it out
+    { "Store", "ctrl-insert" },
+    { "Unmark", "ctrl-shift-u" },
+    { "MarkLeft", "shift-left" },
+    { "MarkRight", "shift-right" },
+    { "MarkUp", "shift-up" },
+    { "MarkDown", "shift-down" },
+    { "MarkPageUp", "shift-pgup" },
+    { "MarkPageDown", "shift-pgdn" },
+    { "MarkToHome", "shift-home" },
+    { "MarkToEnd", "shift-end" },
+    // the cursor over the output, while the terminal holds the focus
+    { "Left", "left" },
+    { "Right", "right" },
+    { "Up", "up" },
+    { "Down", "down" },
+    /* The view alone, which moves whoever is typing. The keys of a line reach
+       the command line when there is something on it. */
+    { "ScrollUp", "ctrl-up" },
+    { "ScrollDown", "ctrl-down" },
+    { "PageUp", "pgup" },
+    { "PageDown", "pgdn" },
+    { "Top", "ctrl-home" },
+    { "Bottom", "ctrl-end" },
+    {
+        NULL,
+        NULL,
+    },
+};
+#endif
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -750,6 +795,9 @@ create_default_keymap (void)
                                    default_viewer_struct_keymap);
 #ifdef USE_DIFF_VIEW
     create_default_keymap_section (keymap, KEYMAP_SECTION_DIFFVIEWER, default_diff_keymap);
+#endif
+#ifdef ENABLE_MCTERM
+    create_default_keymap_section (keymap, KEYMAP_SECTION_MCTERM, default_mcterm_keymap);
 #endif
 
     return keymap;
@@ -999,6 +1047,9 @@ keymap_load (gboolean load_from_file)
 #ifdef USE_DIFF_VIEW
         LOAD_KEYMAP (DIFFVIEWER, diff);
 #endif
+#ifdef ENABLE_MCTERM
+        LOAD_KEYMAP (MCTERM, mcterm);
+#endif
 
 #undef LOAD_KEYMAP
         mc_config_deinit (mc_global_keymap);
@@ -1028,6 +1079,9 @@ keymap_load (gboolean load_from_file)
     SET_MAP (viewer_struct);
 #ifdef USE_DIFF_VIEW
     SET_MAP (diff);
+#endif
+#ifdef ENABLE_MCTERM
+    SET_MAP (mcterm);
 #endif
 
 #undef SET_MAP
@@ -1065,6 +1119,9 @@ keymap_free (void)
     FREE_KEYMAP (viewer_struct);
 #ifdef USE_DIFF_VIEW
     FREE_KEYMAP (diff);
+#endif
+#ifdef ENABLE_MCTERM
+    FREE_KEYMAP (mcterm);
 #endif
 
 #undef FREE_KEYMAP

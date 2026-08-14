@@ -154,6 +154,12 @@ static const keybind_section_t diff_sections[] = {
 };
 #endif
 
+#ifdef ENABLE_MCTERM
+static const keybind_section_t mcterm_sections[] = {
+    { N_ ("&Terminal"), KEYMAP_SECTION_MCTERM },
+};
+#endif
+
 static const keybind_section_t widget_sections[] = {
     { N_ ("&Dialog"), KEYMAP_SECTION_DIALOG }, { N_ ("&Menu"), KEYMAP_SECTION_MENU },
     { N_ ("&Input"), KEYMAP_SECTION_INPUT },   { N_ ("&Listbox"), KEYMAP_SECTION_LISTBOX },
@@ -171,6 +177,9 @@ static const keybind_group_t keybind_groups[] = {
     { N_ ("&Viewer"), G_N_ELEMENTS (viewer_sections), viewer_sections },
 #ifdef USE_DIFF_VIEW
     { N_ ("&Diff"), G_N_ELEMENTS (diff_sections), diff_sections },
+#endif
+#ifdef ENABLE_MCTERM
+    { N_ ("&Terminal"), G_N_ELEMENTS (mcterm_sections), mcterm_sections },
 #endif
     { N_ ("&Widgets"), G_N_ELEMENTS (widget_sections), widget_sections },
 };
@@ -491,6 +500,10 @@ keybind_find_map (const char *section)
 #ifdef USE_DIFF_VIEW
     if (strcmp (section, KEYMAP_SECTION_DIFFVIEWER) == 0)
         return diff_map;
+#endif
+#ifdef ENABLE_MCTERM
+    if (strcmp (section, KEYMAP_SECTION_MCTERM) == 0)
+        return mcterm_map;
 #endif
     return NULL;
 }

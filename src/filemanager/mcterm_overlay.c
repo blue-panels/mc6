@@ -35,6 +35,7 @@
 
 #include "lib/global.h"
 #include "lib/keybind.h"
+#include "lib/skin.h"
 #include "lib/tty/key.h"
 #include "lib/tty/tty.h"
 #include "lib/vfs/vfs.h"
@@ -117,7 +118,8 @@ mcterm_overlay_draw_cmdline_row (void)
     if (cursor_col < 0 || cursor_col >= mwr->cols)
         cursor_col = 0;
 
-    mcterm_draw_prompt_row (mcterm_panel, cmdline_y);
+    // The row is the command line's, so it carries the command line's colors.
+    mcterm_draw_prompt_row (mcterm_panel, cmdline_y, "core", CORE_DEFAULT_COLOR);
     widget_set_size (WIDGET (cmdline), cmdline_y, mwr->x + cursor_col, 1, mwr->cols - cursor_col);
 }
 
@@ -172,6 +174,48 @@ mcterm_overlay_sync_shell_to_panel (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+mcterm_overlay_terminal_focused (void)
+{
+    WGroup *g = GROUP (filemanager);
+
+    return (g->current != NULL && WIDGET (g->current->data) == mcterm_overlay_widget ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Put the cursor where the input goes: the terminal draws its own when it is
+   being read, the command line whenever it is the one typed into. */
+static void
+mcterm_overlay_place_cursor (void)
+{
+    if (mcterm_overlay_terminal_focused ())
+        send_message (mcterm_overlay_widget (), NULL, MSG_CURSOR, 0, NULL);
+    else if (command_prompt)
+        send_message (WIDGET (cmdline), NULL, MSG_CURSOR, 0, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Where typing goes when the panels step aside. */
+static void
+mcterm_overlay_focus_typing (void)
+{
+    widget_select (command_prompt ? WIDGET (cmdline) : mcterm_overlay_widget ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Hand the typing over to the command line, which is where it goes. */
+static void
+mcterm_overlay_focus_cmdline (void)
+{
+    if (command_prompt && mcterm_overlay_terminal_focused ())
+        widget_select (WIDGET (cmdline));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcterm_overlay_prompt_ready_cb (void *data)
 {
@@ -186,7 +230,7 @@ mcterm_overlay_prompt_ready_cb (void *data)
         return;
 
     mcterm_overlay_draw_cmdline_row ();
-    send_message (WIDGET (cmdline), NULL, MSG_CURSOR, 0, NULL);
+    mcterm_overlay_place_cursor ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -364,7 +408,9 @@ mcterm_overlay_toggle (void)
         mcterm_set_scroll_allowed (mcterm_panel, TRUE);
         mcterm_mode = TRUE;
         widget_set_options (WIDGET (filemanager), WOP_WANT_TAB, TRUE);
-        widget_select (mcterm_overlay_widget ());
+        // Selectable here only: elsewhere a panel would lose its selection to it.
+        widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, TRUE);
+        mcterm_overlay_focus_typing ();
 
         do_refresh ();
     }
@@ -398,6 +444,7 @@ mcterm_overlay_toggle (void)
 
         mcterm_mode = FALSE;
         widget_set_options (WIDGET (filemanager), WOP_WANT_TAB, FALSE);
+        widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
         layout_change ();
         widget_select (WIDGET (current_panel));
         do_refresh ();
@@ -468,7 +515,7 @@ mcterm_overlay_after_filemanager_draw (void)
     if (mcterm_mode && mcterm_overlay_ready ())
     {
         mcterm_overlay_draw_cmdline_row ();
-        send_message (WIDGET (cmdline), NULL, MSG_CURSOR, 0, NULL);
+        mcterm_overlay_place_cursor ();
     }
 }
 
@@ -529,6 +576,11 @@ mcterm_overlay_complete_or_cycle_focus (void)
             next = p1_vis ? pw1 : mcterm_overlay_widget ();
         else if (focused == pw1)
             next = p0_vis ? pw0 : mcterm_overlay_widget ();
+        else if (focused == mcterm_overlay_widget ())
+            // From reading the output back to typing.
+            next = command_prompt ? WIDGET (cmdline) : NULL;
+        else if (focused == WIDGET (cmdline))
+            next = p0_vis ? pw0 : (p1_vis ? pw1 : mcterm_overlay_widget ());
         else
         {
             Widget *cur = current_panel != NULL ? WIDGET (current_panel) : NULL;
@@ -655,7 +707,7 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
                         : PANEL (pw);
                 }
 
-                widget_select (mcterm_overlay_widget ());
+                mcterm_overlay_focus_typing ();
                 widget_draw (mcterm_overlay_widget ());
             }
             else
@@ -757,12 +809,15 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
                            mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data)
 {
     long cmd;
+    long term_cmd = CK_IgnoreKey;
 
     if (!mcterm_mode || mcterm_panel == NULL)
         return MSG_NOT_HANDLED;
 
     // A panel on screen owns the keys that walk a list.
     mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
+    // Both can be turned off while the terminal is up, so they are told each time.
+    mcterm_set_typing_elsewhere (mcterm_panel, command_prompt);
 
     {
         WGroup *g = GROUP (filemanager);
@@ -781,6 +836,17 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         }
     }
 
+    // Tab completes what is typed, so the focus has a key of its own.
+    if (parm == (KEY_M_SHIFT | '\t') && command_prompt)
+    {
+        widget_select (mcterm_overlay_terminal_focused () ? WIDGET (cmdline)
+                                                          : mcterm_overlay_widget ());
+        mcterm_overlay_draw_visible_panels ();
+        mcterm_overlay_place_cursor ();
+        tty_refresh ();
+        return MSG_HANDLED;
+    }
+
     {
         gboolean in_alt = mcterm_in_alt_screen (mcterm_panel);
         gboolean at_prompt =
@@ -789,11 +855,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         if ((parm == 0x0F || parm == XCTRL ('O')) && !in_alt)
             return MSG_NOT_HANDLED;
 
-        if (!in_alt && !mcterm_overlay_any_panel_visible ()
-            && (parm == KEY_PPAGE || parm == KEY_NPAGE || parm == (KEY_M_SHIFT | KEY_UP)
-                || parm == (KEY_M_SHIFT | KEY_DOWN)
-                // with something typed these two still walk the command line
-                || ((parm == KEY_HOME || parm == KEY_END) && input_is_empty (cmdline))))
+        // What the terminal itself acts on: the view, the cursor, and the mark.
+        term_cmd = mcterm_key_command (mcterm_panel, parm);
+
+        if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey)
         {
             cb_ret_t r = send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
 
@@ -817,6 +882,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     cmd = widget_lookup_key (w, parm);
     if (cmd != CK_IgnoreKey)
         return execute_command (cmd, data);
+
+    // Typing goes to the command line, and the focus with it.
+    if (term_cmd == CK_IgnoreKey)
+        mcterm_overlay_focus_cmdline ();
 
     if (parm == KEY_UP)
     {

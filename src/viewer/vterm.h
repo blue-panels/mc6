@@ -76,6 +76,7 @@ void mcview_vterm_set_replay_offset (mcview_vterm_t *vt, off_t offset);
 void mcview_vterm_set_keep_history (mcview_vterm_t *vt, gboolean keep);
 int mcview_vterm_history_len (const mcview_vterm_t *vt);
 const GArray *mcview_vterm_history_row (const mcview_vterm_t *vt, int index);
+gint64 mcview_vterm_scrolled_rows (const mcview_vterm_t *vt);
 
 int mcview_vterm_dpy_top_row (const mcview_vterm_t *vt);
 void mcview_vterm_set_dpy_top_row (mcview_vterm_t *vt, int row);
@@ -90,9 +91,13 @@ gboolean mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols);
 void mcview_vterm_restore_sync_snapshot (mcview_vterm_t *vt, mcview_terminal_buffer_t *snap_buf,
                                          int snap_cursor_row);
 
-/* Render a terminal buffer region to the TUI screen. */
+/* Render a terminal buffer region to the TUI screen, in the colors of the skin
+   section of whoever is drawing it. */
 void mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row, int screen_y,
-                                    int screen_x, int rows, int cols);
+                                    int screen_x, int rows, int cols,
+                                    const mcview_canvas_colors_t *colors);
+/* The section of the viewer itself, which is what mcview draws with. */
+void mcview_canvas_colors_viewer (mcview_canvas_colors_t *colors);
 
 /*** inline functions ****************************************************************************/
 
