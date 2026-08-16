@@ -65,8 +65,9 @@
 
 /*** file scope variables ************************************************************************/
 
-#define MCTERM_INTERNAL_SYNC_MAX_STALLED_READS 16
+#define MCTERM_INTERNAL_SYNC_TIMEOUT_USEC G_USEC_PER_SEC
 
+#define MCTERM_INITIAL_OSC7_MARKER "7;file://__mc_sync__/"
 #define MCTERM_WHEEL_ROWS                      3
 
 /* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
@@ -90,9 +91,10 @@ struct WMcTerm
     void (*on_after_redraw) (void *data);
     void *on_after_redraw_data;
     gboolean pending_internal_sync;
+    gboolean waiting_for_initial_osc7;
     mcview_terminal_buffer_t *sync_snapshot_buf; /* owned, freed in mcterm_free */
     int sync_snapshot_cursor_row;
-    int pending_internal_sync_reads;
+    gint64 internal_sync_deadline;
     int scrollback;  // rows above the live screen; 0 follows the output
     gboolean scroll_allowed;
     // Whether the host types elsewhere; without that the arrows are the shell's.
@@ -229,8 +231,33 @@ mcterm_handle_osc7_generation (WMcTerm *t)
         return FALSE;
 
     t->last_osc7_gen = gen;
+
+    if (t->waiting_for_initial_osc7)
+    {
+        if (g_strcmp0 (mcview_vterm_osc7_raw (t->vterm), MCTERM_INITIAL_OSC7_MARKER) != 0)
+            return FALSE;
+
+        t->waiting_for_initial_osc7 = FALSE;
+        t->internal_sync_deadline = 0;
+
+        if (t->pending_internal_sync)
+        {
+            t->pending_internal_sync = FALSE;
+            if (t->sync_snapshot_buf != NULL)
+            {
+                mcview_vterm_set_keep_history (t->vterm, FALSE);
+                mcview_vterm_set_keep_history (t->vterm, TRUE);
+                mcview_vterm_restore_sync_snapshot (t->vterm, t->sync_snapshot_buf,
+                                                    t->sync_snapshot_cursor_row);
+                t->sync_snapshot_buf = NULL;
+            }
+        }
+
+        return FALSE;
+    }
+
     t->shell_at_prompt = TRUE;
-    t->pending_internal_sync_reads = 0;
+    t->internal_sync_deadline = 0;
 
     if (t->pending_internal_sync)
     {
@@ -252,12 +279,17 @@ mcterm_handle_stalled_internal_sync (WMcTerm *t)
     if (!t->pending_internal_sync)
         return TRUE;
 
-    t->pending_internal_sync_reads++;
-    if (t->pending_internal_sync_reads < MCTERM_INTERNAL_SYNC_MAX_STALLED_READS)
+    /* The startup setup is guaranteed to end with OSC 7.  PTY reads are
+       unrelated to how far Bash has got through its startup, so keep its
+       setup hidden until that marker arrives. */
+    if (t->waiting_for_initial_osc7)
+        return FALSE;
+
+    if (g_get_monotonic_time () < t->internal_sync_deadline)
         return FALSE;
 
     t->pending_internal_sync = FALSE;
-    t->pending_internal_sync_reads = 0;
+    t->internal_sync_deadline = 0;
     mcview_terminal_buffer_free (t->sync_snapshot_buf);
     t->sync_snapshot_buf = NULL;
     return TRUE;
@@ -405,11 +437,13 @@ mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup, size_t setup_len)
     t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
     t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
     t->pending_internal_sync = TRUE;
+    t->waiting_for_initial_osc7 = TRUE;
     if (!mcterm_write_silent (master, setup, setup_len))
     {
         t->osc7_capable = FALSE;
         t->shell_at_prompt = TRUE;
         t->pending_internal_sync = FALSE;
+        t->waiting_for_initial_osc7 = FALSE;
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
     }
@@ -842,6 +876,8 @@ static void
 mcterm_do_draw (WMcTerm *t)
 {
     const WRect *r = &WIDGET (t)->rect;
+
+    (void) mcterm_handle_stalled_internal_sync (t);
 
     if (t->child_dead)
     {
@@ -1328,7 +1364,7 @@ mcterm_new (const WRect *r, const char *start_dir)
                 "  PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND; }"
                 "printf '\\033]7;file://%s\\007'"
                 " \\\"\\$(__mc_pe \\\"\\$PWD\\\")\\\"\"; \\\n"
-                " fi\r";
+                " fi; printf '\\033]7;file://__mc_sync__/\\007'\r";
             mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
         }
         else if (base != NULL && strcmp (base, "zsh") == 0)
@@ -1340,7 +1376,7 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " __mc_first=1;__mc_osc7_precmd(){if (( __mc_first ));then printf "
                 "'\\033[2J\\033[H';"
                 "__mc_first=0;fi;printf '\\033]7;file://%s\\007' \"$(__mc_pe \"$PWD\")\";};"
-                "precmd_functions+=(__mc_osc7_precmd)\r";
+                "precmd_functions+=(__mc_osc7_precmd);printf '\\033]7;file://__mc_sync__/\\007'\r";
 
             mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
         }
@@ -1503,15 +1539,18 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_Right:
     case CK_Up:
     case CK_Down:
-    case CK_WordLeft:
-    case CK_WordRight:
     case CK_Home:
     case CK_End:
-        /* With nowhere else to type, these are the keys the shell reads its
-           own line by, and it keeps them. */
-        if (!t->typing_elsewhere)
-            return CK_IgnoreKey;
-        MC_FALLTHROUGH;
+        /* When the command line owns text input, keep its basic editing and
+         * history keys there. Otherwise the shell reads them itself. */
+        return t->typing_elsewhere
+               && !widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? CK_IgnoreKey : command;
+
+    case CK_WordLeft:
+    case CK_WordRight:
+        /* Ctrl-Left and Ctrl-Right navigate the terminal output even when
+         * the command line owns text input. */
+        return command;
 
     default:
         // The cursor and the mark are its own only while it holds the focus.
@@ -1604,7 +1643,8 @@ mcterm_send_internal_line (WMcTerm *t, const char *line)
     t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
     t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
     t->pending_internal_sync = TRUE;
-    t->pending_internal_sync_reads = 0;
+    t->waiting_for_initial_osc7 = FALSE;
+    t->internal_sync_deadline = g_get_monotonic_time () + MCTERM_INTERNAL_SYNC_TIMEOUT_USEC;
 
     return mcterm_send_line (t, line);
 }

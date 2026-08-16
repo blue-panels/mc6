@@ -214,6 +214,13 @@ mcterm_overlay_focus_cmdline (void)
         widget_select (WIDGET (cmdline));
 }
 
+static gboolean
+mcterm_overlay_starts_cmdline_input (int parm)
+{
+    return (command_prompt && parm >= ' ' && parm <= 255);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -895,24 +902,32 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     if (cmd != CK_IgnoreKey)
         return execute_command (cmd, data);
 
-    // Typing goes to the command line, and the focus with it.
-    if (term_cmd == CK_IgnoreKey)
+    if (!mcterm_overlay_terminal_focused ())
+    {
+        if (parm == KEY_UP)
+        {
+            send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryPrev, NULL);
+            return MSG_HANDLED;
+        }
+
+        if (parm == KEY_DOWN)
+        {
+            send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryNext, NULL);
+            return MSG_HANDLED;
+        }
+
+        send_message (WIDGET (cmdline), NULL, MSG_KEY, parm, NULL);
+        return MSG_HANDLED;
+    }
+
+    if (mcterm_overlay_starts_cmdline_input (parm))
+    {
         mcterm_overlay_focus_cmdline ();
-
-    if (parm == KEY_UP)
-    {
-        send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryPrev, NULL);
+        send_message (WIDGET (cmdline), NULL, MSG_KEY, parm, NULL);
         return MSG_HANDLED;
     }
 
-    if (parm == KEY_DOWN)
-    {
-        send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryNext, NULL);
-        return MSG_HANDLED;
-    }
-
-    send_message (WIDGET (cmdline), NULL, MSG_KEY, parm, NULL);
-    return MSG_HANDLED;
+    return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
 }
 
 #else /* !ENABLE_MCTERM */
