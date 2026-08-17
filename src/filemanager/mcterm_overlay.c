@@ -96,7 +96,7 @@ mcterm_overlay_rect (const WRect *mwr, WRect *r)
 {
     int start_y = mwr->y + (menubar_visible ? 1 : 0);
     int height = mwr->lines - (menubar_visible ? 1 : 0) - (mc_global.keybar_visible ? 1 : 0)
-        - (command_prompt ? 1 : 0);
+        - (command_prompt && mcterm_overlay_ready () ? 1 : 0);
 
     *r = (WRect) { start_y, mwr->x, MAX (height, 1), mwr->cols };
 }
@@ -232,6 +232,8 @@ mcterm_overlay_prompt_ready_cb (void *data)
         return;
 
     mcterm_overlay_sync_panel_from_shell ();
+    mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
+    widget_draw (mcterm_overlay_widget ());
 
     if (!command_prompt)
         return;
@@ -560,67 +562,63 @@ gboolean
 mcterm_overlay_complete_or_cycle_focus (void)
 {
     const char *text;
+    WGroup *g_fm;
+    Widget *focused;
+    Widget *pw0;
+    Widget *pw1;
+    gboolean p0_vis;
+    gboolean p1_vis;
+    Widget *next;
 
     if (!mcterm_mode || !mcterm_overlay_ready ())
         return FALSE;
 
     text = input_get_ctext (cmdline);
-    if (text != NULL && *text != '\0')
+    g_fm = GROUP (filemanager);
+    focused = g_fm->current != NULL ? WIDGET (g_fm->current->data) : NULL;
+
+    if (focused == WIDGET (cmdline) || (text != NULL && *text != '\0'))
     {
-        if (mcterm_send_tab_complete (mcterm_panel, text))
+        if (mcterm_send_tab_complete (mcterm_panel, text != NULL ? text : ""))
         {
-            const WRect *mwr = &CONST_WIDGET (filemanager)->rect;
-
-            input_assign_text (cmdline, "");
-            widget_set_size (WIDGET (cmdline), WIDGET (cmdline)->rect.y, mwr->x, 1, mwr->cols);
+            input_clean (cmdline);
+            mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
             widget_draw (mcterm_overlay_widget ());
-            mcterm_overlay_draw_visible_panels ();
-            send_message (mcterm_overlay_widget (), NULL, MSG_CURSOR, 0, NULL);
-            tty_refresh ();
         }
-
         return TRUE;
     }
+
+    pw0 = get_panel_widget (0);
+    pw1 = get_panel_widget (1);
+    p0_vis = pw0 != NULL && widget_get_state (pw0, WST_VISIBLE);
+    p1_vis = pw1 != NULL && widget_get_state (pw1, WST_VISIBLE);
+
+    if (focused == pw0)
+        next = p1_vis ? pw1 : mcterm_overlay_widget ();
+    else if (focused == pw1)
+        next = p0_vis ? pw0 : mcterm_overlay_widget ();
+    else if (focused == mcterm_overlay_widget ())
+        next = command_prompt ? WIDGET (cmdline) : NULL;
     else
     {
-        WGroup *g_fm = GROUP (filemanager);
-        Widget *focused = g_fm->current != NULL ? WIDGET (g_fm->current->data) : NULL;
-        Widget *pw0 = get_panel_widget (0);
-        Widget *pw1 = get_panel_widget (1);
-        gboolean p0_vis = pw0 != NULL && widget_get_state (pw0, WST_VISIBLE);
-        gboolean p1_vis = pw1 != NULL && widget_get_state (pw1, WST_VISIBLE);
-        Widget *next;
+        Widget *cur = current_panel != NULL ? WIDGET (current_panel) : NULL;
 
-        if (focused == pw0)
-            next = p1_vis ? pw1 : mcterm_overlay_widget ();
-        else if (focused == pw1)
-            next = p0_vis ? pw0 : mcterm_overlay_widget ();
-        else if (focused == mcterm_overlay_widget ())
-            // From reading the output back to typing.
-            next = command_prompt ? WIDGET (cmdline) : NULL;
-        else if (focused == WIDGET (cmdline))
+        if (cur == pw0)
+            next = p1_vis ? pw1 : (p0_vis ? pw0 : mcterm_overlay_widget ());
+        else if (cur == pw1)
             next = p0_vis ? pw0 : (p1_vis ? pw1 : mcterm_overlay_widget ());
         else
-        {
-            Widget *cur = current_panel != NULL ? WIDGET (current_panel) : NULL;
-
-            if (cur == pw0)
-                next = p1_vis ? pw1 : (p0_vis ? pw0 : mcterm_overlay_widget ());
-            else if (cur == pw1)
-                next = p0_vis ? pw0 : (p1_vis ? pw1 : mcterm_overlay_widget ());
-            else
-                next = p0_vis ? pw0 : (p1_vis ? pw1 : NULL);
-        }
-
-        if (next != NULL)
-        {
-            widget_select (next);
-            mcterm_overlay_draw_visible_panels ();
-            tty_refresh ();
-        }
-
-        return TRUE;
+            next = p0_vis ? pw0 : (p1_vis ? pw1 : NULL);
     }
+
+    if (next != NULL)
+    {
+        widget_select (next);
+        mcterm_overlay_draw_visible_panels ();
+        tty_refresh ();
+    }
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -854,12 +852,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
             return MSG_NOT_HANDLED;
         }
     }
-
-    // Tab completes what is typed, so the focus has a key of its own.
-    if (parm == (KEY_M_SHIFT | '\t') && command_prompt)
+    // Tab moves focus into the terminal; in the command line it stays completion.
+    if (parm == (KEY_M_SHIFT | '\t') && command_prompt && mcterm_overlay_terminal_focused ())
     {
-        widget_select (mcterm_overlay_terminal_focused () ? WIDGET (cmdline)
-                                                          : mcterm_overlay_widget ());
+        widget_select (WIDGET (cmdline));
         mcterm_overlay_draw_visible_panels ();
         mcterm_overlay_place_cursor ();
         tty_refresh ();
