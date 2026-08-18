@@ -237,6 +237,21 @@ command_set_default_colors (void)
 
 /* --------------------------------------------------------------------------------------------- */
 /**
+ * Whether the row carries the shell's own prompt.
+ *
+ * When it does, what the user types stands next to that prompt and belongs to the same line as
+ * far as the eye is concerned: it takes the terminal's colors, not the file manager's.
+ */
+
+void
+command_set_shell_colors (gboolean shell)
+{
+    command_colors[WINPUTC_MAIN] = shell ? MCTERM_NORMAL_COLOR : CORE_DEFAULT_COLOR;
+    command_colors[WINPUTC_UNCHANGED] = command_colors[WINPUTC_MAIN];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
  * Insert quoted text in input line.  The function is meant for the
  * command line, so the percent sign is quoted as well.
  *
