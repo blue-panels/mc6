@@ -45,6 +45,7 @@ if ENABLE_MCTERM
 TESTS += \
 	mcterm_key_encode \
 	mcterm_osc7_parse \
+	mcterm_protocol_parse \
 	mcterm_select
 endif
 
@@ -75,6 +76,9 @@ mcterm_key_encode_SOURCES = \
 
 mcterm_osc7_parse_SOURCES = \
 	mcterm_osc7_parse.c
+
+mcterm_protocol_parse_SOURCES = \
+	mcterm_protocol_parse.c
 
 mcterm_select_SOURCES = \
 	mcterm_select.c
