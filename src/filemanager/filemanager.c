@@ -111,7 +111,7 @@ WPanel *current_panel = NULL;
 /* The Menubar */
 WMenuBar *the_menubar = NULL;
 /* The widget where we draw the prompt */
-WLabel *the_prompt;
+WPrompt *the_prompt;
 /* The hint bar */
 WLabel *the_hint;
 /* The button bar */
@@ -917,8 +917,7 @@ create_file_manager (void)
     cmdline = command_new (0, 0, 0);
     group_add_widget (g, cmdline);
 
-    the_prompt = label_new (0, 0, mc_prompt);
-    the_prompt->transparent = TRUE;
+    the_prompt = wprompt_new (0, 0, mc_prompt);
     group_add_widget (g, the_prompt);
 
     the_bar = buttonbar_new ();
@@ -1736,6 +1735,11 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
     case MSG_INIT:
         panel_init ();
         setup_panels ();
+        /* The shell starts with the file manager, so that the prompt in front of the command
+           line is the shell's own from the first screen on, without Ctrl-O. It starts here
+           rather than with the widgets, because only now do the panels know where they are,
+           and the shell is to start where the current one is. */
+        mcterm_overlay_start ();
         return MSG_HANDLED;
 
     case MSG_CHANGED_FOCUS:
@@ -2054,6 +2058,8 @@ change_panel (void)
 {
     input_complete_free (cmdline);
     group_select_next_widget (GROUP (filemanager));
+    /* The other panel is the current one now, and it is the current panel the shell follows. */
+    mcterm_overlay_sync_shell_to_panel ();
     return current_panel;
 }
 

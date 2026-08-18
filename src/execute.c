@@ -46,7 +46,8 @@
 #include "lib/widget.h"
 
 #include "filemanager/filemanager.h"
-#include "filemanager/layout.h"  // use_dash()
+#include "filemanager/layout.h"          // use_dash()
+#include "filemanager/mcterm_overlay.h"  // mcterm_overlay_exec_command()
 #include "consaver/cons.saver.h"
 #ifdef ENABLE_SUBSHELL
 #include "subshell/subshell.h"
@@ -328,8 +329,8 @@ do_executev (const char *shell, int flags, char *const argv[])
         fflush (stdout);
     }
 #ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL
-        && subshell_ensure_started ())
+    if (!mcterm_overlay_has_terminal () && mc_global.tty.use_subshell
+        && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL && subshell_ensure_started ())
     {
         do_update_prompt ();
 
@@ -481,8 +482,20 @@ shell_execute (const char *command, int flags)
         flags ^= EXECUTE_HIDE;
     }
 
+    /* The user's shell is already running, in a terminal of ours: that is where a command
+       belongs. An internal one is not for the user to see and keeps the old way. */
+    if ((flags & EXECUTE_INTERNAL) == 0
+        && mcterm_overlay_exec_command (cmd != NULL ? cmd : command))
+    {
+        g_free (cmd);
+        return;
+    }
+
 #ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell && subshell_ensure_started ())
+    /* A shell the terminal cannot drive - one that speaks no protocol - runs the command the
+       plain way, with the screen handed over. Starting a subshell besides the one the terminal
+       already has would leave mc with two. */
+    if (!mcterm_overlay_has_terminal () && mc_global.tty.use_subshell && subshell_ensure_started ())
     {
         if (subshell_state == INACTIVE)
             do_execute (mc_global.shell->path, cmd != NULL ? cmd : command,

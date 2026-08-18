@@ -983,22 +983,27 @@ setup_cmdline (void)
     }
 #endif
 
-    prompt_width = str_term_width1 (mc_prompt);
+    /* The row belongs to the shell when the shell's prompt is on it, colors and all. */
+    command_set_shell_colors (wprompt_from_shell (the_prompt));
+
+    {
+        /* A command in progress puts its own line here; otherwise the row shows mc's text. */
+        const char *text = mcterm_overlay_prompt_text ();
+
+        wprompt_set_text (the_prompt, text != NULL ? text : mc_prompt);
+    }
+
+    /* The prompt says how wide it is: the shell's own row is as wide as the shell left its
+       cursor, a text prompt as wide as the text. */
+    prompt_width = wprompt_width (the_prompt);
 
     // Check for prompts too big
     if (r->cols > 8 && prompt_width > r->cols - 8)
-    {
-        int prompt_len;
-
-        prompt_width = r->cols - 8;
-        prompt_len = str_offset_to_pos (mc_prompt, prompt_width);
-        mc_prompt[prompt_len] = '\0';
-    }
+        prompt_width = r->cols - 8;  // what does not fit the widget cuts as it draws
 
     y = r->lines - 1 - (mc_global.keybar_visible ? 1 : 0);
 
     widget_set_size (WIDGET (the_prompt), y, r->x, 1, prompt_width);
-    label_set_text (the_prompt, mc_prompt);
     widget_set_size (WIDGET (cmdline), y, r->x + prompt_width, 1, r->cols - prompt_width);
 
     widget_show (WIDGET (the_prompt));

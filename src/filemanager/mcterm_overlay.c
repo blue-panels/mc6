@@ -50,6 +50,7 @@
 #include "src/mcterm/mcterm_cwd.h"
 
 #include "command.h"
+#include "wprompt.h"
 #include "filemanager.h"
 #include "layout.h"
 
@@ -57,6 +58,8 @@
 
 static WMcTerm *mcterm_panel = NULL;
 static gboolean mcterm_mode = FALSE;
+/* A command of ours is running; the panels are to be re-read once it is over. */
+static gboolean mcterm_exec_needs_panel_reload = FALSE;
 
 #define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
 
@@ -83,6 +86,17 @@ mcterm_overlay_ready (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Whether the host keeps the bottom row for itself: the shell's prompt when it is idle, and the
+   busy line while a command runs. A full-screen program takes the whole terminal, so not then. */
+static gboolean
+mcterm_overlay_owns_bottom_row (void)
+{
+    return (command_prompt && mcterm_overlay_live () && mcterm_osc7_capable (mcterm_panel)
+            && !mcterm_in_alt_screen (mcterm_panel));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static Widget *
 mcterm_overlay_widget (void)
 {
@@ -96,31 +110,53 @@ mcterm_overlay_rect (const WRect *mwr, WRect *r)
 {
     int start_y = mwr->y + (menubar_visible ? 1 : 0);
     int height = mwr->lines - (menubar_visible ? 1 : 0) - (mc_global.keybar_visible ? 1 : 0)
-        - (command_prompt && mcterm_overlay_ready () ? 1 : 0);
+        - (mcterm_overlay_owns_bottom_row () ? 1 : 0);
 
     *r = (WRect) { start_y, mwr->x, MAX (height, 1), mwr->cols };
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-mcterm_overlay_draw_cmdline_row (void)
-{
-    int cmdline_y, cursor_col;
-    const WRect *mwr;
+/**
+ * What the row in front of the command line says while a command is running.
+ *
+ * The shell has no prompt to show then - it is busy - but the row should not go blank: it says
+ * that something is running and where the panel stands, which is where a command would go.
+ *
+ * @return the text, or NULL when the shell has a prompt of its own to show.
+ */
 
-    if (!command_prompt || !mcterm_overlay_ready ())
+const char *
+mcterm_overlay_prompt_text (void)
+{
+    static const char turning[] = "|/-\\";
+    static char text[MC_MAXPATHLEN + 32];
+    const char *cwd;
+
+    if (!mcterm_overlay_live () || !mcterm_osc7_capable (mcterm_panel)
+        || mcterm_shell_at_prompt (mcterm_panel))
+        return NULL;
+
+    cwd = (current_panel != NULL) ? vfs_path_as_str (current_panel->cwd_vpath) : "";
+
+    g_snprintf (text, sizeof (text), "(background %c) %s%s ",
+                turning[mcterm_busy_phase (mcterm_panel) % (sizeof (turning) - 1)], cwd,
+                (cwd[0] != '\0' && cwd[strlen (cwd) - 1] != PATH_SEP) ? PATH_SEP_STR : "");
+
+    return text;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The prompt has changed width: lay the row out again and draw it. */
+static void
+mcterm_overlay_place_prompt (void)
+{
+    if (!command_prompt)
         return;
 
-    mwr = &CONST_WIDGET (filemanager)->rect;
-    cmdline_y = WIDGET (cmdline)->rect.y;
-    cursor_col = mcterm_cursor_col (mcterm_panel);
-    if (cursor_col < 0 || cursor_col >= mwr->cols)
-        cursor_col = 0;
-
-    // The row is the command line's, so it carries the command line's colors.
-    mcterm_draw_prompt_row (mcterm_panel, cmdline_y, "core", CORE_DEFAULT_COLOR);
-    widget_set_size (WIDGET (cmdline), cmdline_y, mwr->x + cursor_col, 1, mwr->cols - cursor_col);
+    setup_cmdline ();
+    widget_draw (WIDGET (the_prompt));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -150,7 +186,7 @@ mcterm_overlay_sync_panel_from_shell (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
+void
 mcterm_overlay_sync_shell_to_panel (void)
 {
     const char *panel_cwd;
@@ -223,13 +259,48 @@ mcterm_overlay_starts_cmdline_input (int parm)
 /* --------------------------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
+/* Something is running: keep the row in front of the command line moving. */
+static void
+mcterm_overlay_busy_tick_cb (void *data)
+{
+    (void) data;
+
+    if (!command_prompt || mcterm_panel == NULL)
+        return;
+
+    /* In either view the busy line lives on the same bottom row; with the terminal on screen
+       the row is kept clear for it, so lay the terminal out to that height first. */
+    if (mcterm_mode)
+        mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
+
+    mcterm_overlay_place_prompt ();
+    tty_refresh ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcterm_overlay_prompt_ready_cb (void *data)
 {
     (void) data;
 
-    if (!mcterm_mode || mcterm_panel == NULL)
+    if (mcterm_panel == NULL)
         return;
+
+    if (mcterm_exec_needs_panel_reload)
+    {
+        mcterm_exec_needs_panel_reload = FALSE;
+        update_panels (UP_OPTIMIZE, UP_KEEPSEL);
+    }
+
+    /* With the panels up the shell is out of sight, but its prompt is not: it is the row in
+       front of the command line, and it has just become the shell's own. */
+    if (!mcterm_mode)
+    {
+        mcterm_overlay_place_prompt ();
+        tty_refresh ();
+        return;
+    }
 
     mcterm_overlay_sync_panel_from_shell ();
     mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
@@ -238,7 +309,7 @@ mcterm_overlay_prompt_ready_cb (void *data)
     if (!command_prompt)
         return;
 
-    mcterm_overlay_draw_cmdline_row ();
+    mcterm_overlay_place_prompt ();
     mcterm_overlay_place_cursor ();
 }
 
@@ -362,6 +433,7 @@ mcterm_overlay_create_terminal (void)
         return FALSE;
 
     mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
+    mcterm_set_busy_tick_callback (mcterm_panel, mcterm_overlay_busy_tick_cb, NULL);
     mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
     mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
     group_add_widget (GROUP (filemanager), mcterm_overlay_widget ());
@@ -375,6 +447,21 @@ mcterm_overlay_create_terminal (void)
 /* --------------------------------------------------------------------------------------------- */
 
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Start the shell the file manager runs on, at the time the file manager itself starts.
+ *
+ * Nothing waits for the first prompt: a slow rc file must not hold the panels back. Until the
+ * shell reports a prompt of its own, the row in front of the command line shows mc's own text.
+ */
+
+void
+mcterm_overlay_start (void)
+{
+    if (mcterm_overlay_create_terminal ())
+        wprompt_set_terminal (the_prompt, mcterm_panel);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
@@ -413,10 +500,7 @@ mcterm_overlay_toggle (void)
         widget_hide (get_panel_widget (1));
         widget_hide (WIDGET (the_hint));
         if (command_prompt)
-        {
-            widget_hide (WIDGET (the_prompt));
             widget_set_size (WIDGET (cmdline), WIDGET (cmdline)->rect.y, mwr->x, 1, mwr->cols);
-        }
 
 #ifdef ENABLE_SUBSHELL
         if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
@@ -533,10 +617,11 @@ mcterm_overlay_after_filemanager_draw (void)
 {
     mcterm_overlay_draw_visible_panels ();
 
-    if (mcterm_mode && mcterm_overlay_ready ())
+    if (mcterm_mode)
     {
-        mcterm_overlay_draw_cmdline_row ();
-        mcterm_overlay_place_cursor ();
+        mcterm_overlay_place_prompt ();
+        if (mcterm_overlay_ready ())
+            mcterm_overlay_place_cursor ();
     }
 }
 
@@ -777,17 +862,32 @@ mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Run a command in the terminal mc already has, if it is in a state to take one.
+ *
+ * @return TRUE when the command was dealt with - sent, or refused because the shell is busy.
+ *         FALSE when this terminal is no place for it and the caller must run it the old way.
+ */
+
+/* Whether mc has a terminal running a shell of its own. */
 gboolean
-mcterm_overlay_panel_exec (const char *cmd)
+mcterm_overlay_has_terminal (void)
+{
+    return mcterm_overlay_live ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_overlay_exec_command (const char *cmd)
 {
     Widget *pw;
     gboolean panels_hidden = FALSE;
+    int i;
 
-    if (!mcterm_mode)
-        return FALSE;
-
-    if (mcterm_panel == NULL || !mcterm_is_alive (mcterm_panel)
-        || !mcterm_osc7_capable (mcterm_panel))
+    /* Without the protocol the terminal cannot say when the command has finished, so such a
+       shell gets no commands from us: the caller hands the screen over instead. */
+    if (!mcterm_overlay_live () || !mcterm_osc7_capable (mcterm_panel))
         return FALSE;
 
     if (!mcterm_shell_at_prompt (mcterm_panel))
@@ -796,18 +896,18 @@ mcterm_overlay_panel_exec (const char *cmd)
         return TRUE;
     }
 
-    pw = get_panel_widget (0);
-    if (pw != NULL && widget_get_state (pw, WST_VISIBLE))
-    {
-        widget_hide (pw);
-        panels_hidden = TRUE;
-    }
+    // The command is about to write; show the terminal it writes to.
+    if (!mcterm_mode)
+        mcterm_overlay_toggle ();
 
-    pw = get_panel_widget (1);
-    if (pw != NULL && widget_get_state (pw, WST_VISIBLE))
+    for (i = 0; i < 2; i++)
     {
-        widget_hide (pw);
-        panels_hidden = TRUE;
+        pw = get_panel_widget (i);
+        if (pw != NULL && widget_get_state (pw, WST_VISIBLE))
+        {
+            widget_hide (pw);
+            panels_hidden = TRUE;
+        }
     }
 
     if (panels_hidden)
@@ -816,7 +916,21 @@ mcterm_overlay_panel_exec (const char *cmd)
         tty_refresh ();
     }
 
-    return mcterm_send_line (mcterm_panel, cmd);
+    if (!mcterm_send_line (mcterm_panel, cmd))
+        return FALSE;
+
+    // Whatever it does to the files, the panels should know about it when it is done.
+    mcterm_exec_needs_panel_reload = TRUE;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_overlay_panel_exec (const char *cmd)
+{
+    return mcterm_overlay_exec_command (cmd);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -929,6 +1043,35 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 #else /* !ENABLE_MCTERM */
 
 #include "src/execute.h"
+
+void
+mcterm_overlay_start (void)
+{
+}
+
+const char *
+mcterm_overlay_prompt_text (void)
+{
+    return NULL;
+}
+
+void
+mcterm_overlay_sync_shell_to_panel (void)
+{
+}
+
+gboolean
+mcterm_overlay_has_terminal (void)
+{
+    return FALSE;
+}
+
+gboolean
+mcterm_overlay_exec_command (const char *cmd)
+{
+    (void) cmd;
+    return FALSE;
+}
 
 gboolean
 mcterm_overlay_active (void)
