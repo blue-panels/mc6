@@ -35,6 +35,9 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#ifdef __linux__
+#include <sys/timerfd.h>
+#endif
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
@@ -61,14 +64,19 @@
 
 #include "mcterm.h"
 #include "mcterm_key.h"
+#include "mcterm_proto.h"
 #include "mcterm_select.h"
 
 /*** file scope variables ************************************************************************/
 
 #define MCTERM_INTERNAL_SYNC_TIMEOUT_USEC G_USEC_PER_SEC
 
-#define MCTERM_INITIAL_OSC7_MARKER "7;file://__mc_sync__/"
-#define MCTERM_WHEEL_ROWS                      3
+#define MCTERM_INITIAL_OSC7_MARKER        "7;file://__mc_sync__/"
+/* Stands in the shell setup where the session token goes. */
+#define MCTERM_TOKEN_PLACEHOLDER "@MCTOKEN@"
+#define MCTERM_WHEEL_ROWS        3
+/* How often the host is woken while a command runs, in nanoseconds. */
+#define MCTERM_BUSY_TICK_NSEC (200L * 1000L * 1000L)
 
 /* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
    step the columns of terminal output tend to fall on. */
@@ -86,6 +94,21 @@ struct WMcTerm
     gboolean shell_at_prompt;
     guint last_osc7_gen;
     gboolean osc7_capable;
+    /* Marks our own OSC 7 and our own prompt marks: anything without it belongs to someone else. */
+    char *osc7_token;
+    /* Whether the shell sends semantic prompt marks. With them the prompt says where it ends,
+       and OSC 7 goes back to being about the directory alone. */
+    gboolean osc133_capable;
+    guint last_osc133_gen;
+    int last_exit_code;
+    /* A command of ours is under way and its "done" mark has yet to arrive. */
+    gboolean awaiting_command_done;
+    /* While a command runs the host shows that something is going on, and needs waking to
+       move it along: a timer does that, and so does any output the command makes. */
+    int busy_tick_fd;
+    guint busy_phase;
+    void (*on_busy_tick) (void *data);
+    void *on_busy_tick_data;
     void (*on_prompt_ready) (void *data);
     void *on_prompt_ready_data;
     void (*on_after_redraw) (void *data);
@@ -126,6 +149,10 @@ typedef struct
 static cb_ret_t mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data);
 static void mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event);
 static gboolean mcterm_handle_osc7_generation (WMcTerm *t);
+static gboolean mcterm_osc7_is_ours (const WMcTerm *t, const char *raw);
+static gboolean mcterm_handle_osc133_generation (WMcTerm *t);
+static void mcterm_busy_tick (WMcTerm *t);
+static void mcterm_busy_tick_set (WMcTerm *t, gboolean on);
 static gboolean mcterm_handle_stalled_internal_sync (WMcTerm *t);
 static int mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_terminal_buffer_t *buf,
                                            int rows);
@@ -167,6 +194,7 @@ mcterm_pty_ready_cb (int fd, void *info)
                 (void) ignored;
             }
             mcterm_handle_osc7_generation (t);
+            mcterm_handle_osc133_generation (t);
         }
 
         // New output must not drag the view away from what is being read.
@@ -191,10 +219,26 @@ mcterm_pty_ready_cb (int fd, void *info)
                 t->on_after_redraw (t->on_after_redraw_data);
             tty_refresh ();
         }
+        else if (!suppress_draw && !t->shell_at_prompt && t->osc7_capable && t->busy_tick_fd < 0)
+        {
+            /* Hidden and busy, with no timer to lean on: the command's own output is what
+               moves the indicator the host shows. Where a timer runs, it does that instead,
+               so that a silent command moves it too - and the two do not both drive it. */
+            mcterm_busy_tick (t);
+        }
+        else if (!suppress_draw && t->shell_at_prompt && t->osc7_capable
+                 && t->on_prompt_ready != NULL)
+        {
+            /* Hidden behind the panels, the terminal has nothing to draw - but its prompt is
+               on screen all the same, in front of the command line, and that row is the
+               host's to draw. */
+            t->on_prompt_ready (t->on_prompt_ready_data);
+        }
     }
     else if (n == 0 || (n < 0 && errno == EIO))
     {
         t->child_dead = TRUE;
+        mcterm_busy_tick_set (t, FALSE);
         delete_select_channel (t->pty_master);
         close (t->pty_master);
         t->pty_master = -1;
@@ -217,10 +261,40 @@ mcterm_pty_ready_cb (int fd, void *info)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Whether an OSC 7 is the one our own shell sends.
+ *
+ * The setup we write into the pty appends the session token to every OSC 7. Without it the
+ * sequence came from somewhere else - the output of a command, or a shell on the far side of
+ * ssh - and says nothing about the directory this terminal is in.
+ */
+
+static gboolean
+mcterm_osc7_is_ours (const WMcTerm *t, const char *raw)
+{
+    const char *mark;
+
+    if (t->osc7_token == NULL)
+        return TRUE;
+
+    if (raw == NULL)
+        return FALSE;
+
+    mark = strrchr (raw, '?');
+
+    return (mark != NULL
+            && strncmp (mark, MCTERM_OSC7_TOKEN_PREFIX, sizeof (MCTERM_OSC7_TOKEN_PREFIX) - 1) == 0
+            && strcmp (mark + sizeof (MCTERM_OSC7_TOKEN_PREFIX) - 1, t->osc7_token) == 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Keep snapshot restore ordered with OSC 7 inside a PTY read. */
 static gboolean
 mcterm_handle_osc7_generation (WMcTerm *t)
 {
+    const char *raw;
     guint gen;
 
     if (!t->osc7_capable)
@@ -232,9 +306,15 @@ mcterm_handle_osc7_generation (WMcTerm *t)
 
     t->last_osc7_gen = gen;
 
+    raw = mcview_vterm_osc7_raw (t->vterm);
+    if (!mcterm_osc7_is_ours (t, raw))
+        return FALSE;
+
     if (t->waiting_for_initial_osc7)
     {
-        if (g_strcmp0 (mcview_vterm_osc7_raw (t->vterm), MCTERM_INITIAL_OSC7_MARKER) != 0)
+        if (raw == NULL
+            || strncmp (raw, MCTERM_INITIAL_OSC7_MARKER, sizeof (MCTERM_INITIAL_OSC7_MARKER) - 1)
+                != 0)
             return FALSE;
 
         t->waiting_for_initial_osc7 = FALSE;
@@ -256,7 +336,10 @@ mcterm_handle_osc7_generation (WMcTerm *t)
         return FALSE;
     }
 
-    t->shell_at_prompt = TRUE;
+    /* With prompt marks the shell says itself when it is done printing the prompt; OSC 7
+       arrives before that and would call it ready too early. */
+    if (!t->osc133_capable)
+        t->shell_at_prompt = TRUE;
     t->internal_sync_deadline = 0;
 
     if (t->pending_internal_sync)
@@ -272,6 +355,138 @@ mcterm_handle_osc7_generation (WMcTerm *t)
 
     return TRUE;
 }
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_busy_tick (WMcTerm *t)
+{
+    t->busy_phase++;
+    if (t->on_busy_tick != NULL)
+        t->on_busy_tick (t->on_busy_tick_data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+#ifdef __linux__
+static int
+mcterm_busy_tick_cb (int fd, void *data)
+{
+    WMcTerm *t = (WMcTerm *) data;
+    guint64 ticks;
+    ssize_t ignored;
+
+    ignored = read (fd, &ticks, sizeof (ticks));
+    (void) ignored;
+
+    mcterm_busy_tick (t);
+
+    return 0;
+}
+#endif
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Run a timer for as long as a command does.
+ *
+ * mc has no clock of its own: what it waits on is a set of file descriptors. A timer that is
+ * one of them wakes the loop on its own account, so whatever the host draws while a command
+ * runs keeps moving even when the command says nothing. Where there is no such timer, the
+ * output of the command is what moves it.
+ */
+
+static void
+mcterm_busy_tick_set (WMcTerm *t, gboolean on)
+{
+#ifdef __linux__
+    if (on && t->busy_tick_fd < 0)
+    {
+        struct itimerspec its;
+        int fd;
+
+        fd = timerfd_create (CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+        if (fd < 0)
+            return;
+
+        its.it_interval.tv_sec = 0;
+        its.it_interval.tv_nsec = MCTERM_BUSY_TICK_NSEC;
+        its.it_value = its.it_interval;
+
+        if (timerfd_settime (fd, 0, &its, NULL) != 0)
+        {
+            close (fd);
+            return;
+        }
+
+        t->busy_tick_fd = fd;
+        add_select_channel (fd, mcterm_busy_tick_cb, t);
+    }
+    else if (!on && t->busy_tick_fd >= 0)
+    {
+        delete_select_channel (t->busy_tick_fd);
+        close (t->busy_tick_fd);
+        t->busy_tick_fd = -1;
+    }
+#else
+    (void) t;
+    (void) on;
+#endif
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Follow the shell through its prompt marks.
+ *
+ * @return TRUE when the shell has just come back to its prompt.
+ */
+
+static gboolean
+mcterm_handle_osc133_generation (WMcTerm *t)
+{
+    mcterm_osc133_t mark;
+    guint gen;
+
+    if (!t->osc133_capable)
+        return FALSE;
+
+    gen = mcview_vterm_osc133_generation (t->vterm);
+    if (gen == t->last_osc133_gen)
+        return FALSE;
+
+    t->last_osc133_gen = gen;
+
+    if (!mcterm_osc133_parse (mcview_vterm_osc133_raw (t->vterm), t->osc7_token, &mark))
+        return FALSE;
+
+    switch (mark.mark)
+    {
+    case MCTERM_MARK_PROMPT_END:
+        /* A prompt is printed again whenever the line editor redraws it - among other times,
+           right after we hand it a command. Until the shell reports that command done, a
+           prompt on screen is a redrawn one and the shell is still busy. */
+        if (t->awaiting_command_done || t->shell_at_prompt)
+            return FALSE;
+        t->shell_at_prompt = TRUE;
+        mcterm_busy_tick_set (t, FALSE);
+        return TRUE;
+
+    case MCTERM_MARK_COMMAND_START:
+        t->shell_at_prompt = FALSE;
+        mcterm_busy_tick_set (t, TRUE);
+        return FALSE;
+
+    case MCTERM_MARK_COMMAND_DONE:
+        t->awaiting_command_done = FALSE;
+        if (mark.exit_code >= 0)
+            t->last_exit_code = mark.exit_code;
+        return FALSE;
+
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static gboolean
 mcterm_handle_stalled_internal_sync (WMcTerm *t)
@@ -355,7 +570,7 @@ mcterm_exec_shell (int pty_slave, const char *start_dir)
             close (i);
     }
 
-    shell = g_getenv ("SHELL");
+    shell = (mc_global.shell != NULL) ? mc_global.shell->path : NULL;
     if (shell == NULL || *shell == '\0')
         shell = "/bin/sh";
 
@@ -378,6 +593,41 @@ mcterm_exec_shell (int pty_slave, const char *start_dir)
 
     execl (shell, shell, NULL);
     _exit (127);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Copy the shell setup with every placeholder replaced by the session token.
+ *
+ * The setup is written as a plain shell literal, printf escapes and all, so the token cannot be
+ * spliced in with g_strdup_printf() without doubling every percent sign in it.
+ */
+
+static char *
+mcterm_setup_with_token (const char *setup, const char *token)
+{
+    static const size_t ph_len = sizeof (MCTERM_TOKEN_PLACEHOLDER) - 1;
+    GString *out;
+    const char *p = setup;
+
+    out = g_string_sized_new (strlen (setup) + 64);
+
+    while (TRUE)
+    {
+        const char *ph = strstr (p, MCTERM_TOKEN_PLACEHOLDER);
+
+        if (ph == NULL)
+        {
+            g_string_append (out, p);
+            break;
+        }
+
+        g_string_append_len (out, p, ph - p);
+        g_string_append (out, token);
+        p = ph + ph_len;
+    }
+
+    return g_string_free (out, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -430,17 +680,27 @@ mcterm_write_silent (int master, const char *data, size_t len)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup, size_t setup_len)
+mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup_template)
 {
+    char *setup;
+    gboolean written;
+
     t->osc7_capable = TRUE;
+    t->osc133_capable = TRUE;
     t->shell_at_prompt = FALSE;
     t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
     t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
     t->pending_internal_sync = TRUE;
     t->waiting_for_initial_osc7 = TRUE;
-    if (!mcterm_write_silent (master, setup, setup_len))
+
+    setup = mcterm_setup_with_token (setup_template, t->osc7_token);
+    written = mcterm_write_silent (master, setup, strlen (setup));
+    g_free (setup);
+
+    if (!written)
     {
         t->osc7_capable = FALSE;
+        t->osc133_capable = FALSE;
         t->shell_at_prompt = TRUE;
         t->pending_internal_sync = FALSE;
         t->waiting_for_initial_osc7 = FALSE;
@@ -1251,9 +1511,12 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 t->child_pid = -1;
             }
         }
+        mcterm_busy_tick_set (t, FALSE);
         mcview_vterm_free (t->vterm);
         t->vterm = NULL;
         t->last_osc7_gen = 0;
+        g_free (t->osc7_token);
+        t->osc7_token = NULL;
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
         return MSG_HANDLED;
@@ -1316,6 +1579,12 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->shell_at_prompt = TRUE;
     t->last_osc7_gen = 0;
     t->osc7_capable = FALSE;
+    t->osc133_capable = FALSE;
+    t->last_osc133_gen = 0;
+    t->last_exit_code = -1;
+    t->awaiting_command_done = FALSE;
+    t->busy_tick_fd = -1;
+    t->busy_phase = 0;
     t->vterm = mcview_vterm_new ();
     t->scroll_allowed = TRUE;
     t->typing_elsewhere = TRUE;
@@ -1335,17 +1604,18 @@ mcterm_new (const WRect *r, const char *start_dir)
     add_select_channel (master, mcterm_pty_ready_cb, t);
 
     {
-        const char *shell_name = g_getenv ("SHELL");
-        const char *base;
+        const shell_type_t shell_type =
+            (mc_global.shell != NULL) ? mc_global.shell->type : SHELL_NONE;
 
-        base = (shell_name != NULL) ? strrchr (shell_name, '/') : NULL;
-        base = (base != NULL) ? base + 1 : shell_name;
+        t->osc7_token = g_strdup_printf ("%08x%08x", g_random_int (), g_random_int ());
 
-        if (base != NULL && strcmp (base, "bash") == 0)
+        switch (shell_type)
         {
-            /* Percent-encoder for $PWD: safe chars pass through, everything
-             * else becomes %XX.  Defined once and used in PROMPT_COMMAND. */
-            static const char osc7_setup[] =
+        case SHELL_BASH:
+        {
+            /* Percent-encoder for $PWD, a hook that reports the directory and the exit code
+             * after every command, and a prompt wrapped in marks that say where it ends. */
+            static const char setup[] =
                 "__mc_pe(){"
                 " local s=$1 o= i c;"
                 " for((i=0;i<${#s};i++)); do"
@@ -1356,29 +1626,99 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " esac; done;"
                 " printf '%s' \"$o\";"
                 " }; \\\n"
+                "__mc_pc(){"
+                " local e=$?;"
+                " printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$e\";"
+                " printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$(__mc_pe \"$PWD\")\";"
+                /* Setting PS1 is an everyday thing to do at a prompt, and it would throw the
+                   marks away. Put them back whenever they are gone. */
+                " case \"$PS1\" in *'133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "'*) ;;"
+                " *) PS1=\"\\[\\e]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a\\]${PS1}\\[\\e]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a\\]\";;"
+                " esac;"
+                " return $e;"
+                " }; \\\n"
                 " if test $BASH_VERSINFO -ge 5"
                 " && [[ ${PROMPT_COMMAND@a} == *a* ]] 2>/dev/null; then \\\n"
-                "  PROMPT_COMMAND+=(\"printf '\\033]7;file://%s\\007'"
-                " \\\"\\$(__mc_pe \\\"\\$PWD\\\")\\\"\"); \\\n"
+                "  PROMPT_COMMAND+=(__mc_pc); \\\n"
                 " else \\\n"
-                "  PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND; }"
-                "printf '\\033]7;file://%s\\007'"
-                " \\\"\\$(__mc_pe \\\"\\$PWD\\\")\\\"\"; \\\n"
-                " fi; printf '\\033]7;file://__mc_sync__/\\007'\r";
-            mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
+                "  PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND; }__mc_pc\"; \\\n"
+                " fi; \\\n"
+                " PS0=\"\\[\\e]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a\\]${PS0}\"; \\\n"
+                " printf "
+                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007'\r";
+
+            mcterm_enable_osc7 (t, master, setup);
+            break;
         }
-        else if (base != NULL && strcmp (base, "zsh") == 0)
+
+        case SHELL_ZSH:
         {
-            static const char osc7_setup[] =
+            static const char setup[] =
                 " __mc_pe(){local s=$1 o='' c i;for (( i=1; i<=${#s}; i++ )); do c=${s[i]};"
                 "case $c in [a-zA-Z0-9/_~.-])o+=$c;;*)printf -v o '%s%%%02X' \"$o\" \"'$c\";"
                 ";esac;done;printf %s \"$o\";}; \\\n"
-                " __mc_first=1;__mc_osc7_precmd(){if (( __mc_first ));then printf "
+                " __mc_first=1;__mc_precmd(){local e=$?;if (( __mc_first ));then printf "
                 "'\\033[2J\\033[H';"
-                "__mc_first=0;fi;printf '\\033]7;file://%s\\007' \"$(__mc_pe \"$PWD\")\";};"
-                "precmd_functions+=(__mc_osc7_precmd);printf '\\033]7;file://__mc_sync__/\\007'\r";
+                "__mc_first=0;fi;"
+                "printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$e\";"
+                "printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$(__mc_pe \"$PWD\")\";"
+                /* An assignment to PROMPT throws the marks away: put them back. */
+                "[[ $PROMPT == *'133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "'* ]]"
+                " || PROMPT=$'%{\\e]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a%}'$PROMPT$'%{\\e]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a%}';};"
+                "precmd_functions+=(__mc_precmd); \\\n"
+                " __mc_preexec(){printf "
+                "'\\033]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\007';};"
+                "preexec_functions+=(__mc_preexec); \\\n"
+                " printf "
+                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007'\r";
 
-            mcterm_enable_osc7 (t, master, osc7_setup, sizeof (osc7_setup) - 1);
+            mcterm_enable_osc7 (t, master, setup);
+            break;
+        }
+
+        case SHELL_FISH:
+        {
+            /* fish has an event for everything, so nothing here replaces what the user set:
+             * the prompt function is copied and called, the rest hangs off events. */
+            static const char setup[] =
+                "functions -q __mc_orig_prompt; or functions -c fish_prompt __mc_orig_prompt; "
+                "function fish_prompt; printf "
+                "'\\033]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a'; __mc_orig_prompt; "
+                "printf '\\033]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\a'; end; "
+                "function __mc_preexec --on-event fish_preexec; "
+                "printf '\\033]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\a'; end; "
+                "function __mc_postexec --on-event fish_postexec; "
+                "printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\a' $status; end; "
+                "function __mc_cwd --on-event fish_prompt; "
+                "printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\a' (string escape --style=url -- $PWD); end; "
+                "printf "
+                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\a'\r";
+
+            mcterm_enable_osc7 (t, master, setup);
+            break;
+        }
+
+        default:
+            /* sh, dash, ash, ksh, mksh, tcsh, and whatever else the user runs: nothing to
+             * chain a hook onto, so the terminal goes without the protocol. It still runs
+             * commands; what it does not do is follow the shell's directory or know where
+             * the prompt ends. See mcterm_osc7_capable(). */
+            break;
         }
     }
 
@@ -1543,8 +1883,9 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_End:
         /* When the command line owns text input, keep its basic editing and
          * history keys there. Otherwise the shell reads them itself. */
-        return t->typing_elsewhere
-               && !widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? CK_IgnoreKey : command;
+        return t->typing_elsewhere && !widget_get_state (CONST_WIDGET (t), WST_FOCUSED)
+            ? CK_IgnoreKey
+            : command;
 
     case CK_WordLeft:
     case CK_WordRight:
@@ -1612,6 +1953,7 @@ mcterm_widget (WMcTerm *t)
 gboolean
 mcterm_send_line (WMcTerm *t, const char *line)
 {
+
     if (t == NULL || t->child_dead || t->pty_master < 0)
         return FALSE;
 
@@ -1626,6 +1968,9 @@ mcterm_send_line (WMcTerm *t, const char *line)
     {
         t->shell_at_prompt = FALSE;
         t->last_osc7_gen = mcview_vterm_osc7_generation (t->vterm);
+        // The shell tells us when it is over; a prompt drawn before then is a redrawn one.
+        t->awaiting_command_done = t->osc133_capable;
+        mcterm_busy_tick_set (t, TRUE);
     }
     return TRUE;
 }
@@ -1665,6 +2010,42 @@ mcterm_osc7_raw (const WMcTerm *t)
     if (t == NULL || t->vterm == NULL)
         return NULL;
     return mcview_vterm_osc7_raw (t->vterm);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const char *
+mcterm_osc7_token (const WMcTerm *t)
+{
+    return (t != NULL) ? t->osc7_token : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+mcterm_last_exit_code (const WMcTerm *t)
+{
+    return (t != NULL) ? t->last_exit_code : -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+guint
+mcterm_busy_phase (const WMcTerm *t)
+{
+    return (t != NULL) ? t->busy_phase : 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_set_busy_tick_callback (WMcTerm *t, void (*cb) (void *), void *data)
+{
+    if (t == NULL)
+        return;
+
+    t->on_busy_tick = cb;
+    t->on_busy_tick_data = data;
 }
 
 /* --------------------------------------------------------------------------------------------- */

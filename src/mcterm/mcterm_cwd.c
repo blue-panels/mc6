@@ -52,15 +52,45 @@ osc7_host_is_local (const char *host, size_t len)
     return (local != NULL && strlen (local) == len && memcmp (host, local, len) == 0);
 }
 
-/* Decode a local path from OSC 7 payload "7;file://[host]/path".
- * Returns NULL for non-local hostnames and for non-file:// URIs.
+/* Split the session token off the end of an OSC 7 payload.
+ * With a token expected, a payload that does not carry ours is not ours to read: it is the
+ * output of some command, or a shell on the far side of ssh. Returns the length of the path
+ * part, or -1 when the payload must be ignored. */
+static gssize
+osc7_strip_token (const char *path, const char *token)
+{
+    const char *mark;
+    size_t plen;
+
+    plen = strlen (path);
+
+    if (token == NULL)
+        return (gssize) plen;
+
+    mark = strrchr (path, '?');
+    if (mark == NULL
+        || strncmp (mark, MCTERM_OSC7_TOKEN_PREFIX, sizeof (MCTERM_OSC7_TOKEN_PREFIX) - 1) != 0)
+        return -1;
+
+    if (strcmp (mark + sizeof (MCTERM_OSC7_TOKEN_PREFIX) - 1, token) != 0)
+        return -1;
+
+    return (gssize) (mark - path);
+}
+
+/* Decode a local path from OSC 7 payload "7;file://[host]/path[?mc=token]".
+ * Returns NULL for non-local hostnames, for non-file:// URIs, and - when a token is expected -
+ * for a payload that does not carry it.
  * Tolerates unencoded paths (most shells do not percent-encode $PWD). */
 char *
-mcterm_osc7_uri_to_path (const char *osc7_raw)
+mcterm_osc7_uri_to_path (const char *osc7_raw, const char *token)
 {
     const char *uri;
     const char *host_start;
     const char *path;
+    gssize path_len;
+    char *decoded;
+    char *raw_path;
 
     if (osc7_raw == NULL || strncmp (osc7_raw, "7;", 2) != 0)
         return NULL;
@@ -83,8 +113,16 @@ mcterm_osc7_uri_to_path (const char *osc7_raw)
             return NULL;
     }
 
+    path_len = osc7_strip_token (path, token);
+    if (path_len < 0)
+        return NULL;
+
+    raw_path = g_strndup (path, (gsize) path_len);
     /* Decode percent-encoded sequences; leave unencoded chars as-is. */
-    return g_uri_unescape_string (path, "/");
+    decoded = g_uri_unescape_string (raw_path, "/");
+    g_free (raw_path);
+
+    return decoded;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -92,7 +130,7 @@ mcterm_osc7_uri_to_path (const char *osc7_raw)
 static char *
 mcterm_cwd_from_osc7 (WMcTerm *t)
 {
-    return mcterm_osc7_uri_to_path (mcterm_osc7_raw (t));
+    return mcterm_osc7_uri_to_path (mcterm_osc7_raw (t), mcterm_osc7_token (t));
 }
 
 /* --------------------------------------------------------------------------------------------- */

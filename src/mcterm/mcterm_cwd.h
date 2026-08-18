@@ -7,7 +7,7 @@
 
 #ifdef ENABLE_MCTERM
 
-char *mcterm_osc7_uri_to_path (const char *osc7_raw);
+char *mcterm_osc7_uri_to_path (const char *osc7_raw, const char *token);
 char *mcterm_cwd_on_exit (WMcTerm *t, const char *panel_cwd);
 gboolean mcterm_cwd_differs (WMcTerm *t, const char *panel_cwd);
 
