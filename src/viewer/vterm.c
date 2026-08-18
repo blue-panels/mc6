@@ -58,6 +58,7 @@ struct mcview_vterm_struct
     gboolean csi_private;
     gboolean in_osc;
     gboolean in_osc_esc;
+    gboolean osc_overflow;
     gboolean in_dcs;
     gboolean in_dcs_esc;
     gboolean csi_gt;
@@ -78,6 +79,9 @@ struct mcview_vterm_struct
     int dcs_len;
     char *osc7_raw;
     guint osc7_generation;
+    /* The semantic prompt marks (OSC 133), kept raw: what they mean is the host's business. */
+    char *osc133_raw;
+    guint osc133_generation;
 
     int cursor_row;
     int cursor_col;
@@ -118,6 +122,7 @@ static vterm_event_t vterm_handle_utf8 (mcview_vterm_t *vt, unsigned char byte);
 static void vterm_finalize_param (mcview_vterm_t *vt);
 static vterm_event_t vterm_make (mcview_vterm_t *vt, vterm_result_t type);
 static void vterm_handle_osc (mcview_vterm_t *vt);
+static void vterm_finish_osc (mcview_vterm_t *vt);
 
 /*** file scope functions ************************************************************************/
 
@@ -420,6 +425,32 @@ vterm_handle_osc (mcview_vterm_t *vt)
         vt->osc7_raw = g_strdup (vt->osc_buf);
         vt->osc7_generation++;
     }
+    else if (strncmp (vt->osc_buf, "133;", 4) == 0)
+    {
+        g_free (vt->osc133_raw);
+        vt->osc133_raw = g_strdup (vt->osc_buf);
+        vt->osc133_generation++;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * End an OSC sequence and act on it.
+ *
+ * A sequence longer than the buffer arrives truncated, and a path cut short is worse than no
+ * path at all: drop the whole of it.
+ */
+
+static void
+vterm_finish_osc (mcview_vterm_t *vt)
+{
+    vt->in_osc = FALSE;
+    vt->osc_buf[vt->osc_len] = '\0';
+
+    if (!vt->osc_overflow)
+        vterm_handle_osc (vt);
+
+    vt->osc_overflow = FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -564,6 +595,7 @@ mcview_vterm_free (mcview_vterm_t *vt)
         g_ptr_array_unref (vt->history);
     mcview_terminal_buffer_free (vt->alt_frame_buf);
     g_free (vt->osc7_raw);
+    g_free (vt->osc133_raw);
     g_free (vt);
 }
 
@@ -578,6 +610,7 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vt->csi_private = FALSE;
     vt->in_osc = FALSE;
     vt->in_osc_esc = FALSE;
+    vt->osc_overflow = FALSE;
     vt->in_dcs = FALSE;
     vt->in_dcs_esc = FALSE;
     vt->dcs_len = 0;
@@ -603,6 +636,8 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vt->in_alt_screen = FALSE;
     g_free (vt->osc7_raw);
     vt->osc7_raw = NULL;
+    g_free (vt->osc133_raw);
+    vt->osc133_raw = NULL;
     vt->osc_len = 0;
     mcview_terminal_buffer_clear (vt->buf);
 }
@@ -729,17 +764,11 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         {
             vt->in_osc_esc = FALSE;
             if (byte == '\\')
-            {
-                vt->in_osc = FALSE;
-                vt->osc_buf[vt->osc_len] = '\0';
-                vterm_handle_osc (vt);
-            }
+                vterm_finish_osc (vt);
         }
         else if (byte == 0x07u)
         {
-            vt->in_osc = FALSE;
-            vt->osc_buf[vt->osc_len] = '\0';
-            vterm_handle_osc (vt);
+            vterm_finish_osc (vt);
         }
         else if (byte == ESC_CHAR)
         {
@@ -748,6 +777,10 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         else if (vt->osc_len < (int) sizeof (vt->osc_buf) - 1)
         {
             vt->osc_buf[vt->osc_len++] = (char) byte;
+        }
+        else
+        {
+            vt->osc_overflow = TRUE;
         }
         return vterm_make (vt, VTERM_CONSUMED);
     }
@@ -785,6 +818,7 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         {
             vt->in_osc = TRUE;
             vt->in_osc_esc = FALSE;
+            vt->osc_overflow = FALSE;
             vt->osc_len = 0;
         }
         else if (byte == '(' || byte == ')' || byte == '*' || byte == '+')
@@ -1222,6 +1256,22 @@ const char *
 mcview_vterm_osc7_raw (const mcview_vterm_t *vt)
 {
     return (vt != NULL) ? vt->osc7_raw : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const char *
+mcview_vterm_osc133_raw (const mcview_vterm_t *vt)
+{
+    return (vt != NULL) ? vt->osc133_raw : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+guint
+mcview_vterm_osc133_generation (const mcview_vterm_t *vt)
+{
+    return (vt != NULL) ? vt->osc133_generation : 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -84,6 +84,9 @@ int mcview_vterm_resolve_top_row (const mcview_vterm_t *vt, int data_lines);
 void mcview_vterm_reset (mcview_vterm_t *vt);
 const char *mcview_vterm_osc7_raw (const mcview_vterm_t *vt);
 guint mcview_vterm_osc7_generation (const mcview_vterm_t *vt);
+/* The last semantic prompt mark (OSC 133) as it arrived, and a counter of them. */
+const char *mcview_vterm_osc133_raw (const mcview_vterm_t *vt);
+guint mcview_vterm_osc133_generation (const mcview_vterm_t *vt);
 
 /* Update terminal size; returns TRUE on change. */
 gboolean mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols);
