@@ -12,9 +12,6 @@ if USE_DIFF
 SUBDIRS += diffviewer
 endif
 
-if ENABLE_SUBSHELL
-SUBDIRS += subshell
-endif
 
 noinst_LTLIBRARIES = libinternal.la
 
@@ -44,9 +41,6 @@ if USE_DIFF
 DIFFLIB = diffviewer/libdiffviewer.la
 endif
 
-if ENABLE_SUBSHELL
-SUBSHELLLIB = subshell/libsubshell.la
-endif
 
 if ENABLE_MCTERM
 MCTERMLIB = mcterm/libmcterm.la
@@ -58,7 +52,7 @@ libinternal_la_LIBADD = \
 	vfs/libmc-vfs.la \
 	viewer/libmcviewer.la \
 	$(MCTERMLIB) \
-	$(DIFFLIB) $(EDITLIB) $(SUBSHELLLIB)
+	$(DIFFLIB) $(EDITLIB)
 
 if HAVE_GMODULE
 mc_LDFLAGS = -export-dynamic
