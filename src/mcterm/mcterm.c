@@ -1651,7 +1651,8 @@ mcterm_new (const WRect *r, const char *start_dir)
                 "\\a\\]${PS0}\"; \\\n"
                 " printf "
                 "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007'\r";
+                /* Drop this setup itself from the shell's history: it is ours, not the user's. */
+                "\\007'; history -d $HISTCMD 2>/dev/null\r";
 
             mcterm_enable_osc7 (t, master, setup);
             break;
@@ -1660,6 +1661,10 @@ mcterm_new (const WRect *r, const char *start_dir)
         case SHELL_ZSH:
         {
             static const char setup[] =
+                // Enabled first and on its own line, so the rest of this setup - and later mc's
+                // own commands - stay out of the history behind the leading space that follows.
+                // This one short line is all that is left in it.
+                "setopt hist_ignore_space\r"
                 " __mc_pe(){local s=$1 o='' c i;for (( i=1; i<=${#s}; i++ )); do c=${s[i]};"
                 "case $c in [a-zA-Z0-9/_~.-])o+=$c;;*)printf -v o '%s%%%02X' \"$o\" \"'$c\";"
                 ";esac;done;printf %s \"$o\";}; \\\n"
@@ -1980,6 +1985,9 @@ mcterm_send_line (WMcTerm *t, const char *line)
 gboolean
 mcterm_send_internal_line (WMcTerm *t, const char *line)
 {
+    char *hidden;
+    gboolean ok;
+
     if (t == NULL || line == NULL)
         return FALSE;
 
@@ -1991,7 +1999,16 @@ mcterm_send_internal_line (WMcTerm *t, const char *line)
     t->waiting_for_initial_osc7 = FALSE;
     t->internal_sync_deadline = g_get_monotonic_time () + MCTERM_INTERNAL_SYNC_TIMEOUT_USEC;
 
-    return mcterm_send_line (t, line);
+    /* This command is ours, not the user's: keep it out of the shell's history. bash can drop the
+       entry outright; the others rely on the leading space the setup taught them to ignore. */
+    if (mc_global.shell != NULL && mc_global.shell->type == SHELL_BASH)
+        hidden = g_strdup_printf ("%s; history -d $HISTCMD 2>/dev/null", line);
+    else
+        hidden = g_strdup_printf (" %s", line);
+
+    ok = mcterm_send_line (t, hidden);
+    g_free (hidden);
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */
