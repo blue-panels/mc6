@@ -143,7 +143,7 @@ for more detail about format of the script.
 Following macro definition and directives can be used:
 .TP
 .I #silent
-If this directive is set, then script starts without interactive subshell.
+If this directive is set, then script starts without an interactive shell.
 .TP
 .I %c
 The cursor column position number.

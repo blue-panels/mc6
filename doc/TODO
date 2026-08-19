@@ -64,8 +64,6 @@ don't want mouse scrolling to be interpreted as mouse click.
 Smooth mouse scrolling on panels.  Scrolling one page per step is too
 fast.
 
-Don't read prompt from the subshell, because it's unreliable.  Interpret
-environment variable MC_PS1 (or PS1) in the same way as bash.
 
 Support an environment variable (also like PS1 in bash) for setting the
 window title.
@@ -110,8 +108,6 @@ Add print dialog in the internal editor.
 
 Implement logging, not just for VFS.
 
-Eliminate all pipes in subshell.c, run pwd after kill.  Add support for
-more shells (e.g. ksh).
 
 Internal terminal - no more console saving.
 
@@ -195,7 +191,7 @@ ideas still waiting for their implementation.
     the locking widget until unlocking is done.
 
   - Allow the program to execute a command even when we are on a vfs, maybe
-    a special box, or make subshell code ignore the change directory
+    a special box, or make the command runner ignore the change directory
     request. Perhaps each vfs should store a local path attached to it;
     for extfs it would be the directory which contains the
     topmost tararchive, in ftpfs it would be the directory which we entered

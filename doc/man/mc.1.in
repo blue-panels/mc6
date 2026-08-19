@@ -93,15 +93,6 @@ Midnight Commander use the value of the
 variable for the terminal information instead of the information on
 the system wide terminal database
 .TP
-.I \-u, \-\-nosubshell
-Disable use of the concurrent shell (only makes sense if Midnight
-Commander has been built with concurrent shell support).
-.TP
-.I \-U, \-\-subshell
-Enable use of the concurrent shell support (only makes sense if the
-Midnight Commander was built with the subshell support set as an
-optional feature).
-.TP
 .I \-v file, \-\-view=file
 Start the internal viewer to view the specified file.  See also
 .BR "mcview (1)" .
@@ -419,12 +410,11 @@ on the Linux console, Midnight Commander uses an external program
 (cons.saver) to handle saving and restoring of information on the
 screen.
 .PP
-When the subshell support is compiled in, you can type C\-o at any time
-and you will be taken back to Midnight Commander's main screen, to
-return to your application just type C\-o.  If you have an application
-suspended by using this trick, you won't be able to execute other
-programs from Midnight Commander until you terminate the suspended
-application.
+You can type C\-o at any time and you will be taken back to Midnight
+Commander's main screen, to return to your application just type C\-o.
+If you have an application suspended by using this trick, you won't be
+able to execute other programs from Midnight Commander until you
+terminate the suspended application.
 .\"NODE "  Directory Panels"
 .SH "  Directory Panels"
 This section lists the keys which operate on the directory panels. If
@@ -2454,20 +2444,19 @@ is unset, the
 is substituted.  Otherwise, the value of
 .I ENV
 is substituted.
-.\"NODE "  The subshell support"
-.SH "  The subshell support"
-The subshell support is a compile time option, that works with the
-shells: bash, ash (BusyBox and Debian), (o/m)ksh, tcsh, zsh and fish.
+.\"NODE "  The terminal"
+.SH "  The terminal"
+Midnight Commander runs your shell in a pseudo terminal behind the
+panels. It works with the shells: bash, ash (BusyBox and Debian),
+(o/m)ksh, tcsh, zsh and fish.
 .PP
-When the subshell support is active, Midnight Commander will
-spawn a concurrent copy of your shell (the one defined in the
+The shell is the one defined in the
 .B SHELL
 variable and if it is not defined, then the one in the /etc/passwd
-file) and run it in a pseudo terminal, instead of invoking a new shell
-each time you execute a command, the command will be passed to the
-subshell as if you had typed it.  This also allows you to change the
-environment variables, use shell functions and define aliases that are
-valid until you quit Midnight Commander.
+file. Rather than invoking a new shell each time you execute a command,
+the command is passed to that shell as if you had typed it.  This also
+allows you to change the environment variables, use shell functions and
+define aliases that are valid until you quit Midnight Commander.
 .PP
 .B bash
 users may specify startup commands in ~/.local/share/mc/bashrc (fallback ~/.bashrc)
@@ -2495,9 +2484,6 @@ users may specify startup commands in ~/.local/share/mc/.zshrc (fallback ~/.zshr
 users cannot specify mc\-specific startup commands at present. They have to rely on
 shell\-specific startup files.
 .PP
-The following paragraphs are relevant only when the subshell support is
-active:
-.PP
 You can suspend applications at any
 time with the sequence C\-o and jump back to Midnight Commander, if
 you interrupt an application, you will not be able to run other
@@ -2518,12 +2504,7 @@ are currently using in your shell.
 (There's a known problem when using fish: the prompt is displayed only in
 full screen mode (Ctrl\-o), not when the panels are visible.)
 .PP
-The
-.\"LINK2"
-OPTIONS
-.\"OPTIONS"
-section has more information on how you can control subshell usage (\-U/\-u).
-Furthermore, to set a specific subshell different from your current SHELL variable or
+To set a specific shell different from your current SHELL variable or
 login shell defined in /etc/passwd, you may call MC like this:
 .B SHELL=/bin/myshell mc
 .\"NODE "Chmod"
@@ -2961,7 +2942,7 @@ Swap contents of diff panels.
 Refresh the screen.
 .TP
 .B C\-o
-Switch to the subshell and show the command screen.
+Toggle the terminal and show the command screen.
 .TP
 .B Enter, Space, n
 Find next diff hunk.
@@ -3122,7 +3103,7 @@ Scroll one line backward.
 Refresh the screen.
 .TP
 .B C\-o
-Switch to the subshell and show the command screen.
+Toggle the terminal and show the command screen.
 .TP
 .B "[n] m"
 Set the mark n.
@@ -3963,7 +3944,6 @@ If true, use '+', '\-', '\e' and '*' keys normally. For select/unselect,
 use 'Alt\-+', 'Alt\--' and 'Alt\-*'.
 .TP
 .I show_output_starts_shell
-This variable only works if you are not using the subshell support.
 When you use the C\-o keystroke to go back to the user screen, if this
 one is set, you will get a fresh shell.  Otherwise, pressing any key
 will bring you back to Midnight Commander.
