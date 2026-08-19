@@ -507,6 +507,103 @@ mcterm_overlay_start (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Ctrl-O steps back out of the terminal the way it stepped in. */
+static cb_ret_t
+mcterm_overlay_modal_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_UNHANDLED_KEY:
+        // Ctrl-O steps back out the way it stepped in.
+        if (parm == XCTRL ('O') || parm == KEY_F (10))
+        {
+            dlg_close (DIALOG (w));
+            return MSG_HANDLED;
+        }
+        return MSG_NOT_HANDLED;
+
+    case MSG_RESIZE:
+    {
+        // The terminal follows the window: fill it, which tells the shell its new size too.
+        WRect r = { 0, 0, LINES, COLS };
+
+        dlg_default_callback (w, NULL, MSG_RESIZE, 0, NULL);
+        widget_set_size_rect (mcterm_overlay_widget (), &r);
+        widget_draw (w);
+        return MSG_HANDLED;
+    }
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Show mc's own terminal full screen, for the editor and the viewers to reach with Ctrl-O.
+ *
+ * Their Ctrl-O used to wake the subshell; here it borrows the terminal mc already runs. The
+ * terminal widget moves into a modal of its own for as long as it is shown, and back into the
+ * file manager when it is left. Its callbacks draw the file manager's own row, which is not on
+ * screen now, so they are put by until it returns.
+ *
+ * @return TRUE when the terminal was shown, FALSE when there is none and the caller must fall
+ *         back to the subshell.
+ */
+
+gboolean
+mcterm_overlay_show_terminal (void)
+{
+    WDialog *h;
+    Widget *tw;
+    WRect saved;
+
+    if (!mcterm_overlay_live ())
+        return FALSE;
+
+    tw = mcterm_overlay_widget ();
+    saved = tw->rect;
+
+    mcterm_set_prompt_callback (mcterm_panel, NULL, NULL);
+    mcterm_set_busy_tick_callback (mcterm_panel, NULL, NULL);
+    mcterm_set_after_redraw_callback (mcterm_panel, NULL, NULL);
+
+    group_remove_widget (tw);
+
+    h = dlg_create (TRUE, 0, 0, LINES, COLS, WPOS_FULLSCREEN, FALSE, dialog_colors,
+                    mcterm_overlay_modal_callback, NULL, NULL, NULL);
+    group_add_widget (GROUP (h), tw);
+    widget_show (tw);
+    {
+        WRect r = { 0, 0, LINES, COLS };
+
+        widget_set_size_rect (tw, &r);
+    }
+    mcterm_set_scroll_allowed (mcterm_panel, TRUE);
+    mcterm_scroll_to_end (mcterm_panel);
+    // No host command line here, so the terminal draws the shell's prompt row itself.
+    mcterm_set_typing_elsewhere (mcterm_panel, FALSE);
+    widget_select (tw);
+
+    dlg_run (h);
+
+    mcterm_set_typing_elsewhere (mcterm_panel, TRUE);
+    group_remove_widget (tw);
+    widget_destroy (WIDGET (h));
+
+    mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
+    mcterm_set_busy_tick_callback (mcterm_panel, mcterm_overlay_busy_tick_cb, NULL);
+    mcterm_set_after_redraw_callback (mcterm_panel, mcterm_overlay_after_redraw_cb, NULL);
+    group_add_widget (GROUP (filemanager), tw);
+    widget_set_size_rect (tw, &saved);
+    widget_hide (tw);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 mcterm_overlay_active (void)
 {
@@ -1087,6 +1184,12 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 void
 mcterm_overlay_start (void)
 {
+}
+
+gboolean
+mcterm_overlay_show_terminal (void)
+{
+    return FALSE;
 }
 
 const char *

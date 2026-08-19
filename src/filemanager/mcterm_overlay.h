@@ -24,6 +24,8 @@ typedef enum
 void mcterm_overlay_start (void);
 gboolean mcterm_overlay_active (void);
 void mcterm_overlay_toggle (void);
+/* Show mc's terminal full screen for the editor and viewers; FALSE when there is none to show. */
+gboolean mcterm_overlay_show_terminal (void);
 void mcterm_overlay_destroy (void);
 
 void mcterm_overlay_draw_visible_panels (void);

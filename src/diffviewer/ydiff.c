@@ -52,7 +52,8 @@
 #include "src/filemanager/panel.h"
 #include "src/filemanager/layout.h"  // Needed for get_current_index and get_other_panel
 
-#include "src/execute.h"  // toggle_subshell()
+#include "src/execute.h"                     // toggle_subshell()
+#include "src/filemanager/mcterm_overlay.h"  // mcterm_overlay_show_terminal()
 #include "src/keymap.h"
 #include "src/setup.h"
 #include "src/history.h"
@@ -3143,7 +3144,8 @@ dview_execute_cmd (WDiff *dview, long command)
         dview->skip_cols = 0;
         break;
     case CK_Shell:
-        toggle_subshell ();
+        if (!mcterm_overlay_show_terminal ())
+            toggle_subshell ();
         break;
     case CK_Quit:
         dview->view_quit = TRUE;

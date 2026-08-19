@@ -55,11 +55,12 @@
 #include "lib/charsets.h"
 #include "lib/editor-plugin.h"
 
-#include "src/keymap.h"           // keybind_lookup_keymap_command()
-#include "src/setup.h"            // home_dir
-#include "src/execute.h"          // toggle_subshell()
-#include "src/filemanager/cmd.h"  // save_setup_cmd()
-#include "src/key_learn.h"        // key_learn()
+#include "src/keymap.h"                      // keybind_lookup_keymap_command()
+#include "src/setup.h"                       // home_dir
+#include "src/execute.h"                     // toggle_subshell()
+#include "src/filemanager/mcterm_overlay.h"  // mcterm_overlay_show_terminal()
+#include "src/filemanager/cmd.h"             // save_setup_cmd()
+#include "src/key_learn.h"                   // key_learn()
 
 #include "edit-impl.h"
 #include "editwidget.h"
@@ -1030,7 +1031,8 @@ edit_dialog_command_execute (WDialog *h, long command)
         edit_refresh_cmd ();
         break;
     case CK_Shell:
-        toggle_subshell ();
+        if (!mcterm_overlay_show_terminal ())
+            toggle_subshell ();
         break;
     case CK_LearnKeys:
         key_learn ();

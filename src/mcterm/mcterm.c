@@ -829,8 +829,10 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
     max_row = mcview_terminal_buffer_max_row (g->buf);
     cursor_row = g->snapshot ? t->sync_snapshot_cursor_row : mcview_vterm_cursor_row (t->vterm);
 
-    // The row the shell types on is the host's, see mcterm_draw_prompt_row().
-    if (t->shell_at_prompt && t->osc7_capable && !mcview_vterm_in_alt_screen (t->vterm))
+    /* The row the shell types on is the host's when it types elsewhere, drawn on its command line
+       by mcterm_draw_prompt_row(); shown full screen the terminal draws that row itself. */
+    if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
+        && !mcview_vterm_in_alt_screen (t->vterm))
         effective_max = cursor_row - 1;
     else
         effective_max = (cursor_row > max_row) ? cursor_row : max_row;
@@ -1263,9 +1265,15 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return MSG_HANDLED;
 
     case MSG_CURSOR:
+    {
+        /* Shown full screen with the shell typing at the prompt, the cursor
+           follows the shell, not the reading cursor left at the focus point. */
+        const gboolean live_line =
+            !t->typing_elsewhere && t->shell_at_prompt && t->scrollback == 0 && !t->sel.anchored;
+
         /* Focused, the terminal shows where it is being read; the shell has
            the cursor back as soon as the focus goes to the command line. */
-        if (widget_get_state (w, WST_FOCUSED) && t->cursor_valid && t->vterm != NULL
+        if (!live_line && widget_get_state (w, WST_FOCUSED) && t->cursor_valid && t->vterm != NULL
             && !mcview_vterm_in_alt_screen (t->vterm))
         {
             mcterm_geom_t g;
@@ -1283,7 +1291,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 }
             }
         }
-        if (t->shell_at_prompt && t->osc7_capable)
+        if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere)
             return MSG_NOT_HANDLED;
         if (t->vterm != NULL && !t->child_dead)
         {
@@ -1314,6 +1322,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             return MSG_HANDLED;
         }
         return MSG_NOT_HANDLED;
+    }
 
     case MSG_RESIZE:
         widget_default_callback (w, NULL, MSG_RESIZE, 0, data);
