@@ -34,16 +34,6 @@
 
 #include "global.h"
 
-#ifdef ENABLE_SUBSHELL
-#ifdef SUBSHELL_OPTIONAL
-#define SUBSHELL_USE FALSE
-#else
-#define SUBSHELL_USE TRUE
-#endif
-#else
-#define SUBSHELL_USE FALSE
-#endif
-
 /*** global variables ****************************************************************************/
 
 mc_global_t mc_global =
@@ -90,11 +80,7 @@ mc_global_t mc_global =
         .console_flag = '\0',
 #endif
 
-        .use_subshell = SUBSHELL_USE,
 
-#ifdef ENABLE_SUBSHELL
-        .subshell_pty = 0,
-#endif
 
         .xterm_flag = FALSE,
         .disable_x11 = FALSE,
@@ -112,8 +98,6 @@ mc_global_t mc_global =
     }
 
 };
-
-#undef SUBSHELL_USE
 
 /*** file scope macro definitions ****************************************************************/
 

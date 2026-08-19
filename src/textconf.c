@@ -71,14 +71,6 @@ static const char *const features[] = {
 #endif
 #endif
 
-#ifdef ENABLE_SUBSHELL
-#ifdef SUBSHELL_OPTIONAL
-    N_ ("With optional subshell support"),
-#else
-    N_ ("With subshell support as default"),
-#endif
-#endif
-
 #ifdef ENABLE_BACKGROUND
     N_ ("With support for background operations"),
 #endif

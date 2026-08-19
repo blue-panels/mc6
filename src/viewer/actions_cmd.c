@@ -632,7 +632,7 @@ mcview_execute_cmd (WView *view, long command)
         break;
     case CK_Shell:
         if (!mcterm_overlay_show_terminal ())
-            toggle_subshell ();
+            toggle_terminal ();
         break;
     case CK_Ruler:
         mcview_display_toggle_ruler (view);

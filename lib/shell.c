@@ -65,7 +65,7 @@ mc_shell_get_installed_in_system (void)
 
     mc_shell = g_new0 (mc_shell_t, 1);
 
-    // 3rd choice: look for existing shells supported as MC subshells.
+    // 3rd choice: look for existing shells mc supports.
     if (access ("/bin/bash", X_OK) == 0)
         mc_shell->path = g_strdup ("/bin/bash");
     else if (access ("/bin/zsh", X_OK) == 0)
@@ -92,8 +92,8 @@ mc_shell_get_installed_in_system (void)
         mc_shell->path = g_strdup ("/bin/lksh");
     /* No fish as fallback because it is so much different from other shells and
      * in a way exotic (even though user-friendly by name) that we should not
-     * present it as a subshell without the user's explicit intention. We rather
-     * will not use a subshell but just a command line.
+     * drive it without the user's explicit intention. We rather
+     * will not drive it, just offer a command line.
      * else if (access("/bin/fish", X_OK) == 0)
      *     mc_global.tty.shell = g_strdup ("/bin/fish");
      */
@@ -279,12 +279,6 @@ mc_shell_init (void)
 
     if (mc_shell->type == SHELL_NONE)
         mc_shell_recognize_path (mc_shell);
-
-    /* A subshell is driven through the prompt, and a plain sh offers nothing to
-       hook into: the BSD one does not even expand a command substitution in
-       PS1. Run without a subshell rather than hang waiting for one. */
-    if (mc_shell->type == SHELL_NONE || mc_shell->type == SHELL_SH)
-        mc_global.tty.use_subshell = FALSE;
 
     mc_global.shell = mc_shell;
 }

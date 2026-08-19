@@ -61,9 +61,6 @@
 #include "src/selcodepage.h"  // select_charset (), SELECT_CHARSET_NO_TRANSLATE
 #include "src/keymap.h"       // global_keymap_t
 #include "src/history.h"
-#ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"  // subshell_chdir()
-#endif
 
 #include "src/usermenu.h"
 
@@ -4180,9 +4177,6 @@ panel_do_cd_int (WPanel *panel, const vfs_path_t *new_dir_vpath, enum cd_enum cd
 
     vfs_release_path (olddir_vpath);
 
-#ifdef ENABLE_SUBSHELL
-    subshell_chdir (panel->cwd_vpath);
-#endif
     // The shell follows the panel the user is on, not the one in the other half.
     if (panel == current_panel)
         mcterm_overlay_sync_shell_to_panel ();
@@ -4633,10 +4627,6 @@ panel_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
             cd_error_message (cwd);
             g_free (cwd);
         }
-#ifdef ENABLE_SUBSHELL
-        else
-            subshell_chdir (panel->cwd_vpath);
-#endif
 
         update_xterm_title_path ();
         update_terminal_cwd ();

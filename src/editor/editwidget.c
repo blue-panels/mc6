@@ -57,7 +57,7 @@
 
 #include "src/keymap.h"                      // keybind_lookup_keymap_command()
 #include "src/setup.h"                       // home_dir
-#include "src/execute.h"                     // toggle_subshell()
+#include "src/execute.h"                     // toggle_terminal()
 #include "src/filemanager/mcterm_overlay.h"  // mcterm_overlay_show_terminal()
 #include "src/filemanager/cmd.h"             // save_setup_cmd()
 #include "src/key_learn.h"                   // key_learn()
@@ -1032,7 +1032,7 @@ edit_dialog_command_execute (WDialog *h, long command)
         break;
     case CK_Shell:
         if (!mcterm_overlay_show_terminal ())
-            toggle_subshell ();
+            toggle_terminal ();
         break;
     case CK_LearnKeys:
         key_learn ();

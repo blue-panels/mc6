@@ -88,9 +88,6 @@ static gboolean mc_args__show_version = FALSE;
 
 static GOptionContext *context;
 
-#ifdef ENABLE_SUBSHELL
-static gboolean mc_args__nouse_subshell = FALSE;
-#endif
 static gboolean mc_args__show_datadirs = FALSE;
 static gboolean mc_args__show_datadirs_extended = FALSE;
 #ifdef ENABLE_CONFIGURE_ARGS
@@ -155,28 +152,6 @@ static const GOptionEntry argument_main_table[] = {
         N_ ("Print last working directory to specified file"),
         N_ ("<file>"),
     },
-
-#ifdef ENABLE_SUBSHELL
-    {
-        "subshell",
-        'U',
-        G_OPTION_FLAG_IN_MAIN,
-        G_OPTION_ARG_NONE,
-        &mc_global.tty.use_subshell,
-        N_ ("Enables subshell support (default)"),
-        NULL,
-    },
-
-    {
-        "nosubshell",
-        'u',
-        G_OPTION_FLAG_IN_MAIN,
-        G_OPTION_ARG_NONE,
-        &mc_args__nouse_subshell,
-        N_ ("Disables subshell support"),
-        NULL,
-    },
-#endif
 
     // debug options
 
@@ -727,11 +702,6 @@ mc_setup_by_args (int argc, char **argv, GError **mcerror)
 
     if (mc_args__force_colors)
         mc_global.tty.disable_colors = FALSE;
-
-#ifdef ENABLE_SUBSHELL
-    if (mc_args__nouse_subshell)
-        mc_global.tty.use_subshell = FALSE;
-#endif
 
     tmp = (argc > 0) ? argv[1] : NULL;
 

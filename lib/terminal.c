@@ -28,7 +28,7 @@
  *  \author Johannes Altmanninger
  *  \date 2025
  *
- *  Subshells running inside Midnight Commander may assume they run inside
+ *  Shells running inside Midnight Commander may assume they run inside
  *  a terminal. This module helps us act like a real terminal in relevant
  *  aspects.
  */

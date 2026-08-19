@@ -32,7 +32,7 @@ extern int pause_after_run;
 void shell_execute (const char *command, int flags);
 
 /* Handle toggling panels by Ctrl-O */
-void toggle_subshell (void);
+void toggle_terminal (void);
 
 /* A nested mc asks us to show the panels instead of starting a second copy */
 void show_panels_request_init (void);

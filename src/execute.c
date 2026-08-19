@@ -49,9 +49,6 @@
 #include "filemanager/layout.h"          // use_dash()
 #include "filemanager/mcterm_overlay.h"  // mcterm_overlay_exec_command()
 #include "consaver/cons.saver.h"
-#ifdef ENABLE_SUBSHELL
-#include "subshell/subshell.h"
-#endif
 #include "setup.h"  // clear_before_exec
 
 #include "execute.h"
@@ -143,19 +140,6 @@ edition_pre_exec (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-#ifdef ENABLE_SUBSHELL
-static void
-do_possible_cd (const vfs_path_t *new_dir_vpath)
-{
-    if (!panel_cd (current_panel, new_dir_vpath, cd_exact))
-        message (D_ERROR, _ ("Warning"), "%s",
-                 _ ("The Commander can't change to the directory that\n"
-                    "the subshell claims you are in. Perhaps you have\n"
-                    "deleted your working directory, or given yourself\n"
-                    "extra access permissions with the \"su\" command?"));
-}
-#endif
-
 /* --------------------------------------------------------------------------------------------- */
 
 static void
@@ -163,7 +147,7 @@ do_suspend_cmd (void)
 {
     pre_exec ();
 
-    if (mc_global.tty.console_flag != '\0' && !mc_global.tty.use_subshell)
+    if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_RESTORE);
 
 #ifdef SIGTSTP
@@ -183,7 +167,7 @@ do_suspend_cmd (void)
     }
 #endif
 
-    if (mc_global.tty.console_flag != '\0' && !mc_global.tty.use_subshell)
+    if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_SAVE);
 
     edition_post_exec ();
@@ -307,9 +291,6 @@ execute_get_external_cmd_opts_from_config (const char *command, const vfs_path_t
 void
 do_executev (const char *shell, int flags, char *const argv[])
 {
-#ifdef ENABLE_SUBSHELL
-    vfs_path_t *new_dir_vpath = NULL;
-#endif
 
     vfs_path_t *old_vfs_dir_vpath = NULL;
 
@@ -322,35 +303,19 @@ do_executev (const char *shell, int flags, char *const argv[])
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_RESTORE);
 
-    if (!mc_global.tty.use_subshell && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL
-        && *argv != NULL)
+    if ((flags & EXECUTE_INTERNAL) == 0 && argv != NULL && *argv != NULL)
     {
         printf ("%s%s\n", mc_prompt, *argv);
         fflush (stdout);
     }
-#ifdef ENABLE_SUBSHELL
-    if (!mcterm_overlay_has_terminal () && mc_global.tty.use_subshell
-        && (flags & EXECUTE_INTERNAL) == 0 && argv != NULL && subshell_ensure_started ())
-    {
-        do_update_prompt ();
-
-        // We don't care if it died, higher level takes care of this
-        invoke_subshell (*argv, VISIBLY, old_vfs_dir_vpath != NULL ? NULL : &new_dir_vpath);
-    }
-    else
-#endif
-        my_systemv_flags (flags, shell, argv);
+    my_systemv_flags (flags, shell, argv);
 
     if ((flags & EXECUTE_INTERNAL) == 0)
     {
         if ((pause_after_run == pause_always
              || (pause_after_run == pause_on_dumb_terminals && !mc_global.tty.xterm_flag
                  && mc_global.tty.console_flag == '\0'))
-            && quit == 0
-#ifdef ENABLE_SUBSHELL
-            && subshell_state != RUNNING_COMMAND
-#endif
-        )
+            && quit == 0)
         {
             printf ("%s", _ ("Press any key to continue..."));
             fflush (stdout);
@@ -369,15 +334,6 @@ do_executev (const char *shell, int flags, char *const argv[])
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_SAVE);
     edition_post_exec ();
-
-#ifdef ENABLE_SUBSHELL
-    if (new_dir_vpath != NULL)
-    {
-        do_possible_cd (new_dir_vpath);
-        vfs_path_free (new_dir_vpath, TRUE);
-    }
-
-#endif
 
     if (old_vfs_dir_vpath != NULL)
     {
@@ -491,21 +447,7 @@ shell_execute (const char *command, int flags)
         return;
     }
 
-#ifdef ENABLE_SUBSHELL
-    /* A shell the terminal cannot drive - one that speaks no protocol - runs the command the
-       plain way, with the screen handed over. Starting a subshell besides the one the terminal
-       already has would leave mc with two. */
-    if (!mcterm_overlay_has_terminal () && mc_global.tty.use_subshell && subshell_ensure_started ())
-    {
-        if (subshell_state == INACTIVE)
-            do_execute (mc_global.shell->path, cmd != NULL ? cmd : command,
-                        flags | EXECUTE_AS_SHELL);
-        else
-            message (D_ERROR, MSG_ERROR, "%s", _ ("The shell is already running a command"));
-    }
-    else
-#endif
-        do_execute (mc_global.shell->path, cmd != NULL ? cmd : command, flags | EXECUTE_AS_SHELL);
+    do_execute (mc_global.shell->path, cmd != NULL ? cmd : command, flags | EXECUTE_AS_SHELL);
 
     g_free (cmd);
 }
@@ -513,22 +455,17 @@ shell_execute (const char *command, int flags)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-toggle_subshell (void)
+toggle_terminal (void)
 {
     static gboolean message_flag = TRUE;
 
-#ifdef ENABLE_SUBSHELL
-    vfs_path_t *new_dir_vpath = NULL;
-#endif
-
     SIG_ATOMIC_VOLATILE_T was_sigwinch = 0;
 
-    if (!(mc_global.tty.xterm_flag || mc_global.tty.console_flag != '\0'
-          || mc_global.tty.use_subshell || output_starts_shell))
+    if (!(mc_global.tty.xterm_flag || mc_global.tty.console_flag != '\0' || output_starts_shell))
     {
         if (message_flag)
             message (D_ERROR, MSG_ERROR,
-                     _ ("Not an xterm or Linux console;\nthe subshell cannot be toggled."));
+                     _ ("Not an xterm or Linux console;\nthe terminal cannot be shown."));
         message_flag = FALSE;
         return;
     }
@@ -554,16 +491,6 @@ toggle_subshell (void)
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_RESTORE);
 
-#ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell && subshell_ensure_started ())
-    {
-        vfs_path_t **new_dir_p;
-
-        new_dir_p = vfs_current_is_local () ? &new_dir_vpath : NULL;
-        invoke_subshell (NULL, VISIBLY, new_dir_p);
-    }
-    else
-#endif
     {
         if (output_starts_shell)
         {
@@ -584,22 +511,6 @@ toggle_subshell (void)
     tty_reset_prog_mode ();
     tty_keypad (TRUE);
 
-    /* Prevent screen flash when user did 'exit' or 'logout' within
-       subshell */
-    if ((quit & SUBSHELL_EXIT) != 0)
-    {
-        // User did 'exit' or 'logout': quit MC
-        if (quiet_quit_cmd (FALSE))
-            return;
-
-        quit = 0;
-#ifdef ENABLE_SUBSHELL
-        // restart subshell
-        if (mc_global.tty.use_subshell)
-            init_subshell ();
-#endif
-    }
-
     enable_mouse ();
     enable_bracketed_paste ();
     channels_up ();
@@ -611,21 +522,6 @@ toggle_subshell (void)
      * There is some problem with screen redraw in ncurses-based mc in this situation.
      */
     was_sigwinch = tty_flush_winch ();
-
-#ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
-    {
-        if (mc_global.mc_run_mode == MC_RUN_FULL)
-        {
-            if (new_dir_vpath != NULL)
-                do_possible_cd (new_dir_vpath);
-        }
-        else if (new_dir_vpath != NULL && mc_chdir (new_dir_vpath) != -1)
-            vfs_setup_cwd ();
-    }
-
-    vfs_path_free (new_dir_vpath, TRUE);
-#endif
 
     if (mc_global.mc_run_mode == MC_RUN_FULL)
     {

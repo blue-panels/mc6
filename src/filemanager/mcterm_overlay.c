@@ -43,9 +43,6 @@
 #include "lib/widget/mouse.h"
 
 #include "src/execute.h"
-#ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
-#endif
 #include "src/mcterm/mcterm.h"
 #include "src/mcterm/mcterm_cwd.h"
 
@@ -543,13 +540,13 @@ mcterm_overlay_modal_callback (Widget *w, Widget *sender, widget_msg_t msg, int 
 /**
  * Show mc's own terminal full screen, for the editor and the viewers to reach with Ctrl-O.
  *
- * Their Ctrl-O used to wake the subshell; here it borrows the terminal mc already runs. The
+ * Their Ctrl-O borrows the terminal mc already runs, shown full screen. The
  * terminal widget moves into a modal of its own for as long as it is shown, and back into the
  * file manager when it is left. Its callbacks draw the file manager's own row, which is not on
  * screen now, so they are put by until it returns.
  *
  * @return TRUE when the terminal was shown, FALSE when there is none and the caller must fall
- *         back to the subshell.
+ *         back to toggle_terminal ().
  */
 
 gboolean
@@ -626,7 +623,7 @@ mcterm_overlay_toggle (void)
 
         if (!mcterm_overlay_create_terminal ())
         {
-            toggle_subshell ();
+            toggle_terminal ();
             return;
         }
 
@@ -641,11 +638,6 @@ mcterm_overlay_toggle (void)
         widget_hide (WIDGET (the_hint));
         if (command_prompt)
             widget_set_size (WIDGET (cmdline), WIDGET (cmdline)->rect.y, mwr->x, 1, mwr->cols);
-
-#ifdef ENABLE_SUBSHELL
-        if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
-            delete_select_channel (mc_global.tty.subshell_pty);
-#endif
 
         // Drop a request left over from an earlier session of the overlay
         show_panels_request_clear ();
@@ -680,11 +672,6 @@ mcterm_overlay_toggle (void)
         widget_set_visibility (WIDGET (the_hint), mc_global.message_visible);
         if (command_prompt)
             widget_show (WIDGET (the_prompt));
-
-#ifdef ENABLE_SUBSHELL
-        if (mc_global.tty.use_subshell && mc_global.tty.subshell_pty > 0)
-            add_select_channel (mc_global.tty.subshell_pty, load_prompt, NULL);
-#endif
 
         mcterm_mode = FALSE;
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
@@ -1225,7 +1212,7 @@ mcterm_overlay_active (void)
 void
 mcterm_overlay_toggle (void)
 {
-    toggle_subshell ();
+    toggle_terminal ();
 }
 
 void

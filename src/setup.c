@@ -151,7 +151,7 @@ gboolean only_leading_plus_minus = TRUE;
 /* Automatically fills name with current selected item name on mkdir */
 gboolean auto_fill_mkdir_name = TRUE;
 
-/* If set and you don't have subshell support, then C-o will give you a shell */
+/* If set, running a command hands the screen over instead of using the terminal */
 gboolean output_starts_shell = FALSE;
 
 #ifdef USE_FILE_CMD

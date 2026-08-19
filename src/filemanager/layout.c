@@ -55,9 +55,6 @@
 #include "src/consaver/cons.saver.h"
 #include "src/viewer/mcviewer.h"  // The view widget
 #include "src/setup.h"
-#ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
-#endif
 
 #include "command.h"
 #include "filemanager.h"
@@ -875,10 +872,7 @@ setup_panels (void)
 
     if (command_prompt)
     {
-#ifdef ENABLE_SUBSHELL
-        if (!mc_global.tty.use_subshell || !do_load_prompt ())
-#endif
-            setup_cmdline ();
+        setup_cmdline ();
     }
     else
     {
@@ -968,20 +962,6 @@ setup_cmdline (void)
 
     if (!command_prompt)
         return;
-
-#ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
-    {
-        // Workaround: avoid crash on FreeBSD (see ticket #4213 for details)
-        if (subshell_prompt != NULL)
-        {
-            g_free (mc_prompt);
-            mc_prompt = g_strndup (subshell_prompt->str, subshell_prompt->len);
-        }
-
-        (void) strip_ctrl_codes (mc_prompt);
-    }
-#endif
 
     /* The row belongs to the shell when the shell's prompt is on it, colors and all. */
     command_set_shell_colors (wprompt_from_shell (the_prompt));
@@ -1459,49 +1439,6 @@ get_panel_dir_for (const WPanel *widget)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_SUBSHELL
-gboolean
-do_load_prompt (void)
-{
-    gboolean ret = FALSE;
-
-    if (!read_subshell_prompt ())
-        return ret;
-
-    // Don't actually change the prompt if it's invisible
-    if (top_dlg != NULL && DIALOG (top_dlg->data) == filemanager && command_prompt)
-    {
-        setup_cmdline ();
-
-        /* since the prompt has changed, and we are called from one of the
-         * tty_get_event channels, the prompt updating does not take place
-         * automatically: force a cursor update and a screen refresh
-         */
-        widget_update_cursor (WIDGET (filemanager));
-        mc_refresh ();
-        ret = TRUE;
-    }
-    update_subshell_prompt = TRUE;
-    return ret;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-int
-load_prompt (int fd, void *unused)
-{
-    (void) fd;
-    (void) unused;
-
-    if (should_read_new_subshell_prompt)
-        do_load_prompt ();
-    else
-        flush_subshell (0, QUIETLY);
-
-    return 0;
-}
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 
