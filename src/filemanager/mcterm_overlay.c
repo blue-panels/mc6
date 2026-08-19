@@ -555,7 +555,6 @@ mcterm_overlay_toggle (void)
 
         mcterm_set_scroll_allowed (mcterm_panel, TRUE);
         mcterm_mode = TRUE;
-        widget_set_options (WIDGET (filemanager), WOP_WANT_TAB, TRUE);
         // Selectable here only: elsewhere a panel would lose its selection to it.
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, TRUE);
         mcterm_overlay_focus_typing ();
@@ -591,7 +590,6 @@ mcterm_overlay_toggle (void)
 #endif
 
         mcterm_mode = FALSE;
-        widget_set_options (WIDGET (filemanager), WOP_WANT_TAB, FALSE);
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
         layout_change ();
         widget_select (WIDGET (current_panel));
