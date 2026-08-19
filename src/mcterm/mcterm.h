@@ -47,6 +47,8 @@ int mcterm_cursor_col (const WMcTerm *t);
 /* At a prompt the widget leaves the shell's row to the host: draw it with this. */
 void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
+/* Hand one key to the shell, for its own line editor to act on. */
+gboolean mcterm_send_key (WMcTerm *t, int key);
 long mcterm_key_command (const WMcTerm *t, int key);
 /* Whether the host types on a command line of its own. Without one the plain
    arrows are left to the shell, there being nowhere else for typing to go. */
@@ -181,6 +183,13 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
 {
     (void) t;
     (void) text;
+    return FALSE;
+}
+static inline gboolean
+mcterm_send_key (WMcTerm *t, int key)
+{
+    (void) t;
+    (void) key;
     return FALSE;
 }
 static inline long

@@ -2090,6 +2090,18 @@ mcterm_cursor_col (const WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Hand one key to the shell, as if it had been typed at the terminal: the shell owns the line
+   it is editing, so its own line editor does the typing, the history and the completion. */
+gboolean
+mcterm_send_key (WMcTerm *t, int key)
+{
+    if (t == NULL || t->child_dead || t->pty_master < 0)
+        return FALSE;
+    return mcterm_send_encoded_key (t, key);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 mcterm_send_tab_complete (WMcTerm *t, const char *text)
 {

@@ -220,6 +220,49 @@ mcterm_overlay_terminal_focused (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* At its own prompt the command line is the shell's line: almost every key edits, completes or
+   recalls it there. Only the few mc always answers to - its menu, its function bar, Escape and
+   the Alt shortcuts - are kept back. */
+static gboolean
+mcterm_overlay_cmdline_takes_key (int parm)
+{
+    if (mcterm_panel == NULL || !command_prompt || mcterm_overlay_terminal_focused ())
+        return FALSE;
+    if (mcterm_in_alt_screen (mcterm_panel) || !mcterm_shell_at_prompt (mcterm_panel)
+        || !mcterm_osc7_capable (mcterm_panel))
+        return FALSE;
+
+    // The keys the shell's line editor moves and edits with.
+    switch (parm)
+    {
+    case KEY_UP:
+    case KEY_DOWN:
+    case KEY_LEFT:
+    case KEY_RIGHT:
+    case KEY_HOME:
+    case KEY_END:
+    case KEY_PPAGE:
+    case KEY_NPAGE:
+    case KEY_BACKSPACE:
+    case KEY_DC:
+    case KEY_IC:
+        return TRUE;
+    default:
+        break;
+    }
+
+    // The control keys readline uses - Ctrl+R to search, Ctrl+U, Ctrl+W, Ctrl+A and the rest. mc
+    // tags them with its own control bit; the encoder turns each back into its C0 byte. Ctrl+O is
+    // mc's own - it hides the terminal - so it is left for mc to answer.
+    if ((parm & KEY_M_CTRL) != 0)
+        return (parm != XCTRL ('O'));
+
+    // Printable text and the raw C0 control keys, but not Escape, which mc answers to.
+    return (parm >= 0x01 && parm <= 0xFF && parm != ESC_CHAR);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Put the cursor where the input goes: the terminal draws its own when it is
    being read, the command line whenever it is the one typed into. */
 static void
@@ -664,12 +707,9 @@ mcterm_overlay_complete_or_cycle_focus (void)
 
     if (focused == WIDGET (cmdline) || (text != NULL && *text != '\0'))
     {
-        if (mcterm_send_tab_complete (mcterm_panel, text != NULL ? text : ""))
-        {
-            input_clean (cmdline);
-            mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
-            widget_draw (mcterm_overlay_widget ());
-        }
+        /* The shell owns the line it is editing, so it does the completion too: hand it a Tab
+           and let its own redraw show the result, whenever it is ready. */
+        mcterm_send_key (mcterm_panel, '\t');
         return TRUE;
     }
 
@@ -976,6 +1016,17 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         return MSG_HANDLED;
     }
 
+    // The command line is the shell's own line: Enter runs it in the shell that owns it.
+    if ((parm == '\n' || parm == KEY_ENTER) && command_prompt && !mcterm_overlay_terminal_focused ()
+        && !mcterm_in_alt_screen (mcterm_panel) && mcterm_shell_at_prompt (mcterm_panel)
+        && mcterm_osc7_capable (mcterm_panel))
+    {
+        mcterm_send_key (mcterm_panel, '\r');
+        // Whatever it does to the files, the panels should know about it when it is done.
+        mcterm_exec_needs_panel_reload = TRUE;
+        return MSG_HANDLED;
+    }
+
     {
         gboolean in_alt = mcterm_in_alt_screen (mcterm_panel);
         gboolean at_prompt =
@@ -984,10 +1035,12 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         if ((parm == 0x0F || parm == XCTRL ('O')) && !in_alt)
             return MSG_NOT_HANDLED;
 
-        // What the terminal itself acts on: the view, the cursor, and the mark.
+        // What the terminal itself acts on: the view, the cursor, and the mark. Only while it has
+        // the focus - at the command line those same keys move and edit the shell's own line.
         term_cmd = mcterm_key_command (mcterm_panel, parm);
 
-        if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey)
+        if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey
+            && mcterm_overlay_terminal_focused ())
         {
             cb_ret_t r = send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
 
@@ -1008,32 +1061,21 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
             return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
     }
 
+    // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
+    if (mcterm_overlay_cmdline_takes_key (parm))
+    {
+        mcterm_send_key (mcterm_panel, parm);
+        return MSG_HANDLED;
+    }
+
     cmd = widget_lookup_key (w, parm);
     if (cmd != CK_IgnoreKey)
         return execute_command (cmd, data);
 
-    if (!mcterm_overlay_terminal_focused ())
-    {
-        if (parm == KEY_UP)
-        {
-            send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryPrev, NULL);
-            return MSG_HANDLED;
-        }
-
-        if (parm == KEY_DOWN)
-        {
-            send_message (WIDGET (cmdline), NULL, MSG_ACTION, CK_HistoryNext, NULL);
-            return MSG_HANDLED;
-        }
-
-        send_message (WIDGET (cmdline), NULL, MSG_KEY, parm, NULL);
-        return MSG_HANDLED;
-    }
-
     if (mcterm_overlay_starts_cmdline_input (parm))
     {
         mcterm_overlay_focus_cmdline ();
-        send_message (WIDGET (cmdline), NULL, MSG_KEY, parm, NULL);
+        mcterm_send_key (mcterm_panel, parm);
         return MSG_HANDLED;
     }
 
