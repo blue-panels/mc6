@@ -315,9 +315,14 @@ mcterm_overlay_busy_tick_cb (void *data)
         return;
 
     /* In either view the busy line lives on the same bottom row; with the terminal on screen
-       the row is kept clear for it, so lay the terminal out to that height first. */
+       the row is kept clear for it, so lay the terminal out to that height first. Laying it
+       out repaints the terminal over the whole area, so any panel on top of it has to be
+       drawn again, or it is left blanked until the next redraw and reads as flicker. */
     if (mcterm_mode)
+    {
         mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
+        mcterm_overlay_draw_visible_panels ();
+    }
 
     mcterm_overlay_place_prompt ();
     tty_refresh ();
