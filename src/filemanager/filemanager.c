@@ -1716,10 +1716,7 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
     case MSG_INIT:
         panel_init ();
         setup_panels ();
-        /* The shell starts with the file manager, so that the prompt in front of the command
-           line is the shell's own from the first screen on, without Ctrl-O. It starts here
-           rather than with the widgets, because only now do the panels know where they are,
-           and the shell is to start where the current one is. */
+        // Start here: only now do the panels know the directory the shell should open in.
         mcterm_overlay_start ();
         return MSG_HANDLED;
 

@@ -1508,6 +1508,11 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
 
 /*** public functions ****************************************************************************/
 
+/* The session token tails every OSC the shell setup strings below make it send:
+   mc=<token> on a semantic mark, ?mc=<token> on an OSC 7. */
+#define MC_TOK MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+#define MC_CWD MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+
 WMcTerm *
 mcterm_new (const WRect *r, const char *start_dir)
 {
@@ -1608,16 +1613,12 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " }; \\\n"
                 "__mc_pc(){"
                 " local e=$?;"
-                " printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$e\";"
-                " printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$(__mc_pe \"$PWD\")\";"
+                " printf '\\033]133;D;%s;" MC_TOK "\\007' \"$e\";"
+                " printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
                 /* Setting PS1 is an everyday thing to do at a prompt, and it would throw the
                    marks away. Put them back whenever they are gone. */
-                " case \"$PS1\" in *'133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "'*) ;;"
-                " *) PS1=\"\\[\\e]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a\\]${PS1}\\[\\e]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a\\]\";;"
+                " case \"$PS1\" in *'133;B;" MC_TOK "'*) ;;"
+                " *) PS1=\"\\[\\e]133;A;" MC_TOK "\\a\\]${PS1}\\[\\e]133;B;" MC_TOK "\\a\\]\";;"
                 " esac;"
                 " return $e;"
                 " }; \\\n"
@@ -1627,10 +1628,9 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " else \\\n"
                 "  PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND; }__mc_pc\"; \\\n"
                 " fi; \\\n"
-                " PS0=\"\\[\\e]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a\\]${PS0}\"; \\\n"
+                " PS0=\"\\[\\e]133;C;" MC_TOK "\\a\\]${PS0}\"; \\\n"
                 " printf "
-                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "'\\033]7;file://__mc_sync__/" MC_CWD
                 /* Drop this setup itself from the shell's history: it is ours, not the user's. */
                 "\\007'; history -d $HISTCMD 2>/dev/null\r";
 
@@ -1650,22 +1650,17 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " __mc_first=1;__mc_precmd(){local e=$?;if (( __mc_first ));then printf "
                 "'\\033[2J\\033[H';"
                 "__mc_first=0;fi;"
-                "printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$e\";"
-                "printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$(__mc_pe \"$PWD\")\";"
+                "printf '\\033]133;D;%s;" MC_TOK "\\007' \"$e\";"
+                "printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
                 /* An assignment to PROMPT throws the marks away: put them back. */
-                "[[ $PROMPT == *'133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "'* ]]"
-                " || PROMPT=$'%{\\e]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a%}'$PROMPT$'%{\\e]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a%}';};"
+                "[[ $PROMPT == *'133;B;" MC_TOK "'* ]]"
+                " || PROMPT=$'%{\\e]133;A;" MC_TOK "\\a%}'$PROMPT$'%{\\e]133;B;" MC_TOK "\\a%}';};"
                 "precmd_functions+=(__mc_precmd); \\\n"
                 " __mc_preexec(){printf "
-                "'\\033]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\007';};"
+                "'\\033]133;C;" MC_TOK "\\007';};"
                 "preexec_functions+=(__mc_preexec); \\\n"
                 " printf "
-                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007'\r";
+                "'\\033]7;file://__mc_sync__/" MC_CWD "\\007'\r";
 
             mcterm_enable_osc7 (t, master, setup);
             break;
@@ -1678,20 +1673,16 @@ mcterm_new (const WRect *r, const char *start_dir)
             static const char setup[] =
                 "functions -q __mc_orig_prompt; or functions -c fish_prompt __mc_orig_prompt; "
                 "function fish_prompt; printf "
-                "'\\033]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a'; __mc_orig_prompt; "
-                "printf '\\033]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\a'; end; "
+                "'\\033]133;A;" MC_TOK "\\a'; __mc_orig_prompt; "
+                "printf '\\033]133;B;" MC_TOK "\\a'; end; "
                 "function __mc_preexec --on-event fish_preexec; "
-                "printf '\\033]133;C;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\a'; end; "
+                "printf '\\033]133;C;" MC_TOK "\\a'; end; "
                 "function __mc_postexec --on-event fish_postexec; "
-                "printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\a' $status; end; "
+                "printf '\\033]133;D;%s;" MC_TOK "\\a' $status; end; "
                 "function __mc_cwd --on-event fish_prompt; "
-                "printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\a' (string escape --style=url -- $PWD); end; "
+                "printf '\\033]7;file://%s" MC_CWD "\\a' (string escape --style=url -- $PWD); end; "
                 "printf "
-                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\a'\r";
+                "'\\033]7;file://__mc_sync__/" MC_CWD "\\a'\r";
 
             mcterm_enable_osc7 (t, master, setup);
             break;
@@ -1712,17 +1703,13 @@ mcterm_new (const WRect *r, const char *start_dir)
                 " *) o=$(printf '%s%%%02X' \"$o\" \"'$c\");; esac;"
                 " s=${s#?}; done; printf %s \"$o\"; };"
                 " __mc_a(){"
-                " printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$1\";"
-                " printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007' \"$(__mc_pe \"$PWD\")\";"
-                " printf '\\033]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\007'; };"
-                " __mc_b(){ printf '\\033]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-                "\\007'; };"
+                " printf '\\033]133;D;%s;" MC_TOK "\\007' \"$1\";"
+                " printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
+                " printf '\\033]133;A;" MC_TOK "\\007'; };"
+                " __mc_b(){ printf '\\033]133;B;" MC_TOK "\\007'; };"
                 " PS1='$(__mc_a $?)'\"$PS1\"'$(__mc_b)';"
                 " printf "
-                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
-                "\\007'\r";
+                "'\\033]7;file://__mc_sync__/" MC_CWD "\\007'\r";
 
             mcterm_enable_osc7 (t, master, setup);
             break;
@@ -1737,6 +1724,9 @@ mcterm_new (const WRect *r, const char *start_dir)
 
     return t;
 }
+
+#undef MC_TOK
+#undef MC_CWD
 
 /* --------------------------------------------------------------------------------------------- */
 
