@@ -44,8 +44,8 @@
 
 /* The session token tails every OSC the strings below make the shell send:
    mc=<token> on a semantic mark, ?mc=<token> on an OSC 7. */
-#define MC_TOK MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
-#define MC_CWD MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+#define MC_MARK_TOK MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+#define MC_OSC7_TOK MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
 
 /*** public functions ****************************************************************************/
 
@@ -78,12 +78,13 @@ mcterm_shell_setup (shell_type_t shell_type)
             " }; \\\n"
             "__mc_pc(){"
             " local e=$?;"
-            " printf '\\033]133;D;%s;" MC_TOK "\\007' \"$e\";"
-            " printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
+            " printf '\\033]133;D;%s;" MC_MARK_TOK "\\007' \"$e\";"
+            " printf '\\033]7;file://%s" MC_OSC7_TOK "\\007' \"$(__mc_pe \"$PWD\")\";"
             /* Setting PS1 is an everyday thing to do at a prompt, and it would throw the
                marks away. Put them back whenever they are gone. */
-            " case \"$PS1\" in *'133;B;" MC_TOK "'*) ;;"
-            " *) PS1=\"\\[\\e]133;A;" MC_TOK "\\a\\]${PS1}\\[\\e]133;B;" MC_TOK "\\a\\]\";;"
+            " case \"$PS1\" in *'133;B;" MC_MARK_TOK "'*) ;;"
+            " *) PS1=\"\\[\\e]133;A;" MC_MARK_TOK "\\a\\]${PS1}\\[\\e]133;B;" MC_MARK_TOK
+            "\\a\\]\";;"
             " esac;"
             " return $e;"
             " }; \\\n"
@@ -93,9 +94,9 @@ mcterm_shell_setup (shell_type_t shell_type)
             " else \\\n"
             "  PROMPT_COMMAND=\"${PROMPT_COMMAND:+$PROMPT_COMMAND; }__mc_pc\"; \\\n"
             " fi; \\\n"
-            " PS0=\"\\[\\e]133;C;" MC_TOK "\\a\\]${PS0}\"; \\\n"
+            " PS0=\"\\[\\e]133;C;" MC_MARK_TOK "\\a\\]${PS0}\"; \\\n"
             " printf "
-            "'\\033]7;file://__mc_sync__/" MC_CWD
+            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK
             /* Drop this setup itself from the shell's history: it is ours, not the user's. */
             "\\007'; history -d $HISTCMD 2>/dev/null\r";
 
@@ -114,17 +115,18 @@ mcterm_shell_setup (shell_type_t shell_type)
             " __mc_first=1;__mc_precmd(){local e=$?;if (( __mc_first ));then printf "
             "'\\033[2J\\033[H';"
             "__mc_first=0;fi;"
-            "printf '\\033]133;D;%s;" MC_TOK "\\007' \"$e\";"
-            "printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
+            "printf '\\033]133;D;%s;" MC_MARK_TOK "\\007' \"$e\";"
+            "printf '\\033]7;file://%s" MC_OSC7_TOK "\\007' \"$(__mc_pe \"$PWD\")\";"
             /* An assignment to PROMPT throws the marks away: put them back. */
-            "[[ $PROMPT == *'133;B;" MC_TOK "'* ]]"
-            " || PROMPT=$'%{\\e]133;A;" MC_TOK "\\a%}'$PROMPT$'%{\\e]133;B;" MC_TOK "\\a%}';};"
+            "[[ $PROMPT == *'133;B;" MC_MARK_TOK "'* ]]"
+            " || PROMPT=$'%{\\e]133;A;" MC_MARK_TOK "\\a%}'$PROMPT$'%{\\e]133;B;" MC_MARK_TOK
+            "\\a%}';};"
             "precmd_functions+=(__mc_precmd); \\\n"
             " __mc_preexec(){printf "
-            "'\\033]133;C;" MC_TOK "\\007';};"
+            "'\\033]133;C;" MC_MARK_TOK "\\007';};"
             "preexec_functions+=(__mc_preexec); \\\n"
             " printf "
-            "'\\033]7;file://__mc_sync__/" MC_CWD "\\007'\r";
+            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\007'\r";
 
         return setup;
     }
@@ -136,16 +138,17 @@ mcterm_shell_setup (shell_type_t shell_type)
         static const char setup[] =
             "functions -q __mc_orig_prompt; or functions -c fish_prompt __mc_orig_prompt; "
             "function fish_prompt; printf "
-            "'\\033]133;A;" MC_TOK "\\a'; __mc_orig_prompt; "
-            "printf '\\033]133;B;" MC_TOK "\\a'; end; "
+            "'\\033]133;A;" MC_MARK_TOK "\\a'; __mc_orig_prompt; "
+            "printf '\\033]133;B;" MC_MARK_TOK "\\a'; end; "
             "function __mc_preexec --on-event fish_preexec; "
-            "printf '\\033]133;C;" MC_TOK "\\a'; end; "
+            "printf '\\033]133;C;" MC_MARK_TOK "\\a'; end; "
             "function __mc_postexec --on-event fish_postexec; "
-            "printf '\\033]133;D;%s;" MC_TOK "\\a' $status; end; "
+            "printf '\\033]133;D;%s;" MC_MARK_TOK "\\a' $status; end; "
             "function __mc_cwd --on-event fish_prompt; "
-            "printf '\\033]7;file://%s" MC_CWD "\\a' (string escape --style=url -- $PWD); end; "
+            "printf '\\033]7;file://%s" MC_OSC7_TOK
+            "\\a' (string escape --style=url -- $PWD); end; "
             "printf "
-            "'\\033]7;file://__mc_sync__/" MC_CWD "\\a'\r";
+            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\a'\r";
 
         return setup;
     }
@@ -165,13 +168,13 @@ mcterm_shell_setup (shell_type_t shell_type)
             " *) o=$(printf '%s%%%02X' \"$o\" \"'$c\");; esac;"
             " s=${s#?}; done; printf %s \"$o\"; };"
             " __mc_a(){"
-            " printf '\\033]133;D;%s;" MC_TOK "\\007' \"$1\";"
-            " printf '\\033]7;file://%s" MC_CWD "\\007' \"$(__mc_pe \"$PWD\")\";"
-            " printf '\\033]133;A;" MC_TOK "\\007'; };"
-            " __mc_b(){ printf '\\033]133;B;" MC_TOK "\\007'; };"
+            " printf '\\033]133;D;%s;" MC_MARK_TOK "\\007' \"$1\";"
+            " printf '\\033]7;file://%s" MC_OSC7_TOK "\\007' \"$(__mc_pe \"$PWD\")\";"
+            " printf '\\033]133;A;" MC_MARK_TOK "\\007'; };"
+            " __mc_b(){ printf '\\033]133;B;" MC_MARK_TOK "\\007'; };"
             " PS1='$(__mc_a $?)'\"$PS1\"'$(__mc_b)';"
             " printf "
-            "'\\033]7;file://__mc_sync__/" MC_CWD "\\007'\r";
+            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\007'\r";
 
         return setup;
     }
@@ -183,7 +186,7 @@ mcterm_shell_setup (shell_type_t shell_type)
     }
 }
 
-#undef MC_TOK
-#undef MC_CWD
+#undef MC_MARK_TOK
+#undef MC_OSC7_TOK
 
 /* --------------------------------------------------------------------------------------------- */
