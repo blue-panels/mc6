@@ -83,13 +83,13 @@ mcterm_overlay_ready (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Whether the host keeps the bottom row for itself: the shell's prompt when it is idle, and the
-   busy line while a command runs. A full-screen program takes the whole terminal, so not then. */
+/* Whether the host keeps the bottom row for itself: the shell's prompt when it is idle, the
+   busy line while a command runs, and mc's command line under a full-screen program - which is
+   given one row less so its own last row does not land where the command line is. */
 static gboolean
 mcterm_overlay_owns_bottom_row (void)
 {
-    return (command_prompt && mcterm_overlay_live () && mcterm_osc7_capable (mcterm_panel)
-            && !mcterm_in_alt_screen (mcterm_panel));
+    return (command_prompt && mcterm_overlay_live () && mcterm_osc7_capable (mcterm_panel));
 }
 
 /* --------------------------------------------------------------------------------------------- */
