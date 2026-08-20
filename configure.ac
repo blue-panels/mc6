@@ -470,7 +470,6 @@ else
         diff_msg="no"
 fi
 
-mc_SUBSHELL
 mc_BACKGROUND
 
 mc_MCTERM
@@ -998,7 +997,6 @@ src/consaver/Makefile
 src/editor/Makefile
 src/man2hlp/Makefile
 src/mctree/Makefile
-src/subshell/Makefile
 src/viewer/Makefile
 src/mcterm/Makefile
 src/diffviewer/Makefile
@@ -1156,7 +1154,6 @@ Configuration:
   Screen library:                 ${screen_msg}
   Mouse support:                  ${mouse_lib}
   X11 events support:             ${textmode_x11_support}
-  With subshell support:          ${subshell}
   With background operations:     ${enable_background}
   With ext2fs attributes support: ${ext2fs_attr_msg}
   Internal editor:                ${edit_msg}

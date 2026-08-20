@@ -21,8 +21,11 @@ typedef enum
 
 /*** declarations of public functions ************************************************************/
 
+void mcterm_overlay_start (void);
 gboolean mcterm_overlay_active (void);
 void mcterm_overlay_toggle (void);
+/* Show mc's terminal full screen for the editor and viewers; FALSE when there is none to show. */
+gboolean mcterm_overlay_show_terminal (void);
 void mcterm_overlay_destroy (void);
 
 void mcterm_overlay_draw_visible_panels (void);
@@ -37,6 +40,14 @@ gboolean mcterm_overlay_toggle_panel_command (gboolean right_panel_command);
 mcterm_overlay_cmdline_result_t mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd,
                                                             gboolean is_exit);
 gboolean mcterm_overlay_panel_exec (const char *cmd);
+/* What the prompt row says while a command runs, or NULL when the shell has its own. */
+const char *mcterm_overlay_prompt_text (void);
+/* Send the shell after the current panel, when it is free to go. */
+void mcterm_overlay_sync_shell_to_panel (void);
+/* Whether mc has a terminal with a shell in it. */
+gboolean mcterm_overlay_has_terminal (void);
+/* Run a command in the terminal mc has; FALSE when the caller must run it the old way. */
+gboolean mcterm_overlay_exec_command (const char *cmd);
 
 cb_ret_t mcterm_overlay_handle_key (Widget *w, int parm,
                                     mcterm_overlay_command_cb_t execute_command,

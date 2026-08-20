@@ -84,11 +84,6 @@ void set_hintbar (const char *str);
 void use_dash (gboolean flag);  // Disable/Enable rotate_dash routines
 void rotate_dash (gboolean show);
 
-#ifdef ENABLE_SUBSHELL
-gboolean do_load_prompt (void);
-int load_prompt (int fd, void *unused);
-#endif
-
 void update_xterm_title_path (void);
 void update_terminal_cwd (void);
 

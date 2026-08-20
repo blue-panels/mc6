@@ -70,10 +70,8 @@
 #include "vfs/plugins_init.h"
 
 #include "events_init.h"
+#include "execute.h"  // show_panels_request_init()
 #include "args.h"
-#ifdef ENABLE_SUBSHELL
-#include "subshell/subshell.h"
-#endif
 #include "keymap.h"
 #include "setup.h"  // load_setup()
 
@@ -117,7 +115,7 @@ OS_Setup (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-sigchld_handler_no_subshell (int sig)
+sigchld_handler (int sig)
 {
 #ifdef __linux__
     int pid, status;
@@ -127,7 +125,7 @@ sigchld_handler_no_subshell (int sig)
 
     /* COMMENT: if it were true that after the call to handle_console(..INIT)
        the value of mc_global.tty.console_flag never changed, we could simply not install
-       this handler at all if (!mc_global.tty.console_flag && !mc_global.tty.use_subshell). */
+       this handler at all when console_flag is unset. */
 
     /* Reap cons.saver from this handler so a stopped process can be restarted. */
 
@@ -161,11 +159,7 @@ init_sigchld (void)
     struct sigaction sigchld_action;
 
     memset (&sigchld_action, 0, sizeof (sigchld_action));
-    sigchld_action.sa_handler =
-#ifdef ENABLE_SUBSHELL
-        mc_global.tty.use_subshell ? sigchld_handler :
-#endif
-                                   sigchld_handler_no_subshell;
+    sigchld_action.sa_handler = sigchld_handler;
 
     sigemptyset (&sigchld_action.sa_mask);
 
@@ -175,13 +169,6 @@ init_sigchld (void)
 
     if (my_sigaction (SIGCHLD, &sigchld_action, NULL) == -1)
     {
-#ifdef ENABLE_SUBSHELL
-        /*
-         * This may happen on QNX Neutrino 6, where SA_RESTART
-         * is defined but not implemented.  Fallback to no subshell.
-         */
-        mc_global.tty.use_subshell = FALSE;
-#endif
     }
 }
 
@@ -212,6 +199,46 @@ check_sid (void)
 
     // The parent mc is in a different session, it's OK
     return (old_sid != my_sid);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Ask the mc we are running in to show its panels again.
+ *
+ * The parent hid the panels and gave the terminal to a shell of its own, and the user typed
+ * "mc" there. Showing the panels is what they want; a second copy of mc is not.
+ *
+ * @return TRUE if the request was sent, FALSE otherwise.
+ */
+
+static gboolean
+request_parent_panels (void)
+{
+    const char *pid_str, *tty_str, *my_tty;
+    pid_t parent_pid;
+
+    if (mc_global.mc_run_mode != MC_RUN_FULL)
+        return FALSE;
+
+    pid_str = getenv ("MC_PID");
+    tty_str = getenv ("MC_TTY");
+    if (pid_str == NULL || tty_str == NULL)
+        return FALSE;
+
+    parent_pid = (pid_t) strtol (pid_str, NULL, 0);
+    if (parent_pid <= 1)
+        return FALSE;
+
+    // We must sit on the parent's pty, not in a terminal of our own
+    my_tty = ttyname (STDIN_FILENO);
+    if (my_tty == NULL || strcmp (my_tty, tty_str) != 0)
+        return FALSE;
+
+    // ... and be the foreground job there, not a background or piped one
+    if (tcgetpgrp (STDIN_FILENO) != getpgrp ())
+        return FALSE;
+
+    return (kill (parent_pid, SIGUSR1) == 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -248,6 +275,13 @@ main (int argc, char *argv[])
         mc_shell_deinit ();
         str_uninit_strings ();
         return exit_code;
+    }
+
+    // Plain "mc" typed at the prompt of a shell started by another mc: bring back its panels
+    if (argc == 1 && request_parent_panels ())
+    {
+        exit_code = EXIT_SUCCESS;
+        goto startup_exit_ok;
     }
 
     /* check terminal type
@@ -337,23 +371,16 @@ main (int argc, char *argv[])
     // Must be done before installing the SIGCHLD handler [[FIXME]]
     handle_console (CONSOLE_INIT);
 
-#ifdef ENABLE_SUBSHELL
-    // Disallow subshell when invoked as standalone viewer or editor from running mc
-    if (mc_global.mc_run_mode != MC_RUN_FULL && mc_global.run_from_parent_mc)
-        mc_global.tty.use_subshell = FALSE;
-
-    if (mc_global.tty.use_subshell)
-        subshell_get_console_attributes ();
-#endif
-
-    // Install the SIGCHLD handler; must be done before init_subshell()
+    // Install the SIGCHLD handler
     init_sigchld ();
+
+    if (mc_global.mc_run_mode == MC_RUN_FULL)
+        show_panels_request_init ();
 
     // We need this, since ncurses endwin () doesn't restore the signals
     save_stop_handler ();
 
-    // Must be done before init_subshell, to set up the terminal size:
-    // FIXME: Should be removed and LINES and COLS computed on subshell
+    // Set up the terminal size.
     tty_init (!mc_args__nomouse, mc_global.tty.xterm_flag);
 
     // Removing this from the X code let's us type C-c
@@ -375,51 +402,20 @@ main (int argc, char *argv[])
 
     mc_error_message (&mcerror, NULL);
 
-#ifdef ENABLE_SUBSHELL
-    // Done here to ensure that the subshell doesn't
-    // inherit the file descriptors opened below, etc
-    if (mc_global.tty.use_subshell && mc_global.run_from_parent_mc)
-    {
-        char *text;
-
-        text = g_strdup_printf (_ ("%s\nis already running on this terminal.\n"
-                                   "Subshell support will be disabled."),
-                                PACKAGE_NAME);
-        const int quit_mc = query_dialog (_ ("Warning"), text, D_ERROR, 2, _ ("&OK"), _ ("&Quit"));
-        g_free (text);
-
-        if (quit_mc != 0)
-        {
-            // parent mc was found and the user wants to quit mc
-            mc_global.midnight_shutdown = TRUE;
-        }
-
-        // quit or not, disable nested subshell
-        mc_global.tty.use_subshell = FALSE;
-    }
-
-    if (mc_global.tty.use_subshell)
-        init_subshell ();
-#endif
-
     if (!mc_global.midnight_shutdown)
     {
-        // Also done after init_subshell, to save any shell init file messages
         if (mc_global.tty.console_flag != '\0')
             handle_console (CONSOLE_SAVE);
 
         if (mc_global.tty.alternate_plus_minus)
             application_keypad_mode ();
 
-        /* Done after subshell initialization to allow select and paste text by mouse
-           w/o Shift button in subshell in the native console */
         init_mouse ();
 
         /* Done after tty_enter_ca_mode (tty_init) because in VTE bracketed mode is
            separate for the normal and alternate screens */
         enable_bracketed_paste ();
 
-        // subshell_prompt is NULL here
         mc_prompt = g_strdup ((geteuid () == 0) ? "# " : "$ ");
     }
 
@@ -459,7 +455,7 @@ main (int argc, char *argv[])
 
     done_setup ();
 
-    if (mc_global.tty.console_flag != '\0' && (quit & SUBSHELL_EXIT) == 0)
+    if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_RESTORE);
     if (mc_global.tty.alternate_plus_minus)
         numeric_keypad_mode ();

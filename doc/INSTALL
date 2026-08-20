@@ -113,12 +113,6 @@ incomplete, use `configure --help' to get the full list):
      building binaries for distribution purposes and may not work on
      some operating systems.
 
-`--with-subshell[=optional]', `--without-subshell' 
-     The subshell support is by default turned on, you can disable
-     this by using the --without-subshell option.  If you pass the
-     =optional parameter, then the subshell support is turned off by
-     default.  To turn it on, specify the `-U' option to the program.
-
 `--without-x'
      By default, the Midnight Commander tries to connect to the X Window
      System events to query the status of the keyboard modifiers, such

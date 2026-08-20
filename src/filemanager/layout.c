@@ -55,9 +55,6 @@
 #include "src/consaver/cons.saver.h"
 #include "src/viewer/mcviewer.h"  // The view widget
 #include "src/setup.h"
-#ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
-#endif
 
 #include "command.h"
 #include "filemanager.h"
@@ -875,10 +872,7 @@ setup_panels (void)
 
     if (command_prompt)
     {
-#ifdef ENABLE_SUBSHELL
-        if (!mc_global.tty.use_subshell || !do_load_prompt ())
-#endif
-            setup_cmdline ();
+        setup_cmdline ();
     }
     else
     {
@@ -969,36 +963,27 @@ setup_cmdline (void)
     if (!command_prompt)
         return;
 
-#ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
+    /* The row belongs to the shell when the shell's prompt is on it, colors and all. */
+    command_set_shell_colors (wprompt_from_shell (the_prompt));
+
     {
-        // Workaround: avoid crash on FreeBSD (see ticket #4213 for details)
-        if (subshell_prompt != NULL)
-        {
-            g_free (mc_prompt);
-            mc_prompt = g_strndup (subshell_prompt->str, subshell_prompt->len);
-        }
+        /* A command in progress puts its own line here; otherwise the row shows mc's text. */
+        const char *text = mcterm_overlay_prompt_text ();
 
-        (void) strip_ctrl_codes (mc_prompt);
+        wprompt_set_text (the_prompt, text != NULL ? text : mc_prompt);
     }
-#endif
 
-    prompt_width = str_term_width1 (mc_prompt);
+    /* The prompt says how wide it is: the shell's own row is as wide as the shell left its
+       cursor, a text prompt as wide as the text. */
+    prompt_width = wprompt_width (the_prompt);
 
     // Check for prompts too big
     if (r->cols > 8 && prompt_width > r->cols - 8)
-    {
-        int prompt_len;
-
-        prompt_width = r->cols - 8;
-        prompt_len = str_offset_to_pos (mc_prompt, prompt_width);
-        mc_prompt[prompt_len] = '\0';
-    }
+        prompt_width = r->cols - 8;  // what does not fit the widget cuts as it draws
 
     y = r->lines - 1 - (mc_global.keybar_visible ? 1 : 0);
 
     widget_set_size (WIDGET (the_prompt), y, r->x, 1, prompt_width);
-    label_set_text (the_prompt, mc_prompt);
     widget_set_size (WIDGET (cmdline), y, r->x + prompt_width, 1, r->cols - prompt_width);
 
     widget_show (WIDGET (the_prompt));
@@ -1054,11 +1039,10 @@ rotate_dash (gboolean show)
         tty_print_char (mc_tty_frm[MC_TTY_FRM_DRIGHTTOP]);
     else
     {
-        static const char rotating_dash[4] MC_NONSTRING = "|/-\\";
-        static size_t pos = 0;
+        static unsigned int pos = 0;
 
-        tty_print_char (rotating_dash[pos]);
-        pos = (pos + 1) % sizeof (rotating_dash);
+        tty_print_string (mc_skin_spinner_frame (pos));
+        pos++;
     }
 
     mc_refresh ();
@@ -1454,49 +1438,6 @@ get_panel_dir_for (const WPanel *widget)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_SUBSHELL
-gboolean
-do_load_prompt (void)
-{
-    gboolean ret = FALSE;
-
-    if (!read_subshell_prompt ())
-        return ret;
-
-    // Don't actually change the prompt if it's invisible
-    if (top_dlg != NULL && DIALOG (top_dlg->data) == filemanager && command_prompt)
-    {
-        setup_cmdline ();
-
-        /* since the prompt has changed, and we are called from one of the
-         * tty_get_event channels, the prompt updating does not take place
-         * automatically: force a cursor update and a screen refresh
-         */
-        widget_update_cursor (WIDGET (filemanager));
-        mc_refresh ();
-        ret = TRUE;
-    }
-    update_subshell_prompt = TRUE;
-    return ret;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-int
-load_prompt (int fd, void *unused)
-{
-    (void) fd;
-    (void) unused;
-
-    if (should_read_new_subshell_prompt)
-        do_load_prompt ();
-    else
-        flush_subshell (0, QUIETLY);
-
-    return 0;
-}
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 

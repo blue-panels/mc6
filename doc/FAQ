@@ -53,8 +53,8 @@ Frequently Asked Questions
             .kshrc within MC?
           + 6.5 Is there any way to include additional options or hot
             keys to MC?
-          + 6.6 When I use Ctrl-O I don't get a subshell.  How do I fix
-            this?
+          + 6.6 When I use Ctrl-O the command line does not follow my
+            shell.  How do I fix this?
           + 6.7 Ctrl-O doesn't work at all.  What happens?
           + 6.8 Why I see lot of strange 'cd "printf ' lines into my
             .history file?
@@ -534,8 +534,8 @@ all anymore!
 6.2 How can I access command line history?
 
    Meta-h shows the last commands you executed from the command line.
-   Duplicates are suppressed from the history.  Commands executed from
-   the subshell prompt are not shown.
+   Duplicates are suppressed from the history.  Commands executed at
+   the terminal's own prompt are not shown.
 
    You can put previous commands to the command line with Meta-p.  Meta-n
    moves you forward in history.
@@ -553,7 +553,7 @@ MC?
 
    Sorry, MC only supports bash, tcsh and zsh functions.  Ksh functions
    are not supported because ksh lacks the necessary hooks needed for
-   subshell integration.
+   the terminal integration.
 
    Switch to bash or zsh.  They are both quite compatible with ksh. 
    Your ksh functions should work as such or after minimal changes.
@@ -572,17 +572,18 @@ MC?
    are some limitations to make sure MC stays free.  See GNU General
    Public License for details.
 
-6.6 When I use Ctrl-O I don't get a subshell.  How do I fix this?
+6.6 When I use Ctrl-O the command line does not follow my shell.  How
+do I fix this?
 
-   Only bash, tcsh and zsh can be used as subshell.  Use one of those
-   shells as your default shell, and it will be used as subshell in GNU
-   Midnight Commander.
+   The command line reads its prompt and its directory from bash, zsh
+   and fish through a small integration.  Use one of those shells as
+   your default shell to get it.  Other shells still run in the
+   terminal, only without that integration.
 
 6.7 Ctrl-O doesn't work at all.  What happens?
 
-   Ctrl-O works if either the subshell is used or the terminal can save
-   the output of the commands so it can be restored.  If neither is
-   true, there is absolutely nothing interesting behind the panels!
+   Ctrl-O shows the terminal mc runs behind the panels.  If it does
+   nothing, there is no terminal to show.
 
    Only few terminals support screen saving.  It's xterm, rxvt and other
    xterm-like terminals and virtual terminals on Linux and FreeBSD.
@@ -695,11 +696,9 @@ indenting increases with each line!
 
 9.2 When I start Midnight Commander, nothing happens!
 
-   First, invoke MC without subshell support: "mc -u".  If this helps
-   check the shell you are using.  Subshell support works best with
-   bash, although tcsh and zsh are also supported.  You might want to
-   upgrade your shell to a newer version.  If you use something else
-   than bash, tcsh or zsh, subshell support is disabled automatically.
+   Check the shell you are using.  The command line integration works
+   best with bash, zsh and fish.  You might want to upgrade your shell
+   to a newer version.
 
    Another reason is problems with gpm.  Try using "--nomouse" option to
    see if it makes any difference.  Restarting gpm can help.  Sometimes

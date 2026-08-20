@@ -135,7 +135,7 @@ What mc provides to the plugin while the panel is active:
                               modal message box
   run_command(host, command, flags)
                               execute a shell command in the panel's
-                              subshell
+                              terminal
   open_diff(host, left, right)
                               two-file diff via the integrated viewer
   close_plugin(host, dir_path)

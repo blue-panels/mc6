@@ -177,8 +177,7 @@ mcview_spinner (WView *view)
     static gint64 timestamp = 0;
     // update with 10 FPS rate
     static const gint64 delay = G_USEC_PER_SEC / 10;
-    static const char rotating_dash[4] MC_NONSTRING = "|/-\\";
-    static size_t pos = 0;
+    static unsigned int pos = 0;
 
     const WRect *r = &view->status_area;
 
@@ -190,8 +189,8 @@ mcview_spinner (WView *view)
 
     tty_setcolor (STATUSBAR_COLOR);
     widget_gotoyx (view, r->y, r->x + r->cols - 1);
-    tty_print_char (rotating_dash[pos]);
-    pos = (pos + 1) % sizeof (rotating_dash);
+    tty_print_string (mc_skin_spinner_frame (pos));
+    pos++;
     mc_refresh ();
 }
 

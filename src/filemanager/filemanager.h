@@ -7,6 +7,7 @@
 
 #include "lib/widget.h"
 
+#include "wprompt.h"
 #include "panel.h"
 #include "layout.h"
 
@@ -27,7 +28,7 @@
 /*** global variables defined in .c file *********************************************************/
 
 extern WMenuBar *the_menubar;
-extern WLabel *the_prompt;
+extern WPrompt *the_prompt;
 extern WLabel *the_hint;
 extern WButtonBar *the_bar;
 

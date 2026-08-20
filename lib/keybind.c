@@ -103,7 +103,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME (Replace),
     ADD_KEYMAP_NAME_DESC (ReplaceContinue, N_ ("Replace next")),
     ADD_KEYMAP_NAME_DESC (Help, N_ ("Show help")),
-    ADD_KEYMAP_NAME_DESC (Shell, N_ ("Subshell")),
+    ADD_KEYMAP_NAME_DESC (Shell, N_ ("Terminal")),
     ADD_KEYMAP_NAME_DESC (Edit, N_ ("Edit file")),
     ADD_KEYMAP_NAME_DESC (EditNew, N_ ("Edit new file")),
     ADD_KEYMAP_NAME_DESC (SelectCodepage, N_ ("Select charset")),

@@ -42,10 +42,7 @@
 #include "lib/util.h"     // whitespace()
 #include "lib/widget.h"
 
-#include "src/setup.h"  // quit
-#ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
-#endif
+#include "src/setup.h"     // quit
 #include "src/execute.h"   // shell_execute()
 #include "src/usermenu.h"  // expand_format()
 
@@ -119,15 +116,6 @@ enter (WInput *lc_cmdline)
             message (D_ERROR, MSG_ERROR, _ ("Cannot execute commands on non-local filesystems"));
             return MSG_NOT_HANDLED;
         }
-#ifdef ENABLE_SUBSHELL
-        /* Check this early before we clean command line
-         * (will be checked again by shell_execute) */
-        if (mc_global.tty.use_subshell && subshell_state != INACTIVE)
-        {
-            message (D_ERROR, MSG_ERROR, _ ("The shell is already running a command"));
-            return MSG_NOT_HANDLED;
-        }
-#endif
         command = g_string_sized_new (32);
 
         for (i = 0; cmd[i] != '\0'; i++)
@@ -150,22 +138,6 @@ enter (WInput *lc_cmdline)
         input_clean (lc_cmdline);
         shell_execute (command->str, 0);
         g_string_free (command, TRUE);
-
-#ifdef ENABLE_SUBSHELL
-        if ((quit & SUBSHELL_EXIT) != 0)
-        {
-            if (quiet_quit_cmd (FALSE))
-                return MSG_HANDLED;
-
-            quit = 0;
-            // restart subshell
-            if (mc_global.tty.use_subshell)
-                init_subshell ();
-        }
-
-        if (mc_global.tty.use_subshell)
-            do_load_prompt ();
-#endif
     }
     return MSG_HANDLED;
 }
@@ -233,6 +205,21 @@ command_set_default_colors (void)
     command_colors[WINPUTC_MARK] = CORE_COMMAND_MARK_COLOR;
     command_colors[WINPUTC_UNCHANGED] = CORE_DEFAULT_COLOR;
     command_colors[WINPUTC_HISTORY] = CORE_COMMAND_HISTORY_COLOR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Whether the row carries the shell's own prompt.
+ *
+ * When it does, what the user types stands next to that prompt and belongs to the same line as
+ * far as the eye is concerned: it takes the terminal's colors, not the file manager's.
+ */
+
+void
+command_set_shell_colors (gboolean shell)
+{
+    command_colors[WINPUTC_MAIN] = shell ? MCTERM_NORMAL_COLOR : CORE_DEFAULT_COLOR;
+    command_colors[WINPUTC_UNCHANGED] = command_colors[WINPUTC_MAIN];
 }
 
 /* --------------------------------------------------------------------------------------------- */

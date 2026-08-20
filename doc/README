@@ -81,7 +81,7 @@ The features include:
 	  will complete the name for you.  If you press Alt-Tab for the
 	  second time, you get a list box with all possible completions.
 
-	* Subshell support: Run your commands by a real shell
+	* Terminal: Run your commands in a real shell
 	  interpreter.  Midnight Commander interacts with bash,
 	  tcsh and zsh to provide you with all of the facilities
 	  available in your preferred shell.

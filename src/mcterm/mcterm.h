@@ -1,3 +1,7 @@
+/** \file mcterm.h
+ *  \brief Header: the terminal widget that runs the shell
+ */
+
 #ifndef MC__MCTERM_H
 #define MC__MCTERM_H
 
@@ -7,6 +11,9 @@
 #include "lib/tty/tty.h"
 
 /*** typedefs(not structures) and defined constants **********************************************/
+
+/* What the session token is introduced by, in every OSC 7 our own shell sends. */
+#define MCTERM_OSC7_TOKEN_PREFIX "?mc="
 
 /*** enums ***************************************************************************************/
 
@@ -30,6 +37,13 @@ gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
 gboolean mcterm_shell_at_prompt (const WMcTerm *t);
 gboolean mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec);
 const char *mcterm_osc7_raw (const WMcTerm *t);
+/* The session token our own shell puts in every OSC 7, NULL when there is none. */
+const char *mcterm_osc7_token (const WMcTerm *t);
+/* The exit code the shell reported for the last command, -1 when it reported none. */
+int mcterm_last_exit_code (const WMcTerm *t);
+/* Advances while a command runs, so that the host can show that something is going on. */
+guint mcterm_busy_phase (const WMcTerm *t);
+void mcterm_set_busy_tick_callback (WMcTerm *t, void (*cb) (void *), void *data);
 void mcterm_set_prompt_callback (WMcTerm *t, void (*cb) (void *), void *data);
 void mcterm_set_after_redraw_callback (WMcTerm *t, void (*cb) (void *), void *data);
 gboolean mcterm_osc7_capable (const WMcTerm *t);
@@ -37,6 +51,8 @@ int mcterm_cursor_col (const WMcTerm *t);
 /* At a prompt the widget leaves the shell's row to the host: draw it with this. */
 void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
+/* Hand one key to the shell, for its own line editor to act on. */
+gboolean mcterm_send_key (WMcTerm *t, int key);
 long mcterm_key_command (const WMcTerm *t, int key);
 /* Whether the host types on a command line of its own. Without one the plain
    arrows are left to the shell, there being nowhere else for typing to go. */
@@ -107,6 +123,31 @@ mcterm_osc7_raw (const WMcTerm *t)
     (void) t;
     return NULL;
 }
+static inline const char *
+mcterm_osc7_token (const WMcTerm *t)
+{
+    (void) t;
+    return NULL;
+}
+static inline int
+mcterm_last_exit_code (const WMcTerm *t)
+{
+    (void) t;
+    return -1;
+}
+static inline guint
+mcterm_busy_phase (const WMcTerm *t)
+{
+    (void) t;
+    return 0;
+}
+static inline void
+mcterm_set_busy_tick_callback (WMcTerm *t, void (*cb) (void *), void *data)
+{
+    (void) t;
+    (void) cb;
+    (void) data;
+}
 static inline void
 mcterm_set_prompt_callback (WMcTerm *t, void (*cb) (void *), void *data)
 {
@@ -146,6 +187,13 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
 {
     (void) t;
     (void) text;
+    return FALSE;
+}
+static inline gboolean
+mcterm_send_key (WMcTerm *t, int key)
+{
+    (void) t;
+    (void) key;
     return FALSE;
 }
 static inline long

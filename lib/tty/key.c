@@ -672,6 +672,11 @@ try_channels (gboolean set_timeout)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Build a chain of nodes for @seq. Only the last node carries the key: a node
+ * in the middle of the chain is a step on the way to it, and a code there would
+ * name a key the caller never asked for.
+ */
 static key_def *
 create_sequence (const char *seq, int code, int action)
 {
@@ -680,6 +685,7 @@ create_sequence (const char *seq, int code, int action)
     for (base = attach = NULL; *seq != '\0'; seq++)
     {
         key_def *p;
+        const gboolean last = seq[1] == '\0';
 
         p = g_new (key_def, 1);
         if (base == NULL)
@@ -688,10 +694,10 @@ create_sequence (const char *seq, int code, int action)
             attach->child = p;
 
         p->ch = *seq;
-        p->code = code;
+        p->code = last ? code : 0;
         p->child = NULL;
         p->next = NULL;
-        p->action = seq[1] == '\0' ? action : MCKEY_NOACTION;
+        p->action = last ? action : MCKEY_NOACTION;
         attach = p;
     }
     return base;
@@ -1537,8 +1543,10 @@ void
 done_key (void)
 {
     k_dispose (keys);
+    keys = NULL;
     g_clear_pointer (&key_sequences, g_hash_table_destroy);
     g_slist_free_full (select_list, g_free);
+    select_list = NULL;
 
 #ifdef HAVE_TEXTMODE_X11_SUPPORT
     if (x11_display)

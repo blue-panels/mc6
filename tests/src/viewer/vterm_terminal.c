@@ -544,6 +544,42 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_oversized_osc_is_dropped_whole)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    GString *osc;
+    guint gen_before;
+
+    mcview_vterm_set_size (vt, 6, 40);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "\033]7;file:///good\007");
+    gen_before = mcview_vterm_osc7_generation (vt);
+    ck_assert_str_eq (mcview_vterm_osc7_raw (vt), "7;file:///good");
+
+    /* Longer than the OSC buffer: it arrives truncated, and a path cut short would name the
+       wrong directory. The whole sequence must be dropped instead. */
+    osc = g_string_new ("\033]7;file:///");
+    while (osc->len < 4096)
+        g_string_append (osc, "aaaaaaaaaa");
+    g_string_append_c (osc, '\007');
+
+    feed_bytes (vt, osc->str, osc->len);
+    g_string_free (osc, TRUE);
+
+    ck_assert_uint_eq (mcview_vterm_osc7_generation (vt), gen_before);
+    ck_assert_str_eq (mcview_vterm_osc7_raw (vt), "7;file:///good");
+
+    // and the terminal is back in its senses right after
+    FEED (vt, "\033]7;file:///after\007");
+    ck_assert_str_eq (mcview_vterm_osc7_raw (vt), "7;file:///after");
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -567,6 +603,7 @@ main (void)
     tcase_add_test (tc_core, test_set_size_returns_true_on_change);
     tcase_add_test (tc_core, test_set_size_returns_false_on_same_size);
     tcase_add_test (tc_core, test_golden_draw_move_erase);
+    tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
 
     return mctest_run_all (tc_core);
 }

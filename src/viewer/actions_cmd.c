@@ -64,6 +64,7 @@
 #include "src/history.h"       // MC_HISTORY_SHARED_SEARCH
 #include "src/file_history.h"  // show_file_history()
 #include "src/execute.h"
+#include "src/filemanager/mcterm_overlay.h"  // mcterm_overlay_show_terminal()
 #include "src/keymap.h"
 
 #include "internal.h"
@@ -630,7 +631,8 @@ mcview_execute_cmd (WView *view, long command)
             mcview_moveto_bottom (view);
         break;
     case CK_Shell:
-        toggle_subshell ();
+        if (!mcterm_overlay_show_terminal ())
+            toggle_terminal ();
         break;
     case CK_Ruler:
         mcview_display_toggle_ruler (view);

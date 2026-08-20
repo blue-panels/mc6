@@ -376,11 +376,6 @@ tty_change_screen_size (void)
 #endif
     }
 #endif
-
-#ifdef ENABLE_SUBSHELL
-    if (mc_global.tty.use_subshell)
-        tty_resize (mc_global.tty.subshell_pty);
-#endif
 }
 
 /* --------------------------------------------------------------------------------------------- */

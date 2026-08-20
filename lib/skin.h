@@ -159,6 +159,8 @@ void mc_skin_lines_parse_ini_file (mc_skin_t *mc_skin);
 
 gchar *mc_skin_get (const gchar *group, const gchar *key, const gchar *default_value);
 
+const char *mc_skin_spinner_frame (unsigned int index);
+
 GPtrArray *mc_skin_list (void);
 
 #endif
