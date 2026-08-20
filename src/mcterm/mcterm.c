@@ -1727,11 +1727,42 @@ mcterm_new (const WRect *r, const char *start_dir)
             break;
         }
 
+        case SHELL_SH:
+        case SHELL_DASH:
+        case SHELL_ASH_BUSYBOX:
+        {
+            /* No precmd or preexec hook here, but PS1 is expanded again at every prompt: a
+             * command substitution in it reports the directory and the exit code and lays the
+             * prompt marks down itself. There is no command-start (C) mark, nothing runs
+             * between the prompt and the command for it to hang on. */
+            static const char setup[] =
+                "__mc_pe(){ s=$1; o=;"
+                " while [ -n \"$s\" ]; do c=${s%\"${s#?}\"};"
+                " case $c in [a-zA-Z0-9/_~.-]) o=$o$c;;"
+                " *) o=$(printf '%s%%%02X' \"$o\" \"'$c\");; esac;"
+                " s=${s#?}; done; printf %s \"$o\"; };"
+                " __mc_a(){"
+                " printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$1\";"
+                " printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007' \"$(__mc_pe \"$PWD\")\";"
+                " printf '\\033]133;A;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER "\\007'; };"
+                " __mc_b(){ printf '\\033]133;B;" MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
+                "\\007'; };"
+                " PS1='$(__mc_a $?)'\"$PS1\"'$(__mc_b)';"
+                " printf "
+                "'\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
+                "\\007'\r";
+
+            mcterm_enable_osc7 (t, master, setup);
+            break;
+        }
+
         default:
-            /* sh, dash, ash, ksh, mksh, tcsh, and whatever else the user runs: nothing to
-             * chain a hook onto, so the terminal goes without the protocol. It still runs
+            /* ksh, mksh, tcsh, and whatever else the user runs: nothing to chain a hook onto
+             * and no PS1 the terminal can drive, so it goes without the protocol. It still runs
              * commands; what it does not do is follow the shell's directory or know where
-             * the prompt ends. See mcterm_osc7_capable(). */
+             * the prompt ends. */
             break;
         }
     }
