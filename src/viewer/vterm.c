@@ -950,8 +950,8 @@ mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
             vt->new_chars_since_snapshot = FALSE;
         }
 
-        vt->cursor_row = (new_row < vt->term_rows) ? new_row : vt->term_rows - 1;
-        vt->cursor_col = (new_col < vt->term_cols) ? new_col : vt->term_cols - 1;
+        vt->cursor_row = MIN (new_row, vt->term_rows - 1);
+        vt->cursor_col = MIN (new_col, vt->term_cols - 1);
     }
     break;
 

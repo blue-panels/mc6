@@ -151,6 +151,7 @@ static void mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *ev
 static gboolean mcterm_handle_osc7_generation (WMcTerm *t);
 static gboolean mcterm_osc7_is_ours (const WMcTerm *t, const char *raw);
 static gboolean mcterm_handle_osc133_generation (WMcTerm *t);
+static gboolean mcterm_write_all (int master, const unsigned char *data, size_t len);
 static void mcterm_busy_tick (WMcTerm *t);
 static void mcterm_busy_tick_set (WMcTerm *t, gboolean on);
 static gboolean mcterm_handle_stalled_internal_sync (WMcTerm *t);
@@ -637,7 +638,7 @@ mcterm_write_silent (int master, const char *data, size_t len)
 {
     struct termios tt;
     gboolean echo_was_on = FALSE;
-    gboolean ok = TRUE;
+    gboolean ok;
 
     if (tcgetattr (master, &tt) == 0 && (tt.c_lflag & ECHO) != 0)
     {
@@ -648,29 +649,7 @@ mcterm_write_silent (int master, const char *data, size_t len)
             echo_was_on = TRUE;
     }
 
-    {
-        const char *p = data;
-        size_t remaining = len;
-
-        while (remaining > 0)
-        {
-            ssize_t nw = write (master, p, remaining);
-            if (nw < 0)
-            {
-                if (errno == EINTR)
-                    continue;
-                ok = FALSE;
-                break;
-            }
-            if (nw == 0)
-            {
-                ok = FALSE;
-                break;
-            }
-            p += nw;
-            remaining -= (size_t) nw;
-        }
-    }
+    ok = mcterm_write_all (master, (const unsigned char *) data, len);
 
     if (echo_was_on)
         (void) tcsetattr (master, TCSANOW, &tt);
@@ -1307,17 +1286,9 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             int blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && content_rows < r->lines)
                 ? (r->lines - content_rows)
                 : 0;
-            int crow = cursor_row - top_row + blank_above;
-            int ccol = mcview_vterm_cursor_col (t->vterm);
+            int crow = CLAMP (cursor_row - top_row + blank_above, 0, r->lines - 1);
+            int ccol = CLAMP (mcview_vterm_cursor_col (t->vterm), 0, r->cols - 1);
 
-            if (crow < 0)
-                crow = 0;
-            if (crow >= r->lines)
-                crow = r->lines - 1;
-            if (ccol < 0)
-                ccol = 0;
-            if (ccol >= r->cols)
-                ccol = r->cols - 1;
             tty_gotoyx (r->y + crow, r->x + ccol);
             return MSG_HANDLED;
         }
@@ -1672,7 +1643,6 @@ mcterm_new (const WRect *r, const char *start_dir)
             static const char setup[] =
                 // Enabled first and on its own line, so the rest of this setup - and later mc's
                 // own commands - stay out of the history behind the leading space that follows.
-                // This one short line is all that is left in it.
                 "setopt hist_ignore_space\r"
                 " __mc_pe(){local s=$1 o='' c i;for (( i=1; i<=${#s}; i++ )); do c=${s[i]};"
                 "case $c in [a-zA-Z0-9/_~.-])o+=$c;;*)printf -v o '%s%%%02X' \"$o\" \"'$c\";"
@@ -1759,10 +1729,8 @@ mcterm_new (const WRect *r, const char *start_dir)
         }
 
         default:
-            /* ksh, mksh, tcsh, and whatever else the user runs: nothing to chain a hook onto
-             * and no PS1 the terminal can drive, so it goes without the protocol. It still runs
-             * commands; what it does not do is follow the shell's directory or know where
-             * the prompt ends. */
+            /* ksh, mksh, tcsh and the rest: no hook to chain onto and no PS1 the terminal can
+             * drive, so they run without the protocol. */
             break;
         }
     }
