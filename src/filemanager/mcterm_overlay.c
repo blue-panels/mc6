@@ -308,6 +308,13 @@ mcterm_overlay_busy_tick_cb (void *data)
     if (!command_prompt || mcterm_panel == NULL)
         return;
 
+    /* A full-screen program on screen paints its own display and drives its own redraws; the
+       busy line is for a command hidden behind the panels. While such a program is shown,
+       forcing a redraw and spinning the busy mark over it only fights it and reads as flicker. */
+    if (mcterm_in_alt_screen (mcterm_panel)
+        && widget_get_state (mcterm_overlay_widget (), WST_VISIBLE))
+        return;
+
     /* In either view the busy line lives on the same bottom row; with the terminal on screen
        the row is kept clear for it, so lay the terminal out to that height first. */
     if (mcterm_mode)
