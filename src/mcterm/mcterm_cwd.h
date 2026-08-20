@@ -1,3 +1,7 @@
+/** \file mcterm_cwd.h
+ *  \brief Header: OSC 7 working directory decoding
+ */
+
 #ifndef MC__MCTERM_CWD_H
 #define MC__MCTERM_CWD_H
 

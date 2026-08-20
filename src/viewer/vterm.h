@@ -1,3 +1,7 @@
+/** \file vterm.h
+ *  \brief Header: terminal emulator state and events
+ */
+
 #ifndef MC__VIEWER_VTERM_H
 #define MC__VIEWER_VTERM_H
 

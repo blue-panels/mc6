@@ -1,3 +1,7 @@
+/** \file mcterm.h
+ *  \brief Header: the terminal widget that runs the shell
+ */
+
 #ifndef MC__MCTERM_H
 #define MC__MCTERM_H
 
