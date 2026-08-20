@@ -47,6 +47,11 @@ mc_skin_t mc_skin__default;
 
 static gboolean mc_skin_is_init = FALSE;
 
+/* The frames of the progress spinner, one string per frame, split off the skin once and kept
+   until the skin is dropped. */
+static char **mc_skin_spinner_frames = NULL;
+static guint mc_skin_spinner_nframes = 0;
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -189,6 +194,10 @@ mc_skin_deinit (void)
     mc_config_deinit (mc_skin__default.config);
     mc_skin__default.config = NULL;
 
+    g_strfreev (mc_skin_spinner_frames);
+    mc_skin_spinner_frames = NULL;
+    mc_skin_spinner_nframes = 0;
+
     mc_skin_is_init = FALSE;
 }
 
@@ -201,6 +210,62 @@ mc_skin_get (const gchar *group, const gchar *key, const gchar *default_value)
         return g_strdup (default_value);
 
     return mc_config_get_string_strict (mc_skin__default.config, group, key, default_value);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Cut the spinner string into one string per frame - a frame is a single character, so a
+   multi-byte glyph stays whole. */
+static void
+mc_skin_spinner_load (void)
+{
+    gchar *seq;
+    const char *p;
+    GPtrArray *frames;
+
+    if (mc_skin_spinner_frames != NULL)
+        return;
+
+    seq = mc_skin_get ("core", "spinner_sequence", "|/-\\");
+    if (seq == NULL || *seq == '\0' || !g_utf8_validate (seq, -1, NULL))
+    {
+        g_free (seq);
+        seq = g_strdup ("|/-\\");
+    }
+
+    frames = g_ptr_array_new ();
+    for (p = seq; *p != '\0';)
+    {
+        const char *next = g_utf8_next_char (p);
+
+        g_ptr_array_add (frames, g_strndup (p, next - p));
+        p = next;
+    }
+    g_free (seq);
+
+    mc_skin_spinner_nframes = frames->len;
+    g_ptr_array_add (frames, NULL);
+    mc_skin_spinner_frames = (char **) g_ptr_array_free (frames, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * One frame of the progress spinner shown while mc is busy.
+ *
+ * The frames come from the "spinner_sequence" key of the skin's [core] section, one frame per
+ * character, so a skin may set a plain "|/-\" or a run of multi-byte glyphs. The caller keeps
+ * a counter and hands it in; the frame is picked by it, wrapping round.
+ *
+ * @param index the caller's step counter
+ * @return the frame string, never NULL
+ */
+
+const char *
+mc_skin_spinner_frame (unsigned int index)
+{
+    mc_skin_spinner_load ();
+    return mc_skin_spinner_frames[index % mc_skin_spinner_nframes];
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -126,7 +126,6 @@ mcterm_overlay_rect (const WRect *mwr, WRect *r)
 const char *
 mcterm_overlay_prompt_text (void)
 {
-    static const char turning[] = "|/-\\";
     static char text[MC_MAXPATHLEN + 32];
     const char *cwd;
 
@@ -136,8 +135,8 @@ mcterm_overlay_prompt_text (void)
 
     cwd = (current_panel != NULL) ? vfs_path_as_str (current_panel->cwd_vpath) : "";
 
-    g_snprintf (text, sizeof (text), "(background %c) %s%s ",
-                turning[mcterm_busy_phase (mcterm_panel) % (sizeof (turning) - 1)], cwd,
+    g_snprintf (text, sizeof (text), "(background %s) %s%s ",
+                mc_skin_spinner_frame (mcterm_busy_phase (mcterm_panel)), cwd,
                 (cwd[0] != '\0' && cwd[strlen (cwd) - 1] != PATH_SEP) ? PATH_SEP_STR : "");
 
     return text;

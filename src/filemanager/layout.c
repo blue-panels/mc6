@@ -1039,11 +1039,10 @@ rotate_dash (gboolean show)
         tty_print_char (mc_tty_frm[MC_TTY_FRM_DRIGHTTOP]);
     else
     {
-        static const char rotating_dash[4] MC_NONSTRING = "|/-\\";
-        static size_t pos = 0;
+        static unsigned int pos = 0;
 
-        tty_print_char (rotating_dash[pos]);
-        pos = (pos + 1) % sizeof (rotating_dash);
+        tty_print_string (mc_skin_spinner_frame (pos));
+        pos++;
     }
 
     mc_refresh ();
