@@ -1,0 +1,583 @@
+{
+  "schema_version": 1,
+  "methods": [
+    {
+      "signature": "panel:cwd() -> string|nil, error?",
+      "workspace": "mc",
+      "capability": "panel",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the panel's current directory."
+    },
+    {
+      "signature": "panel:current() -> table|nil, error?",
+      "workspace": "mc",
+      "capability": "panel",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return a snapshot of the current entry."
+    },
+    {
+      "signature": "panel:selected() -> table[]|nil, error?",
+      "workspace": "mc",
+      "capability": "panel",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return snapshots of marked entries."
+    },
+    {
+      "signature": "panel:refresh() -> boolean|nil, error?",
+      "workspace": "mc",
+      "capability": "panel",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Refresh the panel contents."
+    },
+    {
+      "signature": "panel:chdir(path) -> boolean|nil, error?",
+      "workspace": "mc",
+      "capability": "panel",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Change the panel's current directory."
+    },
+    {
+      "signature": "editor:path() -> string|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the document path."
+    },
+    {
+      "signature": "editor:info() -> DocumentInfo|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return document metadata and the current revision."
+    },
+    {
+      "signature": "editor:selection() -> Selection|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the current selection snapshot."
+    },
+    {
+      "signature": "editor:replace_selection(text, options?) -> EditResult|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Replace the selection, or insert when it is empty."
+    },
+    {
+      "signature": "editor:replace(range, text) -> EditResult|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Replace a byte range in the editor buffer."
+    },
+    {
+      "signature": "editor:text(range?) -> string|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Read the complete buffer or a byte range."
+    },
+    {
+      "signature": "editor:edit(spec) -> EditResult|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Apply replacements atomically as one undo operation."
+    },
+    {
+      "signature": "editor:cursor() -> Position|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the current cursor position."
+    },
+    {
+      "signature": "editor:set_cursor(position) -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Move the cursor to a validated position."
+    },
+    {
+      "signature": "editor:is_readonly() -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Report whether the document is read-only."
+    },
+    {
+      "signature": "editor:tab_width() -> integer|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the configured tab width."
+    },
+    {
+      "signature": "editor:get_text() -> string|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Read the complete buffer using the compatibility API."
+    },
+    {
+      "signature": "editor:selected_text() -> string|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Read selected text using the compatibility API."
+    },
+    {
+      "signature": "editor:insert(text) -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Insert text at the cursor using the compatibility API."
+    },
+    {
+      "signature": "editor:save() -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Save the document with the native editor operation."
+    },
+    {
+      "signature": "viewer:path() -> string|nil, error?",
+      "workspace": "mcview",
+      "capability": "viewer",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the viewed file path."
+    },
+    {
+      "signature": "viewer:position() -> integer|nil, error?",
+      "workspace": "mcview",
+      "capability": "viewer",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the current byte offset."
+    },
+    {
+      "signature": "viewer:goto(offset) -> boolean|nil, error?",
+      "workspace": "mcview",
+      "capability": "viewer",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Move the viewer to a byte offset."
+    },
+    {
+      "signature": "viewer:mode() -> string|nil, error?",
+      "workspace": "mcview",
+      "capability": "viewer",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the active viewer mode."
+    },
+    {
+      "signature": "mc.panel.active() -> panel|nil, error?",
+      "workspace": "any",
+      "capability": "panel",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return a handle to the active panel."
+    },
+    {
+      "signature": "mc.panel.passive() -> panel|nil, error?",
+      "workspace": "any",
+      "capability": "panel",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return a handle to the passive panel."
+    },
+    {
+      "signature": "mc.editor.current() -> editor|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the editor associated with the active callback."
+    },
+    {
+      "signature": "mc.viewer.current() -> viewer|nil, error?",
+      "workspace": "mcview",
+      "capability": "viewer",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Return the viewer associated with the active callback."
+    },
+    {
+      "signature": "mc.panel_provider.register(spec) -> registration|nil, error?",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Register a virtual panel namespace and its callbacks."
+    },
+    {
+      "signature": "mc.source.bytes(spec) -> Source",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Describe an in-memory byte source."
+    },
+    {
+      "signature": "mc.source.file(spec) -> Source",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Describe a local-file source and its ownership."
+    },
+    {
+      "signature": "mc.source.process(spec) -> Source",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Describe a process source using argv and an optional working directory."
+    },
+    {
+      "signature": "mc.source.pipeline(stages) -> Source",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Compose process sources into one pipeline."
+    },
+    {
+      "signature": "definition:create(argument, params?) -> controller",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Create a viewer-source controller and its package session."
+    },
+    {
+      "signature": "mc.viewer_source.define(spec) -> definition|nil, error?",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Define a reusable family of managed viewer sources."
+    },
+    {
+      "signature": "mc.ui.open_viewer(spec) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Open the native viewer and transfer a controller to MC."
+    },
+    {
+      "signature": "mc.ui.open_diff(spec) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "diff",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Compare two byte strings in the native diff viewer."
+    },
+    {
+      "signature": "mc.on(event, callback, options?) -> integer|nil, error?",
+      "workspace": "any",
+      "capability": "events",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Subscribe the package to a named MC event."
+    },
+    {
+      "signature": "mc.off(subscription) -> boolean",
+      "workspace": "any",
+      "capability": "events",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Remove an event subscription owned by the package."
+    },
+    {
+      "signature": "mc.macro(spec) -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "events",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Register an editor action with optional key and menu placement."
+    },
+    {
+      "signature": "mc.log.debug(message) -> nil",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Write a debug message to the Lua runtime log."
+    },
+    {
+      "signature": "mc.log.info(message) -> nil",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Write an informational message to the Lua runtime log."
+    },
+    {
+      "signature": "mc.log.warn(message) -> nil",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Write a warning to the Lua runtime log."
+    },
+    {
+      "signature": "mc.log.error(message) -> nil",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Write an error to the Lua runtime log."
+    },
+    {
+      "signature": "mc.process.run(spec) -> ProcessResult|nil, error?",
+      "workspace": "any",
+      "capability": "process",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Run a shell command and capture its bounded output."
+    },
+    {
+      "signature": "mc.ui.dialog(spec) -> DialogResult|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Show a declarative native modal dialog."
+    },
+    {
+      "signature": "mc.ui.indicator(spec) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Set or replace a package-owned persistent UI indicator."
+    },
+    {
+      "signature": "mc.ui.indicator_clear(id, area?) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Remove a package-owned UI indicator."
+    },
+    {
+      "signature": "mc.ui.status(text) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Display transient text in the MC status area."
+    },
+    {
+      "signature": "mc.ui.message(title, text) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Show a native informational message box."
+    },
+    {
+      "signature": "mc.ui.text_width(text) -> integer|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Measure UTF-8 text using terminal display columns."
+    }
+  ],
+  "callbacks": [
+    {
+      "signature": "open(host, connection?) -> instance",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "close(instance)",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "list(instance) -> PanelView",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "navigate(instance, request) -> OperationResult",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "enter(instance, entry, revision) -> OperationResult",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "reload(instance) -> OperationResult",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "invoke_action(instance, request) -> OperationResult",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "view(instance, entry, request) -> ViewerSpec",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "open_read(instance, entry) -> Source",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "new_connection(host) -> Connection",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "edit_connection(host, connection) -> Connection",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "copy_connection(host, connection) -> Connection",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "rename_connection(host, connection) -> Connection",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "delete_connection(host, connection) -> boolean",
+      "workspace": "mc",
+      "capability": "panel_provider",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "open(argument) -> session",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "initial_params(session, params) -> params",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "prepare(session, params) -> ViewerSpec",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "options(session, params) -> params?",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "close(session)",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "event(snapshot) -> nil",
+      "workspace": "any",
+      "capability": "events",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "action(event) -> mc.PASS|mc.CONSUME",
+      "workspace": "mcedit",
+      "capability": "events",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    }
+  ]
+}

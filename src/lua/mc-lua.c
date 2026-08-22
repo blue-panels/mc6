@@ -1070,6 +1070,8 @@ mc_lua_push_event (lua_State *lua, const mc_runtime_event_snapshot_t *snapshot)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua panel:cwd() -> string|nil, error? @workspace mc @capability panel @mutation no @summary
+ * Return the panel's current directory. */
 static int
 mc_lua_panel_cwd (lua_State *lua)
 {
@@ -1092,6 +1094,8 @@ mc_lua_panel_cwd (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua panel:current() -> table|nil, error? @workspace mc @capability panel @mutation no @summary
+ * Return a snapshot of the current entry. */
 static int
 mc_lua_panel_current (lua_State *lua)
 {
@@ -1115,6 +1119,8 @@ mc_lua_panel_current (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua panel:selected() -> table[]|nil, error? @workspace mc @capability panel @mutation no
+ * @summary Return snapshots of marked entries. */
 static int
 mc_lua_panel_selected (lua_State *lua)
 {
@@ -1145,6 +1151,8 @@ mc_lua_panel_selected (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua panel:refresh() -> boolean|nil, error? @workspace mc @capability panel @mutation yes
+ * @summary Refresh the panel contents. */
 static int
 mc_lua_panel_refresh (lua_State *lua)
 {
@@ -1167,6 +1175,8 @@ mc_lua_panel_refresh (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua panel:chdir(path) -> boolean|nil, error? @workspace mc @capability panel @mutation yes
+ * @summary Change the panel's current directory. */
 static int
 mc_lua_panel_chdir (lua_State *lua)
 {
@@ -1191,6 +1201,8 @@ mc_lua_panel_chdir (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:path() -> string|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Return the document path. */
 static int
 mc_lua_editor_path (lua_State *lua)
 {
@@ -1213,6 +1225,8 @@ mc_lua_editor_path (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:info() -> DocumentInfo|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Return document metadata and the current revision. */
 static int
 mc_lua_editor_info (lua_State *lua)
 {
@@ -1262,6 +1276,8 @@ mc_lua_push_editor_position (lua_State *lua, const mc_runtime_editor_position_t 
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:selection() -> Selection|nil, error? @workspace mcedit @capability editor @mutation
+ * no @summary Return the current selection snapshot. */
 static int
 mc_lua_editor_selection (lua_State *lua)
 {
@@ -1328,6 +1344,8 @@ mc_lua_editor_selection (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:replace_selection(text, options?) -> EditResult|nil, error? @workspace mcedit
+ * @capability editor @mutation yes @summary Replace the selection, or insert when it is empty. */
 static int
 mc_lua_editor_replace_selection (lua_State *lua)
 {
@@ -1385,6 +1403,8 @@ static gboolean mc_lua_table_uint64 (lua_State *lua, int index, const char *fiel
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:replace(range, text) -> EditResult|nil, error? @workspace mcedit @capability editor
+ * @mutation yes @summary Replace a byte range in the editor buffer. */
 static int
 mc_lua_editor_replace (lua_State *lua)
 {
@@ -1468,6 +1488,8 @@ mc_lua_table_uint64 (lua_State *lua, int index, const char *field, guint64 *valu
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:text(range?) -> string|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Read the complete buffer or a byte range. */
 static int
 mc_lua_editor_text (lua_State *lua)
 {
@@ -1504,6 +1526,8 @@ mc_lua_editor_text (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:edit(spec) -> EditResult|nil, error? @workspace mcedit @capability editor @mutation
+ * yes @summary Apply replacements atomically as one undo operation. */
 static int
 mc_lua_editor_edit (lua_State *lua)
 {
@@ -1578,6 +1602,8 @@ mc_lua_editor_edit (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:cursor() -> Position|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Return the current cursor position. */
 static int
 mc_lua_editor_cursor (lua_State *lua)
 {
@@ -1603,6 +1629,8 @@ mc_lua_editor_cursor (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:set_cursor(position) -> boolean|nil, error? @workspace mcedit @capability editor
+ * @mutation yes @summary Move the cursor to a validated position. */
 static int
 mc_lua_editor_set_cursor (lua_State *lua)
 {
@@ -1633,6 +1661,8 @@ mc_lua_editor_set_cursor (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:is_readonly() -> boolean|nil, error? @workspace mcedit @capability editor @mutation
+ * no @summary Report whether the document is read-only. */
 static int
 mc_lua_editor_is_readonly (lua_State *lua)
 {
@@ -1656,6 +1686,8 @@ mc_lua_editor_is_readonly (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:tab_width() -> integer|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Return the configured tab width. */
 static int
 mc_lua_editor_tab_width (lua_State *lua)
 {
@@ -1681,6 +1713,8 @@ mc_lua_editor_tab_width (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:get_text() -> string|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Read the complete buffer using the compatibility API. */
 static int
 mc_lua_editor_get_text (lua_State *lua)
 {
@@ -1708,6 +1742,8 @@ mc_lua_editor_get_text (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:selected_text() -> string|nil, error? @workspace mcedit @capability editor @mutation
+ * no @summary Read selected text using the compatibility API. */
 static int
 mc_lua_editor_selected_text (lua_State *lua)
 {
@@ -1734,6 +1770,8 @@ mc_lua_editor_selected_text (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:insert(text) -> boolean|nil, error? @workspace mcedit @capability editor @mutation
+ * yes @summary Insert text at the cursor using the compatibility API. */
 static int
 mc_lua_editor_insert (lua_State *lua)
 {
@@ -1758,6 +1796,8 @@ mc_lua_editor_insert (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:save() -> boolean|nil, error? @workspace mcedit @capability editor @mutation yes
+ * @summary Save the document with the native editor operation. */
 static int
 mc_lua_editor_save (lua_State *lua)
 {
@@ -1780,6 +1820,8 @@ mc_lua_editor_save (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua viewer:path() -> string|nil, error? @workspace mcview @capability viewer @mutation no
+ * @summary Return the viewed file path. */
 static int
 mc_lua_viewer_path (lua_State *lua)
 {
@@ -1802,6 +1844,8 @@ mc_lua_viewer_path (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua viewer:position() -> integer|nil, error? @workspace mcview @capability viewer @mutation no
+ * @summary Return the current byte offset. */
 static int
 mc_lua_viewer_position (lua_State *lua)
 {
@@ -1825,6 +1869,8 @@ mc_lua_viewer_position (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua viewer:goto(offset) -> boolean|nil, error? @workspace mcview @capability viewer @mutation
+ * yes @summary Move the viewer to a byte offset. */
 static int
 mc_lua_viewer_goto (lua_State *lua)
 {
@@ -1851,6 +1897,8 @@ mc_lua_viewer_goto (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua viewer:mode() -> string|nil, error? @workspace mcview @capability viewer @mutation no
+ * @summary Return the active viewer mode. */
 static int
 mc_lua_viewer_mode (lua_State *lua)
 {
@@ -1963,6 +2011,8 @@ mc_lua_handle_index (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.panel.active() -> panel|nil, error? @workspace any @capability panel @mutation no
+ * @summary Return a handle to the active panel. */
 static int
 mc_lua_panel_active (lua_State *lua)
 {
@@ -1982,6 +2032,8 @@ mc_lua_panel_active (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.panel.passive() -> panel|nil, error? @workspace any @capability panel @mutation no
+ * @summary Return a handle to the passive panel. */
 static int
 mc_lua_panel_passive (lua_State *lua)
 {
@@ -2001,6 +2053,8 @@ mc_lua_panel_passive (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.editor.current() -> editor|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Return the editor associated with the active callback. */
 static int
 mc_lua_editor_current (lua_State *lua)
 {
@@ -2020,6 +2074,8 @@ mc_lua_editor_current (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.viewer.current() -> viewer|nil, error? @workspace mcview @capability viewer @mutation no
+ * @summary Return the viewer associated with the active callback. */
 static int
 mc_lua_viewer_current (lua_State *lua)
 {
@@ -3058,6 +3114,23 @@ mc_lua_panel_parse_actions (lua_State *lua, int spec, mc_lua_panel_provider_t *p
     return TRUE;
 }
 
+/** @lua mc.panel_provider.register(spec) -> registration|nil, error? @workspace mc @capability
+ * panel_provider @mutation yes @summary Register a virtual panel namespace and its callbacks.
+ * @lua-callback open(host, connection?) -> instance
+ * @lua-callback close(instance)
+ * @lua-callback list(instance) -> PanelView
+ * @lua-callback navigate(instance, request) -> OperationResult
+ * @lua-callback enter(instance, entry, revision) -> OperationResult
+ * @lua-callback reload(instance) -> OperationResult
+ * @lua-callback invoke_action(instance, request) -> OperationResult
+ * @lua-callback view(instance, entry, request) -> ViewerSpec
+ * @lua-callback open_read(instance, entry) -> Source
+ * @lua-callback new_connection(host) -> Connection
+ * @lua-callback edit_connection(host, connection) -> Connection
+ * @lua-callback copy_connection(host, connection) -> Connection
+ * @lua-callback rename_connection(host, connection) -> Connection
+ * @lua-callback delete_connection(host, connection) -> boolean
+ */
 static int
 mc_lua_panel_provider_register (lua_State *lua)
 {
@@ -3247,6 +3320,8 @@ mc_lua_source_tag (lua_State *lua, const char *tag)
     return 1;
 }
 
+/** @lua mc.source.bytes(spec) -> Source @workspace any @mutation no @summary Describe an in-memory
+ * byte source. */
 static int
 mc_lua_source_bytes (lua_State *lua)
 {
@@ -3261,16 +3336,22 @@ mc_lua_source_bytes (lua_State *lua)
     return 1;
 }
 
+/** @lua mc.source.file(spec) -> Source @workspace any @mutation no @summary Describe a local-file
+ * source and its ownership. */
 static int
 mc_lua_source_file (lua_State *lua)
 {
     return mc_lua_source_tag (lua, "file");
 }
+/** @lua mc.source.process(spec) -> Source @workspace any @mutation no @summary Describe a process
+ * source using argv and an optional working directory. */
 static int
 mc_lua_source_process (lua_State *lua)
 {
     return mc_lua_source_tag (lua, "process");
 }
+/** @lua mc.source.pipeline(stages) -> Source @workspace any @mutation no @summary Compose process
+ * sources into one pipeline. */
 static int
 mc_lua_source_pipeline (lua_State *lua)
 {
@@ -3609,6 +3690,14 @@ mc_lua_viewer_controller_gc (lua_State *lua)
     return 0;
 }
 
+/** @lua definition:create(argument, params?) -> controller @capability viewer_source @mutation yes
+ * @summary Create a viewer-source controller and its package session.
+ * @lua-callback open(argument) -> session
+ * @lua-callback initial_params(session, params) -> params
+ * @lua-callback prepare(session, params) -> ViewerSpec
+ * @lua-callback options(session, params) -> params?
+ * @lua-callback close(session)
+ */
 static int
 mc_lua_viewer_definition_create (lua_State *lua)
 {
@@ -3664,6 +3753,8 @@ mc_lua_viewer_definition_create (lua_State *lua)
     return 1;
 }
 
+/** @lua mc.viewer_source.define(spec) -> definition|nil, error? @capability viewer_source @mutation
+ * yes @summary Define a reusable family of managed viewer sources. */
 static int
 mc_lua_viewer_source_define (lua_State *lua)
 {
@@ -3731,6 +3822,8 @@ mc_lua_viewer_definition_destroy (gpointer data)
     g_free (definition);
 }
 
+/** @lua mc.ui.open_viewer(spec) -> boolean|nil, error? @capability viewer_source @mutation yes
+ * @summary Open the native viewer and transfer a controller to MC. */
 static int
 mc_lua_ui_open_viewer (lua_State *lua)
 {
@@ -3775,6 +3868,8 @@ mc_lua_ui_open_viewer (lua_State *lua)
     return 1;
 }
 
+/** @lua mc.ui.open_diff(spec) -> boolean|nil, error? @capability diff @mutation yes @summary
+ * Compare two byte strings in the native diff viewer. */
 static int
 mc_lua_ui_open_diff (lua_State *lua)
 {
@@ -3814,6 +3909,10 @@ mc_lua_ui_open_diff (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.on(event, callback, options?) -> integer|nil, error? @capability events @mutation yes
+ * @summary Subscribe the package to a named MC event.
+ * @lua-callback event(snapshot) -> nil
+ */
 static int
 mc_lua_on (lua_State *lua)
 {
@@ -3890,6 +3989,8 @@ mc_lua_on (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.off(subscription) -> boolean @capability events @mutation yes @summary Remove an event
+ * subscription owned by the package. */
 static int
 mc_lua_off (lua_State *lua)
 {
@@ -3927,6 +4028,10 @@ mc_lua_off (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.macro(spec) -> boolean|nil, error? @workspace mcedit @capability events @mutation yes
+ * @summary Register an editor action with optional key and menu placement.
+ * @lua-callback action(event) -> mc.PASS|mc.CONSUME
+ */
 static int
 mc_lua_macro (lua_State *lua)
 {
@@ -4137,6 +4242,11 @@ mc_lua_macro (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.log.debug(message) -> nil @summary Write a debug message to the Lua runtime log.
+ * @lua mc.log.info(message) -> nil @summary Write an informational message to the Lua runtime log.
+ * @lua mc.log.warn(message) -> nil @summary Write a warning to the Lua runtime log.
+ * @lua mc.log.error(message) -> nil @summary Write an error to the Lua runtime log.
+ */
 static int
 mc_lua_log_message (lua_State *lua)
 {
@@ -4150,6 +4260,8 @@ mc_lua_log_message (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.process.run(spec) -> ProcessResult|nil, error? @capability process @mutation yes
+ * @summary Run a shell command and capture its bounded output. */
 static int
 mc_lua_process_run (lua_State *lua)
 {
@@ -4596,6 +4708,8 @@ mc_lua_dialog_check_controls (const mc_runtime_dialog_control_t *controls, guint
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes @summary Show a
+ * declarative native modal dialog. */
 static int
 mc_lua_ui_dialog (lua_State *lua)
 {
@@ -4678,6 +4792,8 @@ invalid:
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.indicator(spec) -> boolean|nil, error? @capability ui @mutation yes @summary Set or
+ * replace a package-owned persistent UI indicator. */
 static int
 mc_lua_ui_indicator (lua_State *lua)
 {
@@ -4729,6 +4845,8 @@ mc_lua_ui_indicator (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.indicator_clear(id, area?) -> boolean|nil, error? @capability ui @mutation yes
+ * @summary Remove a package-owned UI indicator. */
 static int
 mc_lua_ui_indicator_clear (lua_State *lua)
 {
@@ -4758,6 +4876,8 @@ mc_lua_ui_indicator_clear (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.status(text) -> boolean|nil, error? @capability ui @mutation yes @summary Display
+ * transient text in the MC status area. */
 static int
 mc_lua_ui_status (lua_State *lua)
 {
@@ -4779,6 +4899,8 @@ mc_lua_ui_status (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.message(title, text) -> boolean|nil, error? @capability ui @mutation yes @summary
+ * Show a native informational message box. */
 static int
 mc_lua_ui_message (lua_State *lua)
 {
@@ -4802,6 +4924,8 @@ mc_lua_ui_message (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.ui.text_width(text) -> integer|nil, error? @capability ui @mutation no @summary Measure
+ * UTF-8 text using terminal display columns. */
 static int
 mc_lua_ui_text_width (lua_State *lua)
 {
