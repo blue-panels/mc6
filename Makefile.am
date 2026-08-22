@@ -7,7 +7,7 @@ if HAVE_TESTS
     SUBDIRS += tests
 endif
 
-EXTRA_DIST = 
+EXTRA_DIST = maint/generate-lua-api.py
 
 dist_noinst_SCRIPTS = \
     build-glib2.sh \
