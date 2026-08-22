@@ -81,7 +81,7 @@ mc_panel_plugin_try_load (const gchar *so_path, const gchar *filename)
 
     /* Eager binding: a plugin from an older install may reference a symbol this
        build no longer exports; lazy binding would crash mc later instead. */
-    module = g_module_open (so_path, 0);
+    module = g_module_open (so_path, G_MODULE_BIND_LOCAL);
     if (module == NULL)
     {
         fprintf (stderr, "Panel plugin %s not loaded: %s\n", filename, g_module_error ());
@@ -137,6 +137,15 @@ mc_panel_plugins_load_from_dir (const gchar *plugins_dir)
             continue;
         }
 
+        /* A user package shadows the system package with the same ID.  Do not
+           even open the duplicate: its register() callback may have process-wide
+           side effects before mc_panel_plugin_add() can reject it. */
+        if (mc_panel_plugin_find_by_name (entry_name) != NULL)
+        {
+            g_free (entry_path);
+            continue;
+        }
+
         subdir = g_dir_open (entry_path, 0, NULL);
         if (subdir != NULL)
         {
@@ -170,16 +179,15 @@ mc_panel_plugins_load (void)
 
     panel_plugin_modules = g_ptr_array_new ();
 
-    /* load from system plugin directory */
-    system_dir = g_build_filename (MC_PANEL_PLUGINS_DIR, (char *) NULL);
-    mc_panel_plugins_load_from_dir (system_dir);
-    g_free (system_dir);
-
-    /* load from user plugin directory (~/.local/lib/mc/panel-plugins) */
+    /* Load user packages first so they can shadow system packages. */
     user_dir =
         g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "panel-plugins", (char *) NULL);
     mc_panel_plugins_load_from_dir (user_dir);
     g_free (user_dir);
+
+    system_dir = g_build_filename (MC_PANEL_PLUGINS_DIR, (char *) NULL);
+    mc_panel_plugins_load_from_dir (system_dir);
+    g_free (system_dir);
 }
 
 /* --------------------------------------------------------------------------------------------- */
