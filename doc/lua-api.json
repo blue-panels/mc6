@@ -412,7 +412,7 @@
   ],
   "callbacks": [
     {
-      "signature": "open(host, connection?) -> instance",
+      "signature": "open(host, path) -> instance",
       "workspace": "mc",
       "capability": "panel_provider",
       "mutation": "no",

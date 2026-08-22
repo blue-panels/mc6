@@ -209,11 +209,14 @@ struct mc_lua_panel_provider
     int connections_ref;
     mc_runtime_panel_action_t *actions;
     guint actions_count;
+    guint base_actions_count;
     GHashTable *instances;
     mc_runtime_handle_t registration;
 };
 
-static void mc_lua_cache_connection (mc_lua_panel_provider_t *provider, int source);
+static gboolean mc_lua_cache_connection (mc_lua_panel_provider_t *provider, int source);
+static void mc_lua_panel_publish_actions (mc_lua_panel_provider_t *provider,
+                                          mc_runtime_panel_provider_response_t *response);
 static gboolean mc_lua_parse_viewer_source (lua_State *lua, int table,
                                             mc_runtime_viewer_source_t *source);
 static void mc_lua_viewer_source_clear (mc_runtime_viewer_source_t *source);
@@ -2341,11 +2344,13 @@ mc_lua_panel_response_free (mc_runtime_plugin_context_t *context,
 {
     mc_runtime_panel_entry_t *entries;
     mc_runtime_panel_column_t *columns;
+    gsize struct_size;
     guint i, j;
 
     (void) context;
     if (response == NULL)
         return;
+    struct_size = response->struct_size;
     entries = (mc_runtime_panel_entry_t *) response->view.entries;
     for (i = 0; i < response->view.entries_count; i++)
     {
@@ -2394,6 +2399,7 @@ mc_lua_panel_response_free (mc_runtime_plugin_context_t *context,
         g_free ((mc_runtime_viewer_source_t *) response->read_source);
     }
     memset (response, 0, sizeof (*response));
+    response->struct_size = struct_size;
 }
 
 static mc_runtime_panel_entry_kind_t
@@ -2819,7 +2825,12 @@ mc_lua_panel_provider_dispatch (mc_runtime_plugin_context_t *context, guint64 ru
             lua_pop (lua, 1);
             return FALSE;
         }
-        mc_lua_cache_connection (provider, -1);
+        if (!mc_lua_cache_connection (provider, -1))
+        {
+            lua_pop (lua, 1);
+            return FALSE;
+        }
+        mc_lua_panel_publish_actions (provider, response);
         response->refresh = TRUE;
         response->focus_id = mc_lua_dup_table_string (lua, -1, "title");
         response->status = g_strdup ("Connection created");
@@ -2846,23 +2857,6 @@ mc_lua_panel_provider_dispatch (mc_runtime_plugin_context_t *context, guint64 ru
         lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
         lua_getfield (lua, -1, request->connection_id != NULL ? request->connection_id : "");
         lua_remove (lua, -2);
-        if (operation == MC_RUNTIME_PANEL_PROVIDER_DELETE_CONNECTION)
-        {
-            gboolean deleted = lua_toboolean (lua, -1) != 0;
-
-            lua_pop (lua, 1);
-            if (!deleted)
-                return FALSE;
-            lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
-            lua_pushstring (lua, request->connection_id);
-            lua_pushnil (lua);
-            lua_settable (lua, -3);
-            lua_pop (lua, 1);
-            response->refresh = TRUE;
-            response->status = g_strdup ("Connection deleted");
-            response->handled = TRUE;
-            return TRUE;
-        }
         if (!lua_istable (lua, -1))
         {
             lua_pop (lua, 3);
@@ -2877,20 +2871,50 @@ mc_lua_panel_provider_dispatch (mc_runtime_plugin_context_t *context, guint64 ru
             return FALSE;
         }
         provider->package->callback_depth--;
-        if (!lua_istable (lua, -1))
+        if (operation == MC_RUNTIME_PANEL_PROVIDER_DELETE_CONNECTION)
         {
+            gboolean deleted = lua_toboolean (lua, -1) != 0;
+
             lua_pop (lua, 1);
-            return FALSE;
-        }
-        if (operation != MC_RUNTIME_PANEL_PROVIDER_COPY_CONNECTION)
-        {
+            if (!deleted)
+                return FALSE;
             lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
             lua_pushstring (lua, request->connection_id);
             lua_pushnil (lua);
             lua_settable (lua, -3);
             lua_pop (lua, 1);
+            mc_lua_panel_publish_actions (provider, response);
+            response->refresh = TRUE;
+            response->status = g_strdup ("Connection deleted");
+            response->handled = TRUE;
+            return TRUE;
         }
-        mc_lua_cache_connection (provider, -1);
+        if (!lua_istable (lua, -1))
+        {
+            lua_pop (lua, 1);
+            return FALSE;
+        }
+        lua_getfield (lua, -1, "id");
+        {
+            const char *new_id = lua_tostring (lua, -1);
+            gboolean identity_changed = g_strcmp0 (request->connection_id, new_id) != 0;
+
+            lua_pop (lua, 1);
+            if (!mc_lua_cache_connection (provider, -1))
+            {
+                lua_pop (lua, 1);
+                return FALSE;
+            }
+            if (operation != MC_RUNTIME_PANEL_PROVIDER_COPY_CONNECTION && identity_changed)
+            {
+                lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
+                lua_pushstring (lua, request->connection_id);
+                lua_pushnil (lua);
+                lua_settable (lua, -3);
+                lua_pop (lua, 1);
+            }
+        }
+        mc_lua_panel_publish_actions (provider, response);
         response->refresh = TRUE;
         response->focus_id = mc_lua_dup_table_string (lua, -1, "title");
         response->status = g_strdup (
@@ -2994,11 +3018,12 @@ mc_lua_push_connection_copy (lua_State *lua, int source)
     return TRUE;
 }
 
-static void
+static gboolean
 mc_lua_cache_connection (mc_lua_panel_provider_t *provider, int source)
 {
     lua_State *lua = provider->package->lua;
     const char *id;
+    gboolean cached = FALSE;
 
     source = lua_absindex (lua, source);
     lua_getfield (lua, source, "id");
@@ -3008,12 +3033,93 @@ mc_lua_cache_connection (mc_lua_panel_provider_t *provider, int source)
         lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
         lua_pushstring (lua, id);
         if (mc_lua_push_connection_copy (lua, source))
+        {
             lua_settable (lua, -3);
+            cached = TRUE;
+        }
         else
             lua_pop (lua, 1);
         lua_pop (lua, 1);
     }
     lua_pop (lua, 1);
+    return cached;
+}
+
+static gint
+mc_lua_connection_action_compare (gconstpointer left, gconstpointer right, gpointer user_data)
+{
+    const mc_runtime_panel_action_t *a = left;
+    const mc_runtime_panel_action_t *b = right;
+
+    (void) user_data;
+    return g_strcmp0 (a->id, b->id);
+}
+
+static void
+mc_lua_panel_rebuild_connection_actions (mc_lua_panel_provider_t *provider)
+{
+    lua_State *lua = provider->package->lua;
+    GArray *actions;
+    guint i;
+
+    actions = g_array_sized_new (FALSE, TRUE, sizeof (mc_runtime_panel_action_t),
+                                 provider->actions_count);
+    if (provider->base_actions_count != 0)
+        g_array_append_vals (actions, provider->actions, provider->base_actions_count);
+    for (i = provider->base_actions_count; i < provider->actions_count; i++)
+        mc_lua_panel_action_clear (&provider->actions[i]);
+    g_free (provider->actions);
+
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, provider->connections_ref);
+    lua_pushnil (lua);
+    while (lua_next (lua, -2) != 0)
+    {
+        mc_runtime_panel_action_t action = { 0 };
+        char *id = NULL;
+        char *location = NULL;
+
+        if (lua_istable (lua, -1))
+        {
+            id = mc_lua_dup_table_string (lua, -1, "id");
+            location = mc_lua_dup_table_string (lua, -1, "location");
+            action.title = mc_lua_dup_table_string (lua, -1, "title");
+        }
+        if (id != NULL && location != NULL && action.title != NULL)
+        {
+            action.id = g_strdup_printf ("connection.%s", id);
+            action.open_path = g_strconcat (provider->prefix, location, NULL);
+            action.targets = MC_RUNTIME_PANEL_ACTION_VIEW;
+            g_array_append_val (actions, action);
+        }
+        else
+            mc_lua_panel_action_clear (&action);
+        g_free (id);
+        g_free (location);
+        lua_pop (lua, 1);
+    }
+    lua_pop (lua, 1);
+
+    if (actions->len > provider->base_actions_count + 1)
+        g_qsort_with_data (
+            &g_array_index (actions, mc_runtime_panel_action_t, provider->base_actions_count),
+            actions->len - provider->base_actions_count, sizeof (mc_runtime_panel_action_t),
+            mc_lua_connection_action_compare, NULL);
+    provider->actions_count = actions->len;
+    provider->actions = (mc_runtime_panel_action_t *) g_array_free (actions, FALSE);
+}
+
+static void
+mc_lua_panel_publish_actions (mc_lua_panel_provider_t *provider,
+                              mc_runtime_panel_provider_response_t *response)
+{
+    mc_lua_panel_rebuild_connection_actions (provider);
+    if (response->struct_size
+        < G_STRUCT_OFFSET (mc_runtime_panel_provider_response_t, actions_count)
+            + sizeof (response->actions_count))
+        return;
+    response->actions_changed = TRUE;
+    response->actions = provider->actions;
+    response->actions_count = provider->actions_count;
 }
 
 static gboolean
@@ -3060,8 +3166,8 @@ mc_lua_panel_parse_actions (lua_State *lua, int spec, mc_lua_panel_provider_t *p
     }
     lua_pop (lua, 1);
 
-    /* Connections are materialized once at registration and become ordinary
-     * open actions.  Their location remains typed provider data. */
+    provider->base_actions_count = actions->len;
+    /* Connection actions are rebuilt after every successful CRUD operation. */
     lua_getfield (lua, spec, "connections");
     if (lua_isfunction (lua, -1))
     {
@@ -3091,7 +3197,7 @@ mc_lua_panel_parse_actions (lua_State *lua, int spec, mc_lua_panel_provider_t *p
                 action.title = mc_lua_dup_table_string (lua, -1, "title");
                 if (id != NULL && location != NULL && action.title != NULL)
                 {
-                    mc_lua_cache_connection (provider, -1);
+                    (void) mc_lua_cache_connection (provider, -1);
                     action.id = g_strdup_printf ("connection.%s", id);
                     action.open_path = g_strconcat (provider->prefix, location, NULL);
                     action.targets = MC_RUNTIME_PANEL_ACTION_VIEW;
@@ -3116,7 +3222,7 @@ mc_lua_panel_parse_actions (lua_State *lua, int spec, mc_lua_panel_provider_t *p
 
 /** @lua mc.panel_provider.register(spec) -> registration|nil, error? @workspace mc @capability
  * panel_provider @mutation yes @summary Register a virtual panel namespace and its callbacks.
- * @lua-callback open(host, connection?) -> instance
+ * @lua-callback open(host, path) -> instance
  * @lua-callback close(instance)
  * @lua-callback list(instance) -> PanelView
  * @lua-callback navigate(instance, request) -> OperationResult

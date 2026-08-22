@@ -92,7 +92,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `navigate(instance, request) -> OperationResult` | `mc` | `panel_provider` |
 | `new_connection(host) -> Connection` | `mc` | `panel_provider` |
 | `open(argument) -> session` | `any` | `viewer_source` |
-| `open(host, connection?) -> instance` | `mc` | `panel_provider` |
+| `open(host, path) -> instance` | `mc` | `panel_provider` |
 | `open_read(instance, entry) -> Source` | `mc` | `panel_provider` |
 | `options(session, params) -> params?` | `any` | `viewer_source` |
 | `prepare(session, params) -> ViewerSpec` | `any` | `viewer_source` |

@@ -72,6 +72,74 @@ static gboolean runtime_panel_dispatch (runtime_panel_provider_t *provider,
 static void runtime_panel_response_clear (runtime_panel_provider_t *provider,
                                           mc_runtime_panel_provider_response_t *response);
 
+static void
+runtime_panel_actions_clear (runtime_panel_provider_t *provider)
+{
+    guint i;
+
+    for (i = 0; i < provider->actions_count; i++)
+    {
+        g_free ((char *) provider->actions[i].id);
+        g_free ((char *) provider->actions[i].title);
+        g_free ((char *) provider->actions[i].key);
+        g_free ((char *) provider->actions[i].menu_path);
+        g_free ((char *) provider->actions[i].menu_label);
+        g_free ((char *) provider->actions[i].help_node);
+        g_free ((char *) provider->actions[i].open_path);
+    }
+    g_clear_pointer (&provider->actions, g_free);
+    g_clear_pointer (&provider->native_actions, g_free);
+    g_clear_pointer (&provider->menu_entries, g_free);
+    provider->actions_count = 0;
+    provider->plugin.actions = NULL;
+    provider->plugin.action_count = 0;
+    provider->plugin.cmd_menu_entries = NULL;
+    provider->plugin.cmd_menu_entry_count = 0;
+}
+
+static gboolean
+runtime_panel_actions_replace (runtime_panel_provider_t *provider,
+                               const mc_runtime_panel_action_t *actions, guint count)
+{
+    guint i;
+
+    if (count > 4096 || (count != 0 && actions == NULL))
+        return FALSE;
+    for (i = 0; i < count; i++)
+        if (actions[i].id == NULL || actions[i].id[0] == '\0' || actions[i].title == NULL
+            || actions[i].title[0] == '\0')
+            return FALSE;
+
+    runtime_panel_actions_clear (provider);
+    provider->actions_count = count;
+    provider->actions = g_new0 (mc_runtime_panel_action_t, count);
+    provider->native_actions = g_new0 (mc_pp_action_t, count);
+    provider->menu_entries = g_new0 (mc_pp_cmd_menu_entry_t, count);
+    for (i = 0; i < count; i++)
+    {
+        provider->actions[i] = actions[i];
+        provider->actions[i].id = g_strdup (actions[i].id);
+        provider->actions[i].title = g_strdup (actions[i].title);
+        provider->actions[i].key = g_strdup (actions[i].key);
+        provider->actions[i].menu_path = g_strdup (actions[i].menu_path);
+        provider->actions[i].menu_label = g_strdup (actions[i].menu_label);
+        provider->actions[i].help_node = g_strdup (actions[i].help_node);
+        provider->actions[i].open_path = g_strdup (actions[i].open_path);
+        provider->native_actions[i].label = provider->actions[i].title;
+        provider->menu_entries[i].label = provider->actions[i].menu_label != NULL
+            ? provider->actions[i].menu_label
+            : provider->actions[i].title;
+        provider->menu_entries[i].shortcut = provider->actions[i].key;
+        provider->menu_entries[i].menu_name = provider->actions[i].menu_path;
+        provider->menu_entries[i].action_index = (int) i;
+    }
+    provider->plugin.actions = provider->native_actions;
+    provider->plugin.action_count = (int) count;
+    provider->plugin.cmd_menu_entries = provider->menu_entries;
+    provider->plugin.cmd_menu_entry_count = (int) count;
+    return TRUE;
+}
+
 typedef struct
 {
     mc_pp_input_stream_t base;
@@ -323,13 +391,19 @@ runtime_panel_dispatch (runtime_panel_provider_t *provider,
                         const mc_runtime_panel_provider_request_t *request,
                         mc_runtime_panel_provider_response_t *response, const char **error)
 {
+    gboolean ok;
+
     memset (response, 0, sizeof (*response));
     response->struct_size = sizeof (*response);
     response->operation_version = 1;
     if (provider == NULL || !provider->active || provider->dispatch == NULL)
         return runtime_panel_set_error (error, "closed");
-    return provider->dispatch (provider->context, provider->runtime_provider_id, operation, request,
-                               response, error);
+    ok = provider->dispatch (provider->context, provider->runtime_provider_id, operation, request,
+                             response, error);
+    if (ok && response->actions_changed
+        && !runtime_panel_actions_replace (provider, response->actions, response->actions_count))
+        return runtime_panel_set_error (error, "invalid_actions");
+    return ok;
 }
 
 static void
@@ -355,6 +429,68 @@ runtime_panel_instance_clear_view (runtime_panel_instance_t *instance)
     g_hash_table_remove_all (instance->column_values);
     g_hash_table_remove_all (instance->entry_help);
     g_hash_table_remove_all (instance->name_to_connection_id);
+}
+
+static gboolean
+runtime_panel_view_is_valid (const mc_runtime_panel_view_t *view)
+{
+    GHashTable *column_ids;
+    GHashTable *ids;
+    GHashTable *names;
+    guint i;
+    gboolean valid = FALSE;
+
+    if (view == NULL || view->revision == 0 || view->entries_count > 100000
+        || (view->entries_count != 0 && view->entries == NULL) || view->columns_count > 32
+        || (view->columns_count != 0 && view->columns == NULL))
+        return FALSE;
+
+    column_ids = g_hash_table_new (g_str_hash, g_str_equal);
+    for (i = 0; i < view->columns_count; i++)
+    {
+        if (view->columns[i].id == NULL || view->columns[i].id[0] == '\0'
+            || view->columns[i].title == NULL
+            || view->columns[i].align > MC_RUNTIME_PANEL_ALIGN_CENTER
+            || g_hash_table_contains (column_ids, view->columns[i].id))
+            goto done_columns;
+        g_hash_table_add (column_ids, (gpointer) view->columns[i].id);
+    }
+    g_hash_table_destroy (column_ids);
+
+    ids = g_hash_table_new (g_str_hash, g_str_equal);
+    names = g_hash_table_new (g_str_hash, g_str_equal);
+    for (i = 0; i < view->entries_count; i++)
+    {
+        const mc_runtime_panel_entry_t *entry = &view->entries[i];
+        guint j;
+
+        if (entry->id == NULL || entry->id[0] == '\0' || entry->name == NULL
+            || entry->name[0] == '\0' || strchr (entry->name, '/') != NULL
+            || (entry->kind != MC_RUNTIME_PANEL_ENTRY_FILE
+                && entry->kind != MC_RUNTIME_PANEL_ENTRY_DIRECTORY
+                && entry->kind != MC_RUNTIME_PANEL_ENTRY_SYMLINK
+                && entry->kind != MC_RUNTIME_PANEL_ENTRY_SPECIAL)
+            || entry->columns_count > 256 || (entry->columns_count != 0 && entry->columns == NULL))
+            goto done;
+        if (g_hash_table_contains (ids, entry->id) || g_hash_table_contains (names, entry->name))
+            goto done;
+        g_hash_table_add (ids, (gpointer) entry->id);
+        g_hash_table_add (names, (gpointer) entry->name);
+        for (j = 0; j < entry->columns_count; j++)
+            if (entry->columns[j].id == NULL || entry->columns[j].id[0] == '\0'
+                || entry->columns[j].value == NULL)
+                goto done;
+    }
+    valid = TRUE;
+
+done:
+    g_hash_table_destroy (names);
+    g_hash_table_destroy (ids);
+    return valid;
+
+done_columns:
+    g_hash_table_destroy (column_ids);
+    return FALSE;
 }
 
 static void *
@@ -450,8 +586,7 @@ runtime_panel_get_items (void *plugin_data, void *list)
     if (!runtime_panel_dispatch (instance->provider, MC_RUNTIME_PANEL_PROVIDER_LIST, &request,
                                  &response, &error))
         return MC_PPR_FAILED;
-    if (response.view.revision == 0 || response.view.entries_count > 100000
-        || (response.view.entries_count != 0 && response.view.entries == NULL))
+    if (!runtime_panel_view_is_valid (&response.view))
     {
         runtime_panel_response_clear (instance->provider, &response);
         return MC_PPR_FAILED;
@@ -485,14 +620,6 @@ runtime_panel_get_items (void *plugin_data, void *list)
         const mc_runtime_panel_entry_t *entry = &response.view.entries[i];
         mode_t type;
 
-        if (entry->id == NULL || entry->id[0] == '\0' || entry->name == NULL
-            || entry->name[0] == '\0' || strchr (entry->name, '/') != NULL
-            || g_hash_table_contains (instance->id_to_name, entry->id)
-            || g_hash_table_contains (instance->name_to_id, entry->name))
-        {
-            runtime_panel_response_clear (instance->provider, &response);
-            return MC_PPR_FAILED;
-        }
         switch (entry->kind)
         {
         case MC_RUNTIME_PANEL_ENTRY_DIRECTORY:
@@ -506,8 +633,8 @@ runtime_panel_get_items (void *plugin_data, void *list)
             type = S_IFREG;
             break;
         default:
-            runtime_panel_response_clear (instance->provider, &response);
-            return MC_PPR_FAILED;
+            type = S_IFREG;
+            break;
         }
         g_hash_table_insert (instance->name_to_id, g_strdup (entry->name), g_strdup (entry->id));
         g_hash_table_insert (instance->id_to_name, g_strdup (entry->id), g_strdup (entry->name));
@@ -769,21 +896,7 @@ runtime_panel_run_action (const mc_panel_plugin_t *plugin, void *plugin_data, mc
 static void
 runtime_panel_provider_free (runtime_panel_provider_t *provider)
 {
-    guint i;
-
-    for (i = 0; i < provider->actions_count; i++)
-    {
-        g_free ((char *) provider->actions[i].id);
-        g_free ((char *) provider->actions[i].title);
-        g_free ((char *) provider->actions[i].key);
-        g_free ((char *) provider->actions[i].menu_path);
-        g_free ((char *) provider->actions[i].menu_label);
-        g_free ((char *) provider->actions[i].help_node);
-        g_free ((char *) provider->actions[i].open_path);
-    }
-    g_free (provider->actions);
-    g_free (provider->native_actions);
-    g_free (provider->menu_entries);
+    runtime_panel_actions_clear (provider);
     g_free (provider->id);
     g_free (provider->title);
     g_free (provider->prefix);
@@ -800,7 +913,6 @@ runtime_panel_provider_register (mc_runtime_plugin_context_t *context,
 {
     runtime_panel_provider_t *provider;
     const char *colon;
-    guint i;
 
     if (source == NULL || registration == NULL
         || source->struct_size
@@ -827,28 +939,6 @@ runtime_panel_provider_register (mc_runtime_plugin_context_t *context,
         provider->help_file = g_strdup (source->help->file);
         provider->help_node = g_strdup (source->help->node);
     }
-    provider->actions_count = source->actions_count;
-    provider->actions = g_new0 (mc_runtime_panel_action_t, provider->actions_count);
-    provider->native_actions = g_new0 (mc_pp_action_t, provider->actions_count);
-    provider->menu_entries = g_new0 (mc_pp_cmd_menu_entry_t, provider->actions_count);
-    for (i = 0; i < provider->actions_count; i++)
-    {
-        provider->actions[i] = source->actions[i];
-        provider->actions[i].id = g_strdup (source->actions[i].id);
-        provider->actions[i].title = g_strdup (source->actions[i].title);
-        provider->actions[i].key = g_strdup (source->actions[i].key);
-        provider->actions[i].menu_path = g_strdup (source->actions[i].menu_path);
-        provider->actions[i].menu_label = g_strdup (source->actions[i].menu_label);
-        provider->actions[i].help_node = g_strdup (source->actions[i].help_node);
-        provider->actions[i].open_path = g_strdup (source->actions[i].open_path);
-        provider->native_actions[i].label = provider->actions[i].title;
-        provider->menu_entries[i].label = provider->actions[i].menu_label != NULL
-            ? provider->actions[i].menu_label
-            : provider->actions[i].title;
-        provider->menu_entries[i].shortcut = provider->actions[i].key;
-        provider->menu_entries[i].menu_name = provider->actions[i].menu_path;
-        provider->menu_entries[i].action_index = (int) i;
-    }
     provider->active = TRUE;
     provider->plugin = (mc_panel_plugin_t) {
         .api_version = MC_PANEL_PLUGIN_API_VERSION,
@@ -874,11 +964,12 @@ runtime_panel_provider_register (mc_runtime_plugin_context_t *context,
         .plugin_context = provider,
         .open_with_plugin = runtime_panel_open,
         .run_action_with_plugin = runtime_panel_run_action,
-        .actions = provider->native_actions,
-        .action_count = (int) provider->actions_count,
-        .cmd_menu_entries = provider->menu_entries,
-        .cmd_menu_entry_count = (int) provider->actions_count,
     };
+    if (!runtime_panel_actions_replace (provider, source->actions, source->actions_count))
+    {
+        runtime_panel_provider_free (provider);
+        return runtime_panel_set_error (error, "invalid_provider");
+    }
     if (source->struct_size
             >= G_STRUCT_OFFSET (mc_runtime_panel_provider_t, supports_new_connection)
                 + sizeof (source->supports_new_connection)

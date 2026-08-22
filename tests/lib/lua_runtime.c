@@ -181,7 +181,7 @@ create_panel_provider_script (void)
         " help={file='help/test.hlp',node='provider'},\n"
         " open=function(host,path) assert(host==nil); if path=='reject' then"
         " return nil,'Not a repository' end; return {path=path, revision=1} end,\n"
-        " close=function(instance) instance.closed=true end,\n"
+        " close=function(instance) assert(delete_called); instance.closed=true end,\n"
         " list=function(instance) return {revision=instance.revision, location=instance.path,"
         " title='Lua panel', help_node='view', entries={{id='dir:one',name='one',"
         "kind='directory',help_node='entry'}}} end,\n"
@@ -198,7 +198,8 @@ create_panel_provider_script (void)
         " return {id='copy',title='Copied connection',location='/copy'}end,\n"
         " rename_connection=function(host,c)assert(host==nil and c.id=='saved');"
         " return {id='saved',title='Renamed connection',location='/saved'}end,\n"
-        " delete_connection=function(host,c)assert(host==nil and c.id=='saved');return true end,\n"
+        " delete_connection=function(host,c)assert(host==nil and c.id=='saved');"
+        "delete_called=true;return true end,\n"
         " invoke_action=function(instance,id,selection) assert(id=='refresh');"
         " assert(selection[1]=='dir:one'); return {refresh=true,status='refreshed'} end,\n"
         " view=function(instance,id,request) assert(id=='dir:one');"
@@ -1668,7 +1669,7 @@ END_TEST
 START_TEST (test_lua_runtime_panel_provider_open_error)
 {
     mc_runtime_panel_provider_request_t request = { 0 };
-    mc_runtime_panel_provider_response_t response = { 0 };
+    mc_runtime_panel_provider_response_t response = { .struct_size = sizeof (response) };
     const char *provider_error = NULL;
 
     create_panel_provider_script ();
@@ -1690,7 +1691,7 @@ END_TEST
 START_TEST (test_lua_runtime_panel_provider_dispatch)
 {
     mc_runtime_panel_provider_request_t request = { 0 };
-    mc_runtime_panel_provider_response_t response = { 0 };
+    mc_runtime_panel_provider_response_t response = { .struct_size = sizeof (response) };
     guint64 instance_id;
     const char *provider_error = NULL;
 
@@ -1778,22 +1779,36 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
 
     request.entry_id = NULL;
     request.connection_id = "saved";
+
+    mctest_assert_true (registered_panel_provider.dispatch (
+        NULL, registered_panel_provider.runtime_provider_id,
+        MC_RUNTIME_PANEL_PROVIDER_NEW_CONNECTION, &request, &response, &provider_error));
+    mctest_assert_true (response.actions_changed);
+    ck_assert_uint_eq (response.actions_count, 3);
+    registered_panel_provider.response_free (NULL, &response);
+
     mctest_assert_true (registered_panel_provider.dispatch (
         NULL, registered_panel_provider.runtime_provider_id,
         MC_RUNTIME_PANEL_PROVIDER_EDIT_CONNECTION, &request, &response, &provider_error));
     ck_assert_str_eq (response.focus_id, "Edited connection");
+    mctest_assert_true (response.actions_changed);
+    ck_assert_uint_eq (response.actions_count, 3);
     registered_panel_provider.response_free (NULL, &response);
 
     mctest_assert_true (registered_panel_provider.dispatch (
         NULL, registered_panel_provider.runtime_provider_id,
         MC_RUNTIME_PANEL_PROVIDER_COPY_CONNECTION, &request, &response, &provider_error));
     ck_assert_str_eq (response.focus_id, "Copied connection");
+    mctest_assert_true (response.actions_changed);
+    ck_assert_uint_eq (response.actions_count, 4);
     registered_panel_provider.response_free (NULL, &response);
 
     mctest_assert_true (registered_panel_provider.dispatch (
         NULL, registered_panel_provider.runtime_provider_id,
         MC_RUNTIME_PANEL_PROVIDER_RENAME_CONNECTION, &request, &response, &provider_error));
     ck_assert_str_eq (response.focus_id, "Renamed connection");
+    mctest_assert_true (response.actions_changed);
+    ck_assert_uint_eq (response.actions_count, 4);
     registered_panel_provider.response_free (NULL, &response);
 
     /* The immutable snapshot cache is replaced transactionally, then removed. */
@@ -1802,6 +1817,8 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
         NULL, registered_panel_provider.runtime_provider_id,
         MC_RUNTIME_PANEL_PROVIDER_DELETE_CONNECTION, &request, &response, &provider_error));
     mctest_assert_true (response.refresh);
+    mctest_assert_true (response.actions_changed);
+    ck_assert_uint_eq (response.actions_count, 3);
     registered_panel_provider.response_free (NULL, &response);
 
     request.connection_id = NULL;

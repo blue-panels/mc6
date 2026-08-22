@@ -312,6 +312,12 @@ typedef struct
     const char *local_path;
     gboolean local_path_temporary;
     const mc_runtime_viewer_source_t *read_source;
+
+    /* Optional operation result.  When actions_changed is true, atomically
+     * replaces the provider's actions after a successful mutation. */
+    gboolean actions_changed;
+    const mc_runtime_panel_action_t *actions;
+    guint actions_count;
 } mc_runtime_panel_provider_response_t;
 
 typedef gboolean (*mc_runtime_panel_provider_dispatch_t) (
