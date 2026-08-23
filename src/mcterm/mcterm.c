@@ -53,6 +53,7 @@
 #endif
 
 #include "lib/global.h"
+#include "lib/strutil.h"
 #include "lib/widget.h"
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"
@@ -100,6 +101,8 @@ struct WMcTerm
     gboolean osc133_capable;
     guint last_osc133_gen;
     int last_exit_code;
+    /* Command submitted by the host, used before its process group becomes visible. */
+    char *command_hint;
     /* A command of ours is under way and its "done" mark has yet to arrive. */
     gboolean awaiting_command_done;
     /* While a command runs the host shows that something is going on, and needs waking to
@@ -158,6 +161,137 @@ static int mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_termin
                                            int rows);
 
 /*** file scope functions ************************************************************************/
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+mcterm_command_basename (const char *path)
+{
+    const char *slash = (path != NULL) ? strrchr (path, PATH_SEP) : NULL;
+
+    return (slash != NULL) ? slash + 1 : path;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mcterm_command_is_interpreter (const char *name)
+{
+    static const char *const interpreters[] = { "python", "perl", "ruby", "node", "php",
+                                                "bash",   "dash", "zsh",  "fish", NULL };
+    const char *const *p;
+
+    for (p = interpreters; *p != NULL; p++)
+        if (g_str_has_prefix (name, *p))
+            return TRUE;
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static char *
+mcterm_command_ellipsize (const char *text, int max_width)
+{
+    char *prefix;
+    char *result;
+
+    if (max_width <= 0)
+        return g_strdup ("");
+    if (str_term_width1 (text) <= max_width)
+        return g_strdup (text);
+    if (max_width <= 3)
+        return g_strndup ("...", (gsize) max_width);
+
+    prefix = g_strdup (str_term_substring (text, 0, max_width - 3));
+    g_strchomp (prefix);
+    result = g_strconcat (prefix, "...", (char *) NULL);
+    g_free (prefix);
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static char *
+mcterm_command_from_argv (const char *const *argv, gsize argc, int max_width)
+{
+    const char *name;
+    char *description;
+    char *result;
+
+    if (argv == NULL || argc == 0 || argv[0] == NULL || *argv[0] == '\0')
+        return NULL;
+
+    name = mcterm_command_basename (argv[0]);
+    if (mcterm_command_is_interpreter (name) && argc > 1 && argv[1] != NULL && argv[1][0] != '-'
+        && argv[1][0] != '\0')
+        description = g_strdup_printf ("%s %s", name, mcterm_command_basename (argv[1]));
+    else if (argc > 4)
+        description = g_strdup_printf ("%s ...", name);
+    else
+        description = g_strdup (name);
+
+    result = mcterm_command_ellipsize (description, max_width);
+    g_free (description);
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static char *
+mcterm_command_from_line (const char *command, int max_width)
+{
+    int argc = 0;
+    char **argv = NULL;
+    char *result = NULL;
+
+    if (command != NULL && g_shell_parse_argv (command, &argc, &argv, NULL))
+    {
+        result = mcterm_command_from_argv ((const char *const *) argv, (gsize) argc, max_width);
+        g_strfreev (argv);
+    }
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+#ifdef __linux__
+
+static char *
+mcterm_command_from_process (pid_t pid, int max_width)
+{
+    char path[64];
+    char *contents = NULL;
+    gsize len = 0;
+    GPtrArray *args;
+    gsize pos;
+    char *result = NULL;
+
+    g_snprintf (path, sizeof (path), "/proc/%ld/cmdline", (long) pid);
+    if (!g_file_get_contents (path, &contents, &len, NULL) || len == 0)
+        goto ret;
+
+    args = g_ptr_array_new ();
+    for (pos = 0; pos < len;)
+    {
+        gsize arg_len = strnlen (contents + pos, len - pos);
+
+        if (arg_len == 0)
+            break;
+        g_ptr_array_add (args, contents + pos);
+        pos += arg_len + 1;
+    }
+
+    result = mcterm_command_from_argv ((const char *const *) args->pdata, args->len, max_width);
+    g_ptr_array_free (args, TRUE);
+
+ret:
+    g_free (contents);
+    return result;
+}
+
+#endif /* __linux__ */
 
 static int
 mcterm_pty_ready_cb (int fd, void *info)
@@ -467,6 +601,7 @@ mcterm_handle_osc133_generation (WMcTerm *t)
         if (t->awaiting_command_done || t->shell_at_prompt)
             return FALSE;
         t->shell_at_prompt = TRUE;
+        g_clear_pointer (&t->command_hint, g_free);
         mcterm_busy_tick_set (t, FALSE);
         return TRUE;
 
@@ -1511,6 +1646,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         t->last_osc7_gen = 0;
         g_free (t->osc7_token);
         t->osc7_token = NULL;
+        g_clear_pointer (&t->command_hint, g_free);
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
         return MSG_HANDLED;
@@ -1893,6 +2029,41 @@ mcterm_send_internal_line (WMcTerm *t, const char *line)
     ok = mcterm_send_line (t, hidden);
     g_free (hidden);
     return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_set_command_hint (WMcTerm *t, const char *command)
+{
+    if (t == NULL)
+        return;
+
+    g_free (t->command_hint);
+    t->command_hint = g_strdup (command);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+char *
+mcterm_running_command (const WMcTerm *t, int max_width)
+{
+#ifdef __linux__
+    if (t != NULL && t->pty_master >= 0)
+    {
+        pid_t foreground = tcgetpgrp (t->pty_master);
+
+        if (foreground > 0 && foreground != t->child_pid)
+        {
+            char *result = mcterm_command_from_process (foreground, max_width);
+
+            if (result != NULL)
+                return result;
+        }
+    }
+#endif
+
+    return (t != NULL) ? mcterm_command_from_line (t->command_hint, max_width) : NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
