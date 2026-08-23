@@ -789,12 +789,43 @@ mcterm_follow_end (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Fit the rows through @cursor_row into the widget and return the last content row. */
+static int
+mcterm_fit_content (const WMcTerm *t, const mcview_terminal_buffer_t *buf, int cursor_row,
+                    int lines, int *top_row, int *content_rows, int *blank_above)
+{
+    const int max_row = mcview_terminal_buffer_max_row (buf);
+    int effective_max;
+
+    /* The row the shell types on is the host's when it types elsewhere, drawn on its command line
+       by mcterm_draw_prompt_row(); shown full screen the terminal draws that row itself. */
+    if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
+        && !mcview_vterm_in_alt_screen (t->vterm))
+        effective_max = cursor_row - 1;
+    else
+        effective_max = (cursor_row > max_row) ? cursor_row : max_row;
+
+    if (effective_max >= *top_row + lines)
+        *top_row = effective_max - lines + 1;
+
+    *content_rows = (effective_max >= *top_row) ? (effective_max - *top_row + 1) : 0;
+    if (*content_rows > lines)
+        *content_rows = lines;
+    *blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && *content_rows < lines)
+        ? (lines - *content_rows)
+        : 0;
+
+    return effective_max;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* FALSE when there is no terminal to draw. */
 static gboolean
 mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
 {
     const WRect *r = &WIDGET (t)->rect;
-    int max_row, cursor_row, effective_max;
+    int cursor_row, effective_max;
     gboolean fill_top;
 
     if (t->vterm == NULL)
@@ -804,25 +835,9 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
     g->buf = g->snapshot ? t->sync_snapshot_buf : mcview_vterm_buf (t->vterm);
     g->top_row = g->snapshot ? mcterm_resolve_top_row_for_buf (t, g->buf, r->lines)
                              : mcview_vterm_resolve_top_row (t->vterm, r->lines);
-    max_row = mcview_terminal_buffer_max_row (g->buf);
     cursor_row = g->snapshot ? t->sync_snapshot_cursor_row : mcview_vterm_cursor_row (t->vterm);
-
-    /* The row the shell types on is the host's when it types elsewhere, drawn on its command line
-       by mcterm_draw_prompt_row(); shown full screen the terminal draws that row itself. */
-    if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
-        && !mcview_vterm_in_alt_screen (t->vterm))
-        effective_max = cursor_row - 1;
-    else
-        effective_max = (cursor_row > max_row) ? cursor_row : max_row;
-    if (effective_max >= g->top_row + r->lines)
-        g->top_row = effective_max - r->lines + 1;
-
-    g->content_rows = (effective_max >= g->top_row) ? (effective_max - g->top_row + 1) : 0;
-    if (g->content_rows > r->lines)
-        g->content_rows = r->lines;
-    g->blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && g->content_rows < r->lines)
-        ? (r->lines - g->content_rows)
-        : 0;
+    effective_max = mcterm_fit_content (t, g->buf, cursor_row, r->lines, &g->top_row,
+                                        &g->content_rows, &g->blank_above);
 
     /* The prompt row is drawn on the command line, so a full screen is one row
        short at the top; that row is the newest one in the history. */
@@ -1276,15 +1291,15 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             const WRect *r = &w->rect;
             mcview_terminal_buffer_t *buf = mcview_vterm_buf (t->vterm);
             int top_row = mcview_vterm_resolve_top_row (t->vterm, r->lines);
-            int max_row = mcview_terminal_buffer_max_row (buf);
             int cursor_row = mcview_vterm_cursor_row (t->vterm);
-            int effective_max = (cursor_row > max_row) ? cursor_row : max_row;
-            if (effective_max >= top_row + r->lines)
-                top_row = effective_max - r->lines + 1;
-            int content_rows = (effective_max >= top_row) ? (effective_max - top_row + 1) : 0;
-            int blank_above = (!mcview_vterm_in_alt_screen (t->vterm) && content_rows < r->lines)
-                ? (r->lines - content_rows)
-                : 0;
+            int content_rows;
+            int blank_above;
+
+            /* Preserve the live-buffer cursor during an internal sync; mcterm_geometry() may be
+               fitting the snapshot then, but the fallback has always followed the live vterm. */
+            (void) mcterm_fit_content (t, buf, cursor_row, r->lines, &top_row, &content_rows,
+                                       &blank_above);
+
             int crow = CLAMP (cursor_row - top_row + blank_above, 0, r->lines - 1);
             int ccol = CLAMP (mcview_vterm_cursor_col (t->vterm), 0, r->cols - 1);
 

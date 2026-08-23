@@ -36,6 +36,7 @@
 #include "lib/global.h"
 #include "lib/keybind.h"
 #include "lib/skin.h"
+#include "lib/strutil.h"
 #include "lib/tty/key.h"
 #include "lib/tty/tty.h"
 #include "lib/vfs/vfs.h"
@@ -296,6 +297,37 @@ mcterm_overlay_starts_cmdline_input (int parm)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* Once the panels step aside, the shell owns the command line. Move any text collected by WInput
+   into its line editor first, including the cursor position, so the two editors cannot remain on
+   screen at the same time and drift apart. */
+static void
+mcterm_overlay_move_cmdline_to_shell (void)
+{
+    const char *text;
+    const unsigned char *p;
+    int left;
+
+    if (!command_prompt || cmdline == NULL || !mcterm_mode || !mcterm_overlay_ready ())
+        return;
+
+    text = input_get_ctext (cmdline);
+    if (text == NULL || *text == '\0')
+        return;
+
+    for (p = (const unsigned char *) text; *p != '\0'; p++)
+        if (!mcterm_send_key (mcterm_panel, *p))
+            return;
+
+    left = MAX (str_length (text) - cmdline->point, 0);
+    while (left-- > 0)
+        if (!mcterm_send_key (mcterm_panel, KEY_LEFT))
+            break;
+
+    input_clean (cmdline);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
 /* Something is running: keep the row in front of the command line moving. */
@@ -360,6 +392,7 @@ mcterm_overlay_prompt_ready_cb (void *data)
     if (!command_prompt)
         return;
 
+    mcterm_overlay_move_cmdline_to_shell ();
     mcterm_overlay_place_prompt ();
     mcterm_overlay_place_cursor ();
 }
@@ -657,6 +690,7 @@ mcterm_overlay_toggle (void)
         mcterm_mode = TRUE;
         // Selectable here only: elsewhere a panel would lose its selection to it.
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, TRUE);
+        mcterm_overlay_move_cmdline_to_shell ();
         mcterm_overlay_focus_typing ();
 
         do_refresh ();
