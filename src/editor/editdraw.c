@@ -640,7 +640,6 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
                 unsigned int c;
                 gboolean wide_width_char = FALSE;
                 gboolean control_char = FALSE;
-                gboolean printable;
 
                 p->ch = 0;
                 p->style = q == edit->buffer.curs1 ? MOD_CURSOR : 0;
@@ -852,18 +851,12 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
                         break;
                     }
 
-                    if (edit->utf8)
-                    {
-                        if (mc_global.utf8_display)
-                            // c is gunichar
-                            printable = g_unichar_isprint (c);
-                        else
-                            // c was gunichar; now c is 8-bit char converted from gunichar
-                            printable = is_printable (c);
-                    }
-                    else
-                        // c is 8-bit char
-                        printable = is_printable (c);
+                    /* On a UTF-8 display, c is a Unicode code point even when the file uses an
+                     * 8-bit encoding: it was converted above.  Classifying its low byte as an
+                     * 8-bit character makes valid letters whose code points end in 0x80..0x9f
+                     * appear as dots. */
+                    const gboolean printable =
+                        mc_global.utf8_display ? g_unichar_isprint (c) : is_printable (c);
 
                     if (printable)
                         p->ch = c;
