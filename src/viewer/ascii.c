@@ -280,9 +280,18 @@ mcview_is_spacing_mark (const WView *view, int c)
 static gboolean
 mcview_isprint (const WView *view, int c)
 {
-    if (!view->utf8)
-        c = convert_from_8bit_to_utf_c ((unsigned char) c, view->converter);
-    return g_unichar_isprint (c);
+    if (mc_global.utf8_display)
+    {
+        if (!view->utf8)
+            c = convert_from_8bit_to_utf_c ((unsigned char) c, view->converter);
+        return g_unichar_isprint (c);
+    }
+
+    if (view->utf8)
+        return g_unichar_isprint (c);
+
+    // On an 8-bit display, the conversion table returns a display byte, not a Unicode code point.
+    return is_printable (convert_to_display_c (c));
 }
 
 /* --------------------------------------------------------------------------------------------- */

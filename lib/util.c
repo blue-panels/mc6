@@ -95,7 +95,7 @@ is_8bit_printable (unsigned char c)
     if (mc_global.tty.xterm_flag)
         return is_iso_printable (c);
 
-    return (c > 31 && c != 127 && c != 155);
+    return isprint (c);
 }
 
 /* --------------------------------------------------------------------------------------------- */
