@@ -60,6 +60,7 @@ static gboolean mcterm_mode = FALSE;
 static gboolean mcterm_exec_needs_panel_reload = FALSE;
 
 #define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
+#define MCTERM_COMMAND_LABEL_WIDTH       14
 
 static gboolean mcterm_overlay_any_panel_visible (void);
 
@@ -128,6 +129,7 @@ const char *
 mcterm_overlay_prompt_text (void)
 {
     static char text[MC_MAXPATHLEN + 32];
+    char *command;
     const char *cwd;
 
     if (!mcterm_overlay_live () || !mcterm_osc7_capable (mcterm_panel)
@@ -135,10 +137,12 @@ mcterm_overlay_prompt_text (void)
         return NULL;
 
     cwd = (current_panel != NULL) ? vfs_path_as_str (current_panel->cwd_vpath) : "";
+    command = mcterm_running_command (mcterm_panel, MCTERM_COMMAND_LABEL_WIDTH);
 
-    g_snprintf (text, sizeof (text), "(background %s) %s%s ",
+    g_snprintf (text, sizeof (text), "(%s %s) %s%s ", command != NULL ? command : "background",
                 mc_skin_spinner_frame (mcterm_busy_phase (mcterm_panel)), cwd,
                 (cwd[0] != '\0' && cwd[strlen (cwd) - 1] != PATH_SEP) ? PATH_SEP_STR : "");
+    g_free (command);
 
     return text;
 }
@@ -1023,8 +1027,12 @@ mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
     if (!mcterm_overlay_live ())
         return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
 
-    return mcterm_send_line (mcterm_panel, cmd) ? MCTERM_OVERLAY_CMDLINE_SENT
-                                                : MCTERM_OVERLAY_CMDLINE_HANDLED;
+    mcterm_set_command_hint (mcterm_panel, cmd);
+    if (mcterm_send_line (mcterm_panel, cmd))
+        return MCTERM_OVERLAY_CMDLINE_SENT;
+
+    mcterm_set_command_hint (mcterm_panel, NULL);
+    return MCTERM_OVERLAY_CMDLINE_HANDLED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1083,8 +1091,12 @@ mcterm_overlay_exec_command (const char *cmd)
         tty_refresh ();
     }
 
+    mcterm_set_command_hint (mcterm_panel, cmd);
     if (!mcterm_send_line (mcterm_panel, cmd))
+    {
+        mcterm_set_command_hint (mcterm_panel, NULL);
         return FALSE;
+    }
 
     // Whatever it does to the files, the panels should know about it when it is done.
     mcterm_exec_needs_panel_reload = TRUE;

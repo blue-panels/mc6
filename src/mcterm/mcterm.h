@@ -34,6 +34,9 @@ void mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed);
 Widget *mcterm_widget (WMcTerm *t);
 gboolean mcterm_send_line (WMcTerm *t, const char *line);
 gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
+/* Remember a command submitted by the host and describe the process currently running it. */
+void mcterm_set_command_hint (WMcTerm *t, const char *command);
+char *mcterm_running_command (const WMcTerm *t, int max_width);
 gboolean mcterm_shell_at_prompt (const WMcTerm *t);
 gboolean mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec);
 const char *mcterm_osc7_raw (const WMcTerm *t);
@@ -103,6 +106,19 @@ mcterm_send_internal_line (WMcTerm *t, const char *line)
     (void) t;
     (void) line;
     return FALSE;
+}
+static inline void
+mcterm_set_command_hint (WMcTerm *t, const char *command)
+{
+    (void) t;
+    (void) command;
+}
+static inline char *
+mcterm_running_command (const WMcTerm *t, int max_width)
+{
+    (void) t;
+    (void) max_width;
+    return NULL;
 }
 static inline gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
