@@ -28,28 +28,27 @@ typedef struct
     gboolean structured;  // Structured (tree) view of JSON/YAML/XML content
 } mcview_mode_flags_t;
 
-/* Source-controller interface: lets a plugin re-drive what the viewer shows
- * (kubectl logs --since=5m -> --since=1h, re-fetch with a different
- * formatter, ...) without the plugin owning subprocess/temp-file lifecycle.
- * The plugin describes the source via a spec; mcview opens / streams it.
- *
- * Either command or file must be non-NULL after prepare(). */
+/* Exactly one of command, argv or file identifies the source. */
 typedef struct
 {
-    char *command;               /* shell pipeline -> mc_popen + stream */
-    char *file;                  /* local path -> mc_open + file load */
-    gboolean auto_scroll_bottom; /* after load, position at bottom */
-    char *title;                 /* optional override for status title */
+    char *command; /* shell pipeline -> mc_popen + stream */
+    char **argv;   /* direct process argv; never interpreted by a shell */
+    guint argc;
+    char *cwd;
+    gboolean separate_stderr;
+    char *file; /* local path -> mc_open + file load */
+    gboolean auto_scroll_bottom;
+    char *title;
     char *help_file;
     char *help_node;
+    gboolean initial_terminal;
 } mcview_source_spec_t;
 
-/* Result of offering an unhandled viewer key to a source controller. */
 typedef enum
 {
-    MCV_KEY_PASS = 0,    /* controller did not consume the key */
-    MCV_KEY_HANDLED,     /* consumed; no viewer-side action needed */
-    MCV_KEY_OPEN_OPTIONS /* viewer should run the generic options/swap flow */
+    MCV_KEY_PASS = 0,
+    MCV_KEY_HANDLED,
+    MCV_KEY_OPEN_OPTIONS
 } mcv_key_result_t;
 
 typedef struct
@@ -57,7 +56,7 @@ typedef struct
     /* Open plugin options and update plugin-side pending state. */
     gboolean (*open_options) (void *ctx, mcview_source_spec_t *draft);
 
-    /* Validate pending state and fill draft->command or draft->file. */
+    /* Validate pending state and fill draft. */
     gboolean (*prepare) (void *ctx, mcview_source_spec_t *draft, char **err_out);
 
     /* New source opened successfully; promote pending state. */
@@ -66,11 +65,13 @@ typedef struct
     /* Draft abandoned; drop pending state. */
     void (*rollback) (void *ctx);
 
-    /* Final teardown on viewer exit. */
     void (*free) (void *ctx);
 
-    /* Optional controller-owned key handling. */
     mcv_key_result_t (*handle_key) (void *ctx, int key);
+
+    gboolean (*prepare_viewport) (void *ctx, mcview_source_spec_t *draft, guint columns,
+                                  guint lines, char **err_out);
+    gboolean rebuild_on_resize;
 } mcview_source_controller_t;
 
 /* Spec helpers. clone() deep-copies all string fields. */
@@ -118,6 +119,12 @@ extern gboolean mcview_viewer_with_controller (mcview_source_spec_t *initial_spe
                                                const mcview_source_controller_t *controller,
                                                void *ctx, int start_line);
 
+/* initial_spec and ctx are consumed on both success and failure. */
+extern gboolean mcview_source_controller_attach (WView *view, mcview_source_spec_t *initial_spec,
+                                                 const mcview_source_controller_t *controller,
+                                                 void *ctx, char **err_out);
+extern void mcview_source_controller_detach (WView *view);
+
 extern void mcview_clear_mode_flags (mcview_mode_flags_t *flags);
 
 /* Show @text in place of content; in a panel it replaces the Quick View body. */
@@ -126,6 +133,7 @@ extern void mcview_load_text (WView *view, const char *text);
 /* Give the view a temp file to own; unlinked on the next one or on destroy. */
 extern void mcview_set_tmp_preview (WView *view, const char *path);
 extern void mcview_remove_tmp_preview (WView *view);
+extern void mcview_source_rebuild_viewport (WView *view);
 
 /*** inline functions ****************************************************************************/
 #endif

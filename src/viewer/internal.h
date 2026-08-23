@@ -261,6 +261,9 @@ struct WView
     mctree_view_t *struct_tree;                 // cursor/expansion state over struct_model
     mctree_content_type_t struct_content_type;  // for the status line
     gchar *struct_needle;                       // last tree search string
+
+    guint source_viewport_columns;
+    guint source_viewport_lines;
 };
 
 typedef struct mcview_nroff_struct

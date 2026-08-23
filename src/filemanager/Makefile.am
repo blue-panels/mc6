@@ -21,7 +21,7 @@ libmcfilemanager_la_SOURCES = \
 	info.c info.h \
 	ioblksize.h \
 	layout.c layout.h \
-	magic.c magic.h \
+	mcmagic.c mcmagic.h \
 	mcterm_overlay.c mcterm_overlay.h \
 	mountlist.c mountlist.h \
 	panel.c panel.h \
@@ -32,7 +32,8 @@ libmcfilemanager_la_SOURCES = \
 	tree.c tree.h \
 	treestore.c treestore.h
 
-AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS) $(LIBMAGIC_CFLAGS)
+libmcfilemanager_la_LIBADD = $(LIBMAGIC_LIBS)
 
 if ENABLE_EXT2FS_ATTR
 libmcfilemanager_la_SOURCES += \

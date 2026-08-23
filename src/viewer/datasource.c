@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009
    Andrew Borodin <aborodin@vmail.ru>, 2009
-   Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2026
 
    This file is part of the Midnight Commander.
 
@@ -53,7 +53,9 @@
  */
 
 #include <config.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 #include "lib/vfs/vfs.h"
@@ -515,6 +517,22 @@ mcview_stream_ready (int fd, void *info)
     return 0;
 }
 
+/* Drain stderr independently to prevent child blockage and keep viewer input stdout-only. */
+static int
+mcview_stream_stderr_ready (int fd, void *info)
+{
+    char buffer[4096];
+    ssize_t count;
+
+    (void) info;
+    do
+        count = read (fd, buffer, sizeof (buffer));
+    while (count > 0 || (count < 0 && errno == EINTR));
+    if (count == 0)
+        delete_select_channel (fd);
+    return 0;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 void
@@ -529,6 +547,12 @@ mcview_stream_start (WView *view)
     fcntl (view->ds_stdio_pipe->out.fd, F_SETFL, flags | O_NONBLOCK);
 
     add_select_channel (view->ds_stdio_pipe->out.fd, mcview_stream_ready, view);
+    if (view->ds_stdio_pipe->err.fd >= 0)
+    {
+        flags = fcntl (view->ds_stdio_pipe->err.fd, F_GETFL);
+        fcntl (view->ds_stdio_pipe->err.fd, F_SETFL, flags | O_NONBLOCK);
+        add_select_channel (view->ds_stdio_pipe->err.fd, mcview_stream_stderr_ready, view);
+    }
     view->streaming = TRUE;
     view->stream_active = TRUE;
 
@@ -550,6 +574,8 @@ mcview_stream_stop (WView *view)
     if (view->stream_active)
     {
         delete_select_channel (view->ds_stdio_pipe->out.fd);
+        if (view->ds_stdio_pipe->err.fd >= 0)
+            delete_select_channel (view->ds_stdio_pipe->err.fd);
         view->stream_active = FALSE;
     }
 

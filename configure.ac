@@ -582,6 +582,33 @@ if test x"$have_lua_plugin" = xyes; then
     AC_DEFINE([ENABLE_LUA_PLUGIN], [1], [Define to build the Lua runtime extension])
 fi
 
+dnl Optional libmagic support used by core file-operation MIME matching and arcmc
+have_libmagic=no
+LIBMAGIC_CFLAGS=""
+LIBMAGIC_LIBS=""
+AC_CHECK_HEADERS([magic.h], [
+    dnl Use a prototype-aware link test because AC_CHECK_LIB conflicts with
+    dnl -Werror=strict-prototypes.
+    mc_saved_LIBS="$LIBS"
+    LIBS="$LIBS -lmagic"
+    AC_MSG_CHECKING([for magic_open in -lmagic])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <magic.h>]],
+                                    [[magic_t cookie = magic_open (0);
+                                      magic_close (cookie);]])],
+        [AC_MSG_RESULT([yes])
+         AC_DEFINE([HAVE_LIBMAGIC], [1], [Define if libmagic is available])
+         LIBMAGIC_LIBS="-lmagic"
+         have_libmagic=yes],
+        [AC_MSG_RESULT([no])])
+    LIBS="$mc_saved_LIBS"
+])
+AC_SUBST([LIBMAGIC_LIBS])
+AC_SUBST([LIBMAGIC_CFLAGS])
+
+AC_PATH_PROG([CHAFA], [chafa])
+AM_CONDITIONAL([ENABLE_LUA_CHAFA],
+               [test x"$have_lua_plugin" = xyes && test -n "$CHAFA" && test x"$CHAFA" != xno])
+
 dnl ############################################################################
 dnl Directories
 dnl ############################################################################
@@ -875,30 +902,6 @@ if test "x$enable_panel_plugin_arcmc" != xno; then
     ])
 fi
 
-dnl Optional libmagic support for arcmc content-based archive detection
-if test "x$have_panel_plugin_arcmc" = xyes; then
-    AC_CHECK_HEADERS([magic.h], [
-        dnl Not AC_CHECK_LIB: it declares the function itself and without a
-        dnl prototype, so -Werror=strict-prototypes fails the test before the
-        dnl link is even tried and --enable-werror builds lose libmagic. The
-        dnl header declares it properly, so ask it.
-        mc_saved_LIBS="$LIBS"
-        LIBS="$LIBS -lmagic"
-        AC_MSG_CHECKING([for magic_open in -lmagic])
-        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <magic.h>]],
-                                        [[magic_t cookie = magic_open (0);
-                                          magic_close (cookie);]])],
-            [AC_MSG_RESULT([yes])
-             AC_DEFINE([HAVE_LIBMAGIC], [1], [Define if libmagic is available])
-             LIBMAGIC_LIBS="-lmagic"
-             LIBMAGIC_CFLAGS=""],
-            [AC_MSG_RESULT([no])])
-        LIBS="$mc_saved_LIBS"
-    ])
-    AC_SUBST([LIBMAGIC_LIBS])
-    AC_SUBST([LIBMAGIC_CFLAGS])
-fi
-
 if test "x$enable_panel_plugin_arcmc" = xyes && test "x$have_panel_plugin_arcmc" != xyes; then
     AC_MSG_ERROR([Archive browser panel plugin requested but libarchive >= 3.0 was not found.
 Install libarchive development package (for example: libarchive-dev) or use --enable-panel-plugin-arcmc=auto/no.])
@@ -921,6 +924,16 @@ fi
 AC_SUBST([MAGIC_ARCMC_RULES])
 dnl Several lines: it belongs in magic.ini, and a Makefile cannot hold it.
 AM_SUBST_NOTMAKE([MAGIC_ARCMC_RULES])
+
+MAGIC_LUA_CHAFA_RULES=""
+if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes \
+        && test -n "$CHAFA" && test x"$CHAFA" != xno; then
+    MAGIC_LUA_CHAFA_RULES='[[image]]
+Mime=^image/
+View=%plugin{lua(lua-chafa):view}'
+fi
+AC_SUBST([MAGIC_LUA_CHAFA_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_CHAFA_RULES])
 
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""

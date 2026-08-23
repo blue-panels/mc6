@@ -40,7 +40,7 @@
 
 #include "src/editor-plugins/builtin-plugins.h"  // editor_plugins_register_all
 #include "src/filemanager/cmd.h"                 // edit_file_at_line()
-#include "src/filemanager/magic.h"
+#include "src/filemanager/mcmagic.h"
 
 #include "manage_plugins.h"
 

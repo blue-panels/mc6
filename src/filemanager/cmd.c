@@ -7,6 +7,7 @@
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2013-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2009-2011, 2013, 2026
 
    This file is part of the Midnight Commander.
 
@@ -66,6 +67,7 @@
 #include "src/util.h"  // check_for_default(), file_error_message()
 
 #include "src/viewer/mcviewer.h"
+#include "src/runtime-viewer-source.h"
 
 #ifdef USE_INTERNAL_EDIT
 #include "src/editor/edit.h"
@@ -88,9 +90,10 @@
 #include "cd.h"
 #include "ioblksize.h"         // IO_BUFSIZE
 #include "panel_plugin_ops.h"  // plugin_panel_create_cmd()
-#include "magic.h"
+#include "mcmagic.h"
 
 #include "lib/panel-plugin.h"
+#include "lib/extension-runtime.h"
 
 #include "cmd.h"  // Our definitions
 
@@ -137,24 +140,47 @@ panel_magic_get_local_copy (void *data, char **local_path)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-panel_magic_view_error (const char *fname, const mc_magic_action_t *action)
+panel_magic_view_error (WView *target, const char *fname, const mc_magic_action_t *action)
 {
-    if (action != NULL && action->plugin_name != NULL && action->operation_name != NULL)
-        message (D_ERROR, MSG_ERROR, _ ("The magic.ini operation %s:%s cannot view %s"),
-                 action->plugin_name, action->operation_name, fname);
+    char *text;
+
+    if (action != NULL && action->plugin_id != NULL && action->operation_id != NULL)
+    {
+        char *handler_target = action->submodule_id != NULL
+            ? g_strdup_printf ("%s(%s)", action->plugin_id, action->submodule_id)
+            : g_strdup (action->plugin_id);
+
+        text = g_strdup_printf (_ ("The magic.ini operation %s:%s cannot view %s"), handler_target,
+                                action->operation_id, fname);
+        g_free (handler_target);
+    }
     else
-        message (D_ERROR, MSG_ERROR, _ ("Invalid magic.ini association for %s"), fname);
+        text = g_strdup_printf (_ ("Invalid magic.ini association for %s"), fname);
+
+    if (target != NULL)
+        mcview_load_text (target, text);
+    else
+        message (D_ERROR, MSG_ERROR, "%s", text);
+    g_free (text);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-panel_magic_show_view (char *local_path)
+panel_magic_show_view (WView *target, char *local_path)
 {
     vfs_path_t *vpath;
 
     if (local_path == NULL)
         return;
+
+    if (target != NULL)
+    {
+        mcview_load (target, NULL, local_path, 0, 0, 0);
+        mcview_set_tmp_preview (target, local_path);
+        g_free (local_path);
+        return;
+    }
 
     vpath = vfs_path_from_str (local_path);
     (void) view_file (vpath, FALSE, TRUE);
@@ -166,7 +192,52 @@ panel_magic_show_view (char *local_path)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath)
+panel_magic_runtime_view (const mc_magic_action_t *action, const char *display_name,
+                          const char *local_path, WView *target, gboolean *opened)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .display_name = display_name,
+        .local_path = local_path,
+        .mime_type = action->mime_type,
+        .magic_group = action->magic_group,
+    };
+    const char *error = NULL;
+    mc_runtime_file_operation_result_t result;
+
+    if (target != NULL)
+        request.target_viewer = mc_runtime_handle_for_object (MC_RUNTIME_HANDLE_VIEWER, target);
+    result = mc_runtime_plugins_invoke_file_operation (action->plugin_id, action->submodule_id,
+                                                       action->operation_id, &request, &error);
+    if (opened != NULL)
+        *opened = result == MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED;
+    if (result == MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED)
+        return FALSE;
+    if (result == MC_RUNTIME_FILE_OPERATION_RESULT_FAILED
+        && (g_strcmp0 (error, "runtime_not_found") == 0
+            || g_strcmp0 (error, "package_not_found") == 0
+            || g_strcmp0 (error, "operation_not_found") == 0
+            || g_strcmp0 (error, "viewer_source_unavailable") == 0))
+        return FALSE;
+    if (result != MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED)
+    {
+        const char *text = error != NULL ? error : _ ("The runtime file handler failed");
+
+        if (target != NULL)
+            mcview_load_text (target, text);
+        else
+            message (D_ERROR, MSG_ERROR, "%s", text);
+    }
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath,
+                             WView *target)
 {
     mc_magic_source_t source = {
         .display_name = fname,
@@ -174,7 +245,7 @@ panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t 
         .get_local_copy = NULL,
         .data = NULL,
     };
-    mc_magic_action_t action = { NULL, NULL };
+    mc_magic_action_t action = { 0 };
     char *type_copy = NULL;
     char *view_path = NULL;
     mc_magic_action_state_t state;
@@ -188,18 +259,26 @@ panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     state = mc_magic_find_action (&source, "View", &type_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
-        handled = panel_plugin_view_local_file_by_operation (
-            panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_name,
-            action.operation_name, &view_path);
-        if (!handled)
-            panel_magic_view_error (fname, &action);
+        if (action.submodule_id != NULL)
+        {
+            handled = panel_magic_runtime_view (&action, fname, vfs_path_as_str (full_name_vpath),
+                                                target, NULL);
+            if (!handled)
+                goto fallback;
+        }
         else
-            panel_magic_show_view (view_path);
+            handled = panel_plugin_view_local_file_by_operation (
+                panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_id,
+                action.operation_id, &view_path);
+        if (!handled)
+            panel_magic_view_error (target, fname, &action);
+        else
+            panel_magic_show_view (target, view_path);
         handled = TRUE;
     }
     else if (state == MC_MAGIC_ACTION_ERROR)
     {
-        panel_magic_view_error (fname, NULL);
+        panel_magic_view_error (target, fname, NULL);
         handled = TRUE;
     }
 
@@ -210,12 +289,21 @@ panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     }
     mc_magic_action_clear (&action);
     return handled;
+
+fallback:
+    if (type_copy != NULL)
+    {
+        unlink (type_copy);
+        g_free (type_copy);
+    }
+    mc_magic_action_clear (&action);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe)
+panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe, WView *target)
 {
     panel_magic_source_data_t source_data = {
         .panel = panel,
@@ -227,7 +315,7 @@ panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe)
         .get_local_copy = panel_magic_get_local_copy,
         .data = &source_data,
     };
-    mc_magic_action_t action = { NULL, NULL };
+    mc_magic_action_t action = { 0 };
     char *type_copy = NULL;
     char *view_path = NULL;
     mc_magic_action_state_t state;
@@ -236,19 +324,40 @@ panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe)
     state = mc_magic_find_action (&source, "View", &type_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
-        handled =
-            panel_plugin_view_entry_by_operation (panel, fe->fname->str, action.plugin_name,
-                                                  action.operation_name, type_copy, &view_path);
-        type_copy = NULL; /* consumed or released by the callee */
-        if (!handled)
-            panel_magic_view_error (fe->fname->str, &action);
+        if (action.submodule_id != NULL)
+        {
+            gboolean opened = FALSE;
+
+            if (type_copy == NULL)
+                (void) panel_magic_get_local_copy (&source_data, &type_copy);
+            if (type_copy != NULL)
+                handled =
+                    panel_magic_runtime_view (&action, fe->fname->str, type_copy, target, &opened);
+            if (!handled)
+                goto fallback;
+            if (target != NULL && opened)
+            {
+                mcview_set_tmp_preview (target, type_copy);
+                g_free (type_copy);
+                type_copy = NULL;
+            }
+        }
         else
-            panel_magic_show_view (view_path);
+        {
+            handled =
+                panel_plugin_view_entry_by_operation (panel, fe->fname->str, action.plugin_id,
+                                                      action.operation_id, type_copy, &view_path);
+            type_copy = NULL; /* consumed or released by the native callee */
+        }
+        if (!handled)
+            panel_magic_view_error (target, fe->fname->str, &action);
+        else
+            panel_magic_show_view (target, view_path);
         handled = TRUE;
     }
     else if (state == MC_MAGIC_ACTION_ERROR)
     {
-        panel_magic_view_error (fe->fname->str, NULL);
+        panel_magic_view_error (target, fe->fname->str, NULL);
         handled = TRUE;
     }
 
@@ -259,6 +368,15 @@ panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe)
     }
     mc_magic_action_clear (&action);
     return handled;
+
+fallback:
+    if (type_copy != NULL)
+    {
+        unlink (type_copy);
+        g_free (type_copy);
+    }
+    mc_magic_action_clear (&action);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -283,13 +401,13 @@ do_view_cmd (WPanel *panel, gboolean plain_view)
         gboolean handled;
 
         if (panel->is_plugin_panel)
-            handled = panel_magic_view_plugin_file (panel, fe);
+            handled = panel_magic_view_plugin_file (panel, fe, NULL);
         else
         {
             vfs_path_t *full_name_vpath =
                 vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
 
-            handled = panel_magic_view_local_file (panel, fe->fname->str, full_name_vpath);
+            handled = panel_magic_view_local_file (panel, fe->fname->str, full_name_vpath, NULL);
             vfs_path_free (full_name_vpath, TRUE);
         }
 
@@ -379,7 +497,6 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
 {
     const file_entry_t *fe;
 
-    /* Nothing else would remove what the previous entry left behind. */
     mcview_remove_tmp_preview ((WView *) view);
 
     fe = panel != NULL ? panel_current_entry (panel) : NULL;
@@ -387,6 +504,25 @@ mcview_load_panel_current (struct WView *view, WPanel *panel)
     {
         mcview_load ((WView *) view, NULL, "", 0, 0, 0);
         return;
+    }
+
+    if (!S_ISDIR (fe->st.st_mode) && !link_isdir (fe))
+    {
+        gboolean handled;
+
+        if (panel->is_plugin_panel)
+            handled = panel_magic_view_plugin_file (panel, fe, (WView *) view);
+        else
+        {
+            vfs_path_t *full_name_vpath =
+                vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
+
+            handled = panel_magic_view_local_file (panel, fe->fname->str, full_name_vpath,
+                                                   (WView *) view);
+            vfs_path_free (full_name_vpath, TRUE);
+        }
+        if (handled)
+            return;
     }
 
     /* Plugin entries need a local copy; the view is given the path to own. */

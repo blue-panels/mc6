@@ -229,6 +229,8 @@ int my_systemv (const char *command, char *const argv[]);
 int my_systemv_flags (int flags, const char *command, char *const argv[]);
 
 mc_pipe_t *mc_popen (const char *command, gboolean read_out, gboolean read_err, GError **error);
+mc_pipe_t *mc_popen_argv (const char *const *argv, const char *cwd, gboolean read_out,
+                          gboolean read_err, GError **error);
 void mc_pread (mc_pipe_t *p, GError **error);
 int mc_pclose_status (mc_pipe_t *p, GError **error);
 void mc_pclose (mc_pipe_t *p, GError **error);

@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2026
 
    This file is part of the Midnight Commander.
 
@@ -846,6 +846,7 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
     case MSG_RESIZE:
         widget_default_callback (w, NULL, MSG_RESIZE, 0, data);
         mcview_resize (view);
+        mcview_source_rebuild_viewport (view);
         return MSG_HANDLED;
 
     case MSG_DESTROY:

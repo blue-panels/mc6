@@ -9,7 +9,7 @@
    Timur Bakeyev, 1997, 1999
    Slava Zanko <slavazanko@gmail.com>, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2013-2023
-   Ilia Maslakov <il.smind@gmail.ru>, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009-2012, 2014, 2026
 
    This file is part of the Midnight Commander.
 
@@ -56,6 +56,7 @@
 #include "lib/event.h"
 #include "lib/panel-plugin.h"
 #include "lib/runtime-events.h"
+#include "lib/extension-runtime.h"
 
 #include "src/setup.h"  // For loading/saving panel options
 #include "src/execute.h"
@@ -70,7 +71,7 @@
 #include "boxes.h"
 #include "tree.h"
 #include "ext.h"  // regexp_command
-#include "magic.h"
+#include "mcmagic.h"
 #include "layout.h"  // Most layout variables are here
 #include "cmd.h"
 #include "command.h"  // cmdline
@@ -3853,11 +3854,44 @@ panel_magic_get_local_copy (void *data, char **local_path)
 static void
 panel_magic_error (const char *fname, const mc_magic_action_t *action)
 {
-    if (action != NULL && action->plugin_name != NULL && action->operation_name != NULL)
-        message (D_ERROR, MSG_ERROR, _ ("The magic.ini operation %s:%s cannot open %s"),
-                 action->plugin_name, action->operation_name, fname);
+    if (action != NULL && action->plugin_id != NULL && action->operation_id != NULL)
+    {
+        char *target = action->submodule_id != NULL
+            ? g_strdup_printf ("%s(%s)", action->plugin_id, action->submodule_id)
+            : g_strdup (action->plugin_id);
+
+        message (D_ERROR, MSG_ERROR, _ ("The magic.ini operation %s:%s cannot open %s"), target,
+                 action->operation_id, fname);
+        g_free (target);
+    }
     else
         message (D_ERROR, MSG_ERROR, _ ("Invalid magic.ini association for %s"), fname);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_magic_runtime_open (const mc_magic_action_t *action, const char *display_name,
+                          const char *local_path)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_OPEN,
+        .display_name = display_name,
+        .local_path = local_path,
+        .mime_type = action->mime_type,
+        .magic_group = action->magic_group,
+    };
+    const char *error = NULL;
+    mc_runtime_file_operation_result_t result;
+
+    result = mc_runtime_plugins_invoke_file_operation (action->plugin_id, action->submodule_id,
+                                                       action->operation_id, &request, &error);
+    if (result != MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED)
+        message (D_ERROR, MSG_ERROR, "%s",
+                 error != NULL ? error : _ ("The runtime file handler failed"));
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -3871,7 +3905,7 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
         .get_local_copy = NULL,
         .data = NULL,
     };
-    mc_magic_action_t action = { NULL, NULL };
+    mc_magic_action_t action = { 0 };
     char *local_copy = NULL;
     mc_magic_action_state_t state;
     gboolean handled = FALSE;
@@ -3884,9 +3918,12 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     state = mc_magic_find_action (&source, "Open", &local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
-        handled = panel_plugin_open_local_file_by_operation (
-            panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_name,
-            action.operation_name);
+        if (action.submodule_id != NULL)
+            handled = panel_magic_runtime_open (&action, fname, vfs_path_as_str (full_name_vpath));
+        else
+            handled = panel_plugin_open_local_file_by_operation (
+                panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_id,
+                action.operation_id);
         if (!handled)
             panel_magic_error (fname, &action);
         handled = TRUE;
@@ -3921,7 +3958,7 @@ panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe)
         .get_local_copy = panel_magic_get_local_copy,
         .data = &source_data,
     };
-    mc_magic_action_t action = { NULL, NULL };
+    mc_magic_action_t action = { 0 };
     char *local_copy = NULL;
     mc_magic_action_state_t state;
     gboolean handled = FALSE;
@@ -3929,9 +3966,19 @@ panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe)
     state = mc_magic_find_action (&source, "Open", &local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
-        handled = panel_plugin_open_entry_by_operation (panel, fe->fname->str, action.plugin_name,
-                                                        action.operation_name, local_copy);
-        local_copy = NULL; /* consumed or released by the callee */
+        if (action.submodule_id != NULL)
+        {
+            if (local_copy == NULL)
+                (void) panel_magic_get_local_copy (&source_data, &local_copy);
+            if (local_copy != NULL)
+                handled = panel_magic_runtime_open (&action, fe->fname->str, local_copy);
+        }
+        else
+        {
+            handled = panel_plugin_open_entry_by_operation (panel, fe->fname->str, action.plugin_id,
+                                                            action.operation_id, local_copy);
+            local_copy = NULL; /* consumed or released by the native callee */
+        }
         if (!handled)
             panel_magic_error (fe->fname->str, &action);
         handled = TRUE;

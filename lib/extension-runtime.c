@@ -4,6 +4,9 @@
    Copyright (C) 2026
    Free Software Foundation, Inc.
 
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026
+
    This file is part of the Midnight Commander.
 
    The Midnight Commander is free software: you can redistribute it
@@ -116,6 +119,9 @@
 #define MC_RUNTIME_PLUGIN_DESCRIPTOR_DISPLAY_NAME_SIZE                                             \
     (G_STRUCT_OFFSET (mc_runtime_plugin_descriptor_v1_t, display_name)                             \
      + sizeof (((mc_runtime_plugin_descriptor_v1_t *) NULL)->display_name))
+#define MC_RUNTIME_PLUGIN_DESCRIPTOR_FILE_OPERATIONS_SIZE                                          \
+    (G_STRUCT_OFFSET (mc_runtime_plugin_descriptor_v1_t, invoke_file_operation)                    \
+     + sizeof (((mc_runtime_plugin_descriptor_v1_t *) NULL)->invoke_file_operation))
 
 /*** file scope type declarations ****************************************************************/
 
@@ -1535,6 +1541,22 @@ mc_runtime_plugin_descriptor_is_compatible (const mc_runtime_plugin_descriptor_v
         return FALSE;
     }
 
+    {
+        gboolean has_capability =
+            (descriptor->capability_flags & MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS) != 0;
+        gboolean has_callbacks =
+            descriptor->struct_size >= MC_RUNTIME_PLUGIN_DESCRIPTOR_FILE_OPERATIONS_SIZE
+            && descriptor->enumerate_file_operations != NULL
+            && descriptor->invoke_file_operation != NULL;
+
+        if (has_capability != has_callbacks)
+        {
+            if (reason != NULL)
+                *reason = "file-operation capability and callbacks disagree";
+            return FALSE;
+        }
+    }
+
     return TRUE;
 }
 
@@ -2003,6 +2025,65 @@ mc_runtime_plugins_invoke_action (const char *runtime_name, const char *workspac
     if (error != NULL)
         *error = "action_not_found";
     return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+mc_runtime_file_operation_result_t
+mc_runtime_plugins_invoke_file_operation (const char *runtime_name, const char *package_id,
+                                          const char *operation_id,
+                                          const mc_runtime_file_operation_request_t *request,
+                                          const char **error)
+{
+    guint i;
+
+    if (error != NULL)
+        *error = NULL;
+    if (runtime_name == NULL || package_id == NULL || operation_id == NULL || request == NULL
+        || request->struct_size < G_STRUCT_OFFSET (mc_runtime_file_operation_request_t, magic_group)
+                + sizeof (request->magic_group)
+        || request->operation_version != 1)
+    {
+        if (error != NULL)
+            *error = "invalid_argument";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+
+    for (i = 0; mc_runtime_plugin_instances != NULL && i < mc_runtime_plugin_instances->len; i++)
+    {
+        const mc_runtime_plugin_instance_t *instance =
+            (const mc_runtime_plugin_instance_t *) g_ptr_array_index (mc_runtime_plugin_instances,
+                                                                      i);
+        const mc_runtime_plugin_descriptor_v1_t *descriptor = instance->descriptor;
+        gboolean has_capability;
+        gboolean has_callbacks;
+
+        if (g_strcmp0 (descriptor->runtime_name, runtime_name) != 0)
+            continue;
+        has_capability =
+            (descriptor->capability_flags & MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS) != 0;
+        has_callbacks = descriptor->struct_size >= MC_RUNTIME_PLUGIN_DESCRIPTOR_FILE_OPERATIONS_SIZE
+            && descriptor->enumerate_file_operations != NULL
+            && descriptor->invoke_file_operation != NULL;
+        if (has_capability != has_callbacks)
+        {
+            if (error != NULL)
+                *error = "malformed_runtime";
+            return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+        }
+        if (!has_callbacks)
+        {
+            if (error != NULL)
+                *error = "operation_not_found";
+            return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+        }
+        return descriptor->invoke_file_operation (instance->context, package_id, operation_id,
+                                                  request, error);
+    }
+
+    if (error != NULL)
+        *error = "runtime_not_found";
+    return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
