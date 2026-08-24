@@ -85,6 +85,7 @@ PutOtherLink = ctrl-r
 [panel]
 PanelModes = alt-t
 Search = ctrl-s; alt-s
+QuickFilter = alt-shift-s
 Mark = insert; ctrl-t
 MarkUp = shift-up
 MarkDown = shift-down

@@ -148,10 +148,12 @@ typedef struct
     struct
     {
         gboolean active;
+        gboolean filtering;
         GString *buffer;
         GString *prev_buffer;
         char ch[MB_LEN_MAX];  // Buffer for multi-byte character
         int chpoint;          // Point after last characters in @ch
+        dir_list source;      // Unfiltered list while quick filter is active
     } quick_search;
 
     unsigned int content_shift;  // Number of characters of filename need to skip from left side

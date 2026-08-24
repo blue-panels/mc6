@@ -57,6 +57,27 @@ START_TEST (test_keymap_load_defaults)
         ck_assert_int_eq (cmd, CK_Move);
     }
 
+    /* Keep both traditional quick-search keys and give quick filter a distinct
+       shifted Alt-S binding for switching modes. */
+    {
+        long cmd;
+
+        cmd = keybind_lookup_keymap_command (panel_map, XCTRL ('s'));
+        ck_assert_int_eq (cmd, CK_Search);
+
+        cmd = keybind_lookup_keymap_command (panel_map, ALT ('s'));
+        ck_assert_int_eq (cmd, CK_Search);
+
+        cmd = keybind_lookup_keymap_command (panel_map, ALT ('S'));
+        ck_assert_int_eq (cmd, CK_QuickFilter);
+
+        ck_assert_uint_eq (keybind_lookup_action_flags (CK_CycleListingFormat),
+                           KEYBIND_ACTION_KEEP_PANEL_FILTER);
+        ck_assert_uint_eq (keybind_lookup_action_flags (CK_Mark),
+                           KEYBIND_ACTION_KEEP_PANEL_FILTER | KEYBIND_ACTION_PANEL_SELECTION);
+        ck_assert_uint_eq (keybind_lookup_action_flags (CK_Copy), KEYBIND_ACTION_NONE);
+    }
+
     keymap_free ();
 }
 END_TEST

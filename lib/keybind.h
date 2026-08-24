@@ -35,6 +35,13 @@
 
 /*** enums ***************************************************************************************/
 
+typedef enum
+{
+    KEYBIND_ACTION_NONE = 0,
+    KEYBIND_ACTION_KEEP_PANEL_FILTER = 1 << 0,
+    KEYBIND_ACTION_PANEL_SELECTION = 1 << 1
+} keybind_action_flags_t;
+
 enum
 {
     // special commands
@@ -229,6 +236,7 @@ enum
     CK_ScrollHome,
     CK_ScrollEnd,
     CK_CycleListingFormat,
+    CK_QuickFilter,
 
     // dialog
     CK_Ok = 300L,
@@ -399,6 +407,7 @@ void keybind_cmd_bind (GArray *keymap, const char *keybind, long action);
 long keybind_lookup_action (const char *name);
 const char *keybind_lookup_actionname (long action);
 const char *keybind_lookup_actiondesc (long action);
+keybind_action_flags_t keybind_lookup_action_flags (long action);
 const char *keybind_lookup_keymap_shortcut (const global_keymap_t *keymap, long action);
 long keybind_lookup_keymap_command (const global_keymap_t *keymap, long key);
 

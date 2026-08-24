@@ -40,8 +40,13 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#define ADD_KEYMAP_NAME(name)            { #name, CK_##name, NULL }
-#define ADD_KEYMAP_NAME_DESC(name, desc) { #name, CK_##name, desc }
+#define ADD_KEYMAP_NAME(name)                         { #name, CK_##name, NULL, KEYBIND_ACTION_NONE }
+#define ADD_KEYMAP_NAME_DESC(name, desc)              { #name, CK_##name, desc, KEYBIND_ACTION_NONE }
+#define ADD_KEYMAP_NAME_FLAGS(name, flags)            { #name, CK_##name, NULL, flags }
+#define ADD_KEYMAP_NAME_DESC_FLAGS(name, desc, flags) { #name, CK_##name, desc, flags }
+
+#define PANEL_FILTER_NAVIGATION                       KEYBIND_ACTION_KEEP_PANEL_FILTER
+#define PANEL_FILTER_SELECTION                        (KEYBIND_ACTION_KEEP_PANEL_FILTER | KEYBIND_ACTION_PANEL_SELECTION)
 
 /*** file scope type declarations ****************************************************************/
 
@@ -50,6 +55,7 @@ typedef struct name_keymap_t
     const char *name;
     long val;
     const char *description; /* N_() translatable, NULL = use name */
+    keybind_action_flags_t flags;
 } name_keymap_t;
 
 /*** forward declarations (file scope functions) *************************************************/
@@ -61,23 +67,23 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME (InsertChar),
     ADD_KEYMAP_NAME (Enter),
     ADD_KEYMAP_NAME_DESC (ChangePanel, N_ ("Switch active panel")),
-    ADD_KEYMAP_NAME (Up),
-    ADD_KEYMAP_NAME (Down),
-    ADD_KEYMAP_NAME (Left),
-    ADD_KEYMAP_NAME (Right),
+    ADD_KEYMAP_NAME_FLAGS (Up, PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_FLAGS (Down, PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_FLAGS (Left, PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_FLAGS (Right, PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (LeftQuick, N_ ("Page left")),
     ADD_KEYMAP_NAME_DESC (RightQuick, N_ ("Page right")),
     ADD_KEYMAP_NAME (Home),
     ADD_KEYMAP_NAME (End),
-    ADD_KEYMAP_NAME (PageUp),
-    ADD_KEYMAP_NAME (PageDown),
+    ADD_KEYMAP_NAME_FLAGS (PageUp, PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_FLAGS (PageDown, PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (HalfPageUp, N_ ("Half page up")),
     ADD_KEYMAP_NAME_DESC (HalfPageDown, N_ ("Half page down")),
-    ADD_KEYMAP_NAME_DESC (Top, N_ ("Go to top")),
-    ADD_KEYMAP_NAME_DESC (Bottom, N_ ("Go to bottom")),
-    ADD_KEYMAP_NAME_DESC (TopOnScreen, N_ ("Top of screen")),
-    ADD_KEYMAP_NAME_DESC (MiddleOnScreen, N_ ("Middle of screen")),
-    ADD_KEYMAP_NAME_DESC (BottomOnScreen, N_ ("Bottom of screen")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (Top, N_ ("Go to top"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (Bottom, N_ ("Go to bottom"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (TopOnScreen, N_ ("Top of screen"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (MiddleOnScreen, N_ ("Middle of screen"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (BottomOnScreen, N_ ("Bottom of screen"), PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (WordLeft, N_ ("Word left")),
     ADD_KEYMAP_NAME_DESC (WordRight, N_ ("Word right")),
     ADD_KEYMAP_NAME_DESC (Copy, N_ ("Copy file(s)")),
@@ -98,7 +104,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (MenuLastSelected, N_ ("Last selected menu item")),
     ADD_KEYMAP_NAME_DESC (UserMenu, N_ ("User-defined menu")),
     ADD_KEYMAP_NAME_DESC (EditUserMenu, N_ ("Edit user menu")),
-    ADD_KEYMAP_NAME (Search),
+    ADD_KEYMAP_NAME_FLAGS (Search, PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (SearchContinue, N_ ("Search next")),
     ADD_KEYMAP_NAME (Replace),
     ADD_KEYMAP_NAME_DESC (ReplaceContinue, N_ ("Replace next")),
@@ -120,7 +126,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (Suspend, N_ ("Suspend to shell")),
     ADD_KEYMAP_NAME_DESC (Swap, N_ ("Swap panels")),
     ADD_KEYMAP_NAME_DESC (HotList, N_ ("Directory hotlist")),
-    ADD_KEYMAP_NAME_DESC (SelectInvert, N_ ("Invert selection")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (SelectInvert, N_ ("Invert selection"), PANEL_FILTER_SELECTION),
     ADD_KEYMAP_NAME_DESC (ScreenList, N_ ("List open screens")),
     ADD_KEYMAP_NAME_DESC (ScreenNext, N_ ("Next screen")),
     ADD_KEYMAP_NAME_DESC (ScreenPrev, N_ ("Previous screen")),
@@ -133,11 +139,11 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (Cut, N_ ("Cut to clipboard")),
     ADD_KEYMAP_NAME_DESC (Store, N_ ("Copy to clipboard")),
     ADD_KEYMAP_NAME_DESC (Paste, N_ ("Paste from clipboard")),
-    ADD_KEYMAP_NAME_DESC (Mark, N_ ("Toggle selection")),
-    ADD_KEYMAP_NAME_DESC (MarkLeft, N_ ("Select left")),
-    ADD_KEYMAP_NAME_DESC (MarkRight, N_ ("Select right")),
-    ADD_KEYMAP_NAME_DESC (MarkUp, N_ ("Select up")),
-    ADD_KEYMAP_NAME_DESC (MarkDown, N_ ("Select down")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (Mark, N_ ("Toggle selection"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (MarkLeft, N_ ("Select left"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (MarkRight, N_ ("Select right"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (MarkUp, N_ ("Select up"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (MarkDown, N_ ("Select down"), PANEL_FILTER_SELECTION),
     ADD_KEYMAP_NAME_DESC (MarkToWordBegin, N_ ("Select to word start")),
     ADD_KEYMAP_NAME_DESC (MarkToWordEnd, N_ ("Select to word end")),
     ADD_KEYMAP_NAME_DESC (MarkToHome, N_ ("Select to line start")),
@@ -175,6 +181,8 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (LinkSymbolicEdit, N_ ("Edit symbolic link")),
     ADD_KEYMAP_NAME_DESC (ExternalPanelize, N_ ("External panelize")),
     ADD_KEYMAP_NAME_DESC (Filter, N_ ("Filter view")),
+    // Transient panel filter that shares the quick-search pattern.
+    ADD_KEYMAP_NAME_DESC_FLAGS (QuickFilter, N_ ("Quick filter"), PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (PanelInfo, N_ ("Info panel")),
 #ifdef ENABLE_BACKGROUND
     ADD_KEYMAP_NAME_DESC (Jobs, N_ ("Background jobs")),
@@ -213,15 +221,15 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (PanelToggleLeft, N_ ("Toggle left panel in terminal mode")),
     ADD_KEYMAP_NAME_DESC (PanelToggleRight, N_ ("Toggle right panel in terminal mode")),
 #endif
-    ADD_KEYMAP_NAME_DESC (Select, N_ ("Select files by pattern")),
-    ADD_KEYMAP_NAME_DESC (Unselect, N_ ("Unselect files by pattern")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (Select, N_ ("Select files by pattern"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (Unselect, N_ ("Unselect files by pattern"), PANEL_FILTER_SELECTION),
 
     // panel
-    ADD_KEYMAP_NAME_DESC (SelectExt, N_ ("Select by extension")),
-    ADD_KEYMAP_NAME_DESC (ScrollLeft, N_ ("Scroll panel left")),
-    ADD_KEYMAP_NAME_DESC (ScrollRight, N_ ("Scroll panel right")),
-    ADD_KEYMAP_NAME_DESC (ScrollHome, N_ ("Scroll to left edge")),
-    ADD_KEYMAP_NAME_DESC (ScrollEnd, N_ ("Scroll to right edge")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (SelectExt, N_ ("Select by extension"), PANEL_FILTER_SELECTION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (ScrollLeft, N_ ("Scroll panel left"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (ScrollRight, N_ ("Scroll panel right"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (ScrollHome, N_ ("Scroll to left edge"), PANEL_FILTER_NAVIGATION),
+    ADD_KEYMAP_NAME_DESC_FLAGS (ScrollEnd, N_ ("Scroll to right edge"), PANEL_FILTER_NAVIGATION),
     ADD_KEYMAP_NAME_DESC (PanelOtherCd, N_ ("Other panel cd here")),
     ADD_KEYMAP_NAME_DESC (PanelOtherCdLink, N_ ("Other panel cd link target")),
     ADD_KEYMAP_NAME_DESC (CopySingle, N_ ("Copy single file")),
@@ -242,7 +250,8 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (SortBySize, N_ ("Sort by size")),
     ADD_KEYMAP_NAME_DESC (SortByMTime, N_ ("Sort by modification time")),
     ADD_KEYMAP_NAME_DESC (CdParentSmart, N_ ("Smart parent directory")),
-    ADD_KEYMAP_NAME_DESC (CycleListingFormat, N_ ("Cycle listing format")),
+    ADD_KEYMAP_NAME_DESC_FLAGS (CycleListingFormat, N_ ("Cycle listing format"),
+                                PANEL_FILTER_NAVIGATION),
 
     // dialog
     ADD_KEYMAP_NAME (Ok),
@@ -340,7 +349,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (OptionsSaveMode, N_ ("Save mode options")),
     ADD_KEYMAP_NAME_DESC (About, N_ ("About editor")),
     // An action to run external script from macro
-    { "ExecuteScript", CK_PipeBlock (0), N_ ("Execute script") },
+    { "ExecuteScript", CK_PipeBlock (0), N_ ("Execute script"), KEYBIND_ACTION_NONE },
     ADD_KEYMAP_NAME_DESC (WindowMove, N_ ("Move window")),
     ADD_KEYMAP_NAME_DESC (WindowResize, N_ ("Resize window")),
     ADD_KEYMAP_NAME_DESC (WindowFullscreen, N_ ("Toggle fullscreen")),
@@ -390,7 +399,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (MergeOther, N_ ("Merge from other file")),
 #endif
 
-    { NULL, CK_IgnoreKey, NULL }
+    { NULL, CK_IgnoreKey, NULL, KEYBIND_ACTION_NONE }
 };
 
 static const size_t num_command_names = G_N_ELEMENTS (command_names) - 1;
@@ -459,7 +468,7 @@ keybind_cmd_bind (GArray *keymap, const char *keybind, long action)
 long
 keybind_lookup_action (const char *name)
 {
-    const name_keymap_t key = { name, 0, NULL };
+    const name_keymap_t key = { name, 0, NULL, KEYBIND_ACTION_NONE };
     name_keymap_t *res;
 
     sort_command_names ();
@@ -496,6 +505,20 @@ keybind_lookup_actiondesc (long action)
             return command_names[i].description;
 
     return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+keybind_action_flags_t
+keybind_lookup_action_flags (long action)
+{
+    size_t i;
+
+    for (i = 0; command_names[i].name != NULL; i++)
+        if (command_names[i].val == action)
+            return command_names[i].flags;
+
+    return KEYBIND_ACTION_NONE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

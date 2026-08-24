@@ -1240,6 +1240,9 @@ swap_panels (void)
     {
         WPanel panel;
 
+        send_message (panel1, NULL, MSG_ACTION, CK_SearchStop, NULL);
+        send_message (panel2, NULL, MSG_ACTION, CK_SearchStop, NULL);
+
 #define panelswap(x)                                                                               \
     panel.x = panel1->x;                                                                           \
     panel1->x = panel2->x;                                                                         \
@@ -1262,9 +1265,6 @@ swap_panels (void)
         panelswap (plugin_pre_cwd_vpath);
         panelswap (dir_stat);
 #undef panelswap
-
-        panel1->quick_search.active = FALSE;
-        panel2->quick_search.active = FALSE;
 
         if (current_panel == panel1)
             current_panel = panel2;
