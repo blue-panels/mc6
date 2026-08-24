@@ -255,7 +255,7 @@
       "capability": "—",
       "mutation": "no",
       "errors": [],
-      "summary": "Describe a process source using argv and an optional working directory."
+      "summary": "Describe a process source using direct argv, an optional working directory, and stderr policy."
     },
     {
       "signature": "mc.source.pipeline(stages) -> Source",
@@ -279,7 +279,15 @@
       "capability": "viewer_source",
       "mutation": "yes",
       "errors": [],
-      "summary": "Define a reusable family of managed viewer sources."
+      "summary": "Define a reusable family of managed viewer sources with optional viewport rebuild."
+    },
+    {
+      "signature": "mc.file_handler.register(spec) -> boolean",
+      "workspace": "mc",
+      "capability": "—",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Register a package-owned Open or View operation for magic.ini."
     },
     {
       "signature": "mc.ui.open_viewer(spec) -> boolean|nil, error?",
@@ -540,7 +548,7 @@
       "summary": ""
     },
     {
-      "signature": "prepare(session, params) -> ViewerSpec",
+      "signature": "prepare(session, params, viewport?) -> ViewerSpec",
       "workspace": "any",
       "capability": "viewer_source",
       "mutation": "no",
@@ -559,6 +567,14 @@
       "signature": "close(session)",
       "workspace": "any",
       "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "handler(request) -> table|nil, error?",
+      "workspace": "mc",
+      "capability": "—",
       "mutation": "no",
       "errors": [],
       "summary": ""

@@ -88,6 +88,7 @@ static mc_runtime_panel_help_t registered_panel_help;
 static gboolean panel_provider_registered = FALSE;
 static guint viewer_controller_open_count = 0;
 static guint viewer_controller_close_count = 0;
+static mc_runtime_handle_t viewer_controller_target;
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -222,7 +223,37 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
     mc_runtime_viewer_spec_t draft = { .struct_size = sizeof (draft) };
     gboolean handled = FALSE;
 
-    (void) viewer_error;
+    if (controller->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, target_viewer)
+            + sizeof (controller->target_viewer))
+        viewer_controller_target = controller->target_viewer;
+
+    if (controller->initial_spec == NULL)
+    {
+        mc_runtime_viewer_viewport_t viewport = {
+            .struct_size = sizeof (viewport),
+            .operation_version = 1,
+            .columns = 91,
+            .lines = 23,
+        };
+
+        ck_assert_int_eq (controller->viewport_policy, MC_RUNTIME_VIEWER_VIEWPORT_REBUILD);
+        ck_assert_ptr_nonnull (controller->dispatch_v2);
+        mctest_assert_true (controller->dispatch_v2 (context, controller->controller_id,
+                                                     MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
+                                                     &viewport, 0, &draft, &handled, viewer_error));
+        mctest_assert_true (handled);
+        ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_TERMINAL);
+        ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_PROCESS);
+        ck_assert_str_eq (draft.source->process.argv[1], "91x23");
+        ck_assert_str_eq (draft.source->process.argv[2], "/tmp/a $; '-.png");
+        controller->spec_free (context, &draft);
+        mctest_assert_true (controller->dispatch_v2 (context, controller->controller_id,
+                                                     MC_RUNTIME_VIEWER_CONTROLLER_CLOSE, NULL, 0,
+                                                     &draft, &handled, viewer_error));
+        viewer_controller_open_count++;
+        viewer_controller_close_count++;
+        return TRUE;
+    }
     ck_assert_ptr_nonnull (controller->initial_spec);
     ck_assert_int_eq (controller->initial_spec->source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
     ck_assert_str_eq (controller->initial_spec->title, "revision 1");
@@ -248,6 +279,29 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
 }
 
 static void
+create_viewport_controller_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "viewport-controller", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    write_file (ini_path,
+                "[Lua]\nid=viewport-controller\napi_version=1\nname=Viewport\nentry=init.lua\n");
+    write_file (entry_path,
+                "local d=assert(mc.viewer_source.define {id='viewport',resize='rebuild',"
+                "open=function() return {} end,"
+                "prepare=function(_,_,v) return {source=mc.source.process {"
+                "argv={'render',v.columns..'x'..v.lines,[=[/tmp/a $; '-.png]=]},"
+                "stderr='separate'},initial_display='terminal'} end,"
+                "close=function() end})\n"
+                "assert(mc.ui.open_viewer {controller=assert(d:create({}))})\n");
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (root);
+}
+
+static void
 create_viewer_controller_script (void)
 {
     char *root = g_build_filename (user_mc_scripts_dir, "viewer-controller", (char *) NULL);
@@ -268,6 +322,37 @@ create_viewer_controller_script (void)
                 "close=function(session)session.closed=true end})\n"
                 "local c=assert(d:create({name='demo'},{text='one',revision=1}))\n"
                 "assert(mc.ui.open_viewer {controller=c})\n");
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (root);
+}
+
+static void
+create_file_handler_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "file-handler", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    write_file (ini_path,
+                "[Lua]\nid=file-handler\napi_version=1\nname=File handler\nentry=init.lua\n"
+                "provides=file-handler\n");
+    write_file (entry_path,
+                "assert(mc.file_handler.register {id='view',kind='view',"
+                "handler=function(r) assert(r.kind=='view' and r.display_name=='photo.png' "
+                "and r.local_path=='/tmp/photo.png' and r.mime_type=='image/png' "
+                "and r.magic_group=='image'); return nil,'not_supported' end})\n"
+                "local d=assert(mc.viewer_source.define {id='handler-view',"
+                "help={node='controller-help'},"
+                "open=function(identity)return {name=identity.name}end,"
+                "prepare=function(session,p)return {source=mc.source.bytes(p.text),"
+                "title='revision '..p.revision}end,"
+                "options=function(session,p)return {text='two',revision=2}end,"
+                "close=function(session)session.closed=true end})\n"
+                "assert(mc.file_handler.register {id='controlled',kind='view',"
+                "handler=function(r) return {handled=true,controller=assert(d:create("
+                "{name='demo'},{text='one',revision=1}))} end})\n");
     g_free (entry_path);
     g_free (ini_path);
     g_free (root);
@@ -1565,6 +1650,7 @@ setup (void)
     panel_provider_registered = FALSE;
     viewer_controller_open_count = 0;
     viewer_controller_close_count = 0;
+    memset (&viewer_controller_target, 0, sizeof (viewer_controller_target));
     {
         char *prefs_path = g_build_filename (config_dir, "mc", "plugins.ini", (char *) NULL);
         char *ini_path = g_build_filename (config_dir, "mc", "ini", (char *) NULL);
@@ -1832,6 +1918,49 @@ END_TEST
 START_TEST (test_lua_runtime_viewer_source_controller)
 {
     create_viewer_controller_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+    ck_assert_uint_eq (viewer_controller_open_count, 1);
+    ck_assert_uint_eq (viewer_controller_close_count, 1);
+}
+END_TEST
+
+START_TEST (test_lua_runtime_file_handler_registration_and_dispatch)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .display_name = "photo.png",
+        .local_path = "/tmp/photo.png",
+        .mime_type = "image/png",
+        .magic_group = "image",
+    };
+    const char *handler_error = NULL;
+
+    create_file_handler_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "file-handler", "view",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED);
+    ck_assert_str_eq (handler_error, "not_supported");
+
+    request.target_viewer.kind = MC_RUNTIME_HANDLE_VIEWER;
+    request.target_viewer.id = 41;
+    request.target_viewer.generation = 7;
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "file-handler", "controlled",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
+    ck_assert_int_eq (viewer_controller_target.kind, MC_RUNTIME_HANDLE_VIEWER);
+    ck_assert_uint_eq (viewer_controller_target.id, 41);
+    ck_assert_uint_eq (viewer_controller_target.generation, 7);
+}
+END_TEST
+
+START_TEST (test_lua_runtime_viewport_controller_uses_direct_argv)
+{
+    create_viewport_controller_script ();
     ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
                    error != NULL ? error->message : "unknown error");
     ck_assert_uint_eq (viewer_controller_open_count, 1);
@@ -2274,6 +2403,8 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_panel_provider_dispatch);
     tcase_add_test (tc_core, test_lua_runtime_panel_provider_open_error);
     tcase_add_test (tc_core, test_lua_runtime_viewer_source_controller);
+    tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
+    tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);
 
     result = mctest_run_all (tc_core);
 

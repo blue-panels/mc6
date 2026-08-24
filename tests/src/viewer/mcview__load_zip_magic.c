@@ -136,6 +136,14 @@ create_test_file (const unsigned char *data, size_t size)
 
 static WView test_view;
 
+static void
+test_source_controller_free (void *data)
+{
+    guint *count = data;
+
+    (*count)++;
+}
+
 /* @Before */
 static void
 setup (void)
@@ -190,6 +198,34 @@ START_TEST (test_zip_magic_file_loads_as_ds_file)
     ck_assert_int_eq (mcview_show_error__call_count, 0);
 
     // cleanup
+    unlink (tmp_path);
+    g_free (tmp_path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_plain_load_detaches_previous_source_controller)
+{
+    static const mcview_source_controller_t controller = {
+        .free = test_source_controller_free,
+    };
+    const unsigned char text_data[] = "next file\n";
+    char *tmp_path = create_test_file (text_data, sizeof (text_data) - 1);
+    guint free_count = 0;
+
+    ck_assert_ptr_nonnull (tmp_path);
+    test_view.source_controller = &controller;
+    test_view.source_ctx = &free_count;
+    test_view.source_spec = g_new0 (mcview_source_spec_t, 1);
+    test_view.source_spec->file = g_strdup ("previous.png");
+
+    mctest_assert_true (mcview_load (&test_view, NULL, tmp_path, 0, 0, 0));
+
+    ck_assert_uint_eq (free_count, 1);
+    ck_assert_ptr_null (test_view.source_controller);
+    ck_assert_ptr_null (test_view.source_ctx);
+    ck_assert_ptr_null (test_view.source_spec);
     unlink (tmp_path);
     g_free (tmp_path);
 }
@@ -316,6 +352,7 @@ main (void)
     tcase_add_test (tc_core, test_zip_magic_file_loads_as_ds_file);
     tcase_add_test (tc_core, test_zip_magic_file_reload_no_crash);
     tcase_add_test (tc_core, test_normal_file_loads_as_ds_file);
+    tcase_add_test (tc_core, test_plain_load_detaches_previous_source_controller);
     tcase_add_test (tc_core, test_nonexistent_file_fails);
     tcase_add_test (tc_core, test_gzip_magic_file_loads_as_ds_file);
     /* *********************************** */

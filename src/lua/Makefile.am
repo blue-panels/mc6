@@ -18,6 +18,13 @@ dist_lua_demo_panel_DATA = \
 	examples/mc/demo-panel/lua.ini \
 	examples/mc/demo-panel/init.lua
 
+lua_chafadir = $(lua_scripts_dir)/mc/lua-chafa
+if ENABLE_LUA_CHAFA
+dist_lua_chafa_DATA = \
+	examples/mc/lua-chafa/lua.ini \
+	examples/mc/lua-chafa/init.lua
+endif
+
 lua_notify_editor_savedir = $(lua_scripts_dir)/editor/notify-editor-save
 dist_lua_notify_editor_save_DATA = \
 	examples/editor/notify-editor-save/lua.ini \

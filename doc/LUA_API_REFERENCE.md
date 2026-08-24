@@ -7,6 +7,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 
 | Lua method | Description | Capability | Mutation |
 |---|---|---|---|
+| `mc.file_handler.register(spec) -> boolean` | Register a package-owned Open or View operation for magic.ini. | `—` | yes |
 | `mc.panel_provider.register(spec) -> registration\|nil, error?` | Register a virtual panel namespace and its callbacks. | `panel_provider` | yes |
 | `panel:chdir(path) -> boolean\|nil, error?` | Change the panel's current directory. | `panel` | yes |
 | `panel:current() -> table\|nil, error?` | Return a snapshot of the current entry. | `panel` | no |
@@ -63,7 +64,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.source.bytes(spec) -> Source` | Describe an in-memory byte source. | `—` | no |
 | `mc.source.file(spec) -> Source` | Describe a local-file source and its ownership. | `—` | no |
 | `mc.source.pipeline(stages) -> Source` | Compose process sources into one pipeline. | `—` | no |
-| `mc.source.process(spec) -> Source` | Describe a process source using argv and an optional working directory. | `—` | no |
+| `mc.source.process(spec) -> Source` | Describe a process source using direct argv, an optional working directory, and stderr policy. | `—` | no |
 | `mc.ui.dialog(spec) -> DialogResult\|nil, error?` | Show a declarative native modal dialog. | `ui` | yes |
 | `mc.ui.indicator(spec) -> boolean\|nil, error?` | Set or replace a package-owned persistent UI indicator. | `ui` | yes |
 | `mc.ui.indicator_clear(id, area?) -> boolean\|nil, error?` | Remove a package-owned UI indicator. | `ui` | yes |
@@ -72,7 +73,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.ui.open_viewer(spec) -> boolean\|nil, error?` | Open the native viewer and transfer a controller to MC. | `viewer_source` | yes |
 | `mc.ui.status(text) -> boolean\|nil, error?` | Display transient text in the MC status area. | `ui` | yes |
 | `mc.ui.text_width(text) -> integer\|nil, error?` | Measure UTF-8 text using terminal display columns. | `ui` | no |
-| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources. | `viewer_source` | yes |
+| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. | `viewer_source` | yes |
 
 ## Callback contracts
 
@@ -86,6 +87,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `edit_connection(host, connection) -> Connection` | `mc` | `panel_provider` |
 | `enter(instance, entry, revision) -> OperationResult` | `mc` | `panel_provider` |
 | `event(snapshot) -> nil` | `any` | `events` |
+| `handler(request) -> table\|nil, error?` | `mc` | `—` |
 | `initial_params(session, params) -> params` | `any` | `viewer_source` |
 | `invoke_action(instance, request) -> OperationResult` | `mc` | `panel_provider` |
 | `list(instance) -> PanelView` | `mc` | `panel_provider` |
@@ -95,7 +97,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `open(host, path) -> instance` | `mc` | `panel_provider` |
 | `open_read(instance, entry) -> Source` | `mc` | `panel_provider` |
 | `options(session, params) -> params?` | `any` | `viewer_source` |
-| `prepare(session, params) -> ViewerSpec` | `any` | `viewer_source` |
+| `prepare(session, params, viewport?) -> ViewerSpec` | `any` | `viewer_source` |
 | `reload(instance) -> OperationResult` | `mc` | `panel_provider` |
 | `rename_connection(host, connection) -> Connection` | `mc` | `panel_provider` |
 | `view(instance, entry, request) -> ViewerSpec` | `mc` | `panel_provider` |

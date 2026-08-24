@@ -323,6 +323,7 @@ mcview_done (WView *view)
     MC_PTR_FREE (view->command);
 
     mcview_close_datasource (view);
+    mcview_source_controller_detach (view);
     // the growing buffer is freed with the datasource
 
     if (view->coord_cache != NULL)

@@ -23,7 +23,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** \file magic.c
+/** \file mcmagic.c
  *  \brief Matching of plugin file-operation associations
  */
 
@@ -31,6 +31,10 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#ifdef HAVE_LIBMAGIC
+#include <magic.h>
+#endif
 
 #include "lib/global.h"
 #include "lib/fileloc.h"
@@ -43,7 +47,7 @@
 #include "src/setup.h"  // use_file_to_check_type
 #endif
 
-#include "magic.h"
+#include "mcmagic.h"
 
 /*** global variables ****************************************************************************/
 
@@ -70,6 +74,12 @@ typedef struct
     gboolean checked;
     char text[BUF_2K];
 } magic_type_info_t;
+
+typedef struct
+{
+    gboolean checked;
+    char *text;
+} magic_mime_info_t;
 
 /*** file scope variables ************************************************************************/
 
@@ -108,7 +118,7 @@ magic_config_load (magic_config_t *config, const char *path)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-magic_load (void)
+magic_configs_load (void)
 {
     char *path;
 
@@ -142,8 +152,8 @@ magic_action_search (void)
 {
     if (magic_action_regex == NULL)
     {
-        magic_action_regex =
-            mc_search_new ("^%plugin\\{([A-Za-z0-9_-]+):([A-Za-z0-9_-]+)\\}$", NULL);
+        magic_action_regex = mc_search_new (
+            "^%plugin\\{([A-Za-z0-9_.-]+)(\\(([A-Za-z0-9_.-]+)\\))?:([A-Za-z0-9_.-]+)\\}$", NULL);
         if (magic_action_regex != NULL)
             magic_action_regex->search_type = MC_SEARCH_T_REGEX;
     }
@@ -188,9 +198,10 @@ magic_parse_action (const char *value, mc_magic_action_t *result)
 
     if (matched)
     {
-        result->plugin_name = magic_fetch_group (search, stripped, 1);
-        result->operation_name = magic_fetch_group (search, stripped, 2);
-        matched = result->plugin_name != NULL && result->operation_name != NULL;
+        result->plugin_id = magic_fetch_group (search, stripped, 1);
+        result->submodule_id = magic_fetch_group (search, stripped, 3);
+        result->operation_id = magic_fetch_group (search, stripped, 4);
+        matched = result->plugin_id != NULL && result->operation_id != NULL;
         if (!matched)
             mc_magic_action_clear (result);
     }
@@ -199,6 +210,67 @@ magic_parse_action (const char *value, mc_magic_action_t *result)
 
     return matched ? MC_MAGIC_ACTION_FOUND : MC_MAGIC_ACTION_ERROR;
 }
+
+/* --------------------------------------------------------------------------------------------- */
+
+#ifdef HAVE_LIBMAGIC
+static const char *
+magic_source_path (const mc_magic_source_t *source, char **local_copy)
+{
+    if (source->local_path != NULL)
+        return source->local_path;
+    if (*local_copy == NULL && source->get_local_copy != NULL
+        && source->get_local_copy (source->data, local_copy) != MC_PPR_OK)
+        return NULL;
+    return *local_copy;
+}
+
+static gboolean
+magic_mime_get (const mc_magic_source_t *source, char **local_copy, magic_mime_info_t *mime)
+{
+    magic_t cookie;
+    const char *path;
+    const char *value;
+
+    if (mime->checked)
+        return mime->text != NULL;
+    mime->checked = TRUE;
+    path = magic_source_path (source, local_copy);
+    if (path == NULL)
+        return FALSE;
+    cookie = magic_open (MAGIC_MIME_TYPE | MAGIC_ERROR);
+    if (cookie == NULL)
+        return FALSE;
+    if (magic_load (cookie, NULL) != 0 || (value = magic_file (cookie, path)) == NULL)
+    {
+        magic_close (cookie);
+        return FALSE;
+    }
+    mime->text = g_strdup (value);
+    magic_close (cookie);
+    return mime->text != NULL;
+}
+
+static gboolean
+magic_mime_matches (const char *pattern, gboolean ignore_case, const mc_magic_source_t *source,
+                    char **local_copy, magic_mime_info_t *mime)
+{
+    mc_search_t *search;
+    gboolean matched = FALSE;
+
+    if (!magic_mime_get (source, local_copy, mime))
+        return FALSE;
+    search = mc_search_new (pattern, NULL);
+    if (search != NULL)
+    {
+        search->search_type = MC_SEARCH_T_REGEX;
+        search->is_case_sensitive = !ignore_case;
+        matched = mc_search_run (search, mime->text, 0, strlen (mime->text), NULL);
+        mc_search_free (search);
+    }
+    return matched;
+}
+#endif
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -285,12 +357,13 @@ magic_type_matches (const char *pattern, gboolean ignore_case, const mc_magic_so
 
 static gboolean
 magic_group_matches (mc_config_t *ini, const char *group, const mc_magic_source_t *source,
-                     char **local_copy, magic_type_info_t *type)
+                     char **local_copy, magic_type_info_t *type, magic_mime_info_t *mime)
 {
     const char *filename;
     size_t filename_len;
     gchar *pattern;
     gboolean type_used = FALSE;
+    gboolean mime_used = FALSE;
 
     filename = x_basename (source->display_name);
     filename_len = strlen (filename);
@@ -315,6 +388,24 @@ magic_group_matches (mc_config_t *ini, const char *group, const mc_magic_source_
     (void) local_copy;
     (void) type;
 #endif
+
+    pattern = mc_config_get_string_raw (ini, group, "Mime", NULL);
+    if (pattern != NULL)
+    {
+#ifdef HAVE_LIBMAGIC
+        gboolean ignore_case = mc_config_get_bool (ini, group, "MimeIgnoreCase", FALSE);
+        gboolean mime_found = magic_mime_matches (pattern, ignore_case, source, local_copy, mime);
+
+        mime_used = TRUE;
+        g_free (pattern);
+        if (!mime_found)
+            return FALSE;
+#else
+        g_free (pattern);
+        (void) mime;
+        return FALSE;
+#endif
+    }
 
     pattern = mc_config_get_string_raw (ini, group, "Regex", NULL);
     if (pattern != NULL)
@@ -352,7 +443,7 @@ magic_group_matches (mc_config_t *ini, const char *group, const mc_magic_source_
         return matched;
     }
 
-    return type_used;
+    return type_used || mime_used;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -360,7 +451,7 @@ magic_group_matches (mc_config_t *ini, const char *group, const mc_magic_source_
 static mc_magic_action_state_t
 magic_find_in_config (magic_config_t *config, const mc_magic_source_t *source, const char *action,
                       char **local_copy, mc_magic_action_t *result, gboolean *matched_out,
-                      magic_type_info_t *type)
+                      magic_type_info_t *type, magic_mime_info_t *mime)
 {
     char **iter;
 
@@ -375,7 +466,7 @@ magic_find_in_config (magic_config_t *config, const mc_magic_source_t *source, c
 
         if (strcmp (group, "Default") == 0 || strcmp (group, "magic.ini") == 0)
             continue;
-        if (!magic_group_matches (config->ini, group, source, local_copy, type))
+        if (!magic_group_matches (config->ini, group, source, local_copy, type, mime))
             continue;
 
         value = mc_config_get_string_raw (config->ini, group, action, NULL);
@@ -392,6 +483,11 @@ magic_find_in_config (magic_config_t *config, const mc_magic_source_t *source, c
         {
             mc_magic_action_state_t state = magic_parse_action (value, result);
 
+            if (state == MC_MAGIC_ACTION_FOUND)
+            {
+                result->magic_group = g_strdup (group);
+                result->mime_type = g_strdup (mime->text);
+            }
             g_free (value);
             return state;
         }
@@ -426,6 +522,7 @@ mc_magic_find_action (const mc_magic_source_t *source, const char *action, char 
 {
     mc_magic_action_state_t state;
     magic_type_info_t type = { FALSE, { '\0' } };
+    magic_mime_info_t mime = { FALSE, NULL };
     gboolean matched;
 
     if (source == NULL || source->display_name == NULL || action == NULL || local_copy == NULL
@@ -433,16 +530,21 @@ mc_magic_find_action (const mc_magic_source_t *source, const char *action, char 
         return MC_MAGIC_ACTION_ERROR;
 
     mc_magic_action_clear (result);
-    magic_load ();
+    magic_configs_load ();
 
     /* file(1) runs at most once for the file, however many rules ask. */
     state = magic_find_in_config (&magic_user_config, source, action, local_copy, result, &matched,
-                                  &type);
+                                  &type, &mime);
     if (matched)
+    {
+        g_free (mime.text);
         return state;
+    }
 
-    return magic_find_in_config (&magic_system_config, source, action, local_copy, result, &matched,
-                                 &type);
+    state = magic_find_in_config (&magic_system_config, source, action, local_copy, result,
+                                  &matched, &type, &mime);
+    g_free (mime.text);
+    return state;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -453,10 +555,12 @@ mc_magic_action_clear (mc_magic_action_t *action)
     if (action == NULL)
         return;
 
-    g_free (action->plugin_name);
-    g_free (action->operation_name);
-    action->plugin_name = NULL;
-    action->operation_name = NULL;
+    g_free (action->plugin_id);
+    g_free (action->submodule_id);
+    g_free (action->operation_id);
+    g_free (action->magic_group);
+    g_free (action->mime_type);
+    memset (action, 0, sizeof (*action));
 }
 
 /* --------------------------------------------------------------------------------------------- */

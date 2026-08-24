@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
 
    This file is part of the Midnight Commander.
 
@@ -474,10 +474,13 @@ mcview_viewer_with_controller (mcview_source_spec_t *initial_spec,
     Widget *vw, *b;
     WGroup *g;
     WRect r;
-    GError *error = NULL;
+    char *attach_error = NULL;
 
-    if (initial_spec == NULL || controller == NULL
-        || (initial_spec->command == NULL && initial_spec->file == NULL))
+    if (controller == NULL
+        || (initial_spec == NULL
+            && (!controller->rebuild_on_resize || controller->prepare_viewport == NULL))
+        || (initial_spec != NULL && initial_spec->command == NULL && initial_spec->file == NULL
+            && (initial_spec->argv == NULL || initial_spec->argc == 0)))
     {
         if (controller != NULL && controller->free != NULL)
             controller->free (ctx);
@@ -510,57 +513,25 @@ mcview_viewer_with_controller (mcview_source_spec_t *initial_spec,
 
     view_dlg->get_title = mcview_get_title;
 
-    lc_mcview->source_controller = controller;
-    lc_mcview->source_ctx = ctx;
-    lc_mcview->source_spec = initial_spec;
-
-    if (initial_spec->command != NULL)
+    if (!mcview_source_controller_attach (lc_mcview, initial_spec, controller, ctx, &attach_error))
     {
-        mc_pipe_t *p;
-
-        p = mc_popen (initial_spec->command, TRUE, FALSE, &error);
-        if (p == NULL)
-        {
-            message (D_ERROR, MSG_ERROR, "%s", error->message);
-            g_error_free (error);
-            controller->free (ctx);
-            lc_mcview->source_spec = NULL;
-            lc_mcview->source_controller = NULL;
-            lc_mcview->source_ctx = NULL;
-            mcview_source_spec_free (initial_spec);
-            widget_destroy (vw);
-            return FALSE;
-        }
-        lc_mcview->command = g_strdup (initial_spec->command);
-        mcview_set_datasource_stdio_pipe (lc_mcview, p);
-        mcview_stream_start (lc_mcview);
-    }
-    else
-    {
-        if (!mcview_load (lc_mcview, NULL, initial_spec->file, start_line, 0, 0))
-        {
-            controller->free (ctx);
-            lc_mcview->source_spec = NULL;
-            lc_mcview->source_controller = NULL;
-            lc_mcview->source_ctx = NULL;
-            mcview_source_spec_free (initial_spec);
-            widget_destroy (vw);
-            return FALSE;
-        }
+        message (D_ERROR, MSG_ERROR, "%s",
+                 attach_error != NULL ? attach_error : _ ("Cannot open source."));
+        g_free (attach_error);
+        widget_destroy (vw);
+        return FALSE;
     }
 
-    if (initial_spec->auto_scroll_bottom)
-        mcview_moveto_bottom (lc_mcview);
-
-    mcview_publish_runtime_open (lc_mcview, initial_spec->command != NULL ? "command" : "file",
-                                 start_line);
+    mcview_publish_runtime_open (
+        lc_mcview,
+        lc_mcview->source_spec->command != NULL
+                || (lc_mcview->source_spec->argv != NULL && lc_mcview->source_spec->argc != 0)
+            ? "process"
+            : "file",
+        start_line);
     dlg_run (view_dlg);
 
-    controller->free (ctx);
-    mcview_source_spec_free (lc_mcview->source_spec);
-    lc_mcview->source_spec = NULL;
-    lc_mcview->source_controller = NULL;
-    lc_mcview->source_ctx = NULL;
+    mcview_source_controller_detach (lc_mcview);
 
     if (widget_get_state (vw, WST_CLOSED))
         widget_destroy (vw);
@@ -580,6 +551,13 @@ mcview_load (WView *view, const char *command, const char *file, int start_line,
     vfs_path_t *vpath = NULL;
 
     g_assert (view->bytes_per_line != 0);
+
+    /* End controller ownership before loading an unrelated source. */
+    if (view->source_controller != NULL)
+    {
+        mcview_reset_for_source_swap (view);
+        mcview_source_controller_detach (view);
+    }
 
     // drop tree state of the previously shown file (quick view reuses the widget)
     mcview_structured_reset (view);

@@ -4,6 +4,9 @@
    Copyright (C) 2026
    Free Software Foundation, Inc.
 
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026
+
    This file is part of the Midnight Commander.
 
    The Midnight Commander is free software: you can redistribute it
@@ -137,7 +140,8 @@ typedef enum
 {
     MC_LUA_PROVIDES_NONE = 0,
     MC_LUA_PROVIDES_EVENTS = (1 << 0),
-    MC_LUA_PROVIDES_MACROS = (1 << 1)
+    MC_LUA_PROVIDES_MACROS = (1 << 1),
+    MC_LUA_PROVIDES_FILE_HANDLER = (1 << 2)
 } mc_lua_provides_t;
 
 typedef struct
@@ -155,6 +159,7 @@ typedef struct mc_lua_package_info mc_lua_package_info_t;
 typedef struct mc_lua_panel_provider mc_lua_panel_provider_t;
 typedef struct mc_lua_viewer_definition mc_lua_viewer_definition_t;
 typedef struct mc_lua_viewer_controller mc_lua_viewer_controller_t;
+typedef struct mc_lua_file_handler mc_lua_file_handler_t;
 
 typedef struct
 {
@@ -235,9 +240,18 @@ struct mc_lua_package
     GPtrArray *macros;
     GPtrArray *panel_providers;
     GPtrArray *viewer_definitions;
+    GPtrArray *file_handlers;
     gboolean closed;
     guint callback_depth;
     mc_runtime_event_id_t active_event;
+};
+
+struct mc_lua_file_handler
+{
+    mc_lua_package_t *package;
+    char *id;
+    mc_runtime_file_operation_kind_t kind;
+    int handler_ref;
 };
 
 struct mc_lua_viewer_definition
@@ -251,12 +265,14 @@ struct mc_lua_viewer_definition
     int prepare_ref;
     int options_ref;
     int close_ref;
+    gboolean resize_rebuild;
 };
 
 struct mc_lua_viewer_controller
 {
     mc_lua_viewer_definition_t *definition;
     guint64 runtime_id;
+    int self_ref;
     int definition_ref;
     int session_ref;
     int live_ref;
@@ -325,6 +341,7 @@ static void mc_lua_subscription_destroy (gpointer data);
 static void mc_lua_macro_destroy (gpointer data);
 static void mc_lua_panel_provider_destroy (gpointer data);
 static void mc_lua_viewer_definition_destroy (gpointer data);
+static void mc_lua_file_handler_destroy (gpointer data);
 static void mc_lua_package_destroy (mc_lua_package_t *package);
 static mc_runtime_event_result_t mc_lua_event_callback (gpointer runtime_context,
                                                         const mc_runtime_event_snapshot_t *snapshot,
@@ -485,6 +502,8 @@ mc_lua_provides_parse (const char *value, guint *provides)
             parsed |= MC_LUA_PROVIDES_EVENTS;
         else if (g_ascii_strcasecmp (name, "macros") == 0)
             parsed |= MC_LUA_PROVIDES_MACROS;
+        else if (g_ascii_strcasecmp (name, "file-handler") == 0)
+            parsed |= MC_LUA_PROVIDES_FILE_HANDLER;
         else
         {
             g_strfreev (items);
@@ -2209,6 +2228,8 @@ mc_lua_package_close (mc_lua_package_t *package)
         g_ptr_array_set_size (package->macros, 0);
     if (package->panel_providers != NULL)
         g_ptr_array_set_size (package->panel_providers, 0);
+    if (package->file_handlers != NULL)
+        g_ptr_array_set_size (package->file_handlers, 0);
 
     package->closed = TRUE;
     if (package->lua != NULL)
@@ -2235,6 +2256,8 @@ mc_lua_package_destroy (mc_lua_package_t *package)
         g_ptr_array_free (package->panel_providers, TRUE);
     if (package->viewer_definitions != NULL)
         g_ptr_array_free (package->viewer_definitions, TRUE);
+    if (package->file_handlers != NULL)
+        g_ptr_array_free (package->file_handlers, TRUE);
     g_free (package->id);
     g_free (package->workspace);
     g_free (package->root);
@@ -3450,7 +3473,7 @@ mc_lua_source_file (lua_State *lua)
     return mc_lua_source_tag (lua, "file");
 }
 /** @lua mc.source.process(spec) -> Source @workspace any @mutation no @summary Describe a process
- * source using argv and an optional working directory. */
+ * source using direct argv, an optional working directory, and stderr policy. */
 static int
 mc_lua_source_process (lua_State *lua)
 {
@@ -3560,6 +3583,12 @@ mc_lua_parse_viewer_source (lua_State *lua, int table, mc_runtime_viewer_source_
     else if (g_strcmp0 (kind, "process") == 0)
     {
         source->kind = MC_RUNTIME_VIEWER_SOURCE_PROCESS;
+        {
+            char *stderr_mode = mc_lua_dup_table_string (lua, table, "stderr");
+
+            source->process_stderr_separate = g_strcmp0 (stderr_mode, "separate") == 0;
+            g_free (stderr_mode);
+        }
         if (!mc_lua_parse_viewer_process (lua, table, &source->process))
         {
             g_free (kind);
@@ -3607,6 +3636,7 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
 {
     mc_runtime_viewer_source_t *source;
     char *scroll;
+    char *display;
 
     memset (spec, 0, sizeof (*spec));
     spec->struct_size = sizeof (*spec);
@@ -3631,6 +3661,21 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
     scroll = mc_lua_dup_table_string (lua, table, "auto_scroll");
     spec->auto_scroll_bottom = g_strcmp0 (scroll, "bottom") == 0;
     g_free (scroll);
+    display = mc_lua_dup_table_string (lua, table, "initial_display");
+    if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0)
+    {
+        g_free (display);
+        mc_lua_viewer_source_clear (source);
+        g_free (source);
+        g_free ((char *) spec->title);
+        g_free ((char *) spec->help_node);
+        memset (spec, 0, sizeof (*spec));
+        return FALSE;
+    }
+    spec->initial_display = g_strcmp0 (display, "terminal") == 0
+        ? MC_RUNTIME_VIEWER_DISPLAY_TERMINAL
+        : MC_RUNTIME_VIEWER_DISPLAY_TEXT;
+    g_free (display);
     return TRUE;
 }
 
@@ -3681,6 +3726,49 @@ mc_lua_viewer_call_prepare (mc_lua_viewer_controller_t *controller, int params_r
     return valid;
 }
 
+static gboolean
+mc_lua_viewer_call_prepare_viewport (mc_lua_viewer_controller_t *controller, int params_ref,
+                                     const mc_runtime_viewer_viewport_t *viewport,
+                                     mc_runtime_viewer_spec_t *spec)
+{
+    mc_lua_package_t *package = controller->definition->package;
+    lua_State *lua = package->lua;
+    gboolean valid;
+
+    if (viewport == NULL || viewport->columns == 0 || viewport->lines == 0)
+        return FALSE;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->definition->prepare_ref);
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->session_ref);
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, params_ref);
+    lua_createtable (lua, 0, 4);
+    lua_pushinteger (lua, viewport->columns);
+    lua_setfield (lua, -2, "columns");
+    lua_pushinteger (lua, viewport->lines);
+    lua_setfield (lua, -2, "lines");
+    if (viewport->pixel_width != 0)
+    {
+        lua_pushinteger (lua, viewport->pixel_width);
+        lua_setfield (lua, -2, "pixel_width");
+    }
+    if (viewport->pixel_height != 0)
+    {
+        lua_pushinteger (lua, viewport->pixel_height);
+        lua_setfield (lua, -2, "pixel_height");
+    }
+    package->callback_depth++;
+    if (lua_pcall (lua, 3, 1, 0) != LUA_OK)
+    {
+        mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT,
+                             "Lua viewer viewport prepare callback failed");
+        package->callback_depth--;
+        return FALSE;
+    }
+    package->callback_depth--;
+    valid = lua_istable (lua, -1) && mc_lua_parse_viewer_spec (lua, -1, spec);
+    lua_pop (lua, 1);
+    return valid;
+}
+
 static void
 mc_lua_viewer_controller_close (mc_lua_viewer_controller_t *controller)
 {
@@ -3706,10 +3794,15 @@ mc_lua_viewer_controller_close (mc_lua_viewer_controller_t *controller)
         g_hash_table_remove (package->runtime->viewer_controllers, &controller->runtime_id);
     if (lua != NULL)
     {
+        int self_ref = controller->self_ref;
+
         luaL_unref (lua, LUA_REGISTRYINDEX, controller->session_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, controller->live_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, controller->pending_ref);
-        controller->session_ref = controller->live_ref = controller->pending_ref = LUA_NOREF;
+        controller->self_ref = controller->session_ref = controller->live_ref =
+            controller->pending_ref = LUA_NOREF;
+        /* The final unref may finalize the controller userdata. */
+        luaL_unref (lua, LUA_REGISTRYINDEX, self_ref);
     }
 }
 
@@ -3784,6 +3877,31 @@ mc_lua_viewer_dispatch (mc_runtime_plugin_context_t *context, guint64 controller
     }
 }
 
+static gboolean
+mc_lua_viewer_dispatch_v2 (mc_runtime_plugin_context_t *context, guint64 controller_id,
+                           mc_runtime_viewer_controller_operation_t operation,
+                           const mc_runtime_viewer_viewport_t *viewport, int key,
+                           mc_runtime_viewer_spec_t *spec, gboolean *handled, const char **error)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    mc_lua_viewer_controller_t *controller;
+
+    if (operation != MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT)
+        return mc_lua_viewer_dispatch (context, controller_id, operation, key, spec, handled,
+                                       error);
+    if (runtime == NULL || runtime->viewer_controllers == NULL)
+        return FALSE;
+    controller = g_hash_table_lookup (runtime->viewer_controllers, &controller_id);
+    if (controller == NULL || controller->closed || !controller->definition->resize_rebuild)
+    {
+        if (error != NULL)
+            *error = "invalid_controller";
+        return FALSE;
+    }
+    *handled = TRUE;
+    return mc_lua_viewer_call_prepare_viewport (controller, controller->live_ref, viewport, spec);
+}
+
 static int
 mc_lua_viewer_controller_gc (lua_State *lua)
 {
@@ -3800,7 +3918,7 @@ mc_lua_viewer_controller_gc (lua_State *lua)
  * @summary Create a viewer-source controller and its package session.
  * @lua-callback open(argument) -> session
  * @lua-callback initial_params(session, params) -> params
- * @lua-callback prepare(session, params) -> ViewerSpec
+ * @lua-callback prepare(session, params, viewport?) -> ViewerSpec
  * @lua-callback options(session, params) -> params?
  * @lua-callback close(session)
  */
@@ -3826,6 +3944,7 @@ mc_lua_viewer_definition_create (lua_State *lua)
     controller = lua_newuserdata (lua, sizeof (*controller));
     memset (controller, 0, sizeof (*controller));
     controller->definition = definition;
+    controller->self_ref = LUA_NOREF;
     controller->definition_ref = LUA_NOREF;
     controller->session_ref = initial_ref;
     controller->live_ref = LUA_NOREF;
@@ -3860,7 +3979,8 @@ mc_lua_viewer_definition_create (lua_State *lua)
 }
 
 /** @lua mc.viewer_source.define(spec) -> definition|nil, error? @capability viewer_source @mutation
- * yes @summary Define a reusable family of managed viewer sources. */
+ * yes @summary Define a reusable family of managed viewer sources with optional viewport rebuild.
+ */
 static int
 mc_lua_viewer_source_define (lua_State *lua)
 {
@@ -3891,6 +4011,18 @@ mc_lua_viewer_source_define (lua_State *lua)
     definition->prepare_ref = mc_lua_panel_callback_ref (lua, 1, "prepare", FALSE);
     definition->options_ref = mc_lua_panel_callback_ref (lua, 1, "options", FALSE);
     definition->close_ref = mc_lua_panel_callback_ref (lua, 1, "close", FALSE);
+    {
+        char *resize = mc_lua_dup_table_string (lua, 1, "resize");
+
+        if (resize != NULL && g_strcmp0 (resize, "none") != 0 && g_strcmp0 (resize, "rebuild") != 0)
+        {
+            g_free (resize);
+            mc_lua_viewer_definition_destroy (definition);
+            return luaL_error (lua, "viewer resize must be none or rebuild");
+        }
+        definition->resize_rebuild = g_strcmp0 (resize, "rebuild") == 0;
+        g_free (resize);
+    }
     if (definition->open_ref == LUA_NOREF || definition->prepare_ref == LUA_NOREF
         || definition->close_ref == LUA_NOREF)
     {
@@ -3928,6 +4060,142 @@ mc_lua_viewer_definition_destroy (gpointer data)
     g_free (definition);
 }
 
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mc_lua_file_handler_destroy (gpointer data)
+{
+    mc_lua_file_handler_t *handler = data;
+
+    if (handler == NULL)
+        return;
+    if (handler->package != NULL && handler->package->lua != NULL)
+        luaL_unref (handler->package->lua, LUA_REGISTRYINDEX, handler->handler_ref);
+    g_free (handler->id);
+    g_free (handler);
+}
+
+/** @lua mc.file_handler.register(spec) -> boolean @workspace mc @mutation yes @summary Register a
+ * package-owned Open or View operation for magic.ini.
+ * @lua-callback handler(request) -> table|nil, error?
+ */
+static int
+mc_lua_file_handler_register (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_lua_file_handler_t *handler;
+    char *id;
+    char *kind;
+    guint i;
+
+    luaL_checktype (lua, 1, LUA_TTABLE);
+    if (package == NULL || package->closed || g_strcmp0 (package->workspace, "mc") != 0)
+        return luaL_error (lua, "file handlers are allowed only in the mc workspace");
+    if ((package->provides & MC_LUA_PROVIDES_FILE_HANDLER) == 0)
+        return luaL_error (lua, "manifest does not declare provides=file-handler");
+    id = mc_lua_dup_table_string (lua, 1, "id");
+    kind = mc_lua_dup_table_string (lua, 1, "kind");
+    if (!mc_lua_id_is_valid (id)
+        || (g_strcmp0 (kind, "open") != 0 && g_strcmp0 (kind, "view") != 0))
+    {
+        g_free (id);
+        g_free (kind);
+        return luaL_error (lua, "file handler requires valid id and open/view kind");
+    }
+    for (i = 0; i < package->file_handlers->len; i++)
+    {
+        const mc_lua_file_handler_t *existing =
+            (const mc_lua_file_handler_t *) g_ptr_array_index (package->file_handlers, i);
+        if (g_strcmp0 (existing->id, id) == 0)
+        {
+            g_free (id);
+            g_free (kind);
+            return luaL_error (lua, "duplicate file handler id");
+        }
+    }
+    lua_getfield (lua, 1, "handler");
+    if (!lua_isfunction (lua, -1))
+    {
+        lua_pop (lua, 1);
+        g_free (id);
+        g_free (kind);
+        return luaL_error (lua, "file handler requires handler function");
+    }
+    handler = g_new0 (mc_lua_file_handler_t, 1);
+    handler->package = package;
+    handler->id = id;
+    handler->kind = g_strcmp0 (kind, "view") == 0 ? MC_RUNTIME_FILE_OPERATION_VIEW
+                                                  : MC_RUNTIME_FILE_OPERATION_OPEN;
+    handler->handler_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+    g_free (kind);
+    g_ptr_array_add (package->file_handlers, handler);
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+static gboolean
+mc_lua_viewer_controller_transfer (mc_lua_package_t *package,
+                                   mc_lua_viewer_controller_t *controller, int controller_index,
+                                   const mc_runtime_handle_t *target_viewer, const char **error)
+{
+    mc_runtime_viewer_controller_t descriptor = { 0 };
+    mc_runtime_viewer_spec_t initial = { 0 };
+    gboolean ok;
+
+    if (controller == NULL || controller->owned || controller->closed)
+    {
+        if (error != NULL)
+            *error = controller != NULL && controller->owned ? "owned" : "closed";
+        return FALSE;
+    }
+    if (package->runtime->host->struct_size < MC_LUA_HOST_API_VIEWER_SOURCE_SIZE
+        || package->runtime->host->viewer_controller_open == NULL)
+    {
+        if (error != NULL)
+            *error = "viewer_source_unavailable";
+        return FALSE;
+    }
+    if (!controller->definition->resize_rebuild
+        && !mc_lua_viewer_call_prepare (controller, controller->live_ref, &initial))
+    {
+        if (error != NULL)
+            *error = "invalid_source";
+        return FALSE;
+    }
+    descriptor.struct_size = sizeof (descriptor);
+    descriptor.api_version = 1;
+    descriptor.controller_id = controller->runtime_id;
+    descriptor.initial_spec = controller->definition->resize_rebuild ? NULL : &initial;
+    descriptor.dispatch = mc_lua_viewer_dispatch;
+    descriptor.spec_free = mc_lua_viewer_spec_free;
+    descriptor.help_file = controller->definition->help_file;
+    descriptor.help_node = controller->definition->help_node;
+    descriptor.dispatch_v2 = mc_lua_viewer_dispatch_v2;
+    descriptor.viewport_policy = controller->definition->resize_rebuild
+        ? MC_RUNTIME_VIEWER_VIEWPORT_REBUILD
+        : MC_RUNTIME_VIEWER_VIEWPORT_NONE;
+    if (target_viewer != NULL)
+        descriptor.target_viewer = *target_viewer;
+    controller_index = lua_absindex (package->lua, controller_index);
+    lua_pushvalue (package->lua, controller_index);
+    controller->self_ref = luaL_ref (package->lua, LUA_REGISTRYINDEX);
+    controller->owned = TRUE;
+    ok = package->runtime->host->viewer_controller_open (package->runtime->context, &descriptor,
+                                                         error);
+    if (!controller->definition->resize_rebuild)
+        mc_lua_viewer_spec_free (package->runtime->context, &initial);
+    if (!ok)
+    {
+        controller->owned = FALSE;
+        if (controller->self_ref != LUA_NOREF)
+        {
+            luaL_unref (package->lua, LUA_REGISTRYINDEX, controller->self_ref);
+            controller->self_ref = LUA_NOREF;
+        }
+    }
+    return ok;
+}
+
 /** @lua mc.ui.open_viewer(spec) -> boolean|nil, error? @capability viewer_source @mutation yes
  * @summary Open the native viewer and transfer a controller to MC. */
 static int
@@ -3935,41 +4203,19 @@ mc_lua_ui_open_viewer (lua_State *lua)
 {
     mc_lua_package_t *package = mc_lua_package_from_state (lua);
     mc_lua_viewer_controller_t *controller;
-    mc_runtime_viewer_controller_t descriptor = { 0 };
-    mc_runtime_viewer_spec_t initial = { 0 };
     const char *error = NULL;
-    gboolean ok;
 
     luaL_checktype (lua, 1, LUA_TTABLE);
     lua_getfield (lua, 1, "controller");
     controller = mc_lua_viewer_controller_check (lua, -1);
-    lua_pop (lua, 1);
-    if (controller->owned || controller->closed)
-        return luaL_error (lua, controller->owned ? "owned" : "closed");
-    if (package->runtime->host->struct_size < MC_LUA_HOST_API_VIEWER_SOURCE_SIZE
-        || package->runtime->host->viewer_controller_open == NULL)
-        return luaL_error (lua, "viewer source host is unavailable");
-    if (!mc_lua_viewer_call_prepare (controller, controller->live_ref, &initial))
-        return luaL_error (lua, "invalid_source");
-    descriptor.struct_size = sizeof (descriptor);
-    descriptor.api_version = 1;
-    descriptor.controller_id = controller->runtime_id;
-    descriptor.initial_spec = &initial;
-    descriptor.dispatch = mc_lua_viewer_dispatch;
-    descriptor.spec_free = mc_lua_viewer_spec_free;
-    descriptor.help_file = controller->definition->help_file;
-    descriptor.help_node = controller->definition->help_node;
-    controller->owned = TRUE;
-    ok = package->runtime->host->viewer_controller_open (package->runtime->context, &descriptor,
-                                                         &error);
-    mc_lua_viewer_spec_free (package->runtime->context, &initial);
-    if (!ok)
+    if (!mc_lua_viewer_controller_transfer (package, controller, -1, NULL, &error))
     {
-        controller->owned = FALSE;
+        lua_pop (lua, 1);
         lua_pushnil (lua);
         lua_pushstring (lua, error != NULL ? error : "open_failed");
         return 2;
     }
+    lua_pop (lua, 1);
     lua_pushboolean (lua, TRUE);
     return 1;
 }
@@ -5280,6 +5526,11 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_setfield (lua, -2, "panel_provider");
 
     lua_createtable (lua, 0, 1);
+    lua_pushcfunction (lua, mc_lua_file_handler_register);
+    lua_setfield (lua, -2, "register");
+    lua_setfield (lua, -2, "file_handler");
+
+    lua_createtable (lua, 0, 1);
     lua_pushcfunction (lua, mc_lua_editor_current);
     lua_setfield (lua, -2, "current");
     lua_setfield (lua, -2, "editor");
@@ -5558,6 +5809,8 @@ mc_lua_package_candidate_new (const char *parent, const char *directory_name,
     provides = g_key_file_get_string (ini, MC_LUA_MANIFEST_GROUP, "provides", NULL);
     if (!mc_lua_provides_parse (provides, &provides_flags))
         goto done_with_provides;
+    if ((provides_flags & MC_LUA_PROVIDES_FILE_HANDLER) != 0 && g_strcmp0 (workspace, "mc") != 0)
+        goto done_with_provides;
 
     candidate = g_new0 (mc_lua_package_candidate_t, 1);
     candidate->id = g_steal_pointer (&id);
@@ -5679,6 +5932,7 @@ mc_lua_package_load (mc_lua_runtime_t *runtime, const mc_lua_package_candidate_t
     package->macros = g_ptr_array_new_with_free_func (mc_lua_macro_destroy);
     package->panel_providers = g_ptr_array_new_with_free_func (mc_lua_panel_provider_destroy);
     package->viewer_definitions = g_ptr_array_new_with_free_func (mc_lua_viewer_definition_destroy);
+    package->file_handlers = g_ptr_array_new_with_free_func (mc_lua_file_handler_destroy);
     package->lua = luaL_newstate ();
 
     if (package->lua == NULL)
@@ -6025,6 +6279,177 @@ mc_lua_runtime_invoke_action (mc_runtime_plugin_context_t *context, const char *
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+mc_lua_runtime_enumerate_file_operations (mc_runtime_plugin_context_t *context,
+                                          mc_runtime_file_operation_callback_t callback,
+                                          gpointer user_data)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    guint i, j;
+
+    if (runtime == NULL || runtime->context != context || runtime->stopping || callback == NULL)
+        return;
+    for (i = 0; i < runtime->packages->len; i++)
+    {
+        const mc_lua_package_t *package =
+            (const mc_lua_package_t *) g_ptr_array_index (runtime->packages, i);
+
+        if (package == NULL || package->closed)
+            continue;
+        for (j = 0; j < package->file_handlers->len; j++)
+        {
+            const mc_lua_file_handler_t *handler =
+                (const mc_lua_file_handler_t *) g_ptr_array_index (package->file_handlers, j);
+            mc_runtime_file_operation_t operation = {
+                .struct_size = sizeof (operation),
+                .api_version = 1,
+                .package_id = package->id,
+                .operation_id = handler->id,
+                .kind = handler->kind,
+            };
+
+            callback (&operation, user_data);
+        }
+    }
+}
+
+static mc_runtime_file_operation_result_t
+mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, const char *package_id,
+                                      const char *operation_id,
+                                      const mc_runtime_file_operation_request_t *request,
+                                      const char **error)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    mc_lua_package_t *package = NULL;
+    mc_lua_file_handler_t *handler = NULL;
+    lua_State *lua;
+    guint i, j;
+
+    if (error != NULL)
+        *error = NULL;
+    if (runtime == NULL || runtime->context != context || runtime->stopping || request == NULL)
+    {
+        if (error != NULL)
+            *error = "invalid_context";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+    for (i = 0; i < runtime->packages->len; i++)
+    {
+        mc_lua_package_t *candidate = (mc_lua_package_t *) g_ptr_array_index (runtime->packages, i);
+        if (candidate != NULL && !candidate->closed && g_strcmp0 (candidate->id, package_id) == 0)
+        {
+            package = candidate;
+            break;
+        }
+    }
+    if (package == NULL)
+    {
+        if (error != NULL)
+            *error = "package_not_found";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+    for (j = 0; j < package->file_handlers->len; j++)
+    {
+        mc_lua_file_handler_t *candidate =
+            (mc_lua_file_handler_t *) g_ptr_array_index (package->file_handlers, j);
+        if (g_strcmp0 (candidate->id, operation_id) == 0)
+        {
+            handler = candidate;
+            break;
+        }
+    }
+    if (handler == NULL)
+    {
+        if (error != NULL)
+            *error = "operation_not_found";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+    if (handler->kind != request->kind)
+    {
+        if (error != NULL)
+            *error = "operation_kind_mismatch";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+
+    lua = package->lua;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, handler->handler_ref);
+    lua_createtable (lua, 0, 5);
+#define MC_LUA_REQUEST_STRING(field_)                                                              \
+    do                                                                                             \
+    {                                                                                              \
+        if (request->field_ != NULL)                                                               \
+        {                                                                                          \
+            lua_pushstring (lua, request->field_);                                                 \
+            lua_setfield (lua, -2, #field_);                                                       \
+        }                                                                                          \
+    }                                                                                              \
+    while (0)
+    lua_pushstring (lua, request->kind == MC_RUNTIME_FILE_OPERATION_VIEW ? "view" : "open");
+    lua_setfield (lua, -2, "kind");
+    MC_LUA_REQUEST_STRING (display_name);
+    MC_LUA_REQUEST_STRING (local_path);
+    MC_LUA_REQUEST_STRING (mime_type);
+    MC_LUA_REQUEST_STRING (magic_group);
+#undef MC_LUA_REQUEST_STRING
+    package->callback_depth++;
+    if (lua_pcall (lua, 1, 3, 0) != LUA_OK)
+    {
+        mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT,
+                             "Lua file handler callback failed");
+        package->callback_depth--;
+        lua_pop (lua, 1);
+        if (error != NULL)
+            *error = "script_error";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+    package->callback_depth--;
+
+    if (lua_istable (lua, -3))
+    {
+        mc_lua_viewer_controller_t *controller;
+        const mc_runtime_handle_t *target_viewer = NULL;
+        gboolean handled;
+        const char *transfer_error = NULL;
+
+        lua_getfield (lua, -3, "handled");
+        handled = lua_toboolean (lua, -1);
+        lua_pop (lua, 1);
+        lua_getfield (lua, -3, "controller");
+        controller =
+            (mc_lua_viewer_controller_t *) luaL_testudata (lua, -1, MC_LUA_VIEWER_CONTROLLER_MT);
+        if (request->struct_size
+                >= G_STRUCT_OFFSET (mc_runtime_file_operation_request_t, target_viewer)
+                    + sizeof (request->target_viewer)
+            && mc_lua_handle_is_valid (&request->target_viewer))
+            target_viewer = &request->target_viewer;
+        if (handled && controller != NULL
+            && mc_lua_viewer_controller_transfer (package, controller, -1, target_viewer,
+                                                  &transfer_error))
+        {
+            lua_pop (lua, 4);
+            return MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED;
+        }
+        lua_pop (lua, 4);
+        if (error != NULL)
+            *error = transfer_error != NULL ? transfer_error : "invalid_controller";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+    }
+    if (lua_isnil (lua, -3) && lua_isstring (lua, -2)
+        && g_strcmp0 (lua_tostring (lua, -2), "not_supported") == 0)
+    {
+        lua_pop (lua, 3);
+        if (error != NULL)
+            *error = "not_supported";
+        return MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED;
+    }
+    lua_pop (lua, 3);
+    if (error != NULL)
+        *error = "handler_failed";
+    return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 mc_lua_runtime_init (const mc_runtime_host_api_v1_t *host, mc_runtime_plugin_context_t *context,
                      GError **error)
@@ -6113,7 +6538,7 @@ mc_runtime_plugin_register_v1 (void)
     static const mc_runtime_plugin_descriptor_v1_t descriptor = {
         .abi_version = MC_RUNTIME_PLUGIN_ABI_VERSION,
         .struct_size = sizeof (mc_runtime_plugin_descriptor_v1_t),
-        .capability_flags = 0,
+        .capability_flags = MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS,
         .runtime_name = "lua",
         .required_host_capabilities = MC_RUNTIME_HOST_CAP_EVENTS | MC_RUNTIME_HOST_CAP_CONTEXT_DATA,
         .init = mc_lua_runtime_init,
@@ -6124,6 +6549,8 @@ mc_runtime_plugin_register_v1 (void)
         .invoke_action = mc_lua_runtime_invoke_action,
         .enumerate_menu_actions = mc_lua_runtime_enumerate_menu_actions,
         .display_name = "Lua engine",
+        .enumerate_file_operations = mc_lua_runtime_enumerate_file_operations,
+        .invoke_file_operation = mc_lua_runtime_invoke_file_operation,
     };
 
     return &descriptor;

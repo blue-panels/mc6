@@ -60,7 +60,7 @@
 #include "filemanager/treestore.h"  // tree_store_save
 #include "filemanager/layout.h"
 #include "filemanager/ext.h"      // flush_extension_file()
-#include "filemanager/magic.h"    // mc_magic_flush()
+#include "filemanager/mcmagic.h"  // mc_magic_flush()
 #include "filemanager/command.h"  // cmdline
 #include "filemanager/panel.h"    // panalized_panel
 #include "filemanager/filenot.h"  // my_rmdir()

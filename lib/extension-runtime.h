@@ -10,19 +10,21 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_RUNTIME_PLUGIN_ABI_VERSION      1
-#define MC_RUNTIME_PLUGIN_ENTRY_V1         "mc_runtime_plugin_register_v1"
+#define MC_RUNTIME_PLUGIN_ABI_VERSION         1
+#define MC_RUNTIME_PLUGIN_ENTRY_V1            "mc_runtime_plugin_register_v1"
 
-#define MC_RUNTIME_HOST_CAP_EVENTS         (G_GUINT64_CONSTANT (1) << 0)
-#define MC_RUNTIME_HOST_CAP_CONTEXT_DATA   (G_GUINT64_CONSTANT (1) << 1)
-#define MC_RUNTIME_HOST_CAP_UI             (G_GUINT64_CONSTANT (1) << 2)
-#define MC_RUNTIME_HOST_CAP_LOG            (G_GUINT64_CONSTANT (1) << 3)
-#define MC_RUNTIME_HOST_CAP_PANEL          (G_GUINT64_CONSTANT (1) << 4)
-#define MC_RUNTIME_HOST_CAP_EDITOR         (G_GUINT64_CONSTANT (1) << 5)
-#define MC_RUNTIME_HOST_CAP_VIEWER         (G_GUINT64_CONSTANT (1) << 6)
-#define MC_RUNTIME_HOST_CAP_PROCESS        (G_GUINT64_CONSTANT (1) << 7)
-#define MC_RUNTIME_HOST_CAP_PANEL_PROVIDER (G_GUINT64_CONSTANT (1) << 8)
-#define MC_RUNTIME_HOST_CAP_VIEWER_SOURCE  (G_GUINT64_CONSTANT (1) << 9)
+#define MC_RUNTIME_HOST_CAP_EVENTS            (G_GUINT64_CONSTANT (1) << 0)
+#define MC_RUNTIME_HOST_CAP_CONTEXT_DATA      (G_GUINT64_CONSTANT (1) << 1)
+#define MC_RUNTIME_HOST_CAP_UI                (G_GUINT64_CONSTANT (1) << 2)
+#define MC_RUNTIME_HOST_CAP_LOG               (G_GUINT64_CONSTANT (1) << 3)
+#define MC_RUNTIME_HOST_CAP_PANEL             (G_GUINT64_CONSTANT (1) << 4)
+#define MC_RUNTIME_HOST_CAP_EDITOR            (G_GUINT64_CONSTANT (1) << 5)
+#define MC_RUNTIME_HOST_CAP_VIEWER            (G_GUINT64_CONSTANT (1) << 6)
+#define MC_RUNTIME_HOST_CAP_PROCESS           (G_GUINT64_CONSTANT (1) << 7)
+#define MC_RUNTIME_HOST_CAP_PANEL_PROVIDER    (G_GUINT64_CONSTANT (1) << 8)
+#define MC_RUNTIME_HOST_CAP_VIEWER_SOURCE     (G_GUINT64_CONSTANT (1) << 9)
+
+#define MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS (G_GUINT64_CONSTANT (1) << 0)
 
 /*** enums ***************************************************************************************/
 
@@ -364,6 +366,12 @@ typedef struct
     const char *cwd;
 } mc_runtime_viewer_process_t;
 
+typedef enum
+{
+    MC_RUNTIME_VIEWER_DISPLAY_TEXT = 0,
+    MC_RUNTIME_VIEWER_DISPLAY_TERMINAL
+} mc_runtime_viewer_display_t;
+
 struct mc_runtime_viewer_source_t
 {
     gsize struct_size;
@@ -375,6 +383,7 @@ struct mc_runtime_viewer_source_t
     mc_runtime_viewer_process_t process;
     const mc_runtime_viewer_source_t *stages;
     guint stages_count;
+    gboolean process_stderr_separate;
 };
 
 typedef struct
@@ -384,6 +393,7 @@ typedef struct
     const char *title;
     const char *help_node;
     gboolean auto_scroll_bottom;
+    mc_runtime_viewer_display_t initial_display;
 } mc_runtime_viewer_spec_t;
 
 typedef enum
@@ -393,8 +403,25 @@ typedef enum
     MC_RUNTIME_VIEWER_CONTROLLER_COMMIT,
     MC_RUNTIME_VIEWER_CONTROLLER_ROLLBACK,
     MC_RUNTIME_VIEWER_CONTROLLER_CLOSE,
-    MC_RUNTIME_VIEWER_CONTROLLER_KEY
+    MC_RUNTIME_VIEWER_CONTROLLER_KEY,
+    MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT
 } mc_runtime_viewer_controller_operation_t;
+
+typedef struct
+{
+    gsize struct_size;
+    guint operation_version;
+    guint columns;
+    guint lines;
+    guint pixel_width;
+    guint pixel_height;
+} mc_runtime_viewer_viewport_t;
+
+typedef enum
+{
+    MC_RUNTIME_VIEWER_VIEWPORT_NONE = 0,
+    MC_RUNTIME_VIEWER_VIEWPORT_REBUILD
+} mc_runtime_viewer_viewport_policy_t;
 
 typedef gboolean (*mc_runtime_viewer_controller_dispatch_t) (
     mc_runtime_plugin_context_t *context, guint64 controller_id,
@@ -402,6 +429,11 @@ typedef gboolean (*mc_runtime_viewer_controller_dispatch_t) (
     gboolean *handled, const char **error);
 typedef void (*mc_runtime_viewer_spec_free_t) (mc_runtime_plugin_context_t *context,
                                                mc_runtime_viewer_spec_t *spec);
+typedef gboolean (*mc_runtime_viewer_controller_dispatch_v2_t) (
+    mc_runtime_plugin_context_t *context, guint64 controller_id,
+    mc_runtime_viewer_controller_operation_t operation,
+    const mc_runtime_viewer_viewport_t *viewport, int key, mc_runtime_viewer_spec_t *spec,
+    gboolean *handled, const char **error);
 
 typedef struct
 {
@@ -413,7 +445,47 @@ typedef struct
     mc_runtime_viewer_spec_free_t spec_free;
     const char *help_file;
     const char *help_node;
+    mc_runtime_viewer_controller_dispatch_v2_t dispatch_v2;
+    mc_runtime_viewer_viewport_policy_t viewport_policy;
+    mc_runtime_handle_t target_viewer;
 } mc_runtime_viewer_controller_t;
+
+typedef enum
+{
+    MC_RUNTIME_FILE_OPERATION_OPEN,
+    MC_RUNTIME_FILE_OPERATION_VIEW
+} mc_runtime_file_operation_kind_t;
+
+typedef struct
+{
+    gsize struct_size;
+    guint api_version;
+    const char *package_id;
+    const char *operation_id;
+    mc_runtime_file_operation_kind_t kind;
+} mc_runtime_file_operation_t;
+
+typedef void (*mc_runtime_file_operation_callback_t) (const mc_runtime_file_operation_t *operation,
+                                                      gpointer user_data);
+
+typedef struct
+{
+    gsize struct_size;
+    guint operation_version;
+    mc_runtime_file_operation_kind_t kind;
+    const char *display_name;
+    const char *local_path;
+    const char *mime_type;
+    const char *magic_group;
+    mc_runtime_handle_t target_viewer;
+} mc_runtime_file_operation_request_t;
+
+typedef enum
+{
+    MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED,
+    MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED,
+    MC_RUNTIME_FILE_OPERATION_RESULT_FAILED
+} mc_runtime_file_operation_result_t;
 
 typedef enum
 {
@@ -803,6 +875,14 @@ typedef struct
 
     /* Optional append-only display metadata. */
     const char *display_name;
+
+    /* Optional append-only v1 file operations exported by runtime packages. */
+    void (*enumerate_file_operations) (mc_runtime_plugin_context_t *context,
+                                       mc_runtime_file_operation_callback_t callback,
+                                       gpointer user_data);
+    mc_runtime_file_operation_result_t (*invoke_file_operation) (
+        mc_runtime_plugin_context_t *context, const char *package_id, const char *operation_id,
+        const mc_runtime_file_operation_request_t *request, const char **error);
 } mc_runtime_plugin_descriptor_v1_t;
 
 typedef const mc_runtime_plugin_descriptor_v1_t *(*mc_runtime_plugin_register_v1_fn) (void);
@@ -832,6 +912,9 @@ void mc_runtime_plugins_enumerate_actions (const char *workspace,
                                            gpointer user_data);
 gboolean mc_runtime_plugins_invoke_action (const char *runtime_name, const char *workspace,
                                            const char *action_id, const char **error);
+mc_runtime_file_operation_result_t mc_runtime_plugins_invoke_file_operation (
+    const char *runtime_name, const char *package_id, const char *operation_id,
+    const mc_runtime_file_operation_request_t *request, const char **error);
 void mc_runtime_plugins_enumerate_menu_actions (const char *workspace,
                                                 mc_runtime_loaded_menu_action_callback_t callback,
                                                 gpointer user_data);

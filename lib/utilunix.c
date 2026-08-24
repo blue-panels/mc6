@@ -11,6 +11,7 @@
    Jakub Jelinek, 1994, 1995, 1996
    Mauricio Plaza, 1994, 1995, 1996
    Andrew Borodin <aborodin@vmail.ru> 2010-2024
+   Ilia Maslakov <il.smind@gmail.com>, 2012, 2026
 
    The mc_realpath routine is mostly from uClibc package, written
    by Rick Sladkey <jrs@world.std.com>
@@ -549,10 +550,10 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
  */
 
 mc_pipe_t *
-mc_popen (const char *command, gboolean read_out, gboolean read_err, GError **error)
+mc_popen_argv (const char *const *argv, const char *cwd, gboolean read_out, gboolean read_err,
+               GError **error)
 {
     mc_pipe_t *p;
-    const char *const argv[] = { "/bin/sh", "sh", "-c", command, NULL };
 
     p = g_try_new (mc_pipe_t, 1);
     if (p == NULL)
@@ -565,10 +566,10 @@ mc_popen (const char *command, gboolean read_out, gboolean read_err, GError **er
     p->out.fd = -1;
     p->err.fd = -1;
 
-    if (!g_spawn_async_with_pipes (NULL, (gchar **) argv, NULL,
-                                   G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_FILE_AND_ARGV_ZERO, NULL,
-                                   NULL, &p->child_pid, NULL, read_out ? &p->out.fd : NULL,
-                                   read_err ? &p->err.fd : NULL, error))
+    if (argv == NULL || argv[0] == NULL
+        || !g_spawn_async_with_pipes (
+            cwd, (gchar **) argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH, NULL, NULL,
+            &p->child_pid, NULL, read_out ? &p->out.fd : NULL, read_err ? &p->err.fd : NULL, error))
     {
         mc_replace_error (error, MC_PIPE_ERROR_CREATE_PIPE_STREAM, "%s",
                           _ ("Cannot create pipe streams"));
@@ -588,6 +589,18 @@ mc_popen (const char *command, gboolean read_out, gboolean read_err, GError **er
 ret_err:
     g_free (p);
     return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+mc_pipe_t *
+mc_popen (const char *command, gboolean read_out, gboolean read_err, GError **error)
+{
+    const char *const argv[] = { "/bin/sh", "-c", command, NULL };
+    mc_pipe_t *pipe;
+
+    pipe = mc_popen_argv (argv, NULL, read_out, read_err, error);
+    return pipe;
 }
 
 /* --------------------------------------------------------------------------------------------- */

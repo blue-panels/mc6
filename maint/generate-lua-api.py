@@ -115,6 +115,15 @@ def validate_coverage(source: Path, methods: list[dict[str, object]], callbacks:
     registered_callbacks = set(
         re.findall(r'mc_lua_panel_callback_ref\s*\(lua,\s*1,\s*\"([^\"]+)\"', text)
     )
+    file_handler_register = re.search(
+        r"static\s+int\s+mc_lua_file_handler_register\s*\(lua_State \*lua\)\s*\{.*?^}\n",
+        text,
+        re.DOTALL | re.MULTILINE,
+    )
+    if file_handler_register is not None and re.search(
+        r'lua_getfield\s*\(lua,\s*1,\s*\"handler\"\s*\)', file_handler_register.group(0)
+    ):
+        registered_callbacks.add("handler")
     annotated_callbacks = {
         match.group(1)
         for callback in callbacks

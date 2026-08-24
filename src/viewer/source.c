@@ -63,7 +63,8 @@ mcview_try_open_source (const mcview_source_spec_t *spec, char **err_out)
     if (err_out != NULL)
         *err_out = NULL;
 
-    if (spec == NULL || (spec->command == NULL && spec->file == NULL))
+    if (spec == NULL
+        || (spec->command == NULL && spec->file == NULL && (spec->argv == NULL || spec->argc == 0)))
     {
         if (err_out != NULL)
             *err_out = g_strdup (_ ("Source spec must set either command or file."));
@@ -72,6 +73,25 @@ mcview_try_open_source (const mcview_source_spec_t *spec, char **err_out)
 
     h = g_new0 (mcview_source_handle_t, 1);
 
+    if (spec->argv != NULL && spec->argc != 0)
+    {
+        GError *gerr = NULL;
+        mc_pipe_t *p = mc_popen_argv ((const char *const *) spec->argv, spec->cwd, TRUE,
+                                      spec->separate_stderr, &gerr);
+
+        if (p == NULL)
+        {
+            if (err_out != NULL)
+                *err_out =
+                    g_strdup (gerr != NULL ? gerr->message : _ ("Cannot open source process."));
+            g_clear_error (&gerr);
+            g_free (h);
+            return NULL;
+        }
+        h->kind = SRC_PIPE;
+        h->pipe = p;
+        return h;
+    }
     if (spec->command != NULL)
     {
         GError *gerr = NULL;
@@ -127,13 +147,25 @@ static void
 mcview_install_source (WView *view, mcview_source_handle_t *handle,
                        const mcview_source_spec_t *spec)
 {
+    if (spec->initial_terminal)
+    {
+        view->mode_flags.hex = FALSE;
+        view->mode_flags.nroff = FALSE;
+        view->mode_flags.syntax = FALSE;
+        view->mode_flags.structured = FALSE;
+        view->mode_flags.terminal = TRUE;
+        if (view->vterm == NULL)
+            view->vterm = mcview_vterm_new ();
+        (void) mcview_vterm_set_size (view->vterm, MAX (view->data_area.lines, 1),
+                                      MAX (view->data_area.cols, 1));
+    }
     if (handle->kind == SRC_PIPE)
     {
         mcview_set_datasource_stdio_pipe (view, handle->pipe);
         mcview_stream_start (view);
 
         g_free (view->command);
-        view->command = g_strdup (spec->command);
+        view->command = g_strdup (spec->command != NULL ? spec->command : spec->argv[0]);
         vfs_path_free (view->filename_vpath, TRUE);
         view->filename_vpath = NULL;
         vfs_path_free (view->workdir_vpath, TRUE);
@@ -165,6 +197,52 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
     mcview_update_bytes_per_line (view);
 
     g_free (handle); /* handle struct itself is transient; datasource owns the fd/pipe */
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_source_rebuild_viewport (WView *view)
+{
+    const mcview_source_controller_t *controller;
+    mcview_source_spec_t *draft;
+    mcview_source_handle_t *handle;
+    char *error = NULL;
+
+    if (view == NULL || view->source_controller == NULL || view->source_spec == NULL)
+        return;
+    controller = view->source_controller;
+    if (!controller->rebuild_on_resize || controller->prepare_viewport == NULL)
+        return;
+    if (view->source_viewport_columns == (guint) MAX (view->data_area.cols, 1)
+        && view->source_viewport_lines == (guint) MAX (view->data_area.lines, 1))
+        return;
+    draft = mcview_source_spec_clone (view->source_spec);
+    if (!controller->prepare_viewport (view->source_ctx, draft, MAX (view->data_area.cols, 1),
+                                       MAX (view->data_area.lines, 1), &error))
+    {
+        message (D_ERROR, MSG_ERROR, "%s",
+                 error != NULL ? error : _ ("Viewport source prepare failed."));
+        g_free (error);
+        mcview_source_spec_free (draft);
+        return;
+    }
+    handle = mcview_try_open_source (draft, &error);
+    if (handle == NULL)
+    {
+        message (D_ERROR, MSG_ERROR, "%s",
+                 error != NULL ? error : _ ("Cannot open resized source."));
+        g_free (error);
+        mcview_source_spec_free (draft);
+        return;
+    }
+    mcview_reset_for_source_swap (view);
+    mcview_install_source (view, handle, draft);
+    mcview_source_spec_free (view->source_spec);
+    view->source_spec = draft;
+    view->source_viewport_columns = (guint) MAX (view->data_area.cols, 1);
+    view->source_viewport_lines = (guint) MAX (view->data_area.lines, 1);
+    view->dirty++;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -207,11 +285,16 @@ mcview_source_spec_clone (const mcview_source_spec_t *src)
         return NULL;
     dst = g_new0 (mcview_source_spec_t, 1);
     dst->command = g_strdup (src->command);
+    dst->argv = g_strdupv (src->argv);
+    dst->argc = src->argc;
+    dst->cwd = g_strdup (src->cwd);
+    dst->separate_stderr = src->separate_stderr;
     dst->file = g_strdup (src->file);
     dst->title = g_strdup (src->title);
     dst->help_file = g_strdup (src->help_file);
     dst->help_node = g_strdup (src->help_node);
     dst->auto_scroll_bottom = src->auto_scroll_bottom;
+    dst->initial_terminal = src->initial_terminal;
     return dst;
 }
 
@@ -223,11 +306,103 @@ mcview_source_spec_free (mcview_source_spec_t *s)
     if (s == NULL)
         return;
     g_free (s->command);
+    g_strfreev (s->argv);
+    g_free (s->cwd);
     g_free (s->file);
     g_free (s->title);
     g_free (s->help_file);
     g_free (s->help_node);
     g_free (s);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_source_controller_detach (WView *view)
+{
+    const mcview_source_controller_t *controller;
+    mcview_source_spec_t *spec;
+    void *ctx;
+
+    if (view == NULL)
+        return;
+
+    controller = view->source_controller;
+    spec = view->source_spec;
+    ctx = view->source_ctx;
+    view->source_controller = NULL;
+    view->source_spec = NULL;
+    view->source_ctx = NULL;
+    view->source_viewport_columns = 0;
+    view->source_viewport_lines = 0;
+
+    if (controller != NULL && controller->free != NULL)
+        controller->free (ctx);
+    mcview_source_spec_free (spec);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcview_source_controller_attach (WView *view, mcview_source_spec_t *initial_spec,
+                                 const mcview_source_controller_t *controller, void *ctx,
+                                 char **err_out)
+{
+    mcview_source_handle_t *handle = NULL;
+    gboolean viewport_source;
+
+    if (err_out != NULL)
+        *err_out = NULL;
+
+    viewport_source =
+        controller != NULL && controller->rebuild_on_resize && controller->prepare_viewport != NULL;
+    if (view == NULL || controller == NULL || controller->open_options == NULL
+        || controller->prepare == NULL || controller->commit == NULL || controller->rollback == NULL
+        || controller->free == NULL || (initial_spec == NULL && !viewport_source))
+    {
+        if (err_out != NULL)
+            *err_out = g_strdup (_ ("Invalid source controller."));
+        goto fail;
+    }
+
+    if (initial_spec == NULL)
+    {
+        mcview_compute_areas (view);
+        initial_spec = g_new0 (mcview_source_spec_t, 1);
+        if (!controller->prepare_viewport (ctx, initial_spec, MAX (view->data_area.cols, 1),
+                                           MAX (view->data_area.lines, 1), err_out))
+            goto fail;
+    }
+
+    handle = mcview_try_open_source (initial_spec, err_out);
+    if (handle == NULL)
+        goto fail;
+
+    /* Opening succeeded; replace the current source atomically. */
+    mcview_reset_for_source_swap (view);
+    mcview_source_controller_detach (view);
+
+    view->source_controller = controller;
+    view->source_ctx = ctx;
+    view->source_spec = initial_spec;
+    mcview_install_source (view, handle, initial_spec);
+    if (viewport_source)
+    {
+        view->source_viewport_columns = (guint) MAX (view->data_area.cols, 1);
+        view->source_viewport_lines = (guint) MAX (view->data_area.lines, 1);
+    }
+    if (initial_spec->auto_scroll_bottom)
+        mcview_moveto_bottom (view);
+    view->dirty++;
+    return TRUE;
+
+fail:
+    if (handle != NULL)
+        g_free (handle);
+    if (controller != NULL && controller->free != NULL)
+        controller->free (ctx);
+    mcview_source_spec_free (initial_spec);
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

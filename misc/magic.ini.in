@@ -4,8 +4,9 @@
 # when no rule here matches, Midnight Commander follows its normal extension
 # and panel-plugin handling.
 #
-# A user may add rules in ~/.config/mc/magic.ini. Values have the exact form
-# %plugin{plugin-name:operation}, for example:
+# A user may add rules in ~/.config/mc/magic.ini. Native values use
+# %plugin{plugin-id:operation}; runtime packages use
+# %plugin{runtime-id(package-id):operation}, for example:
 #
 # [archive]
 # Regex=\\.(tar|tar\\.gz|tgz|zip|7z)$
@@ -14,3 +15,5 @@
 @MAGIC_ARCMC_RULES@
 
 @MAGIC_SQLITE_RULES@
+
+@MAGIC_LUA_CHAFA_RULES@
