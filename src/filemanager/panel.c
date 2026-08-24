@@ -80,6 +80,7 @@
 #include "mcterm_overlay.h"  // mcterm_overlay_sync_shell_to_panel()
 
 #include "panel.h"
+#include "panel-quick-filter.h"
 #include "panel_modes.h"
 #include "panel_plugin_ops.h"
 
@@ -1216,7 +1217,7 @@ paint_dir (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
+void
 panel_quick_filter_get_marked_count (const WPanel *panel, int *visible, int *hidden)
 {
     int i;
@@ -3507,7 +3508,7 @@ panel_quick_filter_append (dir_list *list, const file_entry_t *source)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
+void
 panel_quick_filter_begin (WPanel *panel)
 {
     g_assert (!panel->quick_search.filtering);
@@ -3554,7 +3555,7 @@ panel_quick_filter_show_all (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
+void
 panel_quick_filter_restore (WPanel *panel)
 {
     if (!panel->quick_search.filtering)
@@ -3567,7 +3568,7 @@ panel_quick_filter_restore (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
+void
 panel_quick_filter_sync_marks (WPanel *panel)
 {
     GHashTable *source_by_name;
@@ -3597,7 +3598,7 @@ panel_quick_filter_sync_marks (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
+gboolean
 panel_quick_filter_apply (WPanel *panel)
 {
     const dir_list *source;

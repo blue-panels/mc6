@@ -25,6 +25,7 @@ libmcfilemanager_la_SOURCES = \
 	mcterm_overlay.c mcterm_overlay.h \
 	mountlist.c mountlist.h \
 	panel.c panel.h \
+	panel-quick-filter.h \
 	panel_modes.c panel_modes.h \
 	panel_plugin_ops.c panel_plugin_ops.h \
 	panel_plugin_ui.c \
