@@ -394,6 +394,8 @@ typedef struct
     const char *help_node;
     gboolean auto_scroll_bottom;
     mc_runtime_viewer_display_t initial_display;
+    /* Original file displayed when the viewer switches to raw mode. */
+    const char *raw_path;
 } mc_runtime_viewer_spec_t;
 
 typedef enum

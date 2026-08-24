@@ -451,6 +451,7 @@ void mcview_filter_nav_prev (WView *view);
 
 /* source.c: */
 void mcview_source_options (WView *view);
+gboolean mcview_source_set_raw (WView *view, gboolean raw);
 void mcview_reset_for_source_swap (WView *view);
 
 /* Filter snapshot (filter.c, used by source swap). */

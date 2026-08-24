@@ -28,7 +28,7 @@ typedef struct
     gboolean structured;  // Structured (tree) view of JSON/YAML/XML content
 } mcview_mode_flags_t;
 
-/* Exactly one of command, argv or file identifies the source. */
+/* Exactly one of command, argv or file identifies the generated source. */
 typedef struct
 {
     char *command; /* shell pipeline -> mc_popen + stream */
@@ -42,6 +42,7 @@ typedef struct
     char *help_file;
     char *help_node;
     gboolean initial_terminal;
+    char *raw_file;
 } mcview_source_spec_t;
 
 typedef enum

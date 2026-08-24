@@ -287,6 +287,9 @@ A viewer-source definition may provide `source_state(session, event)`.  Process 
 cancels the old generation before starting the new one, so asynchronous UI state can ignore stale
 terminal events.
 
+A prepared viewer spec may set `raw_path` to the original local file.  The viewer then keeps the
+controller attached while F8 switches between the generated source and the raw file.
+
 An `input` control in `mc.ui.dialog()` accepts an optional `history` name and
 an optional `completion` array.  `complete_on_tab = true` makes `Tab` invoke
 completion while that input has focus; `Shift-Tab` still moves to the previous

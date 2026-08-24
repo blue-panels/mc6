@@ -206,6 +206,7 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
     g_free (target->title);
     g_free (target->help_file);
     g_free (target->help_node);
+    g_free (target->raw_file);
     memset (target, 0, sizeof (*target));
     target->title = g_strdup (source->title);
     target->help_file = g_strdup (help_file);
@@ -219,6 +220,13 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
             && source->initial_display != MC_RUNTIME_VIEWER_DISPLAY_TERMINAL)
             return runtime_viewer_error (error, "invalid_source");
         target->initial_terminal = source->initial_display == MC_RUNTIME_VIEWER_DISPLAY_TERMINAL;
+    }
+    if (source->struct_size
+        >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, raw_path) + sizeof (source->raw_path))
+    {
+        if (source->raw_path != NULL && !g_path_is_absolute (source->raw_path))
+            return runtime_viewer_error (error, "invalid_source");
+        target->raw_file = g_strdup (source->raw_path);
     }
     switch (input->kind)
     {

@@ -244,6 +244,7 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
                                                      &viewport, 0, &draft, &handled, viewer_error));
         mctest_assert_true (handled);
         ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_TERMINAL);
+        ck_assert_str_eq (draft.raw_path, "/tmp/a $; '-.png");
         ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_PROCESS);
         ck_assert_str_eq (draft.source->process.argv[1], "91x23");
         ck_assert_str_eq (draft.source->process.argv[2], "/tmp/a $; '-.png");
@@ -292,6 +293,7 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
 
         ck_assert_int_eq (controller->initial_spec->initial_display,
                           MC_RUNTIME_VIEWER_DISPLAY_TERMINAL);
+        ck_assert_str_eq (controller->initial_spec->raw_path, "/tmp/a $; '-.class");
         ck_assert_int_eq (source->kind, MC_RUNTIME_VIEWER_SOURCE_PROCESS);
         ck_assert_uint_eq (source->process.argc, 8);
         ck_assert_str_eq (source->process.argv[0], "env");
@@ -390,7 +392,8 @@ create_viewport_controller_script (void)
                 "open=function() return {} end,"
                 "prepare=function(_,_,v) return {source=mc.source.process {"
                 "argv={'render',v.columns..'x'..v.lines,[=[/tmp/a $; '-.png]=]},"
-                "stderr='separate'},initial_display='terminal'} end,"
+                "stderr='separate'},raw_path=[=[/tmp/a $; '-.png]=],"
+                "initial_display='terminal'} end,"
                 "source_state=function(s,e) if e.state=='started' then s.generation=e.generation "
                 "assert(mc.ui.indicator{id='render',area='viewer',text='Rendering image...'}) "
                 "elseif s.generation==e.generation then "

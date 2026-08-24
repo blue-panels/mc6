@@ -28,6 +28,7 @@ local viewer = mc.viewer_source.define {
                 stderr = "separate",
             },
             title = session.display_name,
+            raw_path = session.local_path,
             initial_display = "terminal",
             auto_scroll = "top",
         }

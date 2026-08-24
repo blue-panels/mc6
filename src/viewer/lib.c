@@ -71,12 +71,24 @@ mcview_toggle_magic_mode (WView *view)
     char *filename, *command;
     dir_list *dir;
     int *dir_idx;
+    gboolean old_magic;
 
     if (view->filter_active)
         return;
 
     mcview_altered_flags.magic = TRUE;
+    old_magic = view->mode_flags.magic;
     view->mode_flags.magic = !view->mode_flags.magic;
+
+    if (view->source_controller != NULL && view->source_spec != NULL)
+    {
+        if (view->source_spec->raw_file == NULL
+            || !mcview_source_set_raw (view, !view->mode_flags.magic))
+            view->mode_flags.magic = old_magic;
+        view->dpy_bbar_dirty = TRUE;
+        view->dirty++;
+        return;
+    }
 
     // reinit view
     filename = g_strdup (vfs_path_as_str (view->filename_vpath));

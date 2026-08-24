@@ -3659,6 +3659,7 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
     spec->source = source;
     spec->title = mc_lua_dup_table_string (lua, table, "title");
     spec->help_node = mc_lua_dup_table_string (lua, table, "help_node");
+    spec->raw_path = mc_lua_dup_table_string (lua, table, "raw_path");
     scroll = mc_lua_dup_table_string (lua, table, "auto_scroll");
     spec->auto_scroll_bottom = g_strcmp0 (scroll, "bottom") == 0;
     g_free (scroll);
@@ -3670,6 +3671,7 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
         g_free (source);
         g_free ((char *) spec->title);
         g_free ((char *) spec->help_node);
+        g_free ((char *) spec->raw_path);
         memset (spec, 0, sizeof (*spec));
         return FALSE;
     }
@@ -3693,6 +3695,7 @@ mc_lua_viewer_spec_free (mc_runtime_plugin_context_t *context, mc_runtime_viewer
     }
     g_free ((char *) spec->title);
     g_free ((char *) spec->help_node);
+    g_free ((char *) spec->raw_path);
     memset (spec, 0, sizeof (*spec));
 }
 
@@ -3741,7 +3744,7 @@ mc_lua_viewer_call_prepare_viewport (mc_lua_viewer_controller_t *controller, int
     lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->definition->prepare_ref);
     lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->session_ref);
     lua_rawgeti (lua, LUA_REGISTRYINDEX, params_ref);
-    lua_createtable (lua, 0, 5);
+    lua_createtable (lua, 0, 4);
     lua_pushinteger (lua, viewport->columns);
     lua_setfield (lua, -2, "columns");
     lua_pushinteger (lua, viewport->lines);
@@ -3947,7 +3950,7 @@ mc_lua_viewer_source_state (mc_runtime_plugin_context_t *context, guint64 contro
     lua = package->lua;
     lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->definition->source_state_ref);
     lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->session_ref);
-    lua_createtable (lua, 0, 4);
+    lua_createtable (lua, 0, 5);
     lua_pushstring (lua, state);
     lua_setfield (lua, -2, "state");
     lua_pushinteger (lua, (lua_Integer) event->generation);
