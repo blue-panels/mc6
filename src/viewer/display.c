@@ -37,6 +37,7 @@
 #include <inttypes.h>  // uintmax_t
 
 #include "lib/global.h"
+#include "lib/extension-runtime.h"
 #include "lib/skin.h"
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"
@@ -201,6 +202,7 @@ mcview_display_status (WView *view)
 {
     const WRect *r = &view->status_area;
     const char *file_label;
+    char *indicator;
 
     if (r->lines < 1)
         return;
@@ -216,6 +218,8 @@ mcview_display_status (WView *view)
         : view->filename_vpath != NULL ? vfs_path_get_last_path_str (view->filename_vpath)
         : view->command != NULL        ? view->command
                                        : "";
+    indicator = mc_runtime_ui_indicators_compose (
+        "viewer", (guint) MAX (r->cols > 40 ? r->cols - 34 : r->cols - 5, 0));
 
     if (r->cols > 40)
     {
@@ -257,6 +261,12 @@ mcview_display_status (WView *view)
         tty_print_string (str_fit_to_term (fstat, r->cols - 5, J_LEFT_FIT));
         g_free (fstat);
     }
+    else if (indicator[0] != '\0')
+    {
+        widget_gotoyx (view, r->y, r->x);
+        tty_print_string (
+            str_fit_to_term (indicator, r->cols > 40 ? r->cols - 34 : r->cols - 5, J_LEFT_FIT));
+    }
     else
     {
         widget_gotoyx (view, r->y, r->x);
@@ -268,6 +278,7 @@ mcview_display_status (WView *view)
     // no byte offsets in structured mode: the percent value is meaningless there
     if (r->cols > 26 && !view->mode_flags.structured)
         mcview_display_percent (view, view->mode_flags.hex ? view->hex_cursor : view->dpy_end);
+    g_free (indicator);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -388,7 +399,7 @@ static void
 mcview_display_terminal (WView *view)
 {
     mcview_vterm_t *vt = view->vterm;
-    mcview_terminal_buffer_t *buf;
+    mcview_terminal_buffer_t *canvas;
     const WRect *r = &view->data_area;
     mcview_canvas_colors_t colors;
     off_t filesize, pos;
@@ -398,9 +409,12 @@ mcview_display_terminal (WView *view)
         return;
 
     if (mcview_vterm_set_size (vt, r->lines, r->cols))
-        mcview_vterm_reset (vt);
+    {
+        int old_top_row = mcview_vterm_dpy_top_row (vt);
 
-    buf = mcview_vterm_buf (vt);
+        mcview_vterm_reset (vt);
+        mcview_vterm_set_dpy_top_row (vt, old_top_row);
+    }
 
     filesize = mcview_get_filesize (view);
     pos = mcview_vterm_replay_offset (vt);
@@ -420,12 +434,12 @@ mcview_display_terminal (WView *view)
     mcview_vterm_set_replay_offset (vt, pos);
     view->dpy_end = filesize;
 
-    buf = mcview_vterm_buf (vt);
-
-    top_row = mcview_vterm_resolve_top_row (vt, r->lines);
+    top_row = mcview_vterm_resolve_scrollback_top_row (vt, r->lines);
+    canvas = mcview_vterm_compose_scrollback (vt, top_row, r->lines);
     mcview_canvas_colors_viewer (&colors);
-    mcview_render_terminal_canvas (buf, top_row, WIDGET (view)->rect.y + r->y,
+    mcview_render_terminal_canvas (canvas, 0, WIDGET (view)->rect.y + r->y,
                                    WIDGET (view)->rect.x + r->x, r->lines, r->cols, &colors);
+    mcview_terminal_buffer_free (canvas);
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -233,6 +233,48 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_magic_toggle_keeps_source_controller_for_raw_file)
+{
+    static const mcview_source_controller_t controller = { 0 };
+    const unsigned char generated_data[] = "generated\n";
+    const unsigned char raw_data[] = "raw\n";
+    char *generated_path = create_test_file (generated_data, sizeof (generated_data) - 1);
+    char *raw_path = create_test_file (raw_data, sizeof (raw_data) - 1);
+
+    ck_assert_ptr_nonnull (generated_path);
+    ck_assert_ptr_nonnull (raw_path);
+    test_view.source_controller = &controller;
+    test_view.source_spec = g_new0 (mcview_source_spec_t, 1);
+    test_view.source_spec->file = g_strdup (generated_path);
+    test_view.source_spec->raw_file = g_strdup (raw_path);
+    test_view.source_spec->title = g_strdup ("Example.class");
+    test_view.mode_flags.magic = TRUE;
+
+    mcview_toggle_magic_mode (&test_view);
+
+    mctest_assert_false (test_view.mode_flags.magic);
+    ck_assert_ptr_eq (test_view.source_controller, &controller);
+    ck_assert_int_eq (test_view.datasource, DS_FILE);
+    ck_assert_str_eq (vfs_path_as_str (test_view.filename_vpath), raw_path);
+    ck_assert_ptr_null (test_view.command);
+
+    mcview_toggle_magic_mode (&test_view);
+
+    mctest_assert_true (test_view.mode_flags.magic);
+    ck_assert_ptr_eq (test_view.source_controller, &controller);
+    ck_assert_int_eq (test_view.datasource, DS_FILE);
+    ck_assert_str_eq (vfs_path_as_str (test_view.filename_vpath), generated_path);
+
+    mcview_source_controller_detach (&test_view);
+    unlink (generated_path);
+    unlink (raw_path);
+    g_free (generated_path);
+    g_free (raw_path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_zip_magic_file_reload_no_crash)
 {
     // given -- a file with ZIP magic
@@ -353,6 +395,7 @@ main (void)
     tcase_add_test (tc_core, test_zip_magic_file_reload_no_crash);
     tcase_add_test (tc_core, test_normal_file_loads_as_ds_file);
     tcase_add_test (tc_core, test_plain_load_detaches_previous_source_controller);
+    tcase_add_test (tc_core, test_magic_toggle_keeps_source_controller_for_raw_file);
     tcase_add_test (tc_core, test_nonexistent_file_fails);
     tcase_add_test (tc_core, test_gzip_magic_file_loads_as_ds_file);
     /* *********************************** */

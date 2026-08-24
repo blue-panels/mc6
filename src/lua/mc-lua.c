@@ -264,6 +264,7 @@ struct mc_lua_viewer_definition
     int initial_params_ref;
     int prepare_ref;
     int options_ref;
+    int source_state_ref;
     int close_ref;
     gboolean resize_rebuild;
 };
@@ -3658,6 +3659,7 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
     spec->source = source;
     spec->title = mc_lua_dup_table_string (lua, table, "title");
     spec->help_node = mc_lua_dup_table_string (lua, table, "help_node");
+    spec->raw_path = mc_lua_dup_table_string (lua, table, "raw_path");
     scroll = mc_lua_dup_table_string (lua, table, "auto_scroll");
     spec->auto_scroll_bottom = g_strcmp0 (scroll, "bottom") == 0;
     g_free (scroll);
@@ -3669,6 +3671,7 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
         g_free (source);
         g_free ((char *) spec->title);
         g_free ((char *) spec->help_node);
+        g_free ((char *) spec->raw_path);
         memset (spec, 0, sizeof (*spec));
         return FALSE;
     }
@@ -3692,6 +3695,7 @@ mc_lua_viewer_spec_free (mc_runtime_plugin_context_t *context, mc_runtime_viewer
     }
     g_free ((char *) spec->title);
     g_free ((char *) spec->help_node);
+    g_free ((char *) spec->raw_path);
     memset (spec, 0, sizeof (*spec));
 }
 
@@ -3902,6 +3906,80 @@ mc_lua_viewer_dispatch_v2 (mc_runtime_plugin_context_t *context, guint64 control
     return mc_lua_viewer_call_prepare_viewport (controller, controller->live_ref, viewport, spec);
 }
 
+static void
+mc_lua_viewer_source_state (mc_runtime_plugin_context_t *context, guint64 controller_id,
+                            const mc_runtime_viewer_source_state_event_t *event)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    mc_lua_viewer_controller_t *controller;
+    mc_lua_package_t *package;
+    lua_State *lua;
+    const char *state;
+
+    (void) context;
+    if (runtime == NULL || runtime->viewer_controllers == NULL || event == NULL
+        || event->struct_size
+            < G_STRUCT_OFFSET (mc_runtime_viewer_source_state_event_t, term_signal)
+                + sizeof (event->term_signal)
+        || event->event_version != 1)
+        return;
+    controller = g_hash_table_lookup (runtime->viewer_controllers, &controller_id);
+    if (controller == NULL || controller->closed
+        || controller->definition->source_state_ref == LUA_NOREF)
+        return;
+
+    switch (event->state)
+    {
+    case MC_RUNTIME_VIEWER_SOURCE_STARTED:
+        state = "started";
+        break;
+    case MC_RUNTIME_VIEWER_SOURCE_FINISHED:
+        state = "finished";
+        break;
+    case MC_RUNTIME_VIEWER_SOURCE_FAILED:
+        state = "failed";
+        break;
+    case MC_RUNTIME_VIEWER_SOURCE_CANCELLED:
+        state = "cancelled";
+        break;
+    default:
+        return;
+    }
+
+    package = controller->definition->package;
+    lua = package->lua;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->definition->source_state_ref);
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->session_ref);
+    lua_createtable (lua, 0, 5);
+    lua_pushstring (lua, state);
+    lua_setfield (lua, -2, "state");
+    lua_pushinteger (lua, (lua_Integer) event->generation);
+    lua_setfield (lua, -2, "generation");
+    if (event->exit_code >= 0)
+    {
+        lua_pushinteger (lua, event->exit_code);
+        lua_setfield (lua, -2, "exit_code");
+    }
+    if (event->term_signal > 0)
+    {
+        lua_pushinteger (lua, event->term_signal);
+        lua_setfield (lua, -2, "signal");
+    }
+    if (event->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_source_state_event_t, output_size)
+            + sizeof (event->output_size))
+    {
+        lua_pushinteger (lua, (lua_Integer) event->output_size);
+        lua_setfield (lua, -2, "output_size");
+    }
+    package->callback_depth++;
+    if (lua_pcall (lua, 2, 0, 0) != LUA_OK)
+        mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT,
+                             "Lua viewer source-state callback failed");
+    package->callback_depth--;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 mc_lua_viewer_controller_gc (lua_State *lua)
 {
@@ -3920,6 +3998,7 @@ mc_lua_viewer_controller_gc (lua_State *lua)
  * @lua-callback initial_params(session, params) -> params
  * @lua-callback prepare(session, params, viewport?) -> ViewerSpec
  * @lua-callback options(session, params) -> params?
+ * @lua-callback source_state(session, event) -> nil
  * @lua-callback close(session)
  */
 static int
@@ -4000,7 +4079,7 @@ mc_lua_viewer_source_define (lua_State *lua)
     }
     lua_pop (lua, 1);
     definition->open_ref = definition->initial_params_ref = definition->prepare_ref =
-        definition->options_ref = definition->close_ref = LUA_NOREF;
+        definition->options_ref = definition->source_state_ref = definition->close_ref = LUA_NOREF;
     if (definition->id == NULL)
     {
         mc_lua_viewer_definition_destroy (definition);
@@ -4010,6 +4089,7 @@ mc_lua_viewer_source_define (lua_State *lua)
     definition->initial_params_ref = mc_lua_panel_callback_ref (lua, 1, "initial_params", FALSE);
     definition->prepare_ref = mc_lua_panel_callback_ref (lua, 1, "prepare", FALSE);
     definition->options_ref = mc_lua_panel_callback_ref (lua, 1, "options", FALSE);
+    definition->source_state_ref = mc_lua_panel_callback_ref (lua, 1, "source_state", FALSE);
     definition->close_ref = mc_lua_panel_callback_ref (lua, 1, "close", FALSE);
     {
         char *resize = mc_lua_dup_table_string (lua, 1, "resize");
@@ -4052,6 +4132,7 @@ mc_lua_viewer_definition_destroy (gpointer data)
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->initial_params_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->prepare_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->options_ref);
+        luaL_unref (lua, LUA_REGISTRYINDEX, definition->source_state_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->close_ref);
     }
     g_free (definition->id);
@@ -4174,6 +4255,8 @@ mc_lua_viewer_controller_transfer (mc_lua_package_t *package,
     descriptor.viewport_policy = controller->definition->resize_rebuild
         ? MC_RUNTIME_VIEWER_VIEWPORT_REBUILD
         : MC_RUNTIME_VIEWER_VIEWPORT_NONE;
+    descriptor.source_state =
+        controller->definition->source_state_ref != LUA_NOREF ? mc_lua_viewer_source_state : NULL;
     if (target_viewer != NULL)
         descriptor.target_viewer = *target_viewer;
     controller_index = lua_absindex (package->lua, controller_index);
@@ -5179,9 +5262,9 @@ mc_lua_ui_indicator (lua_State *lua)
     }
     lua_pop (lua, 1);
 
-    if (!mc_lua_id_is_valid (id) || strcmp (area, "editor") != 0 || text[0] == '\0'
-        || strlen (text) > 128 || !g_utf8_validate (text, -1, NULL) || priority < -100000
-        || priority > 100000)
+    if (!mc_lua_id_is_valid (id) || (strcmp (area, "editor") != 0 && strcmp (area, "viewer") != 0)
+        || text[0] == '\0' || strlen (text) > 128 || !g_utf8_validate (text, -1, NULL)
+        || priority < -100000 || priority > 100000)
         return mc_lua_return_error (lua, "invalid_indicator");
 
     if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_UI,
@@ -5212,7 +5295,7 @@ mc_lua_ui_indicator_clear (lua_State *lua)
     id = luaL_checkstring (lua, 1);
     area = luaL_optstring (lua, 2, "editor");
 
-    if (!mc_lua_id_is_valid (id) || strcmp (area, "editor") != 0)
+    if (!mc_lua_id_is_valid (id) || (strcmp (area, "editor") != 0 && strcmp (area, "viewer") != 0))
         return mc_lua_return_error (lua, "invalid_indicator");
 
     if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_UI,

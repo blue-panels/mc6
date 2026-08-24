@@ -85,6 +85,9 @@ gint64 mcview_vterm_scrolled_rows (const mcview_vterm_t *vt);
 int mcview_vterm_dpy_top_row (const mcview_vterm_t *vt);
 void mcview_vterm_set_dpy_top_row (mcview_vterm_t *vt, int row);
 int mcview_vterm_resolve_top_row (const mcview_vterm_t *vt, int data_lines);
+int mcview_vterm_resolve_scrollback_top_row (const mcview_vterm_t *vt, int data_lines);
+mcview_terminal_buffer_t *mcview_vterm_compose_scrollback (const mcview_vterm_t *vt, int top_row,
+                                                           int rows);
 void mcview_vterm_reset (mcview_vterm_t *vt);
 const char *mcview_vterm_osc7_raw (const mcview_vterm_t *vt);
 guint mcview_vterm_osc7_generation (const mcview_vterm_t *vt);

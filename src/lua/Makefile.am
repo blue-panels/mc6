@@ -25,6 +25,13 @@ dist_lua_chafa_DATA = \
 	examples/mc/lua-chafa/init.lua
 endif
 
+lua_java_classdir = $(lua_scripts_dir)/mc/lua-java-class
+if ENABLE_LUA_JAVA_CLASS
+dist_lua_java_class_DATA = \
+	examples/mc/lua-java-class/lua.ini \
+	examples/mc/lua-java-class/init.lua
+endif
+
 lua_notify_editor_savedir = $(lua_scripts_dir)/editor/notify-editor-save
 dist_lua_notify_editor_save_DATA = \
 	examples/editor/notify-editor-save/lua.ini \

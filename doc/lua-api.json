@@ -564,6 +564,14 @@
       "summary": ""
     },
     {
+      "signature": "source_state(session, event) -> nil",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
       "signature": "close(session)",
       "workspace": "any",
       "capability": "viewer_source",

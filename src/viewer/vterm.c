@@ -639,6 +639,10 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     g_free (vt->osc133_raw);
     vt->osc133_raw = NULL;
     vt->osc_len = 0;
+    if (vt->history != NULL)
+        g_ptr_array_set_size (vt->history, 0);
+    vt->history_cells = 0;
+    vt->scrolled_rows = 0;
     mcview_terminal_buffer_clear (vt->buf);
 }
 
@@ -1248,6 +1252,62 @@ mcview_vterm_resolve_top_row (const mcview_vterm_t *vt, int data_lines)
         return 0;
     top = max - data_lines + 1;
     return (top > 0) ? top : 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+mcview_vterm_resolve_scrollback_top_row (const mcview_vterm_t *vt, int data_lines)
+{
+    int top = vt->dpy_top_row;
+    int live_rows;
+    int max_top;
+
+    live_rows = MAX (mcview_terminal_buffer_max_row (vt->buf), vt->cursor_row) + 1;
+    max_top = MAX (mcview_vterm_history_len (vt) + live_rows - data_lines, 0);
+
+    if (top < 0)
+        return max_top;
+
+    return MIN (top, max_top);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+mcview_terminal_buffer_t *
+mcview_vterm_compose_scrollback (const mcview_vterm_t *vt, int top_row, int rows)
+{
+    mcview_terminal_buffer_t *canvas;
+    int history_rows;
+    int row;
+
+    canvas = mcview_terminal_buffer_new ();
+    history_rows = mcview_vterm_history_len (vt);
+
+    for (row = 0; row < rows; row++)
+    {
+        int source_row = top_row + row;
+
+        if (source_row < history_rows)
+        {
+            const GArray *history_row = mcview_vterm_history_row (vt, source_row);
+
+            if (history_row != NULL)
+                mcview_terminal_buffer_set_row (canvas, row, history_row);
+        }
+        else
+        {
+            GArray *cells = mcview_terminal_buffer_row_copy (vt->buf, source_row - history_rows);
+
+            if (cells != NULL)
+            {
+                mcview_terminal_buffer_set_row (canvas, row, cells);
+                g_array_unref (cells);
+            }
+        }
+    }
+
+    return canvas;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -829,11 +829,6 @@ View=%view{ascii} @EXTHELPERSDIR@/doc.sh view ebook
 
 ### Miscellaneous ###
 
-# Compiled Java classes
-[javaclass]
-Shell=.class
-View=%view{ascii} @EXTHELPERSDIR@/misc.sh view javaclass
-
 [Imakefile]
 Shell=Imakefile
 Open=xmkmf -a

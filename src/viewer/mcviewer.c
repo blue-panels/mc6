@@ -208,7 +208,8 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
                 if (view->mode_flags.terminal && view->vterm != NULL)
                     mcview_vterm_set_dpy_top_row (
-                        view->vterm, mcview_vterm_resolve_top_row (view->vterm, r->lines) - n);
+                        view->vterm,
+                        mcview_vterm_resolve_scrollback_top_row (view->vterm, r->lines) - n);
                 else
                     mcview_move_up (view, n);
 
@@ -225,7 +226,8 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
                 if (view->mode_flags.terminal && view->vterm != NULL)
                     mcview_vterm_set_dpy_top_row (
-                        view->vterm, mcview_vterm_resolve_top_row (view->vterm, r->lines) + n);
+                        view->vterm,
+                        mcview_vterm_resolve_scrollback_top_row (view->vterm, r->lines) + n);
                 else
                     mcview_move_down (view, n);
 
@@ -243,7 +245,8 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
             else if (view->mode_flags.terminal && view->vterm != NULL)
                 mcview_vterm_set_dpy_top_row (
                     view->vterm,
-                    mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines) - 2);
+                    mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines)
+                        - 2);
             else
                 mcview_move_up (view, 2);
         }
@@ -260,7 +263,8 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
             else if (view->mode_flags.terminal && view->vterm != NULL)
                 mcview_vterm_set_dpy_top_row (
                     view->vterm,
-                    mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines) + 2);
+                    mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines)
+                        + 2);
             else
                 mcview_move_down (view, 2);
         }

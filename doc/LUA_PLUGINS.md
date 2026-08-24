@@ -271,8 +271,7 @@ removes it.  IDs are scoped to the owning package, so scripts cannot replace
 one another's indicators.  Higher-priority indicators are placed first and
 lower-priority ones are omitted when the status line is too narrow.  All
 indicators owned by a package are removed automatically when it is unloaded.
-The initial implementation renders the `editor` area; the area field keeps
-the API extensible to other MC workspaces without editor-specific methods.
+Supported areas are `editor` and `viewer`.
 
 ```lua
 mc.ui.indicator {
@@ -281,6 +280,15 @@ mc.ui.indicator {
 -- later:
 mc.ui.indicator_clear("mode")
 ```
+
+A viewer-source definition may provide `source_state(session, event)`.  Process sources report
+`started`, then exactly one of `finished`, `failed`, or `cancelled`.  The event also contains
+`generation` and `output_size`; `failed` may include `exit_code` or `signal`.  Rebuilding a source
+cancels the old generation before starting the new one, so asynchronous UI state can ignore stale
+terminal events.
+
+A prepared viewer spec may set `raw_path` to the original local file.  The viewer then keeps the
+controller attached while F8 switches between the generated source and the raw file.
 
 An `input` control in `mc.ui.dialog()` accepts an optional `history` name and
 an optional `completion` array.  `complete_on_tab = true` makes `Tab` invoke

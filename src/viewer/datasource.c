@@ -350,19 +350,19 @@ mcview_close_datasource (WView *view)
     case DS_STDIO_PIPE:
         if (view->ds_stdio_pipe != NULL)
         {
-            mcview_growbuf_done (view);
+            mcview_growbuf_done (view, MCVIEW_SOURCE_CANCELLED);
             mcview_display (view);
         }
         mcview_growbuf_free (view);
         break;
     case DS_VFS_PIPE:
         if (view->ds_vfs_pipe != -1)
-            mcview_growbuf_done (view);
+            mcview_growbuf_done (view, MCVIEW_SOURCE_CANCELLED);
         mcview_growbuf_free (view);
         break;
     case DS_RAW_PIPE:
         if (view->ds_raw_pipe != -1)
-            mcview_growbuf_done (view);
+            mcview_growbuf_done (view, MCVIEW_SOURCE_CANCELLED);
         mcview_growbuf_free (view);
         break;
     case DS_FILE:

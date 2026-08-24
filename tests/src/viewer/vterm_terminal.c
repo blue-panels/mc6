@@ -96,6 +96,28 @@ canvas_to_text (mcview_vterm_t *vt, int rows, int cols)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static char *
+buffer_to_text (const mcview_terminal_buffer_t *buffer, int rows, int cols)
+{
+    GString *s;
+    int row, col;
+
+    s = g_string_new ("");
+    for (row = 0; row < rows; row++)
+    {
+        for (col = 0; col < cols; col++)
+        {
+            const mcview_vterm_cell_t *cell = mcview_terminal_buffer_get (buffer, row, col);
+
+            g_string_append_c (s, cell != NULL && cell->ch != 0 ? (char) cell->ch : ' ');
+        }
+        g_string_append_c (s, '\n');
+    }
+    return g_string_free (s, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 feed_with_sync_restore (mcview_vterm_t *vt, const char *data, mcview_terminal_buffer_t **snap_buf,
                         int snap_cursor_row, guint *last_osc7_gen)
@@ -544,6 +566,40 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_scrollback_canvas_preserves_output_from_top)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    mcview_terminal_buffer_t *canvas;
+    char *text;
+
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "first\r\nsecond\r\nthird\r\nfourth");
+
+    mcview_vterm_set_dpy_top_row (vt, 0);
+    ck_assert_int_eq (mcview_vterm_resolve_scrollback_top_row (vt, 3), 0);
+    canvas = mcview_vterm_compose_scrollback (vt, 0, 3);
+    text = buffer_to_text (canvas, 3, 8);
+    ck_assert_str_eq (text, "first   \nsecond  \nthird   \n");
+    g_free (text);
+    mcview_terminal_buffer_free (canvas);
+
+    mcview_vterm_set_dpy_top_row (vt, MCVIEW_VTERM_FOLLOW_END);
+    ck_assert_int_eq (mcview_vterm_resolve_scrollback_top_row (vt, 3), 1);
+    canvas = mcview_vterm_compose_scrollback (vt, 1, 3);
+    text = buffer_to_text (canvas, 3, 8);
+    ck_assert_str_eq (text, "second  \nthird   \nfourth  \n");
+    g_free (text);
+    mcview_terminal_buffer_free (canvas);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_oversized_osc_is_dropped_whole)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -603,6 +659,7 @@ main (void)
     tcase_add_test (tc_core, test_set_size_returns_true_on_change);
     tcase_add_test (tc_core, test_set_size_returns_false_on_same_size);
     tcase_add_test (tc_core, test_golden_draw_move_erase);
+    tcase_add_test (tc_core, test_scrollback_canvas_preserves_output_from_top);
     tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
 
     return mctest_run_all (tc_core);

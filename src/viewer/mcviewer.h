@@ -28,7 +28,7 @@ typedef struct
     gboolean structured;  // Structured (tree) view of JSON/YAML/XML content
 } mcview_mode_flags_t;
 
-/* Exactly one of command, argv or file identifies the source. */
+/* Exactly one of command, argv or file identifies the generated source. */
 typedef struct
 {
     char *command; /* shell pipeline -> mc_popen + stream */
@@ -42,6 +42,7 @@ typedef struct
     char *help_file;
     char *help_node;
     gboolean initial_terminal;
+    char *raw_file;
 } mcview_source_spec_t;
 
 typedef enum
@@ -50,6 +51,24 @@ typedef enum
     MCV_KEY_HANDLED,
     MCV_KEY_OPEN_OPTIONS
 } mcv_key_result_t;
+
+typedef enum
+{
+    MCVIEW_SOURCE_STARTED,
+    MCVIEW_SOURCE_FINISHED,
+    MCVIEW_SOURCE_FAILED,
+    MCVIEW_SOURCE_CANCELLED
+} mcview_source_state_t;
+
+typedef struct
+{
+    guint64 generation;
+    mcview_source_state_t state;
+    int exit_code;
+    int term_signal;
+    /* Bytes received from the process on stdout. */
+    guint64 output_size;
+} mcview_source_state_event_t;
 
 typedef struct
 {
@@ -72,6 +91,7 @@ typedef struct
     gboolean (*prepare_viewport) (void *ctx, mcview_source_spec_t *draft, guint columns,
                                   guint lines, char **err_out);
     gboolean rebuild_on_resize;
+    void (*source_state) (void *ctx, const mcview_source_state_event_t *event);
 } mcview_source_controller_t;
 
 /* Spec helpers. clone() deep-copies all string fields. */
