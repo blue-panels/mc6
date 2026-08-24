@@ -609,6 +609,15 @@ AC_PATH_PROG([CHAFA], [chafa])
 AM_CONDITIONAL([ENABLE_LUA_CHAFA],
                [test x"$have_lua_plugin" = xyes && test -n "$CHAFA" && test x"$CHAFA" != xno])
 
+AC_PATH_PROG([PROCYON], [procyon])
+AC_PATH_PROG([JAVA_CLASS_SCRIPT], [script])
+AC_PATH_PROG([ENV_TOOL], [env])
+AM_CONDITIONAL([ENABLE_LUA_JAVA_CLASS],
+               [test x"$have_lua_plugin" = xyes \
+                && test -n "$PROCYON" && test x"$PROCYON" != xno \
+                && test -n "$JAVA_CLASS_SCRIPT" && test x"$JAVA_CLASS_SCRIPT" != xno \
+                && test -n "$ENV_TOOL" && test x"$ENV_TOOL" != xno])
+
 dnl ############################################################################
 dnl Directories
 dnl ############################################################################
@@ -934,6 +943,18 @@ View=%plugin{lua(lua-chafa):view}'
 fi
 AC_SUBST([MAGIC_LUA_CHAFA_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_CHAFA_RULES])
+
+MAGIC_LUA_JAVA_CLASS_RULES=""
+if test x"$have_lua_plugin" = xyes \
+        && test -n "$PROCYON" && test x"$PROCYON" != xno \
+        && test -n "$JAVA_CLASS_SCRIPT" && test x"$JAVA_CLASS_SCRIPT" != xno \
+        && test -n "$ENV_TOOL" && test x"$ENV_TOOL" != xno; then
+    MAGIC_LUA_JAVA_CLASS_RULES='[[javaclass]]
+Shell=.class
+View=%plugin{lua(lua-java-class):view}'
+fi
+AC_SUBST([MAGIC_LUA_JAVA_CLASS_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_JAVA_CLASS_RULES])
 
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""

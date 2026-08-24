@@ -161,6 +161,7 @@ mcview_cycle_display_mode (WView *view)
             mcview_filter_deactivate (view);
         view->mode_flags.terminal = TRUE;
         view->vterm = mcview_vterm_new ();
+        mcview_vterm_set_keep_history (view->vterm, TRUE);
     }
     else
     {

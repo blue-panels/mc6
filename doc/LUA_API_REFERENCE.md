@@ -100,4 +100,5 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `prepare(session, params, viewport?) -> ViewerSpec` | `any` | `viewer_source` |
 | `reload(instance) -> OperationResult` | `mc` | `panel_provider` |
 | `rename_connection(host, connection) -> Connection` | `mc` | `panel_provider` |
+| `source_state(session, event) -> nil` | `any` | `viewer_source` |
 | `view(instance, entry, request) -> ViewerSpec` | `mc` | `panel_provider` |

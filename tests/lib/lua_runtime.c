@@ -25,6 +25,7 @@
 #include "tests/mctest.h"
 
 #include <stdlib.h>
+#include <signal.h>
 #include <string.h>
 
 #include <glib/gstdio.h>
@@ -247,6 +248,36 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         ck_assert_str_eq (draft.source->process.argv[1], "91x23");
         ck_assert_str_eq (draft.source->process.argv[2], "/tmp/a $; '-.png");
         controller->spec_free (context, &draft);
+        {
+            mc_runtime_viewer_source_state_event_t event = {
+                .struct_size = sizeof (event),
+                .event_version = 1,
+                .generation = 7,
+                .state = MC_RUNTIME_VIEWER_SOURCE_STARTED,
+                .exit_code = -1,
+            };
+            char *indicators;
+
+            ck_assert_ptr_nonnull (controller->source_state);
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Rendering image...");
+            g_free (indicators);
+            event.generation = 8;
+            controller->source_state (context, controller->controller_id, &event);
+            event.generation = 7;
+            event.state = MC_RUNTIME_VIEWER_SOURCE_FINISHED;
+            event.exit_code = 0;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Rendering image...");
+            g_free (indicators);
+            event.generation = 8;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "");
+            g_free (indicators);
+        }
         mctest_assert_true (controller->dispatch_v2 (context, controller->controller_id,
                                                      MC_RUNTIME_VIEWER_CONTROLLER_CLOSE, NULL, 0,
                                                      &draft, &handled, viewer_error));
@@ -255,6 +286,72 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         return TRUE;
     }
     ck_assert_ptr_nonnull (controller->initial_spec);
+    if (g_strcmp0 (controller->initial_spec->title, "Example.class") == 0)
+    {
+        const mc_runtime_viewer_source_t *source = controller->initial_spec->source;
+
+        ck_assert_int_eq (controller->initial_spec->initial_display,
+                          MC_RUNTIME_VIEWER_DISPLAY_TERMINAL);
+        ck_assert_int_eq (source->kind, MC_RUNTIME_VIEWER_SOURCE_PROCESS);
+        ck_assert_uint_eq (source->process.argc, 8);
+        ck_assert_str_eq (source->process.argv[0], "env");
+        ck_assert_str_eq (source->process.argv[1], "MC_JAVA_CLASS_FILE=/tmp/a $; '-.class");
+        ck_assert_str_eq (source->process.argv[2], "script");
+        ck_assert_str_eq (source->process.argv[3], "-q");
+        ck_assert_str_eq (source->process.argv[4], "-e");
+        ck_assert_str_eq (source->process.argv[5], "-c");
+        ck_assert_str_eq (source->process.argv[6],
+                          "exec procyon \"$MC_JAVA_CLASS_FILE\" 2>/dev/null");
+        ck_assert_str_eq (source->process.argv[7], "/dev/null");
+        {
+            mc_runtime_viewer_source_state_event_t event = {
+                .struct_size = sizeof (event),
+                .event_version = 1,
+                .generation = 9,
+                .state = MC_RUNTIME_VIEWER_SOURCE_STARTED,
+                .exit_code = -1,
+            };
+            char *indicators;
+
+            ck_assert_ptr_nonnull (controller->source_state);
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Decompiling class...");
+            g_free (indicators);
+            event.state = MC_RUNTIME_VIEWER_SOURCE_FAILED;
+            event.term_signal = SIGSEGV;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Example.class (decompilation error)");
+            g_free (indicators);
+            event.generation = 10;
+            event.state = MC_RUNTIME_VIEWER_SOURCE_STARTED;
+            event.term_signal = 0;
+            controller->source_state (context, controller->controller_id, &event);
+            event.state = MC_RUNTIME_VIEWER_SOURCE_FINISHED;
+            event.exit_code = 0;
+            event.output_size = 0;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Example.class (decompilation error)");
+            g_free (indicators);
+            event.generation = 11;
+            event.state = MC_RUNTIME_VIEWER_SOURCE_STARTED;
+            controller->source_state (context, controller->controller_id, &event);
+            event.state = MC_RUNTIME_VIEWER_SOURCE_FINISHED;
+            event.output_size = 1;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "");
+            g_free (indicators);
+        }
+        viewer_controller_open_count++;
+        mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                  MC_RUNTIME_VIEWER_CONTROLLER_CLOSE, 0, &draft,
+                                                  &handled, viewer_error));
+        viewer_controller_close_count++;
+        return TRUE;
+    }
     ck_assert_int_eq (controller->initial_spec->source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
     ck_assert_str_eq (controller->initial_spec->title, "revision 1");
     ck_assert_str_eq (controller->help_node, "controller-help");
@@ -294,6 +391,10 @@ create_viewport_controller_script (void)
                 "prepare=function(_,_,v) return {source=mc.source.process {"
                 "argv={'render',v.columns..'x'..v.lines,[=[/tmp/a $; '-.png]=]},"
                 "stderr='separate'},initial_display='terminal'} end,"
+                "source_state=function(s,e) if e.state=='started' then s.generation=e.generation "
+                "assert(mc.ui.indicator{id='render',area='viewer',text='Rendering image...'}) "
+                "elseif s.generation==e.generation then "
+                "assert(mc.ui.indicator_clear('render','viewer')) end end,"
                 "close=function() end})\n"
                 "assert(mc.ui.open_viewer {controller=assert(d:create({}))})\n");
     g_free (entry_path);
@@ -355,6 +456,35 @@ create_file_handler_script (void)
                 "{name='demo'},{text='one',revision=1}))} end})\n");
     g_free (entry_path);
     g_free (ini_path);
+    g_free (root);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+create_java_class_handler_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "lua-java-class", (char *) NULL);
+    char *source_ini = g_build_filename (TEST_LUA_JAVA_CLASS_DIR, "lua.ini", (char *) NULL);
+    char *source_entry = g_build_filename (TEST_LUA_JAVA_CLASS_DIR, "init.lua", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+    char *contents = NULL;
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    mctest_assert_true (g_file_get_contents (source_ini, &contents, NULL, &error));
+    g_clear_error (&error);
+    write_file (ini_path, contents);
+    g_clear_pointer (&contents, g_free);
+    mctest_assert_true (g_file_get_contents (source_entry, &contents, NULL, &error));
+    g_clear_error (&error);
+    write_file (entry_path, contents);
+
+    g_free (contents);
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (source_entry);
+    g_free (source_ini);
     g_free (root);
 }
 
@@ -1689,6 +1819,9 @@ teardown (void)
     indicators = mc_runtime_ui_indicators_compose ("editor", 80);
     ck_assert_str_eq (indicators, "");
     g_free (indicators);
+    indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+    ck_assert_str_eq (indicators, "");
+    g_free (indicators);
     mc_runtime_events_deinit ();
     g_clear_error (&error);
     ck_assert_msg (mc_event_deinit (&error), "Failed to deinitialize event transport: %s",
@@ -1955,6 +2088,30 @@ START_TEST (test_lua_runtime_file_handler_registration_and_dispatch)
     ck_assert_int_eq (viewer_controller_target.kind, MC_RUNTIME_HANDLE_VIEWER);
     ck_assert_uint_eq (viewer_controller_target.id, 41);
     ck_assert_uint_eq (viewer_controller_target.generation, 7);
+}
+END_TEST
+
+START_TEST (test_lua_java_class_handler_uses_pty_process)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .display_name = "Example.class",
+        .local_path = "/tmp/a $; '-.class",
+        .magic_group = "javaclass",
+    };
+    const char *handler_error = NULL;
+
+    create_java_class_handler_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "lua-java-class", "view",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
+    ck_assert_ptr_null (handler_error);
+    ck_assert_uint_eq (viewer_controller_open_count, 1);
+    ck_assert_uint_eq (viewer_controller_close_count, 1);
 }
 END_TEST
 
@@ -2404,6 +2561,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_panel_provider_open_error);
     tcase_add_test (tc_core, test_lua_runtime_viewer_source_controller);
     tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
+    tcase_add_test (tc_core, test_lua_java_class_handler_uses_pty_process);
     tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);
 
     result = mctest_run_all (tc_core);

@@ -1552,6 +1552,12 @@ runtime_host_ui_refresh (const char *area)
         widget_draw (WIDGET (runtime_host_current_editor));
         tty_refresh ();
     }
+    else if (strcmp (area, "viewer") == 0 && runtime_host_current_viewer != NULL
+             && WIDGET (runtime_host_current_viewer)->owner != NULL)
+    {
+        widget_draw (WIDGET (runtime_host_current_viewer));
+        tty_refresh ();
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

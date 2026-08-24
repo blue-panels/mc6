@@ -1,28 +1,29 @@
 local next_session_id = 0
 
 local viewer = mc.viewer_source.define {
-    id = "chafa-image",
-    resize = "rebuild",
+    id = "procyon-java-class",
 
     open = function(request)
         next_session_id = next_session_id + 1
         return {
             local_path = request.local_path,
             display_name = request.display_name,
-            indicator_id = "render-" .. next_session_id,
+            indicator_id = "decompile-" .. next_session_id,
         }
     end,
 
-    prepare = function(session, _, viewport)
+    prepare = function(session)
         return {
             source = mc.source.process {
                 argv = {
-                    "chafa",
-                    "--format=symbols",
-                    "--colors=256",
-                    "--size=" .. viewport.columns .. "x" .. viewport.lines,
-                    "--",
-                    session.local_path,
+                    "env",
+                    "MC_JAVA_CLASS_FILE=" .. session.local_path,
+                    "script",
+                    "-q",
+                    "-e",
+                    "-c",
+                    'exec procyon "$MC_JAVA_CLASS_FILE" 2>/dev/null',
+                    "/dev/null",
                 },
                 stderr = "separate",
             },
@@ -38,10 +39,18 @@ local viewer = mc.viewer_source.define {
             mc.ui.indicator {
                 id = session.indicator_id,
                 area = "viewer",
-                text = "Rendering image...",
+                text = "Decompiling class...",
             }
         elseif session.generation == event.generation then
-            mc.ui.indicator_clear(session.indicator_id, "viewer")
+            if event.state == "failed" or (event.state == "finished" and event.output_size == 0) then
+                mc.ui.indicator {
+                    id = session.indicator_id,
+                    area = "viewer",
+                    text = session.display_name .. " (decompilation error)",
+                }
+            else
+                mc.ui.indicator_clear(session.indicator_id, "viewer")
+            end
             session.generation = nil
         end
     end,
@@ -55,9 +64,16 @@ mc.file_handler.register {
     id = "view",
     kind = "view",
     handler = function(request)
+        local controller, err
+
+        controller, err = viewer:create(request)
+        if controller == nil then
+            return nil, err
+        end
+
         return {
             handled = true,
-            controller = viewer:create(request),
+            controller = controller,
         }
     end,
 }

@@ -147,6 +147,8 @@ static void
 mcview_install_source (WView *view, mcview_source_handle_t *handle,
                        const mcview_source_spec_t *spec)
 {
+    gboolean process_source = handle->kind == SRC_PIPE;
+
     if (spec->initial_terminal)
     {
         view->mode_flags.hex = FALSE;
@@ -156,11 +158,17 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
         view->mode_flags.terminal = TRUE;
         if (view->vterm == NULL)
             view->vterm = mcview_vterm_new ();
+        mcview_vterm_set_keep_history (view->vterm, TRUE);
         (void) mcview_vterm_set_size (view->vterm, MAX (view->data_area.lines, 1),
                                       MAX (view->data_area.cols, 1));
+        mcview_vterm_set_dpy_top_row (view->vterm,
+                                      spec->auto_scroll_bottom ? MCVIEW_VTERM_FOLLOW_END : 0);
     }
     if (handle->kind == SRC_PIPE)
     {
+        view->source_generation++;
+        if (view->source_generation == 0)
+            view->source_generation++;
         mcview_set_datasource_stdio_pipe (view, handle->pipe);
         mcview_stream_start (view);
 
@@ -197,6 +205,29 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
     mcview_update_bytes_per_line (view);
 
     g_free (handle); /* handle struct itself is transient; datasource owns the fd/pipe */
+    if (process_source)
+        mcview_source_state_notify (view, MCVIEW_SOURCE_STARTED, -1, 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_source_state_notify (WView *view, mcview_source_state_t state, int exit_code,
+                            int term_signal)
+{
+    mcview_source_state_event_t event;
+
+    if (view == NULL || view->source_controller == NULL
+        || view->source_controller->source_state == NULL || view->source_generation == 0)
+        return;
+
+    event.generation = view->source_generation;
+    event.state = state;
+    event.exit_code = exit_code;
+    event.term_signal = term_signal;
+    event.output_size = (guint64) mcview_growbuf_filesize (view);
+    view->source_controller->source_state (view->source_ctx, &event);
+    view->dirty++;
 }
 
 /* --------------------------------------------------------------------------------------------- */

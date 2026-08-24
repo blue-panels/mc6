@@ -570,7 +570,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_Up:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top - 1);
         }
         else
@@ -579,7 +579,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_Down:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top + 1);
         }
         else
@@ -588,7 +588,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_HalfPageUp:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top - (view->data_area.lines + 1) / 2);
         }
         else
@@ -597,7 +597,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_HalfPageDown:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top + (view->data_area.lines + 1) / 2);
         }
         else
@@ -606,7 +606,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_PageUp:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top - view->data_area.lines);
         }
         else
@@ -615,7 +615,7 @@ mcview_execute_cmd (WView *view, long command)
     case CK_PageDown:
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
-            int top = mcview_vterm_resolve_top_row (view->vterm, view->data_area.lines);
+            int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
             mcview_vterm_set_dpy_top_row (view->vterm, top + view->data_area.lines);
         }
         else
@@ -655,6 +655,7 @@ mcview_execute_cmd (WView *view, long command)
         {
             mcview_vterm_free (view->vterm);
             view->vterm = mcview_vterm_new ();
+            mcview_vterm_set_keep_history (view->vterm, TRUE);
         }
         view->dirty++;
         break;

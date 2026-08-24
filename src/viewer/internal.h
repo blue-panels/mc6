@@ -264,6 +264,7 @@ struct WView
 
     guint source_viewport_columns;
     guint source_viewport_lines;
+    guint64 source_generation;
 };
 
 typedef struct mcview_nroff_struct
@@ -358,7 +359,7 @@ void mcview_display_ruler (WView *view);
 
 /* growbuf.c: */
 void mcview_growbuf_init (WView *view);
-void mcview_growbuf_done (WView *view);
+void mcview_growbuf_done (WView *view, mcview_source_state_t state);
 void mcview_growbuf_free (WView *view);
 off_t mcview_growbuf_filesize (WView *view);
 void mcview_growbuf_read_until (WView *view, off_t ofs);
@@ -369,6 +370,8 @@ char *mcview_get_ptr_growing_buffer (WView *view, off_t byte_index);
 /* datasource.c: streaming mode */
 void mcview_stream_start (WView *view);
 void mcview_stream_stop (WView *view);
+void mcview_source_state_notify (WView *view, mcview_source_state_t state, int exit_code,
+                                 int term_signal);
 
 /* hex.c: */
 void mcview_display_hex (WView *view);

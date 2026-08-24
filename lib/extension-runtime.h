@@ -435,6 +435,32 @@ typedef gboolean (*mc_runtime_viewer_controller_dispatch_v2_t) (
     const mc_runtime_viewer_viewport_t *viewport, int key, mc_runtime_viewer_spec_t *spec,
     gboolean *handled, const char **error);
 
+typedef enum
+{
+    MC_RUNTIME_VIEWER_SOURCE_STARTED,
+    MC_RUNTIME_VIEWER_SOURCE_FINISHED,
+    MC_RUNTIME_VIEWER_SOURCE_FAILED,
+    MC_RUNTIME_VIEWER_SOURCE_CANCELLED
+} mc_runtime_viewer_source_state_t;
+
+typedef struct
+{
+    gsize struct_size;
+    guint event_version;
+    /* Monotonically increasing within one native viewer instance. */
+    guint64 generation;
+    mc_runtime_viewer_source_state_t state;
+    /* Set only for failed processes when the corresponding value is known. */
+    int exit_code;
+    int term_signal;
+    /* Bytes received from the process on stdout. */
+    guint64 output_size;
+} mc_runtime_viewer_source_state_event_t;
+
+typedef void (*mc_runtime_viewer_source_state_callback_t) (
+    mc_runtime_plugin_context_t *context, guint64 controller_id,
+    const mc_runtime_viewer_source_state_event_t *event);
+
 typedef struct
 {
     gsize struct_size;
@@ -448,6 +474,7 @@ typedef struct
     mc_runtime_viewer_controller_dispatch_v2_t dispatch_v2;
     mc_runtime_viewer_viewport_policy_t viewport_policy;
     mc_runtime_handle_t target_viewer;
+    mc_runtime_viewer_source_state_callback_t source_state;
 } mc_runtime_viewer_controller_t;
 
 typedef enum

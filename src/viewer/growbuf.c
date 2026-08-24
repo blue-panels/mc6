@@ -74,59 +74,91 @@ mcview_growbuf_init (WView *view)
 
 /* --------------------------------------------------------------------------------------------- */
 
-void
-mcview_growbuf_done (WView *view)
+static int
+mcview_stream_reap (mc_pipe_t *pipe, gboolean terminate)
 {
+    int status = -1;
+    int attempt;
+    pid_t waited;
+
+    if (pipe->out.fd >= 0)
+    {
+        close (pipe->out.fd);
+        pipe->out.fd = -1;
+    }
+    if (pipe->err.fd >= 0)
+    {
+        close (pipe->err.fd);
+        pipe->err.fd = -1;
+    }
+    if (pipe->child_pid <= 0)
+        return terminate ? -1 : 0;
+
+    if (terminate)
+        kill (pipe->child_pid, SIGTERM);
+
+    for (attempt = 0; attempt < 10; attempt++)
+    {
+        waited = waitpid (pipe->child_pid, &status, WNOHANG);
+        if (waited == pipe->child_pid || (waited == -1 && errno != EINTR))
+            return waited == pipe->child_pid ? status : -1;
+        usleep (10000);
+    }
+
+    if (!terminate)
+    {
+        kill (pipe->child_pid, SIGTERM);
+        for (attempt = 0; attempt < 10; attempt++)
+        {
+            waited = waitpid (pipe->child_pid, &status, WNOHANG);
+            if (waited == pipe->child_pid || (waited == -1 && errno != EINTR))
+                return waited == pipe->child_pid ? status : -1;
+            usleep (10000);
+        }
+    }
+
+    kill (pipe->child_pid, SIGKILL);
+    do
+        waited = waitpid (pipe->child_pid, &status, 0);
+    while (waited == -1 && errno == EINTR);
+
+    return waited == pipe->child_pid ? status : -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_growbuf_done (WView *view, mcview_source_state_t state)
+{
+    int status = -1;
+
     view->growbuf_finished = TRUE;
 
     if (view->datasource == DS_STDIO_PIPE)
     {
         if (view->streaming)
         {
-            pid_t pid = view->ds_stdio_pipe->child_pid;
-            int i;
-
             mcview_stream_stop (view);
-
-            if (view->ds_stdio_pipe->out.fd >= 0)
-                close (view->ds_stdio_pipe->out.fd);
-            /* err.fd is expected to be -1 in stream mode (read_err=FALSE) */
-            if (view->ds_stdio_pipe->err.fd >= 0)
-                close (view->ds_stdio_pipe->err.fd);
-
-            /* terminate and reap child process */
-            if (pid > 0)
-            {
-                pid_t w;
-
-                kill (pid, SIGTERM);
-                for (i = 0; i < 10; i++)
-                {
-                    w = waitpid (pid, NULL, WNOHANG);
-                    if (w == pid)
-                        goto reaped;
-                    if (w == -1 && errno != EINTR)
-                        goto reaped; /* ECHILD -- already gone */
-                    usleep (10000);  /* 10ms, total max 100ms */
-                }
-
-                /* still alive -- force kill */
-                kill (pid, SIGKILL);
-                do
-                {
-                    w = waitpid (pid, NULL, 0);
-                }
-                while (w == -1 && errno == EINTR);
-            }
-
-        reaped:
+            status = mcview_stream_reap (view->ds_stdio_pipe, state != MCVIEW_SOURCE_FINISHED);
             g_free (view->ds_stdio_pipe);
         }
         else
-        {
-            mc_pclose (view->ds_stdio_pipe, NULL);
-        }
+            status = mc_pclose_status (view->ds_stdio_pipe, NULL);
         view->ds_stdio_pipe = NULL;
+
+        if (state == MCVIEW_SOURCE_FINISHED)
+        {
+            if (status >= 0 && WIFEXITED (status) && WEXITSTATUS (status) == 0)
+                mcview_source_state_notify (view, MCVIEW_SOURCE_FINISHED, 0, 0);
+            else if (status >= 0 && WIFEXITED (status))
+                mcview_source_state_notify (view, MCVIEW_SOURCE_FAILED, WEXITSTATUS (status), 0);
+            else if (status >= 0 && WIFSIGNALED (status))
+                mcview_source_state_notify (view, MCVIEW_SOURCE_FAILED, -1, WTERMSIG (status));
+            else
+                mcview_source_state_notify (view, MCVIEW_SOURCE_FAILED, -1, 0);
+        }
+        else
+            mcview_source_state_notify (view, state, -1, 0);
     }
     else if (view->datasource == DS_VFS_PIPE)
     {
@@ -224,7 +256,7 @@ mcview_growbuf_read_until (WView *view, off_t ofs)
             {
                 mcview_show_error (view, NULL, error->message);
                 g_error_free (error);
-                mcview_growbuf_done (view);
+                mcview_growbuf_done (view, MCVIEW_SOURCE_FAILED);
                 return;
             }
 
@@ -268,7 +300,9 @@ mcview_growbuf_read_until (WView *view, off_t ofs)
                  * mcview_growbuf_read_until() -> mcview_show_error() ->
                  * MSG_DRAW -> mcview_display() -> mcview_get_byte() -> mcview_growbuf_read_until()
                  */
-                mcview_growbuf_done (view);
+                mcview_growbuf_done (view,
+                                     sp->out.len == MC_PIPE_ERROR_READ ? MCVIEW_SOURCE_FAILED
+                                                                       : MCVIEW_SOURCE_FINISHED);
 
                 mcview_display (view);
                 return;
@@ -296,7 +330,7 @@ mcview_growbuf_read_until (WView *view, off_t ofs)
 
             if (nread <= 0)
             {
-                mcview_growbuf_done (view);
+                mcview_growbuf_done (view, MCVIEW_SOURCE_FINISHED);
                 return;
             }
         }
@@ -406,8 +440,8 @@ mcview_growbuf_read_available (WView *view)
         if (nread == 0)
         {
             /* EOF */
-            mcview_growbuf_done (view);
-            return got_data;
+            mcview_growbuf_done (view, MCVIEW_SOURCE_FINISHED);
+            return TRUE;
         }
 
         /* nread < 0 */
@@ -418,8 +452,8 @@ mcview_growbuf_read_available (WView *view)
             return got_data;
 
         /* real read error */
-        mcview_growbuf_done (view);
-        return got_data;
+        mcview_growbuf_done (view, MCVIEW_SOURCE_FAILED);
+        return TRUE;
     }
 }
 

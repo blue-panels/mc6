@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/resource.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -100,6 +101,20 @@ message (int flags, const char *title, const char *text, ...)
 /* --------------------------------------------------------------------------------------------- */
 
 static WView test_view;
+static guint source_state_count;
+static mcview_source_state_event_t last_source_state;
+
+static void
+test_source_state (void *ctx, const mcview_source_state_event_t *event)
+{
+    (void) ctx;
+    last_source_state = *event;
+    source_state_count++;
+}
+
+static const mcview_source_controller_t test_source_controller = {
+    .source_state = test_source_state,
+};
 
 /* @Before */
 static void
@@ -112,6 +127,8 @@ setup (void)
 
     memset (&test_view, 0, sizeof (test_view));
     mcview_init (&test_view);
+    source_state_count = 0;
+    memset (&last_source_state, 0, sizeof (last_source_state));
 }
 
 /* @After */
@@ -326,14 +343,100 @@ START_TEST (test_stream_shutdown_no_zombie)
     mcview_set_datasource_stdio_pipe (&test_view, p);
     test_view.streaming = TRUE;
     test_view.stream_active = FALSE; /* no select channel in test */
+    test_view.source_controller = &test_source_controller;
+    test_view.source_generation = 3;
 
     mcview_close_datasource (&test_view);
+
+    ck_assert_uint_eq (source_state_count, 1);
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_CANCELLED);
+    ck_assert_uint_eq (last_source_state.generation, 3);
 
     /* child should already be reaped */
     errno = 0;
     result = waitpid (child_pid, NULL, WNOHANG);
     ck_assert_int_eq ((int) result, -1);
     ck_assert_int_eq (errno, ECHILD);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_stream_eof_reports_process_failure)
+{
+    mc_pipe_t *p;
+    int pipefd[2];
+    pid_t child_pid;
+
+    ck_assert_int_eq (pipe (pipefd), 0);
+    child_pid = fork ();
+    ck_assert (child_pid >= 0);
+    if (child_pid == 0)
+    {
+        close (pipefd[0]);
+        close (pipefd[1]);
+        _exit (7);
+    }
+    close (pipefd[1]);
+
+    p = g_new0 (mc_pipe_t, 1);
+    p->out.fd = pipefd[0];
+    p->err.fd = -1;
+    p->child_pid = child_pid;
+    mcview_set_datasource_stdio_pipe (&test_view, p);
+    test_view.streaming = TRUE;
+    test_view.source_controller = &test_source_controller;
+    test_view.source_generation = 4;
+
+    mctest_assert_true (mcview_growbuf_read_available (&test_view));
+    ck_assert_uint_eq (source_state_count, 1);
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_FAILED);
+    ck_assert_int_eq (last_source_state.exit_code, 7);
+    ck_assert_int_eq (last_source_state.term_signal, 0);
+    ck_assert_uint_eq (last_source_state.generation, 4);
+    ck_assert_uint_eq (last_source_state.output_size, 0);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_stream_eof_reports_process_signal)
+{
+    mc_pipe_t *p;
+    int pipefd[2];
+    pid_t child_pid;
+
+    ck_assert_int_eq (pipe (pipefd), 0);
+    child_pid = fork ();
+    ck_assert (child_pid >= 0);
+    if (child_pid == 0)
+    {
+        struct rlimit core_limit = { 0, 0 };
+
+        (void) setrlimit (RLIMIT_CORE, &core_limit);
+        close (pipefd[0]);
+        close (pipefd[1]);
+        raise (SIGSEGV);
+        _exit (1);
+    }
+    close (pipefd[1]);
+
+    p = g_new0 (mc_pipe_t, 1);
+    p->out.fd = pipefd[0];
+    p->err.fd = -1;
+    p->child_pid = child_pid;
+    mcview_set_datasource_stdio_pipe (&test_view, p);
+    test_view.streaming = TRUE;
+    test_view.source_controller = &test_source_controller;
+    test_view.source_generation = 5;
+
+    mctest_assert_true (mcview_growbuf_read_available (&test_view));
+    ck_assert_uint_eq (source_state_count, 1);
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_FAILED);
+    ck_assert_int_eq (last_source_state.exit_code, -1);
+    ck_assert_int_eq (last_source_state.term_signal, SIGSEGV);
+    ck_assert_uint_eq (last_source_state.generation, 5);
+    ck_assert_uint_eq (last_source_state.output_size, 0);
 }
 END_TEST
 
@@ -354,6 +457,8 @@ main (void)
     tcase_add_test (tc, test_growbuf_read_available_eof);
     tcase_add_test (tc, test_growbuf_read_until_noop_streaming);
     tcase_add_test (tc, test_stream_shutdown_no_zombie);
+    tcase_add_test (tc, test_stream_eof_reports_process_failure);
+    tcase_add_test (tc, test_stream_eof_reports_process_signal);
 
     return mctest_run_all (tc);
 }

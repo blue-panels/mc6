@@ -64,6 +64,7 @@ typedef struct
     mc_runtime_viewer_controller_dispatch_t dispatch;
     mc_runtime_viewer_controller_dispatch_v2_t dispatch_v2;
     mc_runtime_viewer_spec_free_t spec_free;
+    mc_runtime_viewer_source_state_callback_t source_state;
     char *current_temp;
     char *draft_temp;
     char *help_file;
@@ -417,6 +418,45 @@ runtime_viewer_key (void *data, int key)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+static void
+runtime_viewer_source_state (void *data, const mcview_source_state_event_t *native_event)
+{
+    runtime_viewer_controller_t *controller = data;
+    mc_runtime_viewer_source_state_event_t event = {
+        .struct_size = sizeof (event),
+        .event_version = 1,
+        .generation = native_event->generation,
+        .exit_code = native_event->exit_code,
+        .term_signal = native_event->term_signal,
+        .output_size = native_event->output_size,
+    };
+
+    if (controller->source_state == NULL)
+        return;
+
+    switch (native_event->state)
+    {
+    case MCVIEW_SOURCE_STARTED:
+        event.state = MC_RUNTIME_VIEWER_SOURCE_STARTED;
+        break;
+    case MCVIEW_SOURCE_FINISHED:
+        event.state = MC_RUNTIME_VIEWER_SOURCE_FINISHED;
+        break;
+    case MCVIEW_SOURCE_FAILED:
+        event.state = MC_RUNTIME_VIEWER_SOURCE_FAILED;
+        break;
+    case MCVIEW_SOURCE_CANCELLED:
+        event.state = MC_RUNTIME_VIEWER_SOURCE_CANCELLED;
+        break;
+    default:
+        return;
+    }
+
+    controller->source_state (controller->context, controller->controller_id, &event);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -433,6 +473,7 @@ runtime_viewer_controller_open (mc_runtime_plugin_context_t *context,
         .handle_key = runtime_viewer_key,
         .prepare_viewport = runtime_viewer_prepare_viewport,
         .rebuild_on_resize = FALSE,
+        .source_state = runtime_viewer_source_state,
     };
     runtime_viewer_controller_t *controller;
     mcview_source_spec_t *initial;
@@ -474,6 +515,9 @@ runtime_viewer_controller_open (mc_runtime_plugin_context_t *context,
             return runtime_viewer_error (error, "closed");
         }
     }
+    if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, source_state)
+            + sizeof (source->source_state))
+        controller->source_state = source->source_state;
     if (policy == MC_RUNTIME_VIEWER_VIEWPORT_REBUILD)
     {
         if (source->initial_spec != NULL || controller->dispatch_v2 == NULL)

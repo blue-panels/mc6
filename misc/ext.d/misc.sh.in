@@ -54,16 +54,6 @@ do_view_action() {
     torrent)
         @EXTFSHELPERSDIR@/torrent list "${MC_EXT_FILENAME}" 2>/dev/null
         ;;
-    javaclass)
-        if command -v procyon >/dev/null 2>&1; then
-            script -q /dev/null -c "procyon \"${MC_EXT_FILENAME}\" 2>/dev/null"
-        elif command -v jad >/dev/null 2>&1; then
-            jad -p "${MC_EXT_FILENAME}" 2>/dev/null
-        else
-            file -b "${MC_EXT_FILENAME}"
-            javap -private "${MC_EXT_FILENAME}" 2>/dev/null
-        fi
-        ;;
     *)
         ;;
     esac
