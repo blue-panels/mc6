@@ -24,6 +24,7 @@ TESTS = \
 	get_random_hint \
 	magic \
 	panel_modes \
+	panel_quick_filter \
 	panel_scroll_marker_pos \
 	panel_plugin_close
 
@@ -52,6 +53,9 @@ filegui_is_wildcarded_SOURCES = \
 
 panel_modes_SOURCES = \
 	panel_modes.c
+
+panel_quick_filter_SOURCES = \
+	panel_quick_filter.c
 
 panel_scroll_marker_pos_SOURCES = \
 	panel_scroll_marker_pos.c

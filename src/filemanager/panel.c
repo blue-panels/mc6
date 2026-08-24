@@ -80,6 +80,7 @@
 #include "mcterm_overlay.h"  // mcterm_overlay_sync_shell_to_panel()
 
 #include "panel.h"
+#include "panel-quick-filter.h"
 #include "panel_modes.h"
 #include "panel_plugin_ops.h"
 
@@ -1117,9 +1118,26 @@ display_mini_info (WPanel *panel)
     if (panel->quick_search.active)
     {
         tty_setcolor (CORE_INPUT_COLOR);
-        tty_print_char ('/');
-        tty_print_string (
-            str_fit_to_term (panel->quick_search.buffer->str, w->rect.cols - 3, J_LEFT));
+        if (panel->quick_search.filtering)
+        {
+            const char *prefix = _ ("Filter: ");
+            int prefix_width = str_term_width1 (prefix);
+
+            if (prefix_width >= w->rect.cols - 2)
+                tty_print_string (str_fit_to_term (prefix, w->rect.cols - 2, J_LEFT));
+            else
+            {
+                tty_print_string (prefix);
+                tty_print_string (str_fit_to_term (panel->quick_search.buffer->str,
+                                                   w->rect.cols - prefix_width - 2, J_LEFT));
+            }
+        }
+        else
+        {
+            tty_print_char ('/');
+            tty_print_string (
+                str_fit_to_term (panel->quick_search.buffer->str, w->rect.cols - 3, J_LEFT));
+        }
         return;
     }
 
@@ -1199,6 +1217,26 @@ paint_dir (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+panel_quick_filter_get_marked_count (const WPanel *panel, int *visible, int *hidden)
+{
+    int i;
+    int total = panel->marked;
+
+    if (panel->quick_search.filtering && panel->quick_search.source.list != NULL)
+    {
+        total = 0;
+        for (i = 0; i < panel->quick_search.source.len; i++)
+            if (panel->quick_search.source.list[i].f.marked != 0)
+                total++;
+    }
+
+    *visible = panel->marked;
+    *hidden = MAX (total - panel->marked, 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 display_total_marked_size (const WPanel *panel, int y, int x, gboolean size_only)
 {
@@ -1206,21 +1244,34 @@ display_total_marked_size (const WPanel *panel, int y, int x, gboolean size_only
 
     char buffer[BUF_SMALL], b_bytes[BUF_SMALL];
     const char *buf;
+    int visible_marked;
+    int hidden_marked;
     int cols;
 
-    if (panel->marked <= 0)
+    panel_quick_filter_get_marked_count (panel, &visible_marked, &hidden_marked);
+
+    if (visible_marked <= 0 && hidden_marked <= 0)
         return;
 
-    buf = size_only ? b_bytes : buffer;
     cols = w->rect.cols - 2;
 
-    g_strlcpy (b_bytes, size_trunc_sep (panel->total, panels_options.kilobyte_si),
-               sizeof (b_bytes));
+    if (hidden_marked > 0)
+    {
+        g_snprintf (buffer, sizeof (buffer), _ ("%d marked (+%d more)"), visible_marked,
+                    hidden_marked);
+        buf = buffer;
+    }
+    else
+    {
+        g_strlcpy (b_bytes, size_trunc_sep (panel->total, panels_options.kilobyte_si),
+                   sizeof (b_bytes));
+        buf = size_only ? b_bytes : buffer;
 
-    if (!size_only)
-        g_snprintf (buffer, sizeof (buffer),
-                    ngettext ("%s in %d file", "%s in %d files", panel->marked), b_bytes,
-                    panel->marked);
+        if (!size_only)
+            g_snprintf (buffer, sizeof (buffer),
+                        ngettext ("%s in %d file", "%s in %d files", visible_marked), b_bytes,
+                        visible_marked);
+    }
 
     // don't forget spaces around buffer content
     buf = str_trunc (buf, cols - 4);
@@ -3271,53 +3322,16 @@ panel_do_set_filter (WPanel *panel)
  * @param c_code key code
  */
 
-static void
-do_search (WPanel *panel, int c_code)
+static mc_search_t *
+panel_quick_search_new_handler (const WPanel *panel)
 {
-    int curr;
-    int i;
-    gboolean wrapped = FALSE;
-    char *act;
     mc_search_t *search;
     char *reg_exp, *esc_str;
-    gboolean is_found = FALSE;
 
-    if (c_code == KEY_BACKSPACE)
-    {
-        if (panel->quick_search.buffer->len != 0)
-        {
-            act = panel->quick_search.buffer->str + panel->quick_search.buffer->len;
-            str_prev_noncomb_char (&act, panel->quick_search.buffer->str);
-            g_string_set_size (panel->quick_search.buffer, act - panel->quick_search.buffer->str);
-        }
-        panel->quick_search.chpoint = 0;
-    }
+    if (panel->quick_search.filtering)
+        reg_exp = g_strdup_printf ("*%s*", panel->quick_search.buffer->str);
     else
-    {
-        if (c_code != 0 && (gsize) panel->quick_search.chpoint < sizeof (panel->quick_search.ch))
-        {
-            panel->quick_search.ch[panel->quick_search.chpoint] = c_code;
-            panel->quick_search.chpoint++;
-        }
-
-        if (panel->quick_search.chpoint > 0)
-        {
-            switch (str_is_valid_char (panel->quick_search.ch, panel->quick_search.chpoint))
-            {
-            case -2:
-                return;
-            case -1:
-                panel->quick_search.chpoint = 0;
-                return;
-            default:
-                g_string_append_len (panel->quick_search.buffer, panel->quick_search.ch,
-                                     panel->quick_search.chpoint);
-                panel->quick_search.chpoint = 0;
-            }
-        }
-    }
-
-    reg_exp = g_strdup_printf ("%s*", panel->quick_search.buffer->str);
+        reg_exp = g_strdup_printf ("%s*", panel->quick_search.buffer->str);
     esc_str = str_escape (reg_exp, -1, ",|\\{}[]", TRUE);
     search = mc_search_new (esc_str, NULL);
     search->search_type = MC_SEARCH_T_GLOB;
@@ -3335,6 +3349,81 @@ do_search (WPanel *panel, int c_code)
         search->is_case_sensitive = panel->sort_info.case_sensitive;
         break;
     }
+
+    g_free (reg_exp);
+    g_free (esc_str);
+
+    return search;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void panel_quick_search_remove_last_char (WPanel *panel);
+
+static gboolean
+panel_quick_search_change_buffer (WPanel *panel, int c_code)
+{
+    if (c_code == KEY_BACKSPACE)
+    {
+        panel_quick_search_remove_last_char (panel);
+        panel->quick_search.chpoint = 0;
+        return TRUE;
+    }
+
+    if (c_code != 0 && (gsize) panel->quick_search.chpoint < sizeof (panel->quick_search.ch))
+    {
+        panel->quick_search.ch[panel->quick_search.chpoint] = c_code;
+        panel->quick_search.chpoint++;
+    }
+
+    if (panel->quick_search.chpoint == 0)
+        return c_code == 0;
+
+    switch (str_is_valid_char (panel->quick_search.ch, panel->quick_search.chpoint))
+    {
+    case -2:
+        return FALSE;
+    case -1:
+        panel->quick_search.chpoint = 0;
+        return FALSE;
+    default:
+        g_string_append_len (panel->quick_search.buffer, panel->quick_search.ch,
+                             panel->quick_search.chpoint);
+        panel->quick_search.chpoint = 0;
+        return TRUE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_quick_search_remove_last_char (WPanel *panel)
+{
+    char *act;
+
+    if (panel->quick_search.buffer->len == 0)
+        return;
+
+    act = panel->quick_search.buffer->str + panel->quick_search.buffer->len;
+    str_prev_noncomb_char (&act, panel->quick_search.buffer->str);
+    g_string_set_size (panel->quick_search.buffer, act - panel->quick_search.buffer->str);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+do_search (WPanel *panel, int c_code)
+{
+    int curr;
+    int i;
+    gboolean wrapped = FALSE;
+    mc_search_t *search;
+    gboolean is_found = FALSE;
+
+    if (!panel_quick_search_change_buffer (panel, c_code))
+        return;
+
+    search = panel_quick_search_new_handler (panel);
 
     curr = panel->current;
 
@@ -3363,14 +3452,290 @@ do_search (WPanel *panel, int c_code)
         widget_draw (WIDGET (panel));
     }
     else if (c_code != KEY_BACKSPACE)
-    {
-        act = panel->quick_search.buffer->str + panel->quick_search.buffer->len;
-        str_prev_noncomb_char (&act, panel->quick_search.buffer->str);
-        g_string_set_size (panel->quick_search.buffer, act - panel->quick_search.buffer->str);
-    }
+        panel_quick_search_remove_last_char (panel);
     mc_search_free (search);
-    g_free (reg_exp);
-    g_free (esc_str);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_quick_filter_set_current_by_name (WPanel *panel, const char *name)
+{
+    int i;
+
+    if (panel->dir.len == 0)
+    {
+        panel_set_current (panel, -1);
+        return;
+    }
+
+    if (name != NULL)
+        for (i = 0; i < panel->dir.len; i++)
+            if (strcmp (panel->dir.list[i].fname->str, name) == 0)
+            {
+                panel_set_current (panel, i);
+                return;
+            }
+
+    panel_set_current (panel, 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_quick_filter_matches (mc_search_t *search, const file_entry_t *fe)
+{
+    return !DIR_IS_DOTDOT (fe->fname->str)
+        && mc_search_run (search, fe->fname->str, 0, fe->fname->len, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+panel_quick_filter_append (dir_list *list, const file_entry_t *source)
+{
+    file_entry_t *target;
+
+    if (!dir_list_append (list, source->fname->str, &source->st, source->f.link_to_dir != 0,
+                          source->f.stale_link != 0))
+        return FALSE;
+
+    target = &list->list[list->len - 1];
+    target->f.marked = source->f.marked;
+    target->f.dir_size_computed = source->f.dir_size_computed;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+panel_quick_filter_begin (WPanel *panel)
+{
+    g_assert (!panel->quick_search.filtering);
+    g_assert (panel->quick_search.source.list == NULL);
+
+    panel->quick_search.filtering = TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_quick_filter_capture_source (WPanel *panel)
+{
+    g_assert (panel->quick_search.filtering);
+    g_assert (panel->quick_search.source.list == NULL);
+
+    panel->quick_search.source = panel->dir;
+    memset (&panel->dir, 0, sizeof (panel->dir));
+    panel->dir.callback = panel->quick_search.source.callback;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_quick_filter_show_all (WPanel *panel)
+{
+    char *current_name = NULL;
+
+    if (panel->quick_search.source.list == NULL)
+        return;
+
+    if (panel_current_entry (panel) != NULL)
+        current_name = g_strdup (panel_current_entry (panel)->fname->str);
+
+    dir_list_free_list (&panel->dir);
+    panel->dir = panel->quick_search.source;
+    memset (&panel->quick_search.source, 0, sizeof (panel->quick_search.source));
+
+    panel_quick_filter_set_current_by_name (panel, current_name);
+    recalculate_panel_summary (panel);
+    panel->dirty = TRUE;
+    g_free (current_name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+panel_quick_filter_restore (WPanel *panel)
+{
+    if (!panel->quick_search.filtering)
+        return;
+
+    panel_quick_filter_show_all (panel);
+    panel->quick_search.filtering = FALSE;
+    panel->dirty = TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+panel_quick_filter_sync_marks (WPanel *panel)
+{
+    GHashTable *source_by_name;
+    int i;
+
+    g_assert (panel->quick_search.filtering);
+
+    source_by_name = g_hash_table_new (g_str_hash, g_str_equal);
+    for (i = 0; i < panel->quick_search.source.len; i++)
+    {
+        file_entry_t *source = &panel->quick_search.source.list[i];
+
+        g_hash_table_insert (source_by_name, source->fname->str, source);
+    }
+
+    for (i = 0; i < panel->dir.len; i++)
+    {
+        const file_entry_t *filtered = &panel->dir.list[i];
+        file_entry_t *source = g_hash_table_lookup (source_by_name, filtered->fname->str);
+
+        if (source != NULL)
+            source->f.marked = filtered->f.marked;
+    }
+
+    g_hash_table_destroy (source_by_name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_quick_filter_apply (WPanel *panel)
+{
+    const dir_list *source;
+    dir_list filtered = { 0 };
+    mc_search_t *search;
+    char *current_name = NULL;
+    const char *first_name = NULL;
+    const char *next_name = NULL;
+    gboolean captured_source = FALSE;
+    gboolean current_seen = FALSE;
+    gboolean current_matches = FALSE;
+    int matches = 0;
+    int i;
+
+    g_assert (panel->quick_search.filtering);
+
+    if (panel->quick_search.buffer->len == 0)
+    {
+        panel_quick_filter_show_all (panel);
+        return TRUE;
+    }
+
+    if (panel_current_entry (panel) != NULL)
+        current_name = g_strdup (panel_current_entry (panel)->fname->str);
+
+    if (panel->quick_search.source.list == NULL)
+    {
+        panel_quick_filter_capture_source (panel);
+        captured_source = TRUE;
+    }
+
+    source = &panel->quick_search.source;
+    filtered.callback = source->callback;
+    search = panel_quick_search_new_handler (panel);
+
+    for (i = 0; i < source->len; i++)
+    {
+        const file_entry_t *fe = &source->list[i];
+        gboolean is_current = current_name != NULL && strcmp (fe->fname->str, current_name) == 0;
+        gboolean is_match = panel_quick_filter_matches (search, fe);
+
+        if (is_current)
+        {
+            current_seen = TRUE;
+            current_matches = is_match;
+        }
+
+        if (is_match)
+        {
+            matches++;
+            if (first_name == NULL)
+                first_name = fe->fname->str;
+            if (next_name == NULL && current_seen && !is_current)
+                next_name = fe->fname->str;
+        }
+
+        if (DIR_IS_DOTDOT (fe->fname->str) || is_match)
+        {
+            if (!panel_quick_filter_append (&filtered, fe))
+            {
+                dir_list_free_list (&filtered);
+                mc_search_free (search);
+                g_free (current_name);
+                if (captured_source)
+                {
+                    panel->dir = panel->quick_search.source;
+                    memset (&panel->quick_search.source, 0, sizeof (panel->quick_search.source));
+                }
+                return FALSE;
+            }
+        }
+    }
+
+    if (matches == 0)
+    {
+        dir_list_free_list (&filtered);
+        mc_search_free (search);
+        g_free (current_name);
+        if (captured_source)
+        {
+            panel->dir = panel->quick_search.source;
+            memset (&panel->quick_search.source, 0, sizeof (panel->quick_search.source));
+        }
+        return FALSE;
+    }
+
+    if (!current_seen || !current_matches)
+    {
+        g_free (current_name);
+        current_name = g_strdup (next_name != NULL ? next_name : first_name);
+    }
+
+    dir_list_free_list (&panel->dir);
+    panel->dir = filtered;
+    panel_quick_filter_set_current_by_name (panel, current_name);
+    recalculate_panel_summary (panel);
+    panel->dirty = TRUE;
+
+    mc_search_free (search);
+    g_free (current_name);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+do_quick_filter (WPanel *panel, int c_code)
+{
+    if (!panel_quick_search_change_buffer (panel, c_code))
+        return;
+
+    if (!panel_quick_filter_apply (panel) && c_code != KEY_BACKSPACE)
+        panel_quick_search_remove_last_char (panel);
+
+    widget_draw (WIDGET (panel));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_quick_filter_next_match (WPanel *panel)
+{
+    int i;
+
+    if (panel->dir.len == 0)
+        return;
+
+    for (i = 1; i <= panel->dir.len; i++)
+    {
+        int next = (panel->current + i) % panel->dir.len;
+
+        if (!DIR_IS_DOTDOT (panel->dir.list[next].fname->str))
+        {
+            panel_set_current (panel, next);
+            return;
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -3383,6 +3748,13 @@ start_search (WPanel *panel)
 {
     if (panel->quick_search.active)
     {
+        if (panel->quick_search.filtering)
+        {
+            panel_quick_filter_restore (panel);
+            display_mini_info (panel);
+            return;
+        }
+
         if (panel->current == panel->dir.len - 1)
             panel->current = 0;
         else
@@ -3408,11 +3780,49 @@ start_search (WPanel *panel)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+start_quick_filter (WPanel *panel)
+{
+    if (panel->quick_search.active)
+    {
+        if (!panel->quick_search.filtering)
+        {
+            panel_quick_filter_begin (panel);
+            (void) panel_quick_filter_apply (panel);
+        }
+        else
+        {
+            panel_quick_filter_next_match (panel);
+
+            if (panel->quick_search.buffer->len == 0)
+            {
+                mc_g_string_copy (panel->quick_search.buffer, panel->quick_search.prev_buffer);
+                if (!panel_quick_filter_apply (panel))
+                    g_string_set_size (panel->quick_search.buffer, 0);
+            }
+        }
+    }
+    else if (panel->dir.len != 0)
+    {
+        panel->quick_search.active = TRUE;
+        g_string_set_size (panel->quick_search.buffer, 0);
+        panel->quick_search.ch[0] = '\0';
+        panel->quick_search.chpoint = 0;
+        panel_quick_filter_begin (panel);
+        (void) panel_quick_filter_apply (panel);
+    }
+
+    display_mini_info (panel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
 stop_search (WPanel *panel)
 {
     if (!panel->quick_search.active)
         return;
 
+    panel_quick_filter_restore (panel);
     panel->quick_search.active = FALSE;
 
     /* if user overrdied search string, we need to store it
@@ -4409,8 +4819,11 @@ static cb_ret_t
 panel_execute_cmd (WPanel *panel, long command)
 {
     int res = MSG_HANDLED;
+    keybind_action_flags_t command_flags = keybind_lookup_action_flags (command);
+    gboolean redraw_after_search_stop = command == CK_SearchStop && panel->quick_search.active;
 
-    if (command != CK_Search)
+    if ((panel->quick_search.filtering && (command_flags & KEYBIND_ACTION_KEEP_PANEL_FILTER) == 0)
+        || (!panel->quick_search.filtering && command != CK_Search && command != CK_QuickFilter))
         stop_search (panel);
 
     switch (command)
@@ -4575,7 +4988,12 @@ panel_execute_cmd (WPanel *panel, long command)
     case CK_Search:
         start_search (panel);
         break;
+    case CK_QuickFilter:
+        start_quick_filter (panel);
+        break;
     case CK_SearchStop:
+        if (redraw_after_search_stop)
+            widget_draw (WIDGET (panel));
         break;
     case CK_PanelOtherSync:
         panel_sync_other (panel);
@@ -4613,6 +5031,9 @@ panel_execute_cmd (WPanel *panel, long command)
         break;
     }
 
+    if (panel->quick_search.filtering && (command_flags & KEYBIND_ACTION_PANEL_SELECTION) != 0)
+        panel_quick_filter_sync_marks (panel);
+
     return res;
 }
 
@@ -4631,7 +5052,10 @@ panel_key (WPanel *panel, int key)
 
     if (panel->quick_search.active && ((key >= ' ' && key <= 255) || key == KEY_BACKSPACE))
     {
-        do_search (panel, key);
+        if (panel->quick_search.filtering)
+            do_quick_filter (panel, key);
+        else
+            do_search (panel, key);
         return MSG_HANDLED;
     }
 
@@ -4961,6 +5385,8 @@ panel_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     case MSG_MOUSE_DOWN:
         if (event->y == 0)
         {
+            stop_search (panel);
+
             // top frame
             if (event->x == 1)
                 // "<" button
@@ -4986,6 +5412,8 @@ panel_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
         if (event->y == 1)
         {
+            stop_search (panel);
+
             // sort on clicked column
             mouse_sort_col (panel, event->x + 1);
             break;
@@ -5046,7 +5474,10 @@ panel_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     case MSG_MOUSE_CLICK:
         if ((event->count & GPM_DOUBLE) != 0 && (event->buttons & GPM_B_LEFT) != 0
             && panel_mouse_is_on_item (panel, event->y - 2, event->x) >= 0)
+        {
+            stop_search (panel);
             do_enter (panel);
+        }
         break;
 
     case MSG_MOUSE_MOVE:
@@ -5076,6 +5507,9 @@ panel_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     default:
         break;
     }
+
+    if (panel->quick_search.filtering && (msg == MSG_MOUSE_DOWN || msg == MSG_MOUSE_DRAG))
+        panel_quick_filter_sync_marks (panel);
 
     if (panel->dirty)
         widget_draw (w);
@@ -5365,6 +5799,9 @@ panel_clean_dir (WPanel *panel)
     panel->dirs_marked = 0;
     panel->total = 0;
     panel->quick_search.active = FALSE;
+    panel->quick_search.filtering = FALSE;
+    if (panel->quick_search.source.list != NULL)
+        dir_list_free_list (&panel->quick_search.source);
     panel->is_panelized = FALSE;
     panel->dirty = TRUE;
     panel->content_shift = 0;
@@ -5572,6 +6009,8 @@ panel_reload (WPanel *panel)
 {
     struct stat current_stat;
     vfs_path_t *cwd_vpath;
+
+    stop_search (panel);
 
     if (panels_options.fast_reload && stat (vfs_path_as_str (panel->cwd_vpath), &current_stat) == 0
         && current_stat.st_ctime == panel->dir_stat.st_ctime

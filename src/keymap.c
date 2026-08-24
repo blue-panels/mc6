@@ -243,7 +243,9 @@ static const global_keymap_ini_t default_panel_keymap[] = {
     { "PageDown", "pgdn; ctrl-v" },
     { "PageUp", "pgup; alt-v" },
     { "SelectCodepage", "alt-e" },
+    // Keep both traditional quick-search bindings; quick filter uses shifted Alt-S.
     { "Search", "ctrl-s; alt-s" },
+    { "QuickFilter", "alt-shift-s" },
     { "PanelOtherSync", "alt-i" },
     {
         NULL,

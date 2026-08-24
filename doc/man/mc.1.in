@@ -533,28 +533,41 @@ with the mouse.
 displays the directory history, equivalent to depressing the 'v' with
 the mouse.
 .\"NODE "  Quick search"
-.SH "  Quick search"
-The Quick search mode allows you to perform fast file search in file panel.
+.SH "  Quick search and quick filter"
+The Quick search mode allows you to perform fast file search in a file panel.
 Press
 .I C\-s
 or
 .I Alt\-s
-to start a filename search in the directory listing.
+to start a filename search in the directory listing. Press
+.I Alt\-Shift\-s
+to start Quick filter, which uses the same pattern but hides entries that do
+not contain it. The parent directory entry is always shown.
 .P
-When the search is active, the user input will be added to the search string
+When either mode is active, the user input will be added to the shared pattern
 instead of the command line. If the
 .I Show mini\-status
-option is enabled the search string is shown on the mini\-status
-line. When typing, the selection bar will move to the next file
-starting with the typed letters. The
+option is enabled, the pattern is shown on the mini\-status line. When typing,
+the selection bar will move to the next file starting with the typed letters;
+in Quick filter mode the list is also reduced to matching entries. The
 .I Backspace
 or
 .I DEL
-keys can be used to correct typing mistakes. If C\-s is pressed
-again, the next match is searched for.
+keys can be used to correct typing mistakes.
 .P
-If quick search is started with double pressing of C\-s, the previous quick
-search pattern will be used for current search.
+Pressing C\-s or Alt\-s while Quick filter is active switches to Quick search
+and shows all entries without losing the pattern or current file. Pressing
+Alt\-Shift\-s while Quick search is active switches back to Quick filter.
+Repeating the shortcut of the active mode searches for the next match.
+.P
+Navigation keys such as the arrow, Home, End, Page Up and Page Down keys move
+within the filtered list without closing Quick filter.
+.P
+Files can be marked and unmarked while Quick filter is active. Their marks are
+preserved when switching modes or closing the filter.
+.P
+If either mode is started by pressing its shortcut twice, the previous pattern
+will be used.
 .P
 Besides the filename characters, you can also use wildcard
 characters '*' and '?'.
@@ -2110,13 +2123,13 @@ Filenames Highlight
 .\"Filenames Highlight"
 for more info.
 .PP
-.B Quick search
+.B Quick search and quick filter
 .PP
 You can specify how the
 .\"LINK2"
 Quick search
 .\"Quick search"
-mode should work: case insensitively, case sensitively or be matched
+and Quick filter modes should work: case insensitively, case sensitively or be matched
 to the panel sort order: case sensitive or not.
 .\"NODE "    Confirmation"
 .SH "    Confirmation"

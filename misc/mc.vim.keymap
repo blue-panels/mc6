@@ -81,6 +81,7 @@ Jobs = j
 [panel]
 PanelModes = alt-t
 Search = ctrl-s; alt-s
+QuickFilter = alt-shift-s
 Mark = insert; ctrl-t; shift-m
 MarkUp = shift-k
 MarkDown = shift-j
