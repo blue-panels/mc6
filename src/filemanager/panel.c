@@ -1217,27 +1217,60 @@ paint_dir (WPanel *panel)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+panel_quick_filter_get_marked_count (const WPanel *panel, int *visible, int *hidden)
+{
+    int i;
+    int total = panel->marked;
+
+    if (panel->quick_search.filtering && panel->quick_search.source.list != NULL)
+    {
+        total = 0;
+        for (i = 0; i < panel->quick_search.source.len; i++)
+            if (panel->quick_search.source.list[i].f.marked != 0)
+                total++;
+    }
+
+    *visible = panel->marked;
+    *hidden = MAX (total - panel->marked, 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
 display_total_marked_size (const WPanel *panel, int y, int x, gboolean size_only)
 {
     const Widget *w = CONST_WIDGET (panel);
 
     char buffer[BUF_SMALL], b_bytes[BUF_SMALL];
     const char *buf;
+    int visible_marked;
+    int hidden_marked;
     int cols;
 
-    if (panel->marked <= 0)
+    panel_quick_filter_get_marked_count (panel, &visible_marked, &hidden_marked);
+
+    if (visible_marked <= 0 && hidden_marked <= 0)
         return;
 
-    buf = size_only ? b_bytes : buffer;
     cols = w->rect.cols - 2;
 
-    g_strlcpy (b_bytes, size_trunc_sep (panel->total, panels_options.kilobyte_si),
-               sizeof (b_bytes));
+    if (hidden_marked > 0)
+    {
+        g_snprintf (buffer, sizeof (buffer), _ ("%d marked (+%d more)"), visible_marked,
+                    hidden_marked);
+        buf = buffer;
+    }
+    else
+    {
+        g_strlcpy (b_bytes, size_trunc_sep (panel->total, panels_options.kilobyte_si),
+                   sizeof (b_bytes));
+        buf = size_only ? b_bytes : buffer;
 
-    if (!size_only)
-        g_snprintf (buffer, sizeof (buffer),
-                    ngettext ("%s in %d file", "%s in %d files", panel->marked), b_bytes,
-                    panel->marked);
+        if (!size_only)
+            g_snprintf (buffer, sizeof (buffer),
+                        ngettext ("%s in %d file", "%s in %d files", visible_marked), b_bytes,
+                        visible_marked);
+    }
 
     // don't forget spaces around buffer content
     buf = str_trunc (buf, cols - 4);
