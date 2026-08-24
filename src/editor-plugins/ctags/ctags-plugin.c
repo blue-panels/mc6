@@ -1748,6 +1748,8 @@ ctags_plugin_handle_key (void *plugin_data, int key, void *edit)
     command = ctags_keymap_lookup_command (d->keymap, key);
     if (command == CTAGS_CMD_NONE)
         return MC_EPR_NOT_SUPPORTED;
+    if (command == CTAGS_CMD_COMPLETE && e->mark1 != e->mark2)
+        return MC_EPR_NOT_SUPPORTED;
 
     if (command == CTAGS_CMD_MENU)
         ctags_show_menu (d, e);
