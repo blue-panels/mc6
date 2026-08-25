@@ -35,6 +35,7 @@
 
 #include "lib/global.h"
 #include "lib/keybind.h"
+#include "lib/shell.h"
 #include "lib/skin.h"
 #include "lib/strutil.h"
 #include "lib/tty/key.h"
@@ -277,6 +278,44 @@ mcterm_overlay_cmdline_shell_key (int parm)
     default:
         return parm;
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Whether the shell edits its line at all. sh, dash and ash read it raw from the tty: an arrow
+   sent to them is only printed. */
+static gboolean
+mcterm_overlay_shell_edits_line (void)
+{
+    if (mc_global.shell == NULL)
+        return FALSE;
+
+    switch (mc_global.shell->type)
+    {
+    case SHELL_BASH:
+    case SHELL_ZSH:
+    case SHELL_FISH:
+    case SHELL_TCSH:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Hand the shell a key of the command line's. A shell with no line editor gets the text and
+   the control keys the tty itself acts on, and nothing it would only print. */
+static void
+mcterm_overlay_send_cmdline_key (int parm)
+{
+    const int key = mcterm_overlay_cmdline_shell_key (parm);
+
+    if (!mcterm_overlay_shell_edits_line () && key > 0xFF && (key & ~0x1F) != KEY_M_CTRL
+        && key != KEY_BACKSPACE)
+        return;
+
+    mcterm_send_key (mcterm_panel, key);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1198,7 +1237,7 @@ mcterm_overlay_cmdline_key (int parm)
     if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
         return MSG_NOT_HANDLED;
 
-    mcterm_send_key (mcterm_panel, mcterm_overlay_cmdline_shell_key (parm));
+    mcterm_overlay_send_cmdline_key (parm);
     return MSG_HANDLED;
 }
 
@@ -1310,7 +1349,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
     if (mcterm_overlay_cmdline_takes_key (parm))
     {
-        mcterm_send_key (mcterm_panel, mcterm_overlay_cmdline_shell_key (parm));
+        mcterm_overlay_send_cmdline_key (parm);
         return MSG_HANDLED;
     }
 
