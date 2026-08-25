@@ -1392,6 +1392,21 @@ shfs_get_line_cancellable (shfs_conn_t *conn, char *buffer, int size)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The owner the helper sends after the mode, as "uid.gid" in numbers; the panel names them. */
+static void
+shfs_parse_owner (const char *s, struct stat *st)
+{
+    unsigned int uid, gid;
+
+    if (sscanf (s, " %u.%u", &uid, &gid) == 2)
+    {
+        st->st_uid = (uid_t) uid;
+        st->st_gid = (gid_t) gid;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 shfs_parse_ls (char *buffer, shfs_entry_t *ent)
 {
@@ -1482,9 +1497,11 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
 
     case 'P':
     {
+        // we expect: Pfilemode uid.gid
         size_t skipped;
 
-        vfs_parse_filemode (buffer, &skipped, &ST.st_mode);
+        if (vfs_parse_filemode (buffer, &skipped, &ST.st_mode))
+            shfs_parse_owner (buffer + skipped, &ST);
         break;
     }
 
@@ -1496,7 +1513,8 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
          */
         size_t skipped;
 
-        vfs_parse_raw_filemode (buffer, &skipped, &ST.st_mode);
+        if (vfs_parse_raw_filemode (buffer, &skipped, &ST.st_mode))
+            shfs_parse_owner (buffer + skipped, &ST);
         break;
     }
 
