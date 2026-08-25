@@ -1194,6 +1194,15 @@ input_set_point (WInput *in, int pos)
 /* --------------------------------------------------------------------------------------------- */
 
 void
+input_draw_history_button (WInput *in)
+{
+    if (should_show_history_button (in))
+        draw_history_button (in);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 input_update (WInput *in, gboolean clear_first)
 {
     Widget *wi = WIDGET (in);

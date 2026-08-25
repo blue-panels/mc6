@@ -93,6 +93,8 @@ void input_assign_text (WInput *in, const char *text);
 void input_insert (WInput *in, const char *text, gboolean insert_extra_space);
 void input_set_point (WInput *in, int pos);
 void input_update (WInput *in, gboolean clear_first);
+/* Draw the history button alone, for a row that is drawn by someone else. */
+void input_draw_history_button (WInput *in);
 void input_enable_update (WInput *in);
 void input_disable_update (WInput *in);
 void input_clean (WInput *in);

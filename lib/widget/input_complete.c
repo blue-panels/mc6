@@ -95,6 +95,10 @@ void complete_engine_fill_completions (WInput *in);
 
 static WInput *input;
 static int min_end;
+/* How tall the list may be, and whether it stands on the input line, so that it can shrink and
+   grow with the matches it shows and keep its place. */
+static int list_max_lines;
+static gboolean list_above_input;
 static int start = 0;
 static int end = 0;
 
@@ -945,6 +949,11 @@ insert_text (WInput *in, const char *text, ssize_t size)
     else
         size = MIN (size, (ssize_t) text_len);
 
+    /* What the matches have in common can be shorter than what was typed, when they match it
+       in another case. That is nothing to put in, and nothing to take away either. */
+    if (size < end - start)
+        return FALSE;
+
     new_size = size + start - end;
     if (new_size != 0)
     {
@@ -977,6 +986,37 @@ insert_text (WInput *in, const char *text, ssize_t size)
     end += new_size;
 
     return new_size != 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Show the cached matches that still fit what is typed: the list narrows as characters are added
+   and widens as they are taken away, with no new lookup. */
+static void
+complete_list_refill (WListbox *l)
+{
+    Widget *d = WIDGET (WIDGET (l)->owner);
+    WRect r = d->rect;
+    size_t k;
+    int lines;
+
+    listbox_remove_list (l);
+
+    for (k = 1; k < input->completions->len; k++)
+    {
+        const char *q = g_ptr_array_index (input->completions, k);
+
+        if (strncmp (input->buffer->str + start, q, end - start) == 0)
+            listbox_add_item (l, LISTBOX_APPEND_AT_END, 0, q, NULL, FALSE);
+    }
+
+    lines = MIN (list_max_lines, listbox_get_length (l) + 2);
+    if (list_above_input)
+        r.y += r.lines - lines;
+    r.lines = lines;
+    widget_set_size_rect (d, &r);
+    widget_set_size (WIDGET (l), r.y + 1, r.x + 1, lines - 2, r.cols - 2);
+    do_refresh ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1019,26 +1059,15 @@ complete_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
             }
             else
             {
+                /* Not input_handle_char(): an edit through it drops the cached matches. */
                 int new_end;
-                int i;
-                GList *e;
 
                 new_end = str_get_prev_char (input->buffer->str + end) - input->buffer->str;
-
-                for (i = 0, e = listbox_get_first_link (LISTBOX (g->current->data)); e != NULL;
-                     i++, e = g_list_next (e))
-                {
-                    WLEntry *le = LENTRY (e->data);
-
-                    if (strncmp (input->buffer->str + start, le->text, new_end - start) == 0)
-                    {
-                        listbox_set_current (LISTBOX (g->current->data), i);
-                        end = new_end;
-                        input_handle_char (input, parm);
-                        widget_draw (WIDGET (g->current->data));
-                        break;
-                    }
-                }
+                g_string_erase (input->buffer, new_end, end - new_end);
+                input->point--;
+                end = new_end;
+                input_update (input, TRUE);
+                complete_list_refill (LISTBOX (g->current->data));
             }
             return MSG_HANDLED;
 
@@ -1061,8 +1090,6 @@ complete_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
                 static char buff[MB_LEN_MAX] = "";
                 GList *e;
                 int i;
-                int need_redraw = 0;
-                int low = 4096;
                 char *last_text = NULL;
 
                 buff[bl++] = (char) parm;
@@ -1079,71 +1106,43 @@ complete_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
                     break;
                 }
 
+                /* Matches looked up for nothing typed are not all there is: the first
+                   character narrows nothing, it asks for the matches of its own. */
+                if (min_end == start)
+                {
+                    int b;
+
+                    for (b = 0; b < bl; b++)
+                        input_handle_char (input, (unsigned char) buff[b]);
+                    end += bl;
+                    bl = 0;
+                    h->ret_value = B_USER;
+                    dlg_close (h);
+                    return MSG_HANDLED;
+                }
+
+                /* Only the character typed goes in: what the matches have in common beyond
+                   it is theirs to show, in the list, not to put on the line. */
                 for (i = 0, e = listbox_get_first_link (LISTBOX (g->current->data)); e != NULL;
-                     i++, e = g_list_next (e))
+                     e = g_list_next (e))
                 {
                     WLEntry *le = LENTRY (e->data);
 
                     if (strncmp (input->buffer->str + start, le->text, end - start) == 0
                         && strncmp (le->text + end - start, buff, bl) == 0)
                     {
-                        if (need_redraw == 0)
-                        {
-                            need_redraw = 1;
-                            listbox_set_current (LISTBOX (g->current->data), i);
+                        if (i++ == 0)
                             last_text = le->text;
-                        }
-                        else
-                        {
-                            char *si, *sl;
-                            int si_num = 0;
-                            int sl_num = 0;
-
-                            // count symbols between start and end
-                            for (si = le->text + start; si < le->text + end;
-                                 str_next_char (&si), si_num++)
-                                ;
-                            for (sl = last_text + start; sl < last_text + end;
-                                 str_next_char (&sl), sl_num++)
-                                ;
-
-                            // pointers to next symbols
-                            si = &le->text[str_offset_to_pos (le->text, ++si_num)];
-                            sl = &last_text[str_offset_to_pos (last_text, ++sl_num)];
-
-                            while (si[0] != '\0' && sl[0] != '\0')
-                            {
-                                char *nexti, *nextl;
-
-                                nexti = str_get_next_char (si);
-                                nextl = str_get_next_char (sl);
-
-                                if (nexti - si != nextl - sl || strncmp (si, sl, nexti - si) != 0)
-                                    break;
-
-                                si = nexti;
-                                sl = nextl;
-
-                                si_num++;
-                            }
-
-                            last_text = le->text;
-
-                            si = &last_text[str_offset_to_pos (last_text, si_num)];
-                            if (low > si - last_text)
-                                low = si - last_text;
-
-                            need_redraw = 2;
-                        }
                     }
                 }
 
-                if (need_redraw == 2)
+                if (i > 0)
                 {
-                    insert_text (input, last_text, low);
-                    widget_draw (WIDGET (g->current->data));
+                    insert_text (input, last_text, end - start + bl);
+                    complete_list_refill (LISTBOX (g->current->data));
                 }
-                else if (need_redraw == 1)
+                // The one match left is the answer.
+                if (i == 1)
                 {
                     h->ret_value = B_ENTER;
                     dlg_close (h);
@@ -1234,6 +1233,8 @@ complete_engine (WInput *in, int what_to_do)
 
             input = in;
             min_end = end;
+            list_max_lines = h;
+            list_above_input = (y + h == start_y);
 
             complete_dlg = dlg_create (TRUE, y, x, h, w, WPOS_KEEP_DEFAULT, TRUE, dialog_colors,
                                        complete_callback, NULL, "[Completion]", NULL);
