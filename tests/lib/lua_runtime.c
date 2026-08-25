@@ -354,6 +354,52 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         viewer_controller_close_count++;
         return TRUE;
     }
+    if (g_strcmp0 (controller->initial_spec->title, "xprop") == 0)
+    {
+        const mc_runtime_viewer_source_t *source = controller->initial_spec->source;
+
+        ck_assert_int_eq (controller->initial_spec->initial_display,
+                          MC_RUNTIME_VIEWER_DISPLAY_TEXT);
+        ck_assert_str_eq (controller->initial_spec->raw_path, "/tmp/a $; '-.elf");
+        ck_assert_int_eq (source->kind, MC_RUNTIME_VIEWER_SOURCE_PROCESS);
+        ck_assert_uint_eq (source->process.argc, 8);
+        ck_assert_str_eq (source->process.argv[0], "readelf");
+        ck_assert_str_eq (source->process.argv[1], "-W");
+        ck_assert_str_eq (source->process.argv[2], "-h");
+        ck_assert_str_eq (source->process.argv[3], "-S");
+        ck_assert_str_eq (source->process.argv[4], "-l");
+        ck_assert_str_eq (source->process.argv[5], "-d");
+        ck_assert_str_eq (source->process.argv[6], "--");
+        ck_assert_str_eq (source->process.argv[7], "/tmp/a $; '-.elf");
+        {
+            mc_runtime_viewer_source_state_event_t event = {
+                .struct_size = sizeof (event),
+                .event_version = 1,
+                .generation = 12,
+                .state = MC_RUNTIME_VIEWER_SOURCE_STARTED,
+                .exit_code = -1,
+            };
+            char *indicators;
+
+            ck_assert_ptr_nonnull (controller->source_state);
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "Reading ELF metadata...");
+            g_free (indicators);
+            event.state = MC_RUNTIME_VIEWER_SOURCE_FAILED;
+            event.term_signal = SIGSEGV;
+            controller->source_state (context, controller->controller_id, &event);
+            indicators = mc_runtime_ui_indicators_compose ("viewer", 80);
+            ck_assert_str_eq (indicators, "xprop (readelf error)");
+            g_free (indicators);
+        }
+        viewer_controller_open_count++;
+        mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                  MC_RUNTIME_VIEWER_CONTROLLER_CLOSE, 0, &draft,
+                                                  &handled, viewer_error));
+        viewer_controller_close_count++;
+        return TRUE;
+    }
     ck_assert_int_eq (controller->initial_spec->source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
     ck_assert_str_eq (controller->initial_spec->title, "revision 1");
     ck_assert_str_eq (controller->help_node, "controller-help");
@@ -470,6 +516,35 @@ create_java_class_handler_script (void)
     char *root = g_build_filename (user_mc_scripts_dir, "lua-java-class", (char *) NULL);
     char *source_ini = g_build_filename (TEST_LUA_JAVA_CLASS_DIR, "lua.ini", (char *) NULL);
     char *source_entry = g_build_filename (TEST_LUA_JAVA_CLASS_DIR, "init.lua", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+    char *contents = NULL;
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    mctest_assert_true (g_file_get_contents (source_ini, &contents, NULL, &error));
+    g_clear_error (&error);
+    write_file (ini_path, contents);
+    g_clear_pointer (&contents, g_free);
+    mctest_assert_true (g_file_get_contents (source_entry, &contents, NULL, &error));
+    g_clear_error (&error);
+    write_file (entry_path, contents);
+
+    g_free (contents);
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (source_entry);
+    g_free (source_ini);
+    g_free (root);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+create_readelf_handler_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "lua-readelf", (char *) NULL);
+    char *source_ini = g_build_filename (TEST_LUA_READELF_DIR, "lua.ini", (char *) NULL);
+    char *source_entry = g_build_filename (TEST_LUA_READELF_DIR, "init.lua", (char *) NULL);
     char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
     char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
     char *contents = NULL;
@@ -2118,6 +2193,31 @@ START_TEST (test_lua_java_class_handler_uses_pty_process)
 }
 END_TEST
 
+START_TEST (test_lua_readelf_handler_uses_direct_argv)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .display_name = "xprop",
+        .local_path = "/tmp/a $; '-.elf",
+        .mime_type = "application/x-pie-executable",
+        .magic_group = "elf",
+    };
+    const char *handler_error = NULL;
+
+    create_readelf_handler_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "lua-readelf", "view",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
+    ck_assert_ptr_null (handler_error);
+    ck_assert_uint_eq (viewer_controller_open_count, 1);
+    ck_assert_uint_eq (viewer_controller_close_count, 1);
+}
+END_TEST
+
 START_TEST (test_lua_runtime_viewport_controller_uses_direct_argv)
 {
     create_viewport_controller_script ();
@@ -2565,6 +2665,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_viewer_source_controller);
     tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
     tcase_add_test (tc_core, test_lua_java_class_handler_uses_pty_process);
+    tcase_add_test (tc_core, test_lua_readelf_handler_uses_direct_argv);
     tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);
 
     result = mctest_run_all (tc_core);

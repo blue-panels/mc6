@@ -163,6 +163,61 @@ START_TEST (test_mime_selector_matches_and_copies_metadata)
     g_free (data_path);
 }
 END_TEST
+
+START_TEST (test_elf_mime_selector_does_not_require_filename_extension)
+{
+    static const unsigned char elf_header[64] = {
+        0x7f, 'E', 'L', 'F', 2, 1, 1, 0, 0,    0, 0, 0, 0, 0, 0, 0, 2, 0, 0x3e, 0, 1, 0,
+        0,    0,   0,   0,   0, 0, 0, 0, 0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,
+        0,    0,   0,   0,   0, 0, 0, 0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0,
+    };
+    magic_config_t config = { NULL, NULL };
+    mc_magic_source_t source = { 0 };
+    mc_magic_action_t action = { 0 };
+    magic_type_info_t type = { FALSE, { '\0' } };
+    magic_mime_info_t mime = { FALSE, NULL };
+    char *local_copy = NULL;
+    char *data_path = NULL;
+    char *link_path = NULL;
+    char *ini_path = NULL;
+    gboolean matched = FALSE;
+    int fd;
+
+    fd = g_file_open_tmp ("mc-magic-elf-XXXXXX", &data_path, NULL);
+    ck_assert_int_ne (fd, -1);
+    ck_assert_int_eq ((int) write (fd, elf_header, sizeof (elf_header)), (int) sizeof (elf_header));
+    close (fd);
+    link_path = g_strconcat (data_path, "-link", (char *) NULL);
+    ck_assert_int_eq (symlink (data_path, link_path), 0);
+    fd = g_file_open_tmp ("mc-magic-ini-XXXXXX", &ini_path, NULL);
+    ck_assert_int_ne (fd, -1);
+    close (fd);
+    mctest_assert_true (g_file_set_contents (
+        ini_path,
+        "[elf]\nMime=^application/x-(pie-executable|executable|sharedlib|object)$\n"
+        "View=%plugin{lua(lua-readelf):view}\n",
+        -1, NULL));
+    magic_config_load (&config, ini_path);
+    source.display_name = "program";
+    source.local_path = link_path;
+    ck_assert_int_eq (magic_find_in_config (&config, &source, "View", &local_copy, &action,
+                                            &matched, &type, &mime),
+                      MC_MAGIC_ACTION_FOUND);
+    mctest_assert_true (matched);
+    ck_assert_str_eq (action.magic_group, "elf");
+    ck_assert_str_eq (action.mime_type, "application/x-executable");
+    ck_assert_str_eq (action.submodule_id, "lua-readelf");
+    mc_magic_action_clear (&action);
+    g_free (mime.text);
+    magic_config_clear (&config);
+    unlink (ini_path);
+    unlink (link_path);
+    unlink (data_path);
+    g_free (ini_path);
+    g_free (link_path);
+    g_free (data_path);
+}
+END_TEST
 #endif
 
 /* --------------------------------------------------------------------------------------------- */
@@ -229,6 +284,7 @@ main (void)
     tcase_add_test (tc_core, test_a_rule_without_the_key_does_not_shadow_the_next_file);
 #ifdef HAVE_LIBMAGIC
     tcase_add_test (tc_core, test_mime_selector_matches_and_copies_metadata);
+    tcase_add_test (tc_core, test_elf_mime_selector_does_not_require_filename_extension);
 #endif
     tcase_add_test (tc_core, test_reject_non_plugin_action);
     tcase_add_test (tc_core, test_reject_malformed_plugin_operation);

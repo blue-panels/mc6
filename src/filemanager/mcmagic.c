@@ -238,7 +238,7 @@ magic_mime_get (const mc_magic_source_t *source, char **local_copy, magic_mime_i
     path = magic_source_path (source, local_copy);
     if (path == NULL)
         return FALSE;
-    cookie = magic_open (MAGIC_MIME_TYPE | MAGIC_ERROR);
+    cookie = magic_open (MAGIC_MIME_TYPE | MAGIC_ERROR | MAGIC_SYMLINK);
     if (cookie == NULL)
         return FALSE;
     if (magic_load (cookie, NULL) != 0 || (value = magic_file (cookie, path)) == NULL)

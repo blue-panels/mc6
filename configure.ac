@@ -618,6 +618,11 @@ AM_CONDITIONAL([ENABLE_LUA_JAVA_CLASS],
                 && test -n "$JAVA_CLASS_SCRIPT" && test x"$JAVA_CLASS_SCRIPT" != xno \
                 && test -n "$ENV_TOOL" && test x"$ENV_TOOL" != xno])
 
+AC_PATH_PROG([READELF], [readelf])
+AM_CONDITIONAL([ENABLE_LUA_READELF],
+               [test x"$have_lua_plugin" = xyes \
+                && test -n "$READELF" && test x"$READELF" != xno])
+
 dnl ############################################################################
 dnl Directories
 dnl ############################################################################
@@ -955,6 +960,16 @@ View=%plugin{lua(lua-java-class):view}'
 fi
 AC_SUBST([MAGIC_LUA_JAVA_CLASS_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_JAVA_CLASS_RULES])
+
+MAGIC_LUA_READELF_RULES=""
+if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes \
+        && test -n "$READELF" && test x"$READELF" != xno; then
+    MAGIC_LUA_READELF_RULES='[[elf]]
+Mime=^application/x-(pie-executable|executable|sharedlib|object)$
+View=%plugin{lua(lua-readelf):view}'
+fi
+AC_SUBST([MAGIC_LUA_READELF_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_READELF_RULES])
 
 dnl Optional libcurl >= 7.75.0 for S3 panel plugin (needs CURLOPT_AWS_SIGV4)
 LIBCURL_S3_CFLAGS=""
