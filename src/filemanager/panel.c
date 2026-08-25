@@ -2517,7 +2517,7 @@ cd_up_dir (WPanel *panel)
 static cb_ret_t
 maybe_cd (WPanel *panel, gboolean move_up_dir)
 {
-    if (panels_options.navigate_with_arrows && input_is_empty (cmdline))
+    if (panels_options.navigate_with_arrows && mcterm_overlay_cmdline_is_empty ())
     {
         const file_entry_t *fe;
 
@@ -2553,7 +2553,7 @@ maybe_cd (WPanel *panel, gboolean move_up_dir)
 static cb_ret_t
 force_maybe_cd (WPanel *panel)
 {
-    if (input_is_empty (cmdline))
+    if (mcterm_overlay_cmdline_is_empty ())
     {
         cd_up_dir (panel);
         return MSG_HANDLED;

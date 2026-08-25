@@ -35,6 +35,7 @@
 
 #include "lib/global.h"
 #include "lib/keybind.h"
+#include "lib/shell.h"
 #include "lib/skin.h"
 #include "lib/strutil.h"
 #include "lib/tty/key.h"
@@ -58,11 +59,15 @@ static WMcTerm *mcterm_panel = NULL;
 static gboolean mcterm_mode = FALSE;
 /* A command of ours is running; the panels are to be re-read once it is over. */
 static gboolean mcterm_exec_needs_panel_reload = FALSE;
+/* The user's line, taken off the shell for a command of ours and typed back at the next prompt. */
+static char *mcterm_parked_line = NULL;
+static int mcterm_parked_left = 0;
 
 #define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
 #define MCTERM_COMMAND_LABEL_WIDTH       14
 
 static gboolean mcterm_overlay_any_panel_visible (void);
+static void mcterm_overlay_park_shell_line (void);
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -81,6 +86,18 @@ mcterm_overlay_ready (void)
 {
     return (mcterm_overlay_live () && mcterm_shell_at_prompt (mcterm_panel)
             && mcterm_osc7_capable (mcterm_panel));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* At its prompt the shell's line editor is the command line, whichever view is up: what is typed
+   goes to it, and what it holds is the line. mc's own input stands in only while the shell has
+   no prompt to type on. Read off the shell itself, not remembered, so the panels can come and go
+   and nothing here has to be told. */
+static gboolean
+mcterm_overlay_shell_owns_cmdline (void)
+{
+    return (command_prompt && mcterm_overlay_ready () && !mcterm_in_alt_screen (mcterm_panel));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -203,6 +220,7 @@ mcterm_overlay_sync_shell_to_panel (void)
         char *quoted = g_shell_quote (panel_cwd);
         char *cmd = g_strdup_printf ("cd %s", quoted);
 
+        mcterm_overlay_park_shell_line ();
         mcterm_send_internal_line (mcterm_panel, cmd);
         g_free (cmd);
         g_free (quoted);
@@ -217,6 +235,92 @@ mcterm_overlay_terminal_focused (void)
     WGroup *g = GROUP (filemanager);
 
     return (g->current != NULL && WIDGET (g->current->data) == mcterm_overlay_widget ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What the command line's own keymap makes of the key, as the key the shell's line editor takes
+   for the same thing. With the panels up the plain arrows are theirs, so mc's [input] map spells
+   "one left" as Alt-Left, say - and the shell must be told "left", not "Alt-Left". A key the map
+   has no editing meaning for goes as it is. */
+static int
+mcterm_overlay_cmdline_shell_key (int parm)
+{
+    if (cmdline == NULL)
+        return parm;
+
+    switch (widget_lookup_key (WIDGET (cmdline), parm))
+    {
+    case CK_Left:
+        return KEY_LEFT;
+    case CK_Right:
+        return KEY_RIGHT;
+    case CK_Home:
+        return KEY_HOME;
+    case CK_End:
+        return KEY_END;
+    // The emacs keys, which readline, zle and fish all take; Ctrl-arrows zle does not.
+    case CK_WordLeft:
+        return KEY_M_ALT | 'b';
+    case CK_WordRight:
+        return KEY_M_ALT | 'f';
+    case CK_BackSpace:
+        return KEY_BACKSPACE;
+    case CK_Delete:
+        return KEY_DC;
+    case CK_DeleteToWordBegin:
+        return KEY_M_ALT | KEY_BACKSPACE;
+    case CK_DeleteToWordEnd:
+        return KEY_M_ALT | 'd';
+    case CK_DeleteToEnd:
+        return XCTRL ('K');
+    case CK_HistoryPrev:
+        return KEY_UP;
+    case CK_HistoryNext:
+        return KEY_DOWN;
+    case CK_Complete:
+        return '\t';
+    default:
+        return parm;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Whether the shell edits its line at all. sh, dash and ash read it raw from the tty: an arrow
+   sent to them is only printed. */
+static gboolean
+mcterm_overlay_shell_edits_line (void)
+{
+    if (mc_global.shell == NULL)
+        return FALSE;
+
+    switch (mc_global.shell->type)
+    {
+    case SHELL_BASH:
+    case SHELL_ZSH:
+    case SHELL_FISH:
+    case SHELL_TCSH:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Hand the shell a key of the command line's. A shell with no line editor gets the text and
+   the control keys the tty itself acts on, and nothing it would only print. */
+static void
+mcterm_overlay_send_cmdline_key (int parm)
+{
+    const int key = mcterm_overlay_cmdline_shell_key (parm);
+
+    if (!mcterm_overlay_shell_edits_line () && key > 0xFF && (key & ~0x1F) != KEY_M_CTRL
+        && key != KEY_BACKSPACE)
+        return;
+
+    mcterm_send_key (mcterm_panel, key);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -251,6 +355,10 @@ mcterm_overlay_cmdline_takes_key (int parm)
     default:
         break;
     }
+
+    // Whatever else mc's own command line would edit with.
+    if (mcterm_overlay_cmdline_shell_key (parm) != parm)
+        return TRUE;
 
     // The control keys readline uses - Ctrl+R to search, Ctrl+U, Ctrl+W, Ctrl+A and the rest. mc
     // tags them with its own control bit; the encoder turns each back into its C0 byte. Ctrl+O is
@@ -302,32 +410,68 @@ mcterm_overlay_starts_cmdline_input (int parm)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Once the panels step aside, the shell owns the command line. Move any text collected by WInput
-   into its line editor first, including the cursor position, so the two editors cannot remain on
-   screen at the same time and drift apart. */
+/* Type a line into the shell's line editor, cursor position and all: @left characters of it
+   stay to the right of the cursor. */
 static void
-mcterm_overlay_move_cmdline_to_shell (void)
+mcterm_overlay_type_line (const char *text, int left)
 {
-    const char *text;
     const unsigned char *p;
-    int left;
-
-    if (!command_prompt || cmdline == NULL || !mcterm_mode || !mcterm_overlay_ready ())
-        return;
-
-    text = input_get_ctext (cmdline);
-    if (text == NULL || *text == '\0')
-        return;
 
     for (p = (const unsigned char *) text; *p != '\0'; p++)
         if (!mcterm_send_key (mcterm_panel, *p))
             return;
 
-    left = MAX (str_length (text) - cmdline->point, 0);
     while (left-- > 0)
         if (!mcterm_send_key (mcterm_panel, KEY_LEFT))
             break;
+}
 
+/* --------------------------------------------------------------------------------------------- */
+
+/* A command of ours is about to go to the shell. Whatever the user has typed on its line is
+   taken off and kept, to be typed in again once the shell has its prompt back. */
+static void
+mcterm_overlay_park_shell_line (void)
+{
+    char *text;
+
+    if (!mcterm_overlay_shell_owns_cmdline ())
+        return;
+
+    text = mcterm_shell_line_text (mcterm_panel);
+    if (text == NULL)
+        return;
+
+    g_free (mcterm_parked_line);
+    mcterm_parked_line = text;
+    mcterm_parked_left = MAX (str_length (text) - mcterm_shell_line_point (mcterm_panel), 0);
+    mcterm_clear_shell_line (mcterm_panel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Text typed into mc's own input while the shell had no prompt, and a line parked for a command
+   of ours, go to the shell's line editor as soon as it has a prompt, cursor position and all, so
+   the two never hold a line at the same time. */
+static void
+mcterm_overlay_move_cmdline_to_shell (void)
+{
+    const char *text;
+
+    if (cmdline == NULL || !mcterm_overlay_shell_owns_cmdline ())
+        return;
+
+    if (mcterm_parked_line != NULL)
+    {
+        mcterm_overlay_type_line (mcterm_parked_line, mcterm_parked_left);
+        g_clear_pointer (&mcterm_parked_line, g_free);
+    }
+
+    text = input_get_ctext (cmdline);
+    if (text == NULL || *text == '\0')
+        return;
+
+    mcterm_overlay_type_line (text, MAX (str_length (text) - cmdline->point, 0));
     input_clean (cmdline);
 }
 
@@ -382,9 +526,14 @@ mcterm_overlay_prompt_ready_cb (void *data)
 
     /* With the panels up the shell is out of sight, but its prompt is not: it is the row in
        front of the command line, and it has just become the shell's own. */
+    /* With the panels up, a line in mc's own input waits there for the next key: it may be in
+       the middle of being completed. */
     if (!mcterm_mode)
     {
         mcterm_overlay_place_prompt ();
+        /* The row was just drawn over; the cursor goes back to the command line, or it is left
+           wherever the drawing ended. */
+        mcterm_overlay_place_cursor ();
         tty_refresh ();
         return;
     }
@@ -737,6 +886,7 @@ mcterm_overlay_destroy (void)
 {
     mcterm_panel = NULL;
     mcterm_mode = FALSE;
+    g_clear_pointer (&mcterm_parked_line, g_free);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1114,6 +1264,124 @@ mcterm_overlay_panel_exec (const char *cmd)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcterm_overlay_cmdline_is_empty (void)
+{
+    return (
+        input_is_empty (cmdline)
+        && (!mcterm_overlay_shell_owns_cmdline () || mcterm_shell_line_is_empty (mcterm_panel)));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+char *
+mcterm_overlay_cmdline_text (void)
+{
+    if (!input_is_empty (cmdline))
+        return g_strdup (input_get_ctext (cmdline));
+
+    return mcterm_overlay_shell_owns_cmdline () ? mcterm_shell_line_text (mcterm_panel) : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Completion with the panels up is mc's own, with its list of choices, as it always was: the
+   shell would list its choices into a terminal that is not on screen. The line is taken off the
+   shell into mc's input, which keeps it, choices and all, until the next key: a second press
+   lists the choices, any other key hands the line back to the shell first. */
+static void
+mcterm_overlay_complete_with_mc (void)
+{
+    if (input_is_empty (cmdline))
+    {
+        char *text = mcterm_shell_line_text (mcterm_panel);
+
+        if (text != NULL)
+        {
+            const int point = mcterm_shell_line_point (mcterm_panel);
+
+            mcterm_clear_shell_line (mcterm_panel);
+            input_assign_text (cmdline, text);
+            input_set_point (cmdline, point);
+            g_free (text);
+        }
+    }
+
+    input_complete (cmdline);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* With the panels up, a key that would have gone to the command line goes to the shell's line
+   editor instead. Called after mc's own keys have been dealt with, so what is left really is the
+   command line's. */
+cb_ret_t
+mcterm_overlay_cmdline_key (int parm)
+{
+    if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
+        return MSG_NOT_HANDLED;
+
+    if (widget_lookup_key (WIDGET (cmdline), parm) == CK_Complete)
+        mcterm_overlay_complete_with_mc ();
+    else
+    {
+        mcterm_overlay_move_cmdline_to_shell ();
+        mcterm_overlay_send_cmdline_key (parm);
+    }
+
+    return MSG_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Whether the line is one mc answers to itself with the panels up: cd moves the panel, exit
+   leaves mc. Neither is for the shell then. */
+static gboolean
+mcterm_overlay_line_is_mc_own (const char *text)
+{
+    while (whitespace (*text))
+        text++;
+
+    return ((strncmp (text, "cd", 2) == 0 && (text[2] == '\0' || whitespace (text[2])))
+            || strcmp (text, "exit") == 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Enter with the panels up. An empty line is the panel's Enter. cd and exit are taken off the
+   shell and given to mc's own input, for the caller to deal with as it always has. Anything else
+   the shell runs, with the terminal brought up to show it, the way a command typed into mc's own
+   line is shown. */
+cb_ret_t
+mcterm_overlay_cmdline_enter (void)
+{
+    char *text;
+
+    if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
+        return MSG_NOT_HANDLED;
+
+    text = mcterm_shell_line_text (mcterm_panel);
+    if (text == NULL)
+        return MSG_NOT_HANDLED;
+
+    if (mcterm_overlay_line_is_mc_own (text))
+    {
+        mcterm_clear_shell_line (mcterm_panel);
+        input_assign_text (cmdline, text);
+        g_free (text);
+        return MSG_NOT_HANDLED;
+    }
+    g_free (text);
+
+    mcterm_overlay_toggle ();
+    if (mcterm_send_key (mcterm_panel, '\r'))
+        mcterm_exec_needs_panel_reload = TRUE;
+
+    return MSG_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 cb_ret_t
 mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t execute_command,
                            mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data)
@@ -1203,7 +1471,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
     if (mcterm_overlay_cmdline_takes_key (parm))
     {
-        mcterm_send_key (mcterm_panel, parm);
+        mcterm_overlay_send_cmdline_key (parm);
         return MSG_HANDLED;
     }
 
@@ -1333,6 +1601,31 @@ mcterm_overlay_panel_exec (const char *cmd)
 {
     (void) cmd;
     return FALSE;
+}
+
+gboolean
+mcterm_overlay_cmdline_is_empty (void)
+{
+    return input_is_empty (cmdline);
+}
+
+char *
+mcterm_overlay_cmdline_text (void)
+{
+    return input_is_empty (cmdline) ? NULL : g_strdup (input_get_ctext (cmdline));
+}
+
+cb_ret_t
+mcterm_overlay_cmdline_key (int parm)
+{
+    (void) parm;
+    return MSG_NOT_HANDLED;
+}
+
+cb_ret_t
+mcterm_overlay_cmdline_enter (void)
+{
+    return MSG_NOT_HANDLED;
 }
 
 cb_ret_t

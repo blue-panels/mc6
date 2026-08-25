@@ -1678,6 +1678,9 @@ exec_cmdline_enter (void)
     if (is_cmdline_mute ())
         return MSG_NOT_HANDLED;
 
+    if (mcterm_overlay_cmdline_enter () == MSG_HANDLED)
+        return MSG_HANDLED;
+
     for (s = input_get_ctext (cmdline); *s != '\0' && whitespace (*s); s++)
         ;
 
@@ -1805,7 +1808,7 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
                     return send_message (current_panel, filemanager, MSG_ACTION, CK_SelectInvert,
                                          NULL);
             }
-            else if (!command_prompt || input_is_empty (cmdline))
+            else if (!command_prompt || mcterm_overlay_cmdline_is_empty ())
             {
                 /* Special treatment '+', '-', '\', '*' only when this is
                  * first char on input line
@@ -1867,7 +1870,11 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
             v = midnight_execute_cmd (NULL, command);
 
         if (v == MSG_NOT_HANDLED && command_prompt && !is_cmdline_mute ())
-            v = send_message (cmdline, NULL, MSG_KEY, parm, NULL);
+        {
+            v = mcterm_overlay_cmdline_key (parm);
+            if (v == MSG_NOT_HANDLED)
+                v = send_message (cmdline, NULL, MSG_KEY, parm, NULL);
+        }
 
         return v;
     }

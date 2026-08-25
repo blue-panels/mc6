@@ -49,6 +49,14 @@ gboolean mcterm_overlay_has_terminal (void);
 /* Run a command in the terminal mc has; FALSE when the caller must run it the old way. */
 gboolean mcterm_overlay_exec_command (const char *cmd);
 
+/* The command line as the user sees it: mc's own input and the shell's line together. */
+gboolean mcterm_overlay_cmdline_is_empty (void);
+/* What is on it, wherever it is held; NULL when nothing. Caller frees. */
+char *mcterm_overlay_cmdline_text (void);
+/* Panel view hooks for keys that are the command line's, called after mc's own keys. */
+cb_ret_t mcterm_overlay_cmdline_key (int parm);
+cb_ret_t mcterm_overlay_cmdline_enter (void);
+
 cb_ret_t mcterm_overlay_handle_key (Widget *w, int parm,
                                     mcterm_overlay_command_cb_t execute_command,
                                     mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data);

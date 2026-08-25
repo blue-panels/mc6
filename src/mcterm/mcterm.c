@@ -74,6 +74,7 @@
 #define MCTERM_INTERNAL_SYNC_TIMEOUT_USEC G_USEC_PER_SEC
 
 #define MCTERM_INITIAL_OSC7_MARKER        "7;file://__mc_sync__/"
+#define MCTERM_LINE_SETTLE_USEC           (150L * 1000L)
 #define MCTERM_WHEEL_ROWS                 3
 /* How often the host is woken while a command runs, in nanoseconds. */
 #define MCTERM_BUSY_TICK_NSEC (200L * 1000L * 1000L)
@@ -100,6 +101,15 @@ struct WMcTerm
        and OSC 7 goes back to being about the directory alone. */
     gboolean osc133_capable;
     guint last_osc133_gen;
+    /* Where the shell left its cursor when it finished drawing the prompt: the point at which
+       typing begins. The line is empty while nothing is drawn from there on. */
+    gint64 input_start_row;
+    int input_start_col;
+    gboolean input_start_valid;
+    /* Keys sent to the line are not on the screen until the shell echoes them: the line was
+       told to go, or was typed on, and the screen has yet to say so. */
+    gboolean line_cleared;
+    gboolean line_typed;
     int last_exit_code;
     /* Command submitted by the host, used before its process group becomes visible. */
     char *command_hint;
@@ -151,6 +161,7 @@ typedef struct
 static cb_ret_t mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data);
 static void mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event);
 static gboolean mcterm_handle_osc7_generation (WMcTerm *t);
+static int mcterm_pty_ready_cb (int fd, void *info);
 static gboolean mcterm_osc7_is_ours (const WMcTerm *t, const char *raw);
 static gboolean mcterm_handle_osc133_generation (WMcTerm *t);
 static gboolean mcterm_write_all (int master, const unsigned char *data, size_t len);
@@ -330,6 +341,9 @@ mcterm_pty_ready_cb (int fd, void *info)
             mcterm_handle_osc7_generation (t);
             mcterm_handle_osc133_generation (t);
         }
+
+        t->line_cleared = FALSE;
+        t->line_typed = FALSE;
 
         // New output must not drag the view away from what is being read.
         if (t->scrollback > 0)
@@ -601,12 +615,17 @@ mcterm_handle_osc133_generation (WMcTerm *t)
         if (t->awaiting_command_done || t->shell_at_prompt)
             return FALSE;
         t->shell_at_prompt = TRUE;
+        t->input_start_row =
+            mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
+        t->input_start_col = mcview_vterm_cursor_col (t->vterm);
+        t->input_start_valid = TRUE;
         g_clear_pointer (&t->command_hint, g_free);
         mcterm_busy_tick_set (t, FALSE);
         return TRUE;
 
     case MCTERM_MARK_COMMAND_START:
         t->shell_at_prompt = FALSE;
+        t->input_start_valid = FALSE;
         mcterm_busy_tick_set (t, TRUE);
         return FALSE;
 
@@ -2002,6 +2021,25 @@ mcterm_send_line (WMcTerm *t, const char *line)
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+mcterm_clear_shell_line (WMcTerm *t)
+{
+    if (t == NULL || t->child_dead || t->pty_master < 0)
+        return;
+
+    /* Ctrl-U is what the tty itself kills the line with. A line editor kills to the start with
+       it, so the cursor goes to the end first. */
+    if (mc_global.shell != NULL
+        && (mc_global.shell->type == SHELL_BASH || mc_global.shell->type == SHELL_ZSH
+            || mc_global.shell->type == SHELL_FISH || mc_global.shell->type == SHELL_TCSH))
+        mcterm_send_key (t, XCTRL ('E'));
+    mcterm_send_key (t, XCTRL ('U'));
+    t->line_cleared = TRUE;
+    t->line_typed = FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 mcterm_send_internal_line (WMcTerm *t, const char *line)
 {
@@ -2072,6 +2110,138 @@ gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
 {
     return (t != NULL && !t->child_dead && t->shell_at_prompt);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Keys just sent are not on the screen until the shell echoes them. Before the line is read off
+   the screen, give the shell a moment to answer. */
+static void
+mcterm_settle_line (WMcTerm *t)
+{
+    const gint64 deadline = g_get_monotonic_time () + MCTERM_LINE_SETTLE_USEC;
+
+    while ((t->line_typed || t->line_cleared) && !t->child_dead && t->pty_master >= 0)
+    {
+        fd_set read_set;
+        struct timeval timeout;
+        const gint64 remaining = deadline - g_get_monotonic_time ();
+        int rc;
+
+        if (remaining <= 0)
+            break;
+
+        FD_ZERO (&read_set);
+        FD_SET (t->pty_master, &read_set);
+        timeout.tv_sec = (time_t) (remaining / G_USEC_PER_SEC);
+        timeout.tv_usec = (suseconds_t) (remaining % G_USEC_PER_SEC);
+        rc = select (t->pty_master + 1, &read_set, NULL, NULL, &timeout);
+        if (rc < 0 && errno == EINTR)
+            continue;
+        if (rc <= 0)
+            break;
+
+        mcterm_pty_ready_cb (t->pty_master, t);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+char *
+mcterm_shell_line_text (WMcTerm *t)
+{
+    const mcview_terminal_buffer_t *buf;
+    const int cols = WIDGET (t)->rect.cols;
+    const int lines = WIDGET (t)->rect.lines;
+    GString *text;
+    gint64 row;
+    int cursor_row;
+    int col;
+
+    if (!mcterm_shell_at_prompt (t) || !t->input_start_valid || t->vterm == NULL)
+        return NULL;
+
+    mcterm_settle_line (t);
+    if (t->line_cleared)
+        return NULL;
+
+    /* Typed text starts where the prompt ended and runs on from there. It has scrolled that
+       row away only if it is long; the part that is left is read all the same. */
+    row = t->input_start_row - mcview_vterm_scrolled_rows (t->vterm);
+    col = t->input_start_col;
+    if (row < 0)
+    {
+        row = 0;
+        col = 0;
+    }
+
+    buf = mcview_vterm_buf (t->vterm);
+    cursor_row = mcview_vterm_cursor_row (t->vterm);
+    text = g_string_new (NULL);
+
+    /* The rows up to the cursor are the line's; past it, a row is the line's for as long as
+       it has something on it. */
+    for (; row < lines; row++, col = 0)
+    {
+        gsize row_start = text->len;
+        gboolean blank = TRUE;
+
+        for (; col < cols; col++)
+        {
+            const mcview_vterm_cell_t *cell = mcview_terminal_buffer_get (buf, (int) row, col);
+            gunichar ch = (cell != NULL && cell->ch != 0) ? cell->ch : ' ';
+
+            if (ch != ' ')
+                blank = FALSE;
+            g_string_append_unichar (text, ch);
+        }
+
+        if (blank && row > cursor_row)
+        {
+            g_string_truncate (text, row_start);
+            break;
+        }
+    }
+
+    while (text->len > 0 && text->str[text->len - 1] == ' ')
+        g_string_truncate (text, text->len - 1);
+
+    if (text->len == 0)
+    {
+        g_string_free (text, TRUE);
+        return NULL;
+    }
+
+    return g_string_free (text, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_shell_line_is_empty (WMcTerm *t)
+{
+    char *text = mcterm_shell_line_text (t);
+
+    g_free (text);
+    return (text == NULL && !t->line_typed);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+mcterm_shell_line_point (WMcTerm *t)
+{
+    const int cols = WIDGET (t)->rect.cols;
+    gint64 rows;
+
+    if (!mcterm_shell_at_prompt (t) || !t->input_start_valid || t->vterm == NULL)
+        return 0;
+
+    mcterm_settle_line (t);
+    rows = mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm)
+        - t->input_start_row;
+
+    return MAX ((int) rows * cols + mcview_vterm_cursor_col (t->vterm) - t->input_start_col, 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2169,6 +2339,13 @@ mcterm_send_key (WMcTerm *t, int key)
 {
     if (t == NULL || t->child_dead || t->pty_master < 0)
         return FALSE;
+
+    if (key >= 0x20 && key <= 0xFF && key != 0x7F)
+    {
+        t->line_typed = TRUE;
+        t->line_cleared = FALSE;
+    }
+
     return mcterm_send_encoded_key (t, key);
 }
 
