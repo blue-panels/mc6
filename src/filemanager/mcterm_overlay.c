@@ -253,10 +253,11 @@ mcterm_overlay_cmdline_shell_key (int parm)
         return KEY_HOME;
     case CK_End:
         return KEY_END;
+    // The emacs keys, which readline, zle and fish all take; Ctrl-arrows zle does not.
     case CK_WordLeft:
-        return KEY_M_CTRL | KEY_LEFT;
+        return KEY_M_ALT | 'b';
     case CK_WordRight:
-        return KEY_M_CTRL | KEY_RIGHT;
+        return KEY_M_ALT | 'f';
     case CK_BackSpace:
         return KEY_BACKSPACE;
     case CK_Delete:
