@@ -32,6 +32,13 @@ dist_lua_java_class_DATA = \
 	examples/mc/lua-java-class/init.lua
 endif
 
+lua_readelfdir = $(lua_scripts_dir)/mc/lua-readelf
+if ENABLE_LUA_READELF
+dist_lua_readelf_DATA = \
+	examples/mc/lua-readelf/lua.ini \
+	examples/mc/lua-readelf/init.lua
+endif
+
 lua_notify_editor_savedir = $(lua_scripts_dir)/editor/notify-editor-save
 dist_lua_notify_editor_save_DATA = \
 	examples/editor/notify-editor-save/lua.ini \
