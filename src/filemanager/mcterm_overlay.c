@@ -233,6 +233,53 @@ mcterm_overlay_terminal_focused (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* What the command line's own keymap makes of the key, as the key the shell's line editor takes
+   for the same thing. With the panels up the plain arrows are theirs, so mc's [input] map spells
+   "one left" as Alt-Left, say - and the shell must be told "left", not "Alt-Left". A key the map
+   has no editing meaning for goes as it is. */
+static int
+mcterm_overlay_cmdline_shell_key (int parm)
+{
+    if (cmdline == NULL)
+        return parm;
+
+    switch (widget_lookup_key (WIDGET (cmdline), parm))
+    {
+    case CK_Left:
+        return KEY_LEFT;
+    case CK_Right:
+        return KEY_RIGHT;
+    case CK_Home:
+        return KEY_HOME;
+    case CK_End:
+        return KEY_END;
+    case CK_WordLeft:
+        return KEY_M_CTRL | KEY_LEFT;
+    case CK_WordRight:
+        return KEY_M_CTRL | KEY_RIGHT;
+    case CK_BackSpace:
+        return KEY_BACKSPACE;
+    case CK_Delete:
+        return KEY_DC;
+    case CK_DeleteToWordBegin:
+        return KEY_M_ALT | KEY_BACKSPACE;
+    case CK_DeleteToWordEnd:
+        return KEY_M_ALT | 'd';
+    case CK_DeleteToEnd:
+        return XCTRL ('K');
+    case CK_HistoryPrev:
+        return KEY_UP;
+    case CK_HistoryNext:
+        return KEY_DOWN;
+    case CK_Complete:
+        return '\t';
+    default:
+        return parm;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* At its own prompt the command line is the shell's line: almost every key edits, completes or
    recalls it there. Only the few mc always answers to - its menu, its function bar, Escape and
    the Alt shortcuts - are kept back. */
@@ -263,6 +310,10 @@ mcterm_overlay_cmdline_takes_key (int parm)
     default:
         break;
     }
+
+    // Whatever else mc's own command line would edit with.
+    if (mcterm_overlay_cmdline_shell_key (parm) != parm)
+        return TRUE;
 
     // The control keys readline uses - Ctrl+R to search, Ctrl+U, Ctrl+W, Ctrl+A and the rest. mc
     // tags them with its own control bit; the encoder turns each back into its C0 byte. Ctrl+O is
@@ -1146,7 +1197,7 @@ mcterm_overlay_cmdline_key (int parm)
     if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
         return MSG_NOT_HANDLED;
 
-    mcterm_send_key (mcterm_panel, parm);
+    mcterm_send_key (mcterm_panel, mcterm_overlay_cmdline_shell_key (parm));
     return MSG_HANDLED;
 }
 
@@ -1258,7 +1309,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
     if (mcterm_overlay_cmdline_takes_key (parm))
     {
-        mcterm_send_key (mcterm_panel, parm);
+        mcterm_send_key (mcterm_panel, mcterm_overlay_cmdline_shell_key (parm));
         return MSG_HANDLED;
     }
 
