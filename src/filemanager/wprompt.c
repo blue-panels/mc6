@@ -69,6 +69,16 @@ wprompt_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *d
                the terminal's: the colors it chose were chosen for a terminal, and on the
                file manager's own background a blue path on blue would disappear. */
             mcterm_draw_prompt_row (p->term, w->rect.y, "mcterm", MCTERM_NORMAL_COLOR);
+            /* The row is the shell's, and it was just drawn over what the command line has
+               there: a line of its own, when it holds one - the shell's line is empty then -
+               or at least the history button at the end. */
+            if (cmdline != NULL && widget_get_state (WIDGET (cmdline), WST_VISIBLE))
+            {
+                if (!input_is_empty (cmdline))
+                    widget_draw (WIDGET (cmdline));
+                else
+                    input_draw_history_button (cmdline);
+            }
         }
         else if (p->text != NULL)
         {

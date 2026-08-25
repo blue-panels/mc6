@@ -88,6 +88,7 @@
 #include "boxes.h"        // cd_box()
 #include "dir.h"
 #include "cd.h"
+#include "mcterm_overlay.h"
 #include "ioblksize.h"         // IO_BUFSIZE
 #include "panel_plugin_ops.h"  // plugin_panel_create_cmd()
 #include "mcmagic.h"
@@ -976,9 +977,10 @@ void
 view_filtered_cmd (const WPanel *panel)
 {
     char *command;
-    const char *initial_command;
+    char *initial_command;
 
-    if (input_is_empty (cmdline))
+    initial_command = mcterm_overlay_cmdline_text ();
+    if (initial_command == NULL)
     {
         const file_entry_t *fe;
 
@@ -986,14 +988,13 @@ view_filtered_cmd (const WPanel *panel)
         if (fe == NULL)
             return;
 
-        initial_command = fe->fname->str;
+        initial_command = g_strdup (fe->fname->str);
     }
-    else
-        initial_command = input_get_ctext (cmdline);
 
     command = input_dialog (_ ("Filtered view"), _ ("Filter command and arguments:"),
                             MC_HISTORY_FM_FILTERED_VIEW, initial_command,
                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_COMMANDS);
+    g_free (initial_command);
 
     if (command != NULL)
     {

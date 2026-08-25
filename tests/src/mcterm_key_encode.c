@@ -199,6 +199,24 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_modified_cursor_keys_use_csi_form)
+{
+    init_mcterm_key_table ();
+
+    assert_encoded (KEY_M_ALT | KEY_LEFT, FALSE, "\\e[1;3D");
+    assert_encoded (KEY_M_ALT | KEY_RIGHT, FALSE, "\\e[1;3C");
+    assert_encoded (KEY_M_CTRL | KEY_LEFT, FALSE, "\\e[1;5D");
+    assert_encoded (KEY_M_CTRL | KEY_RIGHT, FALSE, "\\e[1;5C");
+    assert_encoded (KEY_M_SHIFT | KEY_M_CTRL | KEY_RIGHT, FALSE, "\\e[1;6C");
+    assert_encoded (KEY_M_CTRL | KEY_HOME, FALSE, "\\e[1;5H");
+    assert_encoded (KEY_M_CTRL | KEY_END, FALSE, "\\e[1;5F");
+    assert_encoded (KEY_M_CTRL | KEY_DC, FALSE, "\\e[3;5~");
+    assert_encoded (KEY_M_ALT | KEY_NPAGE, FALSE, "\\e[6;3~");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_small_buffer_returns_zero)
 {
     unsigned char buf[2];
@@ -295,6 +313,7 @@ main (void)
     tcase_add_test (tc_core, test_backspace_maps_to_del);
     tcase_add_test (tc_core, test_utf8_bytes_pass_through);
     tcase_add_test (tc_core, test_alt_ascii_uses_esc_prefix);
+    tcase_add_test (tc_core, test_modified_cursor_keys_use_csi_form);
     tcase_add_test (tc_core, test_small_buffer_returns_zero);
     tcase_add_test (tc_core, test_copy_self_does_not_loop);
     tcase_add_test (tc_core, test_copy_cycle_does_not_loop);
