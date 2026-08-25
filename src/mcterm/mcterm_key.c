@@ -150,6 +150,69 @@ mcterm_load_terminal (mc_config_t *cfg)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A cursor or editing key with Shift, Alt or Ctrl held, in the form xterm sends them:
+   CSI 1 ; m X for the arrows, Home and End, CSI n ; m ~ for the rest. */
+static size_t
+mcterm_encode_modified_key (int key, unsigned char *buf, size_t bufsz)
+{
+    const int mods = key & KEY_M_MASK;
+    const char *num = NULL;
+    char final;
+    char seq[16];
+    int m;
+
+    if (mods == 0)
+        return 0;
+
+    switch (key & ~KEY_M_MASK)
+    {
+    case KEY_UP:
+        final = 'A';
+        break;
+    case KEY_DOWN:
+        final = 'B';
+        break;
+    case KEY_RIGHT:
+        final = 'C';
+        break;
+    case KEY_LEFT:
+        final = 'D';
+        break;
+    case KEY_HOME:
+        final = 'H';
+        break;
+    case KEY_END:
+        final = 'F';
+        break;
+    case KEY_IC:
+        num = "2";
+        break;
+    case KEY_DC:
+        num = "3";
+        break;
+    case KEY_PPAGE:
+        num = "5";
+        break;
+    case KEY_NPAGE:
+        num = "6";
+        break;
+    default:
+        return 0;
+    }
+
+    m = 1 + ((mods & KEY_M_SHIFT) != 0 ? 1 : 0) + ((mods & KEY_M_ALT) != 0 ? 2 : 0)
+        + ((mods & KEY_M_CTRL) != 0 ? 4 : 0);
+
+    if (num != NULL)
+        g_snprintf (seq, sizeof (seq), "\x1b[%s;%d~", num, m);
+    else
+        g_snprintf (seq, sizeof (seq), "\x1b[1;%d%c", m, final);
+
+    return mcterm_copy_seq (buf, bufsz, seq);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static size_t
 mcterm_copy_enc_seq (int key, unsigned char *buf, size_t bufsz)
 {
@@ -256,6 +319,8 @@ mcterm_encode_key_xterm (int key, unsigned char *buf, size_t bufsz, gboolean app
     {
         size_t n = mcterm_copy_enc_seq (key, buf, bufsz);
 
+        if (n == 0)
+            n = mcterm_encode_modified_key (key, buf, bufsz);
         if (n > 0)
             return n;
     }

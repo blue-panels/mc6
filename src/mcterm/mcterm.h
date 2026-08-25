@@ -38,6 +38,9 @@ gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
 void mcterm_set_command_hint (WMcTerm *t, const char *command);
 char *mcterm_running_command (const WMcTerm *t, int max_width);
 gboolean mcterm_shell_at_prompt (const WMcTerm *t);
+/* Whether the shell's own line editor holds nothing typed yet: TRUE at a fresh prompt, FALSE once
+   a command has been entered on it. Also TRUE when there is no prompt to speak of. */
+gboolean mcterm_shell_line_is_empty (const WMcTerm *t);
 gboolean mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec);
 const char *mcterm_osc7_raw (const WMcTerm *t);
 /* The session token our own shell puts in every OSC 7, NULL when there is none. */
@@ -125,6 +128,12 @@ mcterm_shell_at_prompt (const WMcTerm *t)
 {
     (void) t;
     return FALSE;
+}
+static inline gboolean
+mcterm_shell_line_is_empty (const WMcTerm *t)
+{
+    (void) t;
+    return TRUE;
 }
 static inline gboolean
 mcterm_wait_for_prompt (WMcTerm *t, int timeout_msec)

@@ -100,6 +100,11 @@ struct WMcTerm
        and OSC 7 goes back to being about the directory alone. */
     gboolean osc133_capable;
     guint last_osc133_gen;
+    /* Where the shell left its cursor when it finished drawing the prompt: the point at which
+       typing begins. The line is empty while nothing is drawn from there on. */
+    gint64 input_start_row;
+    int input_start_col;
+    gboolean input_start_valid;
     int last_exit_code;
     /* Command submitted by the host, used before its process group becomes visible. */
     char *command_hint;
@@ -601,12 +606,17 @@ mcterm_handle_osc133_generation (WMcTerm *t)
         if (t->awaiting_command_done || t->shell_at_prompt)
             return FALSE;
         t->shell_at_prompt = TRUE;
+        t->input_start_row =
+            mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
+        t->input_start_col = mcview_vterm_cursor_col (t->vterm);
+        t->input_start_valid = TRUE;
         g_clear_pointer (&t->command_hint, g_free);
         mcterm_busy_tick_set (t, FALSE);
         return TRUE;
 
     case MCTERM_MARK_COMMAND_START:
         t->shell_at_prompt = FALSE;
+        t->input_start_valid = FALSE;
         mcterm_busy_tick_set (t, TRUE);
         return FALSE;
 
@@ -2072,6 +2082,37 @@ gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
 {
     return (t != NULL && !t->child_dead && t->shell_at_prompt);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_shell_line_is_empty (const WMcTerm *t)
+{
+    const mcview_terminal_buffer_t *buf;
+    const int cols = WIDGET (t)->rect.cols;
+    gint64 row;
+    int col;
+
+    if (!mcterm_shell_at_prompt (t) || !t->input_start_valid || t->vterm == NULL)
+        return TRUE;
+
+    /* Typed text starts where the prompt ended. A line long enough to scroll that row away
+       is anything but empty. */
+    row = t->input_start_row - mcview_vterm_scrolled_rows (t->vterm);
+    if (row < 0)
+        return FALSE;
+
+    buf = mcview_vterm_buf (t->vterm);
+    for (col = t->input_start_col; col < cols; col++)
+    {
+        const mcview_vterm_cell_t *cell = mcview_terminal_buffer_get (buf, (int) row, col);
+
+        if (cell != NULL && cell->ch != 0 && cell->ch != ' ')
+            return FALSE;
+    }
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

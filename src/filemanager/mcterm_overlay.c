@@ -85,6 +85,18 @@ mcterm_overlay_ready (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The shell's line editor holds text, so the command line is its own, whichever view is up.
+   This is read off the shell itself, not remembered: the panels can come and go, a command can
+   clear the line or run it, and nothing here has to be told. */
+static gboolean
+mcterm_overlay_shell_owns_cmdline (void)
+{
+    return (command_prompt && mcterm_overlay_ready () && !mcterm_in_alt_screen (mcterm_panel)
+            && !mcterm_shell_line_is_empty (mcterm_panel));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Whether the host keeps the bottom row for itself: the shell's prompt when it is idle, the
    busy line while a command runs, and mc's command line under a full-screen program - which is
    given one row less so its own last row does not land where the command line is. */
@@ -385,6 +397,9 @@ mcterm_overlay_prompt_ready_cb (void *data)
     if (!mcterm_mode)
     {
         mcterm_overlay_place_prompt ();
+        /* The row was just drawn over; the cursor goes back to the command line, or it is left
+           wherever the drawing ended. */
+        mcterm_overlay_place_cursor ();
         tty_refresh ();
         return;
     }
@@ -1114,6 +1129,46 @@ mcterm_overlay_panel_exec (const char *cmd)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcterm_overlay_cmdline_is_empty (void)
+{
+    return (input_is_empty (cmdline) && !mcterm_overlay_shell_owns_cmdline ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* With the panels up, a key that would have gone to the command line goes to the shell's line
+   editor instead, as long as the line it is editing has something on it. Called after mc's own
+   keys have been dealt with, so what is left really is the command line's. */
+cb_ret_t
+mcterm_overlay_cmdline_key (int parm)
+{
+    if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
+        return MSG_NOT_HANDLED;
+
+    mcterm_send_key (mcterm_panel, parm);
+    return MSG_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Enter with the panels up and a line in the shell: bring the terminal up, the way a command
+   typed into mc's own line does, and have the shell run what it holds. */
+cb_ret_t
+mcterm_overlay_cmdline_enter (void)
+{
+    if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
+        return MSG_NOT_HANDLED;
+
+    mcterm_overlay_toggle ();
+    if (mcterm_send_key (mcterm_panel, '\r'))
+        mcterm_exec_needs_panel_reload = TRUE;
+
+    return MSG_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 cb_ret_t
 mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t execute_command,
                            mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data)
@@ -1333,6 +1388,25 @@ mcterm_overlay_panel_exec (const char *cmd)
 {
     (void) cmd;
     return FALSE;
+}
+
+gboolean
+mcterm_overlay_cmdline_is_empty (void)
+{
+    return input_is_empty (cmdline);
+}
+
+cb_ret_t
+mcterm_overlay_cmdline_key (int parm)
+{
+    (void) parm;
+    return MSG_NOT_HANDLED;
+}
+
+cb_ret_t
+mcterm_overlay_cmdline_enter (void)
+{
+    return MSG_NOT_HANDLED;
 }
 
 cb_ret_t
