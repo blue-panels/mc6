@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
 
    This file is part of the Midnight Commander.
 

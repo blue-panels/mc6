@@ -1,12 +1,13 @@
 /*
    Interface to the terminal controlling library.
 
-   Copyright (C) 2005-2025
+   Copyright (C) 2005-2026
    Free Software Foundation, Inc.
 
    Written by:
    Roland Illig <roland.illig@gmx.de>, 2005.
    Andrew Borodin <aborodin@vmail.ru>, 2009.
+   Ilia Maslakov <il.smind@gmail.com>, 2011, 2026.
 
    This file is part of the Midnight Commander.
 

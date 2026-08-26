@@ -477,6 +477,8 @@ typedef struct
     mc_runtime_viewer_viewport_policy_t viewport_policy;
     mc_runtime_handle_t target_viewer;
     mc_runtime_viewer_source_state_callback_t source_state;
+    /* The viewer key that opens the options, by name ("f2", "alt-s"); NULL for none. */
+    const char *options_key;
 } mc_runtime_viewer_controller_t;
 
 typedef enum
