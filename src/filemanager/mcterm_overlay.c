@@ -1446,6 +1446,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         // the focus - at the command line those same keys move and edit the shell's own line.
         term_cmd = mcterm_key_command (mcterm_panel, parm);
 
+        // The page-up of the output is the terminal's whoever is typing: the line stays put.
+        if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd == CK_Clear)
+            return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+
         if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey
             && mcterm_overlay_terminal_focused ())
         {

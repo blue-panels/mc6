@@ -362,6 +362,97 @@ START_TEST (test_the_span_of_a_row)
 END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_a_double_click_takes_the_word)
+{
+    mcview_vterm_t *vt = term_new ();
+    mcterm_sel_t sel;
+    char *text;
+
+    feed (vt, "ls -la /usr/lib\r\n");
+    mcterm_sel_clear (&sel);
+
+    // Inside the word: the word, up to the slashes.
+    mcterm_sel_word (&sel, vt, 0, 9, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "usr");
+    g_free (text);
+
+    // On a blank: the blank alone.
+    mcterm_sel_word (&sel, vt, 0, 2, TERM_COLS);
+    ck_assert_int_eq (sel.anchor_col, 2);
+    ck_assert_int_eq (sel.point_col, 2);
+
+    // At the edge of the screen the word stops there.
+    mcterm_sel_word (&sel, vt, 0, 0, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "ls");
+    g_free (text);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_the_word_stops_at_a_break_character)
+{
+    mcview_vterm_t *vt = term_new ();
+    mcterm_sel_t sel;
+    char *text;
+
+    feed (vt, "a=(x|y) --no-op\r\n");
+    mcterm_sel_clear (&sel);
+
+    mcterm_sel_word (&sel, vt, 0, 3, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "x");
+    g_free (text);
+
+    // A break character is a word of its own.
+    mcterm_sel_word (&sel, vt, 0, 1, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "=");
+    g_free (text);
+
+    // A dash breaks a word, as it does in the editor.
+    mcterm_sel_word (&sel, vt, 0, 11, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "no");
+    g_free (text);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_a_triple_click_takes_the_row)
+{
+    mcview_vterm_t *vt = term_new ();
+    mcterm_sel_t sel;
+    char *text;
+
+    feed (vt, "one two\r\n\r\n");
+    mcterm_sel_clear (&sel);
+
+    mcterm_sel_line (&sel, vt, 0, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    ck_assert_str_eq (text, "one two");
+    ck_assert_int_eq (sel.point_col, 6);
+    g_free (text);
+
+    // An empty row is marked as one cell, so that there is a mark to see.
+    mcterm_sel_line (&sel, vt, 1, TERM_COLS);
+    ck_assert (sel.active);
+    ck_assert_int_eq (sel.anchor_col, 0);
+    ck_assert_int_eq (sel.point_col, 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
 /*** main ****************************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -383,6 +474,9 @@ main (void)
     tcase_add_test (tc_core, test_a_taller_screen_keeps_the_numbers);
     tcase_add_test (tc_core, test_nothing_is_marked);
     tcase_add_test (tc_core, test_the_span_of_a_row);
+    tcase_add_test (tc_core, test_a_double_click_takes_the_word);
+    tcase_add_test (tc_core, test_the_word_stops_at_a_break_character);
+    tcase_add_test (tc_core, test_a_triple_click_takes_the_row);
 
     return mctest_run_all (tc_core);
 }

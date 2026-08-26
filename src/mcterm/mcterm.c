@@ -1558,6 +1558,31 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 mcterm_cursor_move (t, command, FALSE);
                 return MSG_HANDLED;
 
+            case CK_Clear:
+            {
+                // A page of newlines: the screen goes into the history, the prompt line stays.
+                const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
+                const int cursor_row = mcview_vterm_cursor_row (t->vterm);
+                const gint64 first_row = (t->shell_at_prompt && t->input_start_valid)
+                    ? MAX (t->input_start_row - scrolled, 0)
+                    : cursor_row;
+
+                // A panel over the terminal: the key is someone else's.
+                if (!t->scroll_allowed)
+                    break;
+                mcterm_follow_end (t);
+                if (t->sel.anchored)
+                    mcterm_sel_clear (&t->sel);
+                mcview_vterm_page_up (t->vterm, (int) (cursor_row - first_row) + 1);
+                // The line moved down with its rows.
+                t->input_start_row += mcview_vterm_scrolled_rows (t->vterm) - scrolled
+                    + (mcview_vterm_cursor_row (t->vterm) - cursor_row);
+                t->cursor_valid = FALSE;
+                widget_draw (WIDGET (t));
+                send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+                return MSG_HANDLED;
+            }
+
             case CK_ScrollUp:
             case CK_ScrollDown:
             case CK_PageUp:
@@ -1853,9 +1878,14 @@ mcterm_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
             break;
         widget_select (w);
         mcterm_sel_clear (&t->sel);
-        mcterm_sel_start (&t->sel, row, col);
+        if ((event->count & GPM_TRIPLE) != 0)
+            mcterm_sel_line (&t->sel, t->vterm, row, WIDGET (t)->rect.cols);
+        else if ((event->count & GPM_DOUBLE) != 0)
+            mcterm_sel_word (&t->sel, t->vterm, row, col, WIDGET (t)->rect.cols);
+        else
+            mcterm_sel_start (&t->sel, row, col);
         t->cursor_row = row;
-        t->cursor_col = col;
+        t->cursor_col = t->sel.active ? t->sel.point_col : col;
         t->cursor_valid = TRUE;
         widget_draw (w);
         send_message (w, NULL, MSG_CURSOR, 0, NULL);
@@ -1916,6 +1946,7 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_PageDown:
     case CK_Top:
     case CK_Bottom:
+    case CK_Clear:
         // Looking back at the output does not need the focus, typing goes on.
         return command;
 

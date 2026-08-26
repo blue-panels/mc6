@@ -32,7 +32,26 @@
 
 #include "mcterm_select.h"
 
+/*** file scope variables ************************************************************************/
+
+// What a double click stops at: the break characters of the editor.
+static const char mcterm_word_break[] = "{}[]()<>=|/\\!?~-+`'\",.;:#$%^&*";
+
 /*** file scope functions ************************************************************************/
+
+/* Whether the cell at @col of @row is one a word is made of. */
+static gboolean
+mcterm_sel_is_word_cell (mcview_vterm_t *vt, gint64 row, int col)
+{
+    const mcview_vterm_cell_t *cell = mcterm_sel_cell_at (vt, row, col);
+
+    if (cell == NULL || cell->ch == 0 || g_unichar_isspace (cell->ch))
+        return FALSE;
+
+    return cell->ch >= 0x80 || strchr (mcterm_word_break, (int) cell->ch) == NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 /* The region with its ends in reading order. */
 static void
@@ -94,6 +113,54 @@ mcterm_sel_extend (mcterm_sel_t *sel, gint64 row, int col)
     sel->active = TRUE;
     sel->point_row = row;
     sel->point_col = col;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_sel_word (mcterm_sel_t *sel, mcview_vterm_t *vt, gint64 row, int col, int cols)
+{
+    int from, to;
+
+    if (sel == NULL || vt == NULL || cols <= 0)
+        return;
+
+    col = CLAMP (col, 0, cols - 1);
+    from = col;
+    to = col;
+
+    if (mcterm_sel_is_word_cell (vt, row, col))
+    {
+        while (from > 0 && mcterm_sel_is_word_cell (vt, row, from - 1))
+            from--;
+        while (to < cols - 1 && mcterm_sel_is_word_cell (vt, row, to + 1))
+            to++;
+    }
+
+    mcterm_sel_start (sel, row, from);
+    mcterm_sel_extend (sel, row, to);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_sel_line (mcterm_sel_t *sel, mcview_vterm_t *vt, gint64 row, int cols)
+{
+    int last;
+
+    if (sel == NULL || vt == NULL || cols <= 0)
+        return;
+
+    for (last = cols - 1; last > 0; last--)
+    {
+        const mcview_vterm_cell_t *cell = mcterm_sel_cell_at (vt, row, last);
+
+        if (cell != NULL && cell->ch != 0 && cell->ch != ' ')
+            break;
+    }
+
+    mcterm_sel_start (sel, row, 0);
+    mcterm_sel_extend (sel, row, last);
 }
 
 /* --------------------------------------------------------------------------------------------- */

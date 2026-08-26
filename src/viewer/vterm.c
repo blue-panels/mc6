@@ -1312,6 +1312,50 @@ mcview_vterm_compose_scrollback (const mcview_vterm_t *vt, int top_row, int rows
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+mcview_vterm_page_up (mcview_vterm_t *vt, int keep)
+{
+    mcview_ansi_state_t ansi;
+    GPtrArray *kept;
+    int first, i;
+
+    if (vt == NULL || vt->in_alt_screen)
+        return;
+
+    keep = CLAMP (keep, 1, vt->cursor_row + 1);
+    first = vt->cursor_row - keep + 1;
+    mcview_ansi_state_init (&ansi);
+
+    // The kept rows leave the screen before it goes: the history is not to have them.
+    kept = g_ptr_array_new_with_free_func ((GDestroyNotify) g_array_unref);
+    for (i = first; i <= vt->cursor_row; i++)
+    {
+        GArray *cells = mcview_terminal_buffer_row_copy (vt->buf, i);
+
+        if (cells == NULL)
+            cells = g_array_new (FALSE, TRUE, sizeof (mcview_vterm_cell_t));
+        g_ptr_array_add (kept, cells);
+        mcview_terminal_buffer_erase_line (vt->buf, i, vt->term_cols, &ansi);
+    }
+
+    for (i = 0; i < vt->term_rows; i++)
+        mcview_vterm_scroll_up (vt, 0, vt->term_rows - 1, &ansi);
+
+    mcview_terminal_buffer_clear (vt->buf);
+    for (i = 0; i < keep; i++)
+    {
+        const GArray *cells = g_ptr_array_index (kept, i);
+
+        if (cells->len > 0)
+            mcview_terminal_buffer_set_row (vt->buf, vt->term_rows - keep + i, cells);
+    }
+    g_ptr_array_free (kept, TRUE);
+
+    vt->cursor_row = vt->term_rows - 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 const char *
 mcview_vterm_osc7_raw (const mcview_vterm_t *vt)
 {

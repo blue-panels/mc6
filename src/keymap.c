@@ -716,7 +716,7 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 /* embedded terminal: what is bound here is taken from the shell */
 static const global_keymap_ini_t default_mcterm_keymap[] = {
     // marking the output, and taking it out
-    { "Store", "ctrl-insert" },
+    { "Store", "ctrl-insert; enter" },
     { "Unmark", "ctrl-shift-u" },
     { "MarkLeft", "shift-left" },
     { "MarkRight", "shift-right" },
@@ -739,6 +739,7 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "PageDown", "pgdn" },
     { "Top", "ctrl-home" },
     { "Bottom", "ctrl-end" },
+    { "Clear", "ctrl-l" },
     {
         NULL,
         NULL,
