@@ -20,10 +20,15 @@ D=$(command -v dialog || command -v whiptail) || {
 subject=archives; transports=local; locale=ru_RU.UTF-8; profile=; toggles=; extra=; keymap=; dirs=
 [ -f "$state" ] && . "$state"
 
-# whiptail and dialog both answer on stderr
+# whiptail and dialog both answer on stderr; dialog takes the mouse, whiptail
+# cannot
+mouse=
+case "$D" in
+*/dialog) mouse=--mouse ;;
+esac
 ask ()
 {
-    "$D" --title "mc sandbox" "$@" 3>&1 1>&2 2>&3
+    "$D" $mouse --title "mc sandbox" "$@" 3>&1 1>&2 2>&3
 }
 
 on_off ()
