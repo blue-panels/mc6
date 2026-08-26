@@ -987,8 +987,11 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
                             INPUT_COMPLETE_NONE);
         g_free (prompt);
 
-        if (pwd != NULL && pwd[0] != '\0'
-            && libssh2_userauth_password (data->session, user, pwd) == 0)
+        /* cancelled: nothing to report */
+        if (pwd == NULL)
+            goto fail;
+
+        if (pwd[0] != '\0' && libssh2_userauth_password (data->session, user, pwd) == 0)
         {
             g_free (conn->password);
             conn->password = pwd;
