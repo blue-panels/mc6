@@ -89,6 +89,25 @@ class Item:
 
     def __init__(self, kind, group, key, label, desc=""):
         self.kind, self.group, self.key, self.label, self.desc = kind, group, key, label, desc
+        self.y = self.x = self.w = 0  # where it was drawn last, for the mouse
+
+
+def colors():
+    """mc's dialog look when the terminal has colours, attributes otherwise."""
+    c = {"dialog": 0, "title": curses.A_BOLD, "focus": curses.A_REVERSE, "button": curses.A_REVERSE,
+         "dim": curses.A_DIM, "head": curses.A_BOLD}
+    if curses.has_colors():
+        curses.start_color()
+        curses.use_default_colors()
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
+        curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_CYAN)
+        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLUE)
+        curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_CYAN)
+        curses.init_pair(5, curses.COLOR_CYAN, curses.COLOR_BLUE)
+        c = {"dialog": curses.color_pair(1), "title": curses.color_pair(3) | curses.A_BOLD,
+             "focus": curses.color_pair(2), "button": curses.color_pair(4),
+             "dim": curses.color_pair(5), "head": curses.color_pair(3)}
+    return c
 
 
 class Form:
@@ -142,10 +161,16 @@ class Form:
         it.append(Item("head", None, None, "Case directories (none marked = all)"))
         for n in case_dirs(self.radios["subject"]):
             it.append(Item("check", "dirs", n, n, ""))
-        it.append(Item("head", None, None, ""))
         it.append(Item("button", None, "run", "[ Run ]", ""))
         it.append(Item("button", None, "quit", "[ Quit ]", ""))
         self.items = it
+        # the boxed layout: each heading with the items under it
+        self.groups = []
+        for x in it:
+            if x.kind == "head":
+                self.groups.append([x.label, []])
+            elif x.kind != "button" and self.groups:
+                self.groups[-1][1].append(x)
         if self.cursor >= len(it):
             self.cursor = len(it) - 1
         while self.items[self.cursor].kind == "head":
@@ -153,7 +178,90 @@ class Form:
 
     # ------------------------------------------------------------ drawing ---
 
+    def put(self, y, x, text, attr, width=None):
+        h, w = self.scr.getmaxyx()
+        if y < 0 or y >= h or x >= w:
+            return
+        if width is None:
+            width = w - x
+        text = text[:min(width, w - x)]
+        if width > len(text):
+            text = text + " " * (min(width, w - x) - len(text))
+        try:
+            self.scr.addstr(y, x, text, attr)
+        except curses.error:
+            pass
+
+    def mark(self, it):
+        if it.kind == "radio":
+            return "(*)" if self.radios[it.group] == it.key else "( )"
+        if it.kind == "check":
+            return "[x]" if it.key in self.checks[it.group] else "[ ]"
+        return ""
+
+    def box(self, y, x, hgt, wid, title, attr):
+        for yy in range(y, y + hgt):
+            self.put(yy, x, "", attr, wid)
+        try:
+            win = self.scr.derwin(hgt, wid, y, x)
+            win.attrset(attr)
+            win.box()
+            if title:
+                win.addstr(0, 2, " %s " % title[:wid - 6], attr | curses.A_BOLD)
+            win.refresh()
+        except curses.error:
+            pass
+
     def draw(self):
+        h, w = self.scr.getmaxyx()
+        c = self.c
+        # a column holds a stack of boxes; two columns, the buttons under them
+        left = [g for g in self.groups if g[0].split()[0] in ("Environment", "Subject", "Transports", "Locale", "Keymap", "Case")]
+        right = [g for g in self.groups if g not in left]
+        need = max(sum(len(g[1]) + 2 for g in left), sum(len(g[1]) + 2 for g in right)) + 7
+        if h < need or w < 90:
+            return self.draw_list()
+        self.scr.erase()
+        self.scr.bkgd(" ", c["dialog"])
+        self.put(0, 0, "", c["title"])
+        self.put(0, 2, "mc sandbox", c["title"])
+        self.put(0, w - 44, "click or Space marks, Enter runs, q quits", c["dim"])
+        colw = (w - 3) // 2
+        for col, (x, groups) in enumerate(((1, left), (2 + colw, right))):
+            y = 1
+            for title, items in groups:
+                hgt = len(items) + 2
+                self.box(y, x, hgt, colw, title, c["dialog"])
+                for i, it in enumerate(items):
+                    it.y, it.x, it.w = y + 1 + i, x + 1, colw - 2
+                    focus = self.items.index(it) == self.cursor
+                    attr = c["focus"] if focus else c["dialog"]
+                    if it.kind == "text":
+                        val = self.texts[it.key]
+                        line = " %s: %s" % (it.label, val if val else "<" + it.desc + ">")
+                        if not val and not focus:
+                            attr = c["dim"]
+                    else:
+                        line = " %s %-16s %s" % (self.mark(it), it.label, it.desc)
+                    self.put(it.y, it.x, line, attr, it.w)
+                y += hgt
+        # the command it all adds up to, and the buttons
+        cmd = self.command()
+        cy = need - 6 + 1
+        self.box(cy, 1, 4, w - 2, "the command", c["dialog"])
+        self.put(cy + 1, 3, cmd[:w - 6], c["dim"], w - 6)
+        self.put(cy + 2, 3, cmd[w - 6:2 * (w - 6)], c["dim"], w - 6)
+        by = cy + 5
+        bx = w // 2 - 12
+        for it in self.items:
+            if it.kind == "button":
+                it.y, it.x, it.w = by, bx, len(it.label)
+                focus = self.items.index(it) == self.cursor
+                self.put(by, bx, it.label, c["focus"] if focus else c["button"])
+                bx += len(it.label) + 4
+        self.scr.refresh()
+
+    def draw_list(self):
         scr = self.scr
         scr.erase()
         h, w = scr.getmaxyx()
@@ -187,6 +295,7 @@ class Form:
                 line = "      %s" % it.label
             else:
                 line = "  %s %-16s %s" % (mark, it.label, it.desc)
+            it.y, it.x, it.w = y, 0, w - 1
             scr.addstr(y, 0, line[:w - 1], attr)
         cmd = self.command()
         scr.addstr(h - 1, 0, (" " + cmd)[:w - 1], curses.A_DIM)
@@ -211,14 +320,11 @@ class Form:
 
     def edit(self, i):
         it = self.items[i]
-        h, w = self.scr.getmaxyx()
-        y = i - self.top + 1
         curses.echo()
         curses.curs_set(1)
-        self.scr.addstr(y, 0, " " * (w - 1))
-        self.scr.addstr(y, 0, "  %s: " % it.label)
+        self.put(it.y, it.x, " %s: " % it.label, self.c["focus"], it.w)
         try:
-            self.texts[it.key] = self.scr.getstr(y, len(it.label) + 4, w - len(it.label) - 6).decode(errors="replace").strip()
+            self.texts[it.key] = self.scr.getstr(it.y, it.x + len(it.label) + 3, it.w - len(it.label) - 4).decode(errors="replace").strip()
         except Exception:
             pass
         curses.noecho()
@@ -265,10 +371,17 @@ class Form:
 
     # --------------------------------------------------------------- loop ---
 
+    def hit(self, x, y):
+        for i, it in enumerate(self.items):
+            if it.kind != "head" and it.y == y and it.x <= x < it.x + it.w:
+                return i
+        return None
+
     def run(self):
         curses.curs_set(0)
         curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
         self.scr.keypad(True)
+        self.c = colors()
         while True:
             self.draw()
             c = self.scr.getch()
@@ -306,8 +419,8 @@ class Form:
                         self.move(1)
                     continue
                 if b & (curses.BUTTON1_CLICKED | curses.BUTTON1_PRESSED | curses.BUTTON1_RELEASED):
-                    i = self.top + y - 1
-                    if 0 <= i < len(self.items) and self.items[i].kind != "head":
+                    i = self.hit(x, y)
+                    if i is not None:
                         self.cursor = i
                         if b & (curses.BUTTON1_CLICKED | curses.BUTTON1_RELEASED):
                             r = self.act(i)
