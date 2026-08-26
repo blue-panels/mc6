@@ -261,7 +261,7 @@ class Form:
             if it.kind == "button":
                 it.y, it.x, it.w = by, bx, len(it.label)
                 focus = self.items.index(it) == self.cursor
-                self.put(by, bx, it.label, c["focus"] if focus else c["button"])
+                self.put(by, bx, it.label, c["focus"] if focus else c["button"], len(it.label))
                 bx += len(it.label) + 4
         self.scr.refresh()
 
