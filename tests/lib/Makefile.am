@@ -8,7 +8,8 @@ AM_CPPFLAGS += -DTEST_RUNTIME_PLUGIN_DIR=\"$(abs_builddir)/.libs\"
 AM_CPPFLAGS += -DTEST_LUA_RUNTIME_DIR=\"$(abs_top_builddir)/src/lua/.libs\"
 AM_CPPFLAGS += \
 	-DTEST_LUA_JAVA_CLASS_DIR=\"$(abs_top_srcdir)/src/lua/examples/mc/lua-java-class\" \
-	-DTEST_LUA_READELF_DIR=\"$(abs_top_srcdir)/src/lua/examples/mc/lua-readelf\"
+	-DTEST_LUA_READELF_DIR=\"$(abs_top_srcdir)/src/lua/examples/mc/lua-readelf\" \
+	-DTEST_LUA_SIXEL_DIR=\"$(abs_top_srcdir)/src/lua/examples/mc/lua-sixel\"
 
 LIBS = @CHECK_LIBS@ \
 	$(top_builddir)/lib/libmc.la

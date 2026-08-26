@@ -939,12 +939,16 @@ AC_SUBST([MAGIC_ARCMC_RULES])
 dnl Several lines: it belongs in magic.ini, and a Makefile cannot hold it.
 AM_SUBST_NOTMAKE([MAGIC_ARCMC_RULES])
 
+dnl Pictures go to lua-sixel, which draws them in sixel where the terminal
+dnl can and with chafa's characters where it cannot, and without chafa shows
+dnl the properties and says what to install. The first group whose Mime
+dnl matches is the one, so lua-chafa gets no rule of its own: whoever wants
+dnl it names it here instead of lua-sixel.
 MAGIC_LUA_CHAFA_RULES=""
-if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes \
-        && test -n "$CHAFA" && test x"$CHAFA" != xno; then
+if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes; then
     MAGIC_LUA_CHAFA_RULES='[[image]]
 Mime=^image/
-View=%plugin{lua(lua-chafa):view}'
+View=%plugin{lua(lua-sixel):view}'
 fi
 AC_SUBST([MAGIC_LUA_CHAFA_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_CHAFA_RULES])
