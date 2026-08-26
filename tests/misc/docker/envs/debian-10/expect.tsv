@@ -1,2 +1,2 @@
 case	key	expect	transports
-*	*	known: libssh2 1.8 speaks only ssh-rsa and ssh-dss host keys, which OpenSSH 8.8 and later do not offer; the sftp plugin says nothing about it	sftp,sh
+*	*	known: no sftp plugin and no libssh2 transport for shell-link here: Debian 10 has libssh2 1.8 and configure asks for 1.9	sftp,sh
