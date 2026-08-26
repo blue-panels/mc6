@@ -28,6 +28,7 @@ usage: sandbox.sh [scenario] <command>
   mc        run mc against that scenario                           (what you want)
   build     rebuild mc from the working tree, keeping the objects
   check     ask every protocol for a listing, without a terminal
+  test      press the keys in every cases.tsv: test [-w local|sftp|ftp|smb|sh] [dir...]
   shell     a shell next to mc, with ssh, curl and smbclient in it
   remote    a shell on the remote host
   logs      what the remote host has to say
@@ -84,6 +85,10 @@ build)
 check)
     $COMPOSE up -d remote
     $COMPOSE run --rm mc /usr/local/bin/check-remote.sh
+    ;;
+test)
+    $COMPOSE up -d remote
+    $COMPOSE run --rm mc /usr/local/bin/run-cases.sh "$@"
     ;;
 shell)
     $COMPOSE up -d remote

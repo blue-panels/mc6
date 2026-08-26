@@ -61,9 +61,9 @@ printf 'plain text, whatever the name says\n' > 02-content/notanarchive.tar.gz
 
 cat > 02-content/cases.tsv <<'EOF'
 file	key	expect	why
-noext	Enter	archive panel	a stream is taken by content; a local file by name, so nothing here
-sevenzip-without-suffix	Enter	archive panel	same, over sftp or shell only
-notanarchive.tar.gz	Enter	nothing, no error	the name lies and the operation turns it down
+noext	Enter	nothing, no error	magic.ini knows archives by name only, so a stream is not looked into
+sevenzip-without-suffix	Enter	nothing, no error	same: nothing to open it with, and nothing to complain about
+notanarchive.tar.gz	Enter	error dialog	the name lies, the operation turns it down and says so
 EOF
 
 # ----------------------------------------------------------------- nested ---

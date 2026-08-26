@@ -6,6 +6,7 @@ EXTRA_DIST = \
 	docker/common/build-mc.sh \
 	docker/common/check-remote.sh \
 	docker/common/fixtures.sh \
+	docker/common/run-cases.sh \
 	docker/common/zshrc \
 	docker/common/remote/Dockerfile.remote \
 	docker/common/remote/entrypoint-remote.sh \

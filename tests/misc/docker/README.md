@@ -9,8 +9,8 @@ archives on it, and a container that builds this tree and runs mc against it.
 The scenario name may be left out; `arcmc` is the default, or whatever
 `$MC_SANDBOX` says. `sandbox.sh` with no command lists the rest: `build` after
 an edit, `check` to ask every protocol for a listing without a terminal,
-`shell`, `remote`, `logs`, `down`, `clean`, and `list` for the scenarios there
-are.
+`test` to press the keys in the `cases.tsv` files, `shell`, `remote`, `logs`,
+`down`, `clean`, and `list` for the scenarios there are.
 
 Sources are mounted read-only and copied inside the container, so a build
 leaves nothing in the working tree and reuses its object files between runs.
@@ -53,8 +53,7 @@ from outside, add a compose override with the ports you want.
 has the same tree in `/work/local` for what needs no server.
 
 One directory per situation, each with a `cases.tsv` of file, key, expected
-outcome and reason -- a checklist to read, and columns something automated can
-walk later:
+outcome and reason -- a checklist to read, and the columns `test` walks:
 
 | directory      | what it is for                                            |
 |----------------|-----------------------------------------------------------|
@@ -72,16 +71,32 @@ The cases.tsv files say what each file is for; what differs is where the panel
 is standing when you press the key.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
-downloaded first, and `02-content` works there: the format comes from the
-content rather than the name. `01-formats/big.7z` is the case that only works
-because the stream can seek.
+downloaded first. `01-formats/big.7z` is the case that only works because the
+stream can seek.
 
 **ftp** and **samba** have no `get_input_stream()` yet, so an archive is
-fetched to a local copy first, and `02-content` does not open: without a stream
-the decision is made by name.
+fetched to a local copy first.
+
+`02-content` is what happens when the name does not say: `magic.ini` knows
+archives by extension, so an archive without one is left alone everywhere, and
+plain text called `.tar.gz` gets an error from the operation that was asked to
+open it.
 
 **A local panel** in `/work/local` covers the same ground with no server, plus
 `03-nested/zip-in-zip.zip` for what happens inside an mc filesystem.
+
+## Pressing the keys
+
+    tests/misc/docker/sandbox.sh arcmc test              # local panel, every cases.tsv
+    tests/misc/docker/sandbox.sh arcmc test -w sftp      # the same over sftp: ftp, smb, sh too
+    tests/misc/docker/sandbox.sh arcmc test -w sh 01-formats
+
+`run-cases.sh` starts mc under tmux in the case directory (through the plugin's
+connection list for a remote one), finds the file by quick search, presses the
+key and reads the screen: an `Arcmc:` panel title, the viewer's button bar, an
+`Error` box, or none of them. Rows it cannot press or read -- `..`, `cd`, `F5`,
+a name that is a situation rather than a file -- are listed as skipped; those
+are the checklist for a person. A failure prints the screen it saw.
 
 ## Poking at it by hand
 
