@@ -1,13 +1,14 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
    Miguel de Icaza, 1994, 1995
    Jakub Jelinek, 1995
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2013, 2026
 
    This file is part of the Midnight Commander.
 
@@ -110,6 +111,35 @@ static unsigned long shadows_id;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+static cb_ret_t
+cd_box_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_DRAW:
+        tty_setcolor (CORE_INPUT_COLOR);
+        tty_draw_hline (w->rect.y, w->rect.x, ' ', w->rect.cols);
+        widget_gotoyx (w, 0, 0);
+        tty_print_string ("cd:");
+        return group_default_callback (w, sender, msg, parm, data);
+
+    case MSG_KEY:
+        // Tab and Shift-Tab complete, there is nothing else to switch to
+        if ((parm & ~(KEY_M_SHIFT | KEY_M_CTRL)) == '\t')
+            return send_message (GROUP (w)->current->data, NULL, MSG_ACTION, CK_Complete, NULL);
+        if (parm == KEY_UP)
+            return send_message (GROUP (w)->current->data, NULL, MSG_ACTION, CK_HistoryPrev, NULL);
+        if (parm == KEY_DOWN)
+            return send_message (GROUP (w)->current->data, NULL, MSG_ACTION, CK_HistoryNext, NULL);
+        return MSG_NOT_HANDLED;
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
@@ -1049,26 +1079,26 @@ char *
 cd_box (const WPanel *panel)
 {
     const Widget *w = CONST_WIDGET (panel);
+    WDialog *d;
+    WInput *in;
     char *my_str = NULL;
 
-    quick_widget_t quick_widgets[] = {
-        QUICK_LABELED_INPUT (_ ("cd"), input_label_left, "", "input", &my_str, NULL, FALSE, TRUE,
-                             INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_CD),
-        QUICK_END,
-    };
+    // one line in place of the mini status, inside the panel frame
+    d = dlg_create (FALSE, w->rect.y + w->rect.lines - 2, w->rect.x + 1, 1, w->rect.cols - 2,
+                    WPOS_KEEP_DEFAULT, TRUE, dialog_colors, cd_box_callback, NULL, "[Quick cd]",
+                    NULL);
+    widget_set_state (WIDGET (d), WST_MODAL, TRUE);
+    widget_want_tab (WIDGET (d), TRUE);
 
-    WRect r = { w->rect.y + w->rect.lines - 6, w->rect.x, 0, w->rect.cols };
+    in = input_new (0, 4, input_colors, w->rect.cols - 6, "", "input", INPUT_COMPLETE_CD);
+    group_add_widget (GROUP (d), in);
 
-    quick_dialog_t qdlg = {
-        .rect = r,
-        .title = _ ("Quick cd"),
-        .help = "[Quick cd]",
-        .widgets = quick_widgets,
-        .callback = NULL,
-        .mouse_callback = NULL,
-    };
+    if (dlg_run (d) != B_CANCEL)
+        my_str = tilde_expand (input_get_ctext (in));
 
-    return (quick_dialog (&qdlg) != B_CANCEL) ? my_str : NULL;
+    widget_destroy (WIDGET (d));
+
+    return my_str;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -2,13 +2,14 @@
    Input line filename/username/hostname/variable/command completion.
    (Let mc type for you...)
 
-   Copyright (C) 1995-2025
+   Copyright (C) 1995-2026
    Free Software Foundation, Inc.
 
    Written by:
    Jakub Jelinek, 1995
    Slava Zanko <slavazanko@gmail.com>, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2013-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -784,6 +785,10 @@ check_is_cd (const char *text, int lc_start, input_complete_t flags)
     if ((flags & INPUT_COMPLETE_CD) == 0)
         return FALSE;
 
+    // The whole input is a directory name: no "cd" prefix to look for
+    if ((flags & INPUT_COMPLETE_FILENAMES) == 0)
+        return TRUE;
+
     // Skip initial spaces
     p = text;
     q = text + lc_start;
@@ -878,7 +883,7 @@ try_complete_all_possible (try_complete_automation_state_t *state, char *text, i
         matches = completion_matches (state->word, command_completion_function,
                                       state->flags & (~INPUT_COMPLETE_FILENAMES));
     }
-    else if ((state->flags & INPUT_COMPLETE_FILENAMES) != 0)
+    else if ((state->flags & INPUT_COMPLETE_FILENAMES) != 0 || state->is_cd)
     {
         if (state->is_cd)
             state->flags &= ~(INPUT_COMPLETE_FILENAMES | INPUT_COMPLETE_COMMANDS);
