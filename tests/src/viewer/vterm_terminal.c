@@ -715,6 +715,212 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Two bands of 16 sixels each is 16x12 pixels, but the raster attributes say
+   16x32, and they win: with 8x16 cells that is 2 columns by 2 rows. */
+#define SIXEL_16x32 "\033P0;0;0q\"1;1;16;32#0;2;100;0;0#0!16~-!16~\033\\"
+
+START_TEST (test_sixel_becomes_a_picture_at_the_cursor)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_image_t *image;
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, "\033[3;5H");
+    FEED (vt, SIXEL_16x32);
+
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    image = mcview_vterm_image (vt, 0);
+    ck_assert_int_eq (image->row, 2);
+    ck_assert_int_eq (image->col, 4);
+    ck_assert_int_eq (image->width, 16);
+    ck_assert_int_eq (image->height, 32);
+    ck_assert_int_eq (image->cols, 2);
+    ck_assert_int_eq (image->rows, 2);
+    ck_assert_uint_eq (g_bytes_get_size (image->data), sizeof (SIXEL_16x32) - 1);
+    ck_assert_int_eq (
+        memcmp (g_bytes_get_data (image->data, NULL), SIXEL_16x32, sizeof (SIXEL_16x32) - 1), 0);
+
+    /* The cursor is below the picture, in the column it started at. */
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 4);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 4);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_without_raster_attributes_is_measured)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_image_t *image;
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    /* 3 bands: 20 wide (!20~), then 5 + 10 on one band via $, then 7. */
+    FEED (vt, "\033Pq#1;2;0;0;100#1!20~-!5~$!10~-~~~~~~~\033\\");
+
+    image = mcview_vterm_image (vt, 0);
+    ck_assert_ptr_nonnull (image);
+    ck_assert_int_eq (image->width, 20);
+    ck_assert_int_eq (image->height, 18);
+    ck_assert_int_eq (image->cols, 3);
+    ck_assert_int_eq (image->rows, 2);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_scrolls_with_the_text_and_leaves_at_the_top)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 5, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, "\033[2;1H");
+    FEED (vt, SIXEL_16x32); /* rows 1..2, cursor on row 3 */
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 3);
+
+    FEED (vt, "\n"); /* row 4 */
+    FEED (vt, "\n"); /* scroll: picture on rows 0..1 */
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 0);
+
+    FEED (vt, "\n"); /* the top row of the picture leaves: so does the picture */
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_below_the_bottom_scrolls_the_screen)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 5, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, "\033[1;1H");
+    FEED (vt, "top");
+    FEED (vt, "\033[5;1H");
+    FEED (vt, SIXEL_16x32); /* 2 rows from the last one: one row of scroll */
+
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 0);
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 3);
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 4);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_erase_screen_takes_the_pictures)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    guint generation;
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, SIXEL_16x32);
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    generation = mcview_vterm_images_generation (vt);
+
+    FEED (vt, "\033[2J");
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 0);
+    ck_assert_uint_ne (mcview_vterm_images_generation (vt), generation);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_erase_to_end_of_screen_takes_the_pictures_below)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, SIXEL_16x32); /* rows 0..1 */
+    FEED (vt, "\033[6;1H");
+    FEED (vt, SIXEL_16x32); /* rows 5..6 */
+    FEED (vt, "\033[4;1H");
+    FEED (vt, "\033[J");
+
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_oversized_sixel_is_dropped_whole)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    GString *big = g_string_new ("\033Pq");
+    size_t i;
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+
+    for (i = 0; i < 4 * 1024 * 1024 + 1; i++)
+        g_string_append_c (big, '~');
+    g_string_append (big, "\033\\");
+    feed_bytes (vt, big->str, big->len);
+    g_string_free (big, TRUE);
+
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 0);
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 0);
+
+    /* And the stream goes on as if nothing happened. */
+    FEED (vt, "ok");
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 'o');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_xtgettcap_is_still_answered)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    static const char query[] = "\033P+q544e\033\\";
+    vterm_event_t ev;
+    size_t i;
+
+    mcview_vterm_reset (vt);
+
+    for (i = 0; i < sizeof (query) - 1; i++)
+        ev = mcview_vterm_feed (vt, (unsigned char) query[i]);
+
+    ck_assert_int_eq (ev.type, VTERM_REPLY);
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -743,6 +949,14 @@ main (void)
     tcase_add_test (tc_core, test_page_up_keeps_a_line_of_several_rows);
     tcase_add_test (tc_core, test_page_up_leaves_the_alternate_screen_alone);
     tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
+    tcase_add_test (tc_core, test_sixel_becomes_a_picture_at_the_cursor);
+    tcase_add_test (tc_core, test_sixel_without_raster_attributes_is_measured);
+    tcase_add_test (tc_core, test_sixel_scrolls_with_the_text_and_leaves_at_the_top);
+    tcase_add_test (tc_core, test_sixel_below_the_bottom_scrolls_the_screen);
+    tcase_add_test (tc_core, test_erase_screen_takes_the_pictures);
+    tcase_add_test (tc_core, test_erase_to_end_of_screen_takes_the_pictures_below);
+    tcase_add_test (tc_core, test_oversized_sixel_is_dropped_whole);
+    tcase_add_test (tc_core, test_xtgettcap_is_still_answered);
 
     return mctest_run_all (tc_core);
 }
