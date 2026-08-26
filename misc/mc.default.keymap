@@ -530,7 +530,7 @@ SelectCodepage = alt-e
 # Every key not named here is typed into the shell.
 # The cursor keys and the marking keys work while the terminal holds the focus;
 # the view keys work whoever is typing.
-Store = ctrl-insert
+Store = ctrl-insert; enter
 Unmark = ctrl-shift-u
 MarkLeft = shift-left
 MarkRight = shift-right
