@@ -600,6 +600,85 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_page_up_keeps_the_screen_in_the_history)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    mcview_terminal_buffer_t *canvas;
+    char *text;
+
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, 4, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "first\r\nsecond\r\n$ ls");
+    mcview_vterm_page_up (vt, 1);
+
+    // The prompt row is at the bottom of a blank screen, the cursor still on it.
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 3);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 4);
+    ck_assert_int_eq (cell_ch (vt, 0, 0), 0);
+    ck_assert_int_eq (cell_ch (vt, 3, 2), 'l');
+    // A whole page went up: the rows above the prompt, then blank ones.
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 4);
+
+    mcview_vterm_set_dpy_top_row (vt, 0);
+    canvas = mcview_vterm_compose_scrollback (vt, 0, 8);
+    text = buffer_to_text (canvas, 8, 8);
+    ck_assert_str_eq (
+        text, "first   \nsecond  \n        \n        \n        \n        \n        \n$ ls    \n");
+    g_free (text);
+    mcview_terminal_buffer_free (canvas);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_page_up_keeps_a_line_of_several_rows)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, 4, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "out\r\n$ echo x\r\ny");
+    mcview_vterm_page_up (vt, 2);
+
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 3);
+    ck_assert_int_eq (cell_ch (vt, 2, 0), '$');
+    ck_assert_int_eq (cell_ch (vt, 3, 0), 'y');
+    ck_assert_int_eq (cell_ch (vt, 1, 0), 0);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 4);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_page_up_leaves_the_alternate_screen_alone)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "\x1b[?1049hfull");
+    mcview_vterm_page_up (vt, 1);
+
+    ck_assert_int_eq (cell_ch (vt, 0, 0), 'f');
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 4);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_oversized_osc_is_dropped_whole)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -660,6 +739,9 @@ main (void)
     tcase_add_test (tc_core, test_set_size_returns_false_on_same_size);
     tcase_add_test (tc_core, test_golden_draw_move_erase);
     tcase_add_test (tc_core, test_scrollback_canvas_preserves_output_from_top);
+    tcase_add_test (tc_core, test_page_up_keeps_the_screen_in_the_history);
+    tcase_add_test (tc_core, test_page_up_keeps_a_line_of_several_rows);
+    tcase_add_test (tc_core, test_page_up_leaves_the_alternate_screen_alone);
     tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
 
     return mctest_run_all (tc_core);

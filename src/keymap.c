@@ -739,6 +739,7 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "PageDown", "pgdn" },
     { "Top", "ctrl-home" },
     { "Bottom", "ctrl-end" },
+    { "Clear", "ctrl-l" },
     {
         NULL,
         NULL,

@@ -33,6 +33,12 @@ void mcterm_sel_clear (mcterm_sel_t *sel);
 void mcterm_sel_start (mcterm_sel_t *sel, gint64 row, int col);
 void mcterm_sel_extend (mcterm_sel_t *sel, gint64 row, int col);
 
+/* The word of @row around @col becomes the region, delimited the way the editor
+   delimits one. A delimiter, or a blank, is a word of its own. */
+void mcterm_sel_word (mcterm_sel_t *sel, mcview_vterm_t *vt, gint64 row, int col, int cols);
+/* The text of @row, its trailing blanks left out, becomes the region. */
+void mcterm_sel_line (mcterm_sel_t *sel, mcview_vterm_t *vt, gint64 row, int cols);
+
 /* The part of @row that is marked, as [*from, *to). FALSE if none of it is. */
 gboolean mcterm_sel_row_span (const mcterm_sel_t *sel, gint64 row, int cols, int *from, int *to);
 

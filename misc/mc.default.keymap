@@ -554,3 +554,4 @@ PageUp = pgup
 PageDown = pgdn
 Top = ctrl-home
 Bottom = ctrl-end
+Clear = ctrl-l
