@@ -296,9 +296,14 @@ for where in $(echo "$transports" | tr ',' ' '); do
             stderr=$out/$slug.stderr
             t0=$(now_ms)
             if ! start_mc "$d" "$where" "$stderr"; then
-                printf '  FAIL  %-30s %-8s could not open %s over %s\n' "$name" "$key" "$d" "$where"
                 screen > "$out/$slug.screen"
-                printf '%s\t%s\t%s\tFAIL\t%s\tcould not open the directory\n' "$name" "$key" "$expect" "$(( $(now_ms) - t0 ))" >> "$results"
+                if [ -n "$known" ]; then
+                    printf '  known %-30s %-8s %s\n' "$name" "$key" "$known"
+                    printf '%s\t%s\t%s\tknown\t%s\t%s\n' "$name" "$key" "$expect" "$(( $(now_ms) - t0 ))" "$known" >> "$results"
+                else
+                    printf '  FAIL  %-30s %-8s could not open %s over %s\n' "$name" "$key" "$d" "$where"
+                    printf '%s\t%s\t%s\tFAIL\t%s\tcould not open the directory\n' "$name" "$key" "$expect" "$(( $(now_ms) - t0 ))" >> "$results"
+                fi
                 stop_mc
                 continue
             fi
