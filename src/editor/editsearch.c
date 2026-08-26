@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 #include "lib/search.h"
 #include "lib/mcconfig.h"  // mc_config_history_get_recent_item()
 #include "lib/charsets.h"  // cp_source

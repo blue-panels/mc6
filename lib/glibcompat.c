@@ -191,6 +191,37 @@ g_queue_clear_full (GQueue *queue, GDestroyNotify free_func)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#if !GLIB_CHECK_VERSION(2, 68, 0)
+/**
+ * g_memdup2:
+ * @mem: (nullable): the memory to copy.
+ * @byte_size: the number of bytes to copy.
+ *
+ * Allocates @byte_size bytes of memory, and copies @byte_size bytes into it
+ * from @mem. If @mem is NULL it returns NULL.
+ *
+ * Returns: (nullable): a pointer to the newly-allocated copy of the memory,
+ *    or NULL if @mem is NULL.
+ */
+gpointer
+g_memdup2 (gconstpointer mem, gsize byte_size)
+{
+    gpointer new_mem;
+
+    if (mem != NULL && byte_size != 0)
+    {
+        new_mem = g_malloc (byte_size);
+        memcpy (new_mem, mem, byte_size);
+    }
+    else
+        new_mem = NULL;
+
+    return new_mem;
+}
+#endif
+
+/* --------------------------------------------------------------------------------------------- */
+
 #if !GLIB_CHECK_VERSION(2, 77, 0)
 /**
  * g_string_new_take:

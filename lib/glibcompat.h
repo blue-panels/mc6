@@ -29,6 +29,14 @@ void g_clear_list (GList **list_ptr, GDestroyNotify destroy);
 void g_queue_clear_full (GQueue *queue, GDestroyNotify free_func);
 #endif
 
+#if !GLIB_CHECK_VERSION(2, 68, 0)
+gpointer g_memdup2 (gconstpointer mem, gsize byte_size);
+#endif
+
+#if !GLIB_CHECK_VERSION(2, 70, 0)
+#define g_spawn_check_wait_status g_spawn_check_exit_status
+#endif
+
 #if !GLIB_CHECK_VERSION(2, 77, 0)
 GString *g_string_new_take (char *init);
 #endif

@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"  // XCTRL and ALT macros

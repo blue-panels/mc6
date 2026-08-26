@@ -31,6 +31,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 #include "lib/mcconfig.h"
 #include "lib/tty/key.h"
 #include "lib/plugin-prefs.h"

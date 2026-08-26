@@ -38,6 +38,8 @@
 #include <glib/gstdio.h>
 
 #include <lua.h>
+
+#include "lib/glibcompat.h"
 #include <lauxlib.h>
 #include <lualib.h>
 
