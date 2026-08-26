@@ -106,12 +106,16 @@ open it.
 
 `run-cases.sh` starts mc under tmux in the case directory (through the
 plugin's connection list for a remote one), finds the file by quick search,
-presses the key and reads the screen: an `Arcmc:` panel title, the viewer's
-button bar, an `Error` box, or none of them. mc's stderr is read as well; an
-assertion or a critical warning fails the case whatever the screen shows.
-Rows it cannot press or read -- `..`, `cd`, `F5`, a name that is a situation
-rather than a file -- are listed as skipped; those are the checklist for a
-person.
+presses the keys and reads what came of it. A `cases.tsv` row is file, keys,
+expectation, reason, and optionally the transports it is for. The keys go
+comma separated, in order: `Enter`, `F3`, `F5`, `C-o`, `..` (up one level),
+`on <name>` (the cursor goes there), `cd <path>` (the Quick cd box),
+`type <text>`. The expectations: `archive panel`, `listing`, `error dialog`,
+`nothing, no error`, `the panel it came from`, `extfs panel`, `copy to the
+other panel` (the file is then in `/tmp`, as big as mc said), `the name as
+written` (the shell printed it). mc's stderr is read as well; an assertion
+or a critical warning fails the case whatever the screen shows. A row with
+keys or an expectation the script does not know is listed as skipped.
 
 `-o` writes ini values before mc starts (`section.key=value`, the section
 `Midnight-Commander` when left out), `-k` puts a keymap from `common/keymaps/`

@@ -98,9 +98,9 @@ ln -s "$PREFIX" /work/opt/mc
 
 # The same cases on a local panel, for what does not need a server.  An
 # environment that exists to check the build may not have an archiver at all.
+# Made again on every build: cases.tsv comes from here, and it is cheap.
 for f in /src/tests/misc/docker/cases/*/fixtures.sh; do
     subject=$(basename "$(dirname "$f")")
-    [ -d "/work/local/$subject" ] && continue
     if command -v bsdtar >/dev/null; then
         echo "== local fixtures: $subject =="
         sh "$f" "/work/local/$subject" >/dev/null

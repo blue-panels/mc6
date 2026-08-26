@@ -4,11 +4,13 @@
 # usage: run-cases.sh [-c subject] [-w transports] [-l locale] [-o [sec.]key=val]...
 #                     [-k keymap] [-r report] [-v] [case-dir...]
 #
-# Each row of a cases.tsv is "file, key, expect, why".  mc is started under
-# tmux with the panel in that directory, the file is found by quick search,
-# the key is pressed and the screen is read.  Only rows whose key and
-# expectation this script knows how to press and read are run; the rest are
-# reported as skipped, they are for a person.
+# Each row of a cases.tsv is "file, keys, expect, why, transports".  mc is
+# started under tmux with the panel in that directory, the file is found by
+# quick search, the keys are pressed in order and the screen is read.  A key
+# is Enter, F3, F5, C-o, ".." (up one level), "on <name>" (the cursor goes
+# there), "cd <path>" (through the Quick cd box), "type <text>".  Rows whose
+# keys or expectation this script does not know are reported as skipped; a
+# row with transports named runs only over those.
 #
 #   -c   the subject under cases/ (default archives)
 #   -w   comma separated: local, sftp, ftp, smb, sh (default local)
@@ -24,9 +26,12 @@
 # An expectation "known: <why>" marks a failure that is understood: the case
 # is still run, a failure is reported as "known", and a pass as "FIXED".
 #
-# What the screen must show: "archive panel", "listing", "error dialog",
-# "nothing, no error".  mc's stderr is read too: an assertion or a critical
-# warning fails the case whatever the screen says.
+# What must come of it: "archive panel", "listing", "error dialog",
+# "nothing, no error", "the panel it came from", "extfs panel", "copy to the
+# other panel" (the file is then in /tmp, the same size), "the name as
+# written" (the file's name is on the screen, in the shell's output).  mc's
+# stderr is read too: an assertion or a critical warning fails the case
+# whatever the screen says.
 set -u
 
 MC=/work/opt/mc/bin/mc
@@ -193,19 +198,83 @@ check ()
     "error dialog")
         screen | grep -q " Error " && ! screen | grep -q "Arcmc:"
         ;;
+    "the panel it came from")
+        ! screen | grep -q " Error " && ! screen | grep -q "Arcmc:\|uzip://" && screen | grep -qF "cases.tsv"
+        ;;
+    "extfs panel")
+        screen | grep -q "uzip://" && ! screen | grep -q " Error "
+        ;;
+    "copy to the other panel")
+        # the copy lands in /tmp, the other panel, and must be as big as the
+        # size mc shows for the source; give it a moment to finish
+        want=$(screen | grep -F " $2 " | head -1 | awk -F'│' '{gsub(/ /, "", $3); print $3}')
+        n=150
+        while [ "$n" -gt 0 ]; do
+            have=$(stat -c %s "/tmp/$2" 2>/dev/null)
+            case "$want" in
+            *[0-9]) [ "$have" = "$want" ] && break ;;
+            *) [ -n "$have" ] && [ "$have" != 0 ] && [ "$have" = "$last" ] && break ;;
+            esac
+            last=$have
+            sleep 0.2
+            n=$((n - 1))
+        done
+        [ "$n" -gt 0 ] && ! screen | grep -q " Error "
+        ;;
+    "the name as written")
+        screen | grep -qF -- "$2"
+        ;;
     *)
         return 2
         ;;
     esac
 }
 
+# can every step of $1 be pressed?
+steps_known ()
+{
+    echo "$1" | tr ',' '\n' | while read -r step; do
+        case "$step" in
+        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "*) ;;
+        *) exit 1 ;;
+        esac
+    done
+}
+
 press ()
 {
-    case "$1" in
-    Enter) $T send-keys -t mc Enter ;;
-    F3) $T send-keys -t mc F3 ;;
-    *) return 2 ;;
-    esac
+    echo "$1" | tr ',' '\n' | while read -r step; do
+        case "$step" in
+        F5)
+            $T send-keys -t mc F5
+            # the copy box takes its time over a remote panel
+            wait_for " Copy " 15 >/dev/null
+            ;;
+        Enter | F3 | C-o)
+            $T send-keys -t mc "$step"
+            ;;
+        ..)
+            # the first entry of a listing is ".."
+            $T send-keys -t mc Home
+            sleep 0.3
+            $T send-keys -t mc Enter
+            ;;
+        "on "*)
+            select_entry "${step#on }"
+            ;;
+        "cd "*)
+            $T send-keys -t mc M-c
+            wait_for "cd:" 5 >/dev/null
+            $T send-keys -t mc -l "${step#cd }"
+            sleep 0.3
+            $T send-keys -t mc Enter
+            ;;
+        "type "*)
+            $T send-keys -t mc -l "${step#type }"
+            ;;
+        esac
+        sleep 1.5
+    done
 }
 
 # the environment's own expectation for dir/file + key over transport $3
@@ -254,8 +323,13 @@ for where in $(echo "$transports" | tr ',' ' '); do
         tsv=/work/local/$subject/$d/cases.tsv
         [ -f "$tsv" ] || { echo "  $d: no cases.tsv"; continue; }
 
-        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why; do
+        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why only; do
             [ -n "$file" ] || continue
+            rm -f "/tmp/$file"
+            # a row for some transports only
+            if [ -n "$only" ] && ! echo ",$only," | grep -qF ",$where,"; then
+                continue
+            fi
             name="$d/$file"
             # a row that names a situation rather than a file is for a person
             if [ ! -e "/work/local/$subject/$d/$file" ]; then
@@ -263,14 +337,11 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
                 continue
             fi
-            case "$key" in
-            Enter | F3) ;;
-            *)
+            if ! steps_known "$key"; then
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$why"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
                 continue
-                ;;
-            esac
+            fi
             known=
             if o=$(override "$name" "$key" "$where"); then
                 case "$o" in
@@ -284,7 +355,8 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 esac
             fi
             case "$expect" in
-            "archive panel" | listing | "nothing, no error" | "error dialog") ;;
+            "archive panel" | listing | "nothing, no error" | "error dialog" | "the panel it came from" \
+                | "extfs panel" | "copy to the other panel" | "the name as written") ;;
             *)
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$expect"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
@@ -309,18 +381,19 @@ for where in $(echo "$transports" | tr ',' ' '); do
             fi
             select_entry "$file"
             press "$key"
-            sleep 2
+            sleep 1
             # a remote file takes a moment to arrive: wait for what is expected
             if [ "$where" != local ]; then
                 case "$expect" in
                 "archive panel") wait_for "Arcmc:" 20 >/dev/null ;;
                 listing) wait_for "4Hex" 20 >/dev/null ;;
                 "error dialog") wait_for " Error " 20 >/dev/null ;;
+                "the panel it came from") wait_for "cases.tsv" 20 >/dev/null ;;
                 esac
             fi
             ms=$(( $(now_ms) - t0 ))
             verdict=ok
-            check "$expect" || verdict=FAIL
+            check "$expect" "$file" "$d" || verdict=FAIL
             if grep -qE "assert|CRITICAL|Segmentation|AddressSanitizer|runtime error" "$stderr" 2>/dev/null; then
                 verdict=FAIL
                 why="$why; stderr: $(grep -m1 -E 'assert|CRITICAL|Segmentation|AddressSanitizer|runtime error' "$stderr")"

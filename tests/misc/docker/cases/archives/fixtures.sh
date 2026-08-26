@@ -2,8 +2,11 @@
 # Build the archive cases under $1.
 #
 # One directory per situation, each with a cases.tsv saying what the files in
-# it are for: name, key, expected outcome, reason.  A person reads it as a
-# checklist; run-cases.sh walks the directories and reads the same columns.
+# it are for: name, keys, expected outcome, reason, and the transports it is
+# for (empty: all).  A person reads it as a checklist; run-cases.sh walks the
+# directories and presses the keys.  A key is one of Enter, F3, F5, C-o, ".."
+# (up one level), "on <name>" (put the cursor there), "cd <path>" (the Quick
+# cd box), "type <text>"; several go comma separated, in order.
 set -e
 
 dir="${1:-/home/mc/cases/archives}"
@@ -40,9 +43,13 @@ while [ "$i" -le 10 ]; do
     i=$((i + 1))
 done
 
+# Fixed times and owner in the entries, none in the gzip header: the same
+# archive, byte for byte, wherever it is made.
+find "$work" -exec touch -h -d @1000000000 {} +
+
 pack ()
 {
-    (cd "$work" && bsdtar "$@")
+    (cd "$work" && bsdtar --uid 0 --gid 0 --uname root --gname root --options 'gzip:!timestamp' "$@")
 }
 
 # ---------------------------------------------------------------- formats ---
@@ -54,7 +61,7 @@ pack --format 7zip -cf "$dir/01-formats/small.7z" payload
 pack --format 7zip -cf "$dir/01-formats/big.7z" payload_big
 
 cat > 01-formats/cases.tsv <<'EOF'
-file	key	expect	why
+file	key	expect	why	transports
 small.tar.gz	Enter	archive panel	reads in one pass, no seeking needed
 small.zip	Enter	archive panel	same
 small.7z	Enter	archive panel	directory at the end of the file: needs seek
@@ -70,7 +77,7 @@ cp 01-formats/big.7z 02-content/sevenzip-without-suffix
 printf 'plain text, whatever the name says\n' > 02-content/notanarchive.tar.gz
 
 cat > 02-content/cases.tsv <<'EOF'
-file	key	expect	why
+file	key	expect	why	transports
 noext	Enter	nothing, no error	magic.ini knows archives by name only, so a stream is not looked into
 sevenzip-without-suffix	Enter	nothing, no error	same: nothing to open it with, and nothing to complain about
 notanarchive.tar.gz	Enter	error dialog	the name lies, the operation turns it down and says so
@@ -79,15 +86,16 @@ EOF
 # ----------------------------------------------------------------- nested ---
 
 mkdir -p 03-nested
-(cd 01-formats && bsdtar -cf "$dir/03-nested/outer.tar" small.zip small.7z)
-(cd 01-formats && bsdtar -a -cf "$dir/03-nested/zip-in-zip.zip" small.zip small.tar.gz)
+touch -d @1000000000 01-formats/*
+(cd 01-formats && bsdtar --uid 0 --gid 0 --uname root --gname root -cf "$dir/03-nested/outer.tar" small.zip small.7z)
+(cd 01-formats && bsdtar --uid 0 --gid 0 --uname root --gname root -a -cf "$dir/03-nested/zip-in-zip.zip" small.zip small.tar.gz)
 
 cat > 03-nested/cases.tsv <<'EOF'
-file	key	expect	why
-outer.tar	Enter	archive panel	then Enter on small.zip inside it
-outer.tar	..	the panel it came from	twice: inner archive, outer archive, then sftp or ftp
-zip-in-zip.zip/uzip://	cd	extfs panel	utar:// is gone, uzip:// is the filesystem left to try
-small.zip inside uzip://	Enter	archive panel	a file inside an mc filesystem is left to mc.ext.ini
+file	key	expect	why	transports
+outer.tar	Enter	archive panel	then Enter on small.zip inside it	
+outer.tar	Enter,on small.zip,Enter,..,..	the panel it came from	twice: inner archive, outer archive, then sftp or ftp	
+zip-in-zip.zip	cd zip-in-zip.zip/uzip://	extfs panel	utar:// is gone, uzip:// is the filesystem left to try	local
+zip-in-zip.zip	cd zip-in-zip.zip/uzip://,on small.zip,Enter	extfs panel	a file inside an mc filesystem is left to mc.ext.ini	local
 EOF
 
 # --------------------------------------------------------------- non-ascii ---
@@ -100,11 +108,11 @@ mkdir -p '04-non-ascii/каталог'
 printf 'вложенный файл\n' > '04-non-ascii/каталог/файл.txt'
 
 cat > 04-non-ascii/cases.tsv <<'EOF'
-file	key	expect	why
-архив.tar.gz	Enter	archive panel	the name survives the panel, the quoting and the shell
-архив с пробелами.7z	Enter	archive panel	spaces as well as Cyrillic
-архив.tar.gz	F5	copy to the other panel	the name reaches a file operation intact
-заметка.txt	Ctrl-O then ls	the name as written	the subshell is zsh here
+file	key	expect	why	transports
+архив.tar.gz	Enter	archive panel	the name survives the panel, the quoting and the shell	
+архив с пробелами.7z	Enter	archive panel	spaces as well as Cyrillic	
+архив.tar.gz	F5,Enter	copy to the other panel	the name reaches a file operation intact	
+заметка.txt	C-o,type ls,Enter	the name as written	the subshell is zsh here	local
 EOF
 
 find "$dir" -mindepth 1 -maxdepth 2 | sort
