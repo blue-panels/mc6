@@ -4201,6 +4201,8 @@ do_enter (WPanel *panel)
                     panel_plugin_reload (panel);
                     if (focus_name != NULL)
                         panel_set_current_by_name (panel, focus_name);
+                    else
+                        panel_set_current (panel, 0);
                     g_free (focus_name);
                     return TRUE;
                 }
