@@ -114,6 +114,9 @@ guint mcview_vterm_osc133_generation (const mcview_vterm_t *vt);
    whoever knows the terminal sets it. The generation moves whenever the list
    changes, so the host can tell when the pictures need painting again. */
 void mcview_vterm_set_cell_size (mcview_vterm_t *vt, int width, int height);
+/* Whether to tell the program the terminal draws sixel: in the Device
+   Attributes, and in the pixel sizes it asks for (XTWINOPS 14, 16, 18). */
+void mcview_vterm_set_sixel (mcview_vterm_t *vt, gboolean sixel);
 guint mcview_vterm_images_len (const mcview_vterm_t *vt);
 const mcview_vterm_image_t *mcview_vterm_image (const mcview_vterm_t *vt, guint index);
 guint mcview_vterm_images_generation (const mcview_vterm_t *vt);

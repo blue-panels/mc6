@@ -49,7 +49,11 @@
 
 /* A sixel picture bigger than this is dropped: a screen of it in 256 colors
    is a few hundred kilobytes. */
-#define MCVIEW_VTERM_MAX_SIXEL_BYTES     (4 * 1024 * 1024)
+#define MCVIEW_VTERM_MAX_SIXEL_BYTES (4 * 1024 * 1024)
+
+/* Ceilings on the pictures kept: a program can draw at the same spot forever. */
+#define MCVIEW_VTERM_MAX_IMAGES          64
+#define MCVIEW_VTERM_MAX_IMAGES_BYTES    (32 * 1024 * 1024)
 
 #define MCVIEW_VTERM_DEFAULT_CELL_WIDTH  8
 #define MCVIEW_VTERM_DEFAULT_CELL_HEIGHT 16
@@ -89,8 +93,11 @@ struct mcview_vterm_struct
     gboolean sixel_overflow;
     GString *sixel;
     GPtrArray *images;
+    gsize images_bytes;
     int cell_width;
     int cell_height;
+    gboolean sixel_capable;
+    char reply_buf[48];  // VTERM_REPLY built on the spot: the window sizes
     guint images_generation;
     char *osc7_raw;
     guint osc7_generation;
@@ -186,8 +193,38 @@ vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
     {
         vterm_event_t ev = vterm_make (vt, VTERM_REPLY);
 
-        ev.reply = vt->csi_gt ? ESC_STR "[>0;0;0c" : ESC_STR "[?1;2c";
+        /* With sixel it is a VT240 that draws them: level 2 with sixel graphics. */
+        ev.reply = vt->csi_gt   ? ESC_STR "[>0;0;0c"
+            : vt->sixel_capable ? ESC_STR "[?62;4;22c"
+                                : ESC_STR "[?1;2c";
         vt->csi_gt = FALSE;
+        return ev;
+    }
+
+    /* XTWINOPS: the sizes a program draws pictures by. Only when there are
+       pictures to draw; otherwise the question goes unanswered, as before. */
+    if (final_byte == 't' && !vt->csi_private && vt->sixel_capable && vt->param_count > 0)
+    {
+        vterm_event_t ev = vterm_make (vt, VTERM_REPLY);
+
+        switch (vt->params[0])
+        {
+        case 14: /* text area in pixels */
+            g_snprintf (vt->reply_buf, sizeof (vt->reply_buf), ESC_STR "[4;%d;%dt",
+                        vt->term_rows * vt->cell_height, vt->term_cols * vt->cell_width);
+            break;
+        case 16: /* a cell in pixels */
+            g_snprintf (vt->reply_buf, sizeof (vt->reply_buf), ESC_STR "[6;%d;%dt", vt->cell_height,
+                        vt->cell_width);
+            break;
+        case 18: /* text area in cells */
+            g_snprintf (vt->reply_buf, sizeof (vt->reply_buf), ESC_STR "[8;%d;%dt", vt->term_rows,
+                        vt->term_cols);
+            break;
+        default:
+            return vterm_make (vt, VTERM_CONSUMED);
+        }
+        ev.reply = vt->reply_buf;
         return ev;
     }
 
@@ -480,7 +517,8 @@ vterm_image_free (gpointer data)
 {
     mcview_vterm_image_t *image = data;
 
-    g_bytes_unref (image->data);
+    if (image->data != NULL)
+        g_bytes_unref (image->data);
     g_free (image);
 }
 
@@ -493,6 +531,7 @@ vterm_images_clear (mcview_vterm_t *vt)
         return;
 
     g_ptr_array_set_size (vt->images, 0);
+    vt->images_bytes = 0;
     vt->images_generation++;
 }
 
@@ -521,7 +560,10 @@ vterm_images_shift (mcview_vterm_t *vt, int top, int bottom, int delta)
         image->row += delta;
         vt->images_generation++;
         if (image->row < top || image->row + image->rows - 1 > bottom)
+        {
+            vt->images_bytes -= image->data != NULL ? g_bytes_get_size (image->data) : 0;
             g_ptr_array_remove_index (vt->images, i);
+        }
         else
             i++;
     }
@@ -546,6 +588,7 @@ vterm_images_erase_rows (mcview_vterm_t *vt, int from, int to)
             i++;
         else
         {
+            vt->images_bytes -= image->data != NULL ? g_bytes_get_size (image->data) : 0;
             g_ptr_array_remove_index (vt->images, i);
             vt->images_generation++;
         }
@@ -667,9 +710,10 @@ vterm_finish_sixel (mcview_vterm_t *vt)
         return;
     }
 
+    /* The full width: a picture is drawn whole or not at all, and one that
+       runs past the widget must be seen to run past it. */
     cols = (width + vt->cell_width - 1) / vt->cell_width;
     rows = (height + vt->cell_height - 1) / vt->cell_height;
-    cols = MIN (cols, vt->term_cols - vt->cursor_col);
 
     /* Taller than what is left of the scroll region: the region scrolls up,
        and the picture with it. A picture taller than the region is gone the
@@ -700,12 +744,26 @@ vterm_finish_sixel (mcview_vterm_t *vt)
     image->cols = cols;
     image->width = width;
     image->height = height;
-    image->data = g_bytes_new (vt->sixel->str, vt->sixel->len);
+    /* Where the terminal draws no sixel the bytes have nowhere to go; the
+       place of the picture still matters for the layout. */
+    if (vt->sixel_capable)
+    {
+        image->data = g_bytes_new (vt->sixel->str, vt->sixel->len);
+        vt->images_bytes += vt->sixel->len;
+    }
     g_string_truncate (vt->sixel, 0);
 
     if (vt->images == NULL)
         vt->images = g_ptr_array_new_with_free_func (vterm_image_free);
     g_ptr_array_add (vt->images, image);
+    while (vt->images->len > MCVIEW_VTERM_MAX_IMAGES
+           || (vt->images_bytes > MCVIEW_VTERM_MAX_IMAGES_BYTES && vt->images->len > 1))
+    {
+        const mcview_vterm_image_t *oldest = g_ptr_array_index (vt->images, 0);
+
+        vt->images_bytes -= oldest->data != NULL ? g_bytes_get_size (oldest->data) : 0;
+        g_ptr_array_remove_index (vt->images, 0);
+    }
     vt->images_generation++;
 
     vt->new_chars_since_snapshot = TRUE;
@@ -959,6 +1017,7 @@ mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols)
             /* Those rows are on the screen again, and every row below them
                moved down: what the count names has to move with them. */
             vt->scrolled_rows -= take;
+            vterm_images_shift (vt, 0, rows - 1, take);
             mcview_terminal_buffer_set_max_row (vt->buf, used + take - 1);
         }
     }
@@ -1039,10 +1098,24 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
             vt->in_dcs_esc = TRUE;
         else if (vt->in_sixel)
         {
-            if (vt->sixel->len < MCVIEW_VTERM_MAX_SIXEL_BYTES)
-                g_string_append_c (vt->sixel, (char) byte);
-            else
-                vt->sixel_overflow = TRUE;
+            /* Only what sixel is made of goes back out to the real terminal:
+               a control code smuggled into the data must not end the DCS
+               there and go on as a command. CAN and SUB abort, the way they
+               abort any control string; the rest is dropped. */
+            if (byte >= 0x20u && byte < 0x7Fu)
+            {
+                if (vt->sixel->len < MCVIEW_VTERM_MAX_SIXEL_BYTES)
+                    g_string_append_c (vt->sixel, (char) byte);
+                else
+                    vt->sixel_overflow = TRUE;
+            }
+            else if (byte == 0x18u || byte == 0x1Au)
+            {
+                vt->in_dcs = FALSE;
+                vt->in_sixel = FALSE;
+                vt->sixel_overflow = FALSE;
+                g_string_truncate (vt->sixel, 0);
+            }
         }
         else if (byte == 'q' && vt->dcs_len < (int) sizeof (vt->dcs_buf) - 1)
         {
@@ -1488,6 +1561,14 @@ mcview_vterm_set_cell_size (mcview_vterm_t *vt, int width, int height)
 {
     vt->cell_width = (width > 0) ? width : MCVIEW_VTERM_DEFAULT_CELL_WIDTH;
     vt->cell_height = (height > 0) ? height : MCVIEW_VTERM_DEFAULT_CELL_HEIGHT;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_vterm_set_sixel (mcview_vterm_t *vt, gboolean sixel)
+{
+    vt->sixel_capable = sixel;
 }
 
 /* --------------------------------------------------------------------------------------------- */

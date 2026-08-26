@@ -727,6 +727,7 @@ START_TEST (test_sixel_becomes_a_picture_at_the_cursor)
     mcview_vterm_set_size (vt, 10, 40);
     mcview_vterm_reset (vt);
     mcview_vterm_set_cell_size (vt, 8, 16);
+    mcview_vterm_set_sixel (vt, TRUE);
 
     FEED (vt, "\033[3;5H");
     FEED (vt, SIXEL_16x32);
@@ -921,6 +922,164 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+static const char *
+reply_to (mcview_vterm_t *vt, const char *query)
+{
+    vterm_event_t ev = { 0 };
+    size_t i;
+
+    for (i = 0; query[i] != '\0'; i++)
+    {
+        ev = mcview_vterm_feed (vt, (unsigned char) query[i]);
+        mcview_vterm_apply_event (vt, &ev);
+    }
+    return ev.type == VTERM_REPLY ? ev.reply : NULL;
+}
+
+START_TEST (test_sixel_terminal_says_so_when_asked)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 24, 80);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 10, 20);
+
+    ck_assert_str_eq (reply_to (vt, "\033[c"), "\033[?1;2c");
+    ck_assert_ptr_null (reply_to (vt, "\033[16t"));
+
+    mcview_vterm_set_sixel (vt, TRUE);
+    ck_assert_str_eq (reply_to (vt, "\033[c"), "\033[?62;4;22c");
+    ck_assert_str_eq (reply_to (vt, "\033[16t"), "\033[6;20;10t");
+    ck_assert_str_eq (reply_to (vt, "\033[14t"), "\033[4;480;800t");
+    ck_assert_str_eq (reply_to (vt, "\033[18t"), "\033[8;24;80t");
+    ck_assert_ptr_null (reply_to (vt, "\033[22t"));
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_keeps_only_what_sixel_is_made_of)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_image_t *image;
+    static const char with_controls[] = "\033P0;0;0q\"1;1;16;32#0;2;100;0;0#0\x9b"
+                                        "2J"
+                                        "\x07!16~\r\n-!16~\033\\";
+    static const char clean[] = "\033P0;0;0q\"1;1;16;32#0;2;100;0;0#02J!16~-!16~\033\\";
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_sixel (vt, TRUE);
+
+    feed_bytes (vt, with_controls, sizeof (with_controls) - 1);
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    image = mcview_vterm_image (vt, 0);
+    ck_assert_uint_eq (g_bytes_get_size (image->data), sizeof (clean) - 1);
+    ck_assert_int_eq (memcmp (g_bytes_get_data (image->data, NULL), clean, sizeof (clean) - 1), 0);
+
+    /* CAN throws the picture away, and the stream goes on. */
+    FEED (vt,
+          "\033[2J\033Pq#0!16~\x18"
+          "ok");
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 0);
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 'o');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_without_a_terminal_for_it_takes_its_place_only)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, SIXEL_16x32);
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    ck_assert_ptr_null (mcview_vterm_image (vt, 0)->data);
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 2);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_sixel_wider_than_the_screen_keeps_its_width)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, "\033[1;31H");
+    FEED (vt, SIXEL_16x32); /* two columns from column 30: past the edge */
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->col, 30);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->cols, 2);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_the_pictures_kept_are_so_many)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    int i;
+
+    mcview_vterm_set_size (vt, 10, 40);
+    mcview_vterm_reset (vt);
+
+    for (i = 0; i < 100; i++)
+    {
+        FEED (vt, "\033[1;1H");
+        FEED (vt, SIXEL_16x32);
+    }
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 64);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_a_screen_made_taller_brings_the_pictures_down_with_the_rows)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 6, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+
+    FEED (vt, "one\ntwo\nthree\n");
+    FEED (vt, SIXEL_16x32); /* rows 3..4, cursor row 5 */
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 3);
+
+    /* Two rows shorter: "one" and "two" go to the history, the picture
+       moves up with the rest. */
+    mcview_vterm_set_size (vt, 4, 40);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 1);
+
+    /* And back: the rows come back on top, the picture goes down again. */
+    mcview_vterm_set_size (vt, 6, 40);
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 'o');
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 3);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -957,6 +1116,12 @@ main (void)
     tcase_add_test (tc_core, test_erase_to_end_of_screen_takes_the_pictures_below);
     tcase_add_test (tc_core, test_oversized_sixel_is_dropped_whole);
     tcase_add_test (tc_core, test_xtgettcap_is_still_answered);
+    tcase_add_test (tc_core, test_sixel_terminal_says_so_when_asked);
+    tcase_add_test (tc_core, test_sixel_keeps_only_what_sixel_is_made_of);
+    tcase_add_test (tc_core, test_sixel_without_a_terminal_for_it_takes_its_place_only);
+    tcase_add_test (tc_core, test_sixel_wider_than_the_screen_keeps_its_width);
+    tcase_add_test (tc_core, test_the_pictures_kept_are_so_many);
+    tcase_add_test (tc_core, test_a_screen_made_taller_brings_the_pictures_down_with_the_rows);
 
     return mctest_run_all (tc_core);
 }

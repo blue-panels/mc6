@@ -781,6 +781,26 @@ tty_refresh (void)
 {
     refresh ();
     doupdate ();
+    tty_run_painters ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_touch_area (int y, int x, int rows, int cols)
+{
+    (void) x;
+    (void) cols;
+    touchline (stdscr, y, rows);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_unget_input (const unsigned char *data, size_t len)
+{
+    while (len > 0)
+        ungetch (data[--len]);
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -49,6 +49,9 @@ gboolean tty_lowlevel_input_pending (void);
 
 void tty_colorize_area (int y, int x, int rows, int cols, int color);
 
+/* tty.c: the painters, run by tty_refresh() of either backend. */
+void tty_run_painters (void);
+
 /*** inline functions ****************************************************************************/
 
 #endif

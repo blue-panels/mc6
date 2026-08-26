@@ -159,6 +159,28 @@ extern int tty_resize (int fd);
 extern void tty_refresh (void);
 extern void tty_change_screen_size (void);
 
+/* Output the screen library has no cell for - sixel pictures - goes to the
+   terminal behind its back. Only after tty_refresh(), when the library's own
+   output is out; the cursor comes back to where the library left it. */
+extern void tty_raw_write (const char *data, size_t len);
+/* Make the library write these rows again on the next refresh, changed or
+   not: a picture drawn over them has to be erased or drawn again. */
+extern void tty_touch_area (int y, int x, int rows, int cols);
+/* Painters run after every tty_refresh(), in the order they were added. */
+typedef void (*tty_painter_fn) (void *data);
+extern void tty_painter_add (tty_painter_fn fn, void *data);
+extern void tty_painter_remove (tty_painter_fn fn, void *data);
+/* Ask the terminal whether it draws sixel and how big its cells are:
+   Primary Device Attributes and XTWINOPS 16. Once, after tty_init(), while
+   nothing else reads the keyboard; a terminal that does not answer within a
+   moment is taken not to know. MC_SIXEL=0 or 1 overrides the answer. */
+extern void tty_probe_graphics (void);
+/* Bytes read past the keyboard's back go back to it, in order. */
+extern void tty_unget_input (const unsigned char *data, size_t len);
+extern gboolean tty_has_sixel (void);
+/* Pixels per cell, 0 when the terminal did not say. */
+extern void tty_cell_size (int *width, int *height);
+
 /* Clear screen */
 extern void tty_clear_screen (void);
 
