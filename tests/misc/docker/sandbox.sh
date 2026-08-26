@@ -73,6 +73,10 @@ list)
     exit 0
     ;;
 ui)
+    # the curses one takes the mouse; the dialog one is for a host without python
+    if command -v python3 >/dev/null 2>&1; then
+        exec python3 "$root/common/ui.py" "$env" "$@"
+    fi
     exec sh "$root/common/ui.sh" "$env" "$@"
     ;;
 esac

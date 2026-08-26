@@ -10,6 +10,7 @@ EXTRA_DIST = \
 	docker/common/features.ini \
 	docker/common/run-cases.sh \
 	docker/common/toggles.ini \
+	docker/common/ui.py \
 	docker/common/ui.sh \
 	docker/common/zshrc \
 	docker/common/keymaps/shift-tab-complete.keymap \
