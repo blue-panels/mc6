@@ -28,4 +28,8 @@ EXTRA_DIST = \
 	docker/envs/debian-12-minimal/expect.tsv \
 	docker/envs/alpine-remote/docker-compose.yml \
 	docker/envs/alpine-remote/README.md \
-	docker/envs/alpine-remote/expect.tsv
+	docker/envs/alpine-remote/expect.tsv \
+	docker/envs/debian-10/Dockerfile.mc \
+	docker/envs/debian-10/docker-compose.yml \
+	docker/envs/debian-10/README.md \
+	docker/envs/debian-10/expect.tsv

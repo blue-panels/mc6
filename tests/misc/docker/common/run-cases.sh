@@ -19,7 +19,8 @@
 #   -r   report directory (default /reports/<stamp>-<env>)
 #
 # The environment's envs/<env>/expect.tsv overrides expectations: columns
-# "dir/file, key, expect, transports" (the last one optional, comma separated).
+# "dir/file, key, expect, transports" (the last one optional, comma separated);
+# "*" in the first two stands for any case or any key.
 # An expectation "known: <why>" marks a failure that is understood: the case
 # is still run, a failure is reported as "known", and a pass as "FIXED".
 #
@@ -212,7 +213,7 @@ override ()
 {
     [ -f "$expect_file" ] || return 1
     awk -F'\t' -v f="$1" -v k="$2" -v w="$3" '
-        $1 == f && $2 == k && ($4 == "" || index("," $4 ",", "," w ",") > 0) { print $3; found = 1 }
+        ($1 == f || $1 == "*") && ($2 == k || $2 == "*") && ($4 == "" || index("," $4 ",", "," w ",") > 0) { print $3; found = 1 }
         END { exit found ? 0 : 1 }' "$expect_file"
 }
 
