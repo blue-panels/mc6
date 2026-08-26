@@ -30,6 +30,9 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/prctl.h>
+#endif
 
 #include "lib/strutil.h"
 #include "lib/util.h"
@@ -413,7 +416,12 @@ START_TEST (test_stream_eof_reports_process_signal)
     {
         struct rlimit core_limit = { 0, 0 };
 
+        /* No core dump: writing one takes longer than the reader waits before it
+           sends SIGKILL, and a core_pattern that is a pipe ignores RLIMIT_CORE. */
         (void) setrlimit (RLIMIT_CORE, &core_limit);
+#ifdef PR_SET_DUMPABLE
+        (void) prctl (PR_SET_DUMPABLE, 0, 0, 0, 0);
+#endif
         close (pipefd[0]);
         close (pipefd[1]);
         raise (SIGSEGV);
