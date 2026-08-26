@@ -836,6 +836,8 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
     sftp_connect_status_msg_t status;
     gboolean status_inited = FALSE;
     gboolean result = FALSE;
+    const char *failed = NULL; /* what went wrong, shown once the progress box is gone */
+    char *detail = NULL;
 
     if (data == NULL || conn == NULL)
         return FALSE;
@@ -852,11 +854,17 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
 
     data->socket_handle = sftp_open_socket (conn);
     if (data->socket_handle == LIBSSH2_INVALID_SOCKET)
-        goto out;
+    {
+        failed = N_ ("Cannot connect to %s:%d");
+        goto fail;
+    }
 
     data->session = libssh2_session_init ();
     if (data->session == NULL)
+    {
+        failed = N_ ("Cannot create an SSH session for %s:%d");
         goto fail;
+    }
 
     libssh2_session_set_blocking (data->session, 1);
 
@@ -875,7 +883,10 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
         goto fail;
 
     if (libssh2_session_handshake (data->session, (libssh2_socket_t) data->socket_handle) != 0)
+    {
+        failed = N_ ("SSH handshake with %s:%d failed");
         goto fail;
+    }
 
     /* Keepalive */
     if (conn->keepalive)
@@ -976,8 +987,11 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
                             INPUT_COMPLETE_NONE);
         g_free (prompt);
 
-        if (pwd != NULL && pwd[0] != '\0'
-            && libssh2_userauth_password (data->session, user, pwd) == 0)
+        /* cancelled: nothing to report */
+        if (pwd == NULL)
+            goto fail;
+
+        if (pwd[0] != '\0' && libssh2_userauth_password (data->session, user, pwd) == 0)
         {
             g_free (conn->password);
             conn->password = pwd;
@@ -987,6 +1001,7 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
         g_free (pwd);
     }
 
+    failed = N_ ("Authentication with %s:%d failed");
     goto fail;
 
 auth_ok:
@@ -995,7 +1010,10 @@ auth_ok:
 
     data->sftp_session = libssh2_sftp_init (data->session);
     if (data->sftp_session == NULL)
+    {
+        failed = N_ ("Cannot start the SFTP session with %s:%d");
         goto fail;
+    }
 
     (void) sftp_connect_status_set_stage (&status, _ ("Connected."));
 
@@ -1004,6 +1022,15 @@ auth_ok:
     goto out;
 
 fail:
+    /* the library's own words, taken before the session goes away */
+    if (failed != NULL && data->session != NULL)
+    {
+        char *msg = NULL;
+
+        if (libssh2_session_last_error (data->session, &msg, NULL, 0) != 0 && msg != NULL
+            && msg[0] != '\0')
+            detail = g_strdup (msg);
+    }
     sftp_disconnect (data);
 
 out:
@@ -1011,6 +1038,18 @@ out:
         status_msg_deinit (STATUS_MSG (&status));
     if (status.log != NULL)
         g_string_free (status.log, TRUE);
+    if (failed != NULL)
+    {
+        char *what;
+
+        what = g_strdup_printf (_ (failed), conn->host, conn->port);
+        if (detail != NULL)
+            message (D_ERROR, _ ("SFTP"), "%s\n%s", what, detail);
+        else
+            message (D_ERROR, _ ("SFTP"), "%s", what);
+        g_free (what);
+    }
+    g_free (detail);
     return result;
 }
 

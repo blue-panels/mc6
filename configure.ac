@@ -763,13 +763,13 @@ if test "x$enable_panel_plugin_sftp" != xno && test x"$have_libssh2" = xyes; the
 fi
 
 if test "x$enable_panel_plugin_sftp" = xyes && test "x$have_panel_plugin_sftp" != xyes; then
-    AC_MSG_ERROR([SFTP panel plugin requested but libssh2 >= 1.2.8 was not found.
+    AC_MSG_ERROR([SFTP panel plugin requested but libssh2 >= 1.9.0 was not found.
 Install the libssh2 development package (for example: libssh2-1-dev) or use
 --enable-panel-plugin-sftp=auto/no.])
 fi
 
 if test "x$enable_panel_plugin_sftp" = xauto && test "x$have_panel_plugin_sftp" != xyes; then
-    AC_MSG_WARN([SFTP panel plugin disabled: libssh2 >= 1.2.8 was not found.])
+    AC_MSG_WARN([SFTP panel plugin disabled: libssh2 >= 1.9.0 was not found.])
 fi
 
 AM_CONDITIONAL([ENABLE_PANEL_PLUGIN_SFTP], [test x"$have_panel_plugin_sftp" = xyes])
@@ -839,7 +839,7 @@ if test x"$have_panel_plugin_shell_link" = xyes -a x"$enable_shell_ssh2" != xno;
         AC_DEFINE([ENABLE_SHELL_SSH2], [1], [Use libssh2 as Shell link transport])
         have_shell_ssh2=yes
     elif test x"$enable_shell_ssh2" = xyes; then
-        AC_MSG_ERROR([Shell link libssh2 transport requested but libssh2 >= 1.2.8 was not found.
+        AC_MSG_ERROR([Shell link libssh2 transport requested but libssh2 >= 1.9.0 was not found.
 Install the libssh2 development package (for example: libssh2-1-dev) or use --enable-shell-ssh2=auto/no.])
     fi
 fi
