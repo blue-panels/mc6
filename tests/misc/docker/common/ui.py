@@ -116,8 +116,9 @@ class Form:
         self.st = load_state()
         if env:
             self.st["env"] = env
+        # a rebuild is asked for each time, not remembered: it costs minutes
         self.radios = {"env": self.st["env"], "subject": self.st["subject"],
-                       "locale": self.st["locale"], "profile": self.st["profile"] or "keep",
+                       "locale": self.st["locale"], "profile": "keep",
                        "keymap": self.st["keymap"] or "none"}
         self.checks = {"transports": set(filter(None, self.st["transports"].split(","))),
                        "toggles": set(filter(None, self.st["toggles"].split(","))),
@@ -141,8 +142,8 @@ class Form:
         it.append(Item("head", None, None, "Locale (messages stay English)"))
         for n, d in LOCALES:
             it.append(Item("radio", "locale", n, n, d))
-        it.append(Item("head", None, None, "Build profile (a rebuild before the run)"))
-        it.append(Item("radio", "profile", "keep", "keep", "the build there is now"))
+        it.append(Item("head", None, None, "Build profile"))
+        it.append(Item("radio", "profile", "keep", "keep", "the build there is now: no wait"))
         feats = os.path.join(ROOT, "common", "features.ini")
         text = open(feats).read()
         for n in ini_sections(feats):
@@ -248,7 +249,10 @@ class Form:
         # the command it all adds up to, and the buttons
         cmd = self.command()
         cy = need - 6 + 1
-        self.box(cy, 1, 4, w - 2, "the command", c["dialog"])
+        title = "the command"
+        if self.st["profile"] != "keep":
+            title = "the command: a rebuild first, minutes; keep skips it when mc did not change"
+        self.box(cy, 1, 4, w - 2, title, c["dialog"])
         self.put(cy + 1, 3, cmd[:w - 6], c["dim"], w - 6)
         self.put(cy + 2, 3, cmd[w - 6:2 * (w - 6)], c["dim"], w - 6)
         by = cy + 5
@@ -298,6 +302,8 @@ class Form:
             it.y, it.x, it.w = y, 0, w - 1
             scr.addstr(y, 0, line[:w - 1], attr)
         cmd = self.command()
+        if self.st["profile"] != "keep":
+            cmd = "[rebuild first, minutes; keep skips it] " + cmd
         scr.addstr(h - 1, 0, (" " + cmd)[:w - 1], curses.A_DIM)
         scr.refresh()
 
