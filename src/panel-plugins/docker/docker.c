@@ -32,6 +32,7 @@
 
 #include "src/panel-plugins/docker/docker-internal.h"
 #include "lib/mcconfig.h"
+#include "lib/glibcompat.h"
 #include "src/viewer/mcviewer.h"
 
 /*** forward declarations (file scope functions) *************************************************/

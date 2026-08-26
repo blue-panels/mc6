@@ -55,6 +55,7 @@
 #endif
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 #include "lib/tty/tty.h"
 #include "internal.h"
 

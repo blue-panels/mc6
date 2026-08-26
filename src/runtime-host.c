@@ -31,6 +31,7 @@
 
 #include "lib/file-entry.h"
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 
 #include "lib/extension-runtime.h"
 #include "lib/runtime-events.h"

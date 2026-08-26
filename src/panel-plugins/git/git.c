@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"
 #include "lib/logging.h"
 #include "lib/mcconfig.h"
 #include "lib/panel-plugin.h"
