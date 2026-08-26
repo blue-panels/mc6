@@ -1,0 +1,4 @@
+case	key	expect	transports
+04-non-ascii/архив с пробелами.7z	Enter	known: the ftp plugin cannot fetch a name with spaces	ftp
+04-non-ascii/архив.tar.gz	Enter	known: busybox ls on the remote turns non-ASCII names into ?, shell-link shows them so	sh
+04-non-ascii/архив с пробелами.7z	Enter	known: busybox ls on the remote turns non-ASCII names into ?, shell-link shows them so	sh

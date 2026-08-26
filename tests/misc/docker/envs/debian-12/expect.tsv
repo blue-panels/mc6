@@ -1,0 +1,2 @@
+case	key	expect	transports
+04-non-ascii/архив с пробелами.7z	Enter	known: the ftp plugin cannot fetch a name with spaces	ftp

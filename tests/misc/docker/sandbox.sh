@@ -1,7 +1,7 @@
 #!/bin/sh
-# Drive a sandbox scenario.  Run it from anywhere.
+# Drive a sandbox environment.  Run it from anywhere.
 #
-# A scenario is a directory under scenarios/ with a docker-compose.yml in it.
+# An environment is a directory under envs/ with a docker-compose.yml in it.
 # They are found by looking, not by being listed here, so adding one is adding
 # a directory and nothing else.
 set -e
@@ -12,9 +12,9 @@ root=$(pwd)
 COMPOSE="docker compose"
 $COMPOSE version >/dev/null 2>&1 || COMPOSE="docker-compose"
 
-scenarios ()
+envs ()
 {
-    for d in "$root"/scenarios/*/; do
+    for d in "$root"/envs/*/; do
         [ -f "$d/docker-compose.yml" ] && basename "$d"
     done
 }
@@ -22,65 +22,83 @@ scenarios ()
 usage ()
 {
     cat <<EOF
-usage: sandbox.sh [scenario] <command>
+usage: sandbox.sh [env] <command> [args]
 
   up        build the images, start the remote host, build mc      (first run)
-  mc        run mc against that scenario                           (what you want)
-  build     rebuild mc from the working tree, keeping the objects
+  mc        run mc against that environment                        (what you want)
+  build     rebuild mc from the working tree: build [-f profiles]
   check     ask every protocol for a listing, without a terminal
-  test      press the keys in every cases.tsv: test [-w local|sftp|ftp|smb|sh] [dir...]
+  test      press the keys in the cases: test [-c subject] [-w transports]
+            [-l locale] [-o key=value]... [-k keymap] [dir...]
+  ui        the same, chosen from menus
   shell     a shell next to mc, with ssh, curl and smbclient in it
   remote    a shell on the remote host
   logs      what the remote host has to say
   down      stop the containers
   clean     stop them and throw the build away
+  list      the environments, subjects, transports and profiles there are
 
-scenarios: $(scenarios | tr '\n' ' ')
-default:   \$MC_SANDBOX (currently ${MC_SANDBOX:-arcmc})
+environments: $(envs | tr '\n' ' ')
+default:      \$MC_SANDBOX (currently ${MC_SANDBOX:-debian-12})
 
-Each scenario is its own compose project, so two of them do not share a
-network, a container or a build.  See scenarios/<name>/README.md for what one
-is meant to catch.
+Each environment is its own compose project, so two of them do not share a
+network, a container or a build.  See envs/<name>/README.md for what one is
+meant to catch, and README.md for the rest.
 EOF
 }
 
-# The scenario may be named first; otherwise the default one is used.
-scenario="${MC_SANDBOX:-arcmc}"
-if [ -n "${1:-}" ] && [ -f "$root/scenarios/$1/docker-compose.yml" ]; then
-    scenario="$1"
+list ()
+{
+    echo "environments: $(envs | tr '\n' ' ')"
+    echo "subjects:     $(for d in "$root"/cases/*/; do basename "$d"; done | tr '\n' ' ')"
+    echo "transports:   local sftp ftp smb sh"
+    echo "profiles:     $(sed -n 's/^\[\(.*\)\]$/\1/p' "$root/common/features.ini" | tr '\n' ' ')"
+    echo "keymaps:      $(ls "$root"/common/keymaps/ 2>/dev/null | sed 's/\.keymap$//' | tr '\n' ' ')"
+    echo "locales:      ru_RU.UTF-8 en_US.UTF-8 ru_RU.KOI8-R C"
+}
+
+# The environment may be named first; otherwise the default one is used.
+env=${MC_SANDBOX:-debian-12}
+if [ -n "${1:-}" ] && [ -f "$root/envs/$1/docker-compose.yml" ]; then
+    env=$1
     shift
 fi
 
 command="${1:-}"
 [ -n "$command" ] && shift || true
 
-if [ "$command" = "list" ]; then
-    scenarios
+case "$command" in
+list)
+    list
     exit 0
-fi
+    ;;
+ui)
+    exec sh "$root/common/ui.sh" "$env" "$@"
+    ;;
+esac
 
-if [ ! -f "$root/scenarios/$scenario/docker-compose.yml" ]; then
-    echo "sandbox.sh: no such scenario: $scenario" >&2
-    echo "have: $(scenarios | tr '\n' ' ')" >&2
+if [ ! -f "$root/envs/$env/docker-compose.yml" ]; then
+    echo "sandbox.sh: no such environment: $env" >&2
+    echo "have: $(envs | tr '\n' ' ')" >&2
     exit 1
 fi
 
-cd "$root/scenarios/$scenario"
+cd "$root/envs/$env"
 
 case "$command" in
 up)
     $COMPOSE build
     $COMPOSE up -d remote
-    $COMPOSE run --rm mc /usr/local/bin/build-mc.sh
+    $COMPOSE run --rm mc /usr/local/bin/build-mc.sh "$@"
     echo
-    echo "ready: $0 $scenario mc"
+    echo "ready: $0 $env mc"
     ;;
 mc)
     $COMPOSE up -d remote
     $COMPOSE run --rm mc /work/opt/mc/bin/mc "$@"
     ;;
 build)
-    $COMPOSE run --rm mc /usr/local/bin/build-mc.sh
+    $COMPOSE run --rm mc /usr/local/bin/build-mc.sh "$@"
     ;;
 check)
     $COMPOSE up -d remote

@@ -1,0 +1,31 @@
+# mc as on debian-12; the far end is Alpine: musl, busybox, the same services
+# from apk.  What shell-link's helper and the ftp and samba plugins get back
+# from a host that is not GNU.
+name: mc-sandbox-alpine-remote
+
+services:
+  remote:
+    build:
+      context: ../..
+      dockerfile: common/remote/Dockerfile.remote-alpine
+    hostname: remote
+    container_name: mc-alpine-remote-remote
+
+  mc:
+    build:
+      context: ../..
+      dockerfile: envs/debian-12/Dockerfile.mc
+    container_name: mc-alpine-remote-mc
+    depends_on:
+      - remote
+    environment:
+      SANDBOX_ENV: alpine-remote
+    volumes:
+      - ../../../../..:/src:ro
+      - work:/work
+      - ../../reports:/reports
+    tty: true
+    stdin_open: true
+
+volumes:
+  work:

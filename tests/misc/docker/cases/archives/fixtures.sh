@@ -1,13 +1,12 @@
 #!/bin/sh
-# Build the sandbox scenarios under $1.
+# Build the archive cases under $1.
 #
-# One directory per scenario, each with a cases.tsv saying what the files in it
-# are for: name, key, expected outcome, reason.  A person reads it as a
-# checklist; something automated can walk the directories and read the same
-# columns.
+# One directory per situation, each with a cases.tsv saying what the files in
+# it are for: name, key, expected outcome, reason.  A person reads it as a
+# checklist; run-cases.sh walks the directories and reads the same columns.
 set -e
 
-dir="${1:-/home/mc/archives}"
+dir="${1:-/home/mc/cases/archives}"
 rm -rf "$dir"
 mkdir -p "$dir"
 cd "$dir"
@@ -15,10 +14,21 @@ cd "$dir"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
+# The same bytes every time, so that sizes and screens can be compared between
+# runs.  Poorly compressible, as an archive of real data would be.
+bytes ()
+{
+    LC_ALL=C awk -v n="$1" -v seed="$2" 'BEGIN {
+        srand(seed)
+        for (i = 0; i < n; i++)
+            printf "%c", 1 + int(rand() * 255)
+    }'
+}
+
 # what goes inside every archive
 mkdir -p "$work/payload/каталог с пробелами"
-head -c 3000000 /dev/urandom > "$work/payload/a.bin"
-head -c 1500000 /dev/urandom > "$work/payload/b.bin"
+bytes 3000000 1 > "$work/payload/a.bin"
+bytes 1500000 2 > "$work/payload/b.bin"
 printf 'hello from the sandbox\n' > "$work/payload/readme.txt"
 printf 'кириллица внутри архива\n' > "$work/payload/привет.txt"
 printf 'и ещё одна строка\n' > "$work/payload/каталог с пробелами/файл.txt"
@@ -26,7 +36,7 @@ printf 'и ещё одна строка\n' > "$work/payload/каталог с п
 mkdir -p "$work/payload_big"
 i=1
 while [ "$i" -le 10 ]; do
-    head -c 1000000 /dev/urandom > "$work/payload_big/part$i.bin"
+    bytes 1000000 "$((10 + i))" > "$work/payload_big/part$i.bin"
     i=$((i + 1))
 done
 

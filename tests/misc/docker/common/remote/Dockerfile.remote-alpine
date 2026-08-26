@@ -1,17 +1,10 @@
-# debian:bookworm-slim, pinned so that a run is the same run next month
-FROM debian@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+# The same host as Dockerfile.remote on Alpine: musl, busybox ls/stat/find
+# on the far side of shell-link, openssh, vsftpd and samba from apk.
+# alpine:3.22, pinned so that a run is the same run next month
+FROM alpine@sha256:14358309a308569c32bdc37e2e0e9694be33a9d99e68afb0f5ff33cc1f695dce
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        openssh-server \
-        vsftpd \
-        samba samba-common-bin \
-        libarchive-tools \
-        perl \
-        ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN useradd -m -s /bin/bash mc \
+RUN apk add --no-cache openssh vsftpd samba libarchive-tools ca-certificates \
+    && adduser -D -s /bin/sh mc \
     && echo 'mc:mc' | chpasswd \
     && mkdir -p /run/sshd /var/run/vsftpd/empty /var/log/samba
 
@@ -20,7 +13,6 @@ COPY common/remote/smb.conf /etc/samba/smb.conf
 COPY common/remote/entrypoint-remote.sh /usr/local/bin/entrypoint-remote.sh
 COPY cases /usr/local/lib/mc-sandbox/cases
 
-# every subject's fixtures, each under its own directory
 RUN chmod +x /usr/local/bin/entrypoint-remote.sh \
     && for f in /usr/local/lib/mc-sandbox/cases/*/fixtures.sh; do \
            sh "$f" "/home/mc/cases/$(basename "$(dirname "$f")")"; \

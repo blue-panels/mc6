@@ -1,59 +1,82 @@
 # Sandbox
 
-Docker scenarios for trying out panel plugins by hand: a remote host with
-archives on it, and a container that builds this tree and runs mc against it.
+Docker environments for trying out mc by hand and for pressing the keys from
+a script: a remote host with cases on it, and a container that builds this
+tree and runs mc against it.
 
-    tests/misc/docker/sandbox.sh arcmc up     # images, remote host, mc -- a few minutes
-    tests/misc/docker/sandbox.sh arcmc mc     # mc against that scenario
+    tests/misc/docker/sandbox.sh debian-12 up     # images, remote host, mc -- a few minutes
+    tests/misc/docker/sandbox.sh debian-12 mc     # mc against that environment
+    tests/misc/docker/sandbox.sh debian-12 test   # press the keys in every cases.tsv
+    tests/misc/docker/sandbox.sh ui               # the same, chosen from menus
 
-The scenario name may be left out; `arcmc` is the default, or whatever
+The environment name may be left out; `debian-12` is the default, or whatever
 `$MC_SANDBOX` says. `sandbox.sh` with no command lists the rest: `build` after
 an edit, `check` to ask every protocol for a listing without a terminal,
-`test` to press the keys in the `cases.tsv` files, `shell`, `remote`, `logs`,
-`down`, `clean`, and `list` for the scenarios there are.
+`shell`, `remote`, `logs`, `down`, `clean`, and `list` for what there is.
 
 Sources are mounted read-only and copied inside the container, so a build
 leaves nothing in the working tree and reuses its object files between runs.
 
 ## Layout
 
-    sandbox.sh              the driver; it holds no list of scenarios
-    common/                 what a scenario should not have to write again
+    sandbox.sh              the driver; it holds no list of environments
+    common/                 what an environment should not have to write again
       build-mc.sh           copy the tree in, configure, make, install
+      features.ini          build profiles for build -f
+      run-cases.sh          press the keys, read the screen, write the report
+      ui.sh                 menus that compose a test command
       check-remote.sh       ask each protocol for a listing
-      fixtures.sh           build the scenario directories
-      remote/               the host that serves them: sshd, vsftpd, smbd
-    scenarios/
-      arcmc/                docker-compose.yml, Dockerfile.mc, README.md
+      keymaps/              mc.keymap files for test -k
+      remote/               the host that serves the cases: sshd, vsftpd, smbd
+    envs/
+      debian-12/            docker-compose.yml, Dockerfile.mc, README.md, expect.tsv
+    cases/
+      archives/fixtures.sh  the files and the cases.tsv of one subject
+    reports/                what a run leaves behind (not in git)
 
-## Adding a scenario
+Three axes, chosen independently: the **environment** (which image mc is
+built and run in), the **subject** (which cases), and how mc is run there
+(**transport**, locale, ini values, keymap, build profile).
 
-Add a directory under `scenarios/` with a `docker-compose.yml` in it. Nothing
-else has to change: `sandbox.sh` finds scenarios by looking for that file, and
+## Adding an environment
+
+Add a directory under `envs/` with a `docker-compose.yml` in it. Nothing else
+has to change: `sandbox.sh` finds environments by looking for that file, and
 each is its own compose project with its own network, containers and build
 volume, so an existing one is never touched or rebuilt because a new one
 appeared.
 
-A scenario that only differs in its environment -- an older distribution,
-fewer tools installed, another shell -- is a `Dockerfile.mc` with a different
-`FROM` and the same three `COPY` lines from `common/`; `build-mc.sh` does not
-care which distribution it is on. One that differs in how the far end behaves
-reuses the image and changes `common/remote` through its own compose file.
+One that only differs in what is installed -- an older distribution, fewer
+tools, another shell -- is a `Dockerfile.mc` with a different `FROM` and the
+same `COPY` lines from `common/`; `build-mc.sh` does not care which
+distribution it is on. One that differs in how the far end behaves reuses the
+image and changes `common/remote` through its own compose file.
+
+Base images are pinned by digest, so a run is the same run next month; moving
+to a newer image is a change to the Dockerfile.
 
 Build contexts are the sandbox root, which is why the Dockerfiles refer to
-`common/...` and `scenarios/<name>/...`.
+`common/...`, `cases/...` and `envs/<name>/...`. The compose file sets
+`SANDBOX_ENV`, which is how `run-cases.sh` finds the environment's
+`expect.tsv`.
 
-Scenarios publish no host ports, so several can run side by side; mc reaches
-its host over the compose network by the name `remote`. To get at a server
-from outside, add a compose override with the ports you want.
+Environments publish no host ports, so several can run side by side; mc
+reaches its host over the compose network by the name `remote`.
 
-## What a scenario contains
+## What a subject contains
 
-`remote`, user `mc`, password `mc`, scenarios in `~/archives`; the mc container
-has the same tree in `/work/local` for what needs no server.
+`cases/<subject>/fixtures.sh` builds a directory of files and, in each
+subdirectory, a `cases.tsv` of file, key, expected outcome and reason -- a
+checklist to read, and the columns `test` walks. The bytes are generated from
+a seed, so sizes and screens are the same from run to run.
 
-One directory per situation, each with a `cases.tsv` of file, key, expected
-outcome and reason -- a checklist to read, and the columns `test` walks:
+The remote host builds every subject under `/home/mc/cases/<subject>` and
+serves it four ways, all as user `mc` with password `mc`: sftp and ssh on port
+22, ftp on 21 (`/cases/<subject>`), and the samba share `cases`. The mc
+container has the same tree in `/work/local/<subject>` for what needs no
+server.
+
+### archives
 
 | directory      | what it is for                                            |
 |----------------|-----------------------------------------------------------|
@@ -62,52 +85,64 @@ outcome and reason -- a checklist to read, and the columns `test` walks:
 | `03-nested`    | an archive inside an archive, and one inside `uzip://`     |
 | `04-non-ascii` | Cyrillic and spaces in names, inside the archives and out  |
 
-The same tree is served four ways, all as user `mc` with password `mc`:
-sftp and ssh on port 22, ftp on 21, and the samba share `archives`.
-
-## What to try
-
-The cases.tsv files say what each file is for; what differs is where the panel
-is standing when you press the key.
-
 **sftp** and **shell link** supply a stream, so an archive opens without being
 downloaded first. `01-formats/big.7z` is the case that only works because the
-stream can seek.
-
-**ftp** and **samba** have no `get_input_stream()` yet, so an archive is
-fetched to a local copy first.
+stream can seek. **ftp** and **samba** have no `get_input_stream()` yet, so an
+archive is fetched to a local copy first.
 
 `02-content` is what happens when the name does not say: `magic.ini` knows
 archives by extension, so an archive without one is left alone everywhere, and
 plain text called `.tar.gz` gets an error from the operation that was asked to
 open it.
 
-**A local panel** in `/work/local` covers the same ground with no server, plus
-`03-nested/zip-in-zip.zip` for what happens inside an mc filesystem.
-
 ## Pressing the keys
 
-    tests/misc/docker/sandbox.sh arcmc test              # local panel, every cases.tsv
-    tests/misc/docker/sandbox.sh arcmc test -w sftp      # the same over sftp: ftp, smb, sh too
-    tests/misc/docker/sandbox.sh arcmc test -w sh 01-formats
+    sandbox.sh debian-12 test                          # archives, local panel
+    sandbox.sh debian-12 test -w local,sftp,ftp,smb,sh # over every transport
+    sandbox.sh debian-12 test -w sh 01-formats         # one directory
+    sandbox.sh debian-12 test -l ru_RU.KOI8-R          # an 8-bit locale
+    sandbox.sh debian-12 test -o old_esc_mode=true -k shift-tab-complete
+    sandbox.sh debian-12 build -f all,ncurses && sandbox.sh debian-12 test
 
-`run-cases.sh` starts mc under tmux in the case directory (through the plugin's
-connection list for a remote one), finds the file by quick search, presses the
-key and reads the screen: an `Arcmc:` panel title, the viewer's button bar, an
-`Error` box, or none of them. Rows it cannot press or read -- `..`, `cd`, `F5`,
-a name that is a situation rather than a file -- are listed as skipped; those
-are the checklist for a person. A failure prints the screen it saw.
+`run-cases.sh` starts mc under tmux in the case directory (through the
+plugin's connection list for a remote one), finds the file by quick search,
+presses the key and reads the screen: an `Arcmc:` panel title, the viewer's
+button bar, an `Error` box, or none of them. mc's stderr is read as well; an
+assertion or a critical warning fails the case whatever the screen shows.
+Rows it cannot press or read -- `..`, `cd`, `F5`, a name that is a situation
+rather than a file -- are listed as skipped; those are the checklist for a
+person.
+
+`-o` writes ini values before mc starts (`section.key=value`, the section
+`Midnight-Commander` when left out), `-k` puts a keymap from `common/keymaps/`
+in place, `-l` picks the locale mc runs in (messages stay English so that
+the screen can be read). `build -f` picks a profile from
+`common/features.ini`; each set of features has its own build and install
+directory, and `test` runs the one built last.
+
+An environment that expects something else -- no archiver installed, so
+`small.7z` gives an error rather than a panel -- says so in its
+`envs/<name>/expect.tsv`: `dir/file`, key, expectation, and optionally the
+transports it applies to.
+
+### Reports
+
+Every run writes `reports/<stamp>-<env>/`: `index.md` with a table per
+transport and the list of failures, and under `<transport>/` a `results.tsv`
+(case, key, expectation, verdict, milliseconds, reason), the screen of every
+failure, and mc's stderr per case. `index.md` is what goes into a release
+issue.
 
 ## Poking at it by hand
 
-    tests/misc/docker/sandbox.sh arcmc remote    # the remote host
-    tests/misc/docker/sandbox.sh arcmc shell     # the build container
-    tests/misc/docker/sandbox.sh arcmc clean     # remove containers and the build
+    sandbox.sh debian-12 remote    # the remote host
+    sandbox.sh debian-12 shell     # the build container
+    sandbox.sh debian-12 clean     # remove containers and the build
 
 Or directly, if mc is already built:
 
-    docker run --rm -it --network mc-sandbox-arcmc_default \
-        -v mc-sandbox-arcmc_work:/work mc-sandbox-arcmc-mc /work/opt/mc/bin/mc
+    docker run --rm -it --network mc-sandbox-debian-12_default \
+        -v mc-sandbox-debian-12_work:/work mc-sandbox-debian-12-mc /work/opt/mc/bin/mc
 
 The `mc` container has `ssh`, `curl` and `smbclient`, so a transfer can be
 watched from outside mc as well.
