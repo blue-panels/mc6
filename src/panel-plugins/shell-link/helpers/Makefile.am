@@ -1,5 +1,5 @@
 # The helper scripts are the plugin's, not the file manager's, so they install
-# beside it. The per-host override in ~/.local/share/mc/shell/ is unchanged.
+# beside it. The per-host override in ~/.local/share/mc6/shell/ is unchanged.
 shelllinkhelpersdir = $(panel_plugins_dir)/shell-link/helpers
 
 SHELL_MISC = README.shell

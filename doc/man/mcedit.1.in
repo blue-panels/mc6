@@ -80,13 +80,13 @@ In addition to that, Shift combined with arrows does text highlighting
 (if supported by the terminal):
 .B Ctrl\-Ins
 copies to the file
-.BR ~/.cache/mc/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit/mcedit.clip ,
 .B Shift\-Ins
 pastes from
-.BR ~/.cache/mc/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit/mcedit.clip ,
 .B Shift\-Del
 cuts to
-.BR ~/.cache/mc/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit/mcedit.clip ,
 and
 .B Ctrl\-Del
 deletes highlighted text.  Mouse highlighting also works on some
@@ -112,7 +112,7 @@ The macro is executed when you press the assigned key.
 The macro commands are stored in section
 .B [editor]
 it the file
-.BR ~/.local/share/mc/mc.macros .
+.BR ~/.local/share/mc6/mc.macros .
 .PP
 External scripts (filters) can be assigned into the any hotkey by edit
 .B mc.macros
@@ -126,11 +126,11 @@ ctrl\-W=ExecuteScript:25;
 This means that ctrl\-W hotkey initiates the
 .I ExecuteScript(25)
 action, then editor handler translates this into execution of
-.B ~/.local/share/mc/mcedit/macros.d/macro.25.sh
+.B ~/.local/share/mc6/mcedit/macros.d/macro.25.sh
 shell script.
 .PP
 External scripts are stored in
-.B ~/.local/share/mc/mcedit/macros.d/
+.B ~/.local/share/mc6/mcedit/macros.d/
 directory and must be named as
 .B macro.XXXX.sh
 where
@@ -244,12 +244,12 @@ where equal is symbol "=" goes to next function in navigation list
 supports syntax highlighting.  This means that keywords and contexts
 (like C comments, string constants, etc) are highlighted in different
 colors.  The following section explains the format of the file
-.BR ~/.local/share/mc/syntax/Syntax .
+.BR ~/.local/share/mc6/syntax/Syntax .
 If this file is missing, system\-wide
 .B %pkgdatadir%/syntax/Syntax
 is used.
 The file
-.B ~/.local/share/mc/syntax/Syntax
+.B ~/.local/share/mc6/syntax/Syntax
 is rescanned on opening of every new editor file.  The file contains
 rules for highlighting, each of which is given on a separate line, and
 define which keywords will be highlighted with what color.
@@ -487,7 +487,7 @@ The syntax highlighting can be toggled using Ctrl\-s shortcut.
 Most options can be set from Options dialog box.  See the
 .B Options
 menu.  The following options are defined in
-.B ~/.config/mc/ini
+.B ~/.config/mc6/ini
 and have obvious counterparts in the dialog box.  You can modify them to
 change the editor behavior, by editing the file.  Unless specified, a 1
 sets the option to on, and a 0 sets it to off, as usual.
@@ -626,26 +626,26 @@ The help file for the program.
 .I %pkgdatadir%/mc.ini
 .IP
 The default system\-wide setup for GNU Midnight Commander, used only if
-the user's own ~/.config/mc/ini file is missing.
+the user's own ~/.config/mc6/ini file is missing.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
 Global settings for Midnight Commander. Settings in this file
-affect all users, whether they have ~/.config/mc/ini or not.
+affect all users, whether they have ~/.config/mc6/ini or not.
 .PP
 .I %pkgdatadir%/syntax/*
 .IP
 The default system\-wide syntax files for mcedit, used only if
 the corresponding user's own file in
-.B ~/.local/share/mc/syntax/
+.B ~/.local/share/mc6/syntax/
 is missing.
 .PP
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 .IP
 User's own setup.  If this file is present then the setup is loaded
 from here instead of the system\-wide setup file.
 .PP
-.I ~/.local/share/mc/mcedit/
+.I ~/.local/share/mc6/mcedit/
 .IP
 User's own directory where block commands are processed and saved and
 user's own syntax files are located.

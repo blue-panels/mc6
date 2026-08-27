@@ -16,8 +16,11 @@
 /*** typedefs(not structures) and defined constants **********************************************/
 
 #ifndef MC_USERCONF_DIR
-#define MC_USERCONF_DIR "mc"
+#define MC_USERCONF_DIR "mc6"
 #endif
+
+// pre-6.x user directory name, imported on first run
+#define MC_USERCONF_LEGACY_DIR          "mc"
 
 #define TAGS_NAME                       "TAGS"
 

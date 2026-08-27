@@ -254,7 +254,7 @@ pulsando con el ratón sobre las etiquetas de la línea inferior de la pantalla.
 El valor por defecto de auto repetición para los botones del ratón es 400
 milisegundos. Este valor se puede modificar editando el archivo
 .\"LINK2"
-\&~/.config/mc/ini
+\&~/.config/mc6/ini
 .\"Save Setup"
 y cambiando el parámetro
 .IR mouse_repeat_rate .
@@ -360,7 +360,7 @@ en la sección
 del archivo de configuración.
 .br
 4) Archivo
-.B ~/.config/mc/mc.keymap
+.B ~/.config/mc6/mc.keymap
 .br
 .PP
 La opción de línea de órdenes, la variable de entorno y el parámetro en el
@@ -370,7 +370,7 @@ se procede a realizar una búsqueda por directorios hasta encontrarlo en:
 .IP
 .br
 1)
-.B ~/.config/mc
+.B ~/.config/mc6
 .br
 2)
 .B %sysconfdir%/mc/
@@ -1434,7 +1434,7 @@ Los directorios a ser omitidos deberían ser enumerados en la variable
 en la sección
 .B FindFile
 de nuestro archivo
-.IR ~/.config/mc/ini .
+.IR ~/.config/mc6/ini .
 .PP
 Los componentes del directorio deberían ser separados por dos puntos, como en
 el ejemplo que sigue:
@@ -1498,12 +1498,12 @@ comando cd interno\&.
 .\"NODE "    Edit Extension File"
 .SH "    Editar el Archivo de Extensiones"
 Abre el archivo
-.I ~/.config/mc/mc.ext.ini
+.I ~/.config/mc6/mc.ext.ini
 en nuestro editor.
 If this file does not exist and you are not root, it will be copied from
 .IR %sysconfdir%/mc/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc/mc.ext.ini
+.I ~/.config/mc6/mc.ext.ini
 or system\-wide
 .IR %sysconfdir%/mc/mc.ext.ini .
 The format of this file is described in detail in it.
@@ -1519,7 +1519,7 @@ El menú de usuario es un menú de acciones útiles que puede ser personalizado
 por el usuario. Cuando accedemos al menú de usuario se utiliza, si existe,
 el archivo .mc.menu del directorio actual, pero solo si es propiedad del
 usuario o del superusuario y no es modificable por todos.
-Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc/menu,
+Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc6/menu,
 y si no, mc utiliza el menú por defecto para todo el sistema
 %pkgdatadir%/mc.menu.
 .PP
@@ -1880,7 +1880,7 @@ opción está desactivada.
 .I Auto\-Guarda Configuración.
 Si esta opción está activada, cuando salimos de Midnight Commander las
 opciones configurables de Midnight Commander se guardan en el archivo
-.IR ~/.config/mc/ini .
+.IR ~/.config/mc6/ini .
 .\"NODE "    Layout"
 .SH "    Presentación"
 La ventana de presentación nos da la posibilidad de cambiar la
@@ -1989,7 +1989,7 @@ se intercambian pero se mantienen las opciones de formato y orden de archivos.
 .I Auto Guardar Configuración
 Por defecto está desactivado. Si se activa, la configuración de los paneles
 se guardará en
-.I ~/.config/mc/panels.ini
+.I ~/.config/mc6/panels.ini
 al salir del programa.
 .PP
 .B Navegación
@@ -2087,7 +2087,7 @@ el diálogo desaparezca.
 .PP
 Cuando acabemos con todas las teclas, podríamos Guardar nuestras teclas
 en nuestro archivo
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 dentro de la sección [terminal:TERM] (donde TERM es el
 nombre de nuestro terminal actual) o descartarlas. Si todas nuestras teclas funcionan
 correctamente y no debemos corregir ninguna, entonces (lógico) no se grabará.
@@ -2172,7 +2172,7 @@ y puede ser impedida por algún cortafuegos.
 .SH "    Guardar Configuración"
 Al arrancar Midnight Commander se carga la información de inicio del
 archivo
-.IR ~/.config/mc/ini .
+.IR ~/.config/mc6/ini .
 Si este no existe, se cargará la información del
 archivo de configuración genérico del sistema,
 .IR %pkgdatadir%/mc.ini .
@@ -2182,7 +2182,7 @@ la configuración por defecto.
 El comando
 .I Guardar Configuración
 crea el archivo
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 guardando la configuración actual de los menús
 .\"LINK2"
 Izquierdo, Derecho
@@ -2372,11 +2372,11 @@ que serán válidos hasta salir de Midnight Commander.
 Si estamos usando
 .B bash
 podremos especificar comandos de arranque
-para el subshell en nuestro archivo ~/.local/share/mc/bashrc y
-mapas de teclado especiales en el archivo ~/.local/share/mc/inputrc.
+para el subshell en nuestro archivo ~/.local/share/mc6/bashrc y
+mapas de teclado especiales en el archivo ~/.local/share/mc6/inputrc.
 Los usuarios de
 .B tcsh
-podrán especificar los comandos de arranque en el archivo ~/.local/share/mc/tcshrc.
+podrán especificar los comandos de arranque en el archivo ~/.local/share/mc6/tcshrc.
 .PP
 Cuando utilizamos el código del subshell, podemos suspender aplicaciones en
 cualquier momento con la secuencia
@@ -2908,7 +2908,7 @@ seguido de la tecla asignada. También será ejecutada si
 pulsamos Meta (Alt), Ctrl, o Escape y la tecla asignada, siempre y cuando
 la tecla no sea usada por ninguna otra función. Una vez definida, los comandos de
 macro irán al archivo
-.B ~/.local/share/mc/mcedit/mcedit.macros
+.B ~/.local/share/mc6/mcedit/mcedit.macros
 en nuestro directorio de inicio. Podemos eliminar una macro borrando
 la línea adecuada en este archivo.
 .PP
@@ -2920,7 +2920,7 @@ o
 u otro). Esto está controlado por el archivo
 .B %pkgdatadir%/edit.indent.rc
 que se copia la primera vez que se usa en
-.B ~/.local/share/mc/mcedit/edit.indent.rc
+.B ~/.local/share/mc6/mcedit/edit.indent.rc
 en el directorio personal.
 .PP
 El editor también visualiza caracteres no estadounidenses (160+). Al editar
@@ -3324,7 +3324,7 @@ o sin su extensión .ini. De no indicar la ruta se realiza la búsqueda,
 en orden, en:
 .IP
 1)
-.BR ~/.local/share/mc/skins/ .
+.BR ~/.local/share/mc6/skins/ .
 .br
 2)
 .BR %sysconfdir%/mc/skins/ .
@@ -3672,7 +3672,7 @@ los menús. Sin embargo, hay un pequeño número de ajustes para los que
 es necesario editar el archivo de configuración.
 .PP
 Estas variables se pueden cambiar en nuestro archivo
-.IR ~/.config/mc/ini :
+.IR ~/.config/mc6/ini :
 .TP
 .I clear_before_exec
 Por defecto Midnight Commander limpia la pantalla antes de ejecutar un
@@ -3787,7 +3787,7 @@ externos.  Midnight Commander busca la sección
 en el archivo de inicialización del sistema
 .B %pkgdatadir%/mc.lib
 o en el del usuario
-.BR ~/.config/mc/ini .
+.BR ~/.config/mc6/ini .
 El nombre de la opción debe coincidir con el nombre (ruta completa) del editor
 o visor externo.  Su valor puede contener las siguientes variables:
 .TP
@@ -3823,7 +3823,7 @@ del sistema sin necesidad de privilegios de superusuario. El programa
 busca definiciones de teclas en el archivo de inicialización del sistema
 .B %pkgdatadir%/mc.lib
 o en el del usuario
-.BR ~/.config/mc/ini ,
+.BR ~/.config/mc6/ini ,
 en la sección "terminal:nuestro\-terminal" y si no en "terminal:general".
 Cada línea comienza con el identificador de la tecla, seguido de un signo
 de igual y la definición de la tecla. Para representar el carácter de escape
@@ -3849,7 +3849,7 @@ complete      tecla para completar
 .PP
 Ejemplo: para indicar que la secuencia Escape + [ + O + p corresponde
 a la tecla de insertar, hay que colocar en el archivo
-.BR ~/.config/mc/ini :
+.BR ~/.config/mc6/ini :
 .PP
 .nf
 insert=\ee[Op
@@ -3894,7 +3894,7 @@ Archivo de ayuda.
 .IP
 Archivo de extensiones por defecto del sistema.
 .PP
-.I ~/.config/mc/mc.ext.ini
+.I ~/.config/mc6/mc.ext.ini
 .IP
 Archivo de usuario de extensiones y configuración de visor y editor. Si
 está presente prevalece sobre el contenido de los archivos del sistema.
@@ -3903,19 +3903,19 @@ está presente prevalece sobre el contenido de los archivos del sistema.
 .IP
 Archivo de configuración del sistema para Midnight Commander, solo si
 el usuario no dispone de su propio
-.IR ~/.config/mc/ini .
+.IR ~/.config/mc6/ini .
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
 Opciones globales de Midnight Commander. Se aplican siempre a todos los
 usuarios, tengan
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 o no. Actualmente solo se emplea para los
 .\"LINK2"
 ajustes de terminal\&.
 .\"Terminal databases"
 .PP
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 .IP
 Configuración personal del usuario. Si este archivo está presente entonces
 se cargará la configuración desde aquí en lugar de desde el archivo de
@@ -3930,12 +3930,12 @@ programa.
 .IP
 Este archivo contiene el menú de aplicaciones por defecto para el sistema.
 .PP
-.I ~/.config/mc/menu
+.I ~/.config/mc6/menu
 .IP
 Menú de aplicaciones personal del usuario. Si está presente será utilizado
 en lugar del menú por defecto del sistema.
 .PP
-.I ~/.cache/mc/Tree
+.I ~/.cache/mc6/Tree
 .IP
 La lista de directorios para el árbol de directorios y la vista en árbol.
 .PP

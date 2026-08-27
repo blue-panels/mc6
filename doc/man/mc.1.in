@@ -191,7 +191,7 @@ key labels by clicking on them.
 The default auto repeat rate for the mouse buttons is 400
 milliseconds. This may be changed to other values by editing the
 .\"LINK2"
-\&~/.config/mc/ini
+\&~/.config/mc6/ini
 .\"Save Setup"
 file and changing the
 .I mouse_repeat_rate
@@ -297,7 +297,7 @@ in section
 of config file.
 .br
 4) File
-.B ~/.config/mc/mc.keymap
+.B ~/.config/mc6/mc.keymap
 .br
 .PP
 Command line option, environment variable and parameter in config file may
@@ -306,7 +306,7 @@ or without it). Search of keymap\-file will occur in (to the first one found):
 .IP
 .br
 1)
-.B ~/.config/mc
+.B ~/.config/mc6
 .br
 2)
 .B %sysconfdir%/mc/
@@ -1576,11 +1576,11 @@ description.
 .\"NODE "    Edit Extension File"
 .SH "    Edit Extension File"
 This will invoke your editor on the file
-.IR ~/.config/mc/mc.ext.ini .
+.IR ~/.config/mc6/mc.ext.ini .
 If this file does not exist and you are not root, it will be copied from
 .IR %sysconfdir%/mc/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc/mc.ext.ini
+.I ~/.config/mc6/mc.ext.ini
 or system\-wide
 .IR %sysconfdir%/mc/mc.ext.ini .
 The format of this file is described in detail in it.
@@ -1596,7 +1596,7 @@ The user menu is a menu of useful actions that can be customized by
 the user. When you access the user menu, the
 file .mc.menu from the current directory is used if it exists,
 but only if it is owned by user or root and is not world\-writable.
-If no such file found, ~/.config/mc/menu is tried in the same way,
+If no such file found, ~/.config/mc6/menu is tried in the same way,
 and otherwise mc uses the default system\-wide menu
 %pkgdatadir%/mc.menu.
 .PP
@@ -1965,7 +1965,7 @@ This option is disabled by default.
 .I Auto save setup.
 If this option is enabled, when you exit Midnight Commander, the
 configurable options of Midnight Commander are saved in the
-~/.config/mc/ini file.
+~/.config/mc6/ini file.
 .\"NODE "    Layout"
 .SH "    Layout"
 The layout dialog gives you a possibility to change the general layout
@@ -2069,7 +2069,7 @@ format and sort options. Unchecked by default.
 .PP
 .I Auto save panels setup.
 If this option is enabled, when you exit Midnight Commander, the
-current settings of panels are saved in the ~/.config/mc/panels.ini file.
+current settings of panels are saved in the ~/.config/mc6/panels.ini file.
 Disabled by default.
 .PP
 .B Navigation
@@ -2163,13 +2163,13 @@ sequence appears next to the button.
 \- clear a learned key.
 .PP
 .B Save
-\- write learned keys to ~/.config/mc/term/<TERM>.
+\- write learned keys to ~/.config/mc6/term/<TERM>.
 .PP
 .B "Edit term file"
 \- open the terminal key definitions file in the editor.
 .PP
 The old terminal key definitions from [terminal:TERM] in
-~/.config/mc/ini are migrated automatically on first run.
+~/.config/mc6/ini are migrated automatically on first run.
 .\"NODE "    Virtual FS"
 .SH "    Virtual FS"
 This option gives you control over the settings of the
@@ -2259,7 +2259,7 @@ firewalls.
 .\"NODE "    Save Setup"
 .SH "    Save Setup"
 At startup, Midnight Commander tries to load initialization information
-from the ~/.config/mc/ini file.
+from the ~/.config/mc6/ini file.
 If this file doesn't exist, the system\-wide file
 .B %sysconfdir%/mc/mc.ini
 is used. If this file doesn't exist, the system\-wide file
@@ -2268,7 +2268,7 @@ is used. If this file doesn't exist, MC uses the default settings.
 .PP
 The
 .I Save Setup
-command creates the ~/.config/mc/ini file by saving the
+command creates the ~/.config/mc6/ini file by saving the
 current settings of the
 .\"LINK2"
 Left, Right
@@ -2472,26 +2472,26 @@ allows you to change the environment variables, use shell functions and
 define aliases that are valid until you quit Midnight Commander.
 .PP
 .B bash
-users may specify startup commands in ~/.local/share/mc/bashrc (fallback ~/.bashrc)
-and special keyboard maps in ~/.local/share/mc/inputrc (fallback ~/.inputrc).
+users may specify startup commands in ~/.local/share/mc6/bashrc (fallback ~/.bashrc)
+and special keyboard maps in ~/.local/share/mc6/inputrc (fallback ~/.inputrc).
 .PP
 .B ash/dash
-users (BusyBox or Debian) may specify startup commands in ~/.local/share/mc/ashrc (fallback ~/.profile).
+users (BusyBox or Debian) may specify startup commands in ~/.local/share/mc6/ashrc (fallback ~/.profile).
 .PP
 .B ksh/oksh
-users (PD ksh variants) may specify startup commands in ~/.local/share/mc/kshrc
+users (PD ksh variants) may specify startup commands in ~/.local/share/mc6/kshrc
 (fallback
 .I ENV
 or ~/.profile).
 .PP
 .B mksh
-users (MirBSD ksh) may specify startup commands in ~/.local/share/mc/mkshrc
+users (MirBSD ksh) may specify startup commands in ~/.local/share/mc6/mkshrc
 (fallback
 .I ENV
 or ~/.mkshrc).
 .PP
 .B zsh
-users may specify startup commands in ~/.local/share/mc/.zshrc (fallback ~/.zshrc).
+users may specify startup commands in ~/.local/share/mc6/.zshrc (fallback ~/.zshrc).
 .PP
 .B tcsh, fish
 users cannot specify mc\-specific startup commands at present. They have to rely on
@@ -3391,7 +3391,7 @@ and then the assigned key. The macro is also executed if
 you press Meta, Ctrl, or Esc and the assigned key, provided that the
 key is not used for any other function. Once defined, the macro
 commands go into the file
-.B ~/.local/share/mc/mcedit/mcedit.macros
+.B ~/.local/share/mc6/mcedit/mcedit.macros
 You can delete a macro by deleting the
 appropriate line in this file.
 .PP
@@ -3406,7 +3406,7 @@ code or another). This is controlled by the
 file
 .B %pkgdatadir%/edit.indent.rc
 which is copied to
-.B ~/.local/share/mc/mcedit/edit.indent.rc
+.B ~/.local/share/mc6/mcedit/edit.indent.rc
 in your home directory the first time you use it.
 
 .\"NODE "Internal File Editor / options"
@@ -3843,7 +3843,7 @@ contain the absolute path to the skin\-file (with the extension .ini
 or without it). Search of skin\-file will occur in (to the first one found):
 .IP
 1)
-.B ~/.local/share/mc/skins/
+.B ~/.local/share/mc6/skins/
 .br
 2)
 .B %sysconfdir%/mc/skins/
@@ -3861,7 +3861,7 @@ Section [filehighlight] in current skin\-file contains key names as
 highlight groups and values as color pairs.
 .PP
 Rules of filenames highlight are placed in %pkgdatadir%/filehighlight.ini file
-(~/.config/mc/filehighlight.ini).
+(~/.config/mc6/filehighlight.ini).
 Name of section in this file must be equal to parameters names in
 [filehighlight] section (in current skin\-file).
 .PP
@@ -3906,12 +3906,12 @@ Most of Midnight Commander settings can be changed from the
 menus. However, there are a small number of settings which can only be
 changed by editing the setup file.
 .PP
-These variables may be set in your ~/.config/mc/ini file:
+These variables may be set in your ~/.config/mc6/ini file:
 .TP
 .I clear_before_exec
 By default, Midnight Commander clears the screen before executing a
 command.  If you would prefer to see the output of the command at the
-bottom of the screen, edit your ~/.config/mc/ini file and change the value of
+bottom of the screen, edit your ~/.config/mc6/ini file and change the value of
 the field clear_before_exec to 0.
 .TP
 .I confirm_view_dir
@@ -4024,7 +4024,7 @@ Midnight Commander provides a way for specify an options for external editors
 and viewers. Midnight Commander tries to search the
 "[External editor or viewer parameters]" section in the system initialization file
 (the mc.lib file located in Midnight Commander's library directory)
-and then in the ~/.config/mc/ini file. The option name should be equal to the name
+and then in the ~/.config/mc6/ini file. The option name should be equal to the name
 (full pathname) of external editor or viewer. The option value can contain following
 variables:
 .TP
@@ -4059,7 +4059,7 @@ Midnight Commander provides a way to fix your system terminal
 database without requiring root privileges. Midnight Commander
 searches in the system initialization file (the mc.lib file located in
 Midnight Commander's library directory) and in the 
-~/.config/mc/ini file for the section 
+~/.config/mc6/ini file for the section 
 "terminal:your\-terminal\-name" and then for the section
 "terminal:general", each line of the section contains a key symbol that
 you want to define, followed by an equal sign and the definition for the
@@ -4129,7 +4129,7 @@ The help file for the program.
 .IP
 The default system\-wide extensions file.
 .PP
-.I ~/.config/mc/mc.ext.ini
+.I ~/.config/mc6/mc.ext.ini
 .IP
 User's own extension, view configuration and edit configuration
 file.  They override the contents of the system wide files if present.
@@ -4140,19 +4140,19 @@ file.  They override the contents of the system wide files if present.
 .IP
 System\-wide setup files for Midnight Commander, used only if the user
 doesn't have his own
-.B ~/.config/mc/ini
+.B ~/.config/mc6/ini
 file. If %sysconfdir%/mc/mc.ini exists, %pkgdatadir%/mc.ini isn't used.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
 Global settings for Midnight Commander. Settings in this file
-affect all users, whether they have ~/.config/mc/ini or not.  Currently, only
+affect all users, whether they have ~/.config/mc6/ini or not.  Currently, only
 .\"LINK2"
 terminal settings
 .\"Terminal databases"
 are loaded from mc.lib.
 .PP
-.I ~/.config/mc/ini
+.I ~/.config/mc6/ini
 .IP
 User's own setup. If this file is present then the setup is loaded
 from here instead of the system\-wide startup file.
@@ -4165,16 +4165,16 @@ This file contains the hints displayed by the program.
 .IP
 This file contains the default system\-wide applications menu.
 .PP
-.I ~/.config/mc/menu
+.I ~/.config/mc6/menu
 .IP
 User's own application menu. If this file is present it is used instead
 of the system\-wide applications menu.
 .PP
-.I ~/.cache/mc/Tree
+.I ~/.cache/mc6/Tree
 .IP
 The directory list for the directory tree and tree view features.
 .PP
-.I ~/.local/share/mc.menu
+.I ~/.local/share/mc6.menu
 .IP
 Local user\-defined menu. If this file is present, it is used instead of
 the home or system\-wide applications menu.

@@ -27,6 +27,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
 
 #include "lib/global.h"
 #include "lib/fileloc.h"
@@ -116,6 +121,142 @@ mc_config_mkdir (const char *directory_name, GError **mcerror)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+mc_config_copy_file (const char *src, const char *dst, mode_t mode)
+{
+    int in_fd, out_fd;
+    char buf[BUF_8K];
+    ssize_t n;
+    gboolean ok = TRUE;
+
+    in_fd = open (src, O_RDONLY | O_CLOEXEC);
+    if (in_fd < 0)
+        return FALSE;
+
+    out_fd = open (dst, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode & 0777);
+    if (out_fd < 0)
+    {
+        close (in_fd);
+        return FALSE;
+    }
+
+    while ((n = read (in_fd, buf, sizeof (buf))) > 0)
+    {
+        ssize_t off = 0;
+
+        while (off < n)
+        {
+            ssize_t w = write (out_fd, buf + off, n - off);
+
+            if (w < 0)
+            {
+                ok = FALSE;
+                break;
+            }
+            off += w;
+        }
+        if (!ok)
+            break;
+    }
+    if (n < 0)
+        ok = FALSE;
+
+    close (in_fd);
+    if (close (out_fd) != 0)
+        ok = FALSE;
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mc_config_copy_tree (const char *src, const char *dst)
+{
+    DIR *dir;
+    struct dirent *de;
+    struct stat st;
+    gboolean ok = TRUE;
+
+    if (lstat (src, &st) != 0 || !S_ISDIR (st.st_mode))
+        return FALSE;
+
+    if (mkdir (dst, st.st_mode & 0777) != 0)
+        return FALSE;
+
+    dir = opendir (src);
+    if (dir == NULL)
+        return FALSE;
+
+    while ((de = readdir (dir)) != NULL)
+    {
+        char *s, *d;
+
+        if (DIR_IS_DOT (de->d_name) || DIR_IS_DOTDOT (de->d_name))
+            continue;
+
+        s = g_build_filename (src, de->d_name, (char *) NULL);
+        d = g_build_filename (dst, de->d_name, (char *) NULL);
+
+        if (lstat (s, &st) == 0)
+        {
+            if (S_ISDIR (st.st_mode))
+                ok = mc_config_copy_tree (s, d) && ok;
+            else if (S_ISREG (st.st_mode))
+                ok = mc_config_copy_file (s, d, st.st_mode) && ok;
+            else if (S_ISLNK (st.st_mode))
+            {
+                char target[PATH_MAX];
+                ssize_t len = readlink (s, target, sizeof (target) - 1);
+
+                if (len < 0)
+                    ok = FALSE;
+                else
+                {
+                    target[len] = '\0';
+                    ok = (symlink (target, d) == 0) && ok;
+                }
+            }
+        }
+
+        g_free (s);
+        g_free (d);
+    }
+
+    closedir (dir);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* First run of this version: copy <path_base>/mc to <path_base>/mc6 if only the old one exists. */
+static void
+mc_config_import_legacy (const char *path_base, const char *full_path)
+{
+    char *legacy;
+
+    if (strcmp (MC_USERCONF_DIR, MC_USERCONF_LEGACY_DIR) == 0)
+        return;
+
+    if (g_file_test (full_path, G_FILE_TEST_EXISTS))
+        return;
+
+    legacy = g_build_filename (path_base, MC_USERCONF_LEGACY_DIR, (char *) NULL);
+
+    if (g_file_test (legacy, G_FILE_TEST_IS_DIR) && !g_file_test (legacy, G_FILE_TEST_IS_SYMLINK))
+    {
+        if (mc_config_copy_tree (legacy, full_path))
+            fprintf (stderr, _ ("Imported %s to %s\n"), legacy, full_path);
+        else
+            fprintf (stderr, _ ("Warning: import of %s to %s is incomplete\n"), legacy, full_path);
+    }
+
+    g_free (legacy);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static char *
 mc_config_init_one_config_path (const char *path_base, const char *subdir, GError **mcerror)
 {
@@ -124,6 +265,8 @@ mc_config_init_one_config_path (const char *path_base, const char *subdir, GErro
     mc_return_val_if_error (mcerror, FALSE);
 
     full_path = g_build_filename (path_base, subdir, (char *) NULL);
+
+    mc_config_import_legacy (path_base, full_path);
 
     if (g_file_test (full_path, G_FILE_TEST_EXISTS))
     {

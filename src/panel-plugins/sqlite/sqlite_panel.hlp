@@ -12,7 +12,7 @@ Opening a database:
     Open=%plugin{sqlite:open}
     View=%plugin{sqlite:view}
 
-  Add your own rules to ~/.config/mc/magic.ini to open other names or types
+  Add your own rules to ~/.config/mc6/magic.ini to open other names or types
   here.  A database inside another panel plugin, an archive for example, is
   read from a temporary copy and has no location of its own.
 
