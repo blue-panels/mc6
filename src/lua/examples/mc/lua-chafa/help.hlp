@@ -1,0 +1,14 @@
+[Image Viewer]
+
+Image viewer (lua-chafa)
+
+F3 on a picture shows one line about it (format, size, depth, frames)
+and the picture under it, drawn with chafa's characters.
+
+  i          - switch between the picture and its full properties
+               (exif, exiftool or identify, whichever is installed)
+  F8         - switch between the plugin's view and the file itself
+  F1         - this help
+
+The picture needs chafa; the properties need exif, exiftool or
+ImageMagick's identify.

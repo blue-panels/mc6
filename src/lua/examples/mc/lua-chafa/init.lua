@@ -1,33 +1,55 @@
+-- F3 on a picture: one line about it, then chafa's symbols in the rows left.
+-- i switches between the picture and its properties.
+
 local next_session_id = 0
 
--- Image properties the way misc/ext.d/image.sh printed them on F3
--- (exif, or exiftool when exif is missing or fails, then identify),
--- followed by the chafa rendering.
+-- One line about the picture (identify's format, size, depth and frame
+-- count, or file's description), then the chafa rendering in the rows left
+-- under it.  With "properties" the full properties instead, the way
+-- misc/ext.d/image.sh printed them on F3 (exif, or exiftool when exif is
+-- missing or fails, then identify).
+--
+-- $1 file, $2 "picture" or "properties", $3 columns, $4 lines.
 local render_script = [[
 file=$1
-size=$2
+mode=$2
+cols=$3
+lines=$4
 
-if command -v exif >/dev/null 2>&1; then
-    exif "$file" 2>/dev/null
-    E=$?
-else
-    E=1
-fi
-if [ $E != 0 ] && command -v exiftool >/dev/null 2>&1; then
-    exiftool "$file" 2>/dev/null
-fi
+ident=
 if command -v identify >/dev/null 2>&1; then
     # first frame only: an animated GIF has one line per frame
-    identify -ping -format '%m %wx%h %z-bit, %n frame(s)\n' "$file" 2>/dev/null | head -n 1
+    ident=$(identify -ping -format '%m %wx%h %z-bit, %n frame(s)\n' "$file" 2>/dev/null | head -n 1)
 fi
-echo
 
-exec chafa --format=symbols --colors=256 --animate=off --size="$size" -- "$file"
+if [ "$mode" = properties ]; then
+    props=
+    if command -v exif >/dev/null 2>&1; then
+        props=$(exif "$file" 2>/dev/null)
+    fi
+    if [ -z "$props" ] && command -v exiftool >/dev/null 2>&1; then
+        props=$(exiftool "$file" 2>/dev/null)
+    fi
+    [ -n "$props" ] && printf '%s\n' "$props"
+    [ -n "$ident" ] && printf '%s\n' "$ident"
+    [ -z "$props$ident" ] && echo "Install exif, exiftool or ImageMagick to see the properties here."
+    exit 0
+fi
+
+[ -z "$ident" ] && ident=$(file -b -- "$file" 2>/dev/null)
+[ -z "$ident" ] && ident=$(basename -- "$file")
+printf '%s\n' "$ident"
+rows=$((lines - 1))
+[ "$rows" -lt 1 ] && rows=1
+
+exec chafa --format=symbols --colors=256 --animate=off --size="${cols}x${rows}" -- "$file"
 ]]
 
 local viewer = mc.viewer_source.define {
     id = "chafa-image",
     resize = "rebuild",
+    options_key = "i",
+    help = { file = "help.hlp", node = "[Image Viewer]" },
 
     open = function(request)
         next_session_id = next_session_id + 1
@@ -38,16 +60,18 @@ local viewer = mc.viewer_source.define {
         }
     end,
 
-    prepare = function(session, _, viewport)
+    initial_params = function(_, params)
+        params.show = params.show or "picture"
+        return params
+    end,
+
+    prepare = function(session, params, viewport)
         return {
             source = mc.source.process {
                 argv = {
-                    "sh",
-                    "-c",
-                    render_script,
-                    "lua-chafa",
-                    session.local_path,
-                    viewport.columns .. "x" .. viewport.lines,
+                    "sh", "-c", render_script, "lua-chafa",
+                    session.local_path, params.show,
+                    tostring(viewport.columns), tostring(viewport.lines),
                 },
                 stderr = "separate",
             },
@@ -56,6 +80,11 @@ local viewer = mc.viewer_source.define {
             initial_display = "terminal",
             auto_scroll = "top",
         }
+    end,
+
+    -- i: the picture or its properties, no dialog.
+    options = function(_, params)
+        return { mode = params.mode, show = params.show == "properties" and "picture" or "properties" }
     end,
 
     source_state = function(session, event)

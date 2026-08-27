@@ -1,15 +1,18 @@
 -- F3 on a picture: sixel where the terminal draws it, chafa's symbols where
--- it does not. Alt-O switches between the two.
+-- it does not (params.mode "sixel" or "symbols" forces one). i switches
+-- between the picture and its properties.
 
 local next_session_id = 0
 
--- What misc/ext.d/image.sh printed on F3 (exif, or exiftool when exif is
--- missing or fails, then one line of identify), followed by the picture in
--- the rows left under them: a picture that does not fit whole is not drawn.
--- Without chafa there is no picture, and a line says what to install.
+-- One line about the picture (identify's format, size, depth and frame
+-- count, or file's description), then the picture in the rows left under
+-- it: a picture that does not fit whole is not drawn.  Without chafa there
+-- is no picture, and a line says what to install.  i shows the full
+-- properties instead, the way misc/ext.d/image.sh printed them on F3
+-- (exif, or exiftool when exif is missing or fails, then identify).
 --
--- $1 file, $2 "sixel" or "symbols", $3 columns, $4 lines, $5 and $6 the cell
--- in pixels (sixel), $7... the rest of chafa's arguments.
+-- $1 file, $2 "sixel", "symbols" or "properties", $3 columns, $4 lines,
+-- $5 and $6 the cell in pixels (sixel), $7... the rest of chafa's arguments.
 local render_script = [[
 file=$1
 mode=$2
@@ -19,25 +22,30 @@ cell_w=$5
 cell_h=$6
 shift 6
 
-props=
-if command -v exif >/dev/null 2>&1; then
-    props=$(exif "$file" 2>/dev/null)
-fi
-if [ -z "$props" ] && command -v exiftool >/dev/null 2>&1; then
-    props=$(exiftool "$file" 2>/dev/null)
-fi
+ident=
 if command -v identify >/dev/null 2>&1; then
-    line=$(identify -ping -format '%m %wx%h %z-bit, %n frame(s)\n' "$file" 2>/dev/null | head -n 1)
-    [ -n "$line" ] && props="${props:+$props
-}$line"
+    # first frame only: an animated GIF has one line per frame
+    ident=$(identify -ping -format '%m %wx%h %z-bit, %n frame(s)\n' "$file" 2>/dev/null | head -n 1)
 fi
 
-used=0
-if [ -n "$props" ]; then
-    printf '%s\n\n' "$props"
-    used=$(($(printf '%s\n' "$props" | wc -l) + 1))
+if [ "$mode" = properties ]; then
+    props=
+    if command -v exif >/dev/null 2>&1; then
+        props=$(exif "$file" 2>/dev/null)
+    fi
+    if [ -z "$props" ] && command -v exiftool >/dev/null 2>&1; then
+        props=$(exiftool "$file" 2>/dev/null)
+    fi
+    [ -n "$props" ] && printf '%s\n' "$props"
+    [ -n "$ident" ] && printf '%s\n' "$ident"
+    [ -z "$props$ident" ] && echo "Install exif, exiftool or ImageMagick to see the properties here."
+    exit 0
 fi
-rows=$((lines - used))
+
+[ -z "$ident" ] && ident=$(file -b -- "$file" 2>/dev/null)
+[ -z "$ident" ] && ident=$(basename -- "$file")
+printf '%s\n' "$ident"
+rows=$((lines - 1))
 [ "$rows" -lt 1 ] && rows=1
 
 if ! command -v chafa >/dev/null 2>&1; then
@@ -72,7 +80,8 @@ end
 local viewer = mc.viewer_source.define {
     id = "sixel-image",
     resize = "rebuild",
-    options_key = "alt-o",
+    options_key = "i",
+    help = { file = "help.hlp", node = "[Image Viewer]" },
 
     open = function(request)
         next_session_id = next_session_id + 1
@@ -85,12 +94,19 @@ local viewer = mc.viewer_source.define {
 
     initial_params = function(_, params)
         params.mode = params.mode or "auto"
+        params.show = params.show or "picture"
         return params
     end,
 
     prepare = function(session, params, viewport)
         local argv
-        if want_sixel(params, viewport) then
+        if params.show == "properties" then
+            argv = {
+                "sh", "-c", render_script, "lua-sixel",
+                session.local_path, "properties",
+                tostring(viewport.columns), tostring(viewport.lines), "0", "0",
+            }
+        elseif want_sixel(params, viewport) then
             -- Without pixels (the mode forced) the cell is taken for 8x16,
             -- the guess vterm makes too.
             local cell_w = viewport.pixel_width and viewport.pixel_width // viewport.columns or 8
@@ -121,30 +137,9 @@ local viewer = mc.viewer_source.define {
         }
     end,
 
+    -- i: the picture or its properties, no dialog.
     options = function(_, params)
-        local dialog, dialog_error = mc.ui.dialog {
-            title = "Image viewer",
-            controls = {
-                { id = "mode", type = "select", label = "Draw with:", value = params.mode,
-                  options = {
-                      { id = "auto", label = "Sixel where the terminal draws it" },
-                      { id = "sixel", label = "Sixel" },
-                      { id = "symbols", label = "Characters (chafa symbols)" },
-                  } },
-                { type = "hbox", expand_x = true, controls = {
-                    { type = "spacer", expand_x = true },
-                    { id = "ok", type = "button", label = "&OK", default = true },
-                    { id = "cancel", type = "button", label = "&Cancel", cancel = true },
-                } },
-            },
-        }
-        if dialog == nil then
-            if dialog_error ~= "cancelled" then
-                mc.ui.message("Image viewer", dialog_error)
-            end
-            return nil
-        end
-        return { mode = dialog.values.mode }
+        return { mode = params.mode, show = params.show == "properties" and "picture" or "properties" }
     end,
 
     source_state = function(session, event)
