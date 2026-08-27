@@ -1187,7 +1187,7 @@ migrate_term_keys (void)
 /* --------------------------------------------------------------------------------------------- */
 
 /**
- * Load learned keys from ~/.config/mc/term/<TERM>
+ * Load learned keys from ~/.config/mc6/term/<TERM>
  */
 static void
 load_term_keys_file (void)
@@ -1264,7 +1264,7 @@ load_key_defs (void)
     /* migrate old [terminal:$TERM] from ini to separate file */
     migrate_term_keys ();
 
-    /* load learned keys from ~/.config/mc/term/<TERM> */
+    /* load learned keys from ~/.config/mc6/term/<TERM> */
     load_term_keys_file ();
 }
 

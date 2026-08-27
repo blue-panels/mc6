@@ -96,7 +96,7 @@ ctags_excmd_resolve (const char *file_path, const char *excmd)
 /* --------------------------------------------------------------------------------------------- */
 
 /* Returns a newly-allocated path for the history file of @repo.
- * Stored in ~/.local/share/mc/ctags/<hash_of_root_dir>.history */
+ * Stored in ~/.local/share/mc6/ctags/<hash_of_root_dir>.history */
 static char *
 ctags_repo_history_path (const ctags_repo_t *repo)
 {

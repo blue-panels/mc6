@@ -71,7 +71,7 @@ expect_file=$SRC/envs/$env_name/expect.tsv
 
 # ------------------------------------------------------------- mc's config ---
 
-config=${XDG_CONFIG_HOME:-$HOME/.config}/mc
+config=${XDG_CONFIG_HOME:-$HOME/.config}/mc6
 mkdir -p "$config"
 
 # -o values, grouped by section

@@ -4,7 +4,7 @@
 # when no rule here matches, Midnight Commander follows its normal extension
 # and panel-plugin handling.
 #
-# A user may add rules in ~/.config/mc/magic.ini. Native values use
+# A user may add rules in ~/.config/mc6/magic.ini. Native values use
 # %plugin{plugin-id:operation}; runtime packages use
 # %plugin{runtime-id(package-id):operation}, for example:
 #

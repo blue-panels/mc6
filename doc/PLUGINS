@@ -462,7 +462,7 @@ there names a plugin operation and nothing else:
     Open=%plugin{sqlite:open}
     View=%plugin{sqlite:view}
 
-Rules live in $sysconfdir/mc/magic.ini and in ~/.config/mc/magic.ini,
+Rules live in $sysconfdir/mc/magic.ini and in ~/.config/mc6/magic.ini,
 which is consulted first.  Matching uses the same Regex / Shell / Type
 keys as mc.ext.ini.  A file with no rule follows the ordinary
 mc.ext.ini route.

@@ -337,7 +337,7 @@ View and change keyboard shortcuts for mc actions.
   Enter    Replace shortcut (press the key to assign)
   F5       Add extra shortcut for this action
   F8/Del   Remove shortcut
-  Save     Write changes to ~/.config/mc/mc.keymap
+  Save     Write changes to ~/.config/mc6/mc.keymap
   Edit keymap file   Open mc.keymap in editor
   Edit term file     Open terminal key definitions
 
@@ -358,7 +358,7 @@ for function keys, arrows and navigation keys.
   4. Save when done
 
   Del      Clear a learned key
-  Save     Write to ~/.config/mc/term/<TERM>
+  Save     Write to ~/.config/mc6/term/<TERM>
   Edit term file   Open the file in editor
 
 [Key Sniffer]

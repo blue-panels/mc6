@@ -9,9 +9,9 @@
   Opening the plugin
 
     Alt-F1 / Alt-F2 -> MongoDB    Opens the list of clusters loaded
-                                  from ~/.config/mc/mongo.ini.
+                                  from ~/.config/mc6/mongo.ini.
 
-  Configuration: ~/.config/mc/mongo.ini
+  Configuration: ~/.config/mc6/mongo.ini
 
     [General]
       default_cluster              optional preferred cluster name

@@ -1,7 +1,7 @@
 /** \file plugin-prefs.h
  *  \brief Header: shared preference helpers for editor and panel plugins, and Lua scripts.
  *
- * Enable/disable state lives in ~/.config/mc/plugins.ini under section
+ * Enable/disable state lives in ~/.config/mc6/plugins.ini under section
  * [DisabledPlugins], one key per disabled plugin in the form "<kind>/<name>"
  * (value is ignored, presence == disabled).  Kind disambiguates editor and
  * panel plugins, and Lua scripts so they can share names without colliding.  Changes are

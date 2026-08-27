@@ -22,7 +22,7 @@ Connection management:
   F7         - create new connection (at connection level)
   F8         - delete selected connection
 
-Config file: ~/.config/mc/s3-connections.ini
+Config file: ~/.config/mc6/s3-connections.ini
 
 [S3 Connection]
 

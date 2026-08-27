@@ -191,7 +191,7 @@ ctags_keymap_parse_line (GArray *keymap, char *line)
         return;
 
     /* Later definitions override earlier ones: drop any existing bindings for this action.
-     * This makes ~/.config/mc/ctags.keymap (loaded last) override the system file, and
+     * This makes ~/.config/mc6/ctags.keymap (loaded last) override the system file, and
      * "Action =" with an empty value unbind the action. */
     {
         guint i = 0;
@@ -270,7 +270,7 @@ ctags_keymap_load (void)
         g_free (fname);
     }
 
-    /* User override: ~/.config/mc/ctags.keymap (mc_config_get_full_path doesn't
+    /* User override: ~/.config/mc6/ctags.keymap (mc_config_get_full_path doesn't
      * work for unregistered filenames, so build the path from the config dir). */
     if (mc_config_get_path () != NULL)
     {

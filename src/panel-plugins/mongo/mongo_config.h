@@ -1,5 +1,5 @@
 /** \file mongo_config.h
- *  \brief MongoDB plugin: ~/.config/mc/mongo.ini reader.
+ *  \brief MongoDB plugin: ~/.config/mc6/mongo.ini reader.
  */
 
 #ifndef MC_PANEL_MONGO_CONFIG_H

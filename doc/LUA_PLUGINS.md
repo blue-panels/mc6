@@ -20,7 +20,7 @@ built when a compatible Lua development package is unavailable.
 ## Enabling and disabling
 
 Lua is enabled by default in a Lua-enabled build.  Put this in
-`~/.config/mc/ini` to disable it persistently:
+`~/.config/mc6/ini` to disable it persistently:
 
 ```ini
 [Lua]
@@ -39,7 +39,7 @@ list, F4 opens the selected package's declared `entry` file in the internal
 editor; **Run** lists and invokes only actions registered by the selected
 package.  Event-only packages have no runnable action.  Individual script
 choices are stored as `lua/<id>=true` in
-`[DisabledPlugins]` of `~/.config/mc/plugins.ini`.  No Lua script is hot-reloaded
+`[DisabledPlugins]` of `~/.config/mc6/plugins.ini`.  No Lua script is hot-reloaded
 during a session.
 
 ## Script layout
