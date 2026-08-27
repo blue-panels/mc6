@@ -296,6 +296,12 @@ now_ms ()
 if [ $# -eq 0 ]; then
     set -- $(cd "/work/local/$subject" && ls -d */ | sed 's,/$,,')
 fi
+for d in "$@"; do
+    [ -f "/work/local/$subject/${d%/}/cases.tsv" ] && continue
+    echo "run-cases.sh: no cases.tsv in $subject/${d%/}; have: $(cd "/work/local/$subject" && ls -d */ | tr -d / | tr '\n' ' ')" >&2
+    exit 2
+done
+total_run=0
 
 {
     echo "# $env_name: $subject"
@@ -393,12 +399,15 @@ for where in $(echo "$transports" | tr ',' ' '); do
             fi
             ms=$(( $(now_ms) - t0 ))
             verdict=ok
+            fatal=0
             check "$expect" "$file" "$d" || verdict=FAIL
             if grep -qE "assert|CRITICAL|Segmentation|AddressSanitizer|runtime error" "$stderr" 2>/dev/null; then
                 verdict=FAIL
+                fatal=1
                 why="$why; stderr: $(grep -m1 -E 'assert|CRITICAL|Segmentation|AddressSanitizer|runtime error' "$stderr")"
             fi
-            if [ -n "$known" ]; then
+            # a known failure is one that was understood; a crash never is
+            if [ -n "$known" ] && [ $fatal = 0 ]; then
                 if [ $verdict = ok ]; then
                     verdict=FIXED
                     why="$why; was known to fail: $known"
@@ -436,6 +445,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
     knownc=$(grep -c "$(printf "\tknown\t")" "$results")
     fixed=$(grep -c "$(printf "\tFIXED\t")" "$results")
     total_fail=$((total_fail + fail))
+    total_run=$((total_run + pass + fail + knownc + fixed))
     echo "  $where: passed $pass, failed $fail, known $knownc, fixed $fixed, skipped $skip (for a person)"
     echo "| $where | $pass | $fail | $knownc | $fixed | $skip |" >> "$index"
 done
@@ -469,4 +479,8 @@ done
 } >> "$index"
 
 echo "report: $report"
+if [ "$total_run" = 0 ]; then
+    echo "run-cases.sh: nothing was run" >&2
+    exit 1
+fi
 [ "$total_fail" = 0 ]

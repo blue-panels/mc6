@@ -92,8 +92,8 @@ touch -d @1000000000 01-formats/*
 
 cat > 03-nested/cases.tsv <<'EOF'
 file	key	expect	why	transports
-outer.tar	Enter	archive panel	then Enter on small.zip inside it	
-outer.tar	Enter,on small.zip,Enter,..,..	the panel it came from	twice: inner archive, outer archive, then sftp or ftp	
+outer.tar	Enter	archive panel	then Enter on small.zip inside it
+outer.tar	Enter,on small.zip,Enter,..,..	the panel it came from	twice: inner archive, outer archive, then sftp or ftp
 zip-in-zip.zip	cd zip-in-zip.zip/uzip://	extfs panel	utar:// is gone, uzip:// is the filesystem left to try	local
 zip-in-zip.zip	cd zip-in-zip.zip/uzip://,on small.zip,Enter	extfs panel	a file inside an mc filesystem is left to mc.ext.ini	local
 EOF
@@ -109,9 +109,9 @@ printf 'вложенный файл\n' > '04-non-ascii/каталог/файл.t
 
 cat > 04-non-ascii/cases.tsv <<'EOF'
 file	key	expect	why	transports
-архив.tar.gz	Enter	archive panel	the name survives the panel, the quoting and the shell	
-архив с пробелами.7z	Enter	archive panel	spaces as well as Cyrillic	
-архив.tar.gz	F5,Enter	copy to the other panel	the name reaches a file operation intact	
+архив.tar.gz	Enter	archive panel	the name survives the panel, the quoting and the shell
+архив с пробелами.7z	Enter	archive panel	spaces as well as Cyrillic
+архив.tar.gz	F5,Enter	copy to the other panel	the name reaches a file operation intact
 заметка.txt	C-o,type ls,Enter	the name as written	the subshell is zsh here	local
 EOF
 

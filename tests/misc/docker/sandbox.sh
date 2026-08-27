@@ -9,8 +9,12 @@ set -e
 cd "$(dirname "$0")"
 root=$(pwd)
 
+# the compose files use the top-level "name:", which is Compose v2
 COMPOSE="docker compose"
-$COMPOSE version >/dev/null 2>&1 || COMPOSE="docker-compose"
+if ! $COMPOSE version >/dev/null 2>&1; then
+    echo "sandbox.sh: needs Docker Compose v2 (docker compose); docker-compose v1 does not read these files" >&2
+    exit 2
+fi
 
 envs ()
 {

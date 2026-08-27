@@ -20,7 +20,8 @@ done
 
 ini=/usr/local/bin/features.ini
 
-# "a,b,-c": the flags of a and b, minus those of c
+# "a,b,-c": the flags of a and b, then those of c taken out.  An --enable-x
+# flag taken out becomes --enable-x=no, since configure's own default is auto.
 profile_flags ()
 {
     key=$1
@@ -34,15 +35,19 @@ profile_flags ()
     for name in $(echo "$features" | tr ',' ' '); do
         case "$name" in
         -*)
-            sed -n "/^\[${name#-}\]/,/^\[/p" "$ini" | sed -n "s/^$key *= *//p" | tr ' ' '\n' \
-                | grep . > /tmp/minus.$$ || true
-            grep -vxF -f /tmp/minus.$$ /tmp/flags.$$ > /tmp/flags2.$$ || true
-            mv /tmp/flags2.$$ /tmp/flags.$$
+            for flag in $(sed -n "/^\[${name#-}\]/,/^\[/p" "$ini" | sed -n "s/^$key *= *//p"); do
+                base=${flag%%=*}
+                grep -vE "^$base(=.*)?\$" /tmp/flags.$$ > /tmp/flags2.$$ || true
+                mv /tmp/flags2.$$ /tmp/flags.$$
+                case "$base" in
+                --enable-*) echo "$base=no" >> /tmp/flags.$$ ;;
+                esac
+            done
             ;;
         esac
     done
     tr '\n' ' ' < /tmp/flags.$$
-    rm -f /tmp/flags.$$ /tmp/minus.$$
+    rm -f /tmp/flags.$$
 }
 
 configure_flags=$(profile_flags configure)

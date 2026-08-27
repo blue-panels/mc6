@@ -130,6 +130,16 @@ keymap=$keymap
 dirs=$dirs
 EOF
 
+# what was typed in goes to sandbox.sh as arguments, never through a shell;
+# an ini value or a profile is letters, digits and a few marks
+for v in $extra $profile; do
+    case "$v" in
+    *[!A-Za-z0-9_.,=:/-]*)
+        ask --msgbox "Not taken: $v\n\nan ini value is [section.]key=value, a profile a name" 8 60
+        exit 1
+        ;;
+    esac
+done
 opts=""
 for t in $(echo "$toggles" | tr ',' ' '); do
     v=$(sed -n "s/^$t *= *\([^|]*\)|.*/\1/p" "$root/common/toggles.ini" | sed 's/ *$//')
@@ -139,10 +149,11 @@ for v in $extra; do
     opts="$opts -o $v"
 done
 [ "$keymap" != none ] && opts="$opts -k $keymap"
+dirs_sp=$(echo "$dirs" | tr ',' ' ')
 
 build=""
 [ "$profile" != keep ] && build="$root/sandbox.sh $env build -f $profile && "
-cmd="$root/sandbox.sh $env test -c $subject -w $transports -l $locale$opts $(echo "$dirs" | tr ',' ' ')"
+cmd="$root/sandbox.sh $env test -c $subject -w $transports -l $locale$opts $dirs_sp"
 
 ask --yesno "Run this?\n\n$build$cmd" 12 78 || exit 0
 echo "$build$cmd" > "$root/reports/last.cmd"
@@ -150,7 +161,15 @@ echo "$build$cmd" > "$root/reports/last.cmd"
 clear
 echo "$build$cmd"
 echo
-report=$(sh -c "$build$cmd" | tee /dev/stderr | sed -n 's/^report: \/reports\///p' | tail -1)
+run ()
+{
+    if [ "$profile" != keep ]; then
+        "$root/sandbox.sh" "$env" build -f "$profile" || return $?
+    fi
+    # shellcheck disable=SC2086
+    "$root/sandbox.sh" "$env" test -c "$subject" -w "$transports" -l "$locale" $opts $dirs_sp
+}
+report=$(run | tee /dev/stderr | sed -n 's/^report: \/reports\///p' | tail -1)
 
 # ---------------------------------------------------------- the failures ---
 

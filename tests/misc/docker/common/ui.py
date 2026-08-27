@@ -11,6 +11,7 @@
 import curses
 import os
 import re
+import shlex
 import subprocess
 import sys
 
@@ -359,21 +360,28 @@ class Form:
         st["extra"] = self.texts["extra"]
         st["keymap"] = self.radios["keymap"]
         st["dirs"] = ",".join(d for d in case_dirs(st["subject"]) if d in self.checks["dirs"])
-        opts = ""
+        return " && ".join(shlex.join(c) for c in self.commands())
+
+    def commands(self):
+        """The argv lists the choice adds up to: a build when asked, then the test.
+        Nothing here goes through a shell, so a stray character in a text field
+        is an argument, not a command."""
+        st = self.st
+        sb = os.path.join(ROOT, "sandbox.sh")
+        test = [sb, st["env"], "test", "-c", st["subject"], "-w", st["transports"], "-l", st["locale"]]
         for tag, value, _ in toggles():
             if tag in self.checks["toggles"]:
-                opts += " -o " + value
+                test += ["-o", value]
         for v in st["extra"].split():
-            opts += " -o " + v
+            test += ["-o", v]
         if st["keymap"] != "none":
-            opts += " -k " + st["keymap"]
-        sb = os.path.join(ROOT, "sandbox.sh")
-        cmd = ""
-        if prof != "keep":
-            cmd = "%s %s build -f %s && " % (sb, st["env"], prof)
-        cmd += "%s %s test -c %s -w %s -l %s%s %s" % (sb, st["env"], st["subject"], st["transports"],
-                                                      st["locale"], opts, st["dirs"].replace(",", " "))
-        return cmd.strip()
+            test += ["-k", st["keymap"]]
+        test += [d for d in st["dirs"].split(",") if d]
+        out = []
+        if st["profile"] != "keep":
+            out.append([sb, st["env"], "build", "-f", st["profile"]])
+        out.append(test)
+        return out
 
     # --------------------------------------------------------------- loop ---
 
@@ -527,17 +535,22 @@ def main():
     print(cmd)
     print()
     report = None
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    for line in proc.stdout:
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        m = re.match(r"report: /reports/(\S+)", line)
-        if m:
-            report = os.path.join(ROOT, "reports", m.group(1))
-    proc.wait()
+    rc = 0
+    for argv in form.commands():
+        proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        for line in proc.stdout:
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            m = re.match(r"report: /reports/(\S+)", line)
+            if m:
+                report = os.path.join(ROOT, "reports", m.group(1))
+        rc = proc.wait()
+        if rc != 0 and argv[2] == "build":
+            print("the build failed, nothing run")
+            return rc
     if report and os.path.isdir(report):
         curses.wrapper(failures, report)
-    return proc.returncode
+    return rc
 
 
 if __name__ == "__main__":
