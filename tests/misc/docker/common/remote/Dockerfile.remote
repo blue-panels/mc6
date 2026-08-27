@@ -1,0 +1,33 @@
+# debian:bookworm-slim, pinned so that a run is the same run next month
+FROM debian@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        openssh-server \
+        vsftpd \
+        samba samba-common-bin \
+        libarchive-tools \
+        perl \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m -s /bin/bash mc \
+    && echo 'mc:mc' | chpasswd \
+    && mkdir -p /run/sshd /var/run/vsftpd/empty /var/log/samba
+
+COPY common/remote/vsftpd.conf /etc/vsftpd.conf
+COPY common/remote/smb.conf /etc/samba/smb.conf
+COPY common/remote/entrypoint-remote.sh /usr/local/bin/entrypoint-remote.sh
+COPY cases /usr/local/lib/mc-sandbox/cases
+
+# every subject's fixtures, each under its own directory
+RUN chmod +x /usr/local/bin/entrypoint-remote.sh \
+    && for f in /usr/local/lib/mc-sandbox/cases/*/fixtures.sh; do \
+           sh "$f" "/home/mc/cases/$(basename "$(dirname "$f")")"; \
+       done \
+    && chown -R mc:mc /home/mc \
+    && printf 'mc\nmc\n' | smbpasswd -a -s mc
+
+EXPOSE 21 22 445 21100-21110
+
+CMD ["/usr/local/bin/entrypoint-remote.sh"]

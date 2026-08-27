@@ -1,0 +1,6 @@
+[input]
+Complete=Shift-Tab
+
+[editor]
+Complete=Shift-Tab
+Tab=Tab

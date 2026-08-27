@@ -18,17 +18,17 @@ report ()
     fi
 }
 
-out=$(curl -s -u "$user:$pass" "sftp://$host/home/$user/archives/" -l) && [ -n "$out" ]
+out=$(curl -s -u "$user:$pass" "sftp://$host/home/$user/cases/" -l) && [ -n "$out" ]
 report sftp $?
 
-out=$(curl -s -u "$user:$pass" "ftp://$host/archives/") && [ -n "$out" ]
+out=$(curl -s -u "$user:$pass" "ftp://$host/cases/") && [ -n "$out" ]
 report ftp $?
 
 out=$(sshpass -p "$pass" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-        "$user@$host" 'ls ~/archives' 2>/dev/null) && [ -n "$out" ]
+        "$user@$host" 'ls ~/cases' 2>/dev/null) && [ -n "$out" ]
 report ssh $?
 
-out=$(smbclient "//$host/archives" -U "$user%$pass" -c ls 2>/dev/null) && [ -n "$out" ]
+out=$(smbclient "//$host/cases" -U "$user%$pass" -c ls 2>/dev/null) && [ -n "$out" ]
 report smb $?
 
 if [ -x /work/opt/mc/bin/mc ]; then

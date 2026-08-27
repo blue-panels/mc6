@@ -1,0 +1,36 @@
+# One project per environment: its own containers, network and build volume,
+# so environments do not have to agree about anything.
+name: mc-sandbox-debian-12
+
+services:
+  remote:
+    build:
+      context: ../..
+      dockerfile: common/remote/Dockerfile.remote
+    hostname: remote
+    container_name: mc-debian-12-remote
+    # No published ports: environments are meant to run side by side, and mc
+    # reaches the host over the compose network anyway.  To get at it from
+    # outside, add a compose override with the ports you want.
+
+  mc:
+    build:
+      context: ../..
+      dockerfile: envs/debian-12/Dockerfile.mc
+    container_name: mc-debian-12-mc
+    depends_on:
+      - remote
+    environment:
+      SANDBOX_ENV: debian-12
+    volumes:
+      # the working tree, never written to
+      - ../../../../..:/src:ro
+      # the build lives in the volume, so nothing lands in the tree
+      - work:/work
+      # what a run leaves behind, on the host
+      - ../../reports:/reports
+    tty: true
+    stdin_open: true
+
+volumes:
+  work:
