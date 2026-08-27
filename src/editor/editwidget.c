@@ -1011,7 +1011,7 @@ edit_plugins_info (WDialog *h)
 static void
 edit_help (const WDialog *h)
 {
-    ev_help_t event_data = { NULL, h->help_ctx };
+    ev_help_t event_data = { NULL, h->help_ctx, NULL };
 
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
 }

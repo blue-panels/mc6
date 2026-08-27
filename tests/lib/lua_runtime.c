@@ -240,7 +240,7 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         const gboolean sixel =
             controller->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, options_key)
                     + sizeof (controller->options_key)
-            && g_strcmp0 (controller->options_key, "alt-o") == 0;
+            && g_strcmp0 (controller->options_key, "i") == 0;
 
         if (sixel)
         {
@@ -2052,6 +2052,14 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
     ck_assert_str_eq (registered_panel_provider.id, "test-panel");
     ck_assert_uint_eq (registered_panel_provider.actions_count, 2);
     ck_assert_str_eq (registered_panel_provider.help->node, "provider");
+    {
+        /* A relative help file is taken from the package directory. */
+        char *expected = g_build_filename (user_mc_scripts_dir, "panel-provider", "help",
+                                           "test.hlp", (char *) NULL);
+
+        ck_assert_str_eq (registered_panel_provider.help->file, expected);
+        g_free (expected);
+    }
     ck_assert_str_eq (registered_panel_provider.actions[1].open_path, "test-panel:/saved");
     mctest_assert_true (registered_panel_provider.supports_new_connection);
     mctest_assert_true (registered_panel_provider.supports_edit_connection);

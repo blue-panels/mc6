@@ -443,7 +443,7 @@ regex_check_dlg_cb (Widget *w, Widget *sender, widget_msg_t msg, int parm, void 
 {
     if (msg == MSG_KEY && parm == KEY_F (1))
     {
-        ev_help_t event_data = { NULL, "[Regex Quick Reference]" };
+        ev_help_t event_data = { NULL, "[Regex Quick Reference]", NULL };
         mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
         return MSG_HANDLED;
     }

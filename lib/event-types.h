@@ -46,8 +46,9 @@ typedef struct
 /* MCEVENT_GROUP_CORE:help */
 typedef struct
 {
-    const char *filename;
+    const char *filename;  // a help file of its own (a script's), NULL for mc.hlp
     const char *node;
+    const char *parent_node;  // the node of mc.hlp the file stands in for, gets linked to
 } ev_help_t;
 
 /* MCEVENT_GROUP_CORE:background_parent_call */

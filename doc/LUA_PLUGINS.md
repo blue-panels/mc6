@@ -290,6 +290,13 @@ terminal events.
 A prepared viewer spec may set `raw_path` to the original local file.  The viewer then keeps the
 controller attached while F8 switches between the generated source and the raw file.
 
+A viewer-source definition may carry `help = { file = "help.hlp", node = "[Image Viewer]" }`:
+F1 in that view opens the node of that file instead of MC's own help.  A relative `file` is
+taken from the script's directory, so a script ships its help next to its `init.lua` in MC's
+help format (`[Node]` headings).  The node shown gets a link to the node of MC's help it stands
+in for (the viewer's), and a link or F2 (Index) naming a node the file does not have opens it
+in MC's help.  Panel providers accept the same `help` table.
+
 An `input` control in `mc.ui.dialog()` accepts an optional `history` name and
 an optional `completion` array.  `complete_on_tab = true` makes `Tab` invoke
 completion while that input has focus; `Shift-Tab` still moves to the previous

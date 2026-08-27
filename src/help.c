@@ -90,9 +90,14 @@ typedef struct Link_Area
 
 /*** forward declarations (file scope functions) *************************************************/
 
+static char *translate_file (const char *filedata);
+static void help_link_script_node (char **filedata, const char *node, const char *parent_node);
+
 /*** file scope variables ************************************************************************/
 
-static char *fdata = NULL;             // Pointer to the loaded data file
+static char *fdata = NULL;             // The help file shown: script_data or main_data
+static char *script_data = NULL;       // A script's own help file, if one was asked for
+static char *main_data = NULL;         // mc.hlp, loaded when a node is not in script_data
 static int help_lines;                 // Lines in help viewer
 static int history_ptr = 0;            // For the history queue
 static const char *main_node;          // The main node
@@ -108,6 +113,7 @@ static struct
 {
     const char *page;  // Pointer to the selected page
     const char *link;  // Pointer to the selected link
+    const char *data;  // The help file the page is in
 } history[HISTORY_SIZE];
 
 static GSList *link_area = NULL;
@@ -180,6 +186,74 @@ search_string_node (const char *start, const char *text)
     }
 
     return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** mc.hlp, loaded once per help session. */
+
+static const char *
+help_main_data (void)
+{
+    if (main_data == NULL)
+    {
+        char *filedata;
+
+        filedata = load_mc_home_file (mc_global.share_data_dir, MC_HELP, NULL, NULL);
+        if (filedata != NULL)
+        {
+            main_data = translate_file (filedata);
+            g_free (filedata);
+        }
+    }
+
+    return main_data;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Finds a node in the help file shown; a node a script's help does not have is looked for in
+ * mc.hlp, which then becomes the file shown.
+ * @return the node, or NULL when neither file has it
+ */
+
+static const char *
+help_find_node (const char *name)
+{
+    const char *node;
+
+    node = search_string (fdata, name);
+    if (node == NULL && fdata != main_data && help_main_data () != NULL)
+    {
+        node = search_string (main_data, name);
+        if (node != NULL)
+            fdata = main_data;
+    }
+
+    return node;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Remembers the page shown, the file it is in, and the link to select when coming back.
+ * Call it before help_find_node(), which may switch the file.
+ */
+
+static void
+help_history_push (const char *link)
+{
+    history_ptr = (history_ptr + 1) % HISTORY_SIZE;
+    history[history_ptr].page = currentpoint;
+    history[history_ptr].link = link;
+    history[history_ptr].data = fdata;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+help_history_pop (void)
+{
+    history_ptr--;
+    if (history_ptr < 0)
+        history_ptr = HISTORY_SIZE - 1;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -313,7 +387,7 @@ help_follow_link (const char *start, const char *lc_selected_item)
             link_name[i++] = *++p;
         link_name[i - 1] = ']';
         link_name[i] = '\0';
-        p = search_string (fdata, link_name);
+        p = help_find_node (link_name);
         if (p != NULL)
         {
             p += 1;  // Skip the newline following the start of the node
@@ -662,11 +736,9 @@ help_help (WDialog *h)
 {
     const char *p;
 
-    history_ptr = (history_ptr + 1) % HISTORY_SIZE;
-    history[history_ptr].page = currentpoint;
-    history[history_ptr].link = selected_item;
+    help_history_push (selected_item);
 
-    p = search_string (fdata, "[How to use help]");
+    p = help_find_node ("[How to use help]");
     if (p != NULL)
     {
         currentpoint = p + 1;  // Skip the newline following the start of the node
@@ -682,15 +754,16 @@ help_index (WDialog *h)
 {
     const char *new_item;
 
-    new_item = search_string (fdata, "[Contents]");
+    help_history_push (selected_item);
+    new_item = help_find_node ("[Contents]");
 
     if (new_item == NULL)
+    {
+        help_history_pop ();
         message (D_ERROR, MSG_ERROR, _ ("Cannot find node %s in help file"), "[Contents]");
+    }
     else
     {
-        history_ptr = (history_ptr + 1) % HISTORY_SIZE;
-        history[history_ptr].page = currentpoint;
-        history[history_ptr].link = selected_item;
 
         currentpoint = new_item + 1;  // Skip the newline following the start of the node
         selected_item = NULL;
@@ -705,9 +778,8 @@ help_back (WDialog *h)
 {
     currentpoint = history[history_ptr].page;
     selected_item = history[history_ptr].link;
-    history_ptr--;
-    if (history_ptr < 0)
-        history_ptr = HISTORY_SIZE - 1;
+    fdata = (char *) history[history_ptr].data;
+    help_history_pop ();
 
     widget_draw (WIDGET (h));  // FIXME: unneeded?
 }
@@ -817,13 +889,12 @@ help_select_link (void)
 
         currentpoint = history[history_ptr].page;
         selected_item = history[history_ptr].link;
+        fdata = (char *) history[history_ptr].data;
 #endif
     }
     else
     {
-        history_ptr = (history_ptr + 1) % HISTORY_SIZE;
-        history[history_ptr].page = currentpoint;
-        history[history_ptr].link = selected_item;
+        help_history_push (selected_item);
         currentpoint = help_follow_link (currentpoint, selected_item);
     }
 
@@ -986,15 +1057,19 @@ static void
 interactive_display_finish (void)
 {
     clear_link_areas ();
+    MC_PTR_FREE (script_data);
+    MC_PTR_FREE (main_data);
+    fdata = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 /** translate help file into terminal encoding */
 
-static void
-translate_file (char *filedata)
+static char *
+translate_file (const char *filedata)
 {
     GIConv conv;
+    char *translated = NULL;
 
     conv = str_crt_conv_from ("UTF-8");
     if (conv != INVALID_CONV)
@@ -1002,15 +1077,54 @@ translate_file (char *filedata)
         GString *translated_data;
         gboolean nok;
 
-        g_free (fdata);
-
         // initial allocation for largest whole help file
         translated_data = g_string_sized_new (32 * 1024);
         nok = (str_convert (conv, filedata, translated_data) == ESTR_FAILURE);
-        fdata = g_string_free (translated_data, nok);
+        translated = g_string_free (translated_data, nok);
 
         str_close_conv (conv);
     }
+
+    return translated;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** A script's help stands in for a node of mc.hlp (the viewer's, the editor's); the node shown
+ * gets a link to that one under its heading, so the way to the help it replaced is always there.
+ */
+
+static void
+help_link_script_node (char **filedata, const char *node, const char *parent_node)
+{
+    const char *heading;
+    const char *eol;
+    char *name;
+    char *link;
+    char *linked;
+
+    if (parent_node == NULL || *parent_node == '\0')
+        return;
+
+    heading = search_string (*filedata, node);
+    if (heading == NULL)
+        return;
+    eol = strchr (heading, '\n');
+    if (eol == NULL)
+        return;
+
+    name = g_strdup (parent_node);
+    if (name[0] == '[' && name[strlen (name) - 1] == ']')
+    {
+        name[strlen (name) - 1] = '\0';
+        memmove (name, name + 1, strlen (name));
+    }
+    // ^Atext^Bnode^C is a link; the node is named without brackets
+    link = g_strdup_printf ("\n%s: \01%s\02%s\03\n", _ ("See also"), name, name);
+    linked = g_strdup_printf ("%.*s%s%s", (int) (eol - *filedata + 1), *filedata, link, eol + 1);
+    g_free (link);
+    g_free (name);
+    g_free (*filedata);
+    *filedata = linked;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1079,9 +1193,7 @@ help_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
         Link_Area *la = (Link_Area *) current_area->data;
 
         // The click was inside a link area -> follow the link
-        history_ptr = (history_ptr + 1) % HISTORY_SIZE;
-        history[history_ptr].page = currentpoint;
-        history[history_ptr].link = la->link_name;
+        help_history_push (la->link_name);
         currentpoint = help_follow_link (currentpoint, la->link_name);
         selected_item = NULL;
     }
@@ -1135,10 +1247,30 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     (void) event_name;
     (void) init_data;
 
+    if ((event_data->node == NULL) || (*event_data->node == '\0'))
+        event_data->node = "[main]";
+
     if (event_data->filename != NULL)
+    {
         g_file_get_contents (event_data->filename, &filedata, NULL, NULL);
+        if (filedata != NULL)
+        {
+            help_link_script_node (&filedata, event_data->node, event_data->parent_node);
+            script_data = translate_file (filedata);
+            g_free (filedata);
+        }
+        fdata = script_data;
+    }
     else
+    {
         filedata = load_mc_home_file (mc_global.share_data_dir, MC_HELP, &hlpfile, NULL);
+        if (filedata != NULL)
+        {
+            main_data = translate_file (filedata);
+            g_free (filedata);
+        }
+        fdata = main_data;
+    }
 
     if (filedata == NULL)
         file_error_message (_ ("Cannot open file\n%s"),
@@ -1146,27 +1278,20 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
 
     g_free (hlpfile);
 
-    if (filedata == NULL)
-        return TRUE;
-
-    translate_file (filedata);
-
-    g_free (filedata);
-
     if (fdata == NULL)
+    {
+        interactive_display_finish ();
         return TRUE;
+    }
 
-    if ((event_data->node == NULL) || (*event_data->node == '\0'))
-        event_data->node = "[main]";
-
-    main_node = search_string (fdata, event_data->node);
+    main_node = help_find_node (event_data->node);
 
     if (main_node == NULL)
     {
         message (D_ERROR, MSG_ERROR, _ ("Cannot find node %s in help file"), event_data->node);
 
         // Fallback to [main], return if it also cannot be found
-        main_node = search_string (fdata, "[main]");
+        main_node = help_find_node ("[main]");
         if (main_node == NULL)
         {
             interactive_display_finish ();
@@ -1192,6 +1317,7 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     {
         history[i].page = currentpoint;
         history[i].link = selected_item;
+        history[i].data = fdata;
     }
 
     help_bar = buttonbar_new ();

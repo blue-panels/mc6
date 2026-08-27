@@ -975,7 +975,7 @@ tree_toggle_navig (WTree *tree)
 static void
 tree_help (void)
 {
-    ev_help_t event_data = { NULL, "[Directory Tree]" };
+    ev_help_t event_data = { NULL, "[Directory Tree]", NULL };
 
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
 }

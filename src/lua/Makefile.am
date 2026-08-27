@@ -22,13 +22,15 @@ lua_chafadir = $(lua_scripts_dir)/mc/lua-chafa
 if ENABLE_LUA_CHAFA
 dist_lua_chafa_DATA = \
 	examples/mc/lua-chafa/lua.ini \
-	examples/mc/lua-chafa/init.lua
+	examples/mc/lua-chafa/init.lua \
+	examples/mc/lua-chafa/help.hlp
 endif
 
 lua_sixeldir = $(lua_scripts_dir)/mc/lua-sixel
 dist_lua_sixel_DATA = \
 	examples/mc/lua-sixel/lua.ini \
-	examples/mc/lua-sixel/init.lua
+	examples/mc/lua-sixel/init.lua \
+	examples/mc/lua-sixel/help.hlp
 
 lua_java_classdir = $(lua_scripts_dir)/mc/lua-java-class
 if ENABLE_LUA_JAVA_CLASS

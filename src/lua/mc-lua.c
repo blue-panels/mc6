@@ -2314,6 +2314,24 @@ mc_lua_dup_table_string (lua_State *lua, int table, const char *field)
     return value;
 }
 
+/* The "file" of a help table: a relative name is taken from the script's directory. */
+static char *
+mc_lua_dup_help_file (lua_State *lua, int table, const mc_lua_package_t *package)
+{
+    char *file = mc_lua_dup_table_string (lua, table, "file");
+
+    if (file != NULL && !g_path_is_absolute (file) && package != NULL && package->root != NULL)
+    {
+        char *absolute = g_build_filename (package->root, file, (char *) NULL);
+
+        g_free (file);
+        file = absolute;
+    }
+    return file;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static guint64
 mc_lua_panel_table_uint64 (lua_State *lua, int table, const char *field, guint64 fallback)
 {
@@ -3305,7 +3323,7 @@ mc_lua_panel_provider_register (lua_State *lua)
     lua_getfield (lua, 1, "help");
     if (lua_istable (lua, -1))
     {
-        provider->help_file = mc_lua_dup_table_string (lua, -1, "file");
+        provider->help_file = mc_lua_dup_help_file (lua, -1, package);
         provider->help_node = mc_lua_dup_table_string (lua, -1, "node");
     }
     lua_pop (lua, 1);
@@ -4066,8 +4084,10 @@ mc_lua_viewer_definition_create (lua_State *lua)
 
 /** @lua mc.viewer_source.define(spec) -> definition|nil, error? @capability viewer_source @mutation
  * yes @summary Define a reusable family of managed viewer sources with optional viewport rebuild.
- * spec.options_key names the viewer key ("alt-o") that calls options(); prepare() then runs
+ * spec.options_key names the viewer key ("i") that calls options(); prepare() then runs
  * again with what options() returned. A key the viewer has a command for never reaches it.
+ * spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the
+ * script's directory.
  */
 static int
 mc_lua_viewer_source_define (lua_State *lua)
@@ -4083,7 +4103,7 @@ mc_lua_viewer_source_define (lua_State *lua)
     lua_getfield (lua, 1, "help");
     if (lua_istable (lua, -1))
     {
-        definition->help_file = mc_lua_dup_table_string (lua, -1, "file");
+        definition->help_file = mc_lua_dup_help_file (lua, -1, package);
         definition->help_node = mc_lua_dup_table_string (lua, -1, "node");
     }
     lua_pop (lua, 1);

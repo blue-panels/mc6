@@ -73,7 +73,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.ui.open_viewer(spec) -> boolean\|nil, error?` | Open the native viewer and transfer a controller to MC. | `viewer_source` | yes |
 | `mc.ui.status(text) -> boolean\|nil, error?` | Display transient text in the MC status area. | `ui` | yes |
 | `mc.ui.text_width(text) -> integer\|nil, error?` | Measure UTF-8 text using terminal display columns. | `ui` | no |
-| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key ("alt-o") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it. | `viewer_source` | yes |
+| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key ("i") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory. | `viewer_source` | yes |
 
 ## Callback contracts
 
