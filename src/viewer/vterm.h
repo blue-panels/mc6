@@ -58,6 +58,19 @@ typedef struct
 
 typedef struct mcview_vterm_struct mcview_vterm_t;
 
+/* A sixel picture the program drew: where it sits on the screen, in cells, and
+   the DCS as it arrived, to be written to the real terminal as is. */
+typedef struct
+{
+    int row; /* top-left cell, screen coordinates */
+    int col;
+    int rows; /* cells covered */
+    int cols;
+    int width; /* pixels */
+    int height;
+    GBytes *data; /* ESC P ... q ... ESC \ */
+} mcview_vterm_image_t;
+
 /*** declarations of public functions ************************************************************/
 
 mcview_vterm_t *mcview_vterm_new (void);
@@ -96,6 +109,17 @@ guint mcview_vterm_osc7_generation (const mcview_vterm_t *vt);
 /* The last semantic prompt mark (OSC 133) as it arrived, and a counter of them. */
 const char *mcview_vterm_osc133_raw (const mcview_vterm_t *vt);
 guint mcview_vterm_osc133_generation (const mcview_vterm_t *vt);
+
+/* Sixel pictures. The cell size is what turns pixels into rows and columns;
+   whoever knows the terminal sets it. The generation moves whenever the list
+   changes, so the host can tell when the pictures need painting again. */
+void mcview_vterm_set_cell_size (mcview_vterm_t *vt, int width, int height);
+/* Whether to tell the program the terminal draws sixel: in the Device
+   Attributes, and in the pixel sizes it asks for (XTWINOPS 14, 16, 18). */
+void mcview_vterm_set_sixel (mcview_vterm_t *vt, gboolean sixel);
+guint mcview_vterm_images_len (const mcview_vterm_t *vt);
+const mcview_vterm_image_t *mcview_vterm_image (const mcview_vterm_t *vt, guint index);
+guint mcview_vterm_images_generation (const mcview_vterm_t *vt);
 
 /* Update terminal size; returns TRUE on change. */
 gboolean mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols);

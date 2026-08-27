@@ -561,7 +561,11 @@ mcview_source_options (WView *view)
         return;
     }
 
-    if (!c->prepare (ctx, draft, &err))
+    /* A source built for the viewport is built for it again. */
+    if (c->rebuild_on_resize && c->prepare_viewport != NULL
+            ? !c->prepare_viewport (ctx, draft, MAX (view->data_area.cols, 1),
+                                    MAX (view->data_area.lines, 1), &err)
+            : !c->prepare (ctx, draft, &err))
     {
         message (D_ERROR, MSG_ERROR, "%s", err != NULL ? err : _ ("Source prepare failed."));
         g_free (err);

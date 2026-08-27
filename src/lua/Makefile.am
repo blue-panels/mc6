@@ -25,6 +25,11 @@ dist_lua_chafa_DATA = \
 	examples/mc/lua-chafa/init.lua
 endif
 
+lua_sixeldir = $(lua_scripts_dir)/mc/lua-sixel
+dist_lua_sixel_DATA = \
+	examples/mc/lua-sixel/lua.ini \
+	examples/mc/lua-sixel/init.lua
+
 lua_java_classdir = $(lua_scripts_dir)/mc/lua-java-class
 if ENABLE_LUA_JAVA_CLASS
 dist_lua_java_class_DATA = \

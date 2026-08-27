@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
 
    This file is part of the Midnight Commander.
 
@@ -395,6 +395,65 @@ mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row,
 }
 
 /* --------------------------------------------------------------------------------------------- */
+void
+mcview_paint_pictures (void *data)
+{
+    WView *view = data;
+    const mcview_vterm_t *vt = view->vterm;
+    const WRect *r = &view->data_area;
+    const int y0 = WIDGET (view)->rect.y + r->y;
+    const int x0 = WIDGET (view)->rect.x + r->x;
+    int top_row, history_rows;
+    guint i, shown = 0;
+
+    /* Hidden with pictures on the screen: whatever is drawn over the widget
+       leaves the pixels where no cell changed. Every cell again, then. */
+    if (view->pictures_shown && !widget_get_state (WIDGET (view), WST_VISIBLE))
+    {
+        view->pictures_shown = FALSE;
+        view->paint_pending = FALSE;
+        tty_touch_screen ();
+        tty_refresh ();
+        return;
+    }
+
+    if (!view->paint_pending)
+        return;
+    view->paint_pending = FALSE;
+    view->pictures_shown = FALSE;
+
+    if (vt == NULL || !view->mode_flags.terminal || !tty_has_sixel ())
+        return;
+
+    /* The rows on the screen are the history followed by the live screen, from
+       @top_row; a picture lives on the live screen. */
+    top_row = mcview_vterm_resolve_scrollback_top_row (vt, r->lines);
+    history_rows = mcview_vterm_history_len (vt);
+
+    for (i = 0; i < mcview_vterm_images_len (vt); i++)
+    {
+        const mcview_vterm_image_t *image = mcview_vterm_image (vt, i);
+        const int y = y0 + history_rows + image->row - top_row;
+        const int x = x0 + image->col;
+        char move[32];
+
+        /* A picture cannot be cut: one that does not fit is not painted. */
+        if (image->data == NULL || y < y0 || y + image->rows > y0 + r->lines
+            || x + image->cols > x0 + r->cols)
+            continue;
+
+        g_snprintf (move, sizeof (move), ESC_STR "7" ESC_STR "[%d;%dH", y + 1, x + 1);
+        tty_raw_write (move, strlen (move));
+        tty_raw_write (g_bytes_get_data (image->data, NULL), g_bytes_get_size (image->data));
+        tty_raw_write (ESC_STR "8", 2);
+        shown++;
+    }
+
+    view->pictures_shown = shown > 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcview_display_terminal (WView *view)
 {
@@ -407,6 +466,14 @@ mcview_display_terminal (WView *view)
 
     if (vt == NULL)
         return;
+
+    {
+        int cell_width, cell_height;
+
+        tty_cell_size (&cell_width, &cell_height);
+        mcview_vterm_set_cell_size (vt, cell_width, cell_height);
+        mcview_vterm_set_sixel (vt, tty_has_sixel ());
+    }
 
     if (mcview_vterm_set_size (vt, r->lines, r->cols))
     {
@@ -434,6 +501,13 @@ mcview_display_terminal (WView *view)
     mcview_vterm_set_replay_offset (vt, pos);
     view->dpy_end = filesize;
 
+    if (view->pictures_shown || mcview_vterm_images_len (vt) > 0)
+    {
+        tty_touch_area (WIDGET (view)->rect.y + r->y, WIDGET (view)->rect.x + r->x, r->lines,
+                        r->cols);
+        view->paint_pending = TRUE;
+    }
+
     top_row = mcview_vterm_resolve_scrollback_top_row (vt, r->lines);
     canvas = mcview_vterm_compose_scrollback (vt, top_row, r->lines);
     mcview_canvas_colors_viewer (&colors);
@@ -448,6 +522,17 @@ mcview_display_terminal (WView *view)
 MC_MOCKABLE void
 mcview_display (WView *view)
 {
+    /* Pictures were painted, and this may no longer be the terminal mode
+       (another file, another mode): the cells under them are written again,
+       and the painter takes stock after the refresh. */
+    if (view->pictures_shown)
+    {
+        const WRect *r = &WIDGET (view)->rect;
+
+        tty_touch_area (r->y, r->x, r->lines, r->cols);
+        view->paint_pending = TRUE;
+    }
+
     if (view->mode_flags.structured)
         mcview_display_structured (view);
     else if (view->mode_flags.hex)

@@ -279,7 +279,7 @@
       "capability": "viewer_source",
       "mutation": "yes",
       "errors": [],
-      "summary": "Define a reusable family of managed viewer sources with optional viewport rebuild."
+      "summary": "Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key (\"alt-o\") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it."
     },
     {
       "signature": "mc.file_handler.register(spec) -> boolean",

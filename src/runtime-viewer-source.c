@@ -36,6 +36,8 @@
 #include <glib/gstdio.h>
 
 #include "lib/extension-runtime.h"
+#include "lib/tty/tty.h"
+#include "lib/tty/key.h"
 #include "viewer/mcviewer.h"
 
 #include "runtime-viewer-source.h"
@@ -69,6 +71,7 @@ typedef struct
     char *draft_temp;
     char *help_file;
     char *help_node;
+    int options_key;  // keycode, 0 for none
 } runtime_viewer_controller_t;
 
 /*** forward declarations (file scope functions) *************************************************/
@@ -346,6 +349,17 @@ runtime_viewer_prepare_viewport (void *data, mcview_source_spec_t *draft, guint 
     const char *error = NULL;
     gboolean ok;
 
+    /* The pixels, for a source that draws pictures: only where the terminal
+       draws them, so that their absence says so. */
+    if (tty_has_sixel ())
+    {
+        int cell_width, cell_height;
+
+        tty_cell_size (&cell_width, &cell_height);
+        viewport.pixel_width = viewport.columns * (guint) cell_width;
+        viewport.pixel_height = viewport.lines * (guint) cell_height;
+    }
+
     runtime_viewer_remove_temp (&controller->draft_temp);
     ok = runtime_viewer_dispatch (controller, MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
                                   &viewport, 0, &result, &handled, &error)
@@ -418,6 +432,9 @@ runtime_viewer_key (void *data, int key)
     runtime_viewer_controller_t *controller = data;
     mc_runtime_viewer_spec_t ignored = { .struct_size = sizeof (ignored) };
     gboolean handled = FALSE;
+
+    if (controller->options_key != 0 && key == controller->options_key)
+        return MCV_KEY_OPEN_OPTIONS;
 
     if (!runtime_viewer_dispatch (controller, MC_RUNTIME_VIEWER_CONTROLLER_KEY, NULL, key, &ignored,
                                   &handled, NULL))
@@ -511,6 +528,10 @@ runtime_viewer_controller_open (mc_runtime_plugin_context_t *context,
         controller->native_controller.rebuild_on_resize =
             policy == MC_RUNTIME_VIEWER_VIEWPORT_REBUILD;
     }
+    if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, options_key)
+                + sizeof (source->options_key)
+        && source->options_key != NULL)
+        controller->options_key = tty_keyname_to_keycode (source->options_key, NULL);
     if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, target_viewer)
                 + sizeof (source->target_viewer)
         && mc_runtime_handle_is_valid (&source->target_viewer))

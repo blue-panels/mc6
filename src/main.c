@@ -403,6 +403,7 @@ main (int argc, char *argv[])
 
     // Set up the terminal size.
     tty_init (!mc_args__nomouse, mc_global.tty.xterm_flag);
+    tty_probe_graphics ();
 
     // Removing this from the X code let's us type C-c
     load_key_defs ();

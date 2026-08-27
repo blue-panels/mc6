@@ -1,12 +1,13 @@
 /*
    Interface to the terminal controlling library.
 
-   Copyright (C) 2005-2025
+   Copyright (C) 2005-2026
    Free Software Foundation, Inc.
 
    Written by:
    Roland Illig <roland.illig@gmx.de>, 2005.
    Andrew Borodin <aborodin@vmail.ru>, 2009.
+   Ilia Maslakov <il.smind@gmail.com>, 2011, 2026.
 
    This file is part of the Midnight Commander.
 
@@ -75,6 +76,19 @@ mc_tty_char_t mc_tty_frm[MC_TTY_FRM_MAX];
 
 static SIG_ATOMIC_VOLATILE_T got_interrupt = 0;
 
+typedef struct
+{
+    tty_painter_fn fn;
+    void *data;
+} tty_painter_t;
+
+static GSList *painters = NULL;
+static gboolean painting = FALSE;
+
+static gboolean has_sixel = FALSE;
+static int cell_width = 0;
+static int cell_height = 0;
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -88,6 +102,269 @@ sigintr_handler (int signo)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_run_painters (void)
+{
+    GSList *l;
+
+    /* A painter that refreshes would run the painters again. */
+    if (painting)
+        return;
+
+    painting = TRUE;
+    for (l = painters; l != NULL; l = g_slist_next (l))
+    {
+        const tty_painter_t *p = l->data;
+
+        p->fn (p->data);
+    }
+    painting = FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_painter_add (tty_painter_fn fn, void *data)
+{
+    tty_painter_t *p = g_new (tty_painter_t, 1);
+
+    p->fn = fn;
+    p->data = data;
+    painters = g_slist_append (painters, p);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_painter_remove (tty_painter_fn fn, void *data)
+{
+    GSList *l;
+
+    for (l = painters; l != NULL; l = g_slist_next (l))
+    {
+        tty_painter_t *p = l->data;
+
+        if (p->fn == fn && p->data == data)
+        {
+            painters = g_slist_delete_link (painters, l);
+            g_free (p);
+            return;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_raw_write (const char *data, size_t len)
+{
+    while (len > 0)
+    {
+        ssize_t n = write (STDOUT_FILENO, data, len);
+
+        if (n < 0)
+        {
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+            return;
+        }
+        data += n;
+        len -= (size_t) n;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The answers: CSI ? <attributes> c, where 4 among the attributes is sixel,
+   and CSI 6 ; <height> ; <width> t. The sequences are taken out of the
+   buffer as they are found, and what is left is the user's. */
+static void
+tty_parse_graphics_reply (char *buf, size_t *len, gboolean *sixel_seen, gboolean *cell_seen)
+{
+    size_t i = 0;
+
+    while (i + 2 < *len)
+    {
+        const char *p = buf + i + 2;
+        const char *end = buf + *len;
+        size_t taken = 0;
+
+        if (buf[i] != ESC_CHAR || buf[i + 1] != '[')
+        {
+            i++;
+            continue;
+        }
+
+        if (*p == '?')
+        {
+            int n = 0;
+            gboolean have = FALSE, sixel = FALSE;
+
+            for (p++; p < end; p++)
+            {
+                if (*p >= '0' && *p <= '9')
+                {
+                    n = n * 10 + (*p - '0');
+                    have = TRUE;
+                }
+                else if (*p == ';' || *p == 'c')
+                {
+                    if (have && n == 4)
+                        sixel = TRUE;
+                    n = 0;
+                    have = FALSE;
+                    if (*p == 'c')
+                    {
+                        has_sixel = sixel;
+                        *sixel_seen = TRUE;
+                        taken = (size_t) (p + 1 - (buf + i));
+                        break;
+                    }
+                }
+                else
+                    break;
+            }
+        }
+        else if (p[0] == '6' && p[1] == ';')
+        {
+            int h = 0, w = 0;
+
+            for (p += 2; p < end && *p >= '0' && *p <= '9'; p++)
+                h = h * 10 + (*p - '0');
+            if (p < end && *p == ';')
+                for (p++; p < end && *p >= '0' && *p <= '9'; p++)
+                    w = w * 10 + (*p - '0');
+            if (p < end && *p == 't')
+            {
+                if (h > 0 && w > 0)
+                {
+                    cell_width = w;
+                    cell_height = h;
+                }
+                *cell_seen = TRUE;
+                taken = (size_t) (p + 1 - (buf + i));
+            }
+        }
+
+        if (taken == 0)
+        {
+            i++;
+            continue;
+        }
+        memmove (buf + i, buf + i + taken, *len - i - taken);
+        *len -= taken;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_probe_graphics (void)
+{
+    const char *env = getenv ("MC_SIXEL");
+    const char *term = getenv ("TERM");
+    char buf[512];
+    size_t len = 0;
+    gboolean sixel_seen = FALSE, cell_seen = FALSE;
+    gboolean forced_off = env != NULL && env[0] == '0';
+    gboolean forced_on = env != NULL && env[0] == '1';
+    int waited_ms = 0;
+
+    has_sixel = FALSE;
+    cell_width = 0;
+    cell_height = 0;
+
+#ifdef TIOCGWINSZ
+    {
+        struct winsize ws;
+
+        memset (&ws, 0, sizeof (ws));
+        if (ioctl (STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0 && ws.ws_row > 0
+            && ws.ws_xpixel > 0 && ws.ws_ypixel > 0)
+        {
+            cell_width = ws.ws_xpixel / ws.ws_col;
+            cell_height = ws.ws_ypixel / ws.ws_row;
+            cell_seen = TRUE;
+        }
+    }
+#endif
+
+    /* A multiplexer answers for itself and keeps the DCS: no sixel through it
+       unless the user says so. */
+    if (forced_off
+        || (!forced_on && term != NULL
+            && (strncmp (term, "screen", 6) == 0 || strncmp (term, "tmux", 4) == 0)))
+    {
+        has_sixel = FALSE;
+        return;
+    }
+
+    if (isatty (STDIN_FILENO) && isatty (STDOUT_FILENO))
+    {
+        static const char query[] = ESC_STR "[c" ESC_STR "[16t";
+
+        tty_raw_write (query, sizeof (query) - 1);
+
+        /* Every terminal answers DA1; not every one answers about the cell,
+           so once DA1 is in, the cell gets a short while only. A terminal
+           that answers neither costs the whole wait once, at startup. */
+        while (len < sizeof (buf) - 1 && !(sixel_seen && cell_seen)
+               && waited_ms < (sixel_seen ? 100 : 300))
+        {
+            fd_set fds;
+            struct timeval tv = { 0, 50000 };
+            ssize_t n;
+
+            FD_ZERO (&fds);
+            FD_SET (STDIN_FILENO, &fds);
+            if (select (STDIN_FILENO + 1, &fds, NULL, NULL, &tv) <= 0)
+            {
+                waited_ms += 50;
+                continue;
+            }
+            n = read (STDIN_FILENO, buf + len, sizeof (buf) - 1 - len);
+            if (n <= 0)
+                break;
+            len += (size_t) n;
+            tty_parse_graphics_reply (buf, &len, &sixel_seen, &cell_seen);
+        }
+
+        /* Whatever else came in was typed: it goes back to the keyboard. */
+        if (len > 0)
+            tty_unget_input ((const unsigned char *) buf, len);
+    }
+
+    if (forced_on)
+        has_sixel = TRUE;
+
+    /* Sixel with no word on the cell: take the usual 8x16, so that the
+       pictures are placed and sized at all, rather than not drawn. */
+    if (has_sixel && (cell_width <= 0 || cell_height <= 0))
+    {
+        cell_width = 8;
+        cell_height = 16;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+tty_has_sixel (void)
+{
+    return has_sixel;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+tty_cell_size (int *width, int *height)
+{
+    *width = cell_width;
+    *height = cell_height;
+}
 /* --------------------------------------------------------------------------------------------- */
 
 /**

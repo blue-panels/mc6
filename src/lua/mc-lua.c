@@ -269,6 +269,7 @@ struct mc_lua_viewer_definition
     int source_state_ref;
     int close_ref;
     gboolean resize_rebuild;
+    char *options_key;  // the name of the key that opens the options, or NULL
 };
 
 struct mc_lua_viewer_controller
@@ -3905,7 +3906,11 @@ mc_lua_viewer_dispatch_v2 (mc_runtime_plugin_context_t *context, guint64 control
         return FALSE;
     }
     *handled = TRUE;
-    return mc_lua_viewer_call_prepare_viewport (controller, controller->live_ref, viewport, spec);
+    /* After the options: the params they returned, not yet committed. */
+    return mc_lua_viewer_call_prepare_viewport (
+        controller,
+        controller->pending_ref != LUA_NOREF ? controller->pending_ref : controller->live_ref,
+        viewport, spec);
 }
 
 static void
@@ -4061,6 +4066,8 @@ mc_lua_viewer_definition_create (lua_State *lua)
 
 /** @lua mc.viewer_source.define(spec) -> definition|nil, error? @capability viewer_source @mutation
  * yes @summary Define a reusable family of managed viewer sources with optional viewport rebuild.
+ * spec.options_key names the viewer key ("alt-o") that calls options(); prepare() then runs
+ * again with what options() returned. A key the viewer has a command for never reaches it.
  */
 static int
 mc_lua_viewer_source_define (lua_State *lua)
@@ -4105,6 +4112,7 @@ mc_lua_viewer_source_define (lua_State *lua)
         definition->resize_rebuild = g_strcmp0 (resize, "rebuild") == 0;
         g_free (resize);
     }
+    definition->options_key = mc_lua_dup_table_string (lua, 1, "options_key");
     if (definition->open_ref == LUA_NOREF || definition->prepare_ref == LUA_NOREF
         || definition->close_ref == LUA_NOREF)
     {
@@ -4139,6 +4147,7 @@ mc_lua_viewer_definition_destroy (gpointer data)
     }
     g_free (definition->id);
     g_free (definition->help_file);
+    g_free (definition->options_key);
     g_free (definition->help_node);
     g_free (definition);
 }
@@ -4259,6 +4268,9 @@ mc_lua_viewer_controller_transfer (mc_lua_package_t *package,
         : MC_RUNTIME_VIEWER_VIEWPORT_NONE;
     descriptor.source_state =
         controller->definition->source_state_ref != LUA_NOREF ? mc_lua_viewer_source_state : NULL;
+    descriptor.options_key = controller->definition->options_ref != LUA_NOREF
+        ? controller->definition->options_key
+        : NULL;
     if (target_viewer != NULL)
         descriptor.target_viewer = *target_viewer;
     controller_index = lua_absindex (package->lua, controller_index);
