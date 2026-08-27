@@ -240,6 +240,31 @@ mc_skin_color_set_default_for_terminal (mc_skin_t *mc_skin)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/* A key a skin written before it existed does not name gets a color of its own anyway: the
+ * foreground given here on the group's own background. */
+
+static void
+mc_skin_color_add_fallback (mc_skin_t *mc_skin, const gchar *group, const gchar *key,
+                            const gchar *fg)
+{
+    tty_color_pair_t *mc_skin_color, *tmp;
+
+    if (mc_skin_color_get_from_hash (mc_skin, group, key) != NULL)
+        return;
+
+    tmp = mc_skin_color_get_with_defaults (group, "_default_");
+    mc_skin_color = g_try_new0 (tty_color_pair_t, 1);
+    if (mc_skin_color == NULL)
+        return;
+
+    mc_skin_color->fg = g_strdup (fg);
+    mc_skin_color->bg = tmp != NULL ? g_strdup (tmp->bg) : NULL;
+    mc_skin_color->attrs = NULL;
+    mc_skin_color->pair_index = tty_try_alloc_color_pair (mc_skin_color, FALSE);
+    mc_skin_color_add_to_hash (mc_skin, group, key, mc_skin_color);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static void
 mc_skin_color_cache_init (void)
@@ -255,6 +280,11 @@ mc_skin_color_cache_init (void)
     CORE_COMMAND_MARK_COLOR = mc_skin_color_get ("core", "commandlinemark");
     CORE_SHADOW_COLOR = mc_skin_color_get ("core", "shadow");
     CORE_FRAME_COLOR = mc_skin_color_get ("core", "frame");
+    CORE_PERM_READ_COLOR = mc_skin_color_get ("core", "permread");
+    CORE_PERM_WRITE_COLOR = mc_skin_color_get ("core", "permwrite");
+    CORE_PERM_EXEC_COLOR = mc_skin_color_get ("core", "permexec");
+    CORE_PERM_SPECIAL_COLOR = mc_skin_color_get ("core", "permspecial");
+    CORE_PERM_NONE_COLOR = mc_skin_color_get ("core", "permnone");
 
     DIALOG_NORMAL_COLOR = mc_skin_color_get ("dialog", "_default_");
     DIALOG_FOCUS_COLOR = mc_skin_color_get ("dialog", "dfocus");
@@ -417,6 +447,12 @@ mc_skin_color_parse_ini_file (mc_skin_t *mc_skin)
         }
         g_strfreev (orig_keys);
     }
+
+    mc_skin_color_add_fallback (mc_skin, "core", "permread", "yellow");
+    mc_skin_color_add_fallback (mc_skin, "core", "permwrite", "brightred");
+    mc_skin_color_add_fallback (mc_skin, "core", "permexec", "brightgreen");
+    mc_skin_color_add_fallback (mc_skin, "core", "permspecial", "brightmagenta");
+    mc_skin_color_add_fallback (mc_skin, "core", "permnone", "gray");
 
     mc_skin_color_cache_init ();
 

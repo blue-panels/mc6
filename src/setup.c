@@ -134,6 +134,7 @@ panels_options_t panels_options = {
     .mouse_move_pages = TRUE,
     .filetype_mode = TRUE,
     .permission_mode = FALSE,
+    .permission_colors = FALSE,
     .qsearch_mode = QSEARCH_PANEL_CASE,
     .select_flags = SELECT_MATCH_CASE | SELECT_SHELL_PATTERNS,
 };
@@ -420,6 +421,7 @@ static const struct
     { "mouse_move_pages", &panels_options.mouse_move_pages },
     { "filetype_mode", &panels_options.filetype_mode },
     { "permission_mode", &panels_options.permission_mode },
+    { "permission_colors", &panels_options.permission_colors },
     {
         NULL,
         NULL,

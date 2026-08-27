@@ -448,29 +448,67 @@ panel_lines (const WPanel *p)
 /* --------------------------------------------------------------------------------------------- */
 /** This code relies on the default justification!!! */
 
+/* The color a character of the rwx string stands in, -1 for one that has none of its own. */
+static int
+permission_bit_color (char c)
+{
+    switch (c)
+    {
+    case 'r':
+        return CORE_PERM_READ_COLOR;
+    case 'w':
+        return CORE_PERM_WRITE_COLOR;
+    case 'x':
+        return CORE_PERM_EXEC_COLOR;
+    case 's':
+    case 'S':
+    case 't':
+    case 'T':
+        return CORE_PERM_SPECIAL_COLOR;
+    case '-':
+        return CORE_PERM_NONE_COLOR;
+    default:
+        return -1;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 add_permission_string (const char *dest, int width, file_entry_t *fe, file_attr_t attr, int color,
-                       gboolean is_octal)
+                       gboolean is_octal, gboolean color_bits)
 {
-    int i, r, l;
+    int i, r = 0, l = 0;
 
-    l = get_user_permissions (&fe->st);
+    if (panels_options.permission_mode)
+    {
+        l = get_user_permissions (&fe->st);
 
-    if (is_octal)
-    {
-        // Place of the access bit in octal mode
-        l = width + l - 3;
-        r = l + 1;
+        if (is_octal)
+        {
+            // Place of the access bit in octal mode
+            l = width + l - 3;
+            r = l + 1;
+        }
+        else
+        {
+            // The same to the triplet in string mode
+            l = l * 3 + 1;
+            r = l + 3;
+        }
     }
-    else
-    {
-        // The same to the triplet in string mode
-        l = l * 3 + 1;
-        r = l + 3;
-    }
+
+    /* The bits get their own colors on an ordinary row only: the cursor and the mark
+       keep their colors whole, like they do over a highlighted file name. */
+    color_bits = color_bits && !is_octal && attr == FATTR_NORMAL;
 
     for (i = 0; i < width; i++)
     {
+        int bit_color = -1;
+
+        if (color_bits && i > 0)
+            bit_color = permission_bit_color (dest[i]);
+
         if (i >= l && i < r)
         {
             if (attr == FATTR_CURRENT || attr == FATTR_MARKED_CURRENT)
@@ -478,6 +516,8 @@ add_permission_string (const char *dest, int width, file_entry_t *fe, file_attr_
             else
                 tty_setcolor (CORE_MARKED_COLOR);
         }
+        else if (bit_color >= 0)
+            tty_setcolor (bit_color);
         else if (color >= 0)
             tty_setcolor (color);
         else
@@ -971,11 +1011,14 @@ format_file (WPanel *panel, int file_index, int width, file_attr_t attr, gboolea
                 }
             }
 
-            if (panels_options.permission_mode)
+            if (strcmp (fi->id, "perm") == 0)
             {
-                if (strcmp (fi->id, "perm") == 0)
+                if (panels_options.permission_mode || panels_options.permission_colors)
                     perm = 1;
-                else if (strcmp (fi->id, "mode") == 0)
+            }
+            else if (strcmp (fi->id, "mode") == 0)
+            {
+                if (panels_options.permission_mode)
                     perm = 2;
             }
 
@@ -987,7 +1030,8 @@ format_file (WPanel *panel, int file_index, int width, file_attr_t attr, gboolea
                 prepared_text = str_fit_to_term (txt, len, fi->just_mode);
 
             if (perm != 0 && fe != NULL)
-                add_permission_string (prepared_text, fi->field_len, fe, attr, color, perm != 1);
+                add_permission_string (prepared_text, fi->field_len, fe, attr, color, perm != 1,
+                                       panels_options.permission_colors);
             else
                 tty_print_string (prepared_text);
 
