@@ -32,6 +32,7 @@ EXTFS_IN    = 			\
 	uc1541.in		\
 	ucab.in			\
 	uha.in			\
+	uinno.in		\
 	ulha.in			\
 	ulib.in			\
 	unar.in			\
@@ -67,6 +68,7 @@ EXTFS_OUT = 			\
 	uc1541			\
 	ucab			\
 	uha			\
+	uinno			\
 	ulha			\
 	ulib			\
 	unar			\

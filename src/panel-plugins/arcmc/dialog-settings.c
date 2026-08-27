@@ -270,9 +270,18 @@ settings_ext_get_text (const void *data, int row, int col)
     case SETTINGS_COL_PACK:
         return a->pack_bin != NULL ? "extern" : "-";
     case SETTINGS_COL_UNPACK:
-        return a->unpack_bin != NULL ? "extern" : "-";
+        return a->unpack_bin != NULL || a->extfs_helper != NULL ? "extern" : "-";
     case 4:
-        return settings_tool_text (a->pack_bin != NULL ? a->pack_bin : a->unpack_bin);
+    {
+        const char *bin = a->pack_bin;
+
+        if (bin == NULL)
+            bin = a->unpack_bin;
+        if (bin == NULL)
+            bin = a->test_bin;
+
+        return settings_tool_text (bin);
+    }
     default:
         return "";
     }
@@ -568,6 +577,7 @@ arcmc_show_ext_params_dialog (size_t idx)
 #define SET_FIELD(field, val)                                                                      \
     do                                                                                             \
     {                                                                                              \
+        g_free (a->field);                                                                         \
         if (val != NULL && val[0] != '\0')                                                         \
             a->field = val;                                                                        \
         else                                                                                       \

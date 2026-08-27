@@ -71,6 +71,7 @@ static arcmc_ext_archiver_t ext_archivers[] = {
     { "LZH", ".lzh", "lha", "a", "lha", "x", "lha", "t", "ulha", "@%s" },
     { "DEB", ".deb", NULL, NULL, "dpkg-deb", "-x", NULL, NULL, "deb", NULL },
     { "RPM", ".rpm", NULL, NULL, NULL, NULL, NULL, NULL, "rpm", NULL },
+    { "INO", ".exe", NULL, NULL, NULL, NULL, "innoextract", "--test --silent", "uinno", NULL },
 };
 
 static const size_t ext_archivers_count = G_N_ELEMENTS (ext_archivers);
@@ -364,6 +365,7 @@ static const struct test_is_supported_ds
     { "app.war", TRUE },     /* 7: war (web archive) */
     { "app.ear", TRUE },     /* 8: ear (enterprise archive) */
     { "APP.JAR", TRUE },     /* 9: jar case insensitive */
+    { "setup.exe", TRUE },   /* 10: Inno Setup installer */
 };
 
 /* ---- arcmc_detect_fmt_id ---- */
@@ -392,10 +394,11 @@ static const struct test_find_ext_ds
     const char *archive_path;
     const char *expected_name;
 } test_find_ext_ds[] = {
-    { "a.rar", "RAR" },       /* 0: rar */
-    { "/path/a.arj", "ARJ" }, /* 1: arj with path */
-    { "a.zip", NULL },        /* 2: zip - not ext archiver */
-    { NULL, NULL },           /* 3: NULL */
+    { "a.rar", "RAR" },           /* 0: rar */
+    { "/path/a.arj", "ARJ" },     /* 1: arj with path */
+    { "a.zip", NULL },            /* 2: zip - not ext archiver */
+    { NULL, NULL },               /* 3: NULL */
+    { "/path/SETUP.EXE", "INO" }, /* 4: Inno Setup installer, case insensitive */
 };
 
 /* ---- arcmc_check_bin_available ---- */

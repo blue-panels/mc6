@@ -162,8 +162,10 @@ typedef enum
 static const char *panel_format (WPanel *panel);
 static gboolean do_enter (WPanel *panel);
 static gboolean panel_magic_open_local_file (WPanel *panel, const char *fname,
-                                             const vfs_path_t *full_name_vpath);
-static gboolean panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe);
+                                             const vfs_path_t *full_name_vpath,
+                                             const char *action_name);
+static gboolean panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe,
+                                              const char *action_name);
 static const char *string_file_name (const file_entry_t *fe, int len);
 static const char *string_file_size (const file_entry_t *fe, int len);
 static const char *string_file_size_brief (const file_entry_t *fe, int len);
@@ -2991,18 +2993,22 @@ goto_child_dir (WPanel *panel)
         return;
     }
 
-    // a file that magic.ini knows how to enter is entered the way Enter does it
+    // Prefer an action specific to Ctrl-PgDn, then preserve legacy Open associations.
     if (!S_ISREG (fe->st.st_mode))
         return;
 
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL)
-        (void) panel_magic_open_plugin_file (panel, fe);
+    {
+        if (!panel_magic_open_plugin_file (panel, fe, "CdChild"))
+            (void) panel_magic_open_plugin_file (panel, fe, "Open");
+    }
     else
     {
         vfs_path_t *full_name_vpath;
 
         full_name_vpath = vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
-        (void) panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath);
+        if (!panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "CdChild"))
+            (void) panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "Open");
         vfs_path_free (full_name_vpath, TRUE);
     }
 }
@@ -3926,7 +3932,8 @@ panel_magic_runtime_open (const mc_magic_action_t *action, const char *display_n
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath)
+panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath,
+                             const char *action_name)
 {
     mc_magic_source_t source = {
         .display_name = fname,
@@ -3944,7 +3951,7 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     if (!vfs_file_is_local (full_name_vpath))
         return FALSE;
 
-    state = mc_magic_find_action (&source, "Open", &local_copy, &action);
+    state = mc_magic_find_action (&source, action_name, &local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
         if (action.submodule_id != NULL)
@@ -3975,7 +3982,7 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe)
+panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char *action_name)
 {
     panel_magic_source_data_t source_data = {
         .panel = panel,
@@ -3992,7 +3999,7 @@ panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe)
     mc_magic_action_state_t state;
     gboolean handled = FALSE;
 
-    state = mc_magic_find_action (&source, "Open", &local_copy, &action);
+    state = mc_magic_find_action (&source, action_name, &local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
         if (action.submodule_id != NULL)
@@ -4057,7 +4064,7 @@ do_enter_on_file_entry (WPanel *panel, const file_entry_t *fe)
     panel_runtime_publish_file_open (panel, fe, "other");
 
     /* magic.ini is a user-controlled overlay for plugin file operations. */
-    if (panel_magic_open_local_file (panel, fname, full_name_vpath))
+    if (panel_magic_open_local_file (panel, fname, full_name_vpath, "Open"))
     {
         vfs_path_free (full_name_vpath, TRUE);
         return TRUE;
@@ -4165,7 +4172,7 @@ do_enter (WPanel *panel)
             focus_name = plugin_title_last_component (title);
         }
 
-        if (S_ISREG (fe->st.st_mode) && panel_magic_open_plugin_file (panel, fe))
+        if (S_ISREG (fe->st.st_mode) && panel_magic_open_plugin_file (panel, fe, "Open"))
         {
             g_free (focus_name);
             return TRUE;

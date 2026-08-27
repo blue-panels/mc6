@@ -122,24 +122,6 @@ static const struct
     { ".tzst", ARCMC_FMT_TAR_ZST }, { ".tlz", ARCMC_FMT_TAR_LZ },
 };
 
-/* External archivers table -replaces the old extfs_map[] */
-arcmc_ext_archiver_t ext_archivers[] = {
-    { "RAR", ".rar", "rar", "a -r", "unrar", "x -o+", "unrar", "t", "urar", "@%s" },
-    { "ARJ", ".arj", "arj", "a -r", "arj", "x -y", "arj", "t", "uarj", "!%s" },
-    { "ACE", ".ace", NULL, NULL, "unace", "x -o", "unace", "t", "uace", NULL },
-    { "ARC", ".arc", "arc", "a", "arc", "x", NULL, NULL, "uarc", NULL },
-    { "ALZ", ".alz", NULL, NULL, "unalz", "", NULL, NULL, "ualz", NULL },
-    { "ZOO", ".zoo", "zoo", "a", "zoo", "x", NULL, NULL, "uzoo", NULL },
-    { "HA", ".ha", "ha", "a", "ha", "x", "ha", "t", "uha", NULL },
-    { "WIM", ".wim", NULL, NULL, "wimlib-imagex", "extract", NULL, NULL, "uwim", NULL },
-    { "LHA", ".lha", "lha", "a", "lha", "x", "lha", "t", "ulha", "@%s" },
-    { "LZH", ".lzh", "lha", "a", "lha", "x", "lha", "t", "ulha", "@%s" },
-    { "DEB", ".deb", NULL, NULL, "dpkg-deb", "-x", NULL, NULL, "deb", NULL },
-    { "RPM", ".rpm", NULL, NULL, NULL, NULL, NULL, NULL, "rpm", NULL },
-};
-
-const size_t ext_archivers_count = G_N_ELEMENTS (ext_archivers);
-
 /*** forward declarations (file scope functions) *************************************************/
 
 static gboolean arcmc_ext_run_with_status (const char *title, const char *cmd_str,
@@ -843,8 +825,7 @@ char *
 arcmc_find_extfs_helper (const char *archive_path)
 {
     const arcmc_builtin_format_t *fmt;
-    const char *basename_ptr;
-    size_t i;
+    const arcmc_ext_archiver_t *ext;
 
     /* a builtin format uses a helper only when its settings allow the external tool */
     fmt = arcmc_find_builtin_format (archive_path);
@@ -857,20 +838,16 @@ arcmc_find_extfs_helper (const char *archive_path)
         return arcmc_extfs_helper_path (fmt->extfs_helper);
     }
 
-    basename_ptr = strrchr (archive_path, '/');
-    if (basename_ptr != NULL)
-        basename_ptr++;
-    else
-        basename_ptr = archive_path;
+    ext = arcmc_find_ext_archiver (archive_path);
+    if (ext != NULL)
+    {
+        size_t i = (size_t) (ext - ext_archivers);
 
-    for (i = 0; i < ext_archivers_count; i++)
-        if (arcmc_has_ext (basename_ptr, ext_archivers[i].ext))
-        {
-            if (arcmc_ext_enabled != NULL && !arcmc_ext_enabled[i])
-                return NULL;
+        if (arcmc_ext_enabled != NULL && !arcmc_ext_enabled[i])
+            return NULL;
 
-            return arcmc_extfs_helper_path (ext_archivers[i].extfs_helper);
-        }
+        return arcmc_extfs_helper_path (ext->extfs_helper);
+    }
 
     return NULL;
 }
@@ -1444,9 +1421,10 @@ arcmc_try_open (arcmc_data_t *data)
     if (res == ARCMC_READ_OK)
         return TRUE;
 
-    /* an external helper is given a filename, so it has nothing to open when the
-       archive arrives as a stream */
-    if (data->input_stream == NULL)
+    /* An external helper needs a filename. A file-backed stream has one; an
+       arbitrary stream does not. */
+    if (data->input_stream == NULL
+        || mc_pp_input_stream_local_path (data->input_stream, NULL) != NULL)
     {
         /* try extfs helper as fallback */
         data->extfs_helper = arcmc_find_extfs_helper (data->archive_path);
@@ -2490,39 +2468,6 @@ arcmc_push_nested (arcmc_data_t *data, char *local_path)
     }
 
     return MC_PPR_OK;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* Find the external archiver entry matching the archive file extension.
-   Returns NULL if no match. */
-const arcmc_ext_archiver_t *
-arcmc_find_ext_archiver (const char *archive_path)
-{
-    const char *basename_ptr;
-    size_t blen, i;
-
-    if (archive_path == NULL)
-        return NULL;
-
-    basename_ptr = strrchr (archive_path, '/');
-    if (basename_ptr != NULL)
-        basename_ptr++;
-    else
-        basename_ptr = archive_path;
-
-    blen = strlen (basename_ptr);
-
-    for (i = 0; i < ext_archivers_count; i++)
-    {
-        size_t elen = strlen (ext_archivers[i].ext);
-
-        if (blen >= elen
-            && g_ascii_strcasecmp (basename_ptr + blen - elen, ext_archivers[i].ext) == 0)
-            return &ext_archivers[i];
-    }
-
-    return NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */

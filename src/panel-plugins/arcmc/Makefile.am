@@ -1,9 +1,13 @@
 arcmcdir = $(panel_plugins_dir)/arcmc
 arcmc_LTLIBRARIES = mc-panel-arcmc.la
 
+EXTRA_DIST = README.md
+
 mc_panel_arcmc_la_SOURCES = \
     arcmc.c \
     arcmc-config.c \
+    arcmc-ext.c \
+    arcmc-ext.h \
     arcmc-reader.c \
     archive-io.c \
     progress.c \

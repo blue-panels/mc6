@@ -122,6 +122,48 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_cdchild_action_does_not_define_open)
+{
+    magic_config_t config = { NULL, NULL };
+    mc_magic_source_t source = { .display_name = "setup.exe" };
+    mc_magic_action_t action = { 0 };
+    char *local_copy = NULL;
+    gboolean matched = TRUE;
+    magic_type_info_t type = { FALSE, { '\0' } };
+    magic_mime_info_t mime = { FALSE, NULL };
+    char *path = NULL;
+    int fd;
+
+    fd = g_file_open_tmp ("mc-magic-XXXXXX", &path, NULL);
+    ck_assert_int_ne (fd, -1);
+    close (fd);
+    mctest_assert_true (g_file_set_contents (
+        path, "[inno]\nRegex=\\\\.exe$\nCdChild=%plugin{arcmc:open}\n", -1, NULL));
+
+    magic_config_load (&config, path);
+    mctest_assert_not_null (config.ini);
+
+    ck_assert_int_eq (magic_find_in_config (&config, &source, "Open", &local_copy, &action,
+                                            &matched, &type, &mime),
+                      MC_MAGIC_ACTION_NONE);
+    mctest_assert_false (matched);
+
+    ck_assert_int_eq (magic_find_in_config (&config, &source, "CdChild", &local_copy, &action,
+                                            &matched, &type, &mime),
+                      MC_MAGIC_ACTION_FOUND);
+    mctest_assert_true (matched);
+    ck_assert_str_eq (action.plugin_id, "arcmc");
+    ck_assert_str_eq (action.operation_id, "open");
+
+    mc_magic_action_clear (&action);
+    magic_config_clear (&config);
+    unlink (path);
+    g_free (path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 #ifdef HAVE_LIBMAGIC
 START_TEST (test_mime_selector_matches_and_copies_metadata)
 {
@@ -282,6 +324,7 @@ main (void)
 
     tcase_add_test (tc_core, test_parse_plugin_operation);
     tcase_add_test (tc_core, test_a_rule_without_the_key_does_not_shadow_the_next_file);
+    tcase_add_test (tc_core, test_cdchild_action_does_not_define_open);
 #ifdef HAVE_LIBMAGIC
     tcase_add_test (tc_core, test_mime_selector_matches_and_copies_metadata);
     tcase_add_test (tc_core, test_elf_mime_selector_does_not_require_filename_extension);

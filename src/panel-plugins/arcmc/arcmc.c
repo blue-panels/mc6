@@ -238,7 +238,7 @@ static gboolean
 arcmc_is_supported_archive (const char *filename)
 {
     const arcmc_builtin_format_t *fmt;
-    size_t flen, i;
+    const arcmc_ext_archiver_t *ext;
 
     if (filename == NULL)
         return FALSE;
@@ -247,15 +247,13 @@ arcmc_is_supported_archive (const char *filename)
     if (fmt != NULL)
         return (fmt->enabled && fmt->unpack != ARCMC_BACKEND_OFF);
 
-    /* also accept extensions handled by external archivers */
-    flen = strlen (filename);
-
-    for (i = 0; i < ext_archivers_count; i++)
+    /* Also accept suffixes from the runtime external-archiver registry. */
+    ext = arcmc_find_ext_archiver (filename);
+    if (ext != NULL)
     {
-        size_t elen = strlen (ext_archivers[i].ext);
+        size_t i = (size_t) (ext - ext_archivers);
 
-        if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, ext_archivers[i].ext) == 0)
-            return (arcmc_ext_enabled == NULL || arcmc_ext_enabled[i]);
+        return arcmc_ext_enabled == NULL || arcmc_ext_enabled[i];
     }
 
     return FALSE;
@@ -290,18 +288,12 @@ arcmc_detect_format (const char *filename)
             return map[i].fmt;
     }
 
-    /* check external archiver extensions */
+    /* Check the runtime external-archiver registry. */
     {
-        size_t flen = strlen (filename);
+        const arcmc_ext_archiver_t *ext = arcmc_find_ext_archiver (filename);
 
-        for (i = 0; i < ext_archivers_count; i++)
-        {
-            size_t elen = strlen (ext_archivers[i].ext);
-
-            if (flen >= elen
-                && g_ascii_strcasecmp (filename + flen - elen, ext_archivers[i].ext) == 0)
-                return ext_archivers[i].ext + 1; /* skip the leading dot */
-        }
+        if (ext != NULL)
+            return ext->ext + 1; /* skip the leading dot */
     }
 
     return "arc";
@@ -404,14 +396,13 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
             }
         }
 
-        /* also strip external archiver extensions */
-        for (i = 0; i < ext_archivers_count; i++)
+        /* also strip a suffix from the external-archiver registry */
         {
-            size_t ext_len = strlen (ext_archivers[i].ext);
+            const arcmc_ext_archiver_t *ext = arcmc_find_ext_archiver (base_name);
 
-            if (name_len > ext_len
-                && g_ascii_strcasecmp (base_name + name_len - ext_len, ext_archivers[i].ext) == 0)
+            if (ext != NULL)
             {
+                size_t ext_len = strlen (ext->ext);
                 char *stripped = g_strndup (base_name, name_len - ext_len);
 
                 result = g_strconcat (stripped, arcmc_builtin_formats[ARCMC_FMT_ZIP].ext, NULL);
@@ -495,13 +486,16 @@ arcmc_open_input_stream (mc_panel_host_t *host, const char *display_name,
                          mc_pp_input_stream_t *stream)
 {
     arcmc_data_t *data;
+    const char *local_path;
 
     if (stream == NULL)
         return NULL;
 
+    local_path = mc_pp_input_stream_local_path (stream, NULL);
+
     data = g_new0 (arcmc_data_t, 1);
     data->host = host;
-    data->archive_path = g_strdup (display_name);
+    data->archive_path = g_strdup (local_path != NULL ? local_path : display_name);
     data->current_dir = g_strdup ("");
     data->input_stream = stream;
 
