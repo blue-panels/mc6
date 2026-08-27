@@ -2989,7 +2989,7 @@ dview_ok_to_exit (WDiff *dview)
 static void
 dview_help (const WDiff *dview)
 {
-    ev_help_t event_data = { NULL, "[Diff Viewer]" };
+    ev_help_t event_data = { NULL, "[Diff Viewer]", NULL };
 
     (void) dview;
 

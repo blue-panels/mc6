@@ -1605,7 +1605,7 @@ edit_symlink_cmd (void)
 void
 help_cmd (void)
 {
-    ev_help_t event_data = { NULL, NULL };
+    ev_help_t event_data = { NULL, NULL, NULL };
 
     if (current_panel->quick_search.active)
         event_data.node = "[Quick search]";

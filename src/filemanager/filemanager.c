@@ -1388,7 +1388,8 @@ midnight_execute_cmd (Widget *sender, long command)
                                                       &help_node);
             if (r == MC_PPR_OK)
             {
-                ev_help_t event_data = { help_filename, help_node };
+                // the plugin's help stands in for the main one and links to it
+                ev_help_t event_data = { help_filename, help_node, "[main]" };
                 mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
                 break;
             }

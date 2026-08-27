@@ -538,6 +538,7 @@ menubar_help (const WMenuBar *menubar)
     ev_help_t event_data;
 
     event_data.filename = NULL;
+    event_data.parent_node = NULL;
 
     if (menubar->is_dropped)
         event_data.node = MENU (g_list_nth_data (menubar->menu, menubar->current))->help_node;
