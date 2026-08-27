@@ -67,6 +67,8 @@ data_files_to_distribute = \
 	data/uace.README \
 	data/uace.input \
 	data/uace.output \
+	data/uinno.input \
+	data/uinno.output \
 	data/uarc.README \
 	data/uarc.input \
 	data/uarc.output \

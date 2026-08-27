@@ -1,0 +1,4 @@
+drwxr-xr-x   1  <<uid>>  <<gid>>          0 2000-01-01 00:00:00 app/
+-rw-r--r--   1  <<uid>>  <<gid>>         12 2000-01-01 00:00:00 app/readme.txt
+-rw-r--r--   1  <<uid>>  <<gid>>       4096 2000-01-01 00:00:00 app/bin/tool.exe
+-rw-r--r--   1  <<uid>>  <<gid>>          0 2000-01-01 00:00:00 empty file.txt

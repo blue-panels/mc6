@@ -1,0 +1,66 @@
+#! /bin/sh
+# Midnight Commander - Inno Setup installer support
+#
+# Requires innoextract: https://constexpr.org/innoextract/
+
+INNOEXTRACT=${MC_TEST_INNOEXTRACT:-innoextract}
+AWK=@AWK@
+
+[ -n "$2" ] || exit 1
+
+action=$1
+archive=$2
+
+mc_inno_list()
+{
+    list_file=`mktemp "${MC_TMPDIR:-/tmp}/mctmpdir-uinno-list.XXXXXX"` || exit 1
+    trap 'rm -f "$list_file"' 0 1 2 3 5 13 15
+
+    if [ -n "${MC_TEST_EXTFS_LIST_CMD:-}" ]; then
+        list_cmd=$MC_TEST_EXTFS_LIST_CMD
+        $list_cmd > "$list_file" || exit 1
+    else
+        "$INNOEXTRACT" --list --silent --list-sizes -- "$archive" > "$list_file" || exit 1
+    fi
+
+    "$AWK" -v uid="`id -ru`" -v gid="`id -rg`" '
+        /\/$/ {
+            printf "drwxr-xr-x 1 %s %s 0 01/01/2000 00:00:00 %s\n", uid, gid, $0
+            next
+        }
+        /^[0-9]+ / {
+            size = $1
+            name = substr($0, length($1) + 2)
+            printf "-rw-r--r-- 1 %s %s %s 01/01/2000 00:00:00 %s\n", uid, gid, size, name
+        }
+    ' "$list_file"
+}
+
+mc_inno_copyout()
+{
+    source_path=$3
+    dest_path=$4
+    temp_dir=`mktemp -d "${MC_TMPDIR:-/tmp}/mctmpdir-uinno.XXXXXX"` || exit 1
+    trap 'rm -rf "$temp_dir"' 0 1 2 3 5 13 15
+
+    "$INNOEXTRACT" --extract --silent --output-dir "$temp_dir" \
+        --include "/$source_path" -- "$archive" >/dev/null || exit 1
+
+    [ -f "$temp_dir/$source_path" ] || exit 1
+    cp -p "$temp_dir/$source_path" "$dest_path"
+}
+
+umask 077
+
+case "$action" in
+    list)
+        mc_inno_list
+        ;;
+    copyout)
+        [ -n "$4" ] || exit 1
+        mc_inno_copyout "$@"
+        ;;
+    *)
+        exit 1
+        ;;
+esac

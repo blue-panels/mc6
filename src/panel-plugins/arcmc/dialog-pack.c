@@ -282,8 +282,7 @@ sel_other_format_button (WButton *button, int action)
 
     /* count enabled external archivers with pack support */
     for (i = 0; i < (int) ext_archivers_count; i++)
-        if (ext_archivers[i].pack_bin != NULL
-            && (arcmc_ext_enabled == NULL || arcmc_ext_enabled[i]))
+        if (ext_archivers[i].pack_bin != NULL && ext_archivers[i].enabled)
             count++;
 
     if (count == 0)
@@ -329,7 +328,7 @@ sel_other_format_button (WButton *button, int action)
 
         if (ext_archivers[i].pack_bin == NULL)
             continue;
-        if (arcmc_ext_enabled != NULL && !arcmc_ext_enabled[i])
+        if (!ext_archivers[i].enabled)
             continue;
 
         g_snprintf (label, sizeof (label), "+ %s (%s)", ext_archivers[i].name,

@@ -28,10 +28,6 @@
 
 #include "lib/global.h"
 
-/*** global variables **************************************************************************/
-
-extern gboolean *arcmc_ext_enabled;
-
 /* "Create archive" hotkey, loaded from arcmc.ini ([arcmc]/hotkey_create).
    arcmc_hotkey_create is the resolved key code (0 = disabled);
    arcmc_hotkey_create_label is a program-lifetime display string for the
@@ -43,5 +39,6 @@ extern const char *arcmc_hotkey_create_label;
 
 void arcmc_config_load (void);
 void arcmc_config_save (void);
+void arcmc_config_free (void);
 
 #endif /* ARCMC_CONFIG_H */

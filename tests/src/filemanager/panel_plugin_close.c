@@ -42,6 +42,7 @@ static char *last_cd_path;
 static char *last_history_path;
 static const mc_panel_plugin_t *find_by_prefix_result;
 static const mc_panel_plugin_t *find_by_name_result;
+static const GSList *plugin_list_result;
 static char *last_find_prefix;
 static char *last_find_name;
 static int call_order_formats;
@@ -112,6 +113,13 @@ mock_mc_panel_plugin_find_by_name (const char *name)
 }
 
 /* @Mock */
+static const GSList *
+mock_mc_panel_plugin_list (void)
+{
+    return plugin_list_result;
+}
+
+/* @Mock */
 static void
 mock_panel_clean_dir (WPanel *panel)
 {
@@ -149,6 +157,7 @@ mock_panel_re_sort (WPanel *panel)
 #define panel_directory_history_add_path          mock_panel_directory_history_add_path
 #define mc_panel_plugin_find_by_prefix            mock_mc_panel_plugin_find_by_prefix
 #define mc_panel_plugin_find_by_name              mock_mc_panel_plugin_find_by_name
+#define mc_panel_plugin_list                      mock_mc_panel_plugin_list
 #define panel_clean_dir                           mock_panel_clean_dir
 #define panel_plugin_apply_default_columns_format mock_panel_plugin_apply_default_columns_format
 #define dir_list_init                             mock_dir_list_init
@@ -162,6 +171,7 @@ mock_panel_re_sort (WPanel *panel)
 #undef panel_directory_history_add_path
 #undef mc_panel_plugin_find_by_prefix
 #undef mc_panel_plugin_find_by_name
+#undef mc_panel_plugin_list
 #undef panel_clean_dir
 #undef panel_plugin_apply_default_columns_format
 #undef dir_list_init
@@ -176,6 +186,7 @@ static gboolean mock_input_stream_freed;
 static gboolean mock_stream_target_close_called;
 static mc_pp_input_stream_t *mock_stream_target_input;
 static gboolean mock_view_input_stream_called;
+static gboolean mock_plugin_shutdown_called;
 
 static void
 mock_plugin_close (void *data)
@@ -206,6 +217,43 @@ mock_plugin_get_items (void *data, void *list)
     (void) data;
     (void) list;
     return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void *
+mock_plugin_open (mc_panel_host_t *host, const char *open_path)
+{
+    static int plugin_data;
+
+    (void) host;
+    (void) open_path;
+    return &plugin_data;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mock_plugin_shutdown (void)
+{
+    mock_plugin_shutdown_called = TRUE;
+}
+
+static const mc_panel_plugin_t mock_shutdown_plugin = {
+    .api_version = MC_PANEL_PLUGIN_API_VERSION,
+    .name = "shutdown-test",
+    .open = mock_plugin_open,
+    .close = mock_plugin_close,
+    .get_items = mock_plugin_get_items,
+    .shutdown = mock_plugin_shutdown,
+};
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mock_may_open_name (const char *display_name)
+{
+    return g_str_has_suffix (display_name, ".pkgx");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -271,6 +319,7 @@ static const mc_pp_file_operation_t mock_file_operations[] = {
     {
         .name = "open",
         .kind = MC_PP_FILE_OPERATION_OPEN,
+        .may_open_name = mock_may_open_name,
         .open_input_stream = mock_open_input_stream_accept,
     },
     {
@@ -364,7 +413,9 @@ setup (void)
     mock_stream_target_close_called = FALSE;
     mock_stream_target_input = NULL;
     mock_view_input_stream_called = FALSE;
+    mock_plugin_shutdown_called = FALSE;
     find_by_name_result = NULL;
+    plugin_list_result = NULL;
     g_clear_pointer (&last_find_name, g_free);
     g_clear_pointer (&last_find_prefix, g_free);
     find_by_prefix_result = NULL;
@@ -412,6 +463,78 @@ START_TEST (test_plugin_close_restores_formats_before_reload)
     ck_assert_msg (panel_reload_called, "panel_reload was not called");
     ck_assert_msg (mock_plugin_close_called, "plugin close callback was not called");
     ck_assert_int_lt (call_order_formats, call_order_reload);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_registry_shutdown_calls_plugin_cleanup_once)
+{
+    ck_assert (mc_panel_plugin_add (&mock_shutdown_plugin));
+
+    mc_panel_plugins_shutdown ();
+    ck_assert (mock_plugin_shutdown_called);
+
+    mock_plugin_shutdown_called = FALSE;
+    mc_panel_plugins_shutdown ();
+    ck_assert (!mock_plugin_shutdown_called);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_ctrl_pgdn_auto_selects_operation_by_runtime_name_matcher)
+{
+    WPanel panel;
+    GSList plugin_node = { (gpointer) &mock_stream_target_plugin, NULL };
+
+    memset (&panel, 0, sizeof (panel));
+    find_by_name_result = &mock_stream_target_plugin;
+    plugin_list_result = &plugin_node;
+
+    ck_assert (panel_plugin_open_local_file_auto (&panel, "archive.pkgx", "/dev/null"));
+    ck_assert_ptr_eq ((const void *) panel.plugin, (const void *) &mock_stream_target_plugin);
+
+    panel_plugin_dispose (&panel);
+    ck_assert (mock_stream_target_close_called);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_rejected_operation_preserves_cached_local_copy_for_retry)
+{
+    WPanel panel;
+    char *local_copy = NULL;
+    char *saved_path;
+    int source_data = 42;
+
+    memset (&panel, 0, sizeof (panel));
+    panel.is_plugin_panel = TRUE;
+    panel.plugin = &mock_plugin;
+    panel.plugin_data = &source_data;
+    panel.plugin_host = g_new0 (mc_panel_host_t, 1);
+    ck_assert (mc_pp_write_temp_file ("mc-panel-operation-XXXXXX", "archive", -1, &local_copy));
+    saved_path = g_strdup (local_copy);
+
+    find_by_name_result = &mock_input_stream_rejecting_plugin;
+    ck_assert (!panel_plugin_open_entry_by_operation (&panel, "archive.pkgx", "rejecting", "open",
+                                                      &local_copy));
+    ck_assert_ptr_nonnull (local_copy);
+    ck_assert (g_file_test (saved_path, G_FILE_TEST_IS_REGULAR));
+
+    find_by_name_result = &mock_stream_target_plugin;
+    ck_assert (panel_plugin_open_entry_by_operation (&panel, "archive.pkgx", "target", "open",
+                                                     &local_copy));
+    mctest_assert_null (local_copy);
+    ck_assert (g_file_test (saved_path, G_FILE_TEST_IS_REGULAR));
+
+    panel_plugin_dispose (&panel);
+    ck_assert (!g_file_test (saved_path, G_FILE_TEST_EXISTS));
+    g_free (saved_path);
 }
 END_TEST
 
@@ -733,6 +856,8 @@ main (void)
     tcase_add_test (tc_core, test_plugin_close_not_plugin_panel);
     tcase_add_test (tc_core, test_plugin_close_clears_plugin_host_with_focus_after);
     tcase_add_test (tc_core, test_named_file_operation_does_not_scan_the_plugin_registry);
+    tcase_add_test (tc_core, test_ctrl_pgdn_auto_selects_operation_by_runtime_name_matcher);
+    tcase_add_test (tc_core, test_rejected_operation_preserves_cached_local_copy_for_retry);
     tcase_add_test (tc_core, test_named_view_operation_returns_a_local_viewer_source);
     tcase_add_test (tc_core, test_closing_stream_consumer_restores_suspended_source);
     tcase_add_test (tc_core, test_nested_consumers_keep_every_suspended_source);
@@ -740,6 +865,7 @@ main (void)
     tcase_add_test (tc_core, test_input_stream_stays_with_caller_when_target_rejects_it);
     tcase_add_test (tc_core, test_plugin_find_by_path_uses_prefix_registry);
     tcase_add_test (tc_core, test_plugin_find_by_path_ignores_unknown_prefix);
+    tcase_add_test (tc_core, test_registry_shutdown_calls_plugin_cleanup_once);
 
     return mctest_run_all (tc_core);
 }

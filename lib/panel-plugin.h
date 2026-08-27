@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 13
+#define MC_PANEL_PLUGIN_API_VERSION 14
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -55,9 +55,12 @@ typedef enum
     MC_PPF_ACCEPTS_FILE_LIST = 1 << 9,  /* plugin implements open_file_list(),
                                            i.e. can be a destination for Find
                                            results and similar list producers */
-    MC_PPF_COPY_TREE = 1 << 11          /* copy_to_local() takes a directory and
+    MC_PPF_COPY_TREE = 1 << 11,         /* copy_to_local() takes a directory and
                                            writes everything below it; without
                                            this the core walks the tree itself */
+    MC_PPF_VIEW_ON_ENTER = 1 << 12      /* Enter on a regular file that enter()
+                                           returns MC_PPR_NOT_SUPPORTED for opens
+                                           the viewer instead of doing nothing */
 } mc_pp_flags_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -101,10 +104,11 @@ typedef enum
     MC_PP_FILE_OPERATION_VIEW
 } mc_pp_file_operation_kind_t;
 
-/* A named operation that can be selected by magic.ini for one file.  Separate
-   from actions[], whose callbacks receive a path from the plugin menu rather
-   than file contents from a source panel.  An operation takes @stream only
-   when it succeeds; @local_path is then the core's to view and remove. */
+/* A named operation for one file. magic.ini can select it explicitly;
+   Ctrl-PgDn also tries OPEN operations whose may_open_name() accepts the file.
+   Separate from actions[], whose callbacks receive a path from the plugin menu
+   rather than file contents from a source panel. An operation takes @stream
+   only when it succeeds; @local_path is then the core's to view and remove. */
 typedef struct mc_pp_file_operation_t
 {
     const char *name;
@@ -320,6 +324,10 @@ typedef struct mc_panel_plugin_t
        config. NULL = the plugin has no settings. */
     void (*configure) (void);
 
+    /* API 14: release process-lifetime plugin state. Called once at shutdown,
+       after all panel instances have been closed and before modules unload. */
+    void (*shutdown) (void);
+
     /* Read-only Quick View source for entries that are not files; the core
        unlinks @local_path.  NOT_SUPPORTED = try get_local_copy(), FAILED = show
        nothing. */
@@ -370,6 +378,8 @@ mc_pp_input_stream_t *mc_pp_input_stream_new_for_file (const char *path, gboolea
 /* The file behind @stream, NULL when it has none; @is_temporary: it dies with the stream. */
 const char *mc_pp_input_stream_local_path (const mc_pp_input_stream_t *stream,
                                            gboolean *is_temporary);
+/* Change unlink-on-free for a file-backed stream. Returns FALSE for other stream types. */
+gboolean mc_pp_input_stream_set_file_ownership (mc_pp_input_stream_t *stream, gboolean own_file);
 
 /* Registry */
 gboolean mc_panel_plugin_add (const mc_panel_plugin_t *plugin);

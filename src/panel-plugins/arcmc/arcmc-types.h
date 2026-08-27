@@ -1,26 +1,5 @@
-/*
-   Archive browser panel plugin -shared types and constants.
-
-   Copyright (C) 2026
-   Free Software Foundation, Inc.
-
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026.
-
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
-   and/or modify it under the terms of the GNU General Public License as
-   published by the Free Software Foundation, either version 3 of the License,
-   or (at your option) any later version.
-
-   The Midnight Commander is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/** \file arcmc-types.h
+ *  \brief Header: shared archive browser types and constants
  */
 
 #ifndef ARCMC_TYPES_H
@@ -83,6 +62,7 @@ typedef struct arcmc_nest_frame_t
 {
     struct arcmc_nest_frame_t *prev;
     char *archive_path; /* path to the outer archive on disk */
+    char *display_path; /* stable user-visible name of the outer archive */
     char *current_dir;  /* dir inside the outer archive where we were */
     char *password;
     char *extfs_helper;
@@ -95,6 +75,7 @@ typedef struct
 {
     mc_panel_host_t *host;
     char *archive_path;                 /* path to the archive on disk */
+    char *display_path;                 /* stable user-visible name, never a temporary path */
     char *current_dir;                  /* current directory inside the archive ("" = root) */
     char *password;                     /* password (if encrypted), NULL otherwise */
     GPtrArray *all_entries;             /* flat list of all entries from the archive */
@@ -104,6 +85,7 @@ typedef struct
     arcmc_nest_frame_t *nest_stack;     /* stack of outer archives for nested browsing */
     GHashTable *bulk_cache;             /* bulk extract cache: filename -> local_path */
     char *bulk_temp_dir;                /* temp directory for bulk-extracted files */
+    gboolean history_enabled;           /* FALSE for non-reconstructable input streams */
 } arcmc_data_t;
 
 /* Progress dialog context for pack/extract operations */
@@ -168,22 +150,23 @@ extern const size_t arcmc_builtin_formats_count;
 /* External archiver tool descriptor */
 typedef struct
 {
-    const char *name;          /* display name, e.g. "RAR" */
-    const char *ext;           /* default extension, e.g. ".rar" */
-    const char *pack_bin;      /* pack binary, e.g. "rar", NULL = no pack support */
-    const char *pack_args;     /* pack arguments template, e.g. "a -r -o+" */
-    const char *unpack_bin;    /* unpack binary, e.g. "unrar" */
-    const char *unpack_args;   /* unpack arguments template, e.g. "x -o+" */
-    const char *test_bin;      /* test binary, e.g. "unrar", NULL = no test */
-    const char *test_args;     /* test arguments template, e.g. "t" */
-    const char *extfs_helper;  /* extfs helper name for browsing, e.g. "urar" */
-    const char *list_file_arg; /* file-list argument template, e.g. "@%s" for RAR/7z, NULL = not
-                                  supported */
+    char *name;          /* display name, e.g. "RAR" */
+    char *ext;           /* filename suffix, e.g. ".rar" */
+    char *pack_bin;      /* pack binary, e.g. "rar", NULL = no pack support */
+    char *pack_args;     /* pack arguments template, e.g. "a -r -o+" */
+    char *unpack_bin;    /* unpack binary, e.g. "unrar" */
+    char *unpack_args;   /* unpack arguments template, e.g. "x -o+" */
+    char *test_bin;      /* test binary, e.g. "unrar", NULL = no test */
+    char *test_args;     /* test arguments template, e.g. "t" */
+    char *extfs_helper;  /* extfs helper name for browsing, e.g. "urar" */
+    char *list_file_arg; /* file-list argument template, e.g. "@%s" for RAR/7z, NULL = not
+                            supported */
+    gboolean enabled;    /* format is available for dispatch and settings */
 } arcmc_ext_archiver_t;
 
-/* External archivers table */
-extern arcmc_ext_archiver_t ext_archivers[]; /* mutable: config may override fields */
-extern const size_t ext_archivers_count;
+/* External archivers registry.  arcmc.ini may append rows at startup. */
+extern arcmc_ext_archiver_t *ext_archivers;
+extern size_t ext_archivers_count;
 
 /*** declarations (functions)
  * **********************************************************************/

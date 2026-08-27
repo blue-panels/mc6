@@ -15,6 +15,7 @@ LIBS += $(GLIB_LIBS)
 endif
 
 TESTS = \
+	arcmc_ext_registry \
 	arcmc_utils
 
 # The reader speaks to libarchive, which the plugin itself may have been
@@ -27,6 +28,10 @@ check_PROGRAMS = $(TESTS)
 
 arcmc_utils_SOURCES = \
 	arcmc_utils.c
+
+arcmc_ext_registry_SOURCES = \
+	arcmc_ext_registry.c \
+	$(top_srcdir)/src/panel-plugins/arcmc/arcmc-ext.c
 
 arcmc_reader_SOURCES = \
 	arcmc_reader.c \
