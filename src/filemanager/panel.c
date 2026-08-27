@@ -160,6 +160,10 @@ typedef enum
 /*** forward declarations (file scope functions) *************************************************/
 
 static const char *panel_format (WPanel *panel);
+static gboolean do_enter (WPanel *panel);
+static gboolean panel_magic_open_local_file (WPanel *panel, const char *fname,
+                                             const vfs_path_t *full_name_vpath);
+static gboolean panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe);
 static const char *string_file_name (const file_entry_t *fe, int len);
 static const char *string_file_size (const file_entry_t *fe, int len);
 static const char *string_file_size_brief (const file_entry_t *fe, int len);
@@ -2968,14 +2972,38 @@ goto_child_dir (WPanel *panel)
     const file_entry_t *fe;
 
     fe = panel_current_entry (panel);
+    if (fe == NULL)
+        return;
 
-    if (fe != NULL && (S_ISDIR (fe->st.st_mode) || link_isdir (fe)))
+    if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
     {
         vfs_path_t *vpath;
+
+        if (panel->is_plugin_panel)
+        {
+            (void) do_enter (panel);
+            return;
+        }
 
         vpath = vfs_path_from_str (fe->fname->str);
         panel_cd (panel, vpath, cd_exact);
         vfs_path_free (vpath, TRUE);
+        return;
+    }
+
+    // a file that magic.ini knows how to enter is entered the way Enter does it
+    if (!S_ISREG (fe->st.st_mode))
+        return;
+
+    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL)
+        (void) panel_magic_open_plugin_file (panel, fe);
+    else
+    {
+        vfs_path_t *full_name_vpath;
+
+        full_name_vpath = vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
+        (void) panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath);
+        vfs_path_free (full_name_vpath, TRUE);
     }
 }
 
