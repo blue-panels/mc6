@@ -830,9 +830,6 @@ mcterm_overlay_toggle (void)
         mcterm_overlay_widget ()->mouse_handler = mcterm_overlay_mouse_handler;
         mcterm_overlay_sync_shell_to_panel ();
 
-        widget_hide (get_panel_widget (0));
-        widget_hide (get_panel_widget (1));
-        widget_hide (WIDGET (the_hint));
         if (command_prompt)
             widget_set_size (WIDGET (cmdline), WIDGET (cmdline)->rect.y, mwr->x, 1, mwr->cols);
 
@@ -844,7 +841,13 @@ mcterm_overlay_toggle (void)
         // Selectable here only: elsewhere a panel would lose its selection to it.
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, TRUE);
         mcterm_overlay_move_cmdline_to_shell ();
+        // Move the focus away before hiding the panels: hiding the focused panel
+        // would select the other one and make it current_panel.
         mcterm_overlay_focus_typing ();
+
+        widget_hide (get_panel_widget (0));
+        widget_hide (get_panel_widget (1));
+        widget_hide (WIDGET (the_hint));
 
         do_refresh ();
     }
