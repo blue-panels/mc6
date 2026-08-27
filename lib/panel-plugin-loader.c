@@ -100,9 +100,11 @@ mc_panel_plugin_try_load (const gchar *so_path, const gchar *filename)
     {
         /* register() may allocate module-global state even when preferences or
            validation reject the descriptor. Only the current ABI can safely
-           expose the shutdown field. */
+           expose the shutdown field. A duplicate name is left alone: the same
+           .so reached by another path shares its globals with the live plugin. */
         if (plugin != NULL && plugin->api_version == MC_PANEL_PLUGIN_API_VERSION
-            && plugin->shutdown != NULL)
+            && plugin->shutdown != NULL && plugin->name != NULL
+            && mc_panel_plugin_find_by_name (plugin->name) == NULL)
             plugin->shutdown ();
         /* duplicate name from user dir overriding system dir is expected, stay silent */
         g_module_close (module);

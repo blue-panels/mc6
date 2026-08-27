@@ -55,9 +55,12 @@ typedef enum
     MC_PPF_ACCEPTS_FILE_LIST = 1 << 9,  /* plugin implements open_file_list(),
                                            i.e. can be a destination for Find
                                            results and similar list producers */
-    MC_PPF_COPY_TREE = 1 << 11          /* copy_to_local() takes a directory and
+    MC_PPF_COPY_TREE = 1 << 11,         /* copy_to_local() takes a directory and
                                            writes everything below it; without
                                            this the core walks the tree itself */
+    MC_PPF_VIEW_ON_ENTER = 1 << 12      /* Enter on a regular file that enter()
+                                           returns MC_PPR_NOT_SUPPORTED for opens
+                                           the viewer instead of doing nothing */
 } mc_pp_flags_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/

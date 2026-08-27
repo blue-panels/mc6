@@ -282,8 +282,7 @@ sel_other_format_button (WButton *button, int action)
 
     /* count enabled external archivers with pack support */
     for (i = 0; i < (int) ext_archivers_count; i++)
-        if (ext_archivers[i].pack_bin != NULL
-            && ext_archivers[i].enabled)
+        if (ext_archivers[i].pack_bin != NULL && ext_archivers[i].enabled)
             count++;
 
     if (count == 0)

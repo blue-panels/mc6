@@ -205,7 +205,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .proto = "Arcmc",
     .prefix = "Arcmc:",
     .flags = MC_PPF_NAVIGATE | MC_PPF_GET_FILES | MC_PPF_CUSTOM_TITLE | MC_PPF_SHOW_IN_MENU
-        | MC_PPF_COPY_TREE,
+        | MC_PPF_COPY_TREE | MC_PPF_VIEW_ON_ENTER,
 
     .open = arcmc_open,
     .close = arcmc_close,
@@ -251,7 +251,7 @@ arcmc_is_supported_archive (const char *filename)
     /* Also accept suffixes from the runtime external-archiver registry. */
     ext = arcmc_find_ext_archiver (filename);
     if (ext != NULL)
-        return ext->enabled;
+        return ext->enabled && arcmc_ext_archiver_available (ext);
 
     return FALSE;
 }
@@ -277,8 +277,7 @@ arcmc_add_history (arcmc_data_t *data)
 
     path = arcmc_display_path (data);
     if (data->current_dir[0] != '\0')
-        hist_path =
-            g_strdup_printf ("%s%s:/%s", arcmc_plugin.prefix, path, data->current_dir);
+        hist_path = g_strdup_printf ("%s%s:/%s", arcmc_plugin.prefix, path, data->current_dir);
     else
         hist_path = g_strdup_printf ("%s%s", arcmc_plugin.prefix, path);
     data->host->add_history (data->host, hist_path);
@@ -426,8 +425,7 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
         {
             const arcmc_ext_archiver_t *ext = arcmc_find_ext_archiver (base_name);
 
-            if (ext != NULL && ext->enabled && ext->pack_bin != NULL
-                && name_len > strlen (ext->ext))
+            if (ext != NULL && name_len > strlen (ext->ext))
             {
                 size_t ext_len = strlen (ext->ext);
                 char *stripped = g_strndup (base_name, name_len - ext_len);
@@ -1175,6 +1173,7 @@ arcmc_enter (void *plugin_data, const char *name, const struct stat *st)
     {
         char *local_path = NULL;
         mc_pp_result_t r;
+        gboolean looks_like_archive = TRUE;
 
         r = arcmc_extract_to_temp (data, name, &local_path);
 
@@ -1184,11 +1183,19 @@ arcmc_enter (void *plugin_data, const char *name, const struct stat *st)
             return MC_PPR_FAILED;
         }
 
+#ifdef HAVE_LIBMAGIC
+        /* A suffix such as .exe names an archive only sometimes; what is not
+           one by content is a plain file for the viewer, not an error. */
+        looks_like_archive = arcmc_is_archive_by_content (local_path);
+#endif
         r = arcmc_push_nested (data, local_path, name);
-        if (r != MC_PPR_OK)
+        if (r == MC_PPR_OK)
+            return MC_PPR_OK;
+        if (!looks_like_archive)
             return MC_PPR_NOT_SUPPORTED;
 
-        return MC_PPR_OK;
+        message (D_ERROR, MSG_ERROR, _ ("Cannot open nested archive"));
+        return MC_PPR_FAILED;
     }
 
     /* for unknown extensions, extract and check content with libmagic */

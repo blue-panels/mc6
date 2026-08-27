@@ -168,12 +168,13 @@ typedef enum
 
 static const char *panel_format (WPanel *panel);
 static gboolean do_enter (WPanel *panel);
-static panel_magic_open_result_t panel_magic_open_local_file (
-    WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath, const char *action_name,
-    gboolean report_error);
-static panel_magic_open_result_t panel_magic_open_plugin_file (
-    WPanel *panel, const file_entry_t *fe, const char *action_name, char **local_copy,
-    gboolean report_error);
+static panel_magic_open_result_t panel_magic_open_local_file (WPanel *panel, const char *fname,
+                                                              const vfs_path_t *full_name_vpath,
+                                                              const char *action_name,
+                                                              gboolean report_error);
+static panel_magic_open_result_t
+panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char *action_name,
+                              char **local_copy, gboolean report_error);
 static const char *string_file_name (const file_entry_t *fe, int len);
 static const char *string_file_size (const file_entry_t *fe, int len);
 static const char *string_file_size_brief (const file_entry_t *fe, int len);
@@ -3009,16 +3010,13 @@ goto_child_dir (WPanel *panel)
     {
         char *local_copy = NULL;
         panel_magic_open_result_t result;
-        gboolean magic_found;
 
-        result = panel_magic_open_plugin_file (panel, fe, "CdChild", &local_copy, FALSE);
-        magic_found = result != PANEL_MAGIC_OPEN_NONE;
-        if (result != PANEL_MAGIC_OPEN_HANDLED)
-        {
-            result = panel_magic_open_plugin_file (panel, fe, "Open", &local_copy, FALSE);
-            magic_found = magic_found || result != PANEL_MAGIC_OPEN_NONE;
-        }
-        if (result != PANEL_MAGIC_OPEN_HANDLED && !magic_found)
+        /* A rule that matched owns the outcome, its failure included: the next
+           rule is consulted only when there is no rule at all. */
+        result = panel_magic_open_plugin_file (panel, fe, "CdChild", &local_copy, TRUE);
+        if (result == PANEL_MAGIC_OPEN_NONE)
+            result = panel_magic_open_plugin_file (panel, fe, "Open", &local_copy, TRUE);
+        if (result == PANEL_MAGIC_OPEN_NONE)
             (void) panel_plugin_open_entry_auto (panel, fe->fname->str, &local_copy);
 
         if (local_copy != NULL)
@@ -3031,21 +3029,15 @@ goto_child_dir (WPanel *panel)
     {
         vfs_path_t *full_name_vpath;
         panel_magic_open_result_t result;
-        gboolean magic_found;
 
         full_name_vpath = vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
 
-        result = panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "CdChild",
-                                              FALSE);
-        magic_found = result != PANEL_MAGIC_OPEN_NONE;
-        if (result != PANEL_MAGIC_OPEN_HANDLED)
-        {
-            result = panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "Open",
-                                                  FALSE);
-            magic_found = magic_found || result != PANEL_MAGIC_OPEN_NONE;
-        }
-        if (result != PANEL_MAGIC_OPEN_HANDLED && !magic_found
-            && vfs_file_is_local (full_name_vpath))
+        result =
+            panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "CdChild", TRUE);
+        if (result == PANEL_MAGIC_OPEN_NONE)
+            result =
+                panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "Open", TRUE);
+        if (result == PANEL_MAGIC_OPEN_NONE && vfs_file_is_local (full_name_vpath))
             (void) panel_plugin_open_local_file_auto (panel, fe->fname->str,
                                                       vfs_path_as_str (full_name_vpath));
         vfs_path_free (full_name_vpath, TRUE);
@@ -4048,8 +4040,8 @@ panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char 
             if (*local_copy == NULL)
                 (void) panel_magic_get_local_copy (&source_data, local_copy);
             if (*local_copy != NULL)
-                handled = panel_magic_runtime_open (&action, fe->fname->str, *local_copy,
-                                                    report_error);
+                handled =
+                    panel_magic_runtime_open (&action, fe->fname->str, *local_copy, report_error);
         }
         else
         {
@@ -4322,7 +4314,8 @@ do_enter (WPanel *panel)
             }
         }
 
-        if (S_ISREG (fe->st.st_mode) && enter_result == MC_PPR_NOT_SUPPORTED)
+        if (S_ISREG (fe->st.st_mode) && enter_result == MC_PPR_NOT_SUPPORTED
+            && (panel->plugin->flags & MC_PPF_VIEW_ON_ENTER) != 0)
         {
             g_free (focus_name);
             view_cmd (panel);

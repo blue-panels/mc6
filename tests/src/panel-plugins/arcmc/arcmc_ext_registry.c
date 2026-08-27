@@ -148,8 +148,7 @@ START_TEST (test_canonical_case_wins_and_save_removes_aliases)
     mctest_assert_false (mc_config_has_param (cfg, "arcmc-ext", "rar"));
     mctest_assert_true (mc_config_has_group (cfg, "arcmc-ext-params-RAR"));
     mctest_assert_true (mc_config_has_param (cfg, "arcmc-ext", "RAR"));
-    extension =
-        mc_config_get_string (cfg, "arcmc-ext-params-RAR", "extension", NULL);
+    extension = mc_config_get_string (cfg, "arcmc-ext-params-RAR", "extension", NULL);
     ck_assert_str_eq (extension, ".upper");
     g_free (extension);
 

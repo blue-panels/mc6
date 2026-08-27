@@ -752,8 +752,8 @@ panel_plugin_open_local_file_auto (WPanel *panel, const char *display_name, cons
             if (operation->kind == MC_PP_FILE_OPERATION_OPEN && operation->name != NULL
                 && operation->open_input_stream != NULL && operation->may_open_name != NULL
                 && operation->may_open_name (display_name)
-                && panel_plugin_open_local_file_by_operation (
-                    panel, display_name, local_path, plugin->name, operation->name))
+                && panel_plugin_open_local_file_by_operation (panel, display_name, local_path,
+                                                              plugin->name, operation->name))
                 return TRUE;
         }
     }

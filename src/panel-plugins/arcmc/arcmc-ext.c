@@ -97,6 +97,26 @@ arcmc_ext_archiver_clear (arcmc_ext_archiver_t *a)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The name is written back as a key of [arcmc-ext], so it has to be one GKeyFile
+   accepts: no '=', '[' or ']', no control characters, no blank at either end. */
+static gboolean
+arcmc_ext_name_is_valid (const char *name)
+{
+    const char *p;
+
+    if (name == NULL || name[0] == '\0' || g_ascii_isspace (name[0])
+        || g_ascii_isspace (name[strlen (name) - 1]))
+        return FALSE;
+
+    for (p = name; *p != '\0'; p++)
+        if (*p == '=' || *p == '[' || *p == ']' || g_ascii_iscntrl (*p))
+            return FALSE;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static arcmc_ext_archiver_t *
 arcmc_ext_archiver_append (const char *name, const char *extension)
 {
@@ -141,8 +161,7 @@ arcmc_ext_group_is_preferred (gchar **groups, const char *section)
 {
     const char *name = section + strlen (ARCMC_SECTION_EXT_PARAM);
     char *canonical_name = g_ascii_strup (name, -1);
-    char *canonical_section =
-        g_strconcat (ARCMC_SECTION_EXT_PARAM, canonical_name, (char *) NULL);
+    char *canonical_section = g_strconcat (ARCMC_SECTION_EXT_PARAM, canonical_name, (char *) NULL);
     const char *preferred = arcmc_ext_preferred_name (groups, canonical_section);
     gboolean result = preferred != NULL && strcmp (preferred, section) == 0;
 
@@ -244,7 +263,7 @@ arcmc_ext_load_group (mc_config_t *cfg, const char *section)
     arcmc_ext_archiver_t *a;
     char *extension;
 
-    if (name[0] == '\0')
+    if (!arcmc_ext_name_is_valid (name))
         return;
 
     a = arcmc_ext_archiver_by_name_mutable (name);
@@ -360,8 +379,7 @@ arcmc_ext_archivers_save (mc_config_t *cfg)
             a = arcmc_ext_archiver_by_name (name);
             if (a == NULL)
                 continue;
-            canonical_section =
-                g_strconcat (ARCMC_SECTION_EXT_PARAM, a->name, (char *) NULL);
+            canonical_section = g_strconcat (ARCMC_SECTION_EXT_PARAM, a->name, (char *) NULL);
             if (strcmp (*group, canonical_section) != 0)
                 mc_config_del_group (cfg, *group);
             g_free (canonical_section);
@@ -405,6 +423,35 @@ arcmc_ext_archivers_save (mc_config_t *cfg)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A format is usable when the program that reads it is installed; a row that
+   names no program (a helper script alone) is taken at its word. */
+gboolean
+arcmc_ext_archiver_available (const arcmc_ext_archiver_t *a)
+{
+    const char *const bins[] = { a->unpack_bin, a->test_bin, a->pack_bin };
+    gboolean named = FALSE;
+    size_t i;
+
+    for (i = 0; i < G_N_ELEMENTS (bins); i++)
+    {
+        char *path;
+
+        if (bins[i] == NULL || bins[i][0] == '\0')
+            continue;
+        named = TRUE;
+        path = g_find_program_in_path (bins[i]);
+        if (path != NULL)
+        {
+            g_free (path);
+            return TRUE;
+        }
+    }
+
+    return !named;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 arcmc_ext_archivers_free (void)
 {
@@ -416,7 +463,6 @@ arcmc_ext_archivers_free (void)
     g_free (ext_archivers);
     ext_archivers = NULL;
     ext_archivers_count = 0;
-
 }
 
 /* --------------------------------------------------------------------------------------------- */

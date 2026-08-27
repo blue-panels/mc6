@@ -125,6 +125,9 @@ Set in the descriptor's .flags field.  Multiple flags may be combined.
   MC_PPF_ACCEPTS_FILE_LIST    plugin implements open_file_list(); can be
                               a destination for Find results and similar
                               list producers
+  MC_PPF_VIEW_ON_ENTER        Enter on a regular file that enter() returns
+                              MC_PPR_NOT_SUPPORTED for opens the viewer
+                              instead of doing nothing
 
 
 3.3 Host Services (mc_panel_host_t)

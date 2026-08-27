@@ -194,11 +194,11 @@ START_TEST (test_cdchild_and_open_reuse_one_local_copy)
     fd = g_file_open_tmp ("mc-magic-ini-XXXXXX", &ini_path, NULL);
     ck_assert_int_ne (fd, -1);
     close (fd);
-    mctest_assert_true (g_file_set_contents (
-        ini_path,
-        "[cdchild]\nMime=^text/plain$\nCdChild=%plugin{first:open}\n"
-        "[open]\nMime=^text/plain$\nOpen=%plugin{second:open}\n",
-        -1, NULL));
+    mctest_assert_true (
+        g_file_set_contents (ini_path,
+                             "[cdchild]\nMime=^text/plain$\nCdChild=%plugin{first:open}\n"
+                             "[open]\nMime=^text/plain$\nOpen=%plugin{second:open}\n",
+                             -1, NULL));
     magic_config_load (&config, ini_path);
 
     {

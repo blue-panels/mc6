@@ -1102,7 +1102,7 @@ help_link_script_node (char **filedata, const char *node, const char *parent_nod
     char *link;
     char *linked;
 
-    if (parent_node == NULL || *parent_node == '\0')
+    if (parent_node == NULL || *parent_node == '\0' || strcmp (parent_node, node) == 0)
         return;
 
     heading = search_string (*filedata, node);
@@ -1255,9 +1255,11 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
         g_file_get_contents (event_data->filename, &filedata, NULL, NULL);
         if (filedata != NULL)
         {
-            help_link_script_node (&filedata, event_data->node, event_data->parent_node);
             script_data = translate_file (filedata);
             g_free (filedata);
+            /* after the translation: gettext already speaks the terminal's charset */
+            if (script_data != NULL)
+                help_link_script_node (&script_data, event_data->node, event_data->parent_node);
         }
         fdata = script_data;
     }

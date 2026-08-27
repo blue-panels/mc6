@@ -32,5 +32,6 @@ void arcmc_ext_archivers_free (void);
 
 const arcmc_ext_archiver_t *arcmc_ext_archiver_by_name (const char *name);
 const arcmc_ext_archiver_t *arcmc_find_ext_archiver (const char *archive_path);
+gboolean arcmc_ext_archiver_available (const arcmc_ext_archiver_t *a);
 
 #endif /* ARCMC_EXT_H */
