@@ -49,13 +49,13 @@ find "$work" -exec touch -h -d @1000000000 {} +
 
 pack ()
 {
-    (cd "$work" && bsdtar --uid 0 --gid 0 --uname root --gname root --options 'gzip:!timestamp' "$@")
+    (cd "$work" && bsdtar --uid 0 --gid 0 --uname root --gname root "$@")
 }
 
 # ---------------------------------------------------------------- formats ---
 
 mkdir -p 01-formats
-pack -a -cf "$dir/01-formats/small.tar.gz" payload
+pack -a --options 'gzip:!timestamp' -cf "$dir/01-formats/small.tar.gz" payload
 pack -a -cf "$dir/01-formats/small.zip" payload
 pack --format 7zip -cf "$dir/01-formats/small.7z" payload
 pack --format 7zip -cf "$dir/01-formats/big.7z" payload_big
