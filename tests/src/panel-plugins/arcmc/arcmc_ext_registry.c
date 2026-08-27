@@ -64,6 +64,7 @@ START_TEST (test_defaults_include_innoextract)
     ck_assert_str_eq (a->ext, ".exe");
     ck_assert_str_eq (a->test_bin, "innoextract");
     ck_assert_str_eq (a->extfs_helper, "uinno");
+    mctest_assert_true (a->enabled);
 }
 END_TEST
 
@@ -73,7 +74,6 @@ START_TEST (test_config_adds_arbitrary_extension)
 {
     const arcmc_ext_archiver_t *a;
     size_t default_count;
-    size_t index;
 
     arcmc_ext_archivers_load (NULL);
     default_count = ext_archivers_count;
@@ -96,13 +96,92 @@ START_TEST (test_config_adds_arbitrary_extension)
     ck_assert_str_eq (a->test_bin, "pkgx-test");
     ck_assert_str_eq (a->extfs_helper, "upkgx");
 
-    index = (size_t) (a - ext_archivers);
-    mctest_assert_false (arcmc_ext_enabled[index]);
+    ck_assert_str_eq (a->name, "CUSTOM");
+    mctest_assert_false (a->enabled);
     ck_assert_ptr_eq (arcmc_find_ext_archiver ("/tmp/archive.PKGX"), a);
 
     /* Reloading the same ini rebuilds the registry instead of duplicating rows. */
     arcmc_ext_archivers_load (cfg);
     ck_assert_uint_eq (ext_archivers_count, default_count + 1);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_longest_suffix_wins)
+{
+    const arcmc_ext_archiver_t *a;
+
+    mc_config_set_string (cfg, "arcmc-ext-params-SHORT", "extension", ".pkgx");
+    mc_config_set_string (cfg, "arcmc-ext-params-LONG", "extension", ".tar.pkgx");
+
+    arcmc_ext_archivers_load (cfg);
+
+    a = arcmc_find_ext_archiver ("/tmp/archive.tar.PKGX");
+    mctest_assert_not_null (a);
+    ck_assert_str_eq (a->name, "LONG");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_canonical_case_wins_and_save_removes_aliases)
+{
+    const arcmc_ext_archiver_t *a;
+    char *extension;
+
+    mc_config_set_bool (cfg, "arcmc-ext", "rar", FALSE);
+    mc_config_set_bool (cfg, "arcmc-ext", "RAR", TRUE);
+    mc_config_set_string (cfg, "arcmc-ext-params-rar", "extension", ".lower");
+    mc_config_set_string (cfg, "arcmc-ext-params-RAR", "extension", ".upper");
+
+    arcmc_ext_archivers_load (cfg);
+
+    a = arcmc_ext_archiver_by_name ("rar");
+    mctest_assert_not_null (a);
+    ck_assert_str_eq (a->name, "RAR");
+    ck_assert_str_eq (a->ext, ".upper");
+    mctest_assert_true (a->enabled);
+
+    arcmc_ext_archivers_save (cfg);
+    mctest_assert_false (mc_config_has_group (cfg, "arcmc-ext-params-rar"));
+    mctest_assert_false (mc_config_has_param (cfg, "arcmc-ext", "rar"));
+    mctest_assert_true (mc_config_has_group (cfg, "arcmc-ext-params-RAR"));
+    mctest_assert_true (mc_config_has_param (cfg, "arcmc-ext", "RAR"));
+    extension =
+        mc_config_get_string (cfg, "arcmc-ext-params-RAR", "extension", NULL);
+    ck_assert_str_eq (extension, ".upper");
+    g_free (extension);
+
+    arcmc_ext_archivers_load (cfg);
+    a = arcmc_ext_archiver_by_name ("RAR");
+    mctest_assert_not_null (a);
+    ck_assert_str_eq (a->ext, ".upper");
+    mctest_assert_true (a->enabled);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_lowercase_alias_is_loaded_and_canonicalized)
+{
+    const arcmc_ext_archiver_t *a;
+
+    mc_config_set_bool (cfg, "arcmc-ext", "rar", FALSE);
+    mc_config_set_string (cfg, "arcmc-ext-params-rar", "extension", ".lower");
+
+    arcmc_ext_archivers_load (cfg);
+
+    a = arcmc_ext_archiver_by_name ("RAR");
+    mctest_assert_not_null (a);
+    ck_assert_str_eq (a->ext, ".lower");
+    mctest_assert_false (a->enabled);
+
+    arcmc_ext_archivers_save (cfg);
+    mctest_assert_false (mc_config_has_group (cfg, "arcmc-ext-params-rar"));
+    mctest_assert_false (mc_config_has_param (cfg, "arcmc-ext", "rar"));
+    mctest_assert_true (mc_config_has_group (cfg, "arcmc-ext-params-RAR"));
+    mctest_assert_true (mc_config_has_param (cfg, "arcmc-ext", "RAR"));
 }
 END_TEST
 
@@ -153,6 +232,9 @@ main (void)
     tcase_add_checked_fixture (tc_core, setup, teardown);
     tcase_add_test (tc_core, test_defaults_include_innoextract);
     tcase_add_test (tc_core, test_config_adds_arbitrary_extension);
+    tcase_add_test (tc_core, test_longest_suffix_wins);
+    tcase_add_test (tc_core, test_canonical_case_wins_and_save_removes_aliases);
+    tcase_add_test (tc_core, test_lowercase_alias_is_loaded_and_canonicalized);
     tcase_add_test (tc_core, test_custom_format_requires_extension);
     tcase_add_test (tc_core, test_registry_save_persists_extension);
 

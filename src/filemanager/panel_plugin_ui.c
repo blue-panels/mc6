@@ -608,33 +608,22 @@ panel_plugin_find_file_operation (const mc_panel_plugin_t *plugin, const char *o
 
 gboolean
 panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const char *plugin_name,
-                                      const char *operation_name, char *local_copy)
+                                      const char *operation_name, char **local_copy)
 {
     const mc_panel_plugin_t *target;
     const mc_pp_file_operation_t *operation;
     mc_pp_input_stream_t *stream = NULL;
 
     if (panel == NULL || fname == NULL || plugin_name == NULL || operation_name == NULL
-        || !panel->is_plugin_panel || panel->plugin == NULL || panel->plugin_data == NULL)
-    {
-        if (local_copy != NULL)
-        {
-            unlink (local_copy);
-            g_free (local_copy);
-        }
+        || local_copy == NULL || !panel->is_plugin_panel || panel->plugin == NULL
+        || panel->plugin_data == NULL)
         return FALSE;
-    }
 
     target = mc_panel_plugin_find_by_name (plugin_name);
     operation = panel_plugin_find_file_operation (target, operation_name);
     if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_OPEN
         || operation->open_input_stream == NULL)
     {
-        if (local_copy != NULL)
-        {
-            unlink (local_copy);
-            g_free (local_copy);
-        }
         return FALSE;
     }
 
@@ -642,11 +631,6 @@ panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const ch
         && panel->plugin->get_input_stream (panel->plugin_data, fname, &stream) == MC_PPR_OK
         && stream != NULL)
     {
-        if (local_copy != NULL)
-        {
-            unlink (local_copy);
-            g_free (local_copy);
-        }
         if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
             return TRUE;
 
@@ -654,25 +638,29 @@ panel_plugin_open_entry_by_operation (WPanel *panel, const char *fname, const ch
         return FALSE;
     }
 
-    if (local_copy == NULL)
+    if (*local_copy == NULL)
     {
         if (panel->plugin->get_local_copy == NULL || operation->may_open_name == NULL
             || !operation->may_open_name (fname))
             return FALSE;
 
-        if (panel->plugin->get_local_copy (panel->plugin_data, fname, &local_copy) != MC_PPR_OK
-            || local_copy == NULL)
+        if (panel->plugin->get_local_copy (panel->plugin_data, fname, local_copy) != MC_PPR_OK
+            || *local_copy == NULL)
             return FALSE;
     }
 
-    stream = mc_pp_input_stream_new_for_file (local_copy, TRUE);
-    g_free (local_copy);
+    stream = mc_pp_input_stream_new_for_file (*local_copy, TRUE);
     if (stream == NULL)
         return FALSE;
 
     if (panel_plugin_activate_file_operation (panel, target, operation, fname, stream))
+    {
+        g_free (*local_copy);
+        *local_copy = NULL;
         return TRUE;
+    }
 
+    (void) mc_pp_input_stream_set_file_ownership (stream, FALSE);
     mc_pp_input_stream_free (stream);
     return FALSE;
 }
@@ -706,6 +694,70 @@ panel_plugin_open_local_file_by_operation (WPanel *panel, const char *display_na
         return TRUE;
 
     mc_pp_input_stream_free (stream);
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_open_entry_auto (WPanel *panel, const char *fname, char **local_copy)
+{
+    const GSList *plugin_iter;
+
+    if (panel == NULL || fname == NULL || local_copy == NULL)
+        return FALSE;
+
+    for (plugin_iter = mc_panel_plugin_list (); plugin_iter != NULL;
+         plugin_iter = g_slist_next (plugin_iter))
+    {
+        const mc_panel_plugin_t *plugin = (const mc_panel_plugin_t *) plugin_iter->data;
+        int i;
+
+        for (i = 0; i < plugin->file_operation_count; i++)
+        {
+            const mc_pp_file_operation_t *operation = &plugin->file_operations[i];
+
+            if (operation->kind == MC_PP_FILE_OPERATION_OPEN && operation->name != NULL
+                && operation->open_input_stream != NULL && operation->may_open_name != NULL
+                && operation->may_open_name (fname)
+                && panel_plugin_open_entry_by_operation (panel, fname, plugin->name,
+                                                         operation->name, local_copy))
+                return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+panel_plugin_open_local_file_auto (WPanel *panel, const char *display_name, const char *local_path)
+{
+    const GSList *plugin_iter;
+
+    if (panel == NULL || display_name == NULL || local_path == NULL)
+        return FALSE;
+
+    for (plugin_iter = mc_panel_plugin_list (); plugin_iter != NULL;
+         plugin_iter = g_slist_next (plugin_iter))
+    {
+        const mc_panel_plugin_t *plugin = (const mc_panel_plugin_t *) plugin_iter->data;
+        int i;
+
+        for (i = 0; i < plugin->file_operation_count; i++)
+        {
+            const mc_pp_file_operation_t *operation = &plugin->file_operations[i];
+
+            if (operation->kind == MC_PP_FILE_OPERATION_OPEN && operation->name != NULL
+                && operation->open_input_stream != NULL && operation->may_open_name != NULL
+                && operation->may_open_name (display_name)
+                && panel_plugin_open_local_file_by_operation (
+                    panel, display_name, local_path, plugin->name, operation->name))
+                return TRUE;
+        }
+    }
+
     return FALSE;
 }
 

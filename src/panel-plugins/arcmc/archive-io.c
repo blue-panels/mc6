@@ -841,9 +841,7 @@ arcmc_find_extfs_helper (const char *archive_path)
     ext = arcmc_find_ext_archiver (archive_path);
     if (ext != NULL)
     {
-        size_t i = (size_t) (ext - ext_archivers);
-
-        if (arcmc_ext_enabled != NULL && !arcmc_ext_enabled[i])
+        if (!ext->enabled)
             return NULL;
 
         return arcmc_extfs_helper_path (ext->extfs_helper);
@@ -2416,7 +2414,7 @@ arcmc_extract_subtree (arcmc_data_t *data, const char *src_dir, const char *dest
    `local_path` is the already-extracted temp file (takes ownership).
    Returns MC_PPR_OK on success, MC_PPR_FAILED on failure (temp file cleaned up). */
 mc_pp_result_t
-arcmc_push_nested (arcmc_data_t *data, char *local_path)
+arcmc_push_nested (arcmc_data_t *data, char *local_path, const char *display_name)
 {
     arcmc_nest_frame_t *frame;
 
@@ -2424,6 +2422,7 @@ arcmc_push_nested (arcmc_data_t *data, char *local_path)
     frame = g_new0 (arcmc_nest_frame_t, 1);
     frame->prev = data->nest_stack;
     frame->archive_path = data->archive_path;
+    frame->display_path = data->display_path;
     frame->current_dir = data->current_dir;
     frame->password = data->password;
     frame->extfs_helper = data->extfs_helper;
@@ -2434,6 +2433,7 @@ arcmc_push_nested (arcmc_data_t *data, char *local_path)
 
     /* switch to the nested archive */
     data->archive_path = g_strdup (local_path);
+    data->display_path = g_strdup (display_name != NULL ? display_name : local_path);
     data->current_dir = g_strdup ("");
     data->password = NULL;
     data->extfs_helper = NULL;
@@ -2446,6 +2446,7 @@ arcmc_push_nested (arcmc_data_t *data, char *local_path)
         arcmc_nest_frame_t *f = data->nest_stack;
 
         g_free (data->archive_path);
+        g_free (data->display_path);
         g_free (data->current_dir);
         g_free (data->password);
         g_free (data->extfs_helper);
@@ -2453,6 +2454,7 @@ arcmc_push_nested (arcmc_data_t *data, char *local_path)
             g_ptr_array_free (data->all_entries, TRUE);
 
         data->archive_path = f->archive_path;
+        data->display_path = f->display_path;
         data->current_dir = f->current_dir;
         data->password = f->password;
         data->extfs_helper = f->extfs_helper;

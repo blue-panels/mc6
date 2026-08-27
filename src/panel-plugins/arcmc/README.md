@@ -119,19 +119,20 @@ path. It cannot browse an archive exposed only as a non-local plugin stream.
 
 ## Opening a custom format with Ctrl+PgDn
 
-Registering an extension in `arcmc.ini` does not create a file-operation
-association. To open `.foo` files with Ctrl+PgDn, add this rule to the user's
-`magic.ini`:
+Ctrl+PgDn asks registered panel-plugin `open` operations whether they support
+the selected name. Consequently, an enabled extension added to `arcmc.ini`
+works with Ctrl+PgDn immediately after restarting mc; neither recompilation nor
+a matching `magic.ini` rule is needed.
+
+`magic.ini` remains the user-controlled overlay for Enter and for explicit
+handler selection. To make Enter open `.foo` with arcmc as well, add:
 
 ```ini
 [arcmc.foo]
 Regex=\\.foo$
 RegexIgnoreCase=true
-CdChild=%plugin{arcmc:open}
+Open=%plugin{arcmc:open}
 ```
-
-`CdChild` is the Ctrl+PgDn action. It leaves the normal Enter action unchanged.
-Use `Open=%plugin{arcmc:open}` only when Enter should open the archive too.
 
 ## Inno Setup installers
 
@@ -150,5 +151,6 @@ extfs_helper=uinno
 ```
 
 The installed `uinno` helper uses `innoextract` for `list` and `copyout`, so
-`innoextract` must be available in `PATH`. The supplied `magic.ini` rule maps
-`.exe` files to `arcmc` through Ctrl+PgDn, without changing Enter.
+`innoextract` must be available in `PATH`. Ctrl+PgDn tries the enabled INO
+registry entry; a non-Inno `.exe` is rejected quietly and remains a normal
+file. Enter is unchanged.

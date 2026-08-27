@@ -91,7 +91,7 @@ A panel plugin module must export:
 The descriptor minimum:
 
 - api_version = MC_PANEL_PLUGIN_API_VERSION (the header constant;
-  current value is 7)
+  current value is 14)
 - unique name (used by mc_panel_plugin_find_by_name)
 - display_name (UI label)
 - proto and prefix when the plugin owns a protocol scheme
@@ -100,6 +100,10 @@ The descriptor minimum:
 
 The loader strictly rejects mismatched api_version; rebuild against the
 header any time it changes.
+
+API 14 adds an optional shutdown() callback.  mc calls it once after all
+panel instances have been closed and before plugin modules are unloaded;
+use it to release registries, caches, and other process-lifetime state.
 
 
 3.2 Capability Flags (mc_pp_flags_t)
@@ -452,7 +456,7 @@ self-registered Command menu + file-list sink); the registry handles
 each independently.
 
 
-3.12 File Operations (magic.ini)
+3.12 File Operations (magic.ini and Ctrl-PgDn)
 
 Enter and F3 on a file consult magic.ini before mc.ext.ini.  A rule
 there names a plugin operation and nothing else:
@@ -477,6 +481,12 @@ A plugin publishes the operations by name:
           .may_open_name = my_may_open_name,
           .view_input_stream = my_view_input_stream },
     };
+
+Ctrl-PgDn first tries explicit CdChild and legacy Open associations from
+magic.ini, then automatically tries published Open operations whose
+may_open_name() accepts the selected filename.  This lets a plugin extend its
+runtime filename registry without generating another magic.ini rule. Enter
+remains controlled by Open associations and does not use this automatic pass.
 
 An Open operation returns plugin data and the panel becomes the
 plugin's; a View operation writes a temporary file and the core shows

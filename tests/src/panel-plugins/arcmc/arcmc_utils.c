@@ -42,41 +42,6 @@ enum
     ARCMC_FMT_CPIO = 6,
 };
 
-/* External archiver descriptor (from arcmc-types.h) */
-typedef struct
-{
-    const char *name;
-    const char *ext;
-    const char *pack_bin;
-    const char *pack_args;
-    const char *unpack_bin;
-    const char *unpack_args;
-    const char *test_bin;
-    const char *test_args;
-    const char *extfs_helper;
-    const char *list_file_arg;
-} arcmc_ext_archiver_t;
-
-/* Copy of ext_archivers[] from archive-io.c */
-static arcmc_ext_archiver_t ext_archivers[] = {
-    { "RAR", ".rar", "rar", "a -r", "unrar", "x -o+", "unrar", "t", "urar", "@%s" },
-    { "ARJ", ".arj", "arj", "a -r", "arj", "x -y", "arj", "t", "uarj", "!%s" },
-    { "ACE", ".ace", NULL, NULL, "unace", "x -o", "unace", "t", "uace", NULL },
-    { "ARC", ".arc", "arc", "a", "arc", "x", NULL, NULL, "uarc", NULL },
-    { "ALZ", ".alz", NULL, NULL, "unalz", "", NULL, NULL, "ualz", NULL },
-    { "ZOO", ".zoo", "zoo", "a", "zoo", "x", NULL, NULL, "uzoo", NULL },
-    { "HA", ".ha", "ha", "a", "ha", "x", "ha", "t", "uha", NULL },
-    { "WIM", ".wim", NULL, NULL, "wimlib-imagex", "extract", NULL, NULL, "uwim", NULL },
-    { "LHA", ".lha", "lha", "a", "lha", "x", "lha", "t", "ulha", "@%s" },
-    { "LZH", ".lzh", "lha", "a", "lha", "x", "lha", "t", "ulha", "@%s" },
-    { "DEB", ".deb", NULL, NULL, "dpkg-deb", "-x", NULL, NULL, "deb", NULL },
-    { "RPM", ".rpm", NULL, NULL, NULL, NULL, NULL, NULL, "rpm", NULL },
-    { "INO", ".exe", NULL, NULL, NULL, NULL, "innoextract", "--test --silent", "uinno", NULL },
-};
-
-static const size_t ext_archivers_count = G_N_ELEMENTS (ext_archivers);
-
-/* --------------------------------------------------------------------------------------------- */
 /* Copied utility functions under test                                                           */
 /* --------------------------------------------------------------------------------------------- */
 
@@ -156,44 +121,6 @@ is_under_dir (const char *entry_path, const char *dir)
     return strncmp (entry_path, dir, dir_len) == 0 && entry_path[dir_len] == '/';
 }
 
-/* ---- arcmc_is_supported_archive (arcmc.c) ---- */
-
-static gboolean
-arcmc_is_supported_archive (const char *filename)
-{
-    static const char *const exts[] = {
-        ".tar.gz", ".tgz",    ".tar.bz2",  ".tbz2", ".tar.xz", ".txz", ".tar.zst",
-        ".tzst",   ".tar.lz", ".tar.lzma", ".tlz",  ".tar",    ".zip", ".jar",
-        ".war",    ".ear",    ".7z",       ".cpio", ".iso",    ".xar", ".cab",
-    };
-
-    size_t flen, i;
-
-    if (filename == NULL)
-        return FALSE;
-
-    flen = strlen (filename);
-
-    for (i = 0; i < G_N_ELEMENTS (exts); i++)
-    {
-        size_t elen = strlen (exts[i]);
-
-        if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, exts[i]) == 0)
-            return TRUE;
-    }
-
-    /* also accept extensions handled by external archivers */
-    for (i = 0; i < ext_archivers_count; i++)
-    {
-        size_t elen = strlen (ext_archivers[i].ext);
-
-        if (flen >= elen && g_ascii_strcasecmp (filename + flen - elen, ext_archivers[i].ext) == 0)
-            return TRUE;
-    }
-
-    return FALSE;
-}
-
 /* ---- arcmc_detect_fmt_id (archive-io.c, static) ---- */
 
 static int
@@ -226,37 +153,6 @@ arcmc_detect_fmt_id (const char *filename)
     }
 
     return -1;
-}
-
-/* ---- arcmc_find_ext_archiver (archive-io.c) ---- */
-
-static const arcmc_ext_archiver_t *
-arcmc_find_ext_archiver (const char *archive_path)
-{
-    const char *basename_ptr;
-    size_t blen, i;
-
-    if (archive_path == NULL)
-        return NULL;
-
-    basename_ptr = strrchr (archive_path, '/');
-    if (basename_ptr != NULL)
-        basename_ptr++;
-    else
-        basename_ptr = archive_path;
-
-    blen = strlen (basename_ptr);
-
-    for (i = 0; i < ext_archivers_count; i++)
-    {
-        size_t elen = strlen (ext_archivers[i].ext);
-
-        if (blen >= elen
-            && g_ascii_strcasecmp (basename_ptr + blen - elen, ext_archivers[i].ext) == 0)
-            return &ext_archivers[i];
-    }
-
-    return NULL;
 }
 
 /* ---- arcmc_check_bin_available (archive-io.c) ---- */
@@ -347,27 +243,6 @@ static const struct test_is_under_dir_ds
     { "a/b/c", NULL, TRUE },         /* 6: root as NULL */
 };
 
-/* ---- arcmc_is_supported_archive ---- */
-
-/* @DataSource("test_is_supported_ds") */
-static const struct test_is_supported_ds
-{
-    const char *filename;
-    gboolean expected;
-} test_is_supported_ds[] = {
-    { "file.tar.gz", TRUE }, /* 0: tar.gz */
-    { "file.zip", TRUE },    /* 1: zip */
-    { "file.rar", TRUE },    /* 2: rar (ext archiver) */
-    { "file.txt", FALSE },   /* 3: unsupported */
-    { NULL, FALSE },         /* 4: NULL */
-    { "FILE.ZIP", TRUE },    /* 5: case insensitive */
-    { "app.jar", TRUE },     /* 6: jar (java archive) */
-    { "app.war", TRUE },     /* 7: war (web archive) */
-    { "app.ear", TRUE },     /* 8: ear (enterprise archive) */
-    { "APP.JAR", TRUE },     /* 9: jar case insensitive */
-    { "setup.exe", TRUE },   /* 10: Inno Setup installer */
-};
-
 /* ---- arcmc_detect_fmt_id ---- */
 
 /* @DataSource("test_detect_fmt_ds") */
@@ -384,21 +259,6 @@ static const struct test_detect_fmt_ds
     { "f.ear", ARCMC_FMT_ZIP },       /* 5: ear -> zip format */
     { "f.7z", ARCMC_FMT_7Z },         /* 6: 7z */
     { "f.txt", -1 },                  /* 7: unknown */
-};
-
-/* ---- arcmc_find_ext_archiver ---- */
-
-/* @DataSource("test_find_ext_ds") */
-static const struct test_find_ext_ds
-{
-    const char *archive_path;
-    const char *expected_name;
-} test_find_ext_ds[] = {
-    { "a.rar", "RAR" },           /* 0: rar */
-    { "/path/a.arj", "ARJ" },     /* 1: arj with path */
-    { "a.zip", NULL },            /* 2: zip - not ext archiver */
-    { NULL, NULL },               /* 3: NULL */
-    { "/path/SETUP.EXE", "INO" }, /* 4: Inno Setup installer, case insensitive */
 };
 
 /* ---- arcmc_check_bin_available ---- */
@@ -479,18 +339,6 @@ END_PARAMETRIZED_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* @Test(dataSource = "test_is_supported_ds") */
-START_PARAMETRIZED_TEST (test_is_supported_archive, test_is_supported_ds)
-{
-    gboolean result;
-
-    result = arcmc_is_supported_archive (data->filename);
-    ck_assert_int_eq (result, data->expected);
-}
-END_PARAMETRIZED_TEST
-
-/* --------------------------------------------------------------------------------------------- */
-
 /* @Test(dataSource = "test_detect_fmt_ds") */
 START_PARAMETRIZED_TEST (test_detect_fmt_id, test_detect_fmt_ds)
 {
@@ -498,27 +346,6 @@ START_PARAMETRIZED_TEST (test_detect_fmt_id, test_detect_fmt_ds)
 
     result = arcmc_detect_fmt_id (data->filename);
     ck_assert_int_eq (result, data->expected);
-}
-END_PARAMETRIZED_TEST
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* @Test(dataSource = "test_find_ext_ds") */
-START_PARAMETRIZED_TEST (test_find_ext_archiver, test_find_ext_ds)
-{
-    const arcmc_ext_archiver_t *result;
-
-    result = arcmc_find_ext_archiver (data->archive_path);
-
-    if (data->expected_name == NULL)
-    {
-        mctest_assert_null (result);
-    }
-    else
-    {
-        ck_assert_msg (result != NULL, "expected non-NULL archiver for '%s'", data->archive_path);
-        mctest_assert_str_eq (result->name, data->expected_name);
-    }
 }
 END_PARAMETRIZED_TEST
 
@@ -549,14 +376,8 @@ main (void)
     mctest_add_parameterized_test (tc_core, test_is_direct_child, test_is_direct_child_ds);
     mctest_add_parameterized_test (tc_core, test_is_under_dir, test_is_under_dir_ds);
 
-    /* archive detection */
-    mctest_add_parameterized_test (tc_core, test_is_supported_archive, test_is_supported_ds);
-
     /* format detection */
     mctest_add_parameterized_test (tc_core, test_detect_fmt_id, test_detect_fmt_ds);
-
-    /* external archiver lookup */
-    mctest_add_parameterized_test (tc_core, test_find_ext_archiver, test_find_ext_ds);
 
     /* binary availability */
     mctest_add_parameterized_test (tc_core, test_check_bin_available, test_check_bin_ds);

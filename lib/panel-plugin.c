@@ -287,6 +287,20 @@ mc_pp_input_stream_local_path (const mc_pp_input_stream_t *stream, gboolean *is_
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
+mc_pp_input_stream_set_file_ownership (mc_pp_input_stream_t *stream, gboolean own_file)
+{
+    mc_pp_file_stream_t *source = (mc_pp_file_stream_t *) stream;
+
+    if (stream == NULL || stream->ops != &mc_pp_file_stream_ops)
+        return FALSE;
+
+    source->own_file = own_file;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
 mc_pp_write_temp_file (const char *tmpl, const void *data, gssize len, char **local_path)
 {
     GError *error = NULL;
@@ -493,6 +507,16 @@ mc_panel_plugin_find_by_prefix (const char *prefix)
 void
 mc_panel_plugins_shutdown (void)
 {
+    GSList *iter;
+
+    for (iter = panel_plugin_registry; iter != NULL; iter = g_slist_next (iter))
+    {
+        const mc_panel_plugin_t *plugin = (const mc_panel_plugin_t *) iter->data;
+
+        if (plugin->shutdown != NULL)
+            plugin->shutdown ();
+    }
+
     g_slist_free (panel_plugin_registry);
     panel_plugin_registry = NULL;
 }

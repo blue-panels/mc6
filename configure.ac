@@ -933,12 +933,7 @@ if test "x$have_panel_plugin_arcmc" = xyes; then
 Regex=\\.(tar|tar\\.gz|tgz|tar\\.bz2|tbz2|tar\\.xz|txz|tar\\.zst|tzst|zip|jar|war|ear|7z|cpio)$
 RegexIgnoreCase=true
 Open=%plugin{arcmc:open}
-View=%plugin{arcmc:view}
-
-[[arcmc.inno]]
-Regex=\\.exe$
-RegexIgnoreCase=true
-CdChild=%plugin{arcmc:open}'
+View=%plugin{arcmc:view}'
 fi
 AC_SUBST([MAGIC_ARCMC_RULES])
 dnl Several lines: it belongs in magic.ini, and a Makefile cannot hold it.

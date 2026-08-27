@@ -62,6 +62,7 @@ typedef struct arcmc_nest_frame_t
 {
     struct arcmc_nest_frame_t *prev;
     char *archive_path; /* path to the outer archive on disk */
+    char *display_path; /* stable user-visible name of the outer archive */
     char *current_dir;  /* dir inside the outer archive where we were */
     char *password;
     char *extfs_helper;
@@ -74,6 +75,7 @@ typedef struct
 {
     mc_panel_host_t *host;
     char *archive_path;                 /* path to the archive on disk */
+    char *display_path;                 /* stable user-visible name, never a temporary path */
     char *current_dir;                  /* current directory inside the archive ("" = root) */
     char *password;                     /* password (if encrypted), NULL otherwise */
     GPtrArray *all_entries;             /* flat list of all entries from the archive */
@@ -83,6 +85,7 @@ typedef struct
     arcmc_nest_frame_t *nest_stack;     /* stack of outer archives for nested browsing */
     GHashTable *bulk_cache;             /* bulk extract cache: filename -> local_path */
     char *bulk_temp_dir;                /* temp directory for bulk-extracted files */
+    gboolean history_enabled;           /* FALSE for non-reconstructable input streams */
 } arcmc_data_t;
 
 /* Progress dialog context for pack/extract operations */
@@ -158,6 +161,7 @@ typedef struct
     char *extfs_helper;  /* extfs helper name for browsing, e.g. "urar" */
     char *list_file_arg; /* file-list argument template, e.g. "@%s" for RAR/7z, NULL = not
                             supported */
+    gboolean enabled;    /* format is available for dispatch and settings */
 } arcmc_ext_archiver_t;
 
 /* External archivers registry.  arcmc.ini may append rows at startup. */

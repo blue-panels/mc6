@@ -77,7 +77,6 @@ static const arcmc_ext_archiver_default_t ext_archiver_defaults[] = {
 
 arcmc_ext_archiver_t *ext_archivers = NULL;
 size_t ext_archivers_count = 0;
-gboolean *arcmc_ext_enabled = NULL;
 
 /*** file scope functions ************************************************************************/
 
@@ -106,10 +105,60 @@ arcmc_ext_archiver_append (const char *name, const char *extension)
     ext_archivers = g_renew (arcmc_ext_archiver_t, ext_archivers, ext_archivers_count + 1);
     a = &ext_archivers[ext_archivers_count++];
     memset (a, 0, sizeof (*a));
-    a->name = g_strdup (name);
+    a->name = g_ascii_strup (name, -1);
     a->ext = g_strdup (extension);
+    a->enabled = TRUE;
 
     return a;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+arcmc_ext_preferred_name (gchar **names, const char *canonical)
+{
+    gchar **name;
+    const char *fallback = NULL;
+
+    if (names == NULL)
+        return NULL;
+
+    for (name = names; *name != NULL; name++)
+    {
+        if (strcmp (*name, canonical) == 0)
+            return *name;
+        if (fallback == NULL && g_ascii_strcasecmp (*name, canonical) == 0)
+            fallback = *name;
+    }
+
+    return fallback;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+arcmc_ext_group_is_preferred (gchar **groups, const char *section)
+{
+    const char *name = section + strlen (ARCMC_SECTION_EXT_PARAM);
+    char *canonical_name = g_ascii_strup (name, -1);
+    char *canonical_section =
+        g_strconcat (ARCMC_SECTION_EXT_PARAM, canonical_name, (char *) NULL);
+    const char *preferred = arcmc_ext_preferred_name (groups, canonical_section);
+    gboolean result = preferred != NULL && strcmp (preferred, section) == 0;
+
+    g_free (canonical_section);
+    g_free (canonical_name);
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+arcmc_ext_load_enabled (mc_config_t *cfg, gchar **keys, const char *name)
+{
+    const char *key = arcmc_ext_preferred_name (keys, name);
+
+    return key == NULL || mc_config_get_bool (cfg, ARCMC_SECTION_EXT, key, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -238,7 +287,7 @@ arcmc_ext_save_string (mc_config_t *cfg, const char *section, const char *key, c
 void
 arcmc_ext_archivers_load (mc_config_t *cfg)
 {
-    gchar **groups;
+    gchar **groups = NULL;
     size_t i;
 
     arcmc_ext_archivers_free ();
@@ -264,15 +313,21 @@ arcmc_ext_archivers_load (mc_config_t *cfg)
 
         groups = mc_config_get_groups (cfg, NULL);
         for (group = groups; *group != NULL; group++)
-            if (g_str_has_prefix (*group, ARCMC_SECTION_EXT_PARAM))
+            if (g_str_has_prefix (*group, ARCMC_SECTION_EXT_PARAM)
+                && arcmc_ext_group_is_preferred (groups, *group))
                 arcmc_ext_load_group (cfg, *group);
-        g_strfreev (groups);
     }
 
-    arcmc_ext_enabled = g_new (gboolean, ext_archivers_count);
-    for (i = 0; i < ext_archivers_count; i++)
-        arcmc_ext_enabled[i] =
-            cfg == NULL || mc_config_get_bool (cfg, ARCMC_SECTION_EXT, ext_archivers[i].name, TRUE);
+    {
+        gchar **keys = cfg != NULL ? mc_config_get_keys (cfg, ARCMC_SECTION_EXT, NULL) : NULL;
+
+        for (i = 0; i < ext_archivers_count; i++)
+            ext_archivers[i].enabled =
+                cfg == NULL || arcmc_ext_load_enabled (cfg, keys, ext_archivers[i].name);
+        g_strfreev (keys);
+    }
+
+    g_strfreev (groups);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -280,18 +335,61 @@ arcmc_ext_archivers_load (mc_config_t *cfg)
 void
 arcmc_ext_archivers_save (mc_config_t *cfg)
 {
+    gchar **groups;
+    gchar **keys;
     size_t i;
 
     if (cfg == NULL)
         return;
+
+    /* Collapse case aliases before writing canonical uppercase names. */
+    groups = mc_config_get_groups (cfg, NULL);
+    if (groups != NULL)
+    {
+        gchar **group;
+
+        for (group = groups; *group != NULL; group++)
+        {
+            const char *name;
+            const arcmc_ext_archiver_t *a;
+            char *canonical_section;
+
+            if (!g_str_has_prefix (*group, ARCMC_SECTION_EXT_PARAM))
+                continue;
+            name = *group + strlen (ARCMC_SECTION_EXT_PARAM);
+            a = arcmc_ext_archiver_by_name (name);
+            if (a == NULL)
+                continue;
+            canonical_section =
+                g_strconcat (ARCMC_SECTION_EXT_PARAM, a->name, (char *) NULL);
+            if (strcmp (*group, canonical_section) != 0)
+                mc_config_del_group (cfg, *group);
+            g_free (canonical_section);
+        }
+        g_strfreev (groups);
+    }
+
+    keys = mc_config_get_keys (cfg, ARCMC_SECTION_EXT, NULL);
+    if (keys != NULL)
+    {
+        gchar **key;
+
+        for (key = keys; *key != NULL; key++)
+        {
+            const arcmc_ext_archiver_t *a = arcmc_ext_archiver_by_name (*key);
+
+            if (a != NULL && strcmp (*key, a->name) != 0)
+                mc_config_del_key (cfg, ARCMC_SECTION_EXT, *key);
+        }
+        g_strfreev (keys);
+    }
 
     for (i = 0; i < ext_archivers_count; i++)
     {
         const arcmc_ext_archiver_t *a = &ext_archivers[i];
         char *section = g_strconcat (ARCMC_SECTION_EXT_PARAM, a->name, (char *) NULL);
 
-        mc_config_set_bool (cfg, ARCMC_SECTION_EXT, a->name,
-                            arcmc_ext_enabled == NULL || arcmc_ext_enabled[i]);
+        mc_config_set_bool (cfg, ARCMC_SECTION_EXT, a->name, a->enabled);
         arcmc_ext_save_string (cfg, section, "extension", a->ext);
         arcmc_ext_save_string (cfg, section, "pack_bin", a->pack_bin);
         arcmc_ext_save_string (cfg, section, "pack_args", a->pack_args);
@@ -319,8 +417,6 @@ arcmc_ext_archivers_free (void)
     ext_archivers = NULL;
     ext_archivers_count = 0;
 
-    g_free (arcmc_ext_enabled);
-    arcmc_ext_enabled = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */

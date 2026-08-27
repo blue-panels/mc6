@@ -230,6 +230,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .cmd_menu_entries = arcmc_cmd_menu,
     .cmd_menu_entry_count = G_N_ELEMENTS (arcmc_cmd_menu),
     .configure = arcmc_configure,
+    .shutdown = arcmc_config_free,
 };
 
 /*** file scope functions ************************************************************************/
@@ -250,13 +251,38 @@ arcmc_is_supported_archive (const char *filename)
     /* Also accept suffixes from the runtime external-archiver registry. */
     ext = arcmc_find_ext_archiver (filename);
     if (ext != NULL)
-    {
-        size_t i = (size_t) (ext - ext_archivers);
-
-        return arcmc_ext_enabled == NULL || arcmc_ext_enabled[i];
-    }
+        return ext->enabled;
 
     return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+arcmc_display_path (const arcmc_data_t *data)
+{
+    return data->display_path != NULL ? data->display_path : data->archive_path;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+arcmc_add_history (arcmc_data_t *data)
+{
+    char *hist_path;
+    const char *path;
+
+    if (!data->history_enabled || data->host->add_history == NULL || data->nest_stack != NULL)
+        return;
+
+    path = arcmc_display_path (data);
+    if (data->current_dir[0] != '\0')
+        hist_path =
+            g_strdup_printf ("%s%s:/%s", arcmc_plugin.prefix, path, data->current_dir);
+    else
+        hist_path = g_strdup_printf ("%s%s", arcmc_plugin.prefix, path);
+    data->host->add_history (data->host, hist_path);
+    g_free (hist_path);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -400,7 +426,8 @@ arcmc_build_default_archive_name (mc_panel_host_t *host, const char *open_path)
         {
             const arcmc_ext_archiver_t *ext = arcmc_find_ext_archiver (base_name);
 
-            if (ext != NULL)
+            if (ext != NULL && ext->enabled && ext->pack_bin != NULL
+                && name_len > strlen (ext->ext))
             {
                 size_t ext_len = strlen (ext->ext);
                 char *stripped = g_strndup (base_name, name_len - ext_len);
@@ -450,31 +477,24 @@ arcmc_open (mc_panel_host_t *host, const char *open_path)
     data = g_new0 (arcmc_data_t, 1);
     data->host = host;
     data->archive_path = archive_file;
+    data->display_path = g_strdup (archive_file);
     data->current_dir = g_strdup (subdir != NULL ? subdir : "");
     data->extfs_helper = arcmc_find_extfs_helper (archive_file);
+    data->history_enabled = TRUE;
 
     if (!arcmc_try_open (data))
     {
         if (data->all_entries != NULL)
             g_ptr_array_free (data->all_entries, TRUE);
         g_free (data->archive_path);
+        g_free (data->display_path);
         g_free (data->current_dir);
         g_free (data->extfs_helper);
         g_free (data);
         return NULL;
     }
 
-    if (host->add_history != NULL)
-    {
-        char *hist_path;
-
-        if (data->current_dir[0] != '\0')
-            hist_path = g_strdup_printf ("%s%s:/%s", prefix, data->archive_path, data->current_dir);
-        else
-            hist_path = g_strdup_printf ("%s%s", prefix, data->archive_path);
-        host->add_history (host, hist_path);
-        g_free (hist_path);
-    }
+    arcmc_add_history (data);
 
     return data;
 }
@@ -496,8 +516,10 @@ arcmc_open_input_stream (mc_panel_host_t *host, const char *display_name,
     data = g_new0 (arcmc_data_t, 1);
     data->host = host;
     data->archive_path = g_strdup (local_path != NULL ? local_path : display_name);
+    data->display_path = g_strdup (display_name != NULL ? display_name : data->archive_path);
     data->current_dir = g_strdup ("");
     data->input_stream = stream;
+    data->history_enabled = FALSE;
 
     /* The format comes from the content: the name a stream arrives with lies. */
     if (!arcmc_try_open (data))
@@ -505,6 +527,7 @@ arcmc_open_input_stream (mc_panel_host_t *host, const char *display_name,
         if (data->all_entries != NULL)
             g_ptr_array_free (data->all_entries, TRUE);
         g_free (data->archive_path);
+        g_free (data->display_path);
         g_free (data->current_dir);
         g_free (data->password);
         g_free (data->extfs_helper);
@@ -616,18 +639,21 @@ arcmc_action_browse (mc_panel_host_t *host, const char *open_path)
     data = g_new0 (arcmc_data_t, 1);
     data->host = host;
     data->archive_path = archive_file;
+    data->display_path = g_strdup (archive_file);
     data->current_dir = g_strdup ("");
     data->password = NULL;
     data->all_entries = NULL;
     data->title_buf = NULL;
     data->extfs_helper = NULL;
     data->nest_stack = NULL;
+    data->history_enabled = TRUE;
 
     if (!arcmc_try_open (data))
     {
         if (data->all_entries != NULL)
             g_ptr_array_free (data->all_entries, TRUE);
         g_free (data->archive_path);
+        g_free (data->display_path);
         g_free (data->current_dir);
         g_free (data->password);
         g_free (data->extfs_helper);
@@ -635,14 +661,7 @@ arcmc_action_browse (mc_panel_host_t *host, const char *open_path)
         return NULL;
     }
 
-    if (host->add_history != NULL)
-    {
-        char *hist_path;
-
-        hist_path = g_strdup_printf ("%s%s", arcmc_plugin.prefix, data->archive_path);
-        host->add_history (host, hist_path);
-        g_free (hist_path);
-    }
+    arcmc_add_history (data);
 
     return data;
 }
@@ -992,6 +1011,7 @@ arcmc_close (void *plugin_data)
         if (f->all_entries != NULL)
             g_ptr_array_free (f->all_entries, TRUE);
         g_free (f->archive_path);
+        g_free (f->display_path);
         g_free (f->current_dir);
         g_free (f->password);
         g_free (f->extfs_helper);
@@ -1009,6 +1029,7 @@ arcmc_close (void *plugin_data)
     if (data->all_entries != NULL)
         g_ptr_array_free (data->all_entries, TRUE);
     g_free (data->archive_path);
+    g_free (data->display_path);
     g_free (data->current_dir);
     g_free (data->password);
     g_free (data->title_buf);
@@ -1063,6 +1084,7 @@ arcmc_chdir (void *plugin_data, const char *path)
                 if (data->all_entries != NULL)
                     g_ptr_array_free (data->all_entries, TRUE);
                 g_free (data->archive_path);
+                g_free (data->display_path);
                 g_free (data->current_dir);
                 g_free (data->password);
                 g_free (data->extfs_helper);
@@ -1070,6 +1092,7 @@ arcmc_chdir (void *plugin_data, const char *path)
 
                 /* restore outer state */
                 data->archive_path = f->archive_path;
+                data->display_path = f->display_path;
                 data->current_dir = f->current_dir;
                 data->password = f->password;
                 data->extfs_helper = f->extfs_helper;
@@ -1086,28 +1109,17 @@ arcmc_chdir (void *plugin_data, const char *path)
 
                 g_free (f);
 
-                if (data->host->add_history != NULL && data->nest_stack == NULL)
-                {
-                    char *hist_path;
-                    const char *p = arcmc_plugin.prefix;
-
-                    if (data->current_dir[0] != '\0')
-                        hist_path =
-                            g_strdup_printf ("%s%s:/%s", p, data->archive_path, data->current_dir);
-                    else
-                        hist_path = g_strdup_printf ("%s%s", p, data->archive_path);
-                    data->host->add_history (data->host, hist_path);
-                    g_free (hist_path);
-                }
+                arcmc_add_history (data);
 
                 return MC_PPR_OK;
             }
 
             {
                 const char *bn;
+                const char *display_path = arcmc_display_path (data);
 
-                bn = strrchr (data->archive_path, '/');
-                data->host->focus_after = g_strdup (bn != NULL ? bn + 1 : data->archive_path);
+                bn = strrchr (display_path, '/');
+                data->host->focus_after = g_strdup (bn != NULL ? bn + 1 : display_path);
                 return MC_PPR_CLOSE;
             }
         }
@@ -1120,18 +1132,7 @@ arcmc_chdir (void *plugin_data, const char *path)
             data->current_dir = parent;
         }
 
-        if (data->host->add_history != NULL && data->nest_stack == NULL)
-        {
-            char *hist_path;
-            const char *p = arcmc_plugin.prefix;
-
-            if (data->current_dir[0] != '\0')
-                hist_path = g_strdup_printf ("%s%s:/%s", p, data->archive_path, data->current_dir);
-            else
-                hist_path = g_strdup_printf ("%s%s", p, data->archive_path);
-            data->host->add_history (data->host, hist_path);
-            g_free (hist_path);
-        }
+        arcmc_add_history (data);
 
         return MC_PPR_OK;
     }
@@ -1154,18 +1155,7 @@ arcmc_chdir (void *plugin_data, const char *path)
         data->current_dir = new_dir;
     }
 
-    if (data->host->add_history != NULL && data->nest_stack == NULL)
-    {
-        char *hist_path;
-        const char *p = arcmc_plugin.prefix;
-
-        if (data->current_dir[0] != '\0')
-            hist_path = g_strdup_printf ("%s%s:/%s", p, data->archive_path, data->current_dir);
-        else
-            hist_path = g_strdup_printf ("%s%s", p, data->archive_path);
-        data->host->add_history (data->host, hist_path);
-        g_free (hist_path);
-    }
+    arcmc_add_history (data);
 
     return MC_PPR_OK;
 }
@@ -1194,12 +1184,9 @@ arcmc_enter (void *plugin_data, const char *name, const struct stat *st)
             return MC_PPR_FAILED;
         }
 
-        r = arcmc_push_nested (data, local_path);
+        r = arcmc_push_nested (data, local_path, name);
         if (r != MC_PPR_OK)
-        {
-            message (D_ERROR, MSG_ERROR, _ ("Cannot open nested archive"));
-            return MC_PPR_FAILED;
-        }
+            return MC_PPR_NOT_SUPPORTED;
 
         return MC_PPR_OK;
     }
@@ -1221,7 +1208,7 @@ arcmc_enter (void *plugin_data, const char *name, const struct stat *st)
 
         if (arcmc_is_archive_by_content (local_path))
         {
-            r = arcmc_push_nested (data, local_path);
+            r = arcmc_push_nested (data, local_path, name);
             if (r == MC_PPR_OK)
                 return MC_PPR_OK;
             /* push failed -fall through to NOT_SUPPORTED */
@@ -1707,11 +1694,11 @@ arcmc_get_title (void *plugin_data)
 
     g_free (data->title_buf);
 
-    basename_ptr = strrchr (data->archive_path, '/');
+    basename_ptr = strrchr (arcmc_display_path (data), '/');
     if (basename_ptr != NULL)
         basename_ptr++;
     else
-        basename_ptr = data->archive_path;
+        basename_ptr = arcmc_display_path (data);
 
     if (data->current_dir[0] == '\0')
         data->title_buf =

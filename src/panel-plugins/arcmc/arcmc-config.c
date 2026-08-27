@@ -234,3 +234,16 @@ arcmc_config_save (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+void
+arcmc_config_free (void)
+{
+    arcmc_ext_archivers_free ();
+    g_free (arcmc_hotkey_create_text);
+    arcmc_hotkey_create_text = NULL;
+    g_free ((char *) arcmc_hotkey_create_label);
+    arcmc_hotkey_create_label = NULL;
+    arcmc_hotkey_create = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */

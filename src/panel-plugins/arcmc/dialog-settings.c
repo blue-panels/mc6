@@ -797,7 +797,7 @@ arcmc_show_settings_dialog (void)
     settings_tbl_ext = tbl_ext;
     ext_checks = g_new (gboolean, ext_archivers_count > 0 ? ext_archivers_count : 1);
     for (i = 0; i < ext_archivers_count; i++)
-        ext_checks[i] = arcmc_ext_enabled != NULL ? arcmc_ext_enabled[i] : TRUE;
+        ext_checks[i] = ext_archivers[i].enabled;
     {
         table_datasource_t ds = { settings_ext_get_nrows,
                                   settings_ext_get_text,
@@ -859,8 +859,7 @@ arcmc_show_settings_dialog (void)
         }
 
         for (i = 0; i < ext_archivers_count; i++)
-            if (arcmc_ext_enabled != NULL)
-                arcmc_ext_enabled[i] = ext_checks[i];
+            ext_archivers[i].enabled = ext_checks[i];
 
         arcmc_config_save ();
     }

@@ -110,6 +110,13 @@ typedef struct
     const char *fname;
 } panel_magic_source_data_t;
 
+typedef enum
+{
+    PANEL_MAGIC_OPEN_NONE,
+    PANEL_MAGIC_OPEN_HANDLED,
+    PANEL_MAGIC_OPEN_FAILED
+} panel_magic_open_result_t;
+
 #define DEFAULT_USER_FORMAT "half type name | size | perm"
 
 /* select/unselect dialog results */
@@ -161,11 +168,12 @@ typedef enum
 
 static const char *panel_format (WPanel *panel);
 static gboolean do_enter (WPanel *panel);
-static gboolean panel_magic_open_local_file (WPanel *panel, const char *fname,
-                                             const vfs_path_t *full_name_vpath,
-                                             const char *action_name);
-static gboolean panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe,
-                                              const char *action_name);
+static panel_magic_open_result_t panel_magic_open_local_file (
+    WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath, const char *action_name,
+    gboolean report_error);
+static panel_magic_open_result_t panel_magic_open_plugin_file (
+    WPanel *panel, const file_entry_t *fe, const char *action_name, char **local_copy,
+    gboolean report_error);
 static const char *string_file_name (const file_entry_t *fe, int len);
 static const char *string_file_size (const file_entry_t *fe, int len);
 static const char *string_file_size_brief (const file_entry_t *fe, int len);
@@ -2999,16 +3007,47 @@ goto_child_dir (WPanel *panel)
 
     if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL)
     {
-        if (!panel_magic_open_plugin_file (panel, fe, "CdChild"))
-            (void) panel_magic_open_plugin_file (panel, fe, "Open");
+        char *local_copy = NULL;
+        panel_magic_open_result_t result;
+        gboolean magic_found;
+
+        result = panel_magic_open_plugin_file (panel, fe, "CdChild", &local_copy, FALSE);
+        magic_found = result != PANEL_MAGIC_OPEN_NONE;
+        if (result != PANEL_MAGIC_OPEN_HANDLED)
+        {
+            result = panel_magic_open_plugin_file (panel, fe, "Open", &local_copy, FALSE);
+            magic_found = magic_found || result != PANEL_MAGIC_OPEN_NONE;
+        }
+        if (result != PANEL_MAGIC_OPEN_HANDLED && !magic_found)
+            (void) panel_plugin_open_entry_auto (panel, fe->fname->str, &local_copy);
+
+        if (local_copy != NULL)
+        {
+            unlink (local_copy);
+            g_free (local_copy);
+        }
     }
     else
     {
         vfs_path_t *full_name_vpath;
+        panel_magic_open_result_t result;
+        gboolean magic_found;
 
         full_name_vpath = vfs_path_append_new (panel->cwd_vpath, fe->fname->str, (char *) NULL);
-        if (!panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "CdChild"))
-            (void) panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "Open");
+
+        result = panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "CdChild",
+                                              FALSE);
+        magic_found = result != PANEL_MAGIC_OPEN_NONE;
+        if (result != PANEL_MAGIC_OPEN_HANDLED)
+        {
+            result = panel_magic_open_local_file (panel, fe->fname->str, full_name_vpath, "Open",
+                                                  FALSE);
+            magic_found = magic_found || result != PANEL_MAGIC_OPEN_NONE;
+        }
+        if (result != PANEL_MAGIC_OPEN_HANDLED && !magic_found
+            && vfs_file_is_local (full_name_vpath))
+            (void) panel_plugin_open_local_file_auto (panel, fe->fname->str,
+                                                      vfs_path_as_str (full_name_vpath));
         vfs_path_free (full_name_vpath, TRUE);
     }
 }
@@ -3907,7 +3946,7 @@ panel_magic_error (const char *fname, const mc_magic_action_t *action)
 
 static gboolean
 panel_magic_runtime_open (const mc_magic_action_t *action, const char *display_name,
-                          const char *local_path)
+                          const char *local_path, gboolean report_error)
 {
     mc_runtime_file_operation_request_t request = {
         .struct_size = sizeof (request),
@@ -3923,17 +3962,17 @@ panel_magic_runtime_open (const mc_magic_action_t *action, const char *display_n
 
     result = mc_runtime_plugins_invoke_file_operation (action->plugin_id, action->submodule_id,
                                                        action->operation_id, &request, &error);
-    if (result != MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED)
+    if (result != MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED && report_error)
         message (D_ERROR, MSG_ERROR, "%s",
                  error != NULL ? error : _ ("The runtime file handler failed"));
-    return TRUE;
+    return result == MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
+static panel_magic_open_result_t
 panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t *full_name_vpath,
-                             const char *action_name)
+                             const char *action_name, gboolean report_error)
 {
     mc_magic_source_t source = {
         .display_name = fname,
@@ -3949,25 +3988,25 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
     /* An operation is handed a path to open(2), which a name inside an mc
        filesystem is not.  Those keep their mc.ext.ini handling. */
     if (!vfs_file_is_local (full_name_vpath))
-        return FALSE;
+        return PANEL_MAGIC_OPEN_NONE;
 
     state = mc_magic_find_action (&source, action_name, &local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
         if (action.submodule_id != NULL)
-            handled = panel_magic_runtime_open (&action, fname, vfs_path_as_str (full_name_vpath));
+            handled = panel_magic_runtime_open (&action, fname, vfs_path_as_str (full_name_vpath),
+                                                report_error);
         else
             handled = panel_plugin_open_local_file_by_operation (
                 panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_id,
                 action.operation_id);
-        if (!handled)
+        if (!handled && report_error && action.submodule_id == NULL)
             panel_magic_error (fname, &action);
-        handled = TRUE;
     }
     else if (state == MC_MAGIC_ACTION_ERROR)
     {
-        panel_magic_error (fname, NULL);
-        handled = TRUE;
+        if (report_error)
+            panel_magic_error (fname, NULL);
     }
 
     if (local_copy != NULL)
@@ -3976,13 +4015,16 @@ panel_magic_open_local_file (WPanel *panel, const char *fname, const vfs_path_t 
         g_free (local_copy);
     }
     mc_magic_action_clear (&action);
-    return handled;
+    if (state == MC_MAGIC_ACTION_NONE)
+        return PANEL_MAGIC_OPEN_NONE;
+    return handled ? PANEL_MAGIC_OPEN_HANDLED : PANEL_MAGIC_OPEN_FAILED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
-panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char *action_name)
+static panel_magic_open_result_t
+panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char *action_name,
+                              char **local_copy, gboolean report_error)
 {
     panel_magic_source_data_t source_data = {
         .panel = panel,
@@ -3995,43 +4037,37 @@ panel_magic_open_plugin_file (WPanel *panel, const file_entry_t *fe, const char 
         .data = &source_data,
     };
     mc_magic_action_t action = { 0 };
-    char *local_copy = NULL;
     mc_magic_action_state_t state;
     gboolean handled = FALSE;
 
-    state = mc_magic_find_action (&source, action_name, &local_copy, &action);
+    state = mc_magic_find_action (&source, action_name, local_copy, &action);
     if (state == MC_MAGIC_ACTION_FOUND)
     {
         if (action.submodule_id != NULL)
         {
-            if (local_copy == NULL)
-                (void) panel_magic_get_local_copy (&source_data, &local_copy);
-            if (local_copy != NULL)
-                handled = panel_magic_runtime_open (&action, fe->fname->str, local_copy);
+            if (*local_copy == NULL)
+                (void) panel_magic_get_local_copy (&source_data, local_copy);
+            if (*local_copy != NULL)
+                handled = panel_magic_runtime_open (&action, fe->fname->str, *local_copy,
+                                                    report_error);
         }
         else
         {
             handled = panel_plugin_open_entry_by_operation (panel, fe->fname->str, action.plugin_id,
                                                             action.operation_id, local_copy);
-            local_copy = NULL; /* consumed or released by the native callee */
         }
-        if (!handled)
+        if (!handled && report_error && action.submodule_id == NULL)
             panel_magic_error (fe->fname->str, &action);
-        handled = TRUE;
     }
     else if (state == MC_MAGIC_ACTION_ERROR)
     {
-        panel_magic_error (fe->fname->str, NULL);
-        handled = TRUE;
-    }
-
-    if (local_copy != NULL)
-    {
-        unlink (local_copy);
-        g_free (local_copy);
+        if (report_error)
+            panel_magic_error (fe->fname->str, NULL);
     }
     mc_magic_action_clear (&action);
-    return handled;
+    if (state == MC_MAGIC_ACTION_NONE)
+        return PANEL_MAGIC_OPEN_NONE;
+    return handled ? PANEL_MAGIC_OPEN_HANDLED : PANEL_MAGIC_OPEN_FAILED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -4064,7 +4100,8 @@ do_enter_on_file_entry (WPanel *panel, const file_entry_t *fe)
     panel_runtime_publish_file_open (panel, fe, "other");
 
     /* magic.ini is a user-controlled overlay for plugin file operations. */
-    if (panel_magic_open_local_file (panel, fname, full_name_vpath, "Open"))
+    if (panel_magic_open_local_file (panel, fname, full_name_vpath, "Open", TRUE)
+        != PANEL_MAGIC_OPEN_NONE)
     {
         vfs_path_free (full_name_vpath, TRUE);
         return TRUE;
@@ -4172,10 +4209,22 @@ do_enter (WPanel *panel)
             focus_name = plugin_title_last_component (title);
         }
 
-        if (S_ISREG (fe->st.st_mode) && panel_magic_open_plugin_file (panel, fe, "Open"))
+        if (S_ISREG (fe->st.st_mode))
         {
-            g_free (focus_name);
-            return TRUE;
+            char *local_copy = NULL;
+            panel_magic_open_result_t magic_result =
+                panel_magic_open_plugin_file (panel, fe, "Open", &local_copy, TRUE);
+
+            if (local_copy != NULL)
+            {
+                unlink (local_copy);
+                g_free (local_copy);
+            }
+            if (magic_result != PANEL_MAGIC_OPEN_NONE)
+            {
+                g_free (focus_name);
+                return TRUE;
+            }
         }
 
         // let plugin handle enter when magic.ini has no association
@@ -4271,6 +4320,13 @@ do_enter (WPanel *panel)
                 panel_plugin_close (panel);
                 return TRUE;
             }
+        }
+
+        if (S_ISREG (fe->st.st_mode) && enter_result == MC_PPR_NOT_SUPPORTED)
+        {
+            g_free (focus_name);
+            view_cmd (panel);
+            return TRUE;
         }
 
         g_free (focus_name);

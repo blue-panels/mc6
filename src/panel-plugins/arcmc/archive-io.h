@@ -58,7 +58,8 @@ gboolean arcmc_extfs_run_cmd (const char *helper, const char *cmd_name, const ch
                               const char *stored_name, const char *local_name,
                               const char *password);
 mc_pp_result_t arcmc_extract_to_temp (arcmc_data_t *data, const char *name, char **local_path);
-mc_pp_result_t arcmc_push_nested (arcmc_data_t *data, char *local_path);
+mc_pp_result_t arcmc_push_nested (arcmc_data_t *data, char *local_path,
+                                  const char *display_name);
 
 /* External archiver operations */
 gboolean arcmc_check_bin_available (const char *bin_name);

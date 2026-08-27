@@ -165,6 +165,75 @@ END_TEST
 /* --------------------------------------------------------------------------------------------- */
 
 #ifdef HAVE_LIBMAGIC
+static mc_pp_result_t
+mock_get_local_copy (void *data, char **local_path)
+{
+    int *calls = (int *) data;
+
+    (*calls)++;
+    return mc_pp_write_temp_file ("mc-magic-copy-XXXXXX", "plain text\n", -1, local_path)
+        ? MC_PPR_OK
+        : MC_PPR_FAILED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_cdchild_and_open_reuse_one_local_copy)
+{
+    magic_config_t config = { NULL, NULL };
+    mc_magic_source_t source = { .display_name = "document.pkgx",
+                                 .get_local_copy = mock_get_local_copy };
+    mc_magic_action_t action = { 0 };
+    char *local_copy = NULL;
+    char *ini_path = NULL;
+    gboolean matched = FALSE;
+    int copy_calls = 0;
+    int fd;
+
+    source.data = &copy_calls;
+    fd = g_file_open_tmp ("mc-magic-ini-XXXXXX", &ini_path, NULL);
+    ck_assert_int_ne (fd, -1);
+    close (fd);
+    mctest_assert_true (g_file_set_contents (
+        ini_path,
+        "[cdchild]\nMime=^text/plain$\nCdChild=%plugin{first:open}\n"
+        "[open]\nMime=^text/plain$\nOpen=%plugin{second:open}\n",
+        -1, NULL));
+    magic_config_load (&config, ini_path);
+
+    {
+        magic_type_info_t type = { FALSE, { '\0' } };
+        magic_mime_info_t mime = { FALSE, NULL };
+
+        ck_assert_int_eq (magic_find_in_config (&config, &source, "CdChild", &local_copy, &action,
+                                                &matched, &type, &mime),
+                          MC_MAGIC_ACTION_FOUND);
+        mc_magic_action_clear (&action);
+        g_free (mime.text);
+    }
+    {
+        magic_type_info_t type = { FALSE, { '\0' } };
+        magic_mime_info_t mime = { FALSE, NULL };
+
+        ck_assert_int_eq (magic_find_in_config (&config, &source, "Open", &local_copy, &action,
+                                                &matched, &type, &mime),
+                          MC_MAGIC_ACTION_FOUND);
+        mc_magic_action_clear (&action);
+        g_free (mime.text);
+    }
+
+    ck_assert_int_eq (copy_calls, 1);
+    ck_assert_ptr_nonnull (local_copy);
+    unlink (local_copy);
+    g_free (local_copy);
+    magic_config_clear (&config);
+    unlink (ini_path);
+    g_free (ini_path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_mime_selector_matches_and_copies_metadata)
 {
     magic_config_t config = { NULL, NULL };
@@ -326,6 +395,7 @@ main (void)
     tcase_add_test (tc_core, test_a_rule_without_the_key_does_not_shadow_the_next_file);
     tcase_add_test (tc_core, test_cdchild_action_does_not_define_open);
 #ifdef HAVE_LIBMAGIC
+    tcase_add_test (tc_core, test_cdchild_and_open_reuse_one_local_copy);
     tcase_add_test (tc_core, test_mime_selector_matches_and_copies_metadata);
     tcase_add_test (tc_core, test_elf_mime_selector_does_not_require_filename_extension);
 #endif
