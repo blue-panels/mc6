@@ -127,7 +127,14 @@
 
 #define FILEHIGHLIGHT_DEFAULT_COLOR  mc_skin_color__cache[78]
 
-#define MC_SKIN_COLOR_CACHE_COUNT    84
+/* permission bits, one color per kind of bit */
+#define CORE_PERM_READ_COLOR      mc_skin_color__cache[84]
+#define CORE_PERM_WRITE_COLOR     mc_skin_color__cache[85]
+#define CORE_PERM_EXEC_COLOR      mc_skin_color__cache[86]
+#define CORE_PERM_SPECIAL_COLOR   mc_skin_color__cache[87]
+#define CORE_PERM_NONE_COLOR      mc_skin_color__cache[88]
+
+#define MC_SKIN_COLOR_CACHE_COUNT 89
 
 /*** enums ***************************************************************************************/
 

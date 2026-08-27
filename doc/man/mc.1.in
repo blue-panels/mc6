@@ -2113,8 +2113,22 @@ display fields
 .\"Listing Format..."
 which apply to the user running Midnight Commander are highlighted with
 the color defined by the
-.I selected
-keyword.  If the file type highlighting is enabled, file names are colored
+.I marked
+keyword.  If
+.I permission colors
+are enabled, every character of the
+.I perm
+field is colored by what it stands for: the
+.I permread ,
+.I permwrite ,
+.I permexec ,
+.I permspecial
+and
+.I permnone
+colors of the skin for r, w, x, s/t and \-.  Both can be on at once; the
+triplet that applies to the user then keeps the
+.I marked
+color.  If the file type highlighting is enabled, file names are colored
 according to rules described in
 %sysconfdir%/mc/filehighlight.ini
 file. See

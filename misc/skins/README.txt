@@ -55,6 +55,12 @@ applies individually to each of these three properties.
         markselect
             A file that is both marked and is under the cursor
 
+        permread, permwrite, permexec, permspecial, permnone
+            The r, w, x, s/t and - characters of the permission field,
+            when the Permission colors panel option is on. A skin that
+            names none of them gets yellow, bright red, bright green,
+            bright magenta and gray on its own background
+
         gauge
             Filled part of the progress bar
 
