@@ -617,13 +617,18 @@ mcterm_handle_osc133_generation (WMcTerm *t)
         /* A prompt is printed again whenever the line editor redraws it - among other times,
            right after we hand it a command. Until the shell reports that command done, a
            prompt on screen is a redrawn one and the shell is still busy. */
-        if (t->awaiting_command_done || t->shell_at_prompt)
+        if (t->awaiting_command_done)
             return FALSE;
-        t->shell_at_prompt = TRUE;
+        /* Wherever the prompt ends is where the typed line begins - also for a prompt printed
+           afresh while the shell was already at one: Enter on an empty line runs no command,
+           so nothing else moves the line down to the new prompt. */
         t->input_start_row =
             mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
         t->input_start_col = mcview_vterm_cursor_col (t->vterm);
         t->input_start_valid = TRUE;
+        if (t->shell_at_prompt)
+            return FALSE;
+        t->shell_at_prompt = TRUE;
         g_clear_pointer (&t->command_hint, g_free);
         mcterm_busy_tick_set (t, FALSE);
         return TRUE;
