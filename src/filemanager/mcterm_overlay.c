@@ -1395,6 +1395,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     if (!mcterm_mode || mcterm_panel == NULL)
         return MSG_NOT_HANDLED;
 
+    // An open menu takes every key itself; none of them is the shell's.
+    if (the_menubar != NULL && widget_get_state (WIDGET (the_menubar), WST_FOCUSED))
+        return MSG_NOT_HANDLED;
+
     // A panel on screen owns the keys that walk a list.
     mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
     // Both can be turned off while the terminal is up, so they are told each time.
