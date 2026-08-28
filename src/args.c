@@ -7,6 +7,7 @@
    Written by:
    Slava Zanko <slavazanko@gmail.com>, 2009.
    Andrew Borodin <aborodin@vmail.ru>, 2011, 2012.
+   Ilia Maslakov <il.smind@gmail.com>, 2026.
 
    This file is part of the Midnight Commander.
 
@@ -58,6 +59,7 @@ gboolean mc_args__force_colors = FALSE;
 gboolean mc_args__nokeymap = FALSE;
 
 gboolean mc_args__mctree = FALSE;
+gboolean mc_args__mcstruct = FALSE;
 
 gboolean mc_args__no_lua = FALSE;
 
@@ -585,6 +587,8 @@ mc_setup_run_mode (char **argv)
 #endif
     else if (strcmp (base, "mctree") == 0)
         mc_args__mctree = TRUE;
+    else if (strcmp (base, "mcstruct") == 0)
+        mc_args__mcstruct = TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -716,6 +720,33 @@ mc_setup_by_args (int argc, char **argv, GError **mcerror)
         mc_global.tty.disable_colors = FALSE;
 
     tmp = (argc > 0) ? argv[1] : NULL;
+
+    if (mc_args__mcstruct)
+    {
+        // mcstruct FILE [DEF.STL]: the struct look plugin screen
+        if (tmp == NULL)
+        {
+            mc_propagate_error (mcerror, 0, "%s\n", _ ("No arguments given to mcstruct."));
+            return FALSE;
+        }
+
+        mc_global.mc_run_mode = MC_RUN_VIEWER;
+        mc_run_param0 = g_strdup (tmp);
+        if (argc > 2)
+        {
+            /* a def-file path is resolved here, the plugin does not know the working directory */
+            if (strchr (argv[2], PATH_SEP) != NULL && !g_path_is_absolute (argv[2]))
+            {
+                char *cwd = g_get_current_dir ();
+
+                mc_run_param1 = g_build_filename (cwd, argv[2], (char *) NULL);
+                g_free (cwd);
+            }
+            else
+                mc_run_param1 = g_strdup (argv[2]);
+        }
+        return TRUE;
+    }
 
     if (mc_args__mctree)
     {

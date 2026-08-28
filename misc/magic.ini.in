@@ -16,6 +16,19 @@
 
 @MAGIC_SQLITE_RULES@
 
+# mcstruct: the group name is the def-file hint (mcstruct-NAME -> NAME.stl)
+[mcstruct-uimage]
+Type=^u-boot legacy uImage
+View=%plugin{mcstruct:show}
+
+[mcstruct-dtb]
+Type=^Device Tree Blob
+View=%plugin{mcstruct:show}
+
+[mcstruct-mbr]
+Type=^DOS/MBR boot sector
+View=%plugin{mcstruct:show}
+
 @MAGIC_LUA_CHAFA_RULES@
 
 @MAGIC_LUA_JAVA_CLASS_RULES@
