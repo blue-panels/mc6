@@ -1,12 +1,12 @@
 /*
    Editor low level data handling and cursor fundamentals.
 
-   Copyright (C) 1996-2025
+   Copyright (C) 1996-2026
    Free Software Foundation, Inc.
 
    Written by:
    Paul Sheer 1996, 1997
-   Ilia Maslakov <il.smind@gmail.com> 2009, 2010, 2011
+   Ilia Maslakov <il.smind@gmail.com> 2009-2012, 2026
    Andrew Borodin <aborodin@vmail.ru> 2012-2022
 
    This file is part of the Midnight Commander.

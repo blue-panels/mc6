@@ -1,11 +1,12 @@
 /*
    Search & replace engine of MCEditor.
 
-   Copyright (C) 2021-2025
+   Copyright (C) 2021-2026
    Free Software Foundation, Inc.
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2021-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 

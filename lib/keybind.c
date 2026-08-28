@@ -1,12 +1,12 @@
 /*
    Definitions of key bindings.
 
-   Copyright (C) 2005-2025
+   Copyright (C) 2005-2026
    Free Software Foundation, Inc.
 
    Written by:
    Vitja Makarov, 2005
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2012
+   Ilia Maslakov <il.smind@gmail.com>, 2009-2012, 2014, 2026
    Andrew Borodin <aborodin@vmail.ru>, 2009-2020
 
    This file is part of the Midnight Commander.

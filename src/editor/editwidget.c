@@ -1,12 +1,13 @@
 /*
    Editor initialisation and callback handler.
 
-   Copyright (C) 1996-2025
+   Copyright (C) 1996-2026
    Free Software Foundation, Inc.
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru> 2012-2024
+   Ilia Maslakov <il.smind@gmail.com> 2010-2012, 2026
 
    This file is part of the Midnight Commander.
 
