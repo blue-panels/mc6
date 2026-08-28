@@ -112,7 +112,12 @@ table_draw_cells (WTable *t, int y, int row_idx, int nrows, int row_color, gbool
     /* the scrollbar has the last column of cells */
     int right = w->cols - ((t->scrollbar || t->scrollbar_on_frame) ? 1 : 0);
     int col_x = 1;
+    int last_col = t->ncols - 1;
     int c;
+
+    /* separators only between columns that are drawn */
+    while (last_col > 0 && table_col_width (t, last_col) <= 0)
+        last_col--;
 
     for (c = t->first_col; c < t->ncols && col_x < right; c++)
     {
@@ -120,6 +125,9 @@ table_draw_cells (WTable *t, int y, int row_idx, int nrows, int row_color, gbool
         int room = right - col_x;
         int cell_color = row_color;
 
+        /* a zero width column is not there: no cell, no separator */
+        if (width <= 0)
+            continue;
         if (width > room)
             width = room;
         if (row_idx >= 0 && row_idx != t->current && t->cell_color != NULL)
@@ -167,7 +175,7 @@ table_draw_cells (WTable *t, int y, int row_idx, int nrows, int row_color, gbool
         col_x += width;
 
         /* draw column separator except after last column */
-        if (c < t->ncols - 1 && col_x < right)
+        if (c < last_col && col_x < right)
         {
             tty_setcolor (row_color);
             widget_gotoyx (t, y, col_x);
@@ -251,13 +259,20 @@ table_draw (WTable *t, gboolean focused)
     colors = widget_get_colors (wt);
 
     disabled = widget_get_state (wt, WST_DISABLED);
-    if (t->color_idx >= 0)
+    if (t->normal_color >= 0)
+        normalc = disabled ? CORE_DISABLED_COLOR : t->normal_color;
+    else if (t->color_idx >= 0)
         normalc = disabled ? CORE_DISABLED_COLOR : colors[t->color_idx];
     else
         normalc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_NORMAL];
-    selc = disabled ? CORE_DISABLED_COLOR
-                    : colors[focused ? DLG_COLOR_SELECTED_FOCUS : DLG_COLOR_SELECTED_NORMAL];
-    scrollbarc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_FRAME];
+    if (t->selected_color >= 0)
+        selc = disabled ? CORE_DISABLED_COLOR : t->selected_color;
+    else
+        selc = disabled ? CORE_DISABLED_COLOR
+                        : colors[focused ? DLG_COLOR_SELECTED_FOCUS : DLG_COLOR_SELECTED_NORMAL];
+    scrollbarc = disabled         ? CORE_DISABLED_COLOR
+        : t->scrollbar_color >= 0 ? t->scrollbar_color
+                                  : colors[DLG_COLOR_FRAME];
 
     if (t->prefetch != NULL && nrows > 0 && t->top < nrows)
         t->prefetch (t->datasource.data, t->top, MIN (lines, nrows - t->top));
@@ -664,6 +679,9 @@ table_new (int y, int x, int height, int width, int ncols, const table_column_de
     t->scrollbar = !mc_global.tty.slow_terminal;
     t->scrollbar_on_frame = FALSE;
     t->color_idx = -1;
+    t->normal_color = -1;
+    t->selected_color = -1;
+    t->scrollbar_color = -1;
 
     /* detect CHECK and CHOICE columns */
     t->has_check_cols = FALSE;
