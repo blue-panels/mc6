@@ -1572,7 +1572,7 @@ edit_update_cursor (WEdit *edit, const mouse_event_t *event)
         edit_move_to_prev_col (edit, edit_buffer_get_current_bol (&edit->buffer));
 
     /* On a fold start line, handle clicks relative to fold indicator */
-    if (edit->folds != NULL)
+    if (edit->folds != NULL && !edit->filter_active)
     {
         edit_fold_t *fold;
 
@@ -1607,7 +1607,7 @@ edit_update_cursor (WEdit *edit, const mouse_event_t *event)
 
                     /* Calculate visual end of fold indicator */
                     line_visual_len = (long) edit_move_forward3 (edit, bol, 0, eol);
-                    fold_visual_end = line_visual_len + edit_fold_indicator_width (fold);
+                    fold_visual_end = line_visual_len + edit_fold_indicator_width (edit, fold);
 
                     /* Snap cursor to the bracket */
                     edit_cursor_move (edit, bracket_off - edit->buffer.curs1);

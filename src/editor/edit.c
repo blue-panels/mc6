@@ -969,7 +969,7 @@ edit_cursor_to_eol (WEdit *edit)
 
         fold = edit_fold_find (edit, edit->buffer.curs_line);
         if (fold != NULL && edit->buffer.curs_line == fold->line_start)
-            edit->over_col = edit_fold_indicator_width (fold);
+            edit->over_col = edit_fold_indicator_width (edit, fold);
     }
 }
 
@@ -1148,7 +1148,7 @@ edit_right_char_move_cmd (WEdit *edit)
         c = edit_buffer_get_current_byte (&edit->buffer);
 
     /* On a fold start line at or past the opening bracket: skip over fold indicator */
-    if (edit->folds != NULL)
+    if (edit->folds != NULL && !edit->filter_active)
     {
         edit_fold_t *fold;
 
@@ -1176,7 +1176,7 @@ edit_right_char_move_cmd (WEdit *edit)
                 {
                     int fold_width;
 
-                    fold_width = edit_fold_indicator_width (fold);
+                    fold_width = edit_fold_indicator_width (edit, fold);
 
                     /* move cursor to EOL if not already there */
                     if (edit->buffer.curs1 < eol)
@@ -1258,7 +1258,7 @@ edit_left_char_move_cmd (WEdit *edit)
     if (edit_options.cursor_beyond_eol && edit->over_col > 0)
     {
         /* On a fold start line, jump over the fold indicator in one step */
-        if (edit->folds != NULL)
+        if (edit->folds != NULL && !edit->filter_active)
         {
             edit_fold_t *fold;
 
@@ -1267,7 +1267,7 @@ edit_left_char_move_cmd (WEdit *edit)
             {
                 int fold_width;
 
-                fold_width = edit_fold_indicator_width (fold);
+                fold_width = edit_fold_indicator_width (edit, fold);
                 if (edit->over_col <= fold_width)
                 {
                     off_t bol, eol, bracket_off;
@@ -1304,7 +1304,18 @@ edit_left_char_move_cmd (WEdit *edit)
         edit_fold_t *fold;
 
         fold = edit_fold_find (edit, edit->buffer.curs_line);
-        if (fold != NULL)
+        if (fold != NULL && fold->line_start < 0)
+        {
+            /* nothing is shown above a headless run: go back to its first shown line */
+            off_t target;
+
+            target = edit_buffer_get_forward_offset (
+                &edit->buffer, edit_buffer_get_current_bol (&edit->buffer),
+                fold->line_start + fold->line_count + 1 - edit->buffer.curs_line, 0);
+            edit_cursor_move (edit, target - edit->buffer.curs1);
+            edit->over_col = 0;
+        }
+        else if (fold != NULL)
         {
             long delta;
             off_t bol, eol;
@@ -1315,11 +1326,11 @@ edit_left_char_move_cmd (WEdit *edit)
                 &edit->buffer, edit_buffer_get_current_bol (&edit->buffer), delta);
             eol = edit_buffer_get_eol (&edit->buffer, bol);
 
-            if (edit_options.cursor_beyond_eol)
+            if (edit_options.cursor_beyond_eol || edit->filter_active)
             {
-                /* cursor_beyond_eol on: land at end of fold indicator */
+                /* land at end of fold indicator (a filter run has none: plain EOL) */
                 edit_cursor_move (edit, eol - edit->buffer.curs1);
-                edit->over_col = edit_fold_indicator_width (fold);
+                edit->over_col = edit_fold_indicator_width (edit, fold);
             }
             else
             {
@@ -1391,7 +1402,7 @@ edit_move_updown (WEdit *edit, long lines, gboolean do_scroll, gboolean directio
         {
             long target;
 
-            if (direction)
+            if (direction && fold->line_start >= 0)
                 target = fold->line_start;
             else
                 target = fold->line_start + fold->line_count + 1;
@@ -4200,7 +4211,8 @@ edit_scroll_upward (WEdit *edit, long i)
         f = edit_fold_find (edit, edit->start_line);
         if (f != NULL && edit->start_line > f->line_start)
         {
-            long skip = edit->start_line - f->line_start;
+            /* a headless run has no start line to show: stop at the top of the file */
+            long skip = edit->start_line - MAX (f->line_start, 0);
 
             edit->start_line -= skip;
             edit->start_display =
@@ -4640,6 +4652,48 @@ edit_find_bracket (WEdit *edit)
 
 /* --------------------------------------------------------------------------------------------- */
 /**
+ * Snap the cursor out of hidden (folded) lines, like tab-snap prevents a mid-tab cursor:
+ * to the end of the fold's start line, or below a headless run that has none.
+ */
+static void
+edit_fold_snap_cursor (WEdit *edit)
+{
+    edit_fold_t *fold;
+
+    if (edit->folds == NULL || !edit_fold_is_hidden (edit, edit->buffer.curs_line))
+        return;
+
+    fold = edit_fold_find (edit, edit->buffer.curs_line);
+    if (fold == NULL)
+        return;
+
+    if (fold->line_start < 0)
+    {
+        off_t target;
+
+        target = edit_buffer_get_forward_offset (
+            &edit->buffer, edit_buffer_get_current_bol (&edit->buffer),
+            fold->line_start + fold->line_count + 1 - edit->buffer.curs_line, 0);
+        edit_cursor_move (edit, target - edit->buffer.curs1);
+    }
+    else
+    {
+        long delta;
+        off_t bol;
+
+        delta = edit->buffer.curs_line - fold->line_start;
+        bol = edit_buffer_get_backward_offset (&edit->buffer,
+                                               edit_buffer_get_current_bol (&edit->buffer), delta);
+        edit_cursor_move (edit, bol - edit->buffer.curs1);
+        /* position at EOL of fold start line */
+        edit_cursor_move (edit, edit_buffer_get_current_eol (&edit->buffer) - edit->buffer.curs1);
+    }
+    edit->over_col = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
  * This executes a command as though the user initiated it through a key
  * press.  Callback with MSG_KEY as a message calls this after
  * translating the key press.  This function can be used to pass any
@@ -4809,27 +4863,7 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
 
     edit->redo_stack_reset = 1;
 
-    /* Snap cursor out of hidden (folded) lines - like tab-snap prevents mid-tab cursor */
-    if (edit->folds != NULL && edit_fold_is_hidden (edit, edit->buffer.curs_line))
-    {
-        edit_fold_t *fold;
-
-        fold = edit_fold_find (edit, edit->buffer.curs_line);
-        if (fold != NULL)
-        {
-            long delta;
-            off_t bol;
-
-            delta = edit->buffer.curs_line - fold->line_start;
-            bol = edit_buffer_get_backward_offset (
-                &edit->buffer, edit_buffer_get_current_bol (&edit->buffer), delta);
-            edit_cursor_move (edit, bol - edit->buffer.curs1);
-            /* position at EOL of fold start line */
-            edit_cursor_move (edit,
-                              edit_buffer_get_current_eol (&edit->buffer) - edit->buffer.curs1);
-            edit->over_col = 0;
-        }
-    }
+    edit_fold_snap_cursor (edit);
 
     // An ordinary key press
     if (char_for_insertion >= 0)
@@ -5258,6 +5292,9 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
         edit_fold_flush (edit);
         edit->force |= REDRAW_PAGE;
         break;
+    case CK_FilterClear:
+        edit_filter_clear (edit);
+        break;
 
     case CK_Top:
     case CK_MarkToFileBegin:
@@ -5415,6 +5452,9 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
     }
 
     (void) edit_plugin_handle_action (DIALOG (WIDGET (edit)->owner), command, edit);
+
+    /* a command that landed on a hidden line (Ctrl-Home, search, goto) is corrected at once */
+    edit_fold_snap_cursor (edit);
 
     // keys which must set the col position, and the search vars
     switch (command)

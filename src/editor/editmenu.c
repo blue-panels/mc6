@@ -289,6 +289,7 @@ create_search_replace_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Search..."), CK_Search));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Search &again"), CK_SearchContinue));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Replace..."), CK_Replace));
+    entries = g_list_prepend (entries, menu_entry_new (_ ("C&lear line filter"), CK_FilterClear));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Toggle bookmark"), CK_Bookmark));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Next bookmark"), CK_BookmarkNext));

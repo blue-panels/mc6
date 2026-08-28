@@ -285,6 +285,7 @@ enum
     // code folding
     CK_FoldToggle,
     CK_UnfoldAll,
+    CK_FilterClear,
     // mark commands
     CK_MarkColumn,
     CK_MarkWord,

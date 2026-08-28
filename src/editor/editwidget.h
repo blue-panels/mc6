@@ -155,6 +155,8 @@ struct WEdit
 
     // code folding
     edit_fold_t *folds;
+    // folds were made by the line filter: no fold indicator, edits keep new lines visible
+    gboolean filter_active;
 
     // undo stack and pointers
     unsigned long undo_stack_pointer;

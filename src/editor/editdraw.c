@@ -891,7 +891,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
         }
     }
 
-    if (fold_line_count > 0)
+    if (fold_line_count > 0 && !edit->filter_active)
     {
         char fold_text[64];
         int fi;
