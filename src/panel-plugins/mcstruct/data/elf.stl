@@ -1,0 +1,181 @@
+STL 5.00
+;
+;   ELF: header, program headers, section headers
+;
+
+/ELF
+#if @d != 0x464C457F
+        :ERROR!!! not an ELF file
+#else
+        c       4               magic
+class:  u8      'elf_class      class
+data:   u8      'elf_data       data
+        u8      1               ident version
+        u8      'elf_osabi      os/abi
+        u8      1               abi version
+        b       7               padding
+#if data == 2
+#endian big
+#fi
+        u16     'elf_type       type
+        u16     'elf_machine    machine
+        u32     1               version
+#if class == 2
+        q       1               entry point
+phoff:  q       1               program header offset
+shoff:  q       1               section header offset
+#else
+        d       1               entry point
+phoff:  d       1               program header offset
+shoff:  d       1               section header offset
+#fi
+        d       1               flags
+        u16     1               header size
+        u16     1               program header entry size
+phnum:  u16     1               program header count
+        u16     1               section header entry size
+shnum:  u16     1               section header count
+        u16     1               section name table index
+#if class == 2
+        :--- program headers ---
+        .       phoff
+        *       phnum           :Phdr64
+        :--- section headers ---
+        .       shoff
+        *       shnum           :Shdr64
+#else
+        :--- program headers ---
+        .       phoff
+        *       phnum           :Phdr32
+        :--- section headers ---
+        .       shoff
+        *       shnum           :Shdr32
+#fi
+#fi
+
+/:Phdr64
+u32     'ph_type        type
+u32     1               flags
+q       1               offset
+q       1               vaddr
+q       1               paddr
+u64     1               file size
+u64     1               memory size
+u64     1               align
+
+/:Phdr32
+u32     'ph_type        type
+d       1               offset
+d       1               vaddr
+d       1               paddr
+u32     1               file size
+u32     1               memory size
+u32     1               flags
+u32     1               align
+
+/:Shdr64
+u32     1               name
+u32     'sh_type        type
+q       1               flags
+q       1               addr
+q       1               offset
+u64     1               size
+u32     1               link
+u32     1               info
+u64     1               align
+u64     1               entry size
+
+/:Shdr32
+u32     1               name
+u32     'sh_type        type
+d       1               flags
+d       1               addr
+d       1               offset
+u32     1               size
+u32     1               link
+u32     1               info
+u32     1               align
+u32     1               entry size
+
+/'elf_class
+1       ELF32
+2       ELF64
+
+/'elf_data
+1       little endian
+2       big endian
+
+/'elf_osabi
+0       System V
+1       HP-UX
+2       NetBSD
+3       Linux
+6       Solaris
+9       FreeBSD
+12      OpenBSD
+97      ARM
+
+/'elf_type
+0       none
+1       relocatable
+2       executable
+3       shared object
+4       core
+0xFE00 0xFEFF  OS specific
+0xFF00 0xFFFF  processor specific
+
+/'elf_machine
+0       none
+2       SPARC
+3       x86
+4       Motorola 68000
+8       MIPS
+15      PA-RISC
+20      PowerPC
+21      PowerPC64
+22      S390
+40      ARM
+42      SuperH
+43      SPARC V9
+50      IA-64
+62      x86-64
+183     AArch64
+243     RISC-V
+247     BPF
+258     LoongArch
+
+/'ph_type
+0       NULL
+1       LOAD
+2       DYNAMIC
+3       INTERP
+4       NOTE
+5       SHLIB
+6       PHDR
+7       TLS
+0x6474E550      GNU_EH_FRAME
+0x6474E551      GNU_STACK
+0x6474E552      GNU_RELRO
+0x6474E553      GNU_PROPERTY
+
+/'sh_type
+0       NULL
+1       PROGBITS
+2       SYMTAB
+3       STRTAB
+4       RELA
+5       HASH
+6       DYNAMIC
+7       NOTE
+8       NOBITS
+9       REL
+11      DYNSYM
+14      INIT_ARRAY
+15      FINI_ARRAY
+16      PREINIT_ARRAY
+17      GROUP
+18      SYMTAB_SHNDX
+0x6FFFFFF6      GNU_HASH
+0x6FFFFFFD      GNU_verdef
+0x6FFFFFFE      GNU_verneed
+0x6FFFFFFF      GNU_versym

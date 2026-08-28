@@ -1162,6 +1162,7 @@ src/filemanager/Makefile
 src/panel-plugins/Makefile
 src/panel-plugins/hello/Makefile
 src/panel-plugins/panelize/Makefile
+src/panel-plugins/mcstruct/Makefile
 src/panel-plugins/samba/Makefile
 src/panel-plugins/ftp/Makefile
 src/panel-plugins/systemd/Makefile
@@ -1286,6 +1287,7 @@ tests/src/vfs/extfs/helpers-list/misc/Makefile
 tests/src/panel-plugins/Makefile
 tests/src/panel-plugins/ftp/Makefile
 tests/src/panel-plugins/arcmc/Makefile
+tests/src/panel-plugins/mcstruct/Makefile
 tests/src/panel-plugins/samba/Makefile
 tests/src/panel-plugins/docker/Makefile
 tests/src/panel-plugins/mongo/Makefile

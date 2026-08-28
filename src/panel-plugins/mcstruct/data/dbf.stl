@@ -1,0 +1,134 @@
+STL 5.00
+;
+;   dBASE / xBase table file: header, field descriptors and records.
+;
+
+/DBF
+ver:    b       'dbf_version    version
+        u8      3               last update (yy mm dd)
+nrec:   u32     1               records
+hlen:   j16     :RecordRaw[nrec]=@ header length, records start there
+rlen:   u16     1               record length
+        b       2               reserved
+        b       1               transaction flag
+        b       1               encryption flag
+        b       12              multi-user reserved
+        t8      `dbf_mdx        production index
+        b       'dbf_codepage   language driver
+        b       2               reserved
+#if ver == 0x30 || ver == 0x31 || ver == 0x32
+        *       "(hlen - 296) / 32"   :Field
+        b       1               descriptor terminator
+        b       263             database container link
+#else
+        *       "(hlen - 33) / 32"    :Field
+        b       1               descriptor terminator
+#fi
+        :--- records, one row per field of the descriptors ---
+#set    nfld = (hlen - 33) / 32
+        .       hlen
+        *       nrec            Record
+        b       1               end of file marker
+
+/:Field
+sc      11      name
+c       'dbf_type       type
+d       1               displacement
+u8      1               length
+u8      1               decimals
+t8      `dbf_field_flags        flags
+u32     1               autoincrement next
+u8      1               autoincrement step
+b       8               reserved
+
+; a record: the deleted flag, then every field with the width from its
+; descriptor; the descriptor table starts at 0x20, 32 bytes each
+/Record
+        c       'dbf_deleted    deleted
+#set    i = 0
+#repeat nfld
+#set    desc = 0x20 + i * 32
+        c       "@u8(desc + 16)"  =desc
+#set    i = i + 1
+#end
+
+; the same records as a plain table
+/:RecordRaw
+c:1     'dbf_deleted    deleted
+c       "rlen - 1"      data
+
+/'dbf_version
+0x02    FoxBASE
+0x03    dBASE III / FoxBASE+ without memo
+0x04    dBASE IV without memo
+0x05    dBASE V without memo
+0x07    Visual Objects
+0x30    Visual FoxPro
+0x31    Visual FoxPro with autoincrement
+0x32    Visual FoxPro with varchar
+0x43    dBASE IV SQL table without memo
+0x63    dBASE IV SQL system
+0x83    dBASE III with memo
+0x8B    dBASE IV with memo
+0x8E    dBASE IV with SQL table
+0xCB    dBASE IV SQL table with memo
+0xF5    FoxPro with memo
+0xFB    FoxBASE with memo
+
+/'dbf_type
+"C"     character
+"D"     date
+"F"     float
+"L"     logical
+"M"     memo
+"N"     numeric
+"B"     double
+"G"     general
+"I"     integer
+"P"     picture
+"T"     datetime
+"Y"     currency
+"V"     varchar
+"Q"     varbinary
+"W"     blob
+"0"     null flags
+
+/'dbf_deleted
+0x20    live
+0x2A    deleted
+
+/`dbf_mdx
+0x01            has production index
+
+/`dbf_field_flags
+0x01            system column
+0x02            nullable
+0x04            binary
+0x0C            autoincrement
+
+/'dbf_codepage
+0x00    none
+0x01    DOS US (437)
+0x02    DOS international (850)
+0x03    Windows ANSI (1252)
+0x04    Macintosh
+0x64    DOS EE (852)
+0x65    DOS Russian (866)
+0x66    DOS Nordic (865)
+0x67    DOS Icelandic (861)
+0x68    DOS Czech (895)
+0x69    DOS Polish (620)
+0x6A    DOS Greek (737)
+0x6B    DOS Turkish (857)
+0x78    Windows Chinese traditional (950)
+0x79    Windows Korean (949)
+0x7A    Windows Chinese simplified (936)
+0x7B    Windows Japanese (932)
+0x7C    Windows Thai (874)
+0x7D    Windows Hebrew (1255)
+0x7E    Windows Arabic (1256)
+0xC8    Windows EE (1250)
+0xC9    Windows Russian (1251)
+0xCA    Windows Turkish (1254)
+0xCB    Windows Greek (1253)
+0xCC    Windows Baltic (1257)

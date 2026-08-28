@@ -1,0 +1,145 @@
+STL 5.00
+;
+;   SQLite 3 database file: the 100 byte header and the b-tree page that
+;   follows it on page 1. Apply /Page at N * page size for any other page
+;   (F3, offset "psize * (N - 1)" with the labels of /SQLite in scope).
+;   All numbers are big endian.
+;
+
+/SQLite
+#endian big
+        c       16              magic
+psize:  u16     1               page size, 1 = 65536
+        u8      'sqlite_version file format write version
+        u8      'sqlite_version file format read version
+        u8      1               reserved bytes per page
+        u8      1               max embedded payload fraction
+        u8      1               min embedded payload fraction
+        u8      1               leaf payload fraction
+        u32     1               file change counter
+npages: u32     1               database size in pages
+        u32     1               first freelist trunk page
+        u32     1               freelist pages
+        u32     1               schema cookie
+        u32     'sqlite_schema  schema format
+        u32     1               default page cache size
+        u32     1               largest root page (auto-vacuum)
+        u32     'sqlite_text    text encoding
+        u32     1               user version
+        u32     1               incremental vacuum mode
+        d       1               application id
+        b       20              reserved
+        u32     1               version valid for
+        u32     1               sqlite version number
+        :--- page 1: the sqlite_master b-tree, one cell per table, index, view, trigger ---
+        *       1               SchemaPage
+
+; the b-tree page that holds sqlite_master: Enter on a pointer opens the cell
+/SchemaPage
+#endian big
+ptype:  u8      'sqlite_ptype   page type
+        u16     1               first freeblock
+ncell:  u16     1               cells
+        u16     1               cell content start, 0 = 65536
+        u8      1               fragmented free bytes
+#if ptype == 2 || ptype == 5
+        u32     1               right-most child page
+#fi
+        *       ncell           :SchemaPointer
+
+/:SchemaPointer
+j16     SchemaCell=@+^-^^         cell
+
+; a leaf table cell of sqlite_master: type, name, tbl_name, rootpage, sql.
+; a record starts with the header size, then one serial type per column;
+; text columns have serial type 2*len+13.
+/SchemaCell
+#endian big
+        v       1               payload size
+        v       1               rowid
+        v       1               record header size
+t1:     v       1               serial type of "type"
+t2:     v       1               serial type of "name"
+t3:     v       1               serial type of "tbl_name"
+t4:     v       'sqlite_serial  serial type of "rootpage"
+t5:     v       1               serial type of "sql"
+        c       "(t1 - 13) / 2" type
+        c       "(t2 - 13) / 2" name
+        c       "(t3 - 13) / 2" tbl_name
+#if t4 == 1
+        u8      1               rootpage
+#elseif t4 == 2
+        u16     1               rootpage
+#elseif t4 == 3
+        m32     0               rootpage
+        -       4
+        b       3               rootpage
+#elseif t4 == 4
+        u32     1               rootpage
+#elseif t4 == 8
+        :rootpage = 0
+#elseif t4 == 9
+        :rootpage = 1
+#fi
+        c       "(t5 - 13) / 2" sql
+
+; any other b-tree page: the header and the cell pointer array
+/Page
+#endian big
+ptype:  u8      'sqlite_ptype   page type
+        u16     1               first freeblock
+ncell:  u16     1               cells
+        u16     1               cell content start, 0 = 65536
+        u8      1               fragmented free bytes
+#if ptype == 2 || ptype == 5
+        u32     1               right-most child page
+#fi
+        *       ncell           :CellPointer
+
+/:CellPointer
+j16     Cell=@+^-^^       cell
+
+; a leaf table cell in general: the record header lists the serial types,
+; the values follow; sizes: 0 null, 1..4 ints of 1..4 bytes, 5 6 bytes,
+; 6 8 bytes, 7 float, 8 zero, 9 one, 2n+12 blob of n, 2n+13 text of n
+/Cell
+        v       1               payload size
+        v       1               rowid
+hsize:  v       1               record header size
+#set    hend = ^@ + hsize - 1
+#repeat while ^@ < hend
+        v       'sqlite_serial  serial type
+#end
+
+/'sqlite_serial
+0       NULL
+1       int8
+2       int16
+3       int24
+4       int32
+5       int48
+6       int64
+7       float64
+8       integer 0
+9       integer 1
+
+/'sqlite_version
+1       legacy (rollback journal)
+2       WAL
+
+/'sqlite_schema
+1       format 1
+2       format 2 (ALTER TABLE ADD COLUMN)
+3       format 3 (non-NULL defaults)
+4       format 4 (DESC indexes, boolean)
+
+/'sqlite_text
+1       UTF-8
+2       UTF-16le
+3       UTF-16be
+
+/'sqlite_ptype
+2       interior index b-tree
+5       interior table b-tree
+10      leaf index b-tree
+13      leaf table b-tree
