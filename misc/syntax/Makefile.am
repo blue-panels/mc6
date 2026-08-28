@@ -88,6 +88,7 @@ SYNTAXFILES =			\
 	slang.syntax		\
 	smalltalk.syntax	\
 	spec.syntax		\
+	stl.syntax		\
 	spice.syntax		\
 	sql.syntax		\
 	strace.syntax 		\

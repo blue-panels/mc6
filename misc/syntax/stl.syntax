@@ -1,0 +1,104 @@
+# STL5 def-files of the mcstruct plugin
+
+wholechars abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.
+
+context default
+    # directives
+    keyword whole linestart #if brightmagenta
+    keyword whole linestart #elseif brightmagenta
+    keyword whole linestart #elif brightmagenta
+    keyword whole linestart #else brightmagenta
+    keyword whole linestart #fi brightmagenta
+    keyword whole linestart #endif brightmagenta
+    keyword whole linestart #repeat brightmagenta
+    keyword whole linestart #end brightmagenta
+    keyword whole linestart #endian brightmagenta
+    keyword whole linestart #set brightmagenta
+    keyword whole linestart #include brightmagenta
+    keyword whole while brightmagenta
+    keyword whole big brightmagenta
+    keyword whole little brightmagenta
+
+    # types
+    keyword whole c yellow
+    keyword whole b yellow
+    keyword whole w yellow
+    keyword whole d yellow
+    keyword whole q yellow
+    keyword whole i8 yellow
+    keyword whole i16 yellow
+    keyword whole i32 yellow
+    keyword whole i64 yellow
+    keyword whole u8 yellow
+    keyword whole u16 yellow
+    keyword whole u32 yellow
+    keyword whole u64 yellow
+    keyword whole t8 yellow
+    keyword whole t16 yellow
+    keyword whole t32 yellow
+    keyword whole t64 yellow
+    keyword whole m8 yellow
+    keyword whole m16 yellow
+    keyword whole m32 yellow
+    keyword whole m64 yellow
+    keyword whole f32 yellow
+    keyword whole f64 yellow
+    keyword whole f80 yellow
+    keyword whole e32 yellow
+    keyword whole e64 yellow
+    keyword whole p32 yellow
+    keyword whole p48 yellow
+    keyword whole sp yellow
+    keyword whole sc yellow
+    keyword whole s8 yellow
+    keyword whole s16 yellow
+    keyword whole v yellow
+    keyword whole vl yellow
+    keyword whole td yellow
+    keyword whole tu yellow
+    keyword whole j8 yellow
+    keyword whole j16 yellow
+    keyword whole j32 yellow
+    keyword whole j64 yellow
+    keyword whole crc32 yellow
+    keyword whole sum8 yellow
+    keyword whole sum16 yellow
+    keyword whole *.le yellow
+    keyword whole *.be yellow
+
+    # labels, legend references, jump targets
+    keyword whole linestart +: brightgreen
+    keyword whole '+ brightcyan
+    keyword whole `+ brightcyan
+    keyword whole +=+ cyan
+
+    # offsets and nesting
+    keyword whole linestart .. white
+    keyword whole linestart . white
+    keyword whole linestart \+ white
+    keyword whole linestart - white
+    keyword whole linestart \* white
+
+    # numbers
+    keyword whole 0x+ brightred
+    keyword whole 0\{0123456789\}+ brightred
+    keyword whole \{0123456789\}\[0123456789\] brightred
+    keyword whole \{01\}\[01\]b brightred
+
+    # expression operators and offsets of labels
+    keyword ^ cyan
+    keyword @ cyan
+    keyword $size cyan
+
+# a structure, table or legend header
+context linestart / \n brightgreen
+
+# a remark row
+context linestart : \n green
+
+# a comment, spell checked as in ini files
+context ; \n brown
+    spellcheck
+
+# a string literal
+context " " magenta

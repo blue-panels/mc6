@@ -87,6 +87,9 @@ include xml.syntax
 file ..\*\\.cir$ Spice\scircuit
 include spice.syntax
 
+file ..\*\\.(?i:stl)$ STL5\sdef-file ^STL\s[45]\.
+include stl.syntax
+
 file ..\*\\.(?i:tt)$ Template::Toolkit\sFile
 include tt.syntax
 
