@@ -315,6 +315,25 @@ static const mc_panel_plugin_t mock_stream_source_plugin = {
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean mock_show_called;
+static char *mock_show_hint;
+
+static mc_pp_result_t
+mock_show (mc_panel_host_t *host, const char *display_name, const char *local_path,
+           const char *hint)
+{
+    (void) host;
+    (void) display_name;
+    (void) local_path;
+
+    mock_show_called = TRUE;
+    g_free (mock_show_hint);
+    mock_show_hint = g_strdup (hint);
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static const mc_pp_file_operation_t mock_file_operations[] = {
     {
         .name = "open",
@@ -326,6 +345,11 @@ static const mc_pp_file_operation_t mock_file_operations[] = {
         .name = "view",
         .kind = MC_PP_FILE_OPERATION_VIEW,
         .view_input_stream = mock_view_input_stream,
+    },
+    {
+        .name = "show",
+        .kind = MC_PP_FILE_OPERATION_SHOW,
+        .show = mock_show,
     },
 };
 
@@ -414,6 +438,9 @@ setup (void)
     mock_stream_target_input = NULL;
     mock_view_input_stream_called = FALSE;
     mock_plugin_shutdown_called = FALSE;
+    mock_show_called = FALSE;
+    g_free (mock_show_hint);
+    mock_show_hint = NULL;
     find_by_name_result = NULL;
     plugin_list_result = NULL;
     g_clear_pointer (&last_find_name, g_free);
@@ -569,8 +596,8 @@ START_TEST (test_named_view_operation_returns_a_local_viewer_source)
     memset (&panel, 0, sizeof (panel));
     find_by_name_result = &mock_stream_target_plugin;
 
-    ck_assert (panel_plugin_view_local_file_by_operation (&panel, "local.tar", "/dev/null",
-                                                          "target", "view", &view_path));
+    ck_assert (panel_plugin_view_local_file_by_operation (
+        &panel, "local.tar", "/dev/null", "target", "view", NULL, TRUE, &view_path));
     ck_assert_str_eq (last_find_name, "target");
     ck_assert (mock_view_input_stream_called);
     ck_assert_ptr_nonnull (view_path);
@@ -578,6 +605,32 @@ START_TEST (test_named_view_operation_returns_a_local_viewer_source)
 
     unlink (view_path);
     g_free (view_path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_named_show_operation_displays_the_file_itself)
+{
+    WPanel panel;
+    char *view_path = NULL;
+
+    memset (&panel, 0, sizeof (panel));
+    find_by_name_result = &mock_stream_target_plugin;
+
+    ck_assert (panel_plugin_view_local_file_by_operation (
+        &panel, "fw.bin", "/dev/null", "target", "show", "mcstruct-zip", TRUE, &view_path));
+    ck_assert (mock_show_called);
+    ck_assert_str_eq (mock_show_hint, "mcstruct-zip");
+    ck_assert_ptr_null (view_path);
+    ck_assert (!mock_view_input_stream_called);
+
+    /* a quick view panel cannot host a plugin screen */
+    mock_show_called = FALSE;
+    ck_assert (!panel_plugin_view_local_file_by_operation (&panel, "fw.bin", "/dev/null", "target",
+                                                           "show", NULL, FALSE, &view_path));
+    ck_assert (!mock_show_called);
 }
 END_TEST
 
@@ -859,6 +912,7 @@ main (void)
     tcase_add_test (tc_core, test_ctrl_pgdn_auto_selects_operation_by_runtime_name_matcher);
     tcase_add_test (tc_core, test_rejected_operation_preserves_cached_local_copy_for_retry);
     tcase_add_test (tc_core, test_named_view_operation_returns_a_local_viewer_source);
+    tcase_add_test (tc_core, test_named_show_operation_displays_the_file_itself);
     tcase_add_test (tc_core, test_closing_stream_consumer_restores_suspended_source);
     tcase_add_test (tc_core, test_nested_consumers_keep_every_suspended_source);
     tcase_add_test (tc_core, test_named_operation_reports_a_file_it_could_not_open);

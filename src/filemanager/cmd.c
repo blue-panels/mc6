@@ -268,9 +268,15 @@ panel_magic_view_local_file (WPanel *panel, const char *fname, const vfs_path_t 
                 goto fallback;
         }
         else
+        {
+            /* a plugin that is not installed or a full-screen show in quick view: plain viewer */
+            if (!panel_plugin_view_operation_usable (action.plugin_id, action.operation_id,
+                                                     target == NULL))
+                goto fallback;
             handled = panel_plugin_view_local_file_by_operation (
                 panel, fname, vfs_path_as_str (full_name_vpath), action.plugin_id,
-                action.operation_id, &view_path);
+                action.operation_id, action.magic_group, target == NULL, &view_path);
+        }
         if (!handled)
             panel_magic_view_error (target, fname, &action);
         else
@@ -345,6 +351,9 @@ panel_magic_view_plugin_file (WPanel *panel, const file_entry_t *fe, WView *targ
         }
         else
         {
+            /* entries of a plugin panel are viewed through a stream: no full-screen show */
+            if (!panel_plugin_view_operation_usable (action.plugin_id, action.operation_id, FALSE))
+                goto fallback;
             handled =
                 panel_plugin_view_entry_by_operation (panel, fe->fname->str, action.plugin_id,
                                                       action.operation_id, type_copy, &view_path);

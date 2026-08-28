@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 14
+#define MC_PANEL_PLUGIN_API_VERSION 15
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -101,7 +101,8 @@ typedef struct mc_pp_action_t
 typedef enum
 {
     MC_PP_FILE_OPERATION_OPEN,
-    MC_PP_FILE_OPERATION_VIEW
+    MC_PP_FILE_OPERATION_VIEW,
+    MC_PP_FILE_OPERATION_SHOW /* the plugin displays the file itself */
 } mc_pp_file_operation_kind_t;
 
 /* A named operation for one file. magic.ini can select it explicitly;
@@ -118,6 +119,12 @@ typedef struct mc_pp_file_operation_t
                                 mc_pp_input_stream_t *stream);
     mc_pp_result_t (*view_input_stream) (struct mc_panel_host_t *host, const char *display_name,
                                          mc_pp_input_stream_t *stream, char **local_path);
+    /* MC_PP_FILE_OPERATION_SHOW: open the plugin's own screen for @local_path.
+       @hint is the magic.ini group that selected the operation, or NULL.
+       @host may be NULL or have no callbacks; focus_after is the only field
+       the caller reads back. */
+    mc_pp_result_t (*show) (struct mc_panel_host_t *host, const char *display_name,
+                            const char *local_path, const char *hint);
 } mc_pp_file_operation_t;
 
 /* Entry added to the Command menu by a plugin. */
@@ -390,6 +397,8 @@ const mc_panel_plugin_t *mc_panel_plugin_find_by_prefix (const char *prefix);
 
 /* Loader */
 void mc_panel_plugins_load (void);
+/* load one package by name without the others; NULL when there is none */
+const mc_panel_plugin_t *mc_panel_plugin_load_named (const char *name);
 void mc_panel_plugins_shutdown (void);
 
 /*** inline functions ****************************************************************************/

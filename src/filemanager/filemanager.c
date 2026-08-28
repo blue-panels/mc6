@@ -1,7 +1,7 @@
 /*
    Main dialog (file panels) of the Midnight Commander
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -10,7 +10,7 @@
    Norbert Warmuth, 1997
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
    Slava Zanko <slavazanko@gmail.com>, 2013
-   Ilia Maslakov <il.smind@gmail.com>, 2026.
+   Ilia Maslakov <il.smind@gmail.com>, 2011, 2012, 2026.
 
    This file is part of the Midnight Commander.
 
@@ -126,6 +126,8 @@ char *mc_prompt = NULL;
 /*** file scope type declarations ****************************************************************/
 
 /*** forward declarations (file scope functions) *************************************************/
+
+static gboolean plugin_show_file (const vfs_path_t *vpath, const char *hint);
 
 /*** file scope variables ************************************************************************/
 
@@ -965,6 +967,13 @@ mc_maybe_editor_or_viewer (void)
 
         if (mc_args__mctree)
             mcview_open_structured_once = TRUE;
+
+        if (mc_args__mcstruct)
+        {
+            ret = plugin_show_file (vpath, (const char *) mc_run_param1);
+            vfs_path_free (vpath, TRUE);
+            break;
+        }
 
         ret = view_file (vpath, FALSE, TRUE);
         vfs_path_free (vpath, TRUE);
@@ -1898,6 +1907,39 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
     default:
         return dlg_default_callback (w, sender, msg, parm, data);
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* mcstruct FILE [DEF]: run the SHOW operation of the mcstruct plugin without a panel */
+static gboolean
+plugin_show_file (const vfs_path_t *vpath, const char *hint)
+{
+    const mc_panel_plugin_t *plugin;
+    const char *path;
+    int i;
+
+    if (vpath == NULL)
+    {
+        message (D_ERROR, MSG_ERROR, "%s", _ ("No file given"));
+        return FALSE;
+    }
+    path = vfs_path_as_str (vpath);
+    plugin = mc_panel_plugin_load_named ("mcstruct");
+    if (plugin == NULL)
+    {
+        message (D_ERROR, MSG_ERROR, _ ("Plugin %s is not available"), "mcstruct");
+        return FALSE;
+    }
+    for (i = 0; i < plugin->file_operation_count; i++)
+    {
+        const mc_pp_file_operation_t *op = &plugin->file_operations[i];
+
+        if (op->kind == MC_PP_FILE_OPERATION_SHOW && op->show != NULL)
+            return op->show (NULL, x_basename (path), path, hint) == MC_PPR_OK;
+    }
+    message (D_ERROR, MSG_ERROR, _ ("Plugin %s has no show operation"), "mcstruct");
+    return FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
