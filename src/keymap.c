@@ -1,12 +1,12 @@
 /*
    Default values and initialization of keybinding engine
 
-   Copyright (C) 2009-2025
+   Copyright (C) 2009-2026
    Free Software Foundation, Inc.
 
    Written by:
    Vitja Makarov, 2005
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
    Andrew Borodin <aborodin@vmail.ru>, 2010-2021
 
    This file is part of the Midnight Commander.
@@ -556,6 +556,7 @@ static const global_keymap_ini_t default_viewer_keymap[] = {
     { "WrapMode", "f2" },
     { "Quit", "f3; f10; q; esc" },
     { "HexMode", "f4" },
+    { "StructView", "f14" },
     { "Goto", "f5" },
     { "Search", "f7" },
     { "SearchContinue", "f17; n" },
@@ -605,6 +606,7 @@ static const global_keymap_ini_t default_viewer_hex_keymap[] = {
     { "HexEditMode", "f2" },
     { "Quit", "f3; f10; q; esc" },
     { "HexMode", "f4" },
+    { "StructView", "f14" },
     { "Goto", "f5" },
     { "Save", "f6" },
     { "Search", "f7" },

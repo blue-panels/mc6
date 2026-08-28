@@ -377,6 +377,7 @@ enum
     CK_StructExpandAll,
     CK_StructCollapseAll,
     CK_StructCopyPath,
+    CK_StructView,
 
     // diff viewer
     CK_ShowSymbols = 700L,

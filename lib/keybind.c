@@ -381,6 +381,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (FilterNext, N_ ("Jump to next filter match")),
     ADD_KEYMAP_NAME_DESC (FilterPrev, N_ ("Jump to prev filter match")),
     ADD_KEYMAP_NAME_DESC (StructMode, N_ ("Toggle structured (tree) mode")),
+    ADD_KEYMAP_NAME_DESC (StructView, N_ ("Open in the structure viewer (mcstruct)")),
     ADD_KEYMAP_NAME_DESC (StructToggleNode, N_ ("Expand/collapse tree node")),
     ADD_KEYMAP_NAME_DESC (StructExpandSub, N_ ("Expand subtree")),
     ADD_KEYMAP_NAME_DESC (StructExpandAll, N_ ("Expand all tree nodes")),
