@@ -5292,8 +5292,8 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
         edit_fold_flush (edit);
         edit->force |= REDRAW_PAGE;
         break;
-    case CK_FilterClear:
-        edit_filter_clear (edit);
+    case CK_FilterToggle:
+        edit_filter_toggle (edit);
         break;
 
     case CK_Top:

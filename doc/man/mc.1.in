@@ -3414,6 +3414,21 @@ Recoding is made from selected codepage into system codepage. To
 cancel the recoding you may select "<No translation>" in charset
 selection dialog.
 .PP
+The
+.B Filter
+button of the search dialog
+.RB ( F7 )
+hides every line that does not match the search string, using the same
+type, case and whole\-word settings as the search.  Line numbers keep
+their original values and the line state gutter marks each hidden run.
+The set of hidden lines is fixed at the moment the button is pressed:
+editing never re\-applies the match, so a shown line that is split or
+joined stays shown, and lines typed afterwards stay shown even if they
+do not match.
+.B M\-s
+lifts the filter; pressed again it puts the last search back on as a
+filter.  "Unfold all" in the Command menu lifts it as well.
+.PP
 .B F19
 will format the currently highlighted block (plain text or C or C++
 code or another). This is controlled by the

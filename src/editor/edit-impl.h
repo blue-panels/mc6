@@ -264,7 +264,7 @@ void edit_fold_dec (WEdit *edit, long line);
 void edit_fold_toggle (WEdit *edit);
 int edit_fold_indicator_width (const WEdit *edit, const struct edit_fold_t *fold);
 gboolean edit_filter_apply (WEdit *edit, mc_search_t *search);
-void edit_filter_clear (WEdit *edit);
+void edit_filter_toggle (WEdit *edit);
 
 gboolean edit_line_is_blank (WEdit *edit, long line);
 gboolean is_break_char (char c);

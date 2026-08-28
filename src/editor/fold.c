@@ -35,6 +35,7 @@
 
 #include "edit-impl.h"
 #include "editwidget.h"
+#include "editsearch.h"
 
 /* --------------------------------------------------------------------------------------------- */
 /*** global variables ****************************************************************************/
@@ -570,14 +571,22 @@ edit_filter_apply (WEdit *edit, mc_search_t *search)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Lift the filter if one is on; otherwise put the last search back on as a filter,
+ * or ask for one when there has been no search yet.
+ */
 void
-edit_filter_clear (WEdit *edit)
+edit_filter_toggle (WEdit *edit)
 {
-    if (!edit->filter_active)
-        return;
-
-    edit_fold_flush (edit);
-    edit->force |= REDRAW_PAGE;
+    if (edit->filter_active)
+    {
+        edit_fold_flush (edit);
+        edit->force |= REDRAW_PAGE;
+    }
+    else if (edit->search != NULL)
+        (void) edit_filter_apply (edit, edit->search);
+    else
+        edit_search_cmd (edit, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
