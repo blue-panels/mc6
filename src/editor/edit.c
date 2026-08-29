@@ -3263,7 +3263,7 @@ edit_backspace (WEdit *edit, gboolean byte_delete)
         edit->curs_bol_valid = FALSE;
         edit->curs_eol_valid = FALSE;
         book_mark_dec (edit, edit->buffer.curs_line);
-        edit_fold_dec (edit, edit->buffer.curs_line);
+        edit_fold_dec (edit, edit->buffer.curs_line - 1);
         edit->buffer.curs_line--;
         edit->buffer.lines--;
         edit->force |= REDRAW_AFTER_CURSOR;

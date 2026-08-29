@@ -314,10 +314,11 @@ edit_fold_inc (WEdit *edit, long line)
 
 /**
  * Shift fold line numbers up by 1 for all folds after the given line.
- * Called when a line is deleted.
+ * Called when two lines are joined: the newline at the end of @line was deleted,
+ * so line + 1 merged into it.
  *
  * @param edit editor object
- * @param line line where deletion happened
+ * @param line upper line of the join
  */
 void
 edit_fold_dec (WEdit *edit, long line)
@@ -329,11 +330,9 @@ edit_fold_dec (WEdit *edit, long line)
         q = p->next;
         if (p->line_start > line)
             p->line_start--;
-        else if ((line > p->line_start && line <= p->line_start + p->line_count)
-                 || (edit->filter_active
-                     && (line == p->line_start || line == p->line_start + p->line_count + 1)))
+        else if (line <= p->line_start + p->line_count)
         {
-            /* under a filter, a visible line joined with a hidden neighbour stays visible */
+            /* one of the joined lines was hidden: the run is one line shorter */
             p->line_count--;
             if (p->line_count <= 0)
             {
