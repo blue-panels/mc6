@@ -59,6 +59,13 @@ static WMcTerm *mcterm_panel = NULL;
 static gboolean mcterm_mode = FALSE;
 /* A command of ours is running; the panels are to be re-read once it is over. */
 static gboolean mcterm_exec_needs_panel_reload = FALSE;
+/* The panels stepped aside for the command; they come back when it is over. */
+static gboolean mcterm_exec_from_panels = FALSE;
+/* The command is over and the panels wait for a key, as "Pause after run" asks. */
+static gboolean mcterm_pause_pending = FALSE;
+/* The shell was started before the panels settled on which of them is current: at its first
+   prompt it is sent to the one that is. */
+static gboolean mcterm_initial_sync_pending = FALSE;
 /* The user's line, taken off the shell for a command of ours and typed back at the next prompt. */
 static char *mcterm_parked_line = NULL;
 static int mcterm_parked_left = 0;
@@ -149,6 +156,9 @@ mcterm_overlay_prompt_text (void)
     char *command;
     const char *cwd;
 
+    if (mcterm_pause_pending)
+        return _ ("Press any key to continue...");
+
     if (!mcterm_overlay_live () || !mcterm_osc7_capable (mcterm_panel)
         || mcterm_shell_at_prompt (mcterm_panel))
         return NULL;
@@ -162,6 +172,14 @@ mcterm_overlay_prompt_text (void)
     g_free (command);
 
     return text;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_overlay_pause_pending (void)
+{
+    return mcterm_pause_pending;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -510,6 +528,17 @@ mcterm_overlay_busy_tick_cb (void *data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* What "Pause after run" asks for, as do_execute() reads it. */
+static gboolean
+mcterm_overlay_pause_wanted (void)
+{
+    return pause_after_run == pause_always
+        || (pause_after_run == pause_on_dumb_terminals && !mc_global.tty.xterm_flag
+            && mc_global.tty.console_flag == '\0');
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mcterm_overlay_prompt_ready_cb (void *data)
 {
@@ -528,6 +557,15 @@ mcterm_overlay_prompt_ready_cb (void *data)
        front of the command line, and it has just become the shell's own. */
     /* With the panels up, a line in mc's own input waits there for the next key: it may be in
        the middle of being completed. */
+    /* The first prompt: with the panels up the shell goes to the current one. With the
+       terminal up it was sent there already, when the terminal was brought up. */
+    if (mcterm_initial_sync_pending)
+    {
+        mcterm_initial_sync_pending = FALSE;
+        if (!mcterm_mode)
+            mcterm_overlay_sync_shell_to_panel ();
+    }
+
     if (!mcterm_mode)
     {
         mcterm_overlay_place_prompt ();
@@ -541,6 +579,21 @@ mcterm_overlay_prompt_ready_cb (void *data)
     mcterm_overlay_sync_panel_from_shell ();
     mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
     widget_draw (mcterm_overlay_widget ());
+
+    if (mcterm_exec_from_panels)
+    {
+        mcterm_exec_from_panels = FALSE;
+        // Without the command line there is no row for the message: no pause then.
+        if (!mcterm_overlay_pause_wanted () || !command_prompt)
+        {
+            mcterm_overlay_toggle ();
+            return;
+        }
+        mcterm_pause_pending = TRUE;
+        mcterm_overlay_place_prompt ();
+        tty_refresh ();
+        return;
+    }
 
     if (!command_prompt)
         return;
@@ -668,6 +721,7 @@ mcterm_overlay_create_terminal (void)
     mcterm_panel = mcterm_new (&r, start_dir);
     if (mcterm_panel == NULL)
         return FALSE;
+    mcterm_initial_sync_pending = TRUE;
 
     mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
     mcterm_set_busy_tick_callback (mcterm_panel, mcterm_overlay_busy_tick_cb, NULL);
@@ -875,6 +929,8 @@ mcterm_overlay_toggle (void)
             widget_show (WIDGET (the_prompt));
 
         mcterm_mode = FALSE;
+        mcterm_pause_pending = FALSE;
+        mcterm_exec_from_panels = FALSE;
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
         layout_change ();
         widget_select (WIDGET (current_panel));
@@ -1157,6 +1213,8 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
 mcterm_overlay_cmdline_result_t
 mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
 {
+    gboolean from_panels;
+
     if ((is_cd && !mcterm_mode) || (is_exit && !mcterm_mode))
         return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
 
@@ -1170,9 +1228,12 @@ mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
             return MCTERM_OVERLAY_CMDLINE_NOT_APPLICABLE;
     }
 
-    if (!mcterm_mode)
+    from_panels = !mcterm_mode;
+    if (from_panels)
         mcterm_overlay_toggle ();
 
+    /* Bringing the terminal up may send the shell to the panel's directory; its prompt for
+       that must not pass for the command's, so the command waits for it. */
     if (!mcterm_overlay_ready ()
         && !mcterm_wait_for_prompt (mcterm_panel, MCTERM_INITIAL_PROMPT_TIMEOUT_MS))
         return MCTERM_OVERLAY_CMDLINE_HANDLED;
@@ -1182,7 +1243,10 @@ mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd, gboolean is_exit)
 
     mcterm_set_command_hint (mcterm_panel, cmd);
     if (mcterm_send_line (mcterm_panel, cmd))
+    {
+        mcterm_exec_from_panels = from_panels;
         return MCTERM_OVERLAY_CMDLINE_SENT;
+    }
 
     mcterm_set_command_hint (mcterm_panel, NULL);
     return MCTERM_OVERLAY_CMDLINE_HANDLED;
@@ -1226,7 +1290,18 @@ mcterm_overlay_exec_command (const char *cmd)
 
     // The command is about to write; show the terminal it writes to.
     if (!mcterm_mode)
+    {
+        gboolean from_panels;
+
         mcterm_overlay_toggle ();
+        /* Bringing the terminal up may send the shell to the panel's directory; its prompt
+           for that must not pass for the command's. */
+        from_panels = mcterm_overlay_ready ()
+            || mcterm_wait_for_prompt (mcterm_panel, MCTERM_INITIAL_PROMPT_TIMEOUT_MS);
+        if (!from_panels)
+            return TRUE;
+        mcterm_exec_from_panels = TRUE;
+    }
 
     for (i = 0; i < 2; i++)
     {
@@ -1248,6 +1323,7 @@ mcterm_overlay_exec_command (const char *cmd)
     if (!mcterm_send_line (mcterm_panel, cmd))
     {
         mcterm_set_command_hint (mcterm_panel, NULL);
+        mcterm_exec_from_panels = FALSE;
         return FALSE;
     }
 
@@ -1377,8 +1453,17 @@ mcterm_overlay_cmdline_enter (void)
     g_free (text);
 
     mcterm_overlay_toggle ();
-    if (mcterm_send_key (mcterm_panel, '\r'))
+    /* Bringing the terminal up may send the shell to the panel's directory, with the typed
+       line parked and typed back at the prompt after: Enter waits for that prompt. */
+    if (!mcterm_overlay_ready ()
+        && !mcterm_wait_for_prompt (mcterm_panel, MCTERM_INITIAL_PROMPT_TIMEOUT_MS))
+        return MSG_HANDLED;
+    // The shell is busy from here on, not from the mark it sends back.
+    if (mcterm_send_line (mcterm_panel, NULL))
+    {
         mcterm_exec_needs_panel_reload = TRUE;
+        mcterm_exec_from_panels = TRUE;
+    }
 
     return MSG_HANDLED;
 }
@@ -1394,6 +1479,12 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 
     if (!mcterm_mode || mcterm_panel == NULL)
         return MSG_NOT_HANDLED;
+
+    if (mcterm_pause_pending)
+    {
+        mcterm_overlay_toggle ();
+        return MSG_HANDLED;
+    }
 
     // An open menu takes every key itself; none of them is the shell's.
     if (the_menubar != NULL && widget_get_state (WIDGET (the_menubar), WST_FOCUSED))
@@ -1501,6 +1592,12 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
 }
 
 #else /* !ENABLE_MCTERM */
+
+gboolean
+mcterm_overlay_pause_pending (void)
+{
+    return FALSE;
+}
 
 #include "src/execute.h"
 
