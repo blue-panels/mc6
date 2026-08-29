@@ -39,6 +39,7 @@
 #include "lib/widget.h"
 
 #include "command.h"  // cmdline
+#include "mcterm_overlay.h"
 #include "wprompt.h"
 
 /*** file scope functions ************************************************************************/
@@ -50,7 +51,7 @@ gboolean
 wprompt_from_shell (const WPrompt *p)
 {
     return (p != NULL && p->term != NULL && mcterm_osc7_capable (p->term)
-            && mcterm_shell_at_prompt (p->term));
+            && mcterm_shell_at_prompt (p->term) && !mcterm_overlay_pause_pending ());
 }
 
 /* --------------------------------------------------------------------------------------------- */

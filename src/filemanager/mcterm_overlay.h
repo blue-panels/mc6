@@ -42,6 +42,8 @@ mcterm_overlay_cmdline_result_t mcterm_overlay_run_cmdline (const char *cmd, gbo
 gboolean mcterm_overlay_panel_exec (const char *cmd);
 /* What the prompt row says while a command runs, or NULL when the shell has its own. */
 const char *mcterm_overlay_prompt_text (void);
+// The command is over and the panels wait for a key: "Pause after run".
+gboolean mcterm_overlay_pause_pending (void);
 /* Send the shell after the current panel, when it is free to go. */
 void mcterm_overlay_sync_shell_to_panel (void);
 /* Whether mc has a terminal with a shell in it. */
