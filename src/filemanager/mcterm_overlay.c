@@ -382,7 +382,7 @@ mcterm_overlay_cmdline_takes_key (int parm)
     // tags them with its own control bit; the encoder turns each back into its C0 byte. Ctrl+O is
     // mc's own - it hides the terminal - so it is left for mc to answer.
     if ((parm & KEY_M_CTRL) != 0)
-        return (parm != XCTRL ('O'));
+        return (parm != XCTRL ('O') && (parm & ~KEY_M_CTRL) <= 0xFF);
 
     // Printable text and the raw C0 control keys, but not Escape, which mc answers to.
     return (parm >= 0x01 && parm <= 0xFF && parm != ESC_CHAR);
