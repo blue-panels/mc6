@@ -1,7 +1,7 @@
 /*
    Samba network browser panel plugin (libsmbclient).
 
-   Copyright (C) 2025
+   Copyright (C) 2025-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -38,6 +38,7 @@
 #include <libsmbclient.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/keybind.h"
 #include "lib/util.h"
 #include "lib/panel-plugin.h"
@@ -267,7 +268,8 @@ smb_connection_free (gpointer p)
 static char *
 get_connections_file_path (void)
 {
-    return g_build_filename (g_get_user_config_dir (), "mc", "smb-connections.ini", (char *) NULL);
+    return g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "smb-connections.ini",
+                             (char *) NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

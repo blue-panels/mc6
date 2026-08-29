@@ -1,8 +1,11 @@
 /*
    Dynamic panel plugin loader.
 
-   Copyright (C) 2025
+   Copyright (C) 2025-2026
    Free Software Foundation, Inc.
+
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026.
 
    This file is part of the Midnight Commander.
 
@@ -33,6 +36,7 @@
 #include <stdio.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/editor-plugin.h"
 #include "lib/panel-plugin.h"
 
@@ -188,8 +192,8 @@ mc_panel_plugins_load (void)
     panel_plugin_modules = g_ptr_array_new ();
 
     /* Load user packages first so they can shadow system packages. */
-    user_dir =
-        g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "panel-plugins", (char *) NULL);
+    user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
+                                 "panel-plugins", (char *) NULL);
     mc_panel_plugins_load_from_dir (user_dir);
     g_free (user_dir);
 
@@ -274,8 +278,8 @@ mc_editor_plugins_load (void)
     g_free (system_dir);
 
     /* load from user plugin directory (~/.local/lib/mc/editor-plugins) */
-    user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "editor-plugins",
-                                 (char *) NULL);
+    user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
+                                 "editor-plugins", (char *) NULL);
     mc_editor_plugins_load_from_dir (user_dir);
     g_free (user_dir);
 }

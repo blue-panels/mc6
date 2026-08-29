@@ -44,6 +44,7 @@
 #include <lualib.h>
 
 #include "lib/extension-runtime.h"
+#include "lib/fileloc.h"
 
 /*** global variables ****************************************************************************/
 
@@ -6978,7 +6979,8 @@ mc_lua_load_disabled_package_ids (mc_lua_runtime_t *runtime)
     if (runtime == NULL || runtime->disabled_package_ids == NULL)
         return;
 
-    path = g_build_filename (g_get_user_config_dir (), "mc", "plugins.ini", (char *) NULL);
+    path =
+        g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
     ini = g_key_file_new ();
     if (!g_key_file_load_from_file (ini, path, G_KEY_FILE_NONE, NULL))
     {
@@ -7016,17 +7018,18 @@ mc_lua_config_enabled (mc_lua_runtime_t *runtime)
     char *user_scripts_dir = NULL;
 
     runtime->user_scripts_dir =
-        g_build_filename (g_get_user_data_dir (), "mc", "lua", "scripts", (char *) NULL);
+        g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua", "scripts", (char *) NULL);
     runtime->user_modules_dir =
-        g_build_filename (g_get_user_data_dir (), "mc", "lua", "lib", (char *) NULL);
-    runtime->legacy_user_scripts_dir =
-        g_build_filename (g_get_user_config_dir (), "mc", "lua", "scripts", (char *) NULL);
-    runtime->legacy_user_modules_dir =
-        g_build_filename (g_get_user_config_dir (), "mc", "lua", "lib", (char *) NULL);
+        g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua", "lib", (char *) NULL);
+    /* the directory of the releases before the user directory was renamed */
+    runtime->legacy_user_scripts_dir = g_build_filename (
+        g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "scripts", (char *) NULL);
+    runtime->legacy_user_modules_dir = g_build_filename (
+        g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "lib", (char *) NULL);
     if (g_strcmp0 (g_getenv ("MC_NO_LUA"), "1") == 0)
         return FALSE;
 
-    ini_path = g_build_filename (g_get_user_config_dir (), "mc", "ini", (char *) NULL);
+    ini_path = g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "ini", (char *) NULL);
     ini = g_key_file_new ();
     if (!g_key_file_load_from_file (ini, ini_path, G_KEY_FILE_NONE, &error))
     {

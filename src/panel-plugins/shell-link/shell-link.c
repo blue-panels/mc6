@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/keybind.h"
 #include "lib/mcconfig.h"
 #include "lib/panel-plugin.h"
@@ -482,7 +483,7 @@ shell_configure (void)
 static char *
 get_connections_file_path (void)
 {
-    return g_build_filename (g_get_user_config_dir (), "mc", "shell-connections.ini",
+    return g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "shell-connections.ini",
                              (char *) NULL);
 }
 

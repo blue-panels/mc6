@@ -34,6 +34,7 @@
 #include <glib/gstdio.h>
 
 #include "lib/event.h"
+#include "lib/fileloc.h"
 #include "lib/extension-runtime.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
@@ -2022,8 +2023,9 @@ setup (void)
     viewer_controller_close_count = 0;
     memset (&viewer_controller_target, 0, sizeof (viewer_controller_target));
     {
-        char *prefs_path = g_build_filename (config_dir, "mc", "plugins.ini", (char *) NULL);
-        char *ini_path = g_build_filename (config_dir, "mc", "ini", (char *) NULL);
+        char *prefs_path =
+            g_build_filename (config_dir, MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
+        char *ini_path = g_build_filename (config_dir, MC_USERCONF_DIR, "ini", (char *) NULL);
 
         (void) g_remove (prefs_path);
         (void) g_remove (ini_path);
@@ -2813,7 +2815,7 @@ START_TEST (test_lua_runtime_honors_per_package_disable)
     char *prefs_path;
     char *contents = NULL;
 
-    prefs_path = g_build_filename (config_dir, "mc", "plugins.ini", (char *) NULL);
+    prefs_path = g_build_filename (config_dir, MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
     write_file (prefs_path, "[DisabledPlugins]\nlua/beta=true\n");
     g_free (prefs_path);
 
@@ -2912,8 +2914,10 @@ main (void)
     config_dir = g_build_filename (test_root, "config", (char *) NULL);
     system_scripts_dir = g_build_filename (test_root, "system-scripts", (char *) NULL);
     data_dir = g_build_filename (test_root, "data", (char *) NULL);
-    user_scripts_dir = g_build_filename (data_dir, "mc", "lua", "scripts", (char *) NULL);
-    legacy_user_scripts_dir = g_build_filename (config_dir, "mc", "lua", "scripts", (char *) NULL);
+    user_scripts_dir =
+        g_build_filename (data_dir, MC_USERCONF_DIR, "lua", "scripts", (char *) NULL);
+    legacy_user_scripts_dir =
+        g_build_filename (config_dir, MC_USERCONF_LEGACY_DIR, "lua", "scripts", (char *) NULL);
     system_mc_scripts_dir = g_build_filename (system_scripts_dir, "mc", (char *) NULL);
     user_mc_scripts_dir = g_build_filename (user_scripts_dir, "mc", (char *) NULL);
     system_editor_scripts_dir = g_build_filename (system_scripts_dir, "editor", (char *) NULL);
@@ -2921,7 +2925,7 @@ main (void)
     output_path = g_build_filename (test_root, "events.log", (char *) NULL);
     (void) g_mkdir_with_parents (config_dir, 0700);
     {
-        char *mc_config_dir = g_build_filename (config_dir, "mc", (char *) NULL);
+        char *mc_config_dir = g_build_filename (config_dir, MC_USERCONF_DIR, (char *) NULL);
 
         (void) g_mkdir_with_parents (mc_config_dir, 0700);
         g_free (mc_config_dir);

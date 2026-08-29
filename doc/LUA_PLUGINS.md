@@ -45,8 +45,8 @@ during a session.
 ## Script layout
 
 System scripts live in `${datadir}/mc/lua/scripts/`; user scripts live in
-`${XDG_DATA_HOME:-~/.local/share}/mc/lua/scripts/` (the older
-`${XDG_CONFIG_HOME:-~/.config}/mc/lua/scripts/` is still searched).  A script belongs to a fixed
+`${XDG_DATA_HOME:-~/.local/share}/mc6/lua/scripts/` (the
+`${XDG_CONFIG_HOME:-~/.config}/mc/lua/scripts/` of earlier releases is still searched).  A script belongs to a fixed
 workspace, determined by the directory immediately below `scripts/`:
 
 ```text
@@ -93,7 +93,7 @@ Each script has its own Lua state.  `require("a.b")` searches the script's
 modules are disabled for these lookups.
 
 The shared directories are `${datadir}/mc/lua/lib/` for system scripts and
-`${XDG_CONFIG_HOME:-~/.config}/mc/lua/lib/` for user scripts.  A system script
+`${XDG_DATA_HOME:-~/.local/share}/mc6/lua/lib/` for user scripts.  A system script
 never searches the user shared directory.
 
 ## API

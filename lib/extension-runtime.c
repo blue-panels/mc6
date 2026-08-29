@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/extension-runtime.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
@@ -1867,7 +1868,7 @@ mc_runtime_plugins_load (GError **mcerror)
     {
         /* the user's runtimes first, so that one of them shadows the system's
            of the same name, the way panel plugins are found */
-        char *user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", "mc",
+        char *user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
                                            "runtime-plugins", (char *) NULL);
 
         mc_runtime_plugins_load_from_dir (user_dir);

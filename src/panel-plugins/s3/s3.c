@@ -39,6 +39,7 @@
 #include <curl/curl.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/keybind.h"
 #include "lib/util.h"
 #include "lib/mcconfig.h"
@@ -267,8 +268,8 @@ s3_load_hotkey (const char *key, const char *default_str, int default_val)
     char *val;
     int code;
 
-    user_cfg =
-        g_build_filename (g_get_user_config_dir (), "mc", S3_PANEL_CONFIG_FILE, (char *) NULL);
+    user_cfg = g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, S3_PANEL_CONFIG_FILE,
+                                 (char *) NULL);
     val = mc_plugin_prefs_read_config_string (user_cfg, S3_PANEL_CONFIG_GROUP, key);
     g_free (user_cfg);
 
@@ -286,7 +287,8 @@ s3_load_hotkey (const char *key, const char *default_str, int default_val)
 static char *
 s3_get_connections_file_path (void)
 {
-    return g_build_filename (g_get_user_config_dir (), "mc", "s3-connections.ini", (char *) NULL);
+    return g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "s3-connections.ini",
+                             (char *) NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

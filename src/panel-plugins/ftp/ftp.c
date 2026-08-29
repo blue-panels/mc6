@@ -39,6 +39,7 @@
 #include <curl/curl.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/mcconfig.h"
 #include "lib/keybind.h"
 #include "lib/panel-plugin.h"
@@ -395,7 +396,8 @@ ftp_connection_copy_from (ftp_connection_t *dst, const ftp_connection_t *src)
 static char *
 get_connections_file_path (void)
 {
-    return g_build_filename (g_get_user_config_dir (), "mc", "ftp-connections.ini", (char *) NULL);
+    return g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "ftp-connections.ini",
+                             (char *) NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
