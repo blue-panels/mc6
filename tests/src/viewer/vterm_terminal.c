@@ -238,6 +238,67 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_ich_shifts_the_tail_right)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 5, 8);
+    mcview_vterm_reset (vt);
+
+    /* readline inserting "222" in front of "11111": ICH makes room, then the text is written */
+    FEED (vt, "\033[H");
+    FEED (vt, "11111");
+    FEED (vt, "\033[H");
+    FEED (vt, "\033[3@");
+    FEED (vt, "222");
+
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), '2');
+    ck_assert_uint_eq (cell_ch (vt, 0, 2), '2');
+    ck_assert_uint_eq (cell_ch (vt, 0, 3), '1');
+    ck_assert_uint_eq (cell_ch (vt, 0, 7), '1');
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 3);
+
+    /* a shift past the right edge drops what does not fit */
+    FEED (vt, "\033[7G");
+    FEED (vt, "\033[20@");
+    ck_assert_uint_eq (cell_ch (vt, 0, 6), ' ');
+    ck_assert_uint_eq (cell_ch (vt, 0, 7), ' ');
+    ck_assert_uint_eq (cell_ch (vt, 0, 5), '1');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_insert_mode_shifts_the_tail_right)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 5, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "\033[H");
+    FEED (vt, "11111");
+    FEED (vt, "\033[H");
+    FEED (vt, "\033[4h");
+    FEED (vt, "222");
+    FEED (vt, "\033[4l");
+    FEED (vt, "X");
+
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), '2');
+    ck_assert_uint_eq (cell_ch (vt, 0, 2), '2');
+    ck_assert_uint_eq (cell_ch (vt, 0, 3), 'X');
+    ck_assert_uint_eq (cell_ch (vt, 0, 4), '1');
+    ck_assert_uint_eq (cell_ch (vt, 0, 7), '1');
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 4);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_erase_eol_fills_full_width_with_attrs)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -1091,6 +1152,8 @@ main (void)
     tcase_add_test (tc_core, test_scroll_region_lf_above_region_advances_cursor);
     tcase_add_test (tc_core, test_vpa_moves_row_only);
     tcase_add_test (tc_core, test_ech_erases_with_attrs_cursor_stays);
+    tcase_add_test (tc_core, test_ich_shifts_the_tail_right);
+    tcase_add_test (tc_core, test_insert_mode_shifts_the_tail_right);
     tcase_add_test (tc_core, test_erase_eol_fills_full_width_with_attrs);
     tcase_add_test (tc_core, test_decstbm_out_of_range_bottom_is_clamped);
     tcase_add_test (tc_core, test_cursor_fwd_clamps_to_term_cols);

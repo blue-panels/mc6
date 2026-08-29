@@ -39,6 +39,7 @@ typedef enum
     VTERM_CURSOR_ROW_ABS,    /* param1=target_row (0-based), col unchanged */
     VTERM_ERASE_CHARS,       /* param1=count; erase from cursor_col, cursor stays */
     VTERM_DCH,               /* param1=count; delete chars at cursor, shift left, fill right */
+    VTERM_ICH,               /* param1=count; insert blanks at cursor, shift right, drop at edge */
     VTERM_RI,                /* ESC M: reverse index -- scroll region down, cursor up */
     VTERM_REPLY,             /* the program asked what the terminal is; ev.reply is the answer */
     VTERM_CONSUMED,

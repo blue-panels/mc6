@@ -410,6 +410,31 @@ mcview_terminal_buffer_delete_chars (mcview_terminal_buffer_t *buf, int row, int
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+mcview_terminal_buffer_insert_chars (mcview_terminal_buffer_t *buf, int row, int col, int count,
+                                     int term_cols, const mcview_ansi_state_t *ansi)
+{
+    GArray *arr;
+    int dst, src;
+
+    if (row < 0 || col < 0 || col >= term_cols || count <= 0 || term_cols <= 0)
+        return;
+
+    if (count > term_cols - col)
+        count = term_cols - col;
+
+    arr = get_or_create_row (buf, row);
+    ensure_col (arr, term_cols - 1);
+
+    for (dst = term_cols - 1, src = dst - count; src >= col; dst--, src--)
+        g_array_index (arr, mcview_vterm_cell_t, dst) =
+            g_array_index (arr, mcview_vterm_cell_t, src);
+
+    mcview_terminal_buffer_fill_range (buf, row, col, col + count - 1, ' ', ansi);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 mcview_terminal_buffer_max_row (const mcview_terminal_buffer_t *buf)
 {
