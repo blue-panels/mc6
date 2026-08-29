@@ -1102,6 +1102,31 @@ mcterm_row_last_col (WMcTerm *t, gint64 row, int cols)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The rows were laid out again for a new width: what pointed at them is
+   pointed again, or dropped. */
+static void
+mcterm_after_reflow (WMcTerm *t)
+{
+    if (t->input_start_valid)
+    {
+        gint64 row;
+        int col;
+
+        if (mcview_vterm_reflow_map (t->vterm, t->input_start_row, t->input_start_col, &row, &col))
+        {
+            t->input_start_row = row;
+            t->input_start_col = col;
+        }
+        else
+            t->input_start_valid = FALSE;
+    }
+    mcterm_sel_clear (&t->sel);
+    t->cursor_valid = FALSE;
+    t->scrollback = MIN (t->scrollback, mcview_vterm_history_len (t->vterm));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The cursor starts where the shell is typing, or on the last row the
    terminal draws when the shell is typing on the command line. */
 static void
@@ -1554,8 +1579,13 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
     }
 
     case MSG_RESIZE:
+    {
+        const int old_cols = w->rect.cols;
+
         widget_default_callback (w, NULL, MSG_RESIZE, 0, data);
         mcview_vterm_set_size (t->vterm, w->rect.lines, w->rect.cols);
+        if (w->rect.cols != old_cols)
+            mcterm_after_reflow (t);
         if (!t->child_dead && t->pty_master >= 0)
         {
             struct winsize ws;
@@ -1564,6 +1594,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             ioctl (t->pty_master, TIOCSWINSZ, &ws);
         }
         return MSG_HANDLED;
+    }
 
     case MSG_HOTKEY:
         if (!widget_get_state (w, WST_FOCUSED))
@@ -1850,6 +1881,7 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->scroll_allowed = TRUE;
     t->typing_elsewhere = TRUE;
     mcview_vterm_set_keep_history (t->vterm, TRUE);
+    mcview_vterm_set_autowrap (t->vterm, TRUE);
     mcview_vterm_set_size (t->vterm, r->lines, r->cols);
     {
         int cell_width, cell_height;
