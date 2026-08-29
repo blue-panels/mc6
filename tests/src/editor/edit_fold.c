@@ -1,7 +1,7 @@
 /*
    src/editor - tests for edit_fold_*() functions
 
-   Copyright (C) 2025
+   Copyright (C) 2025-2026
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -34,6 +34,93 @@
  * WGroup has no room for the fields it reads there. */
 static WDialog owner;
 static WEdit *test_edit;
+static int message_call_count;
+
+/* --------------------------------------------------------------------------------------------- */
+/* @Mock */
+void
+message (int flags, const char *title, const char *text, ...)
+{
+    (void) flags;
+    (void) title;
+    (void) text;
+
+    message_call_count++;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* @Mock */
+void
+status_msg_init (status_msg_t *sm, const char *title, double delay, status_msg_cb init_cb,
+                 status_msg_update_cb update_cb, status_msg_cb deinit_cb)
+{
+    (void) sm;
+    (void) title;
+    (void) delay;
+    (void) init_cb;
+    (void) update_cb;
+    (void) deinit_cb;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* @Mock */
+void
+status_msg_deinit (status_msg_t *sm)
+{
+    (void) sm;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_search_cbret_t
+saved_search_callback (const void *user_data, off_t char_offset, int *current_char)
+{
+    (void) user_data;
+    (void) char_offset;
+    (void) current_char;
+
+    return MC_SEARCH_CB_ABORT;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_search_cbret_t
+saved_update_callback (const void *user_data, off_t char_offset)
+{
+    (void) user_data;
+    (void) char_offset;
+
+    return MC_SEARCH_CB_ABORT;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_search_t *
+filter_search_new (const char *pattern, gboolean whole_words)
+{
+    mc_search_t *search;
+
+    search = mc_search_new (pattern, cp_source);
+    mctest_assert_not_null (search);
+    search->search_type = MC_SEARCH_T_NORMAL;
+    search->is_case_sensitive = TRUE;
+    search->whole_words = whole_words;
+    search->search_fn = saved_search_callback;
+    search->update_fn = saved_update_callback;
+
+    return search;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+insert_bytes (const char *text, size_t len)
+{
+    size_t i;
+
+    for (i = 0; i < len; i++)
+        edit_insert (test_edit, (unsigned char) text[i]);
+}
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -62,6 +149,7 @@ setup (void)
 
     do_set_codepage (0);
     edit_set_codeset (test_edit);
+    message_call_count = 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -762,6 +850,157 @@ START_TEST (test_fold_dec_after_fold)
 END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
+/* edit_filter_apply */
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_apply_builds_hidden_runs)
+{
+    static const char text[] = "drop 0\nkeep 1\ndrop 2\nkeep 3\ndrop 4";
+    mc_search_t *search;
+    edit_fold_t *f;
+
+    // given: unmatched runs at the beginning, middle and end of the buffer
+    insert_bytes (text, sizeof (text) - 1);
+    search = filter_search_new ("keep", FALSE);
+
+    // when
+    mctest_assert_true (edit_filter_apply (test_edit, search));
+
+    // then: each unmatched run is represented by one fold
+    mctest_assert_true (test_edit->filter_active);
+    f = test_edit->folds;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, -1);
+    ck_assert_int_eq (f->line_count, 1);
+    f = f->next;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 1);
+    ck_assert_int_eq (f->line_count, 1);
+    f = f->next;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 3);
+    ck_assert_int_eq (f->line_count, 1);
+    mctest_assert_null (f->next);
+
+    ck_assert_int_eq (test_edit->buffer.curs_line, 3);
+    ck_assert_int_eq (test_edit->buffer.curs1, edit_buffer_get_current_bol (&test_edit->buffer));
+    ck_assert_int_eq (message_call_count, 0);
+    ck_assert (search->search_fn == saved_search_callback);
+    ck_assert (search->update_fn == saved_update_callback);
+
+    mc_search_free (search);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_apply_moves_cursor_to_next_match)
+{
+    static const char text[] = "drop\nkeep\ndrop";
+    mc_search_t *search;
+
+    // given: the cursor is on an unmatched first line
+    insert_bytes (text, sizeof (text) - 1);
+    edit_cursor_move (test_edit, -test_edit->buffer.curs1);
+    search = filter_search_new ("keep", FALSE);
+
+    // when
+    mctest_assert_true (edit_filter_apply (test_edit, search));
+
+    // then: the cursor moves to the nearest matching line below
+    ck_assert_int_eq (test_edit->buffer.curs_line, 1);
+    ck_assert_int_eq (test_edit->buffer.curs1, edit_buffer_get_current_bol (&test_edit->buffer));
+
+    mc_search_free (search);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_apply_no_match_preserves_folds)
+{
+    static const char text[] = "one\ntwo";
+    mc_search_t *search;
+    edit_fold_t *f;
+
+    // given: an existing code fold and a search that matches no line
+    insert_bytes (text, sizeof (text) - 1);
+    edit_fold_make (test_edit, 0, 1);
+    search = filter_search_new ("absent", FALSE);
+
+    // when
+    mctest_assert_false (edit_filter_apply (test_edit, search));
+
+    // then: the existing view is untouched and the user is notified
+    mctest_assert_false (test_edit->filter_active);
+    f = test_edit->folds;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 0);
+    ck_assert_int_eq (f->line_count, 1);
+    mctest_assert_null (f->next);
+    ck_assert_int_eq (message_call_count, 1);
+    ck_assert (search->search_fn == saved_search_callback);
+    ck_assert (search->update_fn == saved_update_callback);
+
+    mc_search_free (search);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_apply_searches_after_embedded_nul)
+{
+    static const char text[] = "prefix\0needle\nother";
+    mc_search_t *search;
+    edit_fold_t *f;
+
+    // given: the match is after an embedded NUL byte
+    insert_bytes (text, sizeof (text) - 1);
+    search = filter_search_new ("needle", FALSE);
+
+    // when
+    mctest_assert_true (edit_filter_apply (test_edit, search));
+
+    // then: the first line remains shown and only the second line is hidden
+    f = test_edit->folds;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 0);
+    ck_assert_int_eq (f->line_count, 1);
+    mctest_assert_null (f->next);
+    mctest_assert_false (edit_fold_is_hidden (test_edit, 0));
+    mctest_assert_true (edit_fold_is_hidden (test_edit, 1));
+
+    mc_search_free (search);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_apply_honors_search_options)
+{
+    static const char text[] = "cat\nscatter\nCAT\ncatfish";
+    mc_search_t *search;
+    edit_fold_t *f;
+
+    // given: a case-sensitive whole-word search
+    insert_bytes (text, sizeof (text) - 1);
+    search = filter_search_new ("cat", TRUE);
+
+    // when
+    mctest_assert_true (edit_filter_apply (test_edit, search));
+
+    // then: only the exact lower-case word remains shown
+    f = test_edit->folds;
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 0);
+    ck_assert_int_eq (f->line_count, 3);
+    mctest_assert_null (f->next);
+
+    mc_search_free (search);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
 
 int
 main (void)
@@ -823,6 +1062,12 @@ main (void)
     tcase_add_test (tc_core, test_fold_inc_at_fold_start);
     tcase_add_test (tc_core, test_fold_inc_after_fold);
     tcase_add_test (tc_core, test_fold_dec_after_fold);
+    // edit_filter_apply
+    tcase_add_test (tc_core, test_filter_apply_builds_hidden_runs);
+    tcase_add_test (tc_core, test_filter_apply_moves_cursor_to_next_match);
+    tcase_add_test (tc_core, test_filter_apply_no_match_preserves_folds);
+    tcase_add_test (tc_core, test_filter_apply_searches_after_embedded_nul);
+    tcase_add_test (tc_core, test_filter_apply_honors_search_options);
     // ***********************************
 
     return mctest_run_all (tc_core);
