@@ -132,6 +132,8 @@ struct mcview_vterm_struct
 
     gboolean app_cursor_keys;
 
+    gboolean insert_mode;  // IRM: a printed character pushes the rest of the line right
+
     int dpy_top_row;
 };
 
@@ -259,6 +261,12 @@ vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
         /* SGR: ansi.c already applied it. */
         return vterm_make (vt, VTERM_SGR);
 
+    case 'h': /* SM -- set mode */
+    case 'l': /* RM -- reset mode */
+        if (p0 == 4)
+            vt->insert_mode = (final_byte == 'h');
+        return vterm_make (vt, VTERM_CONSUMED);
+
     case 'H': /* cursor position (1-based row;col) */
     case 'f': /* same */
     {
@@ -376,6 +384,13 @@ vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
     case 'P': /* DCH -- delete characters, shift left */
     {
         vterm_event_t ev = vterm_make (vt, VTERM_DCH);
+        ev.param1 = (p0 > 0) ? p0 : 1;
+        return ev;
+    }
+
+    case '@': /* ICH -- insert blank characters, shift right */
+    {
+        vterm_event_t ev = vterm_make (vt, VTERM_ICH);
         ev.param1 = (p0 > 0) ? p0 : 1;
         return ev;
     }
@@ -966,6 +981,7 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vt->alt_frame_buf = NULL;
     vt->new_chars_since_snapshot = FALSE;
     vt->in_alt_screen = FALSE;
+    vt->insert_mode = FALSE;
     g_free (vt->osc7_raw);
     vt->osc7_raw = NULL;
     g_free (vt->osc133_raw);
@@ -1291,6 +1307,9 @@ mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
     switch (ev->type)
     {
     case VTERM_CHAR:
+        if (vt->insert_mode)
+            mcview_terminal_buffer_insert_chars (vt->buf, vt->cursor_row, vt->cursor_col, 1,
+                                                 vt->term_cols, &ev->ansi);
         if (vt->cursor_col < MCVIEW_VTERM_MAX_CANVAS_COLS)
             mcview_terminal_buffer_put_char (vt->buf, vt->cursor_row, vt->cursor_col, ev->ch,
                                              &ev->ansi);
@@ -1533,6 +1552,11 @@ mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
 
     case VTERM_DCH:
         mcview_terminal_buffer_delete_chars (vt->buf, vt->cursor_row, vt->cursor_col, ev->param1,
+                                             vt->term_cols, &ev->ansi);
+        break;
+
+    case VTERM_ICH:
+        mcview_terminal_buffer_insert_chars (vt->buf, vt->cursor_row, vt->cursor_col, ev->param1,
                                              vt->term_cols, &ev->ansi);
         break;
 

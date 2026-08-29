@@ -71,6 +71,10 @@ void mcview_terminal_buffer_delete_chars (mcview_terminal_buffer_t *buf, int row
                                           int count, int term_cols,
                                           const mcview_ansi_state_t *ansi);
 
+void mcview_terminal_buffer_insert_chars (mcview_terminal_buffer_t *buf, int row, int col,
+                                          int count, int term_cols,
+                                          const mcview_ansi_state_t *ansi);
+
 int mcview_terminal_buffer_max_row (const mcview_terminal_buffer_t *buf);
 
 mcview_terminal_buffer_t *mcview_terminal_buffer_copy (const mcview_terminal_buffer_t *src);
