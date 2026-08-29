@@ -63,6 +63,9 @@ static gboolean mcterm_exec_needs_panel_reload = FALSE;
 static gboolean mcterm_exec_from_panels = FALSE;
 /* The command is over and the panels wait for a key, as "Pause after run" asks. */
 static gboolean mcterm_pause_pending = FALSE;
+/* The shell was started before the panels settled on which of them is current: at its first
+   prompt it is sent to the one that is. */
+static gboolean mcterm_initial_sync_pending = FALSE;
 /* The user's line, taken off the shell for a command of ours and typed back at the next prompt. */
 static char *mcterm_parked_line = NULL;
 static int mcterm_parked_left = 0;
@@ -556,6 +559,11 @@ mcterm_overlay_prompt_ready_cb (void *data)
        the middle of being completed. */
     if (!mcterm_mode)
     {
+        if (mcterm_initial_sync_pending)
+        {
+            mcterm_initial_sync_pending = FALSE;
+            mcterm_overlay_sync_shell_to_panel ();
+        }
         mcterm_overlay_place_prompt ();
         /* The row was just drawn over; the cursor goes back to the command line, or it is left
            wherever the drawing ended. */
@@ -708,6 +716,7 @@ mcterm_overlay_create_terminal (void)
     mcterm_panel = mcterm_new (&r, start_dir);
     if (mcterm_panel == NULL)
         return FALSE;
+    mcterm_initial_sync_pending = TRUE;
 
     mcterm_set_prompt_callback (mcterm_panel, mcterm_overlay_prompt_ready_cb, NULL);
     mcterm_set_busy_tick_callback (mcterm_panel, mcterm_overlay_busy_tick_cb, NULL);

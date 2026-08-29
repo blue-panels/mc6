@@ -5606,6 +5606,8 @@ panel_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                been shuffled by prior WOP_TOP_SELECT reorders. */
             input_complete_free (cmdline);
             widget_select (w);
+            // The shell follows the panel the user is on, as it does on Tab.
+            mcterm_overlay_sync_shell_to_panel ();
         }
         MC_FALLTHROUGH;
 
