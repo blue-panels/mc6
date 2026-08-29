@@ -881,6 +881,186 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+static mcview_vterm_t *
+reflow_vterm (int rows, int cols)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_autowrap (vt, TRUE);
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, rows, cols);
+    mcview_vterm_reset (vt);
+    return vt;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static char *
+scrollback_text (mcview_vterm_t *vt, int term_rows, int cols)
+{
+    const int rows = mcview_vterm_history_len (vt) + term_rows;
+    mcview_terminal_buffer_t *canvas = mcview_vterm_compose_scrollback (vt, 0, rows);
+    char *text = buffer_to_text (canvas, rows, cols);
+
+    mcview_terminal_buffer_free (canvas);
+    return text;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_narrower_breaks_the_lines_again)
+{
+    mcview_vterm_t *vt = reflow_vterm (4, 8);
+    char *text;
+
+    FEED (vt, "0123456789\r\nab\r\n$ ");
+
+    mcview_vterm_set_size (vt, 4, 4);
+
+    text = scrollback_text (vt, 4, 4);
+    ck_assert_str_eq (text, "0123\n4567\n89  \nab  \n$   \n");
+    g_free (text);
+    // The screen keeps what fits; one row had to go up.
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 1);
+    ck_assert (mcview_vterm_history_row_wrapped (vt, 0));
+    ck_assert (mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 1));
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 3);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 2);
+
+    // A blank tail does not turn into blank rows.
+    FEED (vt, "x");
+    ck_assert_int_eq (cell_ch (vt, 3, 2), 'x');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_wider_puts_the_lines_together)
+{
+    mcview_vterm_t *vt = reflow_vterm (3, 4);
+    char *text;
+
+    FEED (vt, "0123456789\r\nab\r\ncd\r\n$ ");
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 3);
+
+    mcview_vterm_set_size (vt, 3, 12);
+
+    text = scrollback_text (vt, 3, 12);
+    ck_assert_str_eq (text, "0123456789  \nab          \ncd          \n$           \n");
+    g_free (text);
+    // Only the rows the terminal broke are joined: "ab" and "cd" stay apart.
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 1);
+    ck_assert (!mcview_vterm_history_row_wrapped (vt, 0));
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 2);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 2);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_keeps_the_cursor_in_its_line)
+{
+    mcview_vterm_t *vt = reflow_vterm (3, 8);
+    gint64 row;
+    int col;
+
+    // The cursor is inside a long line, not at its end.
+    FEED (vt, "0123456789abcd\033[3D");
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 1);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 3);
+
+    mcview_vterm_set_size (vt, 3, 5);
+    // Offset 11 of the line: row 2, column 1.
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 2);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 1);
+    FEED (vt, "X");
+    ck_assert_int_eq (cell_ch (vt, 2, 1), 'X');
+
+    // The map says the same for the position the caller kept.
+    ck_assert (mcview_vterm_reflow_map (vt, 0, 0, &row, &col));
+    ck_assert_int_eq ((int) row, 0);
+    ck_assert_int_eq (col, 0);
+    ck_assert (mcview_vterm_reflow_map (vt, 1, 3, &row, &col));
+    ck_assert_int_eq ((int) row, 2);
+    ck_assert_int_eq (col, 1);
+    ck_assert (!mcview_vterm_reflow_map (vt, 5, 0, &row, &col));
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_narrower_scrolls_the_screen_to_keep_the_cursor)
+{
+    mcview_vterm_t *vt = reflow_vterm (2, 8);
+    char *text;
+
+    FEED (vt, "abcdefgh12345678\r\n$ ");
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 1);
+    ck_assert_int_eq (mcview_vterm_scrolled_rows (vt), 1);
+
+    mcview_vterm_set_size (vt, 2, 4);
+
+    text = scrollback_text (vt, 2, 4);
+    ck_assert_str_eq (text, "abcd\nefgh\n1234\n5678\n$   \n");
+    g_free (text);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 3);
+    ck_assert_int_eq (mcview_vterm_scrolled_rows (vt), 3);
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 1);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 2);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_leaves_the_alternate_screen_alone)
+{
+    mcview_vterm_t *vt = reflow_vterm (3, 8);
+
+    FEED (vt, "0123456789\r\n\033[?1049h\033[Hvim");
+    mcview_vterm_set_size (vt, 3, 4);
+
+    ck_assert_int_eq (cell_ch (vt, 0, 0), 'v');
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_reflow_back_and_forth_is_the_same_text)
+{
+    mcview_vterm_t *vt = reflow_vterm (4, 10);
+    char *before, *after;
+
+    FEED (vt, "one two three four five\r\n\033[31mred\033[0m and plain\r\nlast\r\n$ ");
+    before = scrollback_text (vt, 4, 10);
+
+    mcview_vterm_set_size (vt, 4, 3);
+    mcview_vterm_set_size (vt, 4, 7);
+    mcview_vterm_set_size (vt, 4, 10);
+
+    after = scrollback_text (vt, 4, 10);
+    ck_assert_str_eq (after, before);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 2);
+
+    g_free (before);
+    g_free (after);
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_oversized_osc_is_dropped_whole)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -1316,6 +1496,12 @@ main (void)
     tcase_add_test (tc_core, test_autowrap_off_overwrites_the_last_column);
     tcase_add_test (tc_core, test_autowrap_scrolls_and_the_history_keeps_the_break);
     tcase_add_test (tc_core, test_autowrap_is_off_by_default);
+    tcase_add_test (tc_core, test_reflow_narrower_breaks_the_lines_again);
+    tcase_add_test (tc_core, test_reflow_wider_puts_the_lines_together);
+    tcase_add_test (tc_core, test_reflow_keeps_the_cursor_in_its_line);
+    tcase_add_test (tc_core, test_reflow_narrower_scrolls_the_screen_to_keep_the_cursor);
+    tcase_add_test (tc_core, test_reflow_leaves_the_alternate_screen_alone);
+    tcase_add_test (tc_core, test_reflow_back_and_forth_is_the_same_text);
     tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
     tcase_add_test (tc_core, test_sixel_becomes_a_picture_at_the_cursor);
     tcase_add_test (tc_core, test_sixel_without_raster_attributes_is_measured);
