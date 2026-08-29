@@ -2079,8 +2079,31 @@ fail:
 static void
 runtime_host_log (const char *source, const char *level, const char *message)
 {
-    fprintf (stderr, "%s %s: %s\n", source != NULL ? source : "runtime",
-             level != NULL ? level : "info", message != NULL ? message : "");
+    if (source == NULL)
+        source = "runtime";
+    if (level == NULL)
+        level = "info";
+    if (message == NULL)
+        message = "";
+
+    // while the screen is in use, stderr goes straight into the curses output
+    if (top_dlg == NULL)
+        fprintf (stderr, "%s %s: %s\n", source, level, message);
+    else
+    {
+        const char *log_file = g_getenv ("MC_LOG_FILE");
+
+        if (log_file != NULL && *log_file != '\0')
+        {
+            FILE *f = fopen (log_file, "a");
+
+            if (f != NULL)
+            {
+                fprintf (f, "%s %s: %s\n", source, level, message);
+                fclose (f);
+            }
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
