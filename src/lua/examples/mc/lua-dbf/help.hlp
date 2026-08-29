@@ -1,0 +1,28 @@
+[DBF Viewer]
+
+DBF table viewer (lua-dbf)
+
+F3 or Enter on a dBase / FoxPro / Clipper table opens it full screen:
+one row per record, one column per field, the first column the
+record number.  Numbers are aligned to the right, dates are
+shown as YYYY-MM-DD, logical fields as T, F or ?, memo fields as
+their block number.  The rows are read as the table scrolls, so a
+large file opens at once.  Records marked deleted carry the * of
+the file in the first column and are drawn in red; F4 hides them.
+
+  Up, Down, PgUp, PgDn, Home, End
+             - move along the records
+  Left, Right - scroll the columns when they do not fit;
+               Ctrl-Left, Ctrl-Right scroll them by half a screen
+  Enter, F3  - the record as a card, one field per line
+  F2         - the structure of the table: the header and the
+               field list
+  F4         - hide or show the deleted records
+  F5         - the encoding: auto (by the language driver byte of
+               the header), cp866, cp1251, cp1252 or UTF-8
+  F8         - the file itself, in the viewer
+  F10, Esc   - back to the panel
+  F1         - this help
+
+Nothing outside MC is needed: the file is decoded by the script.
+Memo texts (.dbt / .fpt) are not read.

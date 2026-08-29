@@ -965,6 +965,18 @@ fi
 AC_SUBST([MAGIC_LUA_JAVA_CLASS_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_JAVA_CLASS_RULES])
 
+dnl lua-dbf decodes the table itself: the rule needs nothing but Lua.
+MAGIC_LUA_DBF_RULES=""
+if test x"$have_lua_plugin" = xyes; then
+    MAGIC_LUA_DBF_RULES='[[dbf]]
+Regex=\\.dbf$
+RegexIgnoreCase=true
+Open=%plugin{lua(lua-dbf):open}
+View=%plugin{lua(lua-dbf):view}'
+fi
+AC_SUBST([MAGIC_LUA_DBF_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_DBF_RULES])
+
 MAGIC_LUA_READELF_RULES=""
 if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes \
         && test -n "$READELF" && test x"$READELF" != xno; then
