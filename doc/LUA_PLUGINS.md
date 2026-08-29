@@ -385,9 +385,11 @@ may be combined.  For example:
 `mc.log.debug/info/warn/error(text)` writes a message tagged with the Lua
 script ID.
 
-The installed `notify-editor-save` and `base64-decode` Lua scripts are small
-working examples. Copy a script into the corresponding user workspace
-directory before adapting it, so system updates do not overwrite local changes.
+Teaching examples (`notify-editor-save`, `demo-panel`) are installed under
+`PREFIX/share/mc/lua/examples`; MC never loads scripts from there.  Copy an
+example into the corresponding user workspace directory to try it, and copy
+an installed script before adapting it, so system updates do not overwrite
+local changes.
 
 ## Trust boundary
 
