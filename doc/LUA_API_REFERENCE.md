@@ -61,7 +61,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.panel.active() -> panel\|nil, error?` | Return a handle to the active panel. | `panel` | no |
 | `mc.panel.passive() -> panel\|nil, error?` | Return a handle to the passive panel. | `panel` | no |
 | `mc.process.run(spec) -> ProcessResult\|nil, error?` | Run a shell command and capture its bounded output. | `process` | yes |
-| `mc.source.bytes(spec) -> Source` | Describe an in-memory byte source. | `—` | no |
+| `mc.source.bytes(data) -> Source` | Describe an in-memory byte source: the string is its whole content. | `—` | no |
 | `mc.source.file(spec) -> Source` | Describe a local-file source and its ownership. | `—` | no |
 | `mc.source.pipeline(stages) -> Source` | Compose process sources into one pipeline. | `—` | no |
 | `mc.source.process(spec) -> Source` | Describe a process source using direct argv, an optional working directory, and stderr policy. | `—` | no |
@@ -71,9 +71,14 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.ui.message(title, text) -> boolean\|nil, error?` | Show a native informational message box. | `ui` | yes |
 | `mc.ui.open_diff(spec) -> boolean\|nil, error?` | Compare two byte strings in the native diff viewer. | `diff` | yes |
 | `mc.ui.open_viewer(spec) -> boolean\|nil, error?` | Open the native viewer and transfer a controller to MC. | `viewer_source` | yes |
+| `mc.ui.screen(spec) -> screen\|nil, error?` | Describe a full-screen grid of widgets: a title, a status line on top, keys for the button bar at the bottom, and between them spec.layout, rows of cells; a row is height = n lines or weight = n, a cell is width = n columns or weight = n and holds one control: label, status, text, separator, input, checkbox, or a table with columns and rows(first, count).  help = {file, node}; the callbacks are on_key, on_enter, on_action, on_check, on_row, on_resize, on_close.  screen:run() shows it and returns when it is closed. | `ui` | yes |
 | `mc.ui.status(text) -> boolean\|nil, error?` | Display transient text in the MC status area. | `ui` | yes |
 | `mc.ui.text_width(text) -> integer\|nil, error?` | Measure UTF-8 text using terminal display columns. | `ui` | no |
 | `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key ("i") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory. | `viewer_source` | yes |
+| `screen:close() -> boolean\|nil, error?` | Close a running screen; screen:run() then returns. | `ui` | yes |
+| `screen:run() -> boolean\|nil, error?` | Show the screen and return when it is closed: by F10 or Esc, by the "close" action, by screen:close(), or by a callback returning { close = true }. | `ui` | yes |
+| `screen:status(text) -> boolean\|nil, error?` | Change the status line of a running screen. | `ui` | yes |
+| `screen:update(control, patch) -> boolean\|nil, error?` | Change a running screen's control: patch.text for a label, status or text cell, patch.value for an input or checkbox, and for a table patch.rows (a new rows function), patch.row_count, patch.invalidate (drop the rows fetched so far) and patch.row (the current row, from 0). | `ui` | yes |
 
 ## Callback contracts
 

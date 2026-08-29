@@ -77,16 +77,23 @@ def validate_coverage(source: Path, methods: list[dict[str, object]], callbacks:
         if not match.group("field").startswith("__")
     }
 
-    handle_index = re.search(
-        r"static\s+int\s+mc_lua_handle_index\s*\(lua_State \*lua\)\s*\{.*?^}\n",
-        text,
-        re.DOTALL | re.MULTILINE,
+    # methods of userdata objects are handed out by an __index dispatcher:
+    # mc_lua_handle_index() for panels, editors and viewers, mc_lua_screen_index() for screens
+    index_functions = list(
+        re.finditer(
+            r"static\s+int\s+mc_lua_[a-z0-9_]*index\s*\(lua_State \*lua\)\s*\{.*?^}\n",
+            text,
+            re.DOTALL | re.MULTILINE,
+        )
     )
-    if handle_index is None:
+    if not any("mc_lua_handle_index" in match.group(0) for match in index_functions):
         raise SystemExit("cannot locate mc_lua_handle_index()")
-    registered_functions.update(
-        re.findall(r"lua_pushcfunction\s*\(lua,\s*(mc_lua_[a-z0-9_]+)\s*\)", handle_index.group(0))
-    )
+    for index_function in index_functions:
+        registered_functions.update(
+            re.findall(
+                r"lua_pushcfunction\s*\(lua,\s*(mc_lua_[a-z0-9_]+)\s*\)", index_function.group(0)
+            )
+        )
 
     levels_match = re.search(r"const char \*const levels\[\]\s*=\s*\{(?P<levels>.*?)\};", text)
     if levels_match is None:

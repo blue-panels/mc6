@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/extension-runtime.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
@@ -104,6 +105,9 @@
 #define MC_RUNTIME_HOST_SERVICES_OPEN_DIFF_SIZE                                                    \
     (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, ui_open_diff)                                 \
      + sizeof (((mc_runtime_host_services_v1_t *) NULL)->ui_open_diff))
+#define MC_RUNTIME_HOST_SERVICES_SCREEN_SIZE                                                       \
+    (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, screen_close)                                 \
+     + sizeof (((mc_runtime_host_services_v1_t *) NULL)->screen_close))
 #define MC_RUNTIME_PLUGIN_DESCRIPTOR_ENUMERATE_SIZE                                                \
     (G_STRUCT_OFFSET (mc_runtime_plugin_descriptor_v1_t, enumerate_packages)                       \
      + sizeof (((mc_runtime_plugin_descriptor_v1_t *) NULL)->enumerate_packages))
@@ -1077,6 +1081,54 @@ mc_runtime_host_ui_open_diff (mc_runtime_plugin_context_t *context, const char *
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
+mc_runtime_host_screen_available (mc_runtime_plugin_context_t *context, const char **error)
+{
+    if (!mc_runtime_plugin_context_is_known (context) || mc_runtime_host_services == NULL)
+    {
+        if (error != NULL)
+            *error = "invalid_context";
+        return FALSE;
+    }
+    if (mc_runtime_host_services->struct_size < MC_RUNTIME_HOST_SERVICES_SCREEN_SIZE
+        || mc_runtime_host_services->screen_run == NULL)
+    {
+        if (error != NULL)
+            *error = "not_supported";
+        return FALSE;
+    }
+    return TRUE;
+}
+
+static gboolean
+mc_runtime_host_screen_run (mc_runtime_plugin_context_t *context,
+                            const mc_runtime_screen_descriptor_t *descriptor, const char **error)
+{
+    if (!mc_runtime_host_screen_available (context, error))
+        return FALSE;
+    return mc_runtime_host_services->screen_run (context, descriptor, error);
+}
+
+static gboolean
+mc_runtime_host_screen_update (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                               const mc_runtime_screen_patch_t *patch, const char **error)
+{
+    if (!mc_runtime_host_screen_available (context, error))
+        return FALSE;
+    return mc_runtime_host_services->screen_update (context, screen_id, patch, error);
+}
+
+static gboolean
+mc_runtime_host_screen_close (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                              const char **error)
+{
+    if (!mc_runtime_host_screen_available (context, error))
+        return FALSE;
+    return mc_runtime_host_services->screen_close (context, screen_id, error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
 mc_runtime_host_editor_selected_text (mc_runtime_plugin_context_t *context,
                                       const mc_runtime_handle_t *editor, mc_runtime_string_t *text,
                                       const char **error)
@@ -1485,6 +1537,9 @@ static mc_runtime_host_api_v1_t mc_runtime_host_api = {
     .panel_provider_unregister = mc_runtime_host_panel_provider_unregister,
     .viewer_controller_open = mc_runtime_host_viewer_controller_open,
     .ui_open_diff = mc_runtime_host_ui_open_diff,
+    .screen_run = mc_runtime_host_screen_run,
+    .screen_update = mc_runtime_host_screen_update,
+    .screen_close = mc_runtime_host_screen_close,
 };
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1807,6 +1862,18 @@ mc_runtime_plugins_load (GError **mcerror)
     mc_runtime_plugins_loaded = TRUE;
 
 #ifdef HAVE_GMODULE
+#ifdef HAVE_TESTS
+    if (mc_runtime_plugins_directory_for_tests == NULL)
+#endif
+    {
+        /* the user's runtimes first, so that one of them shadows the system's
+           of the same name, the way panel plugins are found */
+        char *user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
+                                           "runtime-plugins", (char *) NULL);
+
+        mc_runtime_plugins_load_from_dir (user_dir);
+        g_free (user_dir);
+    }
     mc_runtime_plugins_load_from_dir (mc_runtime_plugins_directory ());
 #endif
 

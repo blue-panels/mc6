@@ -4,6 +4,9 @@
    Copyright (C) 2026
    Free Software Foundation, Inc.
 
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026.
+
    This file is part of the Midnight Commander.
 
    The Midnight Commander is free software: you can redistribute it
@@ -54,6 +57,7 @@
 
 #include "runtime-host.h"
 #include "runtime-panel-provider.h"
+#include "runtime-screen.h"
 #include "runtime-viewer-source.h"
 
 /* --------------------------------------------------------------------------------------------- */
@@ -505,6 +509,15 @@ runtime_host_panel_chdir (const mc_runtime_handle_t *handle, const char *path, c
         return FALSE;
     if (path == NULL || path[0] == '\0')
         return runtime_host_set_error (error, "invalid_argument");
+
+    /* A plugin location ("dbf:/x", "sh://host") is not a directory: the plugin
+       takes the panel, the way a hotlist entry or a start-up argument does. */
+    if (panel_plugin_find_by_path (path) != NULL)
+    {
+        if (!panel_plugin_activate_by_path (panel, path))
+            return runtime_host_set_error (error, "failed");
+        return TRUE;
+    }
 
     vpath = vfs_path_from_str (path);
     if (vpath == NULL)
@@ -2241,6 +2254,9 @@ runtime_host_services_init (void)
         .panel_provider_unregister = runtime_panel_provider_unregister,
         .viewer_controller_open = runtime_viewer_controller_open,
         .ui_open_diff = runtime_host_ui_open_diff,
+        .screen_run = runtime_screen_run,
+        .screen_update = runtime_screen_update,
+        .screen_close = runtime_screen_close,
     };
 
     /* Capabilities describe what this invocation can actually open, rather
@@ -2257,6 +2273,9 @@ runtime_host_services_init (void)
         services.panel_provider_register = NULL;
         services.panel_provider_unregister = NULL;
         services.viewer_controller_open = NULL;
+        services.screen_run = NULL;
+        services.screen_update = NULL;
+        services.screen_close = NULL;
     }
 
 #ifdef USE_INTERNAL_EDIT

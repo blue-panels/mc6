@@ -181,6 +181,7 @@ struct WView
 
     // Display information
     int dpy_frame_size;  // Size of the frame surrounding the real viewer
+    gboolean embedded;   // A cell of a screen: no frame, no status line
     off_t dpy_start;     // Offset of the displayed data (start of the paragraph in non-hex mode)
     off_t dpy_end;       // Offset after the displayed data
     off_t dpy_paragraph_skip_lines;  // Extra lines to skip in wrap mode

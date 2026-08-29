@@ -31,6 +31,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/widget.h"
 #include "lib/tty/key.h"
 
@@ -529,7 +530,7 @@ k8s_open (mc_panel_host_t *host, const char *open_path)
         /* User-local install (~/.local/lib/mc/panel-plugins/k8s/) takes
            precedence over the compile-time system path so the help file
            can be iterated without sudo. */
-        char *user_help = g_build_filename (g_get_home_dir (), ".local", "lib", "mc",
+        char *user_help = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
                                             "panel-plugins", "k8s", "k8s_panel.hlp", (char *) NULL);
         if (g_file_test (user_help, G_FILE_TEST_IS_REGULAR))
             data->help_filename = user_help;

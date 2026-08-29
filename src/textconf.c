@@ -1,8 +1,11 @@
 /*
    Print features specific for this build
 
-   Copyright (C) 2000-2025
+   Copyright (C) 2000-2026
    Free Software Foundation, Inc.
+
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -280,14 +283,14 @@ show_datadirs_extended (void)
 #endif
 #ifdef ENABLE_LUA_PLUGIN
     {
-        gchar *user_lua_scripts =
-            g_build_filename (g_get_user_data_dir (), "mc", "lua", "scripts", (char *) NULL);
+        gchar *user_lua_scripts = g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua",
+                                                    "scripts", (char *) NULL);
         gchar *user_lua_modules =
-            g_build_filename (g_get_user_data_dir (), "mc", "lua", "lib", (char *) NULL);
-        gchar *legacy_lua_scripts =
-            g_build_filename (g_get_user_config_dir (), "mc", "lua", "scripts", (char *) NULL);
-        gchar *legacy_lua_modules =
-            g_build_filename (g_get_user_config_dir (), "mc", "lua", "lib", (char *) NULL);
+            g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua", "lib", (char *) NULL);
+        gchar *legacy_lua_scripts = g_build_filename (
+            g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "scripts", (char *) NULL);
+        gchar *legacy_lua_modules = g_build_filename (
+            g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "lib", (char *) NULL);
 
         PRINTF_SECTION2 (_ ("Lua scripts:"), user_lua_scripts);
         PRINTF_SECTION2 (_ ("Lua modules:"), user_lua_modules);
@@ -304,7 +307,7 @@ show_datadirs_extended (void)
 #if defined(MC_PANEL_PLUGINS_DIR) || defined(MC_EDITOR_PLUGINS_DIR)
     {
         gchar *user_lib_dir =
-            g_build_filename (g_get_home_dir (), ".local", "lib", "mc", (char *) NULL);
+            g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR, (char *) NULL);
 
 #ifdef MC_PANEL_PLUGINS_DIR
         {

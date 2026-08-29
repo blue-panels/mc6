@@ -44,6 +44,7 @@
 #include <lualib.h>
 
 #include "lib/extension-runtime.h"
+#include "lib/fileloc.h"
 
 /*** global variables ****************************************************************************/
 
@@ -94,6 +95,9 @@
 #define MC_LUA_HOST_API_EDITOR_REPLACE_SIZE                                                        \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, editor_replace)                                    \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->editor_replace))
+#define MC_LUA_HOST_API_SCREEN_SIZE                                                                \
+    (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, screen_close)                                      \
+     + sizeof (((mc_runtime_host_api_v1_t *) NULL)->screen_close))
 #define MC_LUA_HOST_API_PROCESS_SIZE                                                               \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, process_result_free)                               \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->process_result_free))
@@ -179,6 +183,8 @@ struct mc_lua_runtime
     guint64 next_panel_provider_id;
     GHashTable *viewer_controllers;
     guint64 next_viewer_controller_id;
+    GHashTable *screens; /* id -> mc_lua_screen_t * (userdata owned by Lua) */
+    guint64 next_screen_id;
     GHashTable *disabled_package_ids;
     char *user_scripts_dir;
     char *user_modules_dir;
@@ -2291,6 +2297,8 @@ mc_lua_runtime_destroy (gpointer data)
         g_hash_table_destroy (runtime->panel_providers);
     if (runtime->viewer_controllers != NULL)
         g_hash_table_destroy (runtime->viewer_controllers);
+    if (runtime->screens != NULL)
+        g_hash_table_destroy (runtime->screens);
     if (runtime->disabled_package_ids != NULL)
         g_hash_table_destroy (runtime->disabled_package_ids);
     g_free (runtime->user_scripts_dir);
@@ -2512,18 +2520,22 @@ mc_lua_parse_panel_column_values (lua_State *lua, int table, mc_runtime_panel_en
         lua_pop (lua, 1);
         return;
     }
+    /* The key is looked at with lua_type, never lua_tostring: converting a
+       number key in place would confuse lua_next.  Both loops run to the
+       end, so that no key is left on the stack under the table. */
     lua_pushnil (lua);
     while (lua_next (lua, -2) != 0)
     {
-        if (lua_isstring (lua, -2) && (lua_isstring (lua, -1) || lua_isnumber (lua, -1)))
+        if (lua_type (lua, -2) == LUA_TSTRING && (lua_isstring (lua, -1) || lua_isnumber (lua, -1)))
             length++;
         lua_pop (lua, 1);
     }
     values = g_new0 (mc_runtime_panel_column_value_t, length);
     lua_pushnil (lua);
-    while (index < length && lua_next (lua, -2) != 0)
+    while (lua_next (lua, -2) != 0)
     {
-        if (lua_isstring (lua, -2) && (lua_isstring (lua, -1) || lua_isnumber (lua, -1)))
+        if (index < length && lua_type (lua, -2) == LUA_TSTRING
+            && (lua_isstring (lua, -1) || lua_isnumber (lua, -1)))
         {
             values[index].id = g_strdup (lua_tostring (lua, -2));
             values[index].value = g_strdup (lua_tostring (lua, -1));
@@ -3471,8 +3483,8 @@ mc_lua_source_tag (lua_State *lua, const char *tag)
     return 1;
 }
 
-/** @lua mc.source.bytes(spec) -> Source @workspace any @mutation no @summary Describe an in-memory
- * byte source. */
+/** @lua mc.source.bytes(data) -> Source @workspace any @mutation no @summary Describe an in-memory
+ * byte source: the string is its whole content. */
 static int
 mc_lua_source_bytes (lua_State *lua)
 {
@@ -3587,7 +3599,11 @@ mc_lua_parse_viewer_source (lua_State *lua, int table, mc_runtime_viewer_source_
             g_free (kind);
             return FALSE;
         }
-        source->bytes = g_memdup2 (lua_tolstring (lua, -1, &length), length);
+        {
+            const char *data = lua_tolstring (lua, -1, &length);
+
+            source->bytes = g_memdup2 (data, length);
+        }
         source->bytes_length = length;
         lua_pop (lua, 1);
     }
@@ -5177,6 +5193,869 @@ mc_lua_dialog_check_controls (const mc_runtime_dialog_control_t *controls, guint
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------------------------- */
+/*** screens: a full-screen grid of widgets the script fills and drives *************************/
+/* --------------------------------------------------------------------------------------------- */
+
+#define MC_LUA_SCREEN_MT          "mc.ui.screen"
+#define MC_LUA_SCREEN_MAX_ROWS    64
+#define MC_LUA_SCREEN_MAX_CELLS   16
+#define MC_LUA_SCREEN_MAX_KEYS    64
+#define MC_LUA_SCREEN_MAX_COLUMNS 256
+#define MC_LUA_SCREEN_MAX_PAGE    4096
+
+/* A table cell: its columns and the rows function. */
+typedef struct
+{
+    char *id;
+    int rows_ref;
+    mc_runtime_screen_table_t table;
+    mc_runtime_screen_column_t *columns;
+} mc_lua_screen_table_t;
+
+typedef struct
+{
+    mc_lua_package_t *package;
+    guint64 id;
+    int spec_ref; /* the Lua spec table: the callbacks are looked up in it by name */
+    int self_ref; /* keeps the userdata alive while the screen runs */
+    mc_runtime_screen_t spec;
+    mc_runtime_screen_row_t *rows;
+    mc_runtime_screen_key_t *keys;
+    GPtrArray *tables; /* mc_lua_screen_table_t * */
+    gboolean running;
+    gboolean closed;
+} mc_lua_screen_t;
+
+static mc_lua_screen_t *
+mc_lua_screen_check (lua_State *lua, int index)
+{
+    return (mc_lua_screen_t *) luaL_checkudata (lua, index, MC_LUA_SCREEN_MT);
+}
+
+static void
+mc_lua_screen_control_free (mc_runtime_dialog_control_t *control)
+{
+    g_free ((char *) control->id);
+    g_free ((char *) control->text);
+    g_free ((char *) control->label);
+    g_free ((char *) control->value);
+}
+
+static void
+mc_lua_screen_spec_free (mc_lua_screen_t *screen)
+{
+    guint i;
+
+    g_free ((char *) screen->spec.title);
+    g_free ((char *) screen->spec.status);
+    g_free ((char *) screen->spec.help_file);
+    g_free ((char *) screen->spec.help_node);
+    g_free ((char *) screen->spec.focus);
+    screen->spec.title = screen->spec.status = screen->spec.help_file = screen->spec.help_node =
+        screen->spec.focus = NULL;
+    for (i = 0; screen->rows != NULL && i < screen->spec.rows_count; i++)
+    {
+        mc_runtime_screen_cell_spec_t *cells =
+            (mc_runtime_screen_cell_spec_t *) screen->rows[i].cells;
+        guint j;
+
+        for (j = 0; cells != NULL && j < screen->rows[i].cells_count; j++)
+        {
+            mc_lua_screen_control_free ((mc_runtime_dialog_control_t *) cells[j].control);
+            g_free ((mc_runtime_dialog_control_t *) cells[j].control);
+        }
+        g_free (cells);
+    }
+    g_free (screen->rows);
+    screen->rows = NULL;
+    screen->spec.rows = NULL;
+    screen->spec.rows_count = 0;
+    for (i = 0; screen->keys != NULL && i < screen->spec.keys_count; i++)
+    {
+        g_free ((char *) screen->keys[i].key);
+        g_free ((char *) screen->keys[i].label);
+        g_free ((char *) screen->keys[i].action);
+    }
+    g_free (screen->keys);
+    screen->keys = NULL;
+    screen->spec.keys = NULL;
+    screen->spec.keys_count = 0;
+    for (i = 0; screen->tables != NULL && i < screen->tables->len; i++)
+    {
+        mc_lua_screen_table_t *table = g_ptr_array_index (screen->tables, i);
+        guint c;
+
+        for (c = 0; table->columns != NULL && c < table->table.columns_count; c++)
+        {
+            g_free ((char *) table->columns[c].id);
+            g_free ((char *) table->columns[c].title);
+        }
+        g_free (table->columns);
+        if (screen->package != NULL && screen->package->lua != NULL && table->rows_ref != LUA_NOREF)
+            luaL_unref (screen->package->lua, LUA_REGISTRYINDEX, table->rows_ref);
+        g_free (table->id);
+        g_free (table);
+    }
+    if (screen->tables != NULL)
+        g_ptr_array_free (screen->tables, TRUE);
+    screen->tables = NULL;
+}
+
+static void
+mc_lua_screen_release (mc_lua_screen_t *screen)
+{
+    lua_State *lua = screen->package != NULL ? screen->package->lua : NULL;
+
+    mc_lua_screen_spec_free (screen);
+    if (lua != NULL && screen->spec_ref != LUA_NOREF)
+        luaL_unref (lua, LUA_REGISTRYINDEX, screen->spec_ref);
+    screen->spec_ref = LUA_NOREF;
+    if (screen->package != NULL && screen->package->runtime->screens != NULL)
+        g_hash_table_remove (screen->package->runtime->screens, &screen->id);
+    screen->closed = TRUE;
+}
+
+static int
+mc_lua_screen_gc (lua_State *lua)
+{
+    mc_lua_screen_t *screen = mc_lua_screen_check (lua, 1);
+
+    if (!screen->closed && !screen->running)
+        mc_lua_screen_release (screen);
+    return 0;
+}
+
+static mc_lua_screen_table_t *
+mc_lua_screen_find_table (const mc_lua_screen_t *screen, const char *id)
+{
+    guint i;
+
+    for (i = 0; id != NULL && screen->tables != NULL && i < screen->tables->len; i++)
+    {
+        mc_lua_screen_table_t *table = g_ptr_array_index (screen->tables, i);
+
+        if (strcmp (table->id, id) == 0)
+            return table;
+    }
+    return NULL;
+}
+
+/* The align of a column: "left" (default), "right", "center". */
+static mc_runtime_panel_align_t
+mc_lua_screen_align (lua_State *lua, int table)
+{
+    char *align = mc_lua_dup_table_string (lua, table, "align");
+    mc_runtime_panel_align_t result = g_strcmp0 (align, "right") == 0 ? MC_RUNTIME_PANEL_ALIGN_RIGHT
+        : g_strcmp0 (align, "center") == 0 ? MC_RUNTIME_PANEL_ALIGN_CENTER
+                                           : MC_RUNTIME_PANEL_ALIGN_LEFT;
+
+    g_free (align);
+    return result;
+}
+
+/* A table cell: columns, row_count, page_size, and the rows function. */
+static gboolean
+mc_lua_screen_parse_table (lua_State *lua, int index, mc_lua_screen_t *screen,
+                           mc_runtime_dialog_control_t *control)
+{
+    mc_lua_screen_table_t *table;
+    guint i, count;
+
+    lua_getfield (lua, index, "columns");
+    count = lua_istable (lua, -1) ? (guint) lua_rawlen (lua, -1) : 0;
+    if (count == 0 || count > MC_LUA_SCREEN_MAX_COLUMNS)
+    {
+        lua_pop (lua, 1);
+        return FALSE;
+    }
+    table = g_new0 (mc_lua_screen_table_t, 1);
+    table->id = g_strdup (control->id);
+    table->rows_ref = LUA_NOREF;
+    table->columns = g_new0 (mc_runtime_screen_column_t, count);
+    table->table.columns_count = count;
+    g_ptr_array_add (screen->tables, table);
+    for (i = 0; i < count; i++)
+    {
+        mc_runtime_screen_column_t *column = &table->columns[i];
+        char *type;
+
+        lua_rawgeti (lua, -1, (lua_Integer) i + 1);
+        if (!lua_istable (lua, -1))
+        {
+            lua_pop (lua, 2);
+            return FALSE;
+        }
+        column->id = mc_lua_dup_table_string (lua, -1, "id");
+        column->title = mc_lua_dup_table_string (lua, -1, "title");
+        if (column->id == NULL)
+            column->id = g_strdup_printf ("column%u", i + 1);
+        if (column->title == NULL)
+            column->title = g_strdup (column->id);
+        column->align = mc_lua_screen_align (lua, -1);
+        column->min_width = (guint) mc_lua_panel_table_uint64 (lua, -1, "min_width", 1);
+        column->expands = mc_lua_table_boolean (lua, -1, "expands", FALSE);
+        type = mc_lua_dup_table_string (lua, -1, "type");
+        column->type = g_strcmp0 (type, "check") == 0 ? MC_RUNTIME_SCREEN_COLUMN_CHECK
+                                                      : MC_RUNTIME_SCREEN_COLUMN_TEXT;
+        g_free (type);
+        lua_pop (lua, 1);
+    }
+    lua_pop (lua, 1);
+
+    lua_getfield (lua, index, "row_count");
+    table->table.row_count = lua_isinteger (lua, -1) && lua_tointeger (lua, -1) >= 0
+        ? (gint64) lua_tointeger (lua, -1)
+        : -1;
+    lua_pop (lua, 1);
+    table->table.page_size = (guint) mc_lua_panel_table_uint64 (lua, index, "page_size", 0);
+    if (table->table.page_size > MC_LUA_SCREEN_MAX_PAGE)
+        table->table.page_size = MC_LUA_SCREEN_MAX_PAGE;
+    lua_getfield (lua, index, "rows");
+    if (!lua_isfunction (lua, -1))
+    {
+        lua_pop (lua, 1);
+        return FALSE;
+    }
+    table->rows_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+    table->table.struct_size = sizeof (table->table);
+    table->table.columns = table->columns;
+    control->table = &table->table;
+    return TRUE;
+}
+
+/* One cell of the grid: width or weight, and the control in it. */
+static gboolean
+mc_lua_screen_parse_cell (lua_State *lua, int index, mc_lua_screen_t *screen, GHashTable *ids,
+                          guint number, mc_runtime_screen_cell_spec_t *cell)
+{
+    mc_runtime_dialog_control_t *control = g_new0 (mc_runtime_dialog_control_t, 1);
+    char *type;
+    gboolean ok = TRUE;
+
+    cell->control = control;
+    cell->width = (guint) mc_lua_panel_table_uint64 (lua, index, "width", 0);
+    cell->weight = (guint) mc_lua_panel_table_uint64 (lua, index, "weight", 0);
+    type = mc_lua_dup_table_string (lua, index, "type");
+    control->id = mc_lua_dup_table_string (lua, index, "id");
+    control->text = mc_lua_dup_table_string (lua, index, "text");
+    control->label = mc_lua_dup_table_string (lua, index, "label");
+    control->value = mc_lua_dup_table_string (lua, index, "value");
+    control->checked = mc_lua_table_boolean (lua, index, "value", FALSE);
+    if (control->id == NULL)
+        control->id = g_strdup_printf ("cell%u", number);
+    if (!mc_lua_id_is_valid (control->id) || g_hash_table_contains (ids, control->id))
+        ok = FALSE;
+    else
+        g_hash_table_add (ids, (gpointer) control->id);
+    if (g_strcmp0 (type, "label") == 0)
+        control->type = MC_RUNTIME_DIALOG_LABEL;
+    else if (g_strcmp0 (type, "status") == 0)
+        control->type = MC_RUNTIME_DIALOG_STATUS;
+    else if (g_strcmp0 (type, "text") == 0)
+        control->type = MC_RUNTIME_DIALOG_TEXT;
+    else if (g_strcmp0 (type, "separator") == 0)
+        control->type = MC_RUNTIME_DIALOG_SEPARATOR;
+    else if (g_strcmp0 (type, "input") == 0)
+        control->type = MC_RUNTIME_DIALOG_INPUT;
+    else if (g_strcmp0 (type, "checkbox") == 0)
+        control->type = MC_RUNTIME_DIALOG_CHECKBOX;
+    else if (g_strcmp0 (type, "table") == 0)
+    {
+        control->type = MC_RUNTIME_DIALOG_TABLE;
+        if (ok && !mc_lua_screen_parse_table (lua, index, screen, control))
+            ok = FALSE;
+    }
+    else
+        ok = FALSE;
+    g_free (type);
+    return ok;
+}
+
+/* layout = { { height = n | weight = n, cell, cell, ... }, ... } */
+static gboolean
+mc_lua_screen_parse_layout (lua_State *lua, int index, mc_lua_screen_t *screen)
+{
+    guint i, count, number = 0;
+    GHashTable *ids;
+    gboolean ok = TRUE;
+
+    count = lua_istable (lua, index) ? (guint) lua_rawlen (lua, index) : 0;
+    if (count == 0 || count > MC_LUA_SCREEN_MAX_ROWS)
+        return FALSE;
+    screen->rows = g_new0 (mc_runtime_screen_row_t, count);
+    screen->spec.rows = screen->rows;
+    screen->spec.rows_count = count;
+    ids = g_hash_table_new (g_str_hash, g_str_equal);
+    for (i = 0; i < count && ok; i++)
+    {
+        mc_runtime_screen_row_t *row = &screen->rows[i];
+        mc_runtime_screen_cell_spec_t *cells;
+        guint j, cells_count;
+
+        lua_rawgeti (lua, index, (lua_Integer) i + 1);
+        cells_count = lua_istable (lua, -1) ? (guint) lua_rawlen (lua, -1) : 0;
+        if (cells_count == 0 || cells_count > MC_LUA_SCREEN_MAX_CELLS)
+        {
+            ok = FALSE;
+            lua_pop (lua, 1);
+            break;
+        }
+        row->height = (guint) mc_lua_panel_table_uint64 (lua, -1, "height", 0);
+        row->weight = (guint) mc_lua_panel_table_uint64 (lua, -1, "weight", 0);
+        cells = g_new0 (mc_runtime_screen_cell_spec_t, cells_count);
+        row->cells = cells;
+        row->cells_count = cells_count;
+        for (j = 0; j < cells_count && ok; j++)
+        {
+            lua_rawgeti (lua, -1, (lua_Integer) j + 1);
+            if (!lua_istable (lua, -1)
+                || !mc_lua_screen_parse_cell (lua, lua_gettop (lua), screen, ids, ++number,
+                                              &cells[j]))
+                ok = FALSE;
+            lua_pop (lua, 1);
+        }
+        lua_pop (lua, 1);
+    }
+    g_hash_table_destroy (ids);
+    return ok;
+}
+
+static gboolean
+mc_lua_screen_parse_keys (lua_State *lua, int index, mc_lua_screen_t *screen)
+{
+    guint i, count;
+
+    lua_getfield (lua, index, "keys");
+    count = lua_istable (lua, -1) ? (guint) lua_rawlen (lua, -1) : 0;
+    if (count > MC_LUA_SCREEN_MAX_KEYS)
+    {
+        lua_pop (lua, 1);
+        return FALSE;
+    }
+    screen->keys = g_new0 (mc_runtime_screen_key_t, count + 1);
+    screen->spec.keys = screen->keys;
+    screen->spec.keys_count = count;
+    for (i = 0; i < count; i++)
+    {
+        lua_rawgeti (lua, -1, (lua_Integer) i + 1);
+        if (!lua_istable (lua, -1))
+        {
+            lua_pop (lua, 2);
+            return FALSE;
+        }
+        screen->keys[i].key = mc_lua_dup_table_string (lua, -1, "key");
+        screen->keys[i].label = mc_lua_dup_table_string (lua, -1, "label");
+        screen->keys[i].action = mc_lua_dup_table_string (lua, -1, "action");
+        lua_pop (lua, 1);
+        if (screen->keys[i].key == NULL)
+        {
+            lua_pop (lua, 1);
+            return FALSE;
+        }
+    }
+    lua_pop (lua, 1);
+    return TRUE;
+}
+
+/* The event table of a callback: the control the user is on, and for a table
+   its row (from 0) and column (its id, and its index from 1). */
+static void
+mc_lua_screen_push_event (lua_State *lua, const mc_lua_screen_t *screen,
+                          const mc_runtime_screen_request_t *request)
+{
+    const mc_lua_screen_table_t *table = mc_lua_screen_find_table (screen, request->control_id);
+
+    lua_createtable (lua, 0, 6);
+    if (request->control_id != NULL)
+    {
+        lua_pushstring (lua, request->control_id);
+        lua_setfield (lua, -2, "control");
+    }
+    if (table != NULL && request->row >= 0)
+    {
+        lua_pushinteger (lua, (lua_Integer) request->row);
+        lua_setfield (lua, -2, "row");
+    }
+    if (table != NULL && request->column >= 0
+        && (guint) request->column < table->table.columns_count)
+    {
+        lua_pushstring (lua, table->columns[request->column].id);
+        lua_setfield (lua, -2, "column");
+        lua_pushinteger (lua, request->column + 1);
+        lua_setfield (lua, -2, "column_index");
+    }
+}
+
+/* Call spec.<name>(screen, ...) with nargs arguments already pushed; FALSE
+   when there is no such callback or it failed.  The result stays on the stack
+   when *called. */
+static gboolean
+mc_lua_screen_call (mc_lua_screen_t *screen, const char *name, int nargs, gboolean *called)
+{
+    lua_State *lua = screen->package->lua;
+    int base = lua_gettop (lua) - nargs;
+
+    *called = FALSE;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, screen->spec_ref);
+    lua_getfield (lua, -1, name);
+    lua_remove (lua, -2);
+    if (!lua_isfunction (lua, -1))
+    {
+        lua_settop (lua, base);
+        return FALSE;
+    }
+    /* the callback under the arguments: fn, screen, args... */
+    lua_insert (lua, base + 1);
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, screen->self_ref);
+    lua_insert (lua, base + 2);
+    screen->package->callback_depth++;
+    if (lua_pcall (lua, nargs + 1, 1, 0) != LUA_OK)
+    {
+        mc_lua_report_error (screen->package, MC_RUNTIME_ERROR_PHASE_EVENT,
+                             "Lua screen callback failed");
+        screen->package->callback_depth--;
+        lua_settop (lua, base);
+        return FALSE;
+    }
+    screen->package->callback_depth--;
+    *called = TRUE;
+    return TRUE;
+}
+
+/* A callback's result: true or mc.CONSUME means handled; { close = true } closes. */
+static void
+mc_lua_screen_read_result (lua_State *lua, mc_runtime_screen_response_t *response)
+{
+    if (lua_istable (lua, -1))
+    {
+        response->close = mc_lua_table_boolean (lua, -1, "close", FALSE);
+        response->handled = mc_lua_table_boolean (lua, -1, "handled", TRUE);
+    }
+    else if (lua_isboolean (lua, -1))
+        response->handled = lua_toboolean (lua, -1);
+    else if (lua_isinteger (lua, -1))
+        response->handled = lua_tointeger (lua, -1) != 0;
+    else
+        response->handled = FALSE;
+    lua_pop (lua, 1);
+}
+
+/* rows(first, count) -> { { cell, ... }, ... }; a cell is a string, a number, or
+   { text = ..., color = "fg;bg" }. */
+static gboolean
+mc_lua_screen_rows (mc_lua_screen_t *screen, const mc_runtime_screen_request_t *request,
+                    mc_runtime_screen_response_t *response)
+{
+    lua_State *lua = screen->package->lua;
+    mc_lua_screen_table_t *table = mc_lua_screen_find_table (screen, request->control_id);
+    mc_runtime_screen_cell_t *cells;
+    guint rows, ncols, r, c;
+
+    if (table == NULL || table->rows_ref == LUA_NOREF)
+        return FALSE;
+    ncols = table->table.columns_count;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, table->rows_ref);
+    lua_pushinteger (lua, (lua_Integer) request->first);
+    lua_pushinteger (lua, (lua_Integer) request->count);
+    screen->package->callback_depth++;
+    if (lua_pcall (lua, 2, 1, 0) != LUA_OK)
+    {
+        mc_lua_report_error (screen->package, MC_RUNTIME_ERROR_PHASE_EVENT,
+                             "Lua screen rows callback failed");
+        screen->package->callback_depth--;
+        return FALSE;
+    }
+    screen->package->callback_depth--;
+    if (!lua_istable (lua, -1))
+    {
+        lua_pop (lua, 1);
+        return FALSE;
+    }
+    rows = (guint) lua_rawlen (lua, -1);
+    if (rows > request->count)
+        rows = request->count;
+    if (rows > MC_LUA_SCREEN_MAX_PAGE)
+        rows = MC_LUA_SCREEN_MAX_PAGE;
+    cells = g_new0 (mc_runtime_screen_cell_t, (gsize) rows * ncols + 1);
+    for (r = 0; r < rows; r++)
+    {
+        lua_rawgeti (lua, -1, (lua_Integer) r + 1);
+        if (lua_istable (lua, -1))
+            for (c = 0; c < ncols; c++)
+            {
+                mc_runtime_screen_cell_t *cell = &cells[r * ncols + c];
+
+                lua_rawgeti (lua, -1, (lua_Integer) c + 1);
+                if (lua_istable (lua, -1))
+                {
+                    lua_getfield (lua, -1, "text");
+                    cell->text = g_strdup (lua_isstring (lua, -1) ? lua_tostring (lua, -1) : "");
+                    lua_pop (lua, 1);
+                    cell->color = mc_lua_dup_table_string (lua, -1, "color");
+                }
+                else
+                    cell->text = g_strdup (lua_isstring (lua, -1) ? lua_tostring (lua, -1) : "");
+                lua_pop (lua, 1);
+            }
+        else
+            for (c = 0; c < ncols; c++)
+                cells[r * ncols + c].text = g_strdup ("");
+        lua_pop (lua, 1);
+    }
+    lua_pop (lua, 1);
+    response->cells = cells;
+    response->rows_count = rows;
+    response->columns_count = ncols;
+    return TRUE;
+}
+
+static void
+mc_lua_screen_response_free (mc_runtime_plugin_context_t *context,
+                             mc_runtime_screen_response_t *response)
+{
+    guint i;
+
+    (void) context;
+    if (response == NULL || response->cells == NULL)
+        return;
+    for (i = 0; i < response->rows_count * response->columns_count; i++)
+    {
+        g_free ((char *) response->cells[i].text);
+        g_free ((char *) response->cells[i].color);
+    }
+    g_free ((mc_runtime_screen_cell_t *) response->cells);
+    response->cells = NULL;
+}
+
+static gboolean
+mc_lua_screen_dispatch (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                        mc_runtime_screen_operation_t operation,
+                        const mc_runtime_screen_request_t *request,
+                        mc_runtime_screen_response_t *response, const char **error)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    mc_lua_screen_t *screen;
+    lua_State *lua;
+    gboolean called = FALSE;
+
+    (void) context;
+    if (runtime == NULL || runtime->screens == NULL || request == NULL || response == NULL)
+        return FALSE;
+    screen = g_hash_table_lookup (runtime->screens, &screen_id);
+    if (screen == NULL || screen->closed || screen->package->lua == NULL)
+    {
+        if (error != NULL)
+            *error = "closed";
+        return FALSE;
+    }
+    lua = screen->package->lua;
+
+    switch (operation)
+    {
+    case MC_RUNTIME_SCREEN_ROWS:
+        return mc_lua_screen_rows (screen, request, response);
+
+    case MC_RUNTIME_SCREEN_SET_CHECKED:
+        mc_lua_screen_push_event (lua, screen, request);
+        lua_pushboolean (lua, request->value);
+        lua_setfield (lua, -2, "value");
+        if (mc_lua_screen_call (screen, "on_check", 1, &called) && called)
+            mc_lua_screen_read_result (lua, response);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_KEY:
+        mc_lua_screen_push_event (lua, screen, request);
+        lua_createtable (lua, 0, 2);
+        lua_pushstring (lua, request->key_name != NULL ? request->key_name : "");
+        lua_setfield (lua, -2, "name");
+        lua_pushinteger (lua, request->key);
+        lua_setfield (lua, -2, "code");
+        lua_setfield (lua, -2, "key");
+        if (mc_lua_screen_call (screen, "on_key", 1, &called) && called)
+            mc_lua_screen_read_result (lua, response);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_ENTER:
+        mc_lua_screen_push_event (lua, screen, request);
+        if (mc_lua_screen_call (screen, "on_enter", 1, &called) && called)
+            mc_lua_screen_read_result (lua, response);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_ACTION:
+        lua_pushstring (lua, request->action != NULL ? request->action : "");
+        mc_lua_screen_push_event (lua, screen, request);
+        if (mc_lua_screen_call (screen, "on_action", 2, &called) && called)
+            mc_lua_screen_read_result (lua, response);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_ROW_CHANGED:
+        mc_lua_screen_push_event (lua, screen, request);
+        if (mc_lua_screen_call (screen, "on_row", 1, &called) && called)
+            mc_lua_screen_read_result (lua, response);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_RESIZE:
+        lua_pushinteger (lua, request->columns);
+        lua_pushinteger (lua, request->lines);
+        if (mc_lua_screen_call (screen, "on_resize", 2, &called) && called)
+            lua_pop (lua, 1);
+        return TRUE;
+
+    case MC_RUNTIME_SCREEN_CLOSE:
+        if (mc_lua_screen_call (screen, "on_close", 0, &called) && called)
+            lua_pop (lua, 1);
+        return TRUE;
+
+    default:
+        if (error != NULL)
+            *error = "not_supported";
+        return FALSE;
+    }
+}
+
+/** @lua mc.ui.screen(spec) -> screen|nil, error? @capability ui @mutation yes @summary Describe
+ * a full-screen grid of widgets: a title, a status line on top, keys for the button bar at the
+ * bottom, and between them spec.layout, rows of cells; a row is height = n lines or weight = n,
+ * a cell is width = n columns or weight = n and holds one control: label, status, text,
+ * separator, input, checkbox, or a table with columns and rows(first, count).  help =
+ * {file, node}; the callbacks are on_key, on_enter, on_action, on_check, on_row, on_resize,
+ * on_close.  screen:run() shows it and returns when it is closed. */
+static int
+mc_lua_ui_screen (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_lua_screen_t *screen;
+    guint64 *key;
+    gboolean ok;
+
+    luaL_checktype (lua, 1, LUA_TTABLE);
+    if (package->runtime->screens == NULL)
+        package->runtime->screens =
+            g_hash_table_new_full (g_int64_hash, g_int64_equal, g_free, NULL);
+
+    screen = (mc_lua_screen_t *) lua_newuserdata (lua, sizeof (*screen));
+    memset (screen, 0, sizeof (*screen));
+    screen->package = package;
+    screen->spec_ref = screen->self_ref = LUA_NOREF;
+    screen->tables = g_ptr_array_new ();
+    luaL_getmetatable (lua, MC_LUA_SCREEN_MT);
+    lua_setmetatable (lua, -2);
+
+    screen->spec.struct_size = sizeof (screen->spec);
+    screen->spec.title = mc_lua_dup_table_string (lua, 1, "title");
+    screen->spec.status = mc_lua_dup_table_string (lua, 1, "status");
+    screen->spec.focus = mc_lua_dup_table_string (lua, 1, "focus");
+    lua_getfield (lua, 1, "help");
+    if (lua_istable (lua, -1))
+    {
+        screen->spec.help_file = mc_lua_dup_help_file (lua, -1, package);
+        screen->spec.help_node = mc_lua_dup_table_string (lua, -1, "node");
+    }
+    lua_pop (lua, 1);
+
+    lua_getfield (lua, 1, "layout");
+    ok = mc_lua_screen_parse_layout (lua, lua_gettop (lua), screen);
+    lua_pop (lua, 1);
+    if (!ok || !mc_lua_screen_parse_keys (lua, 1, screen))
+    {
+        mc_lua_screen_release (screen);
+        return mc_lua_return_error (lua, "invalid_screen");
+    }
+
+    lua_pushvalue (lua, 1);
+    screen->spec_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+    screen->id = ++package->runtime->next_screen_id;
+    key = g_new (guint64, 1);
+    *key = screen->id;
+    g_hash_table_insert (package->runtime->screens, key, screen);
+    return 1;
+}
+
+/** @lua screen:run() -> boolean|nil, error? @capability ui @mutation yes @summary Show the
+ * screen and return when it is closed: by F10 or Esc, by the "close" action, by screen:close(),
+ * or by a callback returning { close = true }. */
+static int
+mc_lua_screen_run (lua_State *lua)
+{
+    mc_lua_screen_t *screen = mc_lua_screen_check (lua, 1);
+    mc_lua_package_t *package = screen->package;
+    mc_runtime_screen_descriptor_t descriptor = { 0 };
+    const char *error = NULL;
+    gboolean ok;
+
+    if (!mc_lua_require_active_context (lua, package) || !mc_lua_mutation_is_allowed (lua, package))
+        return 2;
+    if (screen->closed)
+        return mc_lua_return_error (lua, "closed");
+    if (screen->running)
+        return mc_lua_return_error (lua, "already_running");
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_UI, MC_LUA_HOST_API_SCREEN_SIZE)
+        || package->runtime->host->screen_run == NULL)
+        return mc_lua_not_ready (lua);
+
+    descriptor.struct_size = sizeof (descriptor);
+    descriptor.api_version = 1;
+    descriptor.screen_id = screen->id;
+    descriptor.spec = &screen->spec;
+    descriptor.dispatch = mc_lua_screen_dispatch;
+    descriptor.response_free = mc_lua_screen_response_free;
+
+    lua_pushvalue (lua, 1);
+    screen->self_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+    screen->running = TRUE;
+    ok = package->runtime->host->screen_run (package->runtime->context, &descriptor, &error);
+    screen->running = FALSE;
+    luaL_unref (lua, LUA_REGISTRYINDEX, screen->self_ref);
+    screen->self_ref = LUA_NOREF;
+    if (!ok)
+        return mc_lua_return_error (lua, error != NULL ? error : "failed");
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+static int
+mc_lua_screen_send_patch (lua_State *lua, mc_lua_screen_t *screen, const char *control,
+                          mc_runtime_screen_patch_t *patch)
+{
+    mc_lua_package_t *package = screen->package;
+    const char *error = NULL;
+    gboolean ok;
+
+    if (!screen->running)
+        return mc_lua_return_error (lua, "not_running");
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_UI, MC_LUA_HOST_API_SCREEN_SIZE)
+        || package->runtime->host->screen_update == NULL)
+        return mc_lua_not_ready (lua);
+    patch->struct_size = sizeof (*patch);
+    patch->control_id = control;
+    ok = package->runtime->host->screen_update (package->runtime->context, screen->id, patch,
+                                                &error);
+    if (!ok)
+        return mc_lua_return_error (lua, error != NULL ? error : "failed");
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+/** @lua screen:update(control, patch) -> boolean|nil, error? @capability ui @mutation yes
+ * @summary Change a running screen's control: patch.text for a label, status or text cell,
+ * patch.value for an input or checkbox, and for a table patch.rows (a new rows function),
+ * patch.row_count, patch.invalidate (drop the rows fetched so far) and patch.row (the current
+ * row, from 0). */
+static int
+mc_lua_screen_update (lua_State *lua)
+{
+    mc_lua_screen_t *screen = mc_lua_screen_check (lua, 1);
+    mc_runtime_screen_patch_t patch = { 0 };
+    const char *control = luaL_checkstring (lua, 2);
+    int result;
+
+    luaL_checktype (lua, 3, LUA_TTABLE);
+    patch.text = mc_lua_dup_table_string (lua, 3, "text");
+    lua_getfield (lua, 3, "value");
+    if (lua_isboolean (lua, -1))
+        patch.value = g_strdup (lua_toboolean (lua, -1) ? "true" : "false");
+    else if (lua_isstring (lua, -1))
+        patch.value = g_strdup (lua_tostring (lua, -1));
+    lua_pop (lua, 1);
+    lua_getfield (lua, 3, "row_count");
+    if (lua_isinteger (lua, -1))
+    {
+        patch.has_row_count = TRUE;
+        patch.row_count = (gint64) lua_tointeger (lua, -1);
+    }
+    else if (!lua_isnil (lua, -1))
+    {
+        /* any other value: the count is unknown again */
+        patch.has_row_count = TRUE;
+        patch.row_count = -1;
+    }
+    lua_pop (lua, 1);
+    lua_getfield (lua, 3, "row");
+    if (lua_isinteger (lua, -1))
+    {
+        patch.has_row = TRUE;
+        patch.row = (gint64) lua_tointeger (lua, -1);
+    }
+    lua_pop (lua, 1);
+    patch.invalidate = mc_lua_table_boolean (lua, 3, "invalidate", FALSE);
+
+    /* a new rows function: the rows fetched so far are stale */
+    lua_getfield (lua, 3, "rows");
+    if (lua_isfunction (lua, -1))
+    {
+        mc_lua_screen_table_t *table = mc_lua_screen_find_table (screen, control);
+
+        if (table != NULL)
+        {
+            if (table->rows_ref != LUA_NOREF)
+                luaL_unref (lua, LUA_REGISTRYINDEX, table->rows_ref);
+            table->rows_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+            patch.invalidate = TRUE;
+        }
+        else
+            lua_pop (lua, 1);
+    }
+    else
+        lua_pop (lua, 1);
+
+    result = mc_lua_screen_send_patch (lua, screen, control, &patch);
+    g_free ((char *) patch.text);
+    g_free ((char *) patch.value);
+    return result;
+}
+
+/** @lua screen:status(text) -> boolean|nil, error? @capability ui @mutation yes @summary Change
+ * the status line of a running screen. */
+static int
+mc_lua_screen_status (lua_State *lua)
+{
+    mc_lua_screen_t *screen = mc_lua_screen_check (lua, 1);
+    mc_runtime_screen_patch_t patch = { 0 };
+
+    patch.text = luaL_checkstring (lua, 2);
+    return mc_lua_screen_send_patch (lua, screen, "", &patch);
+}
+
+/** @lua screen:close() -> boolean|nil, error? @capability ui @mutation yes @summary Close a
+ * running screen; screen:run() then returns. */
+static int
+mc_lua_screen_close (lua_State *lua)
+{
+    mc_lua_screen_t *screen = mc_lua_screen_check (lua, 1);
+    mc_lua_package_t *package = screen->package;
+    const char *error = NULL;
+
+    if (!screen->running)
+        return mc_lua_return_error (lua, "not_running");
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_UI, MC_LUA_HOST_API_SCREEN_SIZE)
+        || package->runtime->host->screen_close == NULL)
+        return mc_lua_not_ready (lua);
+    if (!package->runtime->host->screen_close (package->runtime->context, screen->id, &error))
+        return mc_lua_return_error (lua, error != NULL ? error : "failed");
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+static int
+mc_lua_screen_index (lua_State *lua)
+{
+    const char *method = luaL_checkstring (lua, 2);
+
+    (void) mc_lua_screen_check (lua, 1);
+    if (strcmp (method, "run") == 0)
+        lua_pushcfunction (lua, mc_lua_screen_run);
+    else if (strcmp (method, "update") == 0 || strcmp (method, "set") == 0)
+        lua_pushcfunction (lua, mc_lua_screen_update);
+    else if (strcmp (method, "status") == 0)
+        lua_pushcfunction (lua, mc_lua_screen_status);
+    else if (strcmp (method, "close") == 0)
+        lua_pushcfunction (lua, mc_lua_screen_close);
+    else
+        lua_pushnil (lua);
+    return 1;
+}
+
 /** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes @summary Show a
  * declarative native modal dialog. */
 static int
@@ -5566,6 +6445,14 @@ mc_lua_install_api (mc_lua_package_t *package)
         lua_setfield (lua, -2, "__gc");
     }
     lua_pop (lua, 1);
+    if (luaL_newmetatable (lua, MC_LUA_SCREEN_MT))
+    {
+        lua_pushcfunction (lua, mc_lua_screen_gc);
+        lua_setfield (lua, -2, "__gc");
+        lua_pushcfunction (lua, mc_lua_screen_index);
+        lua_setfield (lua, -2, "__index");
+    }
+    lua_pop (lua, 1);
 
     lua_pushlightuserdata (lua, package);
     lua_setfield (lua, LUA_REGISTRYINDEX, MC_LUA_REGISTRY_PACKAGE);
@@ -5621,6 +6508,8 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_setfield (lua, -2, "text_width");
     lua_pushcfunction (lua, mc_lua_ui_open_viewer);
     lua_setfield (lua, -2, "open_viewer");
+    lua_pushcfunction (lua, mc_lua_ui_screen);
+    lua_setfield (lua, -2, "screen");
     lua_pushcfunction (lua, mc_lua_ui_open_diff);
     lua_setfield (lua, -2, "open_diff");
     lua_setfield (lua, -2, "ui");
@@ -6090,7 +6979,8 @@ mc_lua_load_disabled_package_ids (mc_lua_runtime_t *runtime)
     if (runtime == NULL || runtime->disabled_package_ids == NULL)
         return;
 
-    path = g_build_filename (g_get_user_config_dir (), "mc", "plugins.ini", (char *) NULL);
+    path =
+        g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
     ini = g_key_file_new ();
     if (!g_key_file_load_from_file (ini, path, G_KEY_FILE_NONE, NULL))
     {
@@ -6128,17 +7018,18 @@ mc_lua_config_enabled (mc_lua_runtime_t *runtime)
     char *user_scripts_dir = NULL;
 
     runtime->user_scripts_dir =
-        g_build_filename (g_get_user_data_dir (), "mc", "lua", "scripts", (char *) NULL);
+        g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua", "scripts", (char *) NULL);
     runtime->user_modules_dir =
-        g_build_filename (g_get_user_data_dir (), "mc", "lua", "lib", (char *) NULL);
-    runtime->legacy_user_scripts_dir =
-        g_build_filename (g_get_user_config_dir (), "mc", "lua", "scripts", (char *) NULL);
-    runtime->legacy_user_modules_dir =
-        g_build_filename (g_get_user_config_dir (), "mc", "lua", "lib", (char *) NULL);
+        g_build_filename (g_get_user_data_dir (), MC_USERCONF_DIR, "lua", "lib", (char *) NULL);
+    /* the directory of the releases before the user directory was renamed */
+    runtime->legacy_user_scripts_dir = g_build_filename (
+        g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "scripts", (char *) NULL);
+    runtime->legacy_user_modules_dir = g_build_filename (
+        g_get_user_config_dir (), MC_USERCONF_LEGACY_DIR, "lua", "lib", (char *) NULL);
     if (g_strcmp0 (g_getenv ("MC_NO_LUA"), "1") == 0)
         return FALSE;
 
-    ini_path = g_build_filename (g_get_user_config_dir (), "mc", "ini", (char *) NULL);
+    ini_path = g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "ini", (char *) NULL);
     ini = g_key_file_new ();
     if (!g_key_file_load_from_file (ini, ini_path, G_KEY_FILE_NONE, &error))
     {
@@ -6511,10 +7402,10 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
     package->callback_depth++;
     if (lua_pcall (lua, 1, 3, 0) != LUA_OK)
     {
+        /* the report takes the error off the stack */
         mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT,
                              "Lua file handler callback failed");
         package->callback_depth--;
-        lua_pop (lua, 1);
         if (error != NULL)
             *error = "script_error";
         return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
@@ -6542,6 +7433,12 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
         if (handled && controller != NULL
             && mc_lua_viewer_controller_transfer (package, controller, -1, target_viewer,
                                                   &transfer_error))
+        {
+            lua_pop (lua, 4);
+            return MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED;
+        }
+        /* No controller: the script did the work itself, say switched a panel. */
+        if (handled && lua_isnil (lua, -1))
         {
             lua_pop (lua, 4);
             return MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED;

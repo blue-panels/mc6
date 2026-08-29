@@ -47,6 +47,7 @@
 #include <libssh2_sftp.h>
 
 #include "lib/global.h"
+#include "lib/fileloc.h"
 #include "lib/tty/key.h"
 #include "lib/plugin-prefs.h"
 #include "lib/keybind.h"
@@ -335,7 +336,8 @@ sftp_connection_copy_from (sftp_connection_t *dst, const sftp_connection_t *src)
 static char *
 get_connections_file_path (void)
 {
-    return g_build_filename (g_get_user_config_dir (), "mc", "sftp-connections.ini", (char *) NULL);
+    return g_build_filename (g_get_user_config_dir (), MC_USERCONF_DIR, "sftp-connections.ini",
+                             (char *) NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

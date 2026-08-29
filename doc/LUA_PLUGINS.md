@@ -45,7 +45,8 @@ during a session.
 ## Script layout
 
 System scripts live in `${datadir}/mc/lua/scripts/`; user scripts live in
-`${XDG_CONFIG_HOME:-~/.config}/mc/lua/scripts/`.  A script belongs to a fixed
+`${XDG_DATA_HOME:-~/.local/share}/mc6/lua/scripts/` (the
+`${XDG_CONFIG_HOME:-~/.config}/mc/lua/scripts/` of earlier releases is still searched).  A script belongs to a fixed
 workspace, determined by the directory immediately below `scripts/`:
 
 ```text
@@ -92,7 +93,7 @@ Each script has its own Lua state.  `require("a.b")` searches the script's
 modules are disabled for these lookups.
 
 The shared directories are `${datadir}/mc/lua/lib/` for system scripts and
-`${XDG_CONFIG_HOME:-~/.config}/mc/lua/lib/` for user scripts.  A system script
+`${XDG_DATA_HOME:-~/.local/share}/mc6/lua/lib/` for user scripts.  A system script
 never searches the user shared directory.
 
 ## API
@@ -280,6 +281,74 @@ mc.ui.indicator {
 -- later:
 mc.ui.indicator_clear("mode")
 ```
+
+### Screens
+
+`mc.ui.screen(spec)` describes a full-screen grid of widgets that a script fills and drives.
+The status line is at the top and the keys make the button bar at the bottom; between them
+`layout`: rows of cells, one control per cell.  A row is `height = n` lines or `weight = n`,
+a share of the lines left; a cell is `width = n` columns or `weight = n`.  `screen:run()`
+shows it and returns when it is closed (F10 or Esc, the `close` action, `screen:close()`, or a
+callback returning `{ close = true }`); it needs an active MC callback, a file handler for
+instance.  Dialogs and viewers opened from a callback nest over the screen.
+
+```lua
+local screen = mc.ui.screen {
+    title  = "sample.dbf",
+    status = "1234 records",
+    help   = { file = "help.hlp", node = "[DBF Viewer]" },
+    layout = {
+        { height = 1, { type = "label", id = "hint", text = "Enter: the card" } },
+        { weight = 3,
+          { weight = 1, id = "grid", type = "table",
+            columns = {
+                { id = "name", title = "NAME", align = "left", min_width = 4, expands = true },
+                { id = "qty",  title = "QTY",  align = "right", min_width = 3 },
+                { id = "sel",  title = "",     type = "check" },
+            },
+            row_count = 1234,     -- nil: unknown, rows are asked for until a short page
+            page_size = 256,      -- rows asked for at a time
+            rows = function(first, count)     -- first from 0; a cell is a string, a number,
+                return read_page(first, count)    -- or { text = ..., color = "red;black" }
+            end } },
+        { weight = 1, { weight = 1, id = "card", type = "text", text = "" } },
+    },
+    keys = {
+        { key = "f2",  label = "Struct", action = "structure" },
+        { key = "f10", label = "Quit",   action = "close" },   -- built in, like "help"
+    },
+    on_row    = function(scr, ev) scr:update("card", { text = card_of(ev.row) }) end,
+    on_enter  = function(scr, ev) ... end,
+    on_action = function(scr, id, ev) ... end,
+    on_key    = function(scr, ev) return ev.key.name == "x" end,  -- true: the key is taken
+    on_check  = function(scr, ev) marks[ev.row] = ev.value end,
+    on_resize = function(scr, columns, lines) end,
+    on_close  = function(scr) end,
+}
+screen:run()
+```
+
+Cell types are `label` and `status` (`text`), `text` (a scrolling, wrapping text area),
+`separator`, `input` (`value`), `checkbox` (`label`, `value`) and `table`; a screen may hold
+any number of tables, each with its own `rows()`.  A column is `text` or `check`; check cells
+read `1`, `x`, `true` or `yes` as checked.  A table keeps the pages it fetched recently and
+asks `rows()` again for the others; Left and Right scroll its columns when they do not fit,
+Tab moves between the cells.  Every callback gets `ev.control` (the cell the user is on) and,
+for a table, `ev.row` (from 0), `ev.column` (the column id) and `ev.column_index`; `on_key`
+also gets `ev.key.name` and `ev.key.code`.  The keys of `keys` are taken before any widget
+sees them; only F1 through F10 have a button.
+
+While the screen runs, `screen:status(text)` changes the status line and
+`screen:update(control, patch)` a cell: `patch.text` for a label, status or text cell,
+`patch.value` for an input or checkbox, and for a table `patch.rows` (a new rows function),
+`patch.row_count`, `patch.invalidate` (drop the rows fetched so far) and `patch.row` (the
+current row).
+
+A file handler registered with `mc.file_handler.register { id, kind, handler }` answers a
+`magic.ini` rule `%plugin{lua(<script-id>):<id>}`.  The handler returns `{ handled = true,
+controller = ... }` to show a viewer source, `{ handled = true }` alone when it did the work
+itself (for instance `panel:chdir()` to a panel provider of its own), or `nil, "not_supported"`
+to leave the file to MC's usual handling.
 
 A viewer-source definition may provide `source_state(session, event)`.  Process sources report
 `started`, then exactly one of `finished`, `failed`, or `cancelled`.  The event also contains

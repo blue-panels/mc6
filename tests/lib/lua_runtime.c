@@ -4,6 +4,9 @@
    Copyright (C) 2026
    Free Software Foundation, Inc.
 
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026.
+
    This file is part of the Midnight Commander.
 
    The Midnight Commander is free software: you can redistribute it
@@ -31,6 +34,7 @@
 #include <glib/gstdio.h>
 
 #include "lib/event.h"
+#include "lib/fileloc.h"
 #include "lib/extension-runtime.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
@@ -185,8 +189,9 @@ create_panel_provider_script (void)
         " return nil,'Not a repository' end; return {path=path, revision=1} end,\n"
         " close=function(instance) assert(delete_called); instance.closed=true end,\n"
         " list=function(instance) return {revision=instance.revision, location=instance.path,"
-        " title='Lua panel', help_node='view', entries={{id='dir:one',name='one',"
-        "kind='directory',help_node='entry'}}} end,\n"
+        " title='Lua panel', help_node='view', columns={{id='c1',title='C'}},"
+        " entries={{id='dir:one',name='one',"
+        "kind='directory',help_node='entry',columns={c1='v1'}}}} end,\n"
         " actions={{id='refresh',title='Refresh',targets='selection',"
         " menu={path='Command',label='Refresh Lua panel'}}},\n"
         " connections=function()return {{id='saved',title='Saved connection',"
@@ -214,6 +219,105 @@ create_panel_provider_script (void)
     g_free (entry_path);
     g_free (ini_path);
     g_free (root);
+}
+
+static guint screen_run_count = 0;
+
+/* A screen host that pulls two pages, presses a key, runs an action, and closes. */
+static gboolean
+test_screen_run (mc_runtime_plugin_context_t *context,
+                 const mc_runtime_screen_descriptor_t *descriptor, const char **screen_error)
+{
+    mc_runtime_screen_request_t request = { .struct_size = sizeof (request) };
+    mc_runtime_screen_response_t response;
+    const mc_runtime_screen_table_t *table = NULL;
+    guint i;
+
+    (void) screen_error;
+    ck_assert_uint_ge (descriptor->struct_size, sizeof (*descriptor));
+    ck_assert_str_eq (descriptor->spec->title, "Screen test");
+    ck_assert_str_eq (descriptor->spec->help_node, "[Test]");
+    ck_assert_str_eq (descriptor->spec->status, "ready");
+    ck_assert_uint_eq (descriptor->spec->rows_count, 2);
+    ck_assert_uint_eq (descriptor->spec->rows[0].height, 1);
+    ck_assert_uint_eq (descriptor->spec->rows[0].cells_count, 1);
+    ck_assert_int_eq (descriptor->spec->rows[0].cells[0].control->type, MC_RUNTIME_DIALOG_LABEL);
+    ck_assert_uint_eq (descriptor->spec->rows[1].weight, 1);
+    ck_assert_uint_eq (descriptor->spec->rows[1].cells_count, 2);
+    ck_assert_int_eq (descriptor->spec->rows[1].cells[0].control->type, MC_RUNTIME_DIALOG_TABLE);
+    ck_assert_uint_eq (descriptor->spec->rows[1].cells[0].weight, 2);
+    ck_assert_int_eq (descriptor->spec->rows[1].cells[1].control->type, MC_RUNTIME_DIALOG_TEXT);
+    ck_assert_uint_eq (descriptor->spec->rows[1].cells[1].width, 20);
+    ck_assert_str_eq (descriptor->spec->rows[1].cells[1].control->text, "card");
+    ck_assert_uint_eq (descriptor->spec->keys_count, 2);
+    ck_assert_str_eq (descriptor->spec->keys[0].key, "f2");
+    ck_assert_str_eq (descriptor->spec->keys[0].action, "hello");
+    table = descriptor->spec->rows[1].cells[0].control->table;
+    ck_assert_ptr_nonnull (table);
+    ck_assert_uint_eq (table->columns_count, 2);
+    ck_assert_str_eq (table->columns[1].id, "n");
+    ck_assert_int_eq (table->columns[1].align, MC_RUNTIME_PANEL_ALIGN_RIGHT);
+    ck_assert_int_eq (table->row_count, 5);
+
+    /* rows 0..2: the cells, a colored one among them */
+    request.control_id = descriptor->spec->rows[1].cells[0].control->id;
+    request.first = 0;
+    request.count = 3;
+    memset (&response, 0, sizeof (response));
+    response.struct_size = sizeof (response);
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_ROWS,
+                                     &request, &response, NULL));
+    ck_assert_uint_eq (response.rows_count, 3);
+    ck_assert_uint_eq (response.columns_count, 2);
+    ck_assert_str_eq (response.cells[0].text, "row 0");
+    ck_assert_str_eq (response.cells[1].text, "0");
+    ck_assert_str_eq (response.cells[4].text, "row 2");
+    ck_assert_str_eq (response.cells[5].color, "red");
+    descriptor->response_free (context, &response);
+
+    /* the last page comes back short */
+    request.first = 3;
+    request.count = 3;
+    memset (&response, 0, sizeof (response));
+    response.struct_size = sizeof (response);
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_ROWS,
+                                     &request, &response, NULL));
+    ck_assert_uint_eq (response.rows_count, 2);
+    descriptor->response_free (context, &response);
+
+    /* a key the script takes, one it does not */
+    request.control_id = descriptor->spec->rows[1].cells[0].control->id;
+    request.row = 1;
+    request.column = 0;
+    request.key = 'x';
+    request.key_name = "x";
+    memset (&response, 0, sizeof (response));
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_KEY,
+                                     &request, &response, NULL));
+    ck_assert (response.handled);
+    request.key = 'y';
+    request.key_name = "y";
+    memset (&response, 0, sizeof (response));
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_KEY,
+                                     &request, &response, NULL));
+    ck_assert (!response.handled);
+
+    /* Enter on row 4, then the action that asks to close */
+    request.row = 4;
+    memset (&response, 0, sizeof (response));
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_ENTER,
+                                     &request, &response, NULL));
+    request.action = "hello";
+    memset (&response, 0, sizeof (response));
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_ACTION,
+                                     &request, &response, NULL));
+    ck_assert (response.close);
+    memset (&response, 0, sizeof (response));
+    ck_assert (descriptor->dispatch (context, descriptor->screen_id, MC_RUNTIME_SCREEN_CLOSE,
+                                     &request, &response, NULL));
+    for (i = 0; i < 1; i++)
+        screen_run_count++;
+    return TRUE;
 }
 
 static gboolean
@@ -427,6 +531,9 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         return TRUE;
     }
     ck_assert_int_eq (controller->initial_spec->source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
+    ck_assert_uint_eq (controller->initial_spec->source->bytes_length, 3);
+    ck_assert_ptr_nonnull (controller->initial_spec->source->bytes);
+    ck_assert_int_eq (memcmp (controller->initial_spec->source->bytes, "one", 3), 0);
     ck_assert_str_eq (controller->initial_spec->title, "revision 1");
     ck_assert_str_eq (controller->help_node, "controller-help");
     viewer_controller_open_count++;
@@ -526,6 +633,8 @@ create_file_handler_script (void)
                 "title='revision '..p.revision}end,"
                 "options=function(session,p)return {text='two',revision=2}end,"
                 "close=function(session)session.closed=true end})\n"
+                "assert(mc.file_handler.register {id='switched',kind='view',"
+                "handler=function(r) return {handled=true} end})\n"
                 "assert(mc.file_handler.register {id='controlled',kind='view',"
                 "handler=function(r) return {handled=true,controller=assert(d:create("
                 "{name='demo'},{text='one',revision=1}))} end})\n");
@@ -1863,6 +1972,7 @@ setup (void)
         .panel_provider_register = test_panel_provider_register,
         .panel_provider_unregister = test_panel_provider_unregister,
         .viewer_controller_open = test_viewer_controller_open,
+        .screen_run = test_screen_run,
     };
 
     error = NULL;
@@ -1913,8 +2023,9 @@ setup (void)
     viewer_controller_close_count = 0;
     memset (&viewer_controller_target, 0, sizeof (viewer_controller_target));
     {
-        char *prefs_path = g_build_filename (config_dir, "mc", "plugins.ini", (char *) NULL);
-        char *ini_path = g_build_filename (config_dir, "mc", "ini", (char *) NULL);
+        char *prefs_path =
+            g_build_filename (config_dir, MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
+        char *ini_path = g_build_filename (config_dir, MC_USERCONF_DIR, "ini", (char *) NULL);
 
         (void) g_remove (prefs_path);
         (void) g_remove (ini_path);
@@ -2086,6 +2197,11 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
     ck_assert_uint_eq (response.view.revision, 1);
     ck_assert_uint_eq (response.view.entries_count, 1);
     ck_assert_str_eq (response.view.entries[0].id, "dir:one");
+    ck_assert_uint_eq (response.view.columns_count, 1);
+    ck_assert_str_eq (response.view.columns[0].id, "c1");
+    ck_assert_uint_eq (response.view.entries[0].columns_count, 1);
+    ck_assert_str_eq (response.view.entries[0].columns[0].id, "c1");
+    ck_assert_str_eq (response.view.entries[0].columns[0].value, "v1");
     registered_panel_provider.response_free (NULL, &response);
 
     request.entry_id = "dir:one";
@@ -2187,6 +2303,85 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
 }
 END_TEST
 
+static void
+create_screen_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "screen", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    write_file (ini_path,
+                "[Lua]\nid=screen\napi_version=1\nname=Screen\nentry=init.lua\n"
+                "provides=file-handler\n");
+    write_file (
+        entry_path,
+        "seen = {}\n"
+        "local function show()\n"
+        "local s = assert(mc.ui.screen {\n"
+        " title = 'Screen test', status = 'ready', help = { node = '[Test]' },\n"
+        " layout = {\n"
+        "  { height = 1, { type = 'label', text = 'head' } },\n"
+        "  { weight = 1,\n"
+        "    { weight = 2, id = 'grid', type = 'table', row_count = 5,\n"
+        "      columns = { { id = 'name', title = 'Name', expands = true },\n"
+        "                  { id = 'n', title = 'N', align = 'right' } },\n"
+        "      rows = function(first, count)\n"
+        "        local rows = {}\n"
+        "        for r = first, math.min(first + count, 5) - 1 do\n"
+        "          rows[#rows + 1] = { 'row ' .. r, r == 2 and { text = tostring(r), color = 'red' "
+        "} "
+        "or r }\n"
+        "        end\n"
+        "        return rows\n"
+        "      end },\n"
+        "    { width = 20, id = 'card', type = 'text', text = 'card' } },\n"
+        " },\n"
+        " keys = { { key = 'f2', label = 'Hello', action = 'hello' },\n"
+        "          { key = 'f10', label = 'Quit', action = 'close' } },\n"
+        " on_key = function(scr, ev) seen.key = (seen.key or '') .. ev.key.name;"
+        " seen.row = ev.row; seen.control = ev.control; return ev.key.name == 'x' end,\n"
+        " on_enter = function(scr, ev) seen.enter = ev.row end,\n"
+        " on_action = function(scr, id, ev) seen.action = id; return { close = true } end,\n"
+        " on_close = function(scr) seen.closed = true end,\n"
+        "})\n"
+        "assert(s:run())\n"
+        "assert(seen.key == 'xy' and seen.row == 1 and seen.control == 'grid', 'key event')\n"
+        "assert(seen.enter == 4, 'enter event')\n"
+        "assert(seen.action == 'hello', 'action event')\n"
+        "assert(seen.closed, 'close event')\n"
+        "end\n"
+        "assert(mc.file_handler.register { id = 'view', kind = 'view',\n"
+        " handler = function(r) show(); return { handled = true } end })\n");
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (root);
+}
+
+START_TEST (test_lua_runtime_screen)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .display_name = "table.dbf",
+        .local_path = "/tmp/table.dbf",
+    };
+    const char *handler_error = NULL;
+
+    create_screen_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "screen", "view", &request,
+                                                                &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
+    ck_assert_msg (runtime_error_count == 0, "screen script failed: %s / %s",
+                   runtime_error_summary != NULL ? runtime_error_summary : "",
+                   runtime_error_details != NULL ? runtime_error_details : "");
+    ck_assert_uint_eq (screen_run_count, 1);
+}
+END_TEST
+
 START_TEST (test_lua_runtime_viewer_source_controller)
 {
     create_viewer_controller_script ();
@@ -2217,6 +2412,11 @@ START_TEST (test_lua_runtime_file_handler_registration_and_dispatch)
                                                                 &request, &handler_error),
                       MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED);
     ck_assert_str_eq (handler_error, "not_supported");
+
+    /* handled without a controller: the script did the work itself */
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "file-handler", "switched",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
 
     request.target_viewer.kind = MC_RUNTIME_HANDLE_VIEWER;
     request.target_viewer.id = 41;
@@ -2615,7 +2815,7 @@ START_TEST (test_lua_runtime_honors_per_package_disable)
     char *prefs_path;
     char *contents = NULL;
 
-    prefs_path = g_build_filename (config_dir, "mc", "plugins.ini", (char *) NULL);
+    prefs_path = g_build_filename (config_dir, MC_USERCONF_DIR, "plugins.ini", (char *) NULL);
     write_file (prefs_path, "[DisabledPlugins]\nlua/beta=true\n");
     g_free (prefs_path);
 
@@ -2714,8 +2914,10 @@ main (void)
     config_dir = g_build_filename (test_root, "config", (char *) NULL);
     system_scripts_dir = g_build_filename (test_root, "system-scripts", (char *) NULL);
     data_dir = g_build_filename (test_root, "data", (char *) NULL);
-    user_scripts_dir = g_build_filename (data_dir, "mc", "lua", "scripts", (char *) NULL);
-    legacy_user_scripts_dir = g_build_filename (config_dir, "mc", "lua", "scripts", (char *) NULL);
+    user_scripts_dir =
+        g_build_filename (data_dir, MC_USERCONF_DIR, "lua", "scripts", (char *) NULL);
+    legacy_user_scripts_dir =
+        g_build_filename (config_dir, MC_USERCONF_LEGACY_DIR, "lua", "scripts", (char *) NULL);
     system_mc_scripts_dir = g_build_filename (system_scripts_dir, "mc", (char *) NULL);
     user_mc_scripts_dir = g_build_filename (user_scripts_dir, "mc", (char *) NULL);
     system_editor_scripts_dir = g_build_filename (system_scripts_dir, "editor", (char *) NULL);
@@ -2723,7 +2925,7 @@ main (void)
     output_path = g_build_filename (test_root, "events.log", (char *) NULL);
     (void) g_mkdir_with_parents (config_dir, 0700);
     {
-        char *mc_config_dir = g_build_filename (config_dir, "mc", (char *) NULL);
+        char *mc_config_dir = g_build_filename (config_dir, MC_USERCONF_DIR, (char *) NULL);
 
         (void) g_mkdir_with_parents (mc_config_dir, 0700);
         g_free (mc_config_dir);
@@ -2749,6 +2951,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_panel_provider_dispatch);
     tcase_add_test (tc_core, test_lua_runtime_panel_provider_open_error);
     tcase_add_test (tc_core, test_lua_runtime_viewer_source_controller);
+    tcase_add_test (tc_core, test_lua_runtime_screen);
     tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
     tcase_add_test (tc_core, test_lua_java_class_handler_uses_pty_process);
     tcase_add_test (tc_core, test_lua_readelf_handler_uses_direct_argv);

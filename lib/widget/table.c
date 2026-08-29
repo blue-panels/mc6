@@ -35,6 +35,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/key.h" /* KEY_M_CTRL */
 #include "lib/skin.h"
 #include "lib/strutil.h"
 #include "lib/widget.h"
@@ -65,16 +66,131 @@ table_get_nrows (const WTable *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static int
+table_col_width (const WTable *t, int c)
+{
+    return t->widths != NULL ? t->widths[c] : t->col_defs[c].width;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The line a data row is drawn on: below the header when there is one. */
+static int
+table_row_y (const WTable *t, int i)
+{
+    return i + (t->titles != NULL ? 1 : 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The first column that shows every column after it whole; scrolling further
+   would only leave the right side empty. */
+static int
+table_max_first_col (const WTable *t)
+{
+    int cols = CONST_WIDGET (t)->rect.cols - 1;
+    int used = 0;
+    int c;
+
+    for (c = t->ncols - 1; c >= 0; c--)
+    {
+        used += table_col_width (t, c) + (c < t->ncols - 1 ? 1 : 0);
+        if (used > cols)
+            return MIN (c + 1, t->ncols - 1);
+    }
+    return 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* One line of cells from first_col, clipped at the right edge. */
+static void
+table_draw_cells (WTable *t, int y, int row_idx, int nrows, int row_color, gboolean focused,
+                  gboolean disabled)
+{
+    const WRect *w = &CONST_WIDGET (t)->rect;
+    /* the scrollbar has the last column of cells */
+    int right = w->cols - ((t->scrollbar || t->scrollbar_on_frame) ? 1 : 0);
+    int col_x = 1;
+    int c;
+
+    for (c = t->first_col; c < t->ncols && col_x < right; c++)
+    {
+        int width = table_col_width (t, c);
+        int room = right - col_x;
+        int cell_color = row_color;
+
+        if (width > room)
+            width = room;
+        if (row_idx >= 0 && row_idx != t->current && t->cell_color != NULL)
+        {
+            int color = t->cell_color (t->datasource.data, row_idx, c);
+
+            if (color >= 0)
+                cell_color = color;
+        }
+        tty_setcolor (cell_color);
+        widget_gotoyx (t, y, col_x);
+
+        if (row_idx < 0)
+            tty_print_string (str_fit_to_term (t->titles[c] != NULL ? t->titles[c] : "", width,
+                                               t->col_defs[c].align));
+        else if (t->col_defs[c].type == TABLE_COL_CHECK && row_idx < nrows
+                 && t->datasource.get_checked != NULL)
+        {
+            gboolean checked = t->datasource.get_checked (t->datasource.data, row_idx, c);
+
+            tty_print_string (str_fit_to_term (checked ? "[x]" : "[ ]", width, J_LEFT));
+        }
+        else
+        {
+            const char *cell_text = "";
+            int text_width = width;
+
+            if (row_idx < nrows && t->datasource.get_text != NULL)
+                cell_text = t->datasource.get_text (t->datasource.data, row_idx, c);
+
+            /* mark the cell space acts on; a character, not a color: the current
+               cell and the current row may share it */
+            if (t->col_defs[c].type == TABLE_COL_CHOICE)
+            {
+                gboolean is_current = (focused && !disabled && row_idx == t->current
+                                       && c == t->current_col && row_idx < nrows);
+
+                tty_print_char (is_current ? '>' : ' ');
+                text_width--;
+            }
+
+            tty_print_string (str_fit_to_term (cell_text, text_width, t->col_defs[c].align));
+        }
+
+        col_x += width;
+
+        /* draw column separator except after last column */
+        if (c < t->ncols - 1 && col_x < right)
+        {
+            tty_setcolor (row_color);
+            widget_gotoyx (t, y, col_x);
+            tty_print_one_vline (TRUE);
+            col_x++;
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 table_drawscroll (const WTable *t, int nrows)
 {
     const WRect *w = &CONST_WIDGET (t)->rect;
+    int first = table_row_y (t, 0);
+    int lines = table_data_lines (t);
     int max_line = w->lines - 1;
-    int line = 0;
+    int line = first;
     int i;
 
     /* top arrow */
-    widget_gotoyx (t, 0, w->cols - 1);
+    widget_gotoyx (t, first, w->cols - 1);
     if (t->top == 0)
         tty_print_one_vline (TRUE);
     else
@@ -82,16 +198,16 @@ table_drawscroll (const WTable *t, int nrows)
 
     /* bottom arrow */
     widget_gotoyx (t, max_line, w->cols - 1);
-    if (t->top + w->lines >= nrows || w->lines >= nrows)
+    if (t->top + lines >= nrows || lines >= nrows)
         tty_print_one_vline (TRUE);
     else
         tty_print_char ('v');
 
     /* thumb position */
-    if (nrows != 0)
-        line = 1 + ((t->current * (w->lines - 2)) / nrows);
+    if (nrows != 0 && lines > 2)
+        line = first + 1 + ((t->current * (lines - 2)) / nrows);
 
-    for (i = 1; i < max_line; i++)
+    for (i = first + 1; i < max_line; i++)
     {
         widget_gotoyx (t, i, w->cols - 1);
         if (i != line)
@@ -126,11 +242,12 @@ table_draw (WTable *t, gboolean focused)
     const int *colors;
     gboolean disabled;
     int normalc, selc, scrollbarc;
-    int nrows;
+    int nrows, lines;
     int i;
     int sel_line = -1;
 
     nrows = table_get_nrows (t);
+    lines = table_data_lines (t);
     colors = widget_get_colors (wt);
 
     disabled = widget_get_state (wt, WST_DISABLED);
@@ -142,16 +259,28 @@ table_draw (WTable *t, gboolean focused)
                     : colors[focused ? DLG_COLOR_SELECTED_FOCUS : DLG_COLOR_SELECTED_NORMAL];
     scrollbarc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_FRAME];
 
-    for (i = 0; i < w->lines; i++)
+    if (t->prefetch != NULL && nrows > 0 && t->top < nrows)
+        t->prefetch (t->datasource.data, t->top, MIN (lines, nrows - t->top));
+
+    if (t->titles != NULL)
+    {
+        int headc = disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_TITLE];
+
+        tty_setcolor (headc);
+        widget_gotoyx (t, 0, 0);
+        tty_print_string (str_fit_to_term ("", w->cols, J_LEFT));
+        table_draw_cells (t, 0, -1, nrows, headc, focused, disabled);
+    }
+
+    for (i = 0; i < lines; i++)
     {
         int row_idx = t->top + i;
+        int y = table_row_y (t, i);
         int row_color;
-        int col_x = 1;
-        int c;
 
         if (row_idx == t->current && sel_line == -1)
         {
-            sel_line = i;
+            sel_line = y;
             row_color = selc;
         }
         else
@@ -160,61 +289,15 @@ table_draw (WTable *t, gboolean focused)
         tty_setcolor (row_color);
 
         /* clear the line first */
-        widget_gotoyx (t, i, 0);
+        widget_gotoyx (t, y, 0);
         tty_print_string (str_fit_to_term ("", w->cols, J_LEFT));
 
-        for (c = 0; c < t->ncols; c++)
-        {
-            int cell_color = row_color;
-
-            tty_setcolor (cell_color);
-            widget_gotoyx (t, i, col_x);
-
-            if (t->col_defs[c].type == TABLE_COL_CHECK && row_idx < nrows
-                && t->datasource.get_checked != NULL)
-            {
-                gboolean checked = t->datasource.get_checked (t->datasource.data, row_idx, c);
-
-                tty_print_string (checked ? "[x]" : "[ ]");
-            }
-            else
-            {
-                const char *cell_text = "";
-                int text_width = t->col_defs[c].width;
-
-                if (row_idx < nrows && t->datasource.get_text != NULL)
-                    cell_text = t->datasource.get_text (t->datasource.data, row_idx, c);
-
-                /* mark the cell space acts on; a character, not a color: the current
-                   cell and the current row may share it */
-                if (t->col_defs[c].type == TABLE_COL_CHOICE)
-                {
-                    gboolean is_current = (focused && !disabled && row_idx == t->current
-                                           && c == t->current_col && row_idx < nrows);
-
-                    tty_print_char (is_current ? '>' : ' ');
-                    text_width--;
-                }
-
-                tty_print_string (str_fit_to_term (cell_text, text_width, t->col_defs[c].align));
-            }
-
-            col_x += t->col_defs[c].width;
-
-            /* draw column separator except after last column */
-            if (c < t->ncols - 1)
-            {
-                tty_setcolor (row_color);
-                widget_gotoyx (t, i, col_x);
-                tty_print_one_vline (TRUE);
-                col_x++;
-            }
-        }
+        table_draw_cells (t, y, row_idx, nrows, row_color, focused, disabled);
     }
 
     t->cursor_y = sel_line;
 
-    if (t->scrollbar && nrows > w->lines)
+    if (t->scrollbar && nrows > lines)
     {
         tty_setcolor (scrollbarc);
         table_drawscroll (t, nrows);
@@ -269,7 +352,7 @@ static cb_ret_t
 table_execute_cmd (WTable *t, long command)
 {
     cb_ret_t ret = MSG_HANDLED;
-    const WRect *w = &CONST_WIDGET (t)->rect;
+    int lines = table_data_lines (t);
     int nrows = table_get_nrows (t);
 
     if (nrows == 0)
@@ -290,10 +373,10 @@ table_execute_cmd (WTable *t, long command)
         table_set_current (t, nrows - 1);
         break;
     case CK_PageUp:
-        table_set_current (t, MAX (t->current - (w->lines - 1), 0));
+        table_set_current (t, MAX (t->current - (lines - 1), 0));
         break;
     case CK_PageDown:
-        table_set_current (t, MIN (t->current + (w->lines - 1), nrows - 1));
+        table_set_current (t, MIN (t->current + (lines - 1), nrows - 1));
         break;
     case CK_Enter:
         ret = send_message (WIDGET (t)->owner, t, MSG_NOTIFY, command, NULL);
@@ -310,8 +393,32 @@ table_execute_cmd (WTable *t, long command)
 static cb_ret_t
 table_key (WTable *t, int key)
 {
-    const WRect *w = &CONST_WIDGET (t)->rect;
+    int lines = table_data_lines (t);
     int nrows = table_get_nrows (t);
+
+    /* the columns scroll even over an empty table */
+    if (t->scroll_columns && !t->has_choice_cols)
+    {
+        int page = MAX (t->ncols / 2, 1);
+
+        switch (key)
+        {
+        case KEY_LEFT:
+            table_scroll_columns (t, -1);
+            return MSG_HANDLED;
+        case KEY_RIGHT:
+            table_scroll_columns (t, 1);
+            return MSG_HANDLED;
+        case KEY_M_CTRL | KEY_LEFT:
+            table_scroll_columns (t, -page);
+            return MSG_HANDLED;
+        case KEY_M_CTRL | KEY_RIGHT:
+            table_scroll_columns (t, page);
+            return MSG_HANDLED;
+        default:
+            break;
+        }
+    }
 
     if (nrows == 0)
         return MSG_NOT_HANDLED;
@@ -331,10 +438,10 @@ table_key (WTable *t, int key)
         table_set_current (t, nrows - 1);
         return MSG_HANDLED;
     case KEY_PPAGE:
-        table_set_current (t, MAX (t->current - (w->lines - 1), 0));
+        table_set_current (t, MAX (t->current - (lines - 1), 0));
         return MSG_HANDLED;
     case KEY_NPAGE:
-        table_set_current (t, MIN (t->current + (w->lines - 1), nrows - 1));
+        table_set_current (t, MIN (t->current + (lines - 1), nrows - 1));
         return MSG_HANDLED;
     case '\n':
     case KEY_ENTER:
@@ -415,6 +522,14 @@ table_destroy (WTable *t)
 {
     g_free (t->col_defs);
     t->col_defs = NULL;
+    g_strfreev (t->titles);
+    t->titles = NULL;
+    g_free (t->min_widths);
+    t->min_widths = NULL;
+    g_free (t->expands);
+    t->expands = NULL;
+    g_free (t->widths);
+    t->widths = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -460,6 +575,15 @@ table_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
         table_destroy (t);
         return MSG_HANDLED;
 
+    case MSG_RESIZE:
+    {
+        cb_ret_t ret = widget_default_callback (w, sender, msg, parm, data);
+
+        table_layout (t);
+        table_set_current (t, t->current);
+        return ret;
+    }
+
     default:
         return widget_default_callback (w, sender, msg, parm, data);
     }
@@ -480,8 +604,8 @@ table_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     {
     case MSG_MOUSE_DOWN:
         widget_select (w);
-        if (nrows > 0)
-            table_set_current (t, MIN (t->top + event->y, nrows - 1));
+        if (nrows > 0 && event->y >= table_row_y (t, 0))
+            table_set_current (t, MIN (t->top + event->y - table_row_y (t, 0), nrows - 1));
         break;
 
     case MSG_MOUSE_SCROLL_UP:
@@ -500,7 +624,7 @@ table_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     case MSG_MOUSE_DRAG:
         event->result.repeat = TRUE;
         if (nrows > 0)
-            table_set_current (t, MIN (t->top + event->y, nrows - 1));
+            table_set_current (t, MIN (t->top + MAX (event->y - table_row_y (t, 0), 0), nrows - 1));
         break;
 
     default:
@@ -611,7 +735,7 @@ table_set_current (WTable *t, int pos)
 
     t->current = pos;
 
-    lines = WIDGET (t)->rect.lines;
+    lines = table_data_lines (t);
     max_top = MAX (nrows - lines, 0);
 
     /* adjust top so current is visible */
@@ -622,6 +746,153 @@ table_set_current (WTable *t, int pos)
 
     if (t->top > max_top)
         t->top = max_top;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+table_data_lines (const WTable *t)
+{
+    int lines = CONST_WIDGET (t)->rect.lines - (t->titles != NULL ? 1 : 0);
+
+    return MAX (lines, 1);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_set_header (WTable *t, const char *const *titles)
+{
+    g_strfreev (t->titles);
+    t->titles = NULL;
+    if (titles != NULL)
+    {
+        int c;
+
+        t->titles = g_new0 (char *, t->ncols + 1);
+        for (c = 0; c < t->ncols; c++)
+            t->titles[c] = g_strdup (titles[c] != NULL ? titles[c] : "");
+    }
+    table_layout (t);
+    table_set_current (t, t->current);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_set_column_sizing (WTable *t, int col, int min_width, gboolean expands)
+{
+    if (col < 0 || col >= t->ncols)
+        return;
+    if (t->min_widths == NULL)
+    {
+        t->min_widths = g_new0 (int, t->ncols);
+        t->expands = g_new0 (gboolean, t->ncols);
+    }
+    t->min_widths[col] = MAX (min_width, 1);
+    t->expands[col] = expands;
+    table_layout (t);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_set_scroll_columns (WTable *t, gboolean enable)
+{
+    t->scroll_columns = enable;
+    if (!enable)
+        t->first_col = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_set_prefetch (WTable *t, void (*prefetch) (void *data, int first, int count))
+{
+    t->prefetch = prefetch;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_set_cell_color (WTable *t, int (*cell_color) (void *data, int row, int col))
+{
+    t->cell_color = cell_color;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Fixed columns keep their col_defs width.  A column sized here starts at its
+   floor (or its title, whichever is wider); when everything fits, the columns
+   that expand share the spare width.  When it does not, the columns scroll. */
+void
+table_layout (WTable *t)
+{
+    int cols = CONST_WIDGET (t)->rect.cols - 1;
+    int total = 0, spare, nexpand = 0;
+    int c;
+
+    if (t->min_widths == NULL)
+    {
+        g_free (t->widths);
+        t->widths = NULL;
+    }
+    else
+    {
+        if (t->widths == NULL)
+            t->widths = g_new0 (int, t->ncols);
+        for (c = 0; c < t->ncols; c++)
+        {
+            int width = t->col_defs[c].width;
+
+            if (width <= 0)
+            {
+                width = t->min_widths[c];
+                if (t->titles != NULL && t->titles[c] != NULL)
+                    width = MAX (width, str_term_width1 (t->titles[c]));
+                if (t->col_defs[c].type == TABLE_COL_CHECK)
+                    width = MAX (width, 3);
+            }
+            t->widths[c] = MAX (width, 1);
+            total += t->widths[c] + (c < t->ncols - 1 ? 1 : 0);
+            if (t->expands[c] && t->col_defs[c].width <= 0)
+                nexpand++;
+        }
+        spare = cols - total;
+        if (spare > 0 && nexpand > 0)
+            for (c = 0; c < t->ncols; c++)
+                if (t->expands[c] && t->col_defs[c].width <= 0)
+                {
+                    int share = spare / nexpand;
+
+                    t->widths[c] += share;
+                    spare -= share;
+                    nexpand--;
+                }
+    }
+
+    if (t->first_col > table_max_first_col (t))
+        t->first_col = table_max_first_col (t);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+table_get_first_column (const WTable *t)
+{
+    return t->first_col;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+table_scroll_columns (WTable *t, int delta)
+{
+    int max_first = table_max_first_col (t);
+
+    t->first_col = CLAMP (t->first_col + delta, 0, max_first);
 }
 
 /* --------------------------------------------------------------------------------------------- */
