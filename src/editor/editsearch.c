@@ -562,7 +562,10 @@ edit_search (WEdit *edit)
     if (!search_apply_filter)
         edit_do_search (edit);
     else if (edit_filter_apply (edit, edit->search))
+    {
         edit->search_start = edit->buffer.curs1;
+        edit->found_len = 0;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

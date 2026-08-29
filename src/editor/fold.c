@@ -34,7 +34,7 @@
 
 #include "lib/global.h"
 #include "lib/search.h"
-#include "lib/widget.h"  // message()
+#include "lib/widget.h"  // message(), status_msg
 
 #include "edit-impl.h"
 #include "editwidget.h"
@@ -50,6 +50,14 @@
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope type declarations ****************************************************************/
+
+typedef struct
+{
+    WEdit *edit;
+    off_t bol;
+    off_t eol;
+} edit_filter_search_data_t;
+
 /* --------------------------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------------------------- */
@@ -62,6 +70,19 @@
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
+
+static mc_search_cbret_t
+edit_filter_search_callback (const void *user_data, off_t char_offset, int *current_char)
+{
+    const edit_filter_search_data_t *data = (const edit_filter_search_data_t *) user_data;
+
+    if (char_offset < 0 || char_offset >= data->eol - data->bol)
+        return MC_SEARCH_CB_NOTFOUND;
+
+    *current_char = edit_buffer_get_byte (&data->edit->buffer, data->bol + char_offset);
+    return MC_SEARCH_CB_OK;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------------------------- */
@@ -448,18 +469,33 @@ edit_fold_toggle (WEdit *edit)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static int
+edit_filter_status_update_cb (status_msg_t *sm)
+{
+    simple_status_msg_t *ssm = SIMPLE_STATUS_MSG (sm);
+    edit_search_status_msg_t *esm = (edit_search_status_msg_t *) sm;
+
+    label_set_textv (ssm->label, _ ("Filtering %s: %3d%%"), esm->edit->last_search_string,
+                     edit_buffer_calc_percent (&esm->edit->buffer, esm->offset));
+
+    return status_msg_common_update (sm);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /**
  * Hide every line that does not match the search.  The set of hidden lines is fixed at
  * this moment: later edits only shift the hidden runs around, they never re-match.
  *
  * @param edit editor object
  * @param search prepared search object; ownership stays with the caller
- * @return TRUE if the filter was applied, FALSE if nothing matched or the search failed
+ * @return TRUE if the filter was applied, FALSE if nothing matched, the search failed
+ *         or the user cancelled
  */
 gboolean
 edit_filter_apply (WEdit *edit, mc_search_t *search)
 {
-    GString *text;
+    edit_filter_search_data_t data;
     off_t bol = 0;
     long line;
     long run_start = -1;  // first line of the hidden run being collected, -1 if none
@@ -468,36 +504,51 @@ edit_filter_apply (WEdit *edit, mc_search_t *search)
     GSList *runs = NULL, *r;
     mc_search_fn saved_search_fn;
     mc_update_fn saved_update_fn;
+    edit_search_status_msg_t esm;
+    gboolean ok = TRUE;
+    char *error_str = NULL;
 
-    /* the editor's callbacks read the buffer through a status message; here each line is
-       handed to the engine as a plain string, which needs no callbacks at all */
+    /* each line is handed to the engine on its own; progress is reported per line, not per
+       byte, so the editor's update callback is not used */
     saved_search_fn = search->search_fn;
     saved_update_fn = search->update_fn;
-    search->search_fn = NULL;
+    search->search_fn = edit_filter_search_callback;
     search->update_fn = NULL;
 
-    text = g_string_sized_new (256);
+    memset (&esm, 0, sizeof (esm));
+    esm.first = TRUE;
+    esm.edit = edit;
+    status_msg_init (STATUS_MSG (&esm), _ ("Filter"), 1.0, simple_status_msg_init_cb,
+                     edit_filter_status_update_cb, NULL);
+
+    data.edit = edit;
 
     for (line = 0; line <= edit->buffer.lines; line++)
     {
-        off_t eol, i;
+        off_t eol;
         gsize found_len;
         gboolean match;
 
-        eol = edit_buffer_get_eol (&edit->buffer, bol);
-        g_string_set_size (text, 0);
-        for (i = bol; i < eol; i++)
-            g_string_append_c (text, (char) edit_buffer_get_byte (&edit->buffer, i));
+        if ((line & 0xff) == 0)
+        {
+            esm.offset = bol;
+            if (status_msg_common_update (STATUS_MSG (&esm)) == B_CANCEL)
+            {
+                ok = FALSE;
+                break;
+            }
+        }
 
-        match = mc_search_run (search, text->str, 0, text->len, &found_len);
+        eol = edit_buffer_get_eol (&edit->buffer, bol);
+        data.bol = bol;
+        data.eol = eol;
+
+        match = mc_search_run (search, &data, 0, eol - bol, &found_len);
         if (!match && search->error != MC_SEARCH_E_OK && search->error != MC_SEARCH_E_NOTFOUND)
         {
-            message (D_ERROR, MSG_ERROR, "%s", search->error_str);
-            g_string_free (text, TRUE);
-            g_slist_free_full (runs, g_free);
-            search->search_fn = saved_search_fn;
-            search->update_fn = saved_update_fn;
-            return FALSE;
+            error_str = g_strdup (search->error_str);
+            ok = FALSE;
+            break;
         }
 
         if (!match)
@@ -524,9 +575,20 @@ edit_filter_apply (WEdit *edit, mc_search_t *search)
         bol = eol + 1;
     }
 
-    g_string_free (text, TRUE);
+    status_msg_deinit (STATUS_MSG (&esm));
     search->search_fn = saved_search_fn;
     search->update_fn = saved_update_fn;
+
+    if (!ok)
+    {
+        g_slist_free_full (runs, g_free);
+        if (error_str != NULL)
+        {
+            message (D_ERROR, MSG_ERROR, "%s", error_str);
+            g_free (error_str);
+        }
+        return FALSE;
+    }
 
     if (shown == 0)
     {
