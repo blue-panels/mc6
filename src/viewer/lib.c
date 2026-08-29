@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Common finctions (used from some other mcviewer functions)
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -15,7 +15,7 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
 
    This file is part of the Midnight Commander.
 
@@ -573,6 +573,15 @@ mcview_load_text (WView *view, const char *text)
     mcview_load (view, NULL, "", 0, 0, 0);
     mcview_close_datasource (view);
     mcview_show_error (view, NULL, text);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_set_embedded (WView *view, gboolean embedded)
+{
+    view->embedded = embedded;
+    mcview_compute_areas (view);
 }
 
 /* --------------------------------------------------------------------------------------------- */

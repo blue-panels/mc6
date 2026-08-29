@@ -102,6 +102,7 @@ libinternal_la_SOURCES = \
 	manage_plugins.c manage_plugins.h \
 	runtime-host.c runtime-host.h \
 	runtime-panel-provider.c runtime-panel-provider.h \
+	runtime-screen.c runtime-screen.h \
 	runtime-viewer-source.c runtime-viewer-source.h \
 	selcodepage.c selcodepage.h \
 	setup.c setup.h \

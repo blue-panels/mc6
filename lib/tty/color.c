@@ -2,13 +2,14 @@
    Color setup.
    Interface functions.
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2009
    Slava Zanko <slavazanko@gmail.com>, 2009
    Egmont Koblinger <egmont@gmail.com>, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2026
 
    This file is part of the Midnight Commander.
 
@@ -145,6 +146,24 @@ gboolean
 tty_use_colors (void)
 {
     return use_colors;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The background of an allocated pair, by its name; NULL for an unknown pair.
+   A color specified without a background is drawn on it. */
+const char *
+tty_color_pair_background (int pair_index)
+{
+    tty_color_lib_pair_t *mc_color_pair;
+
+    if (mc_tty_color__hashtable == NULL || pair_index < 0)
+        return NULL;
+    mc_color_pair = g_hash_table_find (mc_tty_color__hashtable, tty_color_get_next_cpn_cb,
+                                       GSIZE_TO_POINTER ((size_t) pair_index));
+    if (mc_color_pair == NULL)
+        return NULL;
+    return tty_color_get_name_by_index (mc_color_pair->bg);
 }
 
 /* --------------------------------------------------------------------------------------------- */

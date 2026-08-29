@@ -234,12 +234,12 @@
       "summary": "Register a virtual panel namespace and its callbacks."
     },
     {
-      "signature": "mc.source.bytes(spec) -> Source",
+      "signature": "mc.source.bytes(data) -> Source",
       "workspace": "any",
       "capability": "—",
       "mutation": "no",
       "errors": [],
-      "summary": "Describe an in-memory byte source."
+      "summary": "Describe an in-memory byte source: the string is its whole content."
     },
     {
       "signature": "mc.source.file(spec) -> Source",
@@ -368,6 +368,46 @@
       "mutation": "yes",
       "errors": [],
       "summary": "Run a shell command and capture its bounded output."
+    },
+    {
+      "signature": "mc.ui.screen(spec) -> screen|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Describe a full-screen grid of widgets: a title, a status line on top, keys for the button bar at the bottom, and between them spec.layout, rows of cells; a row is height = n lines or weight = n, a cell is width = n columns or weight = n and holds one control: label, status, text, separator, input, checkbox, or a table with columns and rows(first, count).  help = {file, node}; the callbacks are on_key, on_enter, on_action, on_check, on_row, on_resize, on_close.  screen:run() shows it and returns when it is closed."
+    },
+    {
+      "signature": "screen:run() -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Show the screen and return when it is closed: by F10 or Esc, by the \"close\" action, by screen:close(), or by a callback returning { close = true }."
+    },
+    {
+      "signature": "screen:update(control, patch) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Change a running screen's control: patch.text for a label, status or text cell, patch.value for an input or checkbox, and for a table patch.rows (a new rows function), patch.row_count, patch.invalidate (drop the rows fetched so far) and patch.row (the current row, from 0)."
+    },
+    {
+      "signature": "screen:status(text) -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Change the status line of a running screen."
+    },
+    {
+      "signature": "screen:close() -> boolean|nil, error?",
+      "workspace": "any",
+      "capability": "ui",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Close a running screen; screen:run() then returns."
     },
     {
       "signature": "mc.ui.dialog(spec) -> DialogResult|nil, error?",

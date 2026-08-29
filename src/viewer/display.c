@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for whow info on display
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -557,10 +557,13 @@ mcview_compute_areas (WView *view)
      * the data area and an optional ruler, which is shown above or
      * below the data area. */
 
-    view_area.y = view->dpy_frame_size;
-    view_area.x = view->dpy_frame_size;
-    view_area.lines = DOZ (WIDGET (view)->rect.lines, 2 * view->dpy_frame_size);
-    view_area.cols = DOZ (WIDGET (view)->rect.cols, 2 * view->dpy_frame_size);
+    /* an embedded viewer keeps its panel shape but draws no frame */
+    int frame = view->embedded ? 0 : view->dpy_frame_size;
+
+    view_area.y = frame;
+    view_area.x = frame;
+    view_area.lines = DOZ (WIDGET (view)->rect.lines, 2 * frame);
+    view_area.cols = DOZ (WIDGET (view)->rect.cols, 2 * frame);
 
     // Most coordinates of the areas equal those of the whole viewer
     view->status_area = view_area;
@@ -570,7 +573,7 @@ mcview_compute_areas (WView *view)
     // Compute the heights of the areas
     rest = view_area.lines;
 
-    height = MIN (rest, 1);
+    height = view->embedded ? 0 : MIN (rest, 1);
     view->status_area.lines = height;
     rest -= height;
 
@@ -661,7 +664,7 @@ mcview_display_clean (WView *view)
 
     tty_setcolor (VIEWER_NORMAL_COLOR);
     widget_erase (w);
-    if (mcview_is_in_panel (view))
+    if (mcview_is_in_panel (view) && !view->embedded)
         mcview_display_frame (view);
     view->syntax_fill_color = VIEWER_NORMAL_COLOR;
 }

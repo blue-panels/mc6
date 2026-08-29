@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
@@ -813,9 +813,10 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
     switch (msg)
     {
     case MSG_INIT:
-        if (mcview_is_in_panel (view))
+        /* an embedded viewer is a cell of a screen, not the quick view of a panel */
+        if (mcview_is_in_panel (view) && !view->embedded)
             add_hook (&select_file_hook, mcview_hook, view);
-        else
+        else if (!mcview_is_in_panel (view))
             view->dpy_bbar_dirty = TRUE;
         return MSG_HANDLED;
 
@@ -858,7 +859,7 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             tty_touch_screen (); /* the pixels go with the next refresh */
         runtime_host_clear_current_viewer (view);
         mc_runtime_handle_invalidate_object (MC_RUNTIME_HANDLE_VIEWER, view);
-        if (mcview_is_in_panel (view))
+        if (mcview_is_in_panel (view) && !view->embedded)
         {
             delete_hook (&select_file_hook, mcview_hook);
 

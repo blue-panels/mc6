@@ -1,7 +1,7 @@
 .deps
 cons.saver
 mcmfmt
-mc
+/mc
 Makefile
 Makefile.in
 mc.hlp

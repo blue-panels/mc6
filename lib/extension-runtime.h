@@ -42,8 +42,15 @@ typedef enum
     MC_RUNTIME_DIALOG_HBOX,
     MC_RUNTIME_DIALOG_VBOX,
     MC_RUNTIME_DIALOG_SPACER,
-    MC_RUNTIME_DIALOG_BUTTON
+    MC_RUNTIME_DIALOG_BUTTON,
+    /* screens only */
+    MC_RUNTIME_DIALOG_TABLE,
+    MC_RUNTIME_DIALOG_STATUS,
+    /* a read-only text area with the viewer's scrolling and wrapping */
+    MC_RUNTIME_DIALOG_TEXT
 } mc_runtime_dialog_control_type_t;
+
+typedef struct mc_runtime_screen_table mc_runtime_screen_table_t;
 
 typedef struct
 {
@@ -67,6 +74,8 @@ struct mc_runtime_dialog_control
     guint options_count;
     const mc_runtime_dialog_control_t *controls;
     guint controls_count;
+    /* MC_RUNTIME_DIALOG_TABLE: the columns and the row count. */
+    const mc_runtime_screen_table_t *table;
 };
 
 typedef struct
@@ -481,6 +490,178 @@ typedef struct
     const char *options_key;
 } mc_runtime_viewer_controller_t;
 
+/* A screen: a full-screen group of widgets a runtime package fills and drives.
+   The status line is at the top and the keys make the button bar at the
+   bottom; between them a grid of rows, each row a list of cells, each cell
+   one control.  A row is `height` lines or a `weight` share of the lines
+   left; a cell is `width` columns or a `weight` share of the columns left.
+   The host pulls table rows from the runtime through the screen's dispatch;
+   the runtime updates the screen through the host API while screen_run()
+   blocks. */
+
+typedef enum
+{
+    MC_RUNTIME_SCREEN_COLUMN_TEXT = 0,
+    MC_RUNTIME_SCREEN_COLUMN_CHECK
+} mc_runtime_screen_column_type_t;
+
+typedef struct
+{
+    const char *id;
+    const char *title;
+    mc_runtime_panel_align_t align;
+    guint min_width;
+    gboolean expands;
+    mc_runtime_screen_column_type_t type;
+} mc_runtime_screen_column_t;
+
+struct mc_runtime_screen_table
+{
+    gsize struct_size;
+    const mc_runtime_screen_column_t *columns;
+    guint columns_count;
+    /* -1: unknown, the host asks for rows until a page comes back short. */
+    gint64 row_count;
+    /* Rows asked for at a time; 0 for the host's default. */
+    guint page_size;
+};
+
+typedef struct
+{
+    /* Key name the way tty_keyname_to_keycode() reads it ("f2", "ctrl-s"). */
+    const char *key;
+    /* Button bar label; only F1..F10 have a button. */
+    const char *label;
+    /* Reported to the runtime; "close" closes the screen by itself. */
+    const char *action;
+} mc_runtime_screen_key_t;
+
+typedef struct
+{
+    /* one of the two; width in columns, or a share of what is left */
+    guint width;
+    guint weight;
+    const mc_runtime_dialog_control_t *control;
+} mc_runtime_screen_cell_spec_t;
+
+typedef struct
+{
+    guint height;
+    guint weight;
+    const mc_runtime_screen_cell_spec_t *cells;
+    guint cells_count;
+} mc_runtime_screen_row_t;
+
+typedef struct
+{
+    gsize struct_size;
+    const char *title;
+    const char *help_file;
+    const char *help_node;
+    /* the top line */
+    const char *status;
+    const mc_runtime_screen_row_t *rows;
+    guint rows_count;
+    const mc_runtime_screen_key_t *keys;
+    guint keys_count;
+    /* The control focused first; NULL for the first focusable one. */
+    const char *focus;
+} mc_runtime_screen_t;
+
+typedef enum
+{
+    /* rows first..first+count-1 of a table control */
+    MC_RUNTIME_SCREEN_ROWS,
+    /* a check cell toggled: row, column, value; the runtime keeps the state */
+    MC_RUNTIME_SCREEN_SET_CHECKED,
+    /* a key no widget took: key, key_name, and the table's row and column */
+    MC_RUNTIME_SCREEN_KEY,
+    /* Enter on a table row */
+    MC_RUNTIME_SCREEN_ENTER,
+    /* a key of the button bar, or of the keys list: action */
+    MC_RUNTIME_SCREEN_ACTION,
+    /* the table's current row moved: row */
+    MC_RUNTIME_SCREEN_ROW_CHANGED,
+    MC_RUNTIME_SCREEN_RESIZE,
+    /* the screen is closing, whatever the reason */
+    MC_RUNTIME_SCREEN_CLOSE
+} mc_runtime_screen_operation_t;
+
+typedef struct
+{
+    gsize struct_size;
+    guint operation_version;
+    const char *control_id;
+    gint64 first;
+    guint count;
+    gint64 row;
+    gint column;
+    gboolean value;
+    int key;
+    const char *key_name;
+    const char *action;
+    guint columns;
+    guint lines;
+} mc_runtime_screen_request_t;
+
+typedef struct
+{
+    const char *text;
+    /* A skin color pair ("yellow;black", "red"), or NULL for the row's. */
+    const char *color;
+} mc_runtime_screen_cell_t;
+
+typedef struct
+{
+    gsize struct_size;
+    /* MC_RUNTIME_SCREEN_ROWS: rows_count rows of columns_count cells each. */
+    const mc_runtime_screen_cell_t *cells;
+    guint rows_count;
+    guint columns_count;
+    /* MC_RUNTIME_SCREEN_KEY: TRUE when the runtime took the key. */
+    gboolean handled;
+    /* the runtime asks the screen to close */
+    gboolean close;
+} mc_runtime_screen_response_t;
+
+typedef gboolean (*mc_runtime_screen_dispatch_t) (mc_runtime_plugin_context_t *context,
+                                                  guint64 screen_id,
+                                                  mc_runtime_screen_operation_t operation,
+                                                  const mc_runtime_screen_request_t *request,
+                                                  mc_runtime_screen_response_t *response,
+                                                  const char **error);
+typedef void (*mc_runtime_screen_response_free_t) (mc_runtime_plugin_context_t *context,
+                                                   mc_runtime_screen_response_t *response);
+
+typedef struct
+{
+    gsize struct_size;
+    guint api_version;
+    guint64 screen_id;
+    const mc_runtime_screen_t *spec;
+    mc_runtime_screen_dispatch_t dispatch;
+    mc_runtime_screen_response_free_t response_free;
+} mc_runtime_screen_descriptor_t;
+
+/* What a running screen is told to change. */
+typedef struct
+{
+    gsize struct_size;
+    const char *control_id;
+    /* label, text: the text; NULL control_id with text: the status line */
+    const char *text;
+    /* table: a new row count (-1 unknown); has_row_count says whether given */
+    gboolean has_row_count;
+    gint64 row_count;
+    /* table: drop every cached row */
+    gboolean invalidate;
+    /* table: move the current row; has_row says whether given */
+    gboolean has_row;
+    gint64 row;
+    /* input: the value */
+    const char *value;
+} mc_runtime_screen_patch_t;
+
 typedef enum
 {
     MC_RUNTIME_FILE_OPERATION_OPEN,
@@ -707,6 +888,13 @@ typedef struct
     gboolean (*ui_open_diff) (const char *left, gsize left_length, const char *right,
                               gsize right_length, const char *left_label, const char *right_label,
                               const char **error);
+    /* Screens: see mc_runtime_screen_descriptor_t. */
+    gboolean (*screen_run) (mc_runtime_plugin_context_t *context,
+                            const mc_runtime_screen_descriptor_t *descriptor, const char **error);
+    gboolean (*screen_update) (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                               const mc_runtime_screen_patch_t *patch, const char **error);
+    gboolean (*screen_close) (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                              const char **error);
 } mc_runtime_host_services_v1_t;
 
 typedef struct
@@ -869,6 +1057,15 @@ typedef struct
     gboolean (*ui_open_diff) (mc_runtime_plugin_context_t *context, const char *left,
                               gsize left_length, const char *right, gsize right_length,
                               const char *left_label, const char *right_label, const char **error);
+
+    /* Screens.  screen_run() shows the screen and returns when it is closed;
+       the other two act on a screen that is running. */
+    gboolean (*screen_run) (mc_runtime_plugin_context_t *context,
+                            const mc_runtime_screen_descriptor_t *descriptor, const char **error);
+    gboolean (*screen_update) (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                               const mc_runtime_screen_patch_t *patch, const char **error);
+    gboolean (*screen_close) (mc_runtime_plugin_context_t *context, guint64 screen_id,
+                              const char **error);
 } mc_runtime_host_api_v1_t;
 
 typedef struct

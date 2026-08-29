@@ -42,6 +42,7 @@ void tty_colors_done (void);
 
 gboolean tty_use_colors (void);
 int tty_try_alloc_color_pair (const tty_color_pair_t *color, gboolean is_temp);
+const char *tty_color_pair_background (int pair_index);
 
 void tty_color_free_temp (void);
 void tty_color_free_all (void);
