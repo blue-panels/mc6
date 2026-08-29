@@ -94,6 +94,9 @@ void mcview_vterm_set_replay_offset (mcview_vterm_t *vt, off_t offset);
 void mcview_vterm_set_keep_history (mcview_vterm_t *vt, gboolean keep);
 int mcview_vterm_history_len (const mcview_vterm_t *vt);
 const GArray *mcview_vterm_history_row (const mcview_vterm_t *vt, int index);
+gboolean mcview_vterm_history_row_wrapped (const mcview_vterm_t *vt, int index);
+// DECAWM, off unless asked for: a character past the last column starts a new row.
+void mcview_vterm_set_autowrap (mcview_vterm_t *vt, gboolean autowrap);
 gint64 mcview_vterm_scrolled_rows (const mcview_vterm_t *vt);
 
 int mcview_vterm_dpy_top_row (const mcview_vterm_t *vt);

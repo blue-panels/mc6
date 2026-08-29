@@ -79,6 +79,11 @@ int mcview_terminal_buffer_max_row (const mcview_terminal_buffer_t *buf);
 
 mcview_terminal_buffer_t *mcview_terminal_buffer_copy (const mcview_terminal_buffer_t *src);
 
+/* A wrapped row goes on in the row below it: the terminal broke the line, not
+   the program. */
+void mcview_terminal_buffer_set_wrapped (mcview_terminal_buffer_t *buf, int row, gboolean wrapped);
+gboolean mcview_terminal_buffer_is_wrapped (const mcview_terminal_buffer_t *buf, int row);
+
 /*** inline functions ****************************************************************************/
 
 #endif /* MC__VIEWER_TERMINAL_BUFFER_H */

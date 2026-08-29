@@ -1850,6 +1850,7 @@ mcterm_new (const WRect *r, const char *start_dir)
     t->scroll_allowed = TRUE;
     t->typing_elsewhere = TRUE;
     mcview_vterm_set_keep_history (t->vterm, TRUE);
+    mcview_vterm_set_autowrap (t->vterm, TRUE);
     mcview_vterm_set_size (t->vterm, r->lines, r->cols);
     {
         int cell_width, cell_height;

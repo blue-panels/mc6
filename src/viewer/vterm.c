@@ -120,7 +120,8 @@ struct mcview_vterm_struct
     int snapshot_cursor_row;
     int snapshot_cursor_col;
     mcview_terminal_buffer_t *alt_frame_buf;
-    GPtrArray *history;  // rows that left the top of the main screen, oldest first
+    GPtrArray *history;       // rows that left the top of the main screen, oldest first
+    GArray *history_wrapped;  // one flag per history row: it goes on in the next one
     gboolean keep_history;
     gsize history_cells;
     // Rows that ever left the top; unlike the history, this count does not move.
@@ -133,6 +134,9 @@ struct mcview_vterm_struct
     gboolean app_cursor_keys;
 
     gboolean insert_mode;  // IRM: a printed character pushes the rest of the line right
+
+    gboolean autowrap;      // DECAWM: a character past the last column starts a new row
+    gboolean pending_wrap;  // the last column is taken; the next character wraps
 
     int dpy_top_row;
 };
@@ -238,6 +242,9 @@ vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
             {
             case 1:
                 vt->app_cursor_keys = (final_byte == 'h');
+                break;
+            case 7:
+                mcview_vterm_set_autowrap (vt, final_byte == 'h');
                 break;
             case 1049:
                 if (final_byte == 'h')
@@ -797,9 +804,13 @@ static void
 mcview_vterm_history_push (mcview_vterm_t *vt, int row)
 {
     GArray *cells;
+    guint8 wrapped;
 
     if (vt->history == NULL)
+    {
         vt->history = g_ptr_array_new_with_free_func ((GDestroyNotify) g_array_unref);
+        vt->history_wrapped = g_array_new (FALSE, FALSE, sizeof (guint8));
+    }
 
     // Only the width that can be drawn again: a program may write far past it.
     cells = mcview_terminal_buffer_row_copy_n (vt->buf, row, vt->term_cols);
@@ -809,7 +820,9 @@ mcview_vterm_history_push (mcview_vterm_t *vt, int row)
         cells = g_array_new (FALSE, TRUE, sizeof (mcview_vterm_cell_t));
     }
 
+    wrapped = mcview_terminal_buffer_is_wrapped (vt->buf, row) ? 1 : 0;
     g_ptr_array_add (vt->history, cells);
+    g_array_append_val (vt->history_wrapped, wrapped);
     vt->history_cells += cells->len;
 
     while (vt->history->len > MCVIEW_VTERM_MAX_HISTORY_ROWS
@@ -819,6 +832,7 @@ mcview_vterm_history_push (mcview_vterm_t *vt, int row)
 
         vt->history_cells -= first->len;
         g_ptr_array_remove_index (vt->history, 0);
+        g_array_remove_index (vt->history_wrapped, 0);
     }
 }
 
@@ -844,17 +858,37 @@ mcview_vterm_scroll_up (mcview_vterm_t *vt, int top, int bottom, const mcview_an
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Down one row, from the bottom of the region by scrolling it. */
+static void
+vterm_linefeed (mcview_vterm_t *vt, const mcview_ansi_state_t *ansi)
+{
+    vt->cursor_col = 0;
+    if (vt->cursor_row >= vt->scroll_top && vt->cursor_row < vt->scroll_bottom)
+        vt->cursor_row++;
+    else if (vt->cursor_row == vt->scroll_bottom)
+        mcview_vterm_scroll_up (vt, vt->scroll_top, vt->scroll_bottom, ansi);
+    else if (vt->cursor_row < vt->term_rows - 1)
+        vt->cursor_row++;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The newest row of the history, handed over to the caller, or NULL if there is
    none left. */
 static GArray *
-mcview_vterm_history_pop (mcview_vterm_t *vt)
+mcview_vterm_history_pop (mcview_vterm_t *vt, gboolean *wrapped)
 {
     GArray *cells;
+    guint last;
 
+    *wrapped = FALSE;
     if (vt->history == NULL || vt->history->len == 0)
         return NULL;
 
-    cells = (GArray *) g_ptr_array_steal_index (vt->history, vt->history->len - 1);
+    last = vt->history->len - 1;
+    cells = (GArray *) g_ptr_array_steal_index (vt->history, last);
+    *wrapped = g_array_index (vt->history_wrapped, guint8, last) != 0;
+    g_array_remove_index (vt->history_wrapped, last);
     vt->history_cells -= cells->len;
 
     return cells;
@@ -870,6 +904,8 @@ mcview_vterm_set_keep_history (mcview_vterm_t *vt, gboolean keep)
     {
         g_ptr_array_unref (vt->history);
         vt->history = NULL;
+        g_array_unref (vt->history_wrapped);
+        vt->history_wrapped = NULL;
         vt->history_cells = 0;
     }
 }
@@ -903,6 +939,27 @@ mcview_vterm_history_row (const mcview_vterm_t *vt, int index)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcview_vterm_history_row_wrapped (const mcview_vterm_t *vt, int index)
+{
+    if (vt == NULL || vt->history == NULL || index < 0 || index >= (int) vt->history->len)
+        return FALSE;
+
+    return g_array_index (vt->history_wrapped, guint8, index) != 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_vterm_set_autowrap (mcview_vterm_t *vt, gboolean autowrap)
+{
+    vt->autowrap = autowrap;
+    if (!autowrap)
+        vt->pending_wrap = FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 mcview_vterm_t *
 mcview_vterm_new (void)
 {
@@ -932,7 +989,10 @@ mcview_vterm_free (mcview_vterm_t *vt)
     mcview_terminal_buffer_free (vt->buf);
     mcview_terminal_buffer_free (vt->snapshot_buf);
     if (vt->history != NULL)
+    {
         g_ptr_array_unref (vt->history);
+        g_array_unref (vt->history_wrapped);
+    }
     mcview_terminal_buffer_free (vt->alt_frame_buf);
     g_free (vt->osc7_raw);
     g_free (vt->osc133_raw);
@@ -988,7 +1048,11 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vt->osc133_raw = NULL;
     vt->osc_len = 0;
     if (vt->history != NULL)
+    {
         g_ptr_array_set_size (vt->history, 0);
+        g_array_set_size (vt->history_wrapped, 0);
+    }
+    vt->pending_wrap = FALSE;
     vt->history_cells = 0;
     vt->scrolled_rows = 0;
     mcview_terminal_buffer_clear (vt->buf);
@@ -1020,10 +1084,12 @@ mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols)
 
         for (i = 0; i < take; i++)
         {
-            GArray *cells = mcview_vterm_history_pop (vt);
+            gboolean wrapped;
+            GArray *cells = mcview_vterm_history_pop (vt, &wrapped);
 
             mcview_terminal_buffer_scroll_down (vt->buf, 0, rows - 1, cols, &ansi);
             mcview_terminal_buffer_set_row (vt->buf, 0, cells);
+            mcview_terminal_buffer_set_wrapped (vt->buf, 0, wrapped);
             g_array_unref (cells);
         }
 
@@ -1074,6 +1140,7 @@ mcview_vterm_set_size (mcview_vterm_t *vt, int rows, int cols)
         vt->cursor_row = vt->term_rows - 1;
     if (vt->cursor_col >= vt->term_cols)
         vt->cursor_col = vt->term_cols - 1;
+    vt->pending_wrap = FALSE;
 
     return TRUE;
 }
@@ -1304,9 +1371,21 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
 void
 mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
 {
+    /* Whatever moves or clears takes the pending wrap with it; only a printed
+       character makes it happen. */
+    if (ev->type != VTERM_CHAR && ev->type != VTERM_SGR && ev->type != VTERM_CONSUMED
+        && ev->type != VTERM_REPLY)
+        vt->pending_wrap = FALSE;
+
     switch (ev->type)
     {
     case VTERM_CHAR:
+        if (vt->pending_wrap)
+        {
+            mcview_terminal_buffer_set_wrapped (vt->buf, vt->cursor_row, TRUE);
+            vt->pending_wrap = FALSE;
+            vterm_linefeed (vt, &ev->ansi);
+        }
         if (vt->insert_mode)
             mcview_terminal_buffer_insert_chars (vt->buf, vt->cursor_row, vt->cursor_col, 1,
                                                  vt->term_cols, &ev->ansi);
@@ -1314,6 +1393,11 @@ mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
             mcview_terminal_buffer_put_char (vt->buf, vt->cursor_row, vt->cursor_col, ev->ch,
                                              &ev->ansi);
         vt->cursor_col++;
+        if (vt->autowrap && vt->cursor_col >= vt->term_cols)
+        {
+            vt->cursor_col = vt->term_cols - 1;
+            vt->pending_wrap = TRUE;
+        }
         vt->new_chars_since_snapshot = TRUE;
         break;
 
@@ -1322,13 +1406,7 @@ mcview_vterm_apply_event (mcview_vterm_t *vt, const vterm_event_t *ev)
         break;
 
     case VTERM_LF:
-        vt->cursor_col = 0;
-        if (vt->cursor_row >= vt->scroll_top && vt->cursor_row < vt->scroll_bottom)
-            vt->cursor_row++;
-        else if (vt->cursor_row == vt->scroll_bottom)
-            mcview_vterm_scroll_up (vt, vt->scroll_top, vt->scroll_bottom, &ev->ansi);
-        else if (vt->cursor_row < vt->term_rows - 1)
-            vt->cursor_row++;
+        vterm_linefeed (vt, &ev->ansi);
         break;
 
     case VTERM_CURSOR_ABS:

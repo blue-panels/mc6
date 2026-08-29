@@ -740,6 +740,147 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_autowrap_breaks_a_long_line)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    char *text;
+
+    mcview_vterm_set_autowrap (vt, TRUE);
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "0123456789ab");
+
+    text = canvas_to_text (vt, 3, 8);
+    ck_assert_str_eq (text, "01234567\n89ab    \n        \n");
+    g_free (text);
+    ck_assert (mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 1));
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 1);
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 4);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_autowrap_waits_for_the_next_character)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    char *text;
+
+    mcview_vterm_set_autowrap (vt, TRUE);
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    // Exactly the width, then a newline: one row, not a wrapped one plus a blank.
+    FEED (vt, "01234567\r\nnext");
+
+    text = canvas_to_text (vt, 3, 8);
+    ck_assert_str_eq (text, "01234567\nnext    \n        \n");
+    g_free (text);
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+
+    // The cursor stays on the last column until something is printed.
+    FEED (vt, "\033[1;9H");
+    ck_assert_int_eq (mcview_vterm_cursor_col (vt), 7);
+    FEED (vt, "X");
+    ck_assert_int_eq (cell_ch (vt, 0, 7), 'X');
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 0);
+    FEED (vt, "\033[K");
+    FEED (vt, "Y");
+    ck_assert_int_eq (cell_ch (vt, 0, 7), 'Y');
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 0);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_autowrap_off_overwrites_the_last_column)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    char *text;
+
+    mcview_vterm_set_autowrap (vt, TRUE);
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "\033[?7l0123456789ab");
+
+    text = canvas_to_text (vt, 3, 8);
+    ck_assert_str_eq (text, "01234567\n        \n        \n");
+    g_free (text);
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 0);
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+
+    FEED (vt, "\033[?7h\r\nabcdefghij");
+    text = canvas_to_text (vt, 3, 8);
+    ck_assert_str_eq (text, "01234567\nabcdefgh\nij      \n");
+    g_free (text);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_autowrap_scrolls_and_the_history_keeps_the_break)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    mcview_terminal_buffer_t *canvas;
+    char *text;
+
+    mcview_vterm_set_autowrap (vt, TRUE);
+    mcview_vterm_set_keep_history (vt, TRUE);
+    mcview_vterm_set_size (vt, 2, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "0123456789abcdefgh\r\nlast");
+
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 2);
+    ck_assert (mcview_vterm_history_row_wrapped (vt, 0));
+    ck_assert (mcview_vterm_history_row_wrapped (vt, 1));
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+
+    canvas = mcview_vterm_compose_scrollback (vt, 0, 4);
+    text = buffer_to_text (canvas, 4, 8);
+    ck_assert_str_eq (text, "01234567\n89abcdef\ngh      \nlast    \n");
+    g_free (text);
+    mcview_terminal_buffer_free (canvas);
+
+    // Made taller, the screen gets the row back, break and all.
+    mcview_vterm_set_size (vt, 3, 8);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 1);
+    ck_assert (mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 0));
+    ck_assert (!mcview_terminal_buffer_is_wrapped (mcview_vterm_buf (vt), 1));
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_autowrap_is_off_by_default)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 3, 8);
+    mcview_vterm_reset (vt);
+
+    FEED (vt, "0123456789ab");
+
+    ck_assert_int_eq (mcview_vterm_cursor_row (vt), 0);
+    ck_assert_int_eq (cell_ch (vt, 0, 11), 'b');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_oversized_osc_is_dropped_whole)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -1170,6 +1311,11 @@ main (void)
     tcase_add_test (tc_core, test_page_up_keeps_the_screen_in_the_history);
     tcase_add_test (tc_core, test_page_up_keeps_a_line_of_several_rows);
     tcase_add_test (tc_core, test_page_up_leaves_the_alternate_screen_alone);
+    tcase_add_test (tc_core, test_autowrap_breaks_a_long_line);
+    tcase_add_test (tc_core, test_autowrap_waits_for_the_next_character);
+    tcase_add_test (tc_core, test_autowrap_off_overwrites_the_last_column);
+    tcase_add_test (tc_core, test_autowrap_scrolls_and_the_history_keeps_the_break);
+    tcase_add_test (tc_core, test_autowrap_is_off_by_default);
     tcase_add_test (tc_core, test_oversized_osc_is_dropped_whole);
     tcase_add_test (tc_core, test_sixel_becomes_a_picture_at_the_cursor);
     tcase_add_test (tc_core, test_sixel_without_raster_attributes_is_measured);

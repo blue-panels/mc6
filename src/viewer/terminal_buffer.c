@@ -40,6 +40,7 @@
 struct mcview_terminal_buffer_struct
 {
     GHashTable *rows;
+    GHashTable *wrapped;  // rows that go on in the row below: the soft line breaks
     int max_row;
 };
 
@@ -101,6 +102,17 @@ free_row_array (gpointer data)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+static void
+move_wrapped (mcview_terminal_buffer_t *buf, gpointer key_src, gpointer key_dst)
+{
+    if (g_hash_table_contains (buf->wrapped, key_src))
+        g_hash_table_insert (buf->wrapped, key_dst, GINT_TO_POINTER (1));
+    else
+        g_hash_table_remove (buf->wrapped, key_dst);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -111,6 +123,7 @@ mcview_terminal_buffer_new (void)
 
     buf = g_new (mcview_terminal_buffer_t, 1);
     buf->rows = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, free_row_array);
+    buf->wrapped = g_hash_table_new (g_direct_hash, g_direct_equal);
     buf->max_row = -1;
     return buf;
 }
@@ -123,6 +136,7 @@ mcview_terminal_buffer_free (mcview_terminal_buffer_t *buf)
     if (buf == NULL)
         return;
     g_hash_table_destroy (buf->rows);
+    g_hash_table_destroy (buf->wrapped);
     g_free (buf);
 }
 
@@ -132,6 +146,7 @@ void
 mcview_terminal_buffer_clear (mcview_terminal_buffer_t *buf)
 {
     g_hash_table_remove_all (buf->rows);
+    g_hash_table_remove_all (buf->wrapped);
     buf->max_row = -1;
 }
 
@@ -245,6 +260,7 @@ mcview_terminal_buffer_set_row (mcview_terminal_buffer_t *buf, int row, const GA
         return;
 
     g_hash_table_remove (buf->rows, GINT_TO_POINTER (row));
+    g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (row));
 
     if (cells == NULL || cells->len == 0)
         return;
@@ -269,7 +285,10 @@ mcview_terminal_buffer_set_max_row (mcview_terminal_buffer_t *buf, int max_row)
         return;
 
     for (row = max_row + 1; row <= buf->max_row; row++)
+    {
         g_hash_table_remove (buf->rows, GINT_TO_POINTER (row));
+        g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (row));
+    }
 
     buf->max_row = (max_row < -1) ? -1 : max_row;
 }
@@ -293,6 +312,7 @@ mcview_terminal_buffer_scroll_up (mcview_terminal_buffer_t *buf, int top, int bo
         GArray *src_arr;
 
         g_hash_table_remove (buf->rows, key_dst);
+        move_wrapped (buf, key_src, key_dst);
 
         src_arr = (GArray *) g_hash_table_lookup (buf->rows, key_src);
         if (src_arr != NULL)
@@ -306,6 +326,7 @@ mcview_terminal_buffer_scroll_up (mcview_terminal_buffer_t *buf, int top, int bo
 
     /* Clear the vacated bottom row. */
     g_hash_table_remove (buf->rows, GINT_TO_POINTER (bottom));
+    g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (bottom));
     mcview_terminal_buffer_fill_range (buf, bottom, 0, cols - 1, ' ', ansi);
 
     if (buf->max_row < bottom)
@@ -330,6 +351,7 @@ mcview_terminal_buffer_scroll_down (mcview_terminal_buffer_t *buf, int top, int 
         GArray *src_arr;
 
         g_hash_table_remove (buf->rows, key_dst);
+        move_wrapped (buf, key_src, key_dst);
 
         src_arr = (GArray *) g_hash_table_lookup (buf->rows, key_src);
         if (src_arr != NULL)
@@ -342,6 +364,7 @@ mcview_terminal_buffer_scroll_down (mcview_terminal_buffer_t *buf, int top, int 
     }
 
     g_hash_table_remove (buf->rows, GINT_TO_POINTER (top));
+    g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (top));
     mcview_terminal_buffer_fill_range (buf, top, 0, cols - 1, ' ', ansi);
 
     if (buf->max_row < bottom)
@@ -357,6 +380,7 @@ mcview_terminal_buffer_erase_eol (mcview_terminal_buffer_t *buf, int row, int co
     if (col >= term_cols || term_cols <= 0)
         return;
     mcview_terminal_buffer_fill_range (buf, row, col, term_cols - 1, ' ', ansi);
+    g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (row));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -381,6 +405,7 @@ mcview_terminal_buffer_erase_line (mcview_terminal_buffer_t *buf, int row, int t
     if (term_cols <= 0)
         return;
     mcview_terminal_buffer_fill_range (buf, row, 0, term_cols - 1, ' ', ansi);
+    g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (row));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -463,7 +488,32 @@ mcview_terminal_buffer_copy (const mcview_terminal_buffer_t *src)
         g_hash_table_insert (dst->rows, key, dst_arr);
     }
 
+    g_hash_table_iter_init (&iter, (GHashTable *) src->wrapped);
+    while (g_hash_table_iter_next (&iter, &key, &value))
+        g_hash_table_insert (dst->wrapped, key, value);
+
     return dst;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_terminal_buffer_set_wrapped (mcview_terminal_buffer_t *buf, int row, gboolean wrapped)
+{
+    if (row < 0)
+        return;
+    if (wrapped)
+        g_hash_table_insert (buf->wrapped, GINT_TO_POINTER (row), GINT_TO_POINTER (1));
+    else
+        g_hash_table_remove (buf->wrapped, GINT_TO_POINTER (row));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcview_terminal_buffer_is_wrapped (const mcview_terminal_buffer_t *buf, int row)
+{
+    return g_hash_table_contains (buf->wrapped, GINT_TO_POINTER (row));
 }
 
 /* --------------------------------------------------------------------------------------------- */
