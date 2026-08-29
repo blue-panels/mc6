@@ -39,6 +39,12 @@ dist_lua_java_class_DATA = \
 	examples/mc/lua-java-class/init.lua
 endif
 
+lua_dbfdir = $(lua_scripts_dir)/mc/lua-dbf
+dist_lua_dbf_DATA = \
+	examples/mc/lua-dbf/lua.ini \
+	examples/mc/lua-dbf/init.lua \
+	examples/mc/lua-dbf/help.hlp
+
 lua_readelfdir = $(lua_scripts_dir)/mc/lua-readelf
 if ENABLE_LUA_READELF
 dist_lua_readelf_DATA = \
