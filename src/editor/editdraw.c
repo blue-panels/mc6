@@ -1,13 +1,14 @@
 /*
    Editor text drawing.
 
-   Copyright (C) 1996-2025
+   Copyright (C) 1996-2026
    Free Software Foundation, Inc.
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru> 2012-2022
    Slava Zanko <slavazanko@gmail.com>, 2013
+   Ilia Maslakov <il.smind@gmail.com> 2010-2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -891,7 +892,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
         }
     }
 
-    if (fold_line_count > 0)
+    if (fold_line_count > 0 && !edit->filter_active)
     {
         char fold_text[64];
         int fi;

@@ -1,12 +1,13 @@
 /*
    Editor menu definitions and initialisation
 
-   Copyright (C) 1996-2025
+   Copyright (C) 1996-2026
    Free Software Foundation, Inc.
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru> 2012
+   Ilia Maslakov <il.smind@gmail.com> 2010-2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -289,6 +290,7 @@ create_search_replace_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Search..."), CK_Search));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Search &again"), CK_SearchContinue));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Replace..."), CK_Replace));
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Toggle &line filter"), CK_FilterToggle));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Toggle bookmark"), CK_Bookmark));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Next bookmark"), CK_BookmarkNext));

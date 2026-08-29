@@ -1,8 +1,11 @@
 /*
    Editor code folding
 
-   Copyright (C) 2025
+   Copyright (C) 2025-2026
    Free Software Foundation, Inc.
+
+   Written by:
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 
@@ -30,9 +33,12 @@
 #include <string.h>
 
 #include "lib/global.h"
+#include "lib/search.h"
+#include "lib/widget.h"  // message()
 
 #include "edit-impl.h"
 #include "editwidget.h"
+#include "editsearch.h"
 
 /* --------------------------------------------------------------------------------------------- */
 /*** global variables ****************************************************************************/
@@ -252,7 +258,7 @@ edit_fold_prev_visible (WEdit *edit, long line)
 
     f = edit_fold_find (edit, line - 1);
     if (f != NULL && (line - 1) > f->line_start)
-        return f->line_start;
+        return f->line_start < 0 ? line : f->line_start;
 
     return line - 1;
 }
@@ -275,6 +281,7 @@ edit_fold_flush (WEdit *edit)
         g_free (p);
     }
     edit->folds = NULL;
+    edit->filter_active = FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -295,6 +302,9 @@ edit_fold_inc (WEdit *edit, long line)
     {
         if (p->line_start > line)
             p->line_start++;
+        else if (edit->filter_active && line == p->line_start)
+            /* a line split at a filter boundary stays visible: the hidden run moves down */
+            p->line_start++;
         else if (line > p->line_start && line <= p->line_start + p->line_count)
             p->line_count++;
     }
@@ -304,10 +314,11 @@ edit_fold_inc (WEdit *edit, long line)
 
 /**
  * Shift fold line numbers up by 1 for all folds after the given line.
- * Called when a line is deleted.
+ * Called when two lines are joined: the newline at the end of @line was deleted,
+ * so line + 1 merged into it.
  *
  * @param edit editor object
- * @param line line where deletion happened
+ * @param line upper line of the join
  */
 void
 edit_fold_dec (WEdit *edit, long line)
@@ -319,8 +330,9 @@ edit_fold_dec (WEdit *edit, long line)
         q = p->next;
         if (p->line_start > line)
             p->line_start--;
-        else if (line > p->line_start && line <= p->line_start + p->line_count)
+        else if (line <= p->line_start + p->line_count)
         {
+            /* one of the joined lines was hidden: the run is one line shorter */
             p->line_count--;
             if (p->line_count <= 0)
             {
@@ -344,15 +356,16 @@ edit_fold_dec (WEdit *edit, long line)
  *
  * Uses str_term_width1 for correct i18n/UTF-8 handling.
  *
+ * @param edit editor object
  * @param fold fold structure
  * @return visual column width of the fold indicator text
  */
 int
-edit_fold_indicator_width (const struct edit_fold_t *fold)
+edit_fold_indicator_width (const WEdit *edit, const struct edit_fold_t *fold)
 {
     (void) fold;
-    /* fold indicator is "...}" - always 4 columns */
-    return 4;
+    /* filter folds draw nothing in the text; a code fold shows "...}" - always 4 columns */
+    return edit->filter_active ? 0 : 4;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -431,6 +444,151 @@ edit_fold_toggle (WEdit *edit)
 
     edit->mark1 = edit->mark2 = edit->buffer.curs1;
     edit->force |= REDRAW_PAGE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Hide every line that does not match the search.  The set of hidden lines is fixed at
+ * this moment: later edits only shift the hidden runs around, they never re-match.
+ *
+ * @param edit editor object
+ * @param search prepared search object; ownership stays with the caller
+ * @return TRUE if the filter was applied, FALSE if nothing matched or the search failed
+ */
+gboolean
+edit_filter_apply (WEdit *edit, mc_search_t *search)
+{
+    GString *text;
+    off_t bol = 0;
+    long line;
+    long run_start = -1;  // first line of the hidden run being collected, -1 if none
+    long shown = 0;
+    long curs_target = -1;
+    GSList *runs = NULL, *r;
+    mc_search_fn saved_search_fn;
+    mc_update_fn saved_update_fn;
+
+    /* the editor's callbacks read the buffer through a status message; here each line is
+       handed to the engine as a plain string, which needs no callbacks at all */
+    saved_search_fn = search->search_fn;
+    saved_update_fn = search->update_fn;
+    search->search_fn = NULL;
+    search->update_fn = NULL;
+
+    text = g_string_sized_new (256);
+
+    for (line = 0; line <= edit->buffer.lines; line++)
+    {
+        off_t eol, i;
+        gsize found_len;
+        gboolean match;
+
+        eol = edit_buffer_get_eol (&edit->buffer, bol);
+        g_string_set_size (text, 0);
+        for (i = bol; i < eol; i++)
+            g_string_append_c (text, (char) edit_buffer_get_byte (&edit->buffer, i));
+
+        match = mc_search_run (search, text->str, 0, text->len, &found_len);
+        if (!match && search->error != MC_SEARCH_E_OK && search->error != MC_SEARCH_E_NOTFOUND)
+        {
+            message (D_ERROR, MSG_ERROR, "%s", search->error_str);
+            g_string_free (text, TRUE);
+            g_slist_free_full (runs, g_free);
+            search->search_fn = saved_search_fn;
+            search->update_fn = saved_update_fn;
+            return FALSE;
+        }
+
+        if (!match)
+        {
+            if (run_start < 0)
+                run_start = line;
+        }
+        else
+        {
+            shown++;
+            if (curs_target < 0 && line >= edit->buffer.curs_line)
+                curs_target = line;
+            if (run_start >= 0)
+            {
+                long *run = g_new (long, 2);
+
+                run[0] = run_start - 1;
+                run[1] = line - run_start;
+                runs = g_slist_prepend (runs, run);
+                run_start = -1;
+            }
+        }
+
+        bol = eol + 1;
+    }
+
+    g_string_free (text, TRUE);
+    search->search_fn = saved_search_fn;
+    search->update_fn = saved_update_fn;
+
+    if (shown == 0)
+    {
+        g_slist_free_full (runs, g_free);
+        message (D_NORMAL, _ ("Filter"), _ ("No lines match"));
+        return FALSE;
+    }
+
+    if (run_start >= 0)
+    {
+        long *run = g_new (long, 2);
+
+        run[0] = run_start - 1;
+        run[1] = edit->buffer.lines - run_start + 1;
+        runs = g_slist_prepend (runs, run);
+    }
+
+    edit_fold_flush (edit);
+    for (r = runs; r != NULL; r = r->next)
+    {
+        long *run = r->data;
+
+        edit_fold_make (edit, run[0], run[1]);
+    }
+    g_slist_free_full (runs, g_free);
+    edit->filter_active = TRUE;
+
+    /* a cursor left on a hidden line lands on the nearest shown line below, else above */
+    if (edit_fold_is_hidden (edit, edit->buffer.curs_line))
+    {
+        if (curs_target < 0)
+            curs_target = edit_fold_find (edit, edit->buffer.curs_line)->line_start;
+        edit_move_to_line (edit, curs_target);
+        edit_cursor_move (edit, edit_buffer_get_current_bol (&edit->buffer) - edit->buffer.curs1);
+        edit->over_col = 0;
+        edit->prev_col = 0;
+    }
+    if (edit_fold_is_hidden (edit, edit->start_line))
+        edit_scroll_downward (edit, 0);
+
+    edit->force |= REDRAW_PAGE;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Lift the filter if one is on; otherwise put the last search back on as a filter,
+ * or ask for one when there has been no search yet.
+ */
+void
+edit_filter_toggle (WEdit *edit)
+{
+    if (edit->filter_active)
+    {
+        edit_fold_flush (edit);
+        edit->force |= REDRAW_PAGE;
+    }
+    else if (edit->search != NULL)
+        (void) edit_filter_apply (edit, edit->search);
+    else
+        edit_search_cmd (edit, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */

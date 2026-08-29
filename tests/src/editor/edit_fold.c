@@ -511,6 +511,87 @@ START_TEST (test_fold_dec_removes_collapsed_fold)
 }
 END_TEST
 
+START_TEST (test_fold_dec_join_start_with_previous)
+{
+    edit_fold_t *f;
+
+    // given: fold at line 10 with 5 hidden lines
+    edit_fold_make (test_edit, 10, 5);
+
+    // when: line 9 is joined with the fold start line (backspace at its start)
+    edit_fold_dec (test_edit, 9);
+
+    // then: the run moves up, nothing is uncovered
+    f = edit_fold_find (test_edit, 9);
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 9);
+    ck_assert_int_eq (f->line_count, 5);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_fold_dec_join_start_with_first_hidden)
+{
+    edit_fold_t *f;
+
+    // given: fold at line 10 with 5 hidden lines
+    edit_fold_make (test_edit, 10, 5);
+
+    // when: the first hidden line is joined into the start line (delete at its end)
+    edit_fold_dec (test_edit, 10);
+
+    // then: one hidden line less
+    f = edit_fold_find (test_edit, 10);
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 10);
+    ck_assert_int_eq (f->line_count, 4);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_fold_dec_join_last_hidden_with_next)
+{
+    edit_fold_t *f;
+
+    // given: fold at line 10 with 5 hidden lines
+    edit_fold_make (test_edit, 10, 5);
+
+    // when: line 16 is joined into the last hidden line (backspace at its start)
+    edit_fold_dec (test_edit, 15);
+
+    // then: one hidden line less
+    f = edit_fold_find (test_edit, 10);
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 10);
+    ck_assert_int_eq (f->line_count, 4);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_fold_dec_join_shown_lines_after_fold)
+{
+    edit_fold_t *f;
+
+    // given: fold at line 10 with 5 hidden lines, a filter is on
+    edit_fold_make (test_edit, 10, 5);
+    test_edit->filter_active = TRUE;
+
+    // when: two shown lines right after the run are joined (delete at the end of 16)
+    edit_fold_dec (test_edit, 16);
+
+    // then: the run is untouched
+    f = edit_fold_find (test_edit, 10);
+    mctest_assert_not_null (f);
+    ck_assert_int_eq (f->line_start, 10);
+    ck_assert_int_eq (f->line_count, 5);
+
+    test_edit->filter_active = FALSE;
+}
+END_TEST
+
 /* --------------------------------------------------------------------------------------------- */
 /* sorted insertion order */
 /* --------------------------------------------------------------------------------------------- */
@@ -555,7 +636,26 @@ START_TEST (test_fold_indicator_width_returns_4)
     f.line_count = 5;
 
     // then: indicator "...}" is always 4 columns
-    ck_assert_int_eq (edit_fold_indicator_width (&f), 4);
+    ck_assert_int_eq (edit_fold_indicator_width (test_edit, &f), 4);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_fold_indicator_width_zero_under_filter)
+{
+    edit_fold_t f;
+
+    // given: a fold made by the line filter
+    memset (&f, 0, sizeof (f));
+    f.line_start = 10;
+    f.line_count = 5;
+    test_edit->filter_active = TRUE;
+
+    // then: nothing is drawn in the text
+    ck_assert_int_eq (edit_fold_indicator_width (test_edit, &f), 0);
+
+    test_edit->filter_active = FALSE;
 }
 END_TEST
 
@@ -575,7 +675,8 @@ START_TEST (test_fold_indicator_width_independent_of_line_count)
     f2.line_count = 99999;
 
     // then: same width regardless of line count
-    ck_assert_int_eq (edit_fold_indicator_width (&f1), edit_fold_indicator_width (&f2));
+    ck_assert_int_eq (edit_fold_indicator_width (test_edit, &f1),
+                      edit_fold_indicator_width (test_edit, &f2));
 }
 END_TEST
 
@@ -613,26 +714,6 @@ START_TEST (test_fold_inc_at_fold_start)
 
     // then: insertion at fold start line - fold is unchanged
     // (line == line_start is neither "after" nor "inside")
-    f = edit_fold_find (test_edit, 10);
-    mctest_assert_not_null (f);
-    ck_assert_int_eq (f->line_start, 10);
-    ck_assert_int_eq (f->line_count, 5);
-}
-END_TEST
-
-/* --------------------------------------------------------------------------------------------- */
-
-START_TEST (test_fold_dec_at_fold_start)
-{
-    edit_fold_t *f;
-
-    // given: fold at line 10 with 5 hidden lines
-    edit_fold_make (test_edit, 10, 5);
-
-    // when: delete at the fold start line itself
-    edit_fold_dec (test_edit, 10);
-
-    // then: fold start stays, no change (deletion is AT start, not inside)
     f = edit_fold_find (test_edit, 10);
     mctest_assert_not_null (f);
     ck_assert_int_eq (f->line_start, 10);
@@ -726,16 +807,20 @@ main (void)
     tcase_add_test (tc_core, test_fold_dec_before_fold);
     tcase_add_test (tc_core, test_fold_dec_inside_fold);
     tcase_add_test (tc_core, test_fold_dec_removes_collapsed_fold);
+    tcase_add_test (tc_core, test_fold_dec_join_start_with_previous);
+    tcase_add_test (tc_core, test_fold_dec_join_start_with_first_hidden);
+    tcase_add_test (tc_core, test_fold_dec_join_last_hidden_with_next);
+    tcase_add_test (tc_core, test_fold_dec_join_shown_lines_after_fold);
     // sorted order
     tcase_add_test (tc_core, test_fold_make_maintains_sorted_order);
     // edit_fold_indicator_width
     tcase_add_test (tc_core, test_fold_indicator_width_returns_4);
+    tcase_add_test (tc_core, test_fold_indicator_width_zero_under_filter);
     tcase_add_test (tc_core, test_fold_indicator_width_independent_of_line_count);
     // edit_fold_remove from inside
     tcase_add_test (tc_core, test_fold_remove_from_inside);
     // edit_fold_inc / edit_fold_dec edge cases
     tcase_add_test (tc_core, test_fold_inc_at_fold_start);
-    tcase_add_test (tc_core, test_fold_dec_at_fold_start);
     tcase_add_test (tc_core, test_fold_inc_after_fold);
     tcase_add_test (tc_core, test_fold_dec_after_fold);
     // ***********************************

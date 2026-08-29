@@ -1,11 +1,12 @@
 /*
    Search & replace engine of MCEditor.
 
-   Copyright (C) 2021-2025
+   Copyright (C) 2021-2026
    Free Software Foundation, Inc.
 
    Written by:
    Andrew Borodin <aborodin@vmail.ru>, 2021-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 
@@ -70,6 +71,8 @@ MC_MOCKABLE int edit_dialog_replace_prompt_show (WEdit *edit, char *from_text, c
 
 /*** file scope variables ************************************************************************/
 
+static gboolean search_apply_filter = FALSE;
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -104,6 +107,7 @@ edit_dialog_search_show (WEdit *edit)
             QUICK_START_BUTTONS (TRUE, TRUE),
                 QUICK_BUTTON (_ ("&OK"), B_ENTER, NULL, NULL),
                 QUICK_BUTTON (_ ("&Find all"), B_USER, NULL, NULL),
+                QUICK_BUTTON (_ ("Fil&ter"), B_FILTER, NULL, NULL),
                 QUICK_BUTTON (_ ("&Cancel"), B_CANCEL, NULL, NULL),
             QUICK_END,
             // clang-format on
@@ -133,6 +137,8 @@ edit_dialog_search_show (WEdit *edit)
 
     if (dialog_result == B_USER)
         search_create_bookmark = TRUE;
+    else if (dialog_result == B_FILTER)
+        search_apply_filter = TRUE;
 
     {
         GString *tmp;
@@ -548,8 +554,15 @@ edit_do_search (WEdit *edit)
 static void
 edit_search (WEdit *edit)
 {
-    if (edit_dialog_search_show (edit))
+    search_apply_filter = FALSE;
+
+    if (!edit_dialog_search_show (edit))
+        return;
+
+    if (!search_apply_filter)
         edit_do_search (edit);
+    else if (edit_filter_apply (edit, edit->search))
+        edit->search_start = edit->buffer.curs1;
 }
 
 /* --------------------------------------------------------------------------------------------- */

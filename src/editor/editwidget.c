@@ -1,12 +1,13 @@
 /*
    Editor initialisation and callback handler.
 
-   Copyright (C) 1996-2025
+   Copyright (C) 1996-2026
    Free Software Foundation, Inc.
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru> 2012-2024
+   Ilia Maslakov <il.smind@gmail.com> 2010-2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -1528,6 +1529,35 @@ edit_total_update (WEdit *edit)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Map a screen row to the buffer line shown there, stepping over hidden (folded) lines.
+ */
+static long
+edit_line_at_row (WEdit *edit, int row)
+{
+    long line = edit->start_line;
+    edit_fold_t *f;
+    int r;
+
+    /* the top line itself may sit inside a hidden run (a headless one at the file start) */
+    f = edit_fold_find (edit, line);
+    if (f != NULL && line > f->line_start)
+        line = f->line_start + f->line_count + 1;
+
+    for (r = 0; r < row && line < edit->buffer.lines; r++)
+    {
+        f = edit_fold_find (edit, line);
+        if (f != NULL && line == f->line_start)
+            line = f->line_start + f->line_count + 1;
+        else
+            line++;
+    }
+
+    return MIN (line, edit->buffer.lines);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 edit_update_cursor (WEdit *edit, const mouse_event_t *event)
 {
@@ -1564,7 +1594,19 @@ edit_update_cursor (WEdit *edit, const mouse_event_t *event)
         }
     }
 
-    if (y > edit->curs_row)
+    if (edit->folds != NULL)
+    {
+        /* screen rows and buffer lines differ by the hidden ones: resolve the row first */
+        long target = edit_line_at_row (edit, y);
+
+        if (target > edit->buffer.curs_line)
+            edit_move_down (edit, target - edit->buffer.curs_line, FALSE);
+        else if (target < edit->buffer.curs_line)
+            edit_move_up (edit, edit->buffer.curs_line - target, FALSE);
+        else
+            edit_move_to_prev_col (edit, edit_buffer_get_current_bol (&edit->buffer));
+    }
+    else if (y > edit->curs_row)
         edit_move_down (edit, y - edit->curs_row, FALSE);
     else if (y < edit->curs_row)
         edit_move_up (edit, edit->curs_row - y, FALSE);
@@ -1572,7 +1614,7 @@ edit_update_cursor (WEdit *edit, const mouse_event_t *event)
         edit_move_to_prev_col (edit, edit_buffer_get_current_bol (&edit->buffer));
 
     /* On a fold start line, handle clicks relative to fold indicator */
-    if (edit->folds != NULL)
+    if (edit->folds != NULL && !edit->filter_active)
     {
         edit_fold_t *fold;
 
@@ -1607,7 +1649,7 @@ edit_update_cursor (WEdit *edit, const mouse_event_t *event)
 
                     /* Calculate visual end of fold indicator */
                     line_visual_len = (long) edit_move_forward3 (edit, bol, 0, eol);
-                    fold_visual_end = line_visual_len + edit_fold_indicator_width (fold);
+                    fold_visual_end = line_visual_len + edit_fold_indicator_width (edit, fold);
 
                     /* Snap cursor to the bracket */
                     edit_cursor_move (edit, bracket_off - edit->buffer.curs1);
@@ -2049,38 +2091,14 @@ edit_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                 long line;
                 edit_fold_t *fold;
 
-                // map screen row to file line and buffer offset
+                // map screen row to file line and move the cursor there
                 click_y = event->y - (edit->fullscreen != 0 ? 0 : 1);
-                {
-                    long target_line;
-                    off_t target_b;
-                    int r;
-
-                    target_line = edit->start_line;
-                    target_b = edit->start_display;
-                    for (r = 0; r < click_y; r++)
-                    {
-                        edit_fold_t *f;
-
-                        f = edit_fold_find (edit, target_line);
-                        if (f != NULL && target_line == f->line_start)
-                        {
-                            target_b = edit_buffer_get_forward_offset (&edit->buffer, target_b,
-                                                                       f->line_count + 1, 0);
-                            target_line += f->line_count + 1;
-                        }
-                        else
-                        {
-                            target_b =
-                                edit_buffer_get_forward_offset (&edit->buffer, target_b, 1, 0);
-                            target_line++;
-                        }
-                    }
-                    line = target_line;
-
-                    // move cursor directly to the target line
-                    edit_cursor_move (edit, target_b - edit->buffer.curs1);
-                }
+                line = edit_line_at_row (edit, click_y);
+                edit_cursor_move (edit,
+                                  edit_buffer_get_forward_offset (&edit->buffer,
+                                                                  edit->start_display,
+                                                                  line - edit->start_line, 0)
+                                      - edit->buffer.curs1);
 
                 fold = edit_fold_find (edit, line);
 

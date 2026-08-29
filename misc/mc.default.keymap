@@ -362,6 +362,7 @@ UserMenu = f11
 Menu = f9
 Bookmark = alt-k
 BookmarkFlush = alt-o
+FilterToggle = alt-s
 BookmarkNext = alt-j
 BookmarkPrev = alt-i
 # History =
