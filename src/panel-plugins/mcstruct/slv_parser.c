@@ -52,6 +52,7 @@ typedef struct
     int include_depth;
     const char *include_name;     /* errors inside an included file */
     const char *include_chain[8]; /* paths being included, against cycles */
+    char *encoding;               /* #encoding in force */
 } parser_t;
 
 /*** forward declarations (file scope functions) *************************************************/
@@ -113,6 +114,7 @@ item_free (gpointer p)
     g_free (it->legend);
     g_free (it->bits);
     g_free (it->target);
+    g_free (it->encoding);
     slv_expr_free (it->follower);
     slv_expr_free (it->rows);
     slv_expr_free (it->jump);
@@ -572,6 +574,8 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
         char *colon;
         int max_len = 0, view = 0;
 
+        int terminator = 0;
+
         /* table column 'c:max.view' */
         colon = strchr (id, ':');
         if (colon != NULL)
@@ -580,6 +584,16 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
             max_len = atoi (colon + 1);
             if (strchr (colon + 1, '.') != NULL)
                 view = atoi (strchr (colon + 1, '.') + 1);
+        }
+
+        /* 'sc.0a': a C string ended by that byte (5.00) */
+        if (strncmp (id, "sc.", 3) == 0 && strlen (id) == 5 && g_ascii_isxdigit (id[3])
+            && g_ascii_isxdigit (id[4]))
+        {
+            terminator = (int) strtol (id + 3, NULL, 16);
+            id[2] = '\0';
+            if (ps->file->version_major < 5)
+                add_error (ps, "'sc.XX' needs STL 5.00");
         }
 
         if (!slv_parse_type_id (id, &type, &size, &be, &endian_set))
@@ -602,6 +616,11 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
                            : type == SLV_TYPE_CHECK ? SLV_ITEM_CHECK
                                                     : SLV_ITEM_FIELD);
         it->type = type;
+        it->terminator = terminator;
+        if (ps->encoding != NULL
+            && (type == SLV_TYPE_CHAR || type == SLV_TYPE_CSTRING || type == SLV_TYPE_PSTRING
+                || type == SLV_TYPE_STR8))
+            it->encoding = g_strdup (ps->encoding);
         it->size = size;
         it->big_endian = be;
         it->endian_set = endian_set;
@@ -1048,6 +1067,24 @@ parse_directive (parser_t *ps, const char *code)
         return;
     }
 
+    if (directive_is (code, "#encoding"))
+    {
+        const char *arg = code + 9;
+
+        while (*arg == ' ' || *arg == '\t')
+            arg++;
+        if (!v5)
+            add_error (ps, "#encoding needs STL 5.00");
+        g_free (ps->encoding);
+        ps->encoding = NULL;
+        if (*arg == '\0')
+            add_error (ps, "#encoding needs a charset name");
+        else if (g_ascii_strcasecmp (arg, "utf-8") != 0 && g_ascii_strcasecmp (arg, "utf8") != 0
+                 && g_ascii_strcasecmp (arg, "ascii") != 0)
+            ps->encoding = g_strdup (arg);
+        return;
+    }
+
     if (directive_is (code, "#set"))
     {
         const char *arg = code + 4;
@@ -1118,6 +1155,7 @@ parse_directive (parser_t *ps, const char *code)
         if (*arg == '\0')
             add_error (ps, "#switch needs an expression");
         it->branches = g_ptr_array_new ();
+        it->direction = 1; /* the scratch branch is still there */
         br = g_new0 (slv_branch_t, 1);
         br->cond = slv_expr_parse ("0", NULL);
         br->items = g_ptr_array_new_with_free_func (item_free);
@@ -1158,12 +1196,18 @@ parse_directive (parser_t *ps, const char *code)
             add_error (ps, "'%s' outside of #switch", code);
             return;
         }
-        if (it->branches->len == 1)
+        /* the scratch branch made by #switch goes away with the first #case */
+        if (it->branches->len == 1 && it->direction == 1)
         {
-            const slv_branch_t *first = g_ptr_array_index (it->branches, 0);
+            slv_branch_t *first = g_ptr_array_index (it->branches, 0);
 
             if (first->items->len > 0)
                 add_error (ps, "items between #switch and the first #case");
+            slv_expr_free (first->cond);
+            g_ptr_array_free (first->items, TRUE);
+            g_free (first);
+            g_ptr_array_remove_index (it->branches, 0);
+            it->direction = 0;
         }
         br = g_new0 (slv_branch_t, 1);
         if (!is_default)
@@ -1569,6 +1613,7 @@ slv_file_parse (const char *text, gsize len, const char *path)
     {
         add_error (&ps, "label '%s' without a field", ps.pending_label);
         g_free (ps.pending_label);
+        g_free (ps.encoding);
     }
     return file;
 }
