@@ -1497,7 +1497,8 @@ mcterm_filter_set (WMcTerm *t, const char *pattern)
     index = mcterm_filter_index (&t->filter, cursor_row);
     t->filter.top = CLAMP (index - r->lines / 2, 0, MAX (len - r->lines, 0));
     t->cursor_row = mcterm_filter_row (&t->filter, index);
-    t->cursor_col = 0;
+    // The column it was reading at is the column it goes on reading at.
+    t->cursor_col = CLAMP (t->cursor_col, 0, r->cols - 1);
     t->cursor_valid = TRUE;
 
     widget_draw (WIDGET (t));
