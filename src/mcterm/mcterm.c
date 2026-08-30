@@ -64,6 +64,7 @@
 #include "src/keymap.h"
 
 #include "mcterm.h"
+#include "mcterm_filter.h"
 #include "mcterm_key.h"
 #include "mcterm_proto.h"
 #include "mcterm_select.h"
@@ -135,6 +136,9 @@ struct WMcTerm
     // Whether the host types elsewhere; without that the arrows are the shell's.
     gboolean typing_elsewhere;
     mcterm_sel_t sel;
+    /* Only the rows that matched are drawn, the view moving among them alone. */
+    mcterm_filter_t filter;
+    char *last_filter;  // what was filtered by last, for the filter to go back on
     /* Where the terminal is being read, as against where the shell is typing.
        It exists while the widget has the focus, and the arrows move it. */
     gboolean cursor_valid;
@@ -152,6 +156,7 @@ typedef struct
 {
     gboolean compose;   // history and live rows are drawn as one view
     gboolean snapshot;  // a held-back frame is on the screen
+    gboolean filtered;  // the rows that matched are drawn, and nothing else
     mcview_terminal_buffer_t *buf;
     int top_row;       // first live row on the screen
     int content_rows;  // rows of output drawn
@@ -902,6 +907,66 @@ mcterm_compose_view (WMcTerm *t, int lines, int live_top, int live_rows, int bac
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Put the output row @row on line @screen_row of @view. */
+static void
+mcterm_view_set_row (WMcTerm *t, mcview_terminal_buffer_t *view, int screen_row, gint64 row)
+{
+    const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
+
+    if (row >= scrolled)
+    {
+        GArray *cells;
+
+        cells =
+            mcview_terminal_buffer_row_copy (mcview_vterm_buf (t->vterm), (int) (row - scrolled));
+        if (cells != NULL)
+        {
+            mcview_terminal_buffer_set_row (view, screen_row, cells);
+            g_array_unref (cells);
+        }
+    }
+    else
+    {
+        // The history keeps its newest rows only, so the oldest ones are gone.
+        const int len = mcview_vterm_history_len (t->vterm);
+        const gint64 index = row - (scrolled - len);
+
+        if (index >= 0 && index < len)
+        {
+            const GArray *cells = mcview_vterm_history_row (t->vterm, (int) index);
+
+            if (cells != NULL)
+                mcview_terminal_buffer_set_row (view, screen_row, cells);
+        }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* One screen of the rows that matched, the view standing where it was left. */
+static mcview_terminal_buffer_t *
+mcterm_compose_filtered (WMcTerm *t, const mcterm_geom_t *g)
+{
+    mcview_terminal_buffer_t *view;
+    int row;
+
+    view = mcview_terminal_buffer_new ();
+
+    for (row = 0; row < g->content_rows; row++)
+    {
+        const gint64 abs_row = mcterm_filter_row (&t->filter, t->filter.top + row);
+
+        if (abs_row < 0)
+            break;
+
+        mcterm_view_set_row (t, view, g->blank_above + row, abs_row);
+    }
+
+    return view;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Move the view @delta rows, up when negative. TRUE if it moved. */
 static gboolean
 mcterm_scroll_view (WMcTerm *t, int delta)
@@ -911,6 +976,22 @@ mcterm_scroll_view (WMcTerm *t, int delta)
 
     if (t->vterm == NULL || mcview_vterm_in_alt_screen (t->vterm) || !t->scroll_allowed)
         return FALSE;
+
+    if (mcterm_filter_active (&t->filter))
+    {
+        const int lines = WIDGET (t)->rect.lines;
+        const int len = mcterm_filter_len (&t->filter);
+        int top;
+
+        top = CLAMP (t->filter.top + delta, 0, MAX (len - lines, 0));
+        if (top == t->filter.top)
+            return FALSE;
+
+        t->filter.top = top;
+        widget_draw (WIDGET (t));
+
+        return TRUE;
+    }
 
     max = mcview_vterm_history_len (t->vterm);
     back = t->scrollback - delta;
@@ -944,7 +1025,13 @@ mcterm_canvas_colors (mcview_canvas_colors_t *colors)
 static void
 mcterm_follow_end (WMcTerm *t)
 {
-    if (t->scrollback != 0)
+    const gboolean filtered = mcterm_filter_active (&t->filter);
+
+    // The output goes on below the rows that matched: the filter is in the way of it.
+    if (filtered)
+        mcterm_filter_clear (&t->filter);
+
+    if (t->scrollback != 0 || filtered)
     {
         t->scrollback = 0;
         widget_draw (WIDGET (t));
@@ -995,6 +1082,25 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
     if (t->vterm == NULL)
         return FALSE;
 
+    // An alt-screen application draws a screen of its own, which has no rows to pick from.
+    if (mcterm_filter_active (&t->filter) && !mcview_vterm_in_alt_screen (t->vterm))
+    {
+        const int len = mcterm_filter_len (&t->filter);
+
+        g->snapshot = FALSE;
+        g->compose = TRUE;
+        g->filtered = TRUE;
+        g->buf = mcview_vterm_buf (t->vterm);
+        g->top_row = 0;
+        g->content_rows = CLAMP (len - t->filter.top, 0, r->lines);
+        g->blank_above = r->lines - g->content_rows;
+        g->first_abs = mcterm_filter_row (&t->filter, t->filter.top);
+        g->newest_abs = mcterm_filter_row (&t->filter, len - 1);
+
+        return TRUE;
+    }
+
+    g->filtered = FALSE;
     g->snapshot = t->pending_internal_sync && t->sync_snapshot_buf != NULL;
     g->buf = g->snapshot ? t->sync_snapshot_buf : mcview_vterm_buf (t->vterm);
     g->top_row = g->snapshot ? mcterm_resolve_top_row_for_buf (t, g->buf, r->lines)
@@ -1028,6 +1134,34 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The row of the output drawn on screen line @y; -1 where none is. */
+static gint64
+mcterm_geom_row (const WMcTerm *t, const mcterm_geom_t *g, int y)
+{
+    if (y < g->blank_above)
+        return -1;
+
+    if (g->filtered)
+        return mcterm_filter_row (&t->filter, t->filter.top + (y - g->blank_above));
+
+    return g->first_abs + (y - g->blank_above);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The screen line @row is drawn on. One off the screen is counted just the same,
+   so that the caller can tell how far the view has to move. */
+static gint64
+mcterm_geom_screen_row (const WMcTerm *t, const mcterm_geom_t *g, gint64 row)
+{
+    if (g->filtered)
+        return g->blank_above + (mcterm_filter_index (&t->filter, row) - t->filter.top);
+
+    return g->blank_above + (row - g->first_abs);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The number of the row under @y, and the column under @x. */
 static gboolean
 mcterm_row_at (const WMcTerm *t, int y, int x, gint64 *row, int *col)
@@ -1039,8 +1173,17 @@ mcterm_row_at (const WMcTerm *t, int y, int x, gint64 *row, int *col)
         return FALSE;
 
     y = CLAMP (y, g.blank_above, r->lines - 1);
-    *row = g.first_abs + (y - g.blank_above);
+    *row = mcterm_geom_row (t, &g, y);
     *col = CLAMP (x, 0, r->cols - 1);
+
+    if (g.filtered)
+    {
+        // Below the last row that matched: that row is what was clicked on.
+        if (*row < 0)
+            *row = mcterm_filter_row (&t->filter, mcterm_filter_len (&t->filter) - 1);
+
+        return (*row >= 0);
+    }
 
     /* The top of the screen can be filler standing above the oldest row there
        is; a click there belongs to the first row that exists. */
@@ -1068,7 +1211,7 @@ mcterm_show_row (WMcTerm *t, gint64 row)
     if (!mcterm_geometry (t, &g))
         return;
 
-    screen_row = g.blank_above + (row - g.first_abs);
+    screen_row = mcterm_geom_screen_row (t, &g, row);
     if (screen_row < 0)
         delta = screen_row;
     else if (screen_row >= r->lines)
@@ -1121,6 +1264,7 @@ mcterm_after_reflow (WMcTerm *t)
             t->input_start_valid = FALSE;
     }
     mcterm_sel_clear (&t->sel);
+    mcterm_filter_clear (&t->filter);
     t->cursor_valid = FALSE;
     t->scrollback = MIN (t->scrollback, mcview_vterm_history_len (t->vterm));
 }
@@ -1160,8 +1304,8 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
     const WRect *r = &WIDGET (t)->rect;
     const int page = (r->lines > 1) ? r->lines - 1 : 1;
     const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
-    const gint64 oldest = scrolled - mcview_vterm_history_len (t->vterm);
     mcterm_geom_t g;
+    gint64 oldest;
     gint64 newest;
     gint64 row;
     int col;
@@ -1169,13 +1313,25 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
     if (!mcterm_geometry (t, &g))
         return;
 
-    // The cursor stays on what the terminal draws, and off the command line.
-    newest = MAX (g.newest_abs, oldest);
-
     if (!t->cursor_valid)
         mcterm_cursor_reset (t);
 
-    row = t->cursor_row;
+    if (g.filtered)
+    {
+        /* The rows in between are not drawn, so a step over them is a step from
+           one row that matched to the next: @row counts those, not the output. */
+        oldest = 0;
+        newest = MAX (mcterm_filter_len (&t->filter) - 1, 0);
+        row = mcterm_filter_index (&t->filter, t->cursor_row);
+    }
+    else
+    {
+        oldest = scrolled - mcview_vterm_history_len (t->vterm);
+        // The cursor stays on what the terminal draws, and off the command line.
+        newest = MAX (g.newest_abs, oldest);
+        row = t->cursor_row;
+    }
+
     col = t->cursor_col;
 
     switch (command)
@@ -1225,7 +1381,7 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
         break;
     case CK_End:
         // Past the text, where the end of a line puts the cursor everywhere else.
-        col = mcterm_row_last_col (t, row, r->cols);
+        col = mcterm_row_last_col (t, t->cursor_row, r->cols);
         col = (col < 0) ? 0 : MIN (col + 1, r->cols - 1);
         break;
     case CK_MarkToHome:
@@ -1233,7 +1389,7 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
         break;
     case CK_MarkToEnd:
         // On the text, so that what is lit up is the text and nothing besides.
-        col = MAX (mcterm_row_last_col (t, row, r->cols), 0);
+        col = MAX (mcterm_row_last_col (t, t->cursor_row, r->cols), 0);
         break;
     default:
         break;
@@ -1241,6 +1397,13 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
 
     row = CLAMP (row, oldest, newest);
     col = CLAMP (col, 0, r->cols - 1);
+
+    if (g.filtered)
+    {
+        row = mcterm_filter_row (&t->filter, (int) row);
+        if (row < 0)
+            return;
+    }
 
     if (marking)
     {
@@ -1260,6 +1423,126 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* What to filter by: the marked text when it is of one row, and the word under
+   the cursor when there is no such mark. NULL when neither says anything. */
+static char *
+mcterm_filter_pattern (WMcTerm *t)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    char *text = NULL;
+
+    if (t->sel.active)
+    {
+        text = mcterm_sel_text (&t->sel, t->vterm, r->cols);
+        /* A mark over several rows says nothing about the row to look for, and
+           one over blanks says it of every row: the word under the cursor, then. */
+        if (text != NULL && (strchr (text, '\n') != NULL || text[strspn (text, " \t")] == '\0'))
+            g_clear_pointer (&text, g_free);
+    }
+
+    if (text == NULL)
+    {
+        mcterm_sel_t word;
+
+        if (!t->cursor_valid)
+            mcterm_cursor_reset (t);
+
+        mcterm_sel_clear (&word);
+        mcterm_sel_word (&word, t->vterm, t->cursor_row, t->cursor_col, r->cols);
+        text = mcterm_sel_text (&word, t->vterm, r->cols);
+    }
+
+    // A blank is a word of its own, and one that every row of output carries.
+    if (text != NULL && text[strspn (text, " \t")] == '\0')
+        g_clear_pointer (&text, g_free);
+
+    return text;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Show the rows that match @pattern and no others. FALSE when none of them does,
+   the view left as it was. */
+static gboolean
+mcterm_filter_set (WMcTerm *t, const char *pattern)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    const gint64 newest = mcview_vterm_scrolled_rows (t->vterm)
+        + MAX (mcview_terminal_buffer_max_row (mcview_vterm_buf (t->vterm)),
+               mcview_vterm_cursor_row (t->vterm));
+    gint64 cursor_row;
+    int index, len;
+
+    if (!t->cursor_valid)
+        mcterm_cursor_reset (t);
+    cursor_row = t->cursor_row;
+
+    if (!mcterm_filter_apply (&t->filter, t->vterm, r->cols, newest, pattern))
+        return FALSE;
+
+    // The toggle filters by what is kept here; anything else is kept in its turn.
+    if (t->last_filter != pattern)
+    {
+        g_free (t->last_filter);
+        t->last_filter = g_strdup (pattern);
+    }
+
+    // What was marked is not what is drawn any more.
+    mcterm_sel_clear (&t->sel);
+    t->scrollback = 0;
+
+    /* The cursor stays where it was reading: on the row it was on, or on the
+       first row that matched below it. */
+    len = mcterm_filter_len (&t->filter);
+    index = mcterm_filter_index (&t->filter, cursor_row);
+    t->filter.top = CLAMP (index - r->lines / 2, 0, MAX (len - r->lines, 0));
+    t->cursor_row = mcterm_filter_row (&t->filter, index);
+    t->cursor_col = 0;
+    t->cursor_valid = TRUE;
+
+    widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Filter by the marked text, or by the word under the cursor. */
+static void
+mcterm_filter_by_word (WMcTerm *t)
+{
+    char *pattern;
+
+    pattern = mcterm_filter_pattern (t);
+    if (pattern == NULL)
+        return;
+
+    (void) mcterm_filter_set (t, pattern);
+    g_free (pattern);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Lift the filter if one is on; otherwise put the last one back on, over the
+   output as it stands now. FALSE when there has been none: the key is the shell's. */
+static gboolean
+mcterm_filter_toggle (WMcTerm *t)
+{
+    if (mcterm_filter_active (&t->filter))
+    {
+        mcterm_filter_clear (&t->filter);
+        widget_draw (WIDGET (t));
+        send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+
+        return TRUE;
+    }
+
+    return (t->last_filter != NULL && mcterm_filter_set (t, t->last_filter));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The view has moved: bring the cursor along, or it would be left off the
    screen, where it cannot be drawn and the command line takes it over. */
 static void
@@ -1273,6 +1556,19 @@ mcterm_cursor_into_view (WMcTerm *t)
 
     if (!t->cursor_valid || !mcterm_geometry (t, &g))
         return;
+
+    if (g.filtered)
+    {
+        const int last_shown = t->filter.top + MAX (g.content_rows - 1, 0);
+        int index;
+
+        index = CLAMP (mcterm_filter_index (&t->filter, t->cursor_row), t->filter.top, last_shown);
+        index = MIN (index, mcterm_filter_len (&t->filter) - 1);
+        if (index >= 0)
+            t->cursor_row = mcterm_filter_row (&t->filter, index);
+
+        return;
+    }
 
     first = MAX (g.first_abs, oldest);
     last = g.first_abs + (g.compose ? r->lines : g.content_rows) - 1;
@@ -1298,10 +1594,10 @@ mcterm_draw_selection (WMcTerm *t, const mcterm_geom_t *g)
 
     for (row = g->blank_above; row < r->lines; row++)
     {
-        const gint64 abs_row = g->first_abs + (row - g->blank_above);
+        const gint64 abs_row = mcterm_geom_row (t, g, row);
         int from, to, col;
 
-        if (!mcterm_sel_row_span (&t->sel, abs_row, r->cols, &from, &to))
+        if (abs_row < 0 || !mcterm_sel_row_span (&t->sel, abs_row, r->cols, &from, &to))
             continue;
 
         for (col = from; col < to; col++)
@@ -1344,7 +1640,7 @@ mcterm_paint_pictures (void *data)
     t->pictures_shown = FALSE;
 
     if (!widget_get_state (WIDGET (t), WST_VISIBLE) || t->child_dead || !tty_has_sixel ()
-        || !mcterm_geometry (t, &g) || g.snapshot)
+        || !mcterm_geometry (t, &g) || g.snapshot || g.filtered)
         return;
 
     for (i = 0; i < mcview_vterm_images_len (t->vterm); i++)
@@ -1434,7 +1730,9 @@ mcterm_do_draw (WMcTerm *t)
         {
             mcview_terminal_buffer_t *view;
 
-            view = mcterm_compose_view (t, r->lines, g.top_row, g.content_rows, t->scrollback);
+            view = g.filtered
+                ? mcterm_compose_filtered (t, &g)
+                : mcterm_compose_view (t, r->lines, g.top_row, g.content_rows, t->scrollback);
             mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols, &colors);
             mcview_terminal_buffer_free (view);
         }
@@ -1530,8 +1828,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
     {
         /* Shown full screen with the shell typing at the prompt, the cursor
            follows the shell, not the reading cursor left at the focus point. */
-        const gboolean live_line =
-            !t->typing_elsewhere && t->shell_at_prompt && t->scrollback == 0 && !t->sel.anchored;
+        const gboolean live_line = !t->typing_elsewhere && t->shell_at_prompt && t->scrollback == 0
+            && !t->sel.anchored && !mcterm_filter_active (&t->filter);
 
         /* Focused, the terminal shows where it is being read; the shell has
            the cursor back as soon as the focus goes to the command line. */
@@ -1543,7 +1841,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             if (mcterm_geometry (t, &g))
             {
                 const WRect *r = &w->rect;
-                const gint64 screen_row = g.blank_above + (t->cursor_row - g.first_abs);
+                const gint64 screen_row = mcterm_geom_screen_row (t, &g, t->cursor_row);
 
                 if (screen_row >= 0 && screen_row < r->lines)
                 {
@@ -1701,6 +1999,21 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 return MSG_HANDLED;
             }
 
+            case CK_FilterWord:
+                if (!t->scroll_allowed)
+                {
+                    mcterm_follow_end (t);
+                    break;
+                }
+                mcterm_filter_by_word (t);
+                return MSG_HANDLED;
+
+            case CK_FilterToggle:
+                // Without a filter of its own the terminal has no use for the key.
+                if (!t->scroll_allowed || !mcterm_filter_toggle (t))
+                    break;
+                return MSG_HANDLED;
+
             case CK_ScrollUp:
             case CK_ScrollDown:
             case CK_PageUp:
@@ -1708,7 +2021,9 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             case CK_Top:
             case CK_Bottom:
             {
-                const int hist = mcview_vterm_history_len (t->vterm);
+                const int hist = mcterm_filter_active (&t->filter)
+                    ? mcterm_filter_len (&t->filter)
+                    : mcview_vterm_history_len (t->vterm);
                 int delta;
 
                 if (command == CK_ScrollUp)
@@ -1732,7 +2047,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 }
 
                 // Held back, the key is ours; at the end, only these two are.
-                if (t->scrollback > 0 || command == CK_ScrollUp || command == CK_ScrollDown)
+                if (t->scrollback > 0 || mcterm_filter_active (&t->filter) || command == CK_ScrollUp
+                    || command == CK_ScrollDown)
                     return MSG_HANDLED;
                 break;
             }
@@ -1814,6 +2130,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         g_clear_pointer (&t->command_hint, g_free);
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
+        mcterm_filter_clear (&t->filter);
+        g_clear_pointer (&t->last_filter, g_free);
         return MSG_HANDLED;
 
     default:
@@ -2124,11 +2442,8 @@ mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed)
 void
 mcterm_scroll_to_end (WMcTerm *t)
 {
-    if (t != NULL && t->scrollback != 0)
-    {
-        t->scrollback = 0;
-        widget_draw (WIDGET (t));
-    }
+    if (t != NULL)
+        mcterm_follow_end (t);
 }
 
 /* --------------------------------------------------------------------------------------------- */
