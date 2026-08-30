@@ -498,6 +498,40 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_endian_float_and_bits)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/E\n"
+                              "#endian big\n"
+                              " f32 1 f\n"
+                              " f64 1 d\n"
+                              "b:  t16 1 bits\n"
+                              "#if b == 0x0102\n"
+                              " :label is the big endian value\n"
+                              "#fi\n"
+                              " f32.le 1 fle\n";
+    /* 1.5f big endian, 2.5 big endian, 0x0102, 1.5f little endian */
+    static const unsigned char data[] = { 0x3F, 0xC0, 0x00, 0x00, 0x40, 0x04, 0x00, 0x00, 0x00,
+                                          0x00, 0x00, 0x00, 0x01, 0x02, 0x00, 0x00, 0xC0, 0x3F };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "E", &file, &reader);
+
+    ck_assert_str_eq (child (root, 0)->text, "1.5");
+    ck_assert_str_eq (child (root, 1)->text, "2.5");
+    ck_assert_str_eq (child (root, 2)->text, "0000000100000010");
+    ck_assert_int_eq (child (root, 2)->value, 0x0102);
+    ck_assert_int_eq (child (root, 3)->kind, SLV_NODE_REMARK);
+    ck_assert_str_eq (child (root, 4)->text, "1.5");
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -616,6 +650,7 @@ main (void)
     tcase_add_test (tc_core, test_repeat);
     tcase_add_test (tc_core, test_set_and_linked_list);
     tcase_add_test (tc_core, test_outer_labels);
+    tcase_add_test (tc_core, test_endian_float_and_bits);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

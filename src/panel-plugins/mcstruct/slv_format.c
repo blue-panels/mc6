@@ -164,8 +164,18 @@ msbin_to_double (const unsigned char *b, int size)
 /* --------------------------------------------------------------------------------------------- */
 
 static double
-float_value (const unsigned char *b, int size)
+float_value (const unsigned char *b, int size, gboolean big_endian)
 {
+    unsigned char le[10];
+
+    if (big_endian && size <= (int) sizeof (le))
+    {
+        int i;
+
+        for (i = 0; i < size; i++)
+            le[i] = b[size - 1 - i];
+        b = le;
+    }
     if (size == 4)
     {
         float f;
@@ -315,7 +325,7 @@ slv_type_name (slv_type_t type, int size)
 /* bits of a little-endian value, most significant first, groups separated by '.'
    split: "" or "1" = no groups, "0" = every bit, "745" = 7+4+5 (A = 10 ... Z = 35) */
 char *
-slv_format_bits (const unsigned char *buf, int size, const char *split)
+slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, const char *split)
 {
     GString *out;
     guint64 v;
@@ -323,7 +333,7 @@ slv_format_bits (const unsigned char *buf, int size, const char *split)
     int group_left = -1;
     const char *sp = split != NULL ? split : "";
 
-    v = read_uint (buf, size, FALSE);
+    v = read_uint (buf, size, big_endian);
     out = g_string_sized_new (nbits + 8);
 
     if (strcmp (sp, "0") == 0)
@@ -514,11 +524,11 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
 
     case SLV_TYPE_BITS:
     {
-        char *bits = slv_format_bits (buf, size, item->bits);
+        char *bits = slv_format_bits (buf, size, big_endian, item->bits);
 
         g_string_append (out, bits);
         g_free (bits);
-        *first_value = (gint64) read_uint (buf, size, FALSE);
+        *first_value = (gint64) read_uint (buf, size, big_endian);
         break;
     }
 
@@ -586,7 +596,7 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
             case SLV_TYPE_FLOAT:
             case SLV_TYPE_MSBIN:
             {
-                double d = item->type == SLV_TYPE_FLOAT ? float_value (b, size)
+                double d = item->type == SLV_TYPE_FLOAT ? float_value (b, size, big_endian)
                                                         : msbin_to_double (b, size);
 
                 g_string_append_printf (out, ff, d);
