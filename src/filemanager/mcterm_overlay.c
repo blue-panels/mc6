@@ -848,6 +848,15 @@ mcterm_overlay_modal_callback (Widget *w, Widget *sender, widget_msg_t msg, int 
 
 /* --------------------------------------------------------------------------------------------- */
 
+static void
+mcterm_overlay_repaint_screen (void)
+{
+    tty_touch_screen ();
+    repaint_screen ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /**
  * Show mc's own terminal full screen, for the editor and the viewers to reach with Ctrl-O.
  *
@@ -894,6 +903,7 @@ mcterm_overlay_show_terminal (void)
     mcterm_set_typing_elsewhere (mcterm_panel, FALSE);
     widget_select (tw);
 
+    tty_touch_screen ();
     dlg_run (h);
 
     mcterm_set_typing_elsewhere (mcterm_panel, TRUE);
@@ -906,6 +916,7 @@ mcterm_overlay_show_terminal (void)
     group_add_widget (GROUP (filemanager), tw);
     widget_set_size_rect (tw, &saved);
     widget_hide (tw);
+    tty_touch_screen ();
 
     return TRUE;
 }
@@ -964,7 +975,7 @@ mcterm_overlay_toggle (void)
         widget_hide (WIDGET (the_hint));
 
         mcterm_overlay_set_buttonbar ();
-        do_refresh ();
+        mcterm_overlay_repaint_screen ();
     }
     else
     {
@@ -996,7 +1007,7 @@ mcterm_overlay_toggle (void)
         layout_change ();
         widget_select (WIDGET (current_panel));
         mcterm_overlay_set_buttonbar ();
-        do_refresh ();
+        mcterm_overlay_repaint_screen ();
     }
 }
 
