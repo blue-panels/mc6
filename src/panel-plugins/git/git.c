@@ -2806,7 +2806,11 @@ git_handle_key (void *plugin_data, int key)
     if ((data->key_diff != 0 && key == data->key_diff)
         || (data->key_diff_alt != 0 && key == data->key_diff_alt))
     {
-        if ((git_view_t) data->view != GIT_VIEW_COMMITS && git_show_diff_selected (data))
+        const git_view_t view = (git_view_t) data->view;
+
+        /* Only these two views list files; elsewhere the selection is a commit or a branch. */
+        if ((view == GIT_VIEW_STATUS || view == GIT_VIEW_COMMIT_FILES)
+            && git_show_diff_selected (data))
             return MC_PPR_OK;
         return MC_PPR_FAILED;
     }
@@ -2814,11 +2818,11 @@ git_handle_key (void *plugin_data, int key)
     if (data->key_refresh != 0 && key == data->key_refresh)
         return MC_PPR_OK;
 
-    if ((git_view_t) data->view == GIT_VIEW_FAVORITES)
-        return MC_PPR_FAILED;
-
+    /* The remaining hotkeys only make sense on the status list.  Report the key as unhandled
+       rather than failed: panel_key() retries handle_key() with the raw terminal key only for
+       MC_PPR_NOT_SUPPORTED, and plugin hotkeys such as Shift-F3 arrive as a command id first. */
     if ((git_view_t) data->view != GIT_VIEW_STATUS)
-        return MC_PPR_FAILED;
+        return MC_PPR_NOT_SUPPORTED;
 
     if (data->key_fav_add != 0 && key == data->key_fav_add && data->repo_root != NULL)
     {
