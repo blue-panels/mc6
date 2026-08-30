@@ -43,7 +43,8 @@ csz:    i32     1               cell size (negative = allocated)
 #else
 #set    cend = ^@ - 4 + csz
 #fi
-#if @w == 'nk'
+#switch @w
+#case 'nk'
         c       2               nk: named key
         t16     `regf_nk_flags  flags
         q       1               last written (FILETIME)
@@ -64,7 +65,7 @@ csz:    i32     1               cell size (negative = allocated)
 knl:    u16     1               key name length
         u16     1               class name length
         c       knl             key name
-#elseif @w == 'vk'
+#case 'vk'
         c       2               vk: value
 vnl:    u16     1               value name length
         u32     1               data size (bit 31: data in the offset field)
@@ -75,24 +76,24 @@ vnl:    u16     1               value name length
 #if vnl > 0
         c       vnl             value name
 #fi
-#elseif @w == 'lf' || @w == 'lh'
+#case 'lf', 'lh'
         c       2               lf/lh: subkey list
 nel:    u16     1               elements
         *       nel     :regf_lf_entry
-#elseif @w == 'li' || @w == 'ri'
+#case 'li', 'ri'
         c       2               li/ri: subkey list
 nel:    u16     1               elements
         u32     nel             offsets
-#elseif @w == 'sk'
+#case 'sk'
         c       2               sk: security key
         u16     1               unknown
         u32     1               previous security key offset
         u32     1               next security key offset
         u32     1               reference count
         u32     1               security descriptor size
-#else
+#default
         c       2               identifier
-#fi
+#end
         +       "cend - ^@"
 #end
 

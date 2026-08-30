@@ -12,20 +12,21 @@ STL 5.00
         c       12              magic (FILE, 4, PFF2)
 #repeat while ^@ + 8 <= $size && @d != "DATA"
         :--- section ---
-#if @d == "NAME" || @d == "FAMI" || @d == "WEIG" || @d == "SLAN"
+#switch @d
+#case "NAME", "FAMI", "WEIG", "SLAN"
         c       4               type
 slen:   u32     1               length
         sc      slen            text
-#elseif @d == "CHIX"
+#case "CHIX"
         c       4               type
 slen:   u32     1               length
         *       "slen / 9"      _PFF2_char
-#else
+#default
         c       4               type
 slen:   u32     1               length
         u16     1               value
         +       "slen - 2"
-#fi
+#end
 #end
         c       4               type
         u32     1               length (bitmap data follows)

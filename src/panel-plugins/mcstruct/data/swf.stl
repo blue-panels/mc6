@@ -24,27 +24,28 @@ blen:   i32     1               length
 #set    tlen = blen
 #fi
 #set    tend = ^@ + tlen
-#if ttype == 9
+#switch ttype
+#case 9
         u8      1               background red
         u8      1               background green
         u8      1               background blue
-#elseif ttype == 65
+#case 65
         u16     1               max recursion depth
         u16     1               script timeout, seconds
-#elseif ttype == 69
+#case 69
         t32     `swf_attr       file attributes
-#elseif ttype == 76 || ttype == 56
+#case 76, 56
 nsym:   u16     1               symbols
 #repeat nsym
         u16     1               tag
         sc      0               name
 #end
-#elseif ttype == 82
+#case 82
         u32     1               flags
         sc      0               name
-#elseif ttype == 43
+#case 43
         sc      0               label
-#fi
+#end
         +       "tend - ^@"
 #end
         u16     1               end tag

@@ -27,21 +27,22 @@ elen:   u16     1               extensions length
         :--- extension ---
 etype:  u16     'tls_ext        type
 xlen:   u16     1               length
-#if etype == 0
+#switch etype
+#case 0
         u16     1               server name list length
         u8      1               name type
 hlen:   u16     1               host name length
         c       hlen            host name
-#elseif etype == 16
+#case 16
         u16     1               protocol list length
 #set    aend = ^@ - 2 + xlen
 #repeat while ^@ < aend
 plen:   u8      1               protocol name length
         c       plen            protocol
 #end
-#else
+#default
         +       xlen
-#fi
+#end
 #end
 #fi
 

@@ -16,30 +16,31 @@ STL 5.00
         u32     1               children size
 #repeat while ^@ + 12 <= $size
         :--- chunk ---
-#if @d == 'SIZE'
+#switch @d
+#case 'SIZE'
         c       4               id
         u32     1               content size
         u32     1               children size
         u32     1               size x
         u32     1               size y
         u32     1               size z
-#elseif @d == 'XYZI'
+#case 'XYZI'
         c       4               id
         u32     1               content size
         u32     1               children size
 nvox:   u32     1               voxels
         *       nvox    :vox_voxel
-#elseif @d == 'RGBA'
+#case 'RGBA'
         c       4               id
         u32     1               content size
         u32     1               children size
         *       256     :vox_color
-#elseif @d == 'PACK'
+#case 'PACK'
         c       4               id
         u32     1               content size
         u32     1               children size
         u32     1               models
-#elseif @d == 'MATT'
+#case 'MATT'
         c       4               id
 csz:    u32     1               content size
         u32     1               children size
@@ -48,12 +49,12 @@ csz:    u32     1               content size
         f32     1               weight
         t32     `vox_props      property bits
         +       "csz - 16"      property values (f32 each, in bit order)
-#else
+#default
         c       4               id
 csz:    u32     1               content size
         u32     1               children size
         +       csz
-#fi
+#end
 #end
 
 /:vox_voxel

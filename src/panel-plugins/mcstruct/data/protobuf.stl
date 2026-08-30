@@ -10,16 +10,17 @@ STL 5.00
         :--- field ---
 key:    vl      1               key (field number << 3 | wire type)
 #set    wt = key & 7
-#if wt == 0
+#switch wt
+#case 0
         vl      1               varint value
-#elseif wt == 1
+#case 1
         u64     1               64-bit value
-#elseif wt == 2
+#case 2
 len:    vl      1               length
         b       len             bytes (string, message or packed values)
-#elseif wt == 5
+#case 5
         u32     1               32-bit value
-#else
+#default
         :ERROR!!! unsupported wire type (groups)
-#fi
+#end
 #end

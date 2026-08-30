@@ -25,13 +25,14 @@ ctype:  u16     'sparse_chunk   type
         u32     1               blocks
 clen:   u32     1               chunk length (header + body)
 #set    body = clen - chlen
-#if ctype == 0xCAC2
+#switch ctype
+#case 0xCAC2
         d       1               fill value
-#elseif ctype == 0xCAC4
+#case 0xCAC4
         d       1               crc32
-#else
+#default
         +       body
-#fi
+#end
 #end
 
 /'sparse_chunk

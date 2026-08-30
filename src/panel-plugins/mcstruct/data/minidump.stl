@@ -23,21 +23,22 @@ sofs:   u32     1               stream directory offset
 /_MDMP_dir
 st:     u32     'mdmp_stream    stream type
         u32     1               length
-#if st == 7
+#switch st
+#case 7
         j32     _MDMP_system_info=@     offset
-#elseif st == 15
+#case 15
         j32     _MDMP_misc_info=@       offset
-#elseif st == 3
+#case 3
         j32     _MDMP_thread_list=@     offset
-#elseif st == 5
+#case 5
         j32     _MDMP_memory_list=@     offset
-#elseif st == 9
+#case 9
         j32     _MDMP_memory64_list=@   offset
-#elseif st == 6
+#case 6
         j32     _MDMP_exception=@       offset
-#else
+#default
         u32     1               offset
-#fi
+#end
 
 /_MDMP_system_info
         u16     'mdmp_cpu       cpu architecture

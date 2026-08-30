@@ -12,36 +12,37 @@ dsz:    i32     1               document size
         :--- element ---
 et:     u8      'bson_type      type
         sc      0               name
-#if et == 1
+#switch et
+#case 1
         f64     1               double
-#elseif et == 2 || et == 13 || et == 14
+#case 2, 13, 14
 sl:     i32     1               string length
         c       sl              string (with NUL)
-#elseif et == 3 || et == 4
+#case 3, 4
 bl:     i32     1               document size
         +       "bl - 4"        document
-#elseif et == 5
+#case 5
 bl:     i32     1               binary length
         u8      'bson_subtype   subtype
         +       bl              binary
-#elseif et == 7
+#case 7
         b       12              ObjectId
-#elseif et == 8
+#case 8
         u8      1               boolean
-#elseif et == 9
+#case 9
         i64     1               UTC datetime, ms
-#elseif et == 11
+#case 11
         sc      0               regex pattern
         sc      0               regex options
-#elseif et == 16
+#case 16
         i32     1               int32
-#elseif et == 17
+#case 17
         u64     1               timestamp
-#elseif et == 18
+#case 18
         i64     1               int64
-#elseif et == 19
+#case 19
         b       16              decimal128
-#fi
+#end
 #end
         u8      1               end of document
 

@@ -18,19 +18,20 @@ n:      u16     1               tables
 #endian big
 tag:    d       'ttf_tag        tag
         d       1               checksum
-#if tag == "head"
+#switch tag
+#case "head"
         j32     _TTF_head=@     offset
-#elseif tag == "hhea"
+#case "hhea"
         j32     _TTF_hhea=@     offset
-#elseif tag == "maxp"
+#case "maxp"
         j32     _TTF_maxp=@     offset
-#elseif tag == "OS/2"
+#case "OS/2"
         j32     _TTF_os2=@      offset
-#elseif tag == "name"
+#case "name"
         j32     _TTF_name=@     offset
-#else
+#default
         u32     1               offset
-#fi
+#end
         u32     1               length
 
 /_TTF_head

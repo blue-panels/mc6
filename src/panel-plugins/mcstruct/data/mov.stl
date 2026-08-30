@@ -10,27 +10,29 @@ STL 5.00
 #repeat while ^@ + 8 <= $size
         :--- atom ---
 l32:    u32     1               size
-#if l32 == 1
+#switch l32
+#case 1
         c       4               type
 l64:    u64     1               size (64-bit)
 #set    aend = ^@ - 16 + l64
 #set    atype = @u32(^@ - 12)
-#elseif l32 == 0
+#case 0
         c       4               type
 #set    aend = $size
 #set    atype = @u32(^@ - 4)
-#else
+#default
         c       4               type
 #set    aend = ^@ - 8 + l32
 #set    atype = @u32(^@ - 4)
-#fi
-#if atype == "moov" || atype == "trak" || atype == "mdia" || atype == "minf" || atype == "stbl" || atype == "dinf" || atype == "moof" || atype == "traf" || atype == "udta" || atype == "edts"
+#end
+#switch atype
+#case "moov", "trak", "mdia", "minf", "stbl", "dinf", "moof", "traf", "udta", "edts"
         :container, the atoms inside follow
-#elseif atype == "ftyp"
+#case "ftyp"
         c       4               major brand
         u32     1               minor version
         c       "aend - ^@"     compatible brands
-#elseif atype == "mvhd"
+#case "mvhd"
         u8      1               version
         b       3               flags
         u32     1               creation time (seconds since 1904)
@@ -51,7 +53,7 @@ l64:    u64     1               size (64-bit)
         u32     1               current time
         u32     1               next track id
         +       "aend - ^@"
-#elseif atype == "tkhd"
+#case "tkhd"
         u8      1               version
         b       3               flags (bit 0 enabled, 1 in movie, 2 in preview)
         u32     1               creation time
@@ -70,7 +72,7 @@ l64:    u64     1               size (64-bit)
         u16     1               height, integer part
         u16     1               height, fraction
         +       "aend - ^@"
-#elseif atype == "hdlr"
+#case "hdlr"
         u8      1               version
         b       3               flags
         c       4               component type
@@ -78,7 +80,7 @@ l64:    u64     1               size (64-bit)
         b       12              reserved
         sc      "aend - ^@"     name
         +       "aend - ^@"
-#elseif atype == "mdhd"
+#case "mdhd"
         u8      1               version
         b       3               flags
         u32     1               creation time
@@ -88,9 +90,9 @@ l64:    u64     1               size (64-bit)
         u16     1               language (packed ISO 639)
         u16     1               quality
         +       "aend - ^@"
-#else
+#default
         +       "aend - ^@"
-#fi
+#end
 #end
 
 /`mov_tkhd_flags

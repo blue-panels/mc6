@@ -13,7 +13,8 @@ pt:     u8      'rtcp_pt        payload type
 plen:   u16     1               length, 32-bit words - 1
 #set    pend = ^@ + plen * 4
 #set    cnt = b0 & 0x1F
-#if pt == 200
+#switch pt
+#case 200
         d       1               ssrc
         u32     1               ntp timestamp, seconds
         u32     1               ntp timestamp, fraction
@@ -21,10 +22,10 @@ plen:   u16     1               length, 32-bit words - 1
         u32     1               sender packet count
         u32     1               sender octet count
         *       cnt     :rtcp_report
-#elseif pt == 201
+#case 201
         d       1               ssrc
         *       cnt     :rtcp_report
-#elseif pt == 202
+#case 202
 #repeat cnt
         d       1               ssrc
 #repeat while @b != 0
@@ -35,12 +36,12 @@ ilen:   u8      1               length
         u8      1               end of items
         +       "(4 - ^@ % 4) % 4"
 #end
-#elseif pt == 203
+#case 203
         d       cnt             ssrc
-#elseif pt == 205 || pt == 206
+#case 205, 206
         d       1               ssrc
         d       1               media source ssrc
-#fi
+#end
         +       "pend - ^@"
 #end
 

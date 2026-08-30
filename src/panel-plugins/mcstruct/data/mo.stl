@@ -7,13 +7,14 @@ STL 5.00
 
 /MO
 sig:    d       1               signature
-#if sig == 0x950412DE
+#switch sig
+#case 0x950412DE
 #endian little
-#elseif sig == 0xDE120495
+#case 0xDE120495
 #endian big
-#else
+#default
         :ERROR!!! no gettext .mo signature at this offset
-#fi
+#end
         u16     1               minor version
         u16     1               major version
 n:      u32     1               strings

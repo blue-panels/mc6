@@ -15,16 +15,17 @@ STL 5.00
 op:     u8      'mcap_op        opcode
 rlen:   u64     1               length
 #set    rend = ^@ + rlen
-#if op == 1
+#switch op
+#case 1
 pl:     u32     1               profile length
         c       pl              profile
 ll:     u32     1               library length
         c       ll              library
-#elseif op == 2
+#case 2
         u64     1               summary start
         u64     1               summary offset start
         d       1               summary crc
-#elseif op == 3
+#case 3
         u16     1               schema id
 nl:     u32     1               name length
         c       nl              name
@@ -32,7 +33,7 @@ el:     u32     1               encoding length
         c       el              encoding
 dl:     u32     1               data length
         +       dl              data
-#elseif op == 4
+#case 4
         u16     1               channel id
         u16     1               schema id
 tl:     u32     1               topic length
@@ -40,12 +41,12 @@ tl:     u32     1               topic length
 el:     u32     1               message encoding length
         c       el              message encoding
         u32     1               metadata length
-#elseif op == 5
+#case 5
         u16     1               channel id
         u32     1               sequence
         u64     1               log time, ns
         u64     1               publish time, ns
-#elseif op == 6
+#case 6
         u64     1               message start time
         u64     1               message end time
         u64     1               uncompressed size
@@ -53,16 +54,16 @@ el:     u32     1               message encoding length
 cl:     u32     1               compression length
         c       cl              compression
         u64     1               records length
-#elseif op == 7
+#case 7
         u16     1               channel id
         u32     1               records length
-#elseif op == 8
+#case 8
         u64     1               message start time
         u64     1               message end time
         u64     1               chunk start offset
         u64     1               chunk length
         u32     1               message index offsets length
-#elseif op == 9
+#case 9
         u64     1               log time
         u64     1               create time
 nl:     u32     1               name length
@@ -70,7 +71,7 @@ nl:     u32     1               name length
 ml:     u32     1               media type length
         c       ml              media type
         u64     1               data length
-#elseif op == 11
+#case 11
         u64     1               messages
         u16     1               schemas
         u32     1               channels
@@ -79,16 +80,16 @@ ml:     u32     1               media type length
         u32     1               chunks
         u64     1               message start time
         u64     1               message end time
-#elseif op == 12
+#case 12
 nl:     u32     1               name length
         c       nl              name
-#elseif op == 14
+#case 14
         u8      'mcap_op        group opcode
         u64     1               group start
         u64     1               group length
-#elseif op == 15
+#case 15
         d       1               data section crc
-#fi
+#end
         +       "rend - ^@"
 #end
 #if ^@ + 8 <= $size

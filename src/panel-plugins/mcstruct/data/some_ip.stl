@@ -48,26 +48,27 @@ ol:     u16     1               length
 ot:     u8      'sd_option      type
 #set    optend = ^@ + ol
         u8      1               reserved
-#if ot == 4 || ot == 20 || ot == 36
+#switch ot
+#case 4, 20, 36
         b       4               ipv4 address
         u8      1               reserved
         u8      'sd_l4          protocol
         u16     1               port
-#elseif ot == 6 || ot == 22 || ot == 38
+#case 6, 22, 38
         b       16              ipv6 address
         u8      1               reserved
         u8      'sd_l4          protocol
         u16     1               port
-#elseif ot == 2
+#case 2
         u16     1               priority
         u16     1               weight
-#elseif ot == 1
+#case 1
 #repeat while @b != 0
 cl:     u8      1               length
         c       cl              key=value
 #end
         u8      1               end
-#fi
+#end
         +       "optend - ^@"
 #end
 #fi

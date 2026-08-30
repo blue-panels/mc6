@@ -8,12 +8,13 @@ STL 5.00
 /SND
 #endian big
 fmt:    u16     1               format (1 or 2)
-#if fmt == 1
+#switch fmt
+#case 1
 ndf:    u16     1               data formats
         *       ndf     :snd_data_format
-#elseif fmt == 2
+#case 2
         u16     1               reference count
-#fi
+#end
 ncmd:   u16     1               sound commands
 #repeat ncmd
         :--- command ---

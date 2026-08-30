@@ -7,13 +7,14 @@ STL 5.00
 /ICMP
 #endian big
 type:   u8      'icmp_type      type
-#if type == 3
+#switch type
+#case 3
         u8      'icmp_unreach   code
-#elseif type == 11
+#case 11
         u8      'icmp_exceeded  code
-#else
+#default
         u8      1               code
-#fi
+#end
         w       1               checksum
 #if type == 0 || type == 8
         u16     1               identifier

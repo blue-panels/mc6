@@ -15,7 +15,8 @@ hlen:   u16     1               header length
 ft:     u16     'ppi_field      type
 flen:   u16     1               length
 #set    fend = ^@ + flen
-#if ft == 2
+#switch ft
+#case 2
         u64     1               tsf timer
         t16     `ppi_common_flags  flags
         u16     1               rate, 500 kbps units
@@ -25,12 +26,12 @@ flen:   u16     1               length
         u8      1               fhss pattern
         i8      1               antenna signal, dBm
         i8      1               antenna noise, dBm
-#elseif ft == 3
+#case 3
         t32     `ppi_mac_flags  mac flags
         u32     1               a-mpdu id
         u8      1               delimiters
         b       3               reserved
-#elseif ft == 4
+#case 4
         t32     `ppi_mac_flags  mac flags
         u32     1               a-mpdu id
         u8      1               delimiters
@@ -43,7 +44,7 @@ flen:   u16     1               length
         t16     `ppi_channel    extension channel flags
         b       8               rf signal / noise per antenna
         u32     4               evm
-#fi
+#end
         +       "fend - ^@"
 #end
         :frame body follows (Ethernet or 802.11 with F3)

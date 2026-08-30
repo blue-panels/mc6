@@ -15,15 +15,16 @@ csize:  u32     1               compressed size
         td      1               timestamp
         u8      1               attributes
 level:  u8      'lzh_level      header level
-#if level == 0
+#switch level
+#case 0
 fnlen:  u8      1               file name length
         c       fnlen           file name
         w       1               crc16
-#elseif level == 2
+#case 2
         w       1               crc16
         u8      'lzh_os         os
         u16     1               first extended header size
-#fi
+#end
         .       "^@ - ^hlen + hlen + 2"
         +       csize
 #end

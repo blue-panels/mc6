@@ -41,7 +41,8 @@ l4:     u32     1               length
 #fi
 #fi
 #set    pend = ^@ + plen
-#if tag == 6 || tag == 14
+#switch tag
+#case 6, 14
         u8      1               version
         tu      1               creation time
 alg:    u8      'pgp_pubkey_alg algorithm
@@ -56,21 +57,21 @@ ol:     u8      1               curve OID length
 qb:     u16     1               point bits
         +       "(qb + 7) / 8"  point
 #fi
-#elseif tag == 13
+#case 13
         c       plen            user id
-#elseif tag == 2
+#case 2
         u8      1               version
         u8      'pgp_sig_type   signature type
         u8      'pgp_pubkey_alg public key algorithm
         u8      'pgp_hash_alg   hash algorithm
         u16     1               hashed subpackets length
-#elseif tag == 1
+#case 1
         u8      1               version
         q       1               key id
         u8      'pgp_pubkey_alg algorithm
-#elseif tag == 9 || tag == 18
+#case 9, 18
         :encrypted data
-#fi
+#end
         +       "pend - ^@"
 #end
 

@@ -13,13 +13,14 @@ b0:     t8      `ws_b0          fin / rsv / opcode
 b1:     t8      `ws_b1          mask / length
 #set    fin = b0 & 0x80
 #set    plen = b1 & 0x7F
-#if plen == 126
+#switch plen
+#case 126
 elen:   u16     1               extended length
 #set    plen = elen
-#elseif plen == 127
+#case 127
 elen:   u64     1               extended length
 #set    plen = elen
-#fi
+#end
 #if b1 & 0x80
         d       1               mask key
 #fi

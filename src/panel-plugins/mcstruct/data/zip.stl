@@ -8,7 +8,8 @@ STL 5.00
 
 /Zip
 sig:    d       1               signature
-#if sig == 0x04034B50
+#switch sig
+#case 0x04034B50
         :--- local file header ---
         u16     1               version needed
         t16     `zip_flags      flags
@@ -22,7 +23,7 @@ xlen:   u16     1               extra length
         c       nlen            name
         c       xlen            extra
         +       csize
-#elseif sig == 0x02014B50
+#case 0x02014B50
         :--- central directory entry ---
         u8      1               version made by
         u8      'zip_host       made on
@@ -43,7 +44,7 @@ clen:   u16     1               comment length
         c       nlen            name
         c       xlen            extra
         c       clen            comment
-#elseif sig == 0x06054B50
+#case 0x06054B50
         :--- end of central directory ---
         u16     1               this disk
         u16     1               central directory disk
@@ -53,12 +54,12 @@ clen:   u16     1               comment length
         j32     Zip=@           central directory offset
 clen:   u16     1               comment length
         c       clen            comment
-#elseif sig == 0x08074B50
+#case 0x08074B50
         :--- data descriptor ---
         d       1               crc-32
         u32     1               compressed size
         u32     1               uncompressed size
-#elseif sig == 0x06064B50
+#case 0x06064B50
         :--- zip64 end of central directory ---
         u64     1               record size
         u16     1               version made by
@@ -69,14 +70,14 @@ clen:   u16     1               comment length
         u64     1               entries total
         u64     1               central directory size
         j64     Zip=@           central directory offset
-#elseif sig == 0x07064B50
+#case 0x07064B50
         :--- zip64 end of central directory locator ---
         u32     1               zip64 end record disk
         j64     Zip=@           zip64 end record offset
         u32     1               disks total
-#else
+#default
         :ERROR!!! no ZIP record at this offset
-#fi
+#end
 
 /'zip_method
 0       stored

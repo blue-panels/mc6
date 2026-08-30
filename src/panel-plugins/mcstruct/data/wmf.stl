@@ -30,24 +30,25 @@ STL 5.00
 rsz:    u32     1               size, words
 fn:     u16     'wmf_func       function
 #set    rend = ^@ - 6 + rsz * 2
-#if fn == 0x0325 || fn == 0x0324
+#switch fn
+#case 0x0325, 0x0324
 np:     i16     1               points
         *       np      :wmf_point
-#elseif fn == 0x0201
+#case 0x0201
         u8      1               red
         u8      1               green
         u8      1               blue
         u8      1               reserved
-#elseif fn == 0x0102
+#case 0x0102
         u16     'wmf_mix        background mode
-#elseif fn == 0x0106
+#case 0x0106
         u16     'wmf_polyfill   polygon fill mode
-#elseif fn == 0x0104
+#case 0x0104
         u16     'wmf_rop2       draw mode
-#elseif fn == 0x020C || fn == 0x020B
+#case 0x020C, 0x020B
         i16     1               y
         i16     1               x
-#fi
+#end
         +       "rend - ^@"
 #end
         u32     1               size, words

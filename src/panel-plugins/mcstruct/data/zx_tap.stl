@@ -13,17 +13,18 @@ flag:   u8      'tap_flag       flag
 htype:  u8      'tap_header     header type
         c       10              file name
         u16     1               data length
-#if htype == 0
+#switch htype
+#case 0
         u16     1               autostart line
         u16     1               program length
-#elseif htype == 3
+#case 3
         u16     1               start address
         u16     1               reserved
-#else
+#default
         u8      1               reserved
         c       1               variable name
         u16     1               reserved
-#fi
+#end
         u8      1               checksum
 #else
         +       "blen - 1"      data + checksum

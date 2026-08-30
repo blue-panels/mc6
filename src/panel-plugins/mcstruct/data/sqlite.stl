@@ -66,21 +66,22 @@ t5:     v       1               serial type of "sql"
         c       "(t1 - 13) / 2" type
         c       "(t2 - 13) / 2" name
         c       "(t3 - 13) / 2" tbl_name
-#if t4 == 1
+#switch t4
+#case 1
         u8      1               rootpage
-#elseif t4 == 2
+#case 2
         u16     1               rootpage
-#elseif t4 == 3
+#case 3
         m32     0               rootpage
         -       4
         b       3               rootpage
-#elseif t4 == 4
+#case 4
         u32     1               rootpage
-#elseif t4 == 8
+#case 8
         :rootpage = 0
-#elseif t4 == 9
+#case 9
         :rootpage = 1
-#fi
+#end
         c       "(t5 - 13) / 2" sql
 
 ; any other b-tree page: the header and the cell pointer array

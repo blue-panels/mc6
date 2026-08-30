@@ -47,7 +47,8 @@ otype:  u8      'journal_object object type
         b       6               reserved
 olen:   u64     1               object size
 #set    oend = ^@ - 16 + olen
-#if otype == 1
+#switch otype
+#case 1
         q       1               hash
         u64     1               next hash offset
         u64     1               head field offset
@@ -55,21 +56,21 @@ olen:   u64     1               object size
         u64     1               entry array offset
         u64     1               entries
         c       "oend - ^@"     payload
-#elseif otype == 2
+#case 2
         q       1               hash
         u64     1               next hash offset
         u64     1               head data offset
         c       "oend - ^@"     payload
-#elseif otype == 3
+#case 3
         u64     1               seqnum
         u64     1               realtime
         u64     1               monotonic
         b       16              boot id
         q       1               xor hash
         +       "oend - ^@"     items
-#else
+#default
         +       "oend - ^@"
-#fi
+#end
 #end
 
 /`journal_compat

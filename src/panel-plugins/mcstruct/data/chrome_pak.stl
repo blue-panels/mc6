@@ -6,18 +6,19 @@ STL 5.00
 
 /CHROME_PAK
 ver:    u32     1               version (4 or 5)
-#if ver == 4
+#switch ver
+#case 4
 n:      u32     1               resources
         u8      'pak_enc        encoding
 #set    na = 0
-#elseif ver == 5
+#case 5
         u8      'pak_enc        encoding
         b       3               padding
 n:      u16     1               resources
 na:     u16     1               aliases
-#else
+#default
         :ERROR!!! unknown pak version
-#fi
+#end
         *       "n + 1" :pak_resource
         *       na      :pak_alias
 

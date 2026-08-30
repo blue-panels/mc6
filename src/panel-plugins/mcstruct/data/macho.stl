@@ -6,13 +6,14 @@ STL 5.00
 ;
 
 /MACHO
-#if @d == 0xFEEDFACF || @d == 0xFEEDFACE
+#switch @d
+#case 0xFEEDFACF, 0xFEEDFACE
 #endian little
-#elseif @d == 0xCFFAEDFE || @d == 0xCEFAEDFE
+#case 0xCFFAEDFE, 0xCEFAEDFE
 #endian big
-#else
+#default
         :ERROR!!! no Mach-O magic at this offset
-#fi
+#end
 magic:  d       1               magic
         u32     'macho_cpu      cpu type
         d       1               cpu subtype
@@ -31,7 +32,8 @@ ncmd:   u32     1               load commands
 cmd:    u32     'macho_cmd      command
 csz:    u32     1               size
 #set    cend = ^@ - 8 + csz
-#if cmd == 0x19
+#switch cmd
+#case 0x19
         sc      16              segment name
         u64     1               vm address
         u64     1               vm size
@@ -42,7 +44,7 @@ csz:    u32     1               size
 nsect:  u32     1               sections
         t32     `macho_seg_flags  flags
         *       nsect   _MACHO_section64
-#elseif cmd == 0x01
+#case 0x01
         sc      16              segment name
         u32     1               vm address
         u32     1               vm size
@@ -53,28 +55,28 @@ nsect:  u32     1               sections
 nsect:  u32     1               sections
         t32     `macho_seg_flags  flags
         *       nsect   _MACHO_section32
-#elseif cmd == 0x02
+#case 0x02
         u32     1               symbol table offset
         u32     1               symbols
         u32     1               string table offset
         u32     1               string table size
-#elseif cmd == 0x0C || cmd == 0x0D || cmd == 0x0E || cmd == 0x0F || cmd == 0x18 || cmd == 0x80000018 || cmd == 0x80000028
+#case 0x0C, 0x0D, 0x0E, 0x0F, 0x18, 0x80000018, 0x80000028
         u32     1               name offset
         u32     1               timestamp
         u32     1               current version
         u32     1               compatibility version
         sc      "cend - ^@"     name
-#elseif cmd == 0x1B
+#case 0x1B
         b       16              uuid
-#elseif cmd == 0x32
+#case 0x32
         u32     'macho_platform platform
         u32     1               minimum os (x.y.z as 0xXXXXYYZZ)
         u32     1               sdk
         u32     1               tools
-#elseif cmd == 0x80000028
+#case 0x80000028
         u64     1               entry offset
         u64     1               stack size
-#elseif cmd == 0x22 || cmd == 0x80000022
+#case 0x22, 0x80000022
         u32     1               rebase offset
         u32     1               rebase size
         u32     1               bind offset
@@ -85,10 +87,10 @@ nsect:  u32     1               sections
         u32     1               lazy bind size
         u32     1               export offset
         u32     1               export size
-#elseif cmd == 0x1D || cmd == 0x1E || cmd == 0x26 || cmd == 0x29 || cmd == 0x2B || cmd == 0x2E || cmd == 0x33 || cmd == 0x34
+#case 0x1D, 0x1E, 0x26, 0x29, 0x2B, 0x2E, 0x33, 0x34
         u32     1               data offset
         u32     1               data size
-#fi
+#end
         +       "cend - ^@"
 #end
 

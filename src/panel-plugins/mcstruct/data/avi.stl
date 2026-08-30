@@ -14,11 +14,12 @@ rsz:    u32     1               file size - 8
         c       4               form type
 #set    rend = 8 + rsz
 #repeat while ^@ + 8 <= rend
-#if @d == 'LIST'
+#switch @d
+#case 'LIST'
         c       4               chunk
         u32     1               list size
         c       4               list type
-#elseif @d == 'avih'
+#case 'avih'
         c       4               chunk
         u32     1               size
         u32     1               microseconds per frame
@@ -32,7 +33,7 @@ rsz:    u32     1               file size - 8
         u32     1               width
         u32     1               height
         b       16              reserved
-#elseif @d == 'strh'
+#case 'strh'
         c       4               chunk
         u32     1               size
         c       4               stream type
@@ -52,11 +53,11 @@ rsz:    u32     1               file size - 8
         i16     1               frame top
         i16     1               frame right
         i16     1               frame bottom
-#else
+#default
         c       4               chunk
 csz:    u32     1               size
         +       "csz + (csz & 1)"
-#fi
+#end
 #end
 
 /`avi_flags

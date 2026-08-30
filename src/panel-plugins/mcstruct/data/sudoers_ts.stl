@@ -20,11 +20,12 @@ type:   u16     'sudo_ts_type   type
 #fi
         i64     1               time stamp, seconds
         i64     1               time stamp, nanoseconds
-#if type == 2
+#switch type
+#case 2
         u32     1               tty device
-#elseif type == 3
+#case 3
         u32     1               parent pid
-#fi
+#end
         +       "rend - ^@"
 #end
 
