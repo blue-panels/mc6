@@ -153,6 +153,8 @@ gboolean node_is_gridable (const slv_node_t *n);
 gboolean node_is_text (const slv_node_t *n);
 gboolean ui_cmd_save (ui_t *ui);
 gboolean ui_input_offset (ui_t *ui, const char *title, off_t *offset);
+gboolean ui_bytes_range (ui_t *ui, const char *what, off_t *offset, off_t *size, char **name,
+                         char **sname);
 gboolean ui_load_def (ui_t *ui, const char *path);
 row_t *ui_current_row (ui_t *ui);
 slv_node_t *ui_grid_cell_node (ui_t *ui, int row, int col);

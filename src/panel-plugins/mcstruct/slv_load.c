@@ -386,6 +386,7 @@ slv_settings_load (slv_settings_t *s)
     s->grid_rows = 2;
     s->show_hidden = FALSE;
     s->lazy_rows = 64;
+    s->fragment_days = 7;
     s->float_format = g_strdup ("%g");
 
     path = find_in_dirs (dirs, INI_FILE);
@@ -412,6 +413,7 @@ slv_settings_load (slv_settings_t *s)
             s->name_width = mc_config_get_int (cfg, INI_GROUP, "NameWidth", s->name_width);
             s->show_hidden = mc_config_get_bool (cfg, INI_GROUP, "ShowHiddenStructures", FALSE);
             s->lazy_rows = mc_config_get_int (cfg, INI_GROUP, "LazyRows", (int) s->lazy_rows);
+            s->fragment_days = mc_config_get_int (cfg, INI_GROUP, "FragmentDays", s->fragment_days);
             oc = mc_config_get_string_raw (cfg, INI_GROUP, "OffsetColumn", "global");
             if (g_ascii_strcasecmp (oc, "none") == 0)
                 s->offset_column = 0;
@@ -454,6 +456,8 @@ slv_settings_load (slv_settings_t *s)
         s->name_width = 40;
     if (s->lazy_rows < 1)
         s->lazy_rows = 1;
+    if (s->fragment_days < 0)
+        s->fragment_days = 0;
     g_strfreev (dirs);
 }
 
@@ -504,6 +508,7 @@ slv_settings_save (const slv_settings_t *s)
                                                       : "offset");
     mc_config_set_bool (cfg, INI_GROUP, "ShowHiddenStructures", s->show_hidden);
     mc_config_set_int (cfg, INI_GROUP, "LazyRows", (int) s->lazy_rows);
+    mc_config_set_int (cfg, INI_GROUP, "FragmentDays", s->fragment_days);
     mc_config_set_string_raw (cfg, INI_GROUP, "FloatingPointFormat",
                               s->float_format != NULL ? s->float_format : "%g");
     ok = mc_config_save_file (cfg, NULL);

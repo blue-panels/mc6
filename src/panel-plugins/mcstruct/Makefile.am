@@ -29,6 +29,7 @@ mc_panel_mcstruct_la_SOURCES = \
 	mcstruct_ui_priv.h \
 	mcstruct_grid.c \
 	mcstruct_cmd.c \
+	mcstruct_bytes.c \
 	mcstruct_layout.c \
 	mcstruct_ui.h
 mc_panel_mcstruct_la_CPPFLAGS = \

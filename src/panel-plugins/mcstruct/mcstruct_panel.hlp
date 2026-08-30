@@ -45,10 +45,12 @@ Keys in the tree:
   1..9, *          expand to depth, expand all
   Tab              next zone (tree, hex, def-file)
   F2               write pending edits
-  Shift-F2         the bytes of the current row (a field, a structure,
-                   a table, an array element) to a file
-  Ctrl-F2          the bytes of a file into the current row; the size
-                   of the row does not change, F2 writes the result
+  Shift-F2         save the bytes of the current row (a field, a
+                   structure, a table, an array element) as a numbered
+                   fragment, or to a file
+  Ctrl-F2          a saved fragment, or a file, into the current row;
+                   the size of the row does not change, F2 writes the
+                   result
   F3               choose a structure and an offset to apply it at
   F4               edit the current field
   F5               go to an offset (an expression; labels of the current
@@ -89,6 +91,18 @@ Keys in the hex zone:
 
   A block is what Shift-F2 and Ctrl-F2 write or read while the hex zone
   is focused.
+
+Saved fragments:
+
+  Shift-F2 keeps the bytes under a number that is never reused, with a
+  name (the structure by default), the file they came from and the
+  time. The set is shared by every mcstruct, so fragments taken from
+  one file can be put into another opened later. Ctrl-F2 lists them,
+  newest first: number, size (! when it differs from the target row),
+  name, structure, source file, time. Enter puts the fragment over the
+  current row, Delete drops it from the set, the last item reads a
+  file instead. Fragments older than the "Keep fragments" setting
+  (7 days by default, 0 keeps them) are dropped.
 
 Keys in the def-file zone:
 

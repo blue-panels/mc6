@@ -134,6 +134,7 @@ mcstruct_configure (void)
 {
     slv_settings_t s;
     char *hex_lines = NULL, *def_lines = NULL, *name_width = NULL, *lazy_rows = NULL;
+    char *frag_days = NULL, *frag_def;
     char *tree_lines = NULL, *tree_def;
     char *float_format = NULL, *hex_def, *def_def, *name_def, *lazy_def;
     int offset_column, def_layout, grid_rows;
@@ -150,6 +151,7 @@ mcstruct_configure (void)
     def_def = g_strdup_printf ("%d", s.def_lines);
     name_def = g_strdup_printf ("%d", s.name_width);
     lazy_def = g_strdup_printf ("%d", (int) s.lazy_rows);
+    frag_def = g_strdup_printf ("%d", s.fragment_days);
     offset_column = s.offset_column;
     grid_rows = s.grid_rows;
     def_layout = s.def_layout;
@@ -188,6 +190,11 @@ mcstruct_configure (void)
                                      FALSE, FALSE, INPUT_COMPLETE_NONE),
                 QUICK_CHECKBOX (N_("Show &hidden structures"), &show_hidden, NULL),
             QUICK_STOP_GROUPBOX,
+            QUICK_START_GROUPBOX (N_("Saved bytes")),
+                QUICK_LABELED_INPUT (N_("Keep fragments, days (0 = always):"), input_label_left,
+                                     frag_def, "mcstruct-fragment-days", &frag_days, NULL, FALSE,
+                                     FALSE, INPUT_COMPLETE_NONE),
+            QUICK_STOP_GROUPBOX,
             QUICK_START_GROUPBOX (N_("Offset column")),
                 QUICK_RADIO (3, offset_items, &offset_column, NULL),
             QUICK_STOP_GROUPBOX,
@@ -217,6 +224,7 @@ mcstruct_configure (void)
             s.def_lines = atoi (def_lines != NULL ? def_lines : "");
             s.name_width = atoi (name_width != NULL ? name_width : "");
             s.lazy_rows = atoi (lazy_rows != NULL ? lazy_rows : "");
+            s.fragment_days = atoi (frag_days != NULL ? frag_days : "");
             s.offset_column = offset_column;
             s.grid_rows = grid_rows;
             s.def_layout = def_layout;
@@ -241,6 +249,8 @@ mcstruct_configure (void)
     g_free (def_lines);
     g_free (name_width);
     g_free (lazy_rows);
+    g_free (frag_days);
+    g_free (frag_def);
     g_free (float_format);
     g_free (hex_def);
     g_free (def_def);

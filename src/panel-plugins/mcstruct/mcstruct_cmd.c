@@ -735,9 +735,9 @@ ui_cmd_calc (ui_t *ui)
 /* --------------------------------------------------------------------------------------------- */
 
 /* what Shift-F2 / Ctrl-F2 work on: the block in the hex zone when there is one and the zone is
-   focused, else the current tree row or grid cell */
-static gboolean
-bytes_range (ui_t *ui, const char *what, off_t *offset, off_t *size, char **name)
+   focused, else the current tree row or grid cell; @sname is the structure the bytes belong to */
+gboolean
+ui_bytes_range (ui_t *ui, const char *what, off_t *offset, off_t *size, char **name, char **sname)
 {
     const slv_node_t *n = NULL;
 
@@ -746,6 +746,7 @@ bytes_range (ui_t *ui, const char *what, off_t *offset, off_t *size, char **name
         *offset = ui->hex->block_start;
         *size = ui->hex->block_len;
         *name = g_strdup (_ ("block"));
+        *sname = g_strdup (ui->root != NULL && ui->root->def != NULL ? ui->root->def->name : "");
         return TRUE;
     }
     if (ui->grid != NULL)
@@ -764,117 +765,17 @@ bytes_range (ui_t *ui, const char *what, off_t *offset, off_t *size, char **name
     *offset = n->offset;
     *size = n->size;
     *name = g_strdup (n->key != NULL ? n->key : "");
+    if (n->def != NULL)
+        *sname = g_strdup (n->def->name);
+    else
+    {
+        const slv_node_t *p = n->parent;
+
+        while (p != NULL && p->def == NULL)
+            p = p->parent;
+        *sname = g_strdup (p != NULL ? p->def->name : "");
+    }
     return TRUE;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* the bytes of the current structure or field to a file */
-void
-ui_cmd_put_bytes (ui_t *ui)
-{
-    off_t offset, size;
-    char *path, *label, *name;
-    unsigned char *buf;
-    GError *error = NULL;
-
-    if (!bytes_range (ui, _ ("Write bytes"), &offset, &size, &name))
-        return;
-    label = g_strdup_printf (_ ("%s: %lld bytes at %08llX to file:"), name, (long long) size,
-                             (unsigned long long) offset);
-    g_free (name);
-    path = input_expand_dialog (_ ("Write bytes"), label, "mcstruct-bytes", "",
-                                INPUT_COMPLETE_FILENAMES);
-    g_free (label);
-    if (path == NULL || path[0] == '\0')
-    {
-        g_free (path);
-        return;
-    }
-    if (g_file_test (path, G_FILE_TEST_EXISTS)
-        && query_dialog (_ ("Write bytes"), _ ("The file exists. Overwrite?"), D_NORMAL, 2,
-                         _ ("&Yes"), _ ("&No"))
-            != 0)
-    {
-        g_free (path);
-        return;
-    }
-    buf = g_malloc ((gsize) size);
-    if (ui->fr->reader.read (ui->fr->reader.ctx, offset, buf, (gsize) size) != (gssize) size)
-        message (D_ERROR, _ ("Write bytes"), _ ("Cannot read the bytes"));
-    else if (!g_file_set_contents (path, (const char *) buf, (gssize) size, &error))
-    {
-        message (D_ERROR, _ ("Write bytes"), "%s", error->message);
-        g_error_free (error);
-    }
-    g_free (buf);
-    g_free (path);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-/* the bytes of a file into the current structure or field; the size stays as it is */
-void
-ui_cmd_get_bytes (ui_t *ui)
-{
-    off_t offset, size;
-    char *path, *label, *name, *data = NULL;
-    gsize len = 0, i;
-    unsigned char *orig;
-    GError *error = NULL;
-
-    if (!bytes_range (ui, _ ("Read bytes"), &offset, &size, &name))
-        return;
-    label = g_strdup_printf (_ ("%s: %lld bytes at %08llX from file:"), name, (long long) size,
-                             (unsigned long long) offset);
-    g_free (name);
-    path = input_expand_dialog (_ ("Read bytes"), label, "mcstruct-bytes", "",
-                                INPUT_COMPLETE_FILENAMES);
-    g_free (label);
-    if (path == NULL || path[0] == '\0')
-    {
-        g_free (path);
-        return;
-    }
-    if (!g_file_get_contents (path, &data, &len, &error))
-    {
-        message (D_ERROR, _ ("Read bytes"), "%s", error->message);
-        g_error_free (error);
-        g_free (path);
-        return;
-    }
-    g_free (path);
-    if (len > (gsize) size)
-    {
-        if (query_dialog (_ ("Read bytes"),
-                          _ ("The file is longer than the target. Use the first bytes only?"),
-                          D_NORMAL, 2, _ ("&Yes"), _ ("&No"))
-            != 0)
-        {
-            g_free (data);
-            return;
-        }
-        len = (gsize) size;
-    }
-    orig = g_malloc (len > 0 ? len : 1);
-    if (len > 0 && ui->fr->reader.read (ui->fr->reader.ctx, offset, orig, len) != (gssize) len)
-    {
-        message (D_ERROR, _ ("Read bytes"), _ ("Cannot read the bytes"));
-        g_free (orig);
-        g_free (data);
-        return;
-    }
-    ui_note_change (ui);
-    for (i = 0; i < len; i++)
-        if ((unsigned char) data[i] != orig[i])
-            slv_file_reader_set_byte (ui->fr, offset + (off_t) i, (unsigned char) data[i]);
-    g_free (orig);
-    g_free (data);
-    ui_refresh (ui);
-    widget_draw (WIDGET (ui->dlg));
-    if (len < (gsize) size)
-        message (D_NORMAL, _ ("Read bytes"), _ ("%u bytes read, the rest is unchanged"),
-                 (unsigned) len);
 }
 
 /* --------------------------------------------------------------------------------------------- */

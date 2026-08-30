@@ -25,6 +25,7 @@ typedef struct
     int grid_rows;     /* first grid column: 0 none, 1 row number, 2 row offset */
     gboolean show_hidden;
     gint64 lazy_rows;
+    int fragment_days; /* saved byte fragments older than this are dropped, 0 = never */
     char *float_format;
 } slv_settings_t;
 
