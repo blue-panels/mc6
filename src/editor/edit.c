@@ -1018,41 +1018,6 @@ my_type_of (int c)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** get word at cursor for marking */
-
-static void
-edit_get_current_word_extents (WEdit *edit, off_t *start, off_t *end)
-{
-    long pos;
-
-    for (pos = edit->buffer.curs1; pos < edit->buffer.size; pos++)
-    {
-        const int check_char = edit_buffer_get_byte (&edit->buffer, pos);
-
-        if (is_break_char (check_char))
-        {
-            if (pos == edit->buffer.curs1)  // always select at least one character.
-            {
-                *start = pos;
-                *end = pos + 1;
-                return;
-            }
-            break;
-        }
-    }
-    *end = pos;
-
-    for (; pos != 0; pos--)
-    {
-        const int check_char = edit_buffer_get_byte (&edit->buffer, pos - 1);
-
-        if (is_break_char (check_char))
-            break;
-    }
-    *start = pos;
-}
-
-/* --------------------------------------------------------------------------------------------- */
 
 static void
 edit_left_word_move (WEdit *edit, int s)
@@ -4577,6 +4542,41 @@ edit_mark_cmd (WEdit *edit, gboolean unmark)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/** get word at cursor for marking */
+
+void
+edit_get_current_word_extents (WEdit *edit, off_t *start, off_t *end)
+{
+    long pos;
+
+    for (pos = edit->buffer.curs1; pos < edit->buffer.size; pos++)
+    {
+        const int check_char = edit_buffer_get_byte (&edit->buffer, pos);
+
+        if (is_break_char (check_char))
+        {
+            if (pos == edit->buffer.curs1)  // always select at least one character.
+            {
+                *start = pos;
+                *end = pos + 1;
+                return;
+            }
+            break;
+        }
+    }
+    *end = pos;
+
+    for (; pos != 0; pos--)
+    {
+        const int check_char = edit_buffer_get_byte (&edit->buffer, pos - 1);
+
+        if (is_break_char (check_char))
+            break;
+    }
+    *start = pos;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** highlight the word under cursor */
 
 void
@@ -5294,6 +5294,9 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
         break;
     case CK_FilterToggle:
         edit_filter_toggle (edit);
+        break;
+    case CK_FilterWord:
+        edit_filter_word (edit);
         break;
 
     case CK_Top:

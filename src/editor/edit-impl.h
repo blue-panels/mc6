@@ -187,6 +187,7 @@ gboolean edit_load_syntax_file (WDialog *h);
 gboolean edit_load_menu_file (WDialog *h);
 gboolean edit_close_cmd (WEdit *edit);
 void edit_mark_cmd (WEdit *edit, gboolean unmark);
+void edit_get_current_word_extents (WEdit *edit, off_t *start, off_t *end);
 void edit_mark_current_word_cmd (WEdit *edit);
 void edit_mark_current_line_cmd (WEdit *edit);
 void edit_set_markers (WEdit *edit, off_t m1, off_t m2, long c1, long c2);
@@ -265,6 +266,7 @@ void edit_fold_toggle (WEdit *edit);
 int edit_fold_indicator_width (const WEdit *edit, const struct edit_fold_t *fold);
 gboolean edit_filter_apply (WEdit *edit, mc_search_t *search);
 void edit_filter_toggle (WEdit *edit);
+void edit_filter_word (WEdit *edit);
 
 gboolean edit_line_is_blank (WEdit *edit, long line);
 gboolean is_break_char (char c);

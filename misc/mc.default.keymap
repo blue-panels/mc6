@@ -363,6 +363,7 @@ Menu = f9
 Bookmark = alt-k
 BookmarkFlush = alt-o
 FilterToggle = alt-s
+FilterWord = alt-shift-s
 BookmarkNext = alt-j
 BookmarkPrev = alt-i
 # History =
@@ -556,3 +557,6 @@ PageDown = pgdn
 Top = ctrl-home
 Bottom = ctrl-end
 Clear = ctrl-l
+# The output cut down to the rows that match the mark, or the word under the cursor.
+FilterWord = alt-shift-s
+FilterToggle = alt-s
