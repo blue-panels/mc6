@@ -1,0 +1,53 @@
+STL 5.00
+;
+;   ZSoft PCX: 128 byte header and the 256 color palette at the end of
+;   the file. After kaitai_struct_formats image/pcx.ksy.
+;
+
+/PCX
+#if @b != 0x0A
+        :ERROR!!! no PCX signature at this offset
+#fi
+        u8      1               manufacturer (10 = ZSoft)
+ver:    u8      'pcx_version    version
+        u8      'pcx_encoding   encoding
+bpp:    u8      1               bits per pixel
+        u16     1               x min
+        u16     1               y min
+        u16     1               x max
+        u16     1               y max
+        u16     1               horizontal dpi
+        u16     1               vertical dpi
+        *       16      :pcx_rgb
+        u8      1               reserved
+planes: u8      1               color planes
+        u16     1               bytes per line
+        u16     'pcx_palinfo    palette info
+        u16     1               screen width
+        u16     1               screen height
+#if ver == 5 && bpp == 8 && planes == 1 && @u8($size - 769) == 0x0C
+        :--- 256 color palette ---
+        .       "$size - 769"
+        u8      1               marker (12)
+        *       256     :pcx_rgb
+#fi
+
+/:pcx_rgb
+        u8      red
+        u8      green
+        u8      blue
+
+/'pcx_version
+0       2.5
+2       2.8 with palette
+3       2.8 without palette
+4       PC Paintbrush for Windows
+5       3.0
+
+/'pcx_encoding
+0       none
+1       RLE
+
+/'pcx_palinfo
+1       color / monochrome
+2       grayscale

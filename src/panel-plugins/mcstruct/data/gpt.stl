@@ -1,0 +1,42 @@
+STL 5.00
+;
+;   GPT partition table header (open at LBA 1, offset 512, or at the
+;   backup header in the last sector) and its entries.
+;   After kaitai_struct_formats filesystem/gpt_partition_table.ksy.
+;
+
+/GPT
+#if @d != 0x20494645
+        :ERROR!!! no "EFI PART" signature at this offset
+#fi
+        c       8               signature
+        u32     1               revision
+hsize:  u32     1               header size
+        d       1               header crc32
+        u32     1               reserved
+cur:    u64     1               current lba
+        u64     1               backup lba
+        u64     1               first usable lba
+        u64     1               last usable lba
+        b       16              disk guid
+estart: u64     1               entries start lba
+ecount: u32     1               entries count
+esize:  u32     1               entry size
+        d       1               entries crc32
+
+        :--- entries ---
+        .       "(estart - cur) * 512"
+        *       ecount  _GPT_entry
+
+/_GPT_entry
+        b       16              type guid
+        b       16              partition guid
+        u64     1               first lba
+        u64     1               last lba
+        t64     `gpt_attr       attributes
+        s16     36              name
+
+/`gpt_attr
+0x0000000000000001      platform required
+0x0000000000000002      EFI ignore
+0x0000000000000004      legacy BIOS bootable

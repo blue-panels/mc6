@@ -1,0 +1,42 @@
+STL 5.00
+;
+;   Sun/NeXT audio (.au / .snd) header, big endian.
+;   After kaitai_struct_formats media/au.ksy.
+;
+
+/AU
+#endian big
+#if @d.le != '.snd'
+        :ERROR!!! no .snd signature at this offset
+#fi
+        c       4               magic
+ofs:    u32     1               data offset
+        u32     1               data size (0xFFFFFFFF = unknown)
+        u32     'au_encoding    encoding
+        u32     1               sample rate
+        u32     1               channels
+        sc      "ofs - 24"      comment
+
+/'au_encoding
+1       8-bit mu-law
+2       8-bit linear PCM
+3       16-bit linear PCM
+4       24-bit linear PCM
+5       32-bit linear PCM
+6       32-bit IEEE float
+7       64-bit IEEE float
+8       fragmented sample data
+10      DSP program
+11      8-bit fixed point
+12      16-bit fixed point
+13      24-bit fixed point
+14      32-bit fixed point
+18      16-bit linear with emphasis
+19      16-bit linear compressed
+20      16-bit linear with emphasis and compression
+21      music kit DSP commands
+23      4-bit CCITT G.721 ADPCM
+24      CCITT G.722 ADPCM
+25      3-bit CCITT G.723 ADPCM
+26      5-bit CCITT G.723 ADPCM
+27      8-bit A-law

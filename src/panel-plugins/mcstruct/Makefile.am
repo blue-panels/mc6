@@ -54,4 +54,14 @@ dist_mcstructdata_DATA = \
 	data/png.stl \
 	data/bmp.stl \
 	data/wav.stl \
-	data/sqlite.stl
+	data/sqlite.stl \
+	data/gif.stl \
+	data/ico.stl \
+	data/gzip.stl \
+	data/pcap.stl \
+	data/cpio_old.stl \
+	data/tga.stl \
+	data/pcx.stl \
+	data/au.stl \
+	data/ines.stl \
+	data/gpt.stl

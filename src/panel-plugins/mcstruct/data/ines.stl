@@ -1,0 +1,56 @@
+STL 5.00
+;
+;   iNES ROM image header (NES\x1A). After kaitai_struct_formats
+;   firmware/ines.ksy.
+;
+
+/INES
+#if @d != 0x1A53454E
+        :ERROR!!! no NES signature at this offset
+#fi
+        c       4               magic
+prg:    u8      1               PRG ROM, 16 KiB units
+chr:    u8      1               CHR ROM, 8 KiB units
+f6:     t8      `ines_f6        flags 6
+f7:     t8      `ines_f7        flags 7
+        u8      1               PRG RAM, 8 KiB units
+        t8      `ines_f9        flags 9
+        t8      `ines_f10       flags 10
+        b       5               reserved
+#if f6 & 0x04
+        +       512             trainer
+#fi
+        +       "prg * 16384"   PRG ROM
+        +       "chr * 8192"    CHR ROM
+#if f7 & 0x02
+        +       8192            PlayChoice-10 INST-ROM
+        b       16              PlayChoice-10 PROM data
+        b       16              PlayChoice-10 PROM counter out
+#fi
+#if ^@ < $size
+        sc      "$size - ^@"    title
+#fi
+
+/`ines_f6
+0xF0    0xF0    mapper low nibble
+0x01            vertical mirroring
+0x02            battery backed RAM
+0x04            trainer
+0x08            four screen VRAM
+
+/`ines_f7
+0xF0    0xF0    mapper high nibble
+0x01            VS Unisystem
+0x02            PlayChoice-10
+0x0C    0x08    NES 2.0 format
+
+/`ines_f9
+0x01            PAL
+
+/`ines_f10
+0x03    0x00    NTSC
+0x03    0x02    PAL
+0x03    0x01    dual (NTSC preferred)
+0x03    0x03    dual (PAL preferred)
+0x10            PRG RAM present
+0x20            bus conflicts

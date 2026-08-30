@@ -1,0 +1,69 @@
+STL 5.00
+;
+;   gzip member header and trailer, RFC 1952.
+;   After kaitai_struct_formats archive/gzip.ksy.
+;
+
+/GZIP
+#if @w != 0x8B1F
+        :ERROR!!! no gzip signature at this offset
+#fi
+        w       1               signature
+        u8      'gzip_method    compression method
+flags:  t8      `gzip_flags     flags
+        tu      1               modified
+        u8      'gzip_xfl       extra flags
+        u8      'gzip_os        operating system
+#if flags & 0x04
+xlen:   u16     1               extra length
+#set    xend = ^@ + xlen
+#repeat while ^@ < xend
+        c       2               subfield id
+slen:   u16     1               subfield length
+        +       slen
+#end
+#fi
+#if flags & 0x08
+        sc      0               original name
+#fi
+#if flags & 0x10
+        sc      0               comment
+#fi
+#if flags & 0x02
+        w       1               header crc16
+#fi
+        :--- deflate stream, then the trailer at the end of the file ---
+        .       "$size - 8"
+        d       1               crc32 of the uncompressed data
+        u32     1               uncompressed size mod 2^32
+
+/'gzip_method
+8       deflate
+
+/`gzip_flags
+0x01            text
+0x02            header crc
+0x04            extra fields
+0x08            file name
+0x10            comment
+
+/'gzip_xfl
+2       maximum compression
+4       fastest
+
+/'gzip_os
+0       FAT (MS-DOS, OS/2, NT)
+1       Amiga
+2       VMS
+3       Unix
+4       VM/CMS
+5       Atari TOS
+6       HPFS (OS/2, NT)
+7       Macintosh
+8       Z-System
+9       CP/M
+10      TOPS-20
+11      NTFS
+12      QDOS
+13      Acorn RISC OS
+255     unknown

@@ -1,0 +1,87 @@
+STL 5.00
+;
+;   pcap capture file: global header and packet records; the byte order
+;   follows the magic. After kaitai_struct_formats network/pcap.ksy.
+;
+
+/PCAP
+magic:  m32     'pcap_magic     magic
+#if magic == 0xD4C3B2A1 || magic == 0x4D3CB2A1
+#endian little
+#else
+#endian big
+#fi
+        u16     1               version major
+        u16     1               version minor
+        i32     1               time zone correction
+        u32     1               timestamp accuracy
+snap:   u32     1               snapshot length
+        u32     'pcap_linktype  link type
+#repeat while ^@ + 16 <= $size
+        tu      1               timestamp
+        u32     1               microseconds / nanoseconds
+ilen:   u32     1               captured length
+        u32     1               original length
+        +       ilen
+#end
+
+/'pcap_magic
+0xA1B2C3D4      little endian, microseconds
+0xA1B23C4D      little endian, nanoseconds
+0xD4C3B2A1      big endian, microseconds
+0x4D3CB2A1      big endian, nanoseconds
+
+/'pcap_linktype
+0       null
+1       ethernet
+3       AX.25
+6       IEEE 802.5
+7       ARCNET BSD
+8       SLIP
+9       PPP
+10      FDDI
+50      PPP HDLC
+51      PPPoE
+100     ATM RFC 1483
+101     raw IP
+104     Cisco HDLC
+105     IEEE 802.11
+107     Frame Relay
+108     OpenBSD loopback
+113     Linux cooked (SLL)
+117     pflog
+119     Prism + 802.11
+127     radiotap + 802.11
+139     MTP2 with phdr
+140     MTP2
+141     MTP3
+143     DOCSIS
+144     Linux IrDA
+147     158     user defined
+163     AVS + 802.11
+165     BACnet MS/TP
+169     GPRS LLC
+177     Linux LAPD
+187     Bluetooth HCI H4
+189     USB Linux
+190     CAN 2.0b
+192     PPI
+195     IEEE 802.15.4 with FCS
+201     Bluetooth HCI H4 with phdr
+204     PPP with direction
+209     IPMB Linux
+220     USB Linux mmapped
+227     CAN SocketCAN
+228     IPv4
+229     IPv6
+230     IEEE 802.15.4 no FCS
+231     D-Bus
+239     NFLOG
+243     MPEG-2 TS
+249     USBPcap
+251     Bluetooth LE LL
+252     Wireshark upper PDU
+253     netlink
+254     Bluetooth Linux monitor
+256     Bluetooth LE LL with phdr
+276     Linux cooked v2 (SLL2)
