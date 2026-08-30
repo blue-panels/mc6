@@ -226,7 +226,7 @@ START_TEST (test_png_chunks)
     GByteArray *png = g_byte_array_new ();
     slv_file_t *file = load_data_file ("png.stl");
     slv_reader_t *reader;
-    slv_eval_t ev = { file, NULL, 64, "%g" };
+    slv_eval_t ev = { file, NULL, 64, "%g", 0 };
     slv_node_t *root;
     const slv_node_t *rep, *row, *n;
 

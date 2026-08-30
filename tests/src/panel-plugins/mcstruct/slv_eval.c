@@ -159,7 +159,7 @@ START_TEST (test_zip_local_header)
     gsize len = build_zip (z);
     slv_file_t *file = load_data_file ("zip.stl");
     slv_reader_t *reader = slv_reader_new_memory (z, len);
-    slv_eval_t ev = { file, reader, SLV_DEFAULT_LAZY_ROWS, "%g" };
+    slv_eval_t ev = { file, reader, SLV_DEFAULT_LAZY_ROWS, "%g", 0 };
     slv_node_t *root;
     const slv_node_t *n;
 
@@ -421,7 +421,7 @@ START_TEST (test_inline_structures)
                                    " f32 1 pi\n d 0 peek\n -4\n p32 1 far\n tu 1 when\n"
                                    " c 4 tail\n";
         slv_file_t *f2 = slv_file_parse (def2, strlen (def2), "s.stl");
-        slv_eval_t ev2 = { f2, reader, SLV_DEFAULT_LAZY_ROWS, "%.2f" };
+        slv_eval_t ev2 = { f2, reader, SLV_DEFAULT_LAZY_ROWS, "%.2f", 0 };
 
         ck_assert_int_eq (f2->errors->len, 0);
         root = slv_eval_struct (&ev2, slv_file_lookup (f2, "S"), 11);
@@ -456,7 +456,7 @@ START_TEST (test_inline_structures)
     {
         static const char def3[] = "STL 4.00\n/F\n f32 1 pi\n";
         slv_file_t *f3 = slv_file_parse (def3, strlen (def3), "f.stl");
-        slv_eval_t ev3 = { f3, reader, SLV_DEFAULT_LAZY_ROWS, "%.2f" };
+        slv_eval_t ev3 = { f3, reader, SLV_DEFAULT_LAZY_ROWS, "%.2f", 0 };
 
         root = slv_eval_struct (&ev3, slv_file_lookup (f3, "F"), 17);
         n = find_child (root, "pi");
@@ -521,7 +521,7 @@ START_TEST (test_dump)
     static const unsigned char data[] = { 0x34, 0x12, 0xAB };
     slv_file_t *file = slv_file_parse (def, strlen (def), "d.stl");
     slv_reader_t *reader = slv_reader_new_memory (data, sizeof (data));
-    slv_eval_t ev = { file, reader, SLV_DEFAULT_LAZY_ROWS, "%g" };
+    slv_eval_t ev = { file, reader, SLV_DEFAULT_LAZY_ROWS, "%g", 0 };
     slv_node_t *root = slv_eval_struct (&ev, slv_file_lookup (file, "D"), 0);
     char *s = slv_node_dump (root, 0);
 

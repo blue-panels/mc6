@@ -53,7 +53,7 @@ eval_text (const char *def, const unsigned char *data, gsize len, const char *na
 {
     slv_file_t *file = slv_file_parse (def, strlen (def), "inline.stl");
     slv_reader_t *reader = slv_reader_new_memory (data, len);
-    slv_eval_t ev = { file, reader, 64, "%g" };
+    slv_eval_t ev = { file, reader, 64, "%g", 0 };
     slv_node_t *root;
 
     print_errors (file);
@@ -157,7 +157,7 @@ START_TEST (test_repeat)
     slv_reader_t *reader;
     slv_node_t *root = eval_text (def, data, sizeof (data), "R", &file, &reader);
     const slv_node_t *rep, *row;
-    slv_eval_t ev = { file, reader, 64, "%g" };
+    slv_eval_t ev = { file, reader, 64, "%g", 0 };
     slv_node_t *bad;
 
     rep = child (root, 1);
@@ -283,7 +283,7 @@ START_TEST (test_outer_labels)
     slv_reader_t *reader;
     slv_node_t *root, *alone;
     const slv_node_t *tab;
-    slv_eval_t ev = { NULL, NULL, 64, "%g" };
+    slv_eval_t ev = { NULL, NULL, 64, "%g", 0 };
 
     root = eval_text (def, data, sizeof (data), "Outer", &file, &reader);
     tab = child (root, 1);
@@ -297,7 +297,7 @@ START_TEST (test_outer_labels)
         static const unsigned char d2[] = { 7, 8, 'a', 'g', 'e', 0, 1, 2, 3 };
         slv_file_t *f2 = slv_file_parse (def2, strlen (def2), "t.stl");
         slv_reader_t *r2 = slv_reader_new_memory (d2, sizeof (d2));
-        slv_eval_t ev2 = { f2, r2, 64, "%g" };
+        slv_eval_t ev2 = { f2, r2, 64, "%g", 0 };
         slv_node_t *t;
 
         ck_assert_int_eq (f2->errors->len, 0);
