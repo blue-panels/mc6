@@ -58,3 +58,18 @@ stl3d.stl:
 asus_bootldr.stl: @0:424F4F544C445221
 fallout_dat.stl:
 fallout2_dat.stl:
+avantes_roh60.stl: *.roh
+glb.stl: @0:676C5446
+rtp.stl: *.rtp
+heaps_pak.stl: @0:50414B
+zisofs.stl: @0:37E45396C9DBD607
+icmp.stl: *.icmp
+android_dto.stl: *.dtbo @0:D7B7AB1E
+luks.stl: @0:4C554B53BABE
+glshaders.stl: @0:45474C24
+amlogic_mpt.stl: @0:4D505400
+shx.stl: @0:0000270A
+tsm.stl: *.tsm @0:16D116D1
+op2.stl: *.op2 @0:234F504C5F494923
+vmdk.stl: @0:4B444D56
+zx_tap.stl: *.tap

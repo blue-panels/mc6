@@ -1,0 +1,41 @@
+STL 5.00
+;
+;   ESRI shapefile index (.shx): header (big endian file code and
+;   length, little endian shape type, big endian bounds) and the record
+;   offsets. After kaitai_struct_formats geospatial/shapefile_index.ksy.
+;
+
+/SHX
+#endian big
+#if @d != 0x0000270A
+        :ERROR!!! no shapefile code at this offset
+#fi
+        m32     1               file code (0000270A)
+        b       20              unused
+        m32     1               file length, 16-bit words
+        u32.le  1               version (1000)
+        u32.le  'shp_type       shape type
+        m64     8               bounds x min/max, y, z, m (big endian doubles, shown as hex: A11)
+#repeat while ^@ + 8 <= $size
+        *       1       :shx_record
+#end
+
+/:shx_record
+m32     1       offset, words
+m32     1       content length, words
+
+/'shp_type
+0       null shape
+1       point
+3       polyline
+5       polygon
+8       multipoint
+11      point Z
+13      polyline Z
+15      polygon Z
+18      multipoint Z
+21      point M
+23      polyline M
+25      polygon M
+28      multipoint M
+31      multipatch

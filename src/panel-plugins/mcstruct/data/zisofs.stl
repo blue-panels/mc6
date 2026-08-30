@@ -1,0 +1,18 @@
+STL 5.00
+;
+;   zisofs compressed file: header and the block pointer table.
+;   After kaitai_struct_formats archive/zisofs.ksy.
+;
+
+/ZISOFS
+#if @d != 0x9653E437
+        :ERROR!!! no zisofs signature at this offset
+#fi
+        b       8               magic
+usz:    u32     1               uncompressed size
+        u8      1               header length / 4
+lg:     u8      1               block size log2 (15, 16, 17)
+        u16     1               reserved
+#set    bs = 1 << lg
+#set    n = (usz + bs - 1) / bs
+        u32     "n + 1"         block pointers

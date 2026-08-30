@@ -1,0 +1,41 @@
+STL 5.00
+;
+;   ZX Spectrum .tap tape image: header and data blocks.
+;   After kaitai_struct_formats filesystem/zx_spectrum_tap.ksy.
+;
+
+/ZX_TAP
+#repeat while ^@ + 2 <= $size
+        :--- block ---
+blen:   u16     1               block length
+flag:   u8      'tap_flag       flag
+#if blen == 0x13 && flag == 0
+htype:  u8      'tap_header     header type
+        c       10              file name
+        u16     1               data length
+#if htype == 0
+        u16     1               autostart line
+        u16     1               program length
+#elseif htype == 3
+        u16     1               start address
+        u16     1               reserved
+#else
+        u8      1               reserved
+        c       1               variable name
+        u16     1               reserved
+#fi
+        u8      1               checksum
+#else
+        +       "blen - 1"      data + checksum
+#fi
+#end
+
+/'tap_flag
+0       header
+255     data
+
+/'tap_header
+0       program
+1       number array
+2       character array
+3       bytes

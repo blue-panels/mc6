@@ -103,4 +103,19 @@ dist_mcstructdata_DATA = \
 	data/stl3d.stl \
 	data/asus_bootldr.stl \
 	data/fallout_dat.stl \
-	data/fallout2_dat.stl
+	data/fallout2_dat.stl \
+	data/avantes_roh60.stl \
+	data/glb.stl \
+	data/rtp.stl \
+	data/heaps_pak.stl \
+	data/zisofs.stl \
+	data/icmp.stl \
+	data/android_dto.stl \
+	data/luks.stl \
+	data/glshaders.stl \
+	data/amlogic_mpt.stl \
+	data/shx.stl \
+	data/tsm.stl \
+	data/op2.stl \
+	data/vmdk.stl \
+	data/zx_tap.stl

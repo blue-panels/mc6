@@ -1,0 +1,22 @@
+STL 5.00
+;
+;   Avantes AvaSoft .roh (ROH60) spectrum file: wavelength calibration
+;   and the spectrum. After kaitai_struct_formats
+;   scientific/spectroscopy/avantes_roh60.ksy.
+;
+
+/AVANTES_ROH60
+        f32     1               unknown
+        f32     1               wavelength intercept
+        f32     1               wavelength x1
+        f32     1               wavelength x2
+        f32     1               wavelength x3
+        f32     1               wavelength x4
+        f32     9               unknown
+pf:     f32     1               first pixel
+pl:     f32     1               last pixel
+        f32     4               unknown
+        f32     "pl - pf - 1"   spectrum
+        f32     1               integration time, ms
+        f32     1               averaging
+        f32     1               pixel smoothing

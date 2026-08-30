@@ -1,0 +1,28 @@
+STL 5.00
+;
+;   Android device tree overlay table (dtbo.img), big endian.
+;   After kaitai_struct_formats archive/android_dto.ksy.
+;
+
+/ANDROID_DTO
+#endian big
+#if @d != 0xD7B7AB1E
+        :ERROR!!! no dt table signature at this offset
+#fi
+        d       1               magic
+        u32     1               total size
+        u32     1               header size
+esz:    u32     1               entry size
+n:      u32     1               entries
+eofs:   u32     1               entries offset
+        u32     1               page size
+        u32     1               version
+        .       eofs
+        *       n       _DTO_entry
+
+/_DTO_entry
+        u32     1               dt size
+        u32     1               dt offset
+        d       1               id
+        d       1               rev
+        d       4               custom

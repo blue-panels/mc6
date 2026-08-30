@@ -1,0 +1,34 @@
+STL 5.00
+;
+;   Heaps.io .pak archive: header and the root directory (one level).
+;   After kaitai_struct_formats game/heaps_pak.ksy (MIT).
+;
+
+/HEAPS_PAK
+#if (@d & 0xFFFFFF) != 'PAK'
+        :ERROR!!! no PAK signature at this offset
+#fi
+        c       3               magic
+        u8      1               version
+hlen:   u32     1               header length
+        u32     1               data length
+        :--- root entry ---
+rnl:    u8      1               name length
+        c       rnl             name
+        t8      `heaps_flags    flags
+n:      u32     1               entries
+#repeat n
+enl:    u8      1               name length
+        c       enl             name
+efl:    t8      `heaps_flags    flags
+#if efl & 1
+        u32     1               entries (subdirectory, not listed)
+#else
+        u32     1               data offset (from the end of the header)
+        u32     1               data length
+        d       1               checksum
+#fi
+#end
+
+/`heaps_flags
+0x01            directory
