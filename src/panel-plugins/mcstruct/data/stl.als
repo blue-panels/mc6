@@ -131,3 +131,8 @@ minidump.stl: *.dmp *.mdmp @0:4D444D5093A7
 rsrc.stl: *.rsrc
 mov.stl: *.mov *.mp4 *.m4a *.m4v *.3gp @4:66747970
 snd.stl: *.snd
+rwstream.stl: *.dff *.txd
+ttf.stl: *.otf @0:00010000 @0:4F54544F @0:74727565
+macho.stl: *.dylib @0:FEEDFACE @0:FEEDFACF @0:CEFAEDFE @0:CFFAEDFE
+dex.stl: @0:6465780A
+exif.stl: *.tif *.tiff @0:49492A00 @0:4D4D002A

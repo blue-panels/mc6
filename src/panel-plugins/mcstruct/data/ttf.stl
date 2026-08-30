@@ -1,0 +1,207 @@
+STL 5.00
+;
+;   TrueType / OpenType font: offset table and the table directory;
+;   Enter on a table offset opens head, hhea, maxp, OS/2 or name.
+;   After kaitai_struct_formats font/ttf.ksy.
+;
+
+/TTF
+#endian big
+        d       1               sfnt version (00010000, OTTO, true)
+n:      u16     1               tables
+        u16     1               search range
+        u16     1               entry selector
+        u16     1               range shift
+        *       n       _TTF_table
+
+/_TTF_table
+#endian big
+tag:    d       'ttf_tag        tag
+        d       1               checksum
+#if tag == "head"
+        j32     _TTF_head=@     offset
+#elseif tag == "hhea"
+        j32     _TTF_hhea=@     offset
+#elseif tag == "maxp"
+        j32     _TTF_maxp=@     offset
+#elseif tag == "OS/2"
+        j32     _TTF_os2=@      offset
+#elseif tag == "name"
+        j32     _TTF_name=@     offset
+#else
+        u32     1               offset
+#fi
+        u32     1               length
+
+/_TTF_head
+#endian big
+        u32     1               version (16.16)
+        u32     1               font revision (16.16)
+        d       1               checksum adjustment
+        d       1               magic (5F0F3CF5)
+        t16     `ttf_head_flags flags
+        u16     1               units per em
+        q       1               created (seconds since 1904)
+        q       1               modified
+        i16     1               x min
+        i16     1               y min
+        i16     1               x max
+        i16     1               y max
+        t16     `ttf_mac_style  mac style
+        u16     1               lowest rec ppem
+        i16     1               font direction hint
+        i16     1               index to loc format (0 short, 1 long)
+        i16     1               glyph data format
+
+/_TTF_hhea
+#endian big
+        u32     1               version
+        i16     1               ascender
+        i16     1               descender
+        i16     1               line gap
+        u16     1               advance width max
+        i16     1               min left side bearing
+        i16     1               min right side bearing
+        i16     1               x max extent
+        i16     1               caret slope rise
+        i16     1               caret slope run
+        i16     1               caret offset
+        b       8               reserved
+        i16     1               metric data format
+        u16     1               number of h metrics
+
+/_TTF_maxp
+#endian big
+        u32     1               version
+        u16     1               glyphs
+        u16     1               max points
+        u16     1               max contours
+        u16     1               max composite points
+        u16     1               max composite contours
+        u16     1               max zones
+        u16     1               max twilight points
+        u16     1               max storage
+        u16     1               max function defs
+        u16     1               max instruction defs
+        u16     1               max stack elements
+        u16     1               max size of instructions
+        u16     1               max component elements
+        u16     1               max component depth
+
+/_TTF_os2
+#endian big
+        u16     1               version
+        i16     1               x avg char width
+        u16     1               weight class
+        u16     1               width class
+        t16     `ttf_fstype     fs type
+        i16     1               subscript x size
+        i16     1               subscript y size
+        i16     1               subscript x offset
+        i16     1               subscript y offset
+        i16     1               superscript x size
+        i16     1               superscript y size
+        i16     1               superscript x offset
+        i16     1               superscript y offset
+        i16     1               strikeout size
+        i16     1               strikeout position
+        i16     1               family class
+        b       10              panose
+        d       4               unicode ranges
+        c       4               vendor id
+        t16     `ttf_fsselection  fs selection
+        u16     1               first char index
+        u16     1               last char index
+        i16     1               typo ascender
+        i16     1               typo descender
+        i16     1               typo line gap
+        u16     1               win ascent
+        u16     1               win descent
+
+/_TTF_name
+#endian big
+        u16     1               format
+n:      u16     1               records
+        u16     1               string storage offset
+        *       n       :ttf_name_record
+
+/:ttf_name_record
+u16     'ttf_platform   platform
+u16     1       encoding
+u16     1       language
+u16     'ttf_name_id    name id
+u16     1       length
+u16     1       offset
+
+/`ttf_head_flags
+0x0001          baseline at y=0
+0x0002          left sidebearing at x=0
+0x0004          instructions depend on point size
+0x0008          force ppem to integer
+0x0010          instructions alter advance width
+
+/`ttf_mac_style
+0x0001          bold
+0x0002          italic
+0x0004          underline
+0x0008          outline
+0x0010          shadow
+0x0020          condensed
+0x0040          extended
+
+/`ttf_fstype
+0x0002          restricted license
+0x0004          preview and print
+0x0008          editable
+0x0100          no subsetting
+0x0200          bitmap only
+
+/`ttf_fsselection
+0x0001          italic
+0x0020          bold
+0x0040          regular
+0x0080          use typo metrics
+
+/'ttf_platform
+0       Unicode
+1       Macintosh
+3       Windows
+
+/'ttf_name_id
+0       copyright
+1       family
+2       subfamily
+3       unique id
+4       full name
+5       version
+6       postscript name
+7       trademark
+8       manufacturer
+9       designer
+10      description
+11      vendor url
+12      designer url
+13      license
+14      license url
+16      typographic family
+17      typographic subfamily
+
+/'ttf_tag
+0x4F532F32      OS/2
+0x636D6170      cmap
+0x63767420      cvt
+0x6670676D      fpgm
+0x676C7966      glyf
+0x68656164      head
+0x68686561      hhea
+0x686D7478      hmtx
+0x6B65726E      kern
+0x6C6F6361      loca
+0x6D617870      maxp
+0x6E616D65      name
+0x706F7374      post
+0x70726570      prep
+0x43464620      CFF
+0x47535542      GSUB
+0x47504F53      GPOS
+0x47444546      GDEF

@@ -1,0 +1,42 @@
+STL 5.00
+;
+;   Android DEX file header and the string id table.
+;   After kaitai_struct_formats executable/dex.ksy.
+;
+
+/DEX
+#if (@d & 0xFFFFFF) != 'dex'
+        :ERROR!!! no dex signature at this offset
+#fi
+        c       8               magic (dex\n0NN\0)
+        d       1               checksum (adler32)
+        b       20              signature (sha1)
+        u32     1               file size
+        u32     1               header size
+        d       1               endian tag (12345678)
+        u32     1               link size
+        u32     1               link offset
+        u32     1               map offset
+nstr:   u32     1               string ids
+sofs:   u32     1               string ids offset
+        u32     1               type ids
+        u32     1               type ids offset
+        u32     1               proto ids
+        u32     1               proto ids offset
+        u32     1               field ids
+        u32     1               field ids offset
+        u32     1               method ids
+        u32     1               method ids offset
+        u32     1               class defs
+        u32     1               class defs offset
+        u32     1               data size
+        u32     1               data offset
+        .       sofs
+        *       nstr    _DEX_string_id
+
+/_DEX_string_id
+        j32     _DEX_string=@   string data offset
+
+/_DEX_string
+len:    vl      1               utf-16 length
+        sc      0               data (MUTF-8)

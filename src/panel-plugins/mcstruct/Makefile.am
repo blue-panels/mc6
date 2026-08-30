@@ -176,4 +176,9 @@ dist_mcstructdata_DATA = \
 	data/minidump.stl \
 	data/rsrc.stl \
 	data/mov.stl \
-	data/snd.stl
+	data/snd.stl \
+	data/rwstream.stl \
+	data/ttf.stl \
+	data/macho.stl \
+	data/dex.stl \
+	data/exif.stl

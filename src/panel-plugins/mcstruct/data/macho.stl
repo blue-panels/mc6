@@ -1,0 +1,217 @@
+STL 5.00
+;
+;   Mach-O header and load commands (32 and 64 bit, both byte orders);
+;   segments and their sections are decoded. After kaitai_struct_formats
+;   executable/mach_o.ksy.
+;
+
+/MACHO
+#if @d == 0xFEEDFACF || @d == 0xFEEDFACE
+#endian little
+#elseif @d == 0xCFFAEDFE || @d == 0xCEFAEDFE
+#endian big
+#else
+        :ERROR!!! no Mach-O magic at this offset
+#fi
+magic:  d       1               magic
+        u32     'macho_cpu      cpu type
+        d       1               cpu subtype
+        u32     'macho_filetype file type
+ncmd:   u32     1               load commands
+        u32     1               load commands size
+        t32     `macho_flags    flags
+#if magic == 0xFEEDFACF || magic == 0xCFFAEDFE
+        u32     1               reserved
+#set    is64 = 1
+#else
+#set    is64 = 0
+#fi
+#repeat ncmd
+        :--- load command ---
+cmd:    u32     'macho_cmd      command
+csz:    u32     1               size
+#set    cend = ^@ - 8 + csz
+#if cmd == 0x19
+        sc      16              segment name
+        u64     1               vm address
+        u64     1               vm size
+        u64     1               file offset
+        u64     1               file size
+        t32     `macho_prot     max protection
+        t32     `macho_prot     initial protection
+nsect:  u32     1               sections
+        t32     `macho_seg_flags  flags
+        *       nsect   _MACHO_section64
+#elseif cmd == 0x01
+        sc      16              segment name
+        u32     1               vm address
+        u32     1               vm size
+        u32     1               file offset
+        u32     1               file size
+        t32     `macho_prot     max protection
+        t32     `macho_prot     initial protection
+nsect:  u32     1               sections
+        t32     `macho_seg_flags  flags
+        *       nsect   _MACHO_section32
+#elseif cmd == 0x02
+        u32     1               symbol table offset
+        u32     1               symbols
+        u32     1               string table offset
+        u32     1               string table size
+#elseif cmd == 0x0C || cmd == 0x0D || cmd == 0x0E || cmd == 0x0F || cmd == 0x18 || cmd == 0x80000018 || cmd == 0x80000028
+        u32     1               name offset
+        u32     1               timestamp
+        u32     1               current version
+        u32     1               compatibility version
+        sc      "cend - ^@"     name
+#elseif cmd == 0x1B
+        b       16              uuid
+#elseif cmd == 0x32
+        u32     'macho_platform platform
+        u32     1               minimum os (x.y.z as 0xXXXXYYZZ)
+        u32     1               sdk
+        u32     1               tools
+#elseif cmd == 0x80000028
+        u64     1               entry offset
+        u64     1               stack size
+#elseif cmd == 0x22 || cmd == 0x80000022
+        u32     1               rebase offset
+        u32     1               rebase size
+        u32     1               bind offset
+        u32     1               bind size
+        u32     1               weak bind offset
+        u32     1               weak bind size
+        u32     1               lazy bind offset
+        u32     1               lazy bind size
+        u32     1               export offset
+        u32     1               export size
+#elseif cmd == 0x1D || cmd == 0x1E || cmd == 0x26 || cmd == 0x29 || cmd == 0x2B || cmd == 0x2E || cmd == 0x33 || cmd == 0x34
+        u32     1               data offset
+        u32     1               data size
+#fi
+        +       "cend - ^@"
+#end
+
+/_MACHO_section64
+        sc      16              section name
+        sc      16              segment name
+        u64     1               address
+        u64     1               size
+        u32     1               file offset
+        u32     1               alignment (2^n)
+        u32     1               relocations offset
+        u32     1               relocations
+        t32     `macho_sect_flags  flags
+        u32     1               reserved 1
+        u32     1               reserved 2
+        u32     1               reserved 3
+
+/_MACHO_section32
+        sc      16              section name
+        sc      16              segment name
+        u32     1               address
+        u32     1               size
+        u32     1               file offset
+        u32     1               alignment (2^n)
+        u32     1               relocations offset
+        u32     1               relocations
+        t32     `macho_sect_flags  flags
+        u32     1               reserved 1
+        u32     1               reserved 2
+
+/'macho_cpu
+7       i386
+0x01000007      x86-64
+12      ARM
+0x0100000C      ARM64
+18      PowerPC
+0x01000012      PowerPC 64
+
+/'macho_filetype
+1       object
+2       executable
+3       fixed vm library
+4       core
+5       preload
+6       dynamic library
+7       dynamic linker
+8       bundle
+9       dylib stub
+10      dsym
+11      kext bundle
+
+/`macho_flags
+0x00000001      no undefined references
+0x00000002      incremental link
+0x00000004      dyld link
+0x00000008      bind at load
+0x00000010      prebound
+0x00000020      split segments
+0x00000080      two level namespace
+0x00000100      force flat
+0x00200000      PIE
+0x02000000      app extension safe
+
+/'macho_cmd
+0x01    segment
+0x02    symbol table
+0x0B    dynamic symbol table
+0x0C    load dylib
+0x0D    id dylib
+0x0E    load dylinker
+0x0F    id dylinker
+0x18    load weak dylib
+0x19    segment 64
+0x1B    uuid
+0x1D    code signature
+0x1E    segment split info
+0x22    dyld info
+0x24    version min macOS
+0x25    version min iOS
+0x26    function starts
+0x27    dyld environment
+0x29    data in code
+0x2A    source version
+0x2B    dylib code sign drs
+0x2E    linker optimization hint
+0x32    build version
+0x33    dyld exports trie
+0x34    dyld chained fixups
+0x80000018      load weak dylib
+0x80000022      dyld info only
+0x80000028      main
+0x8000001C      rpath
+0x8000001F      reexport dylib
+
+/`macho_prot
+0x01            read
+0x02            write
+0x04            execute
+
+/`macho_seg_flags
+0x01            high vm
+0x02            fixed vm library
+0x04            no relocations
+0x08            protected version 1
+0x10            read only
+
+/`macho_sect_flags
+0x000000FF      0x00    regular
+0x000000FF      0x01    zero fill
+0x000000FF      0x02    cstring literals
+0x000000FF      0x06    non lazy symbol pointers
+0x000000FF      0x07    lazy symbol pointers
+0x000000FF      0x08    symbol stubs
+0x000000FF      0x09    mod init func pointers
+0x80000000      pure instructions
+0x40000000      no toc
+0x00000400      some instructions
+
+/'macho_platform
+1       macOS
+2       iOS
+3       tvOS
+4       watchOS
+5       bridgeOS
+6       Mac Catalyst
+7       iOS simulator
