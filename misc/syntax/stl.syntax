@@ -61,6 +61,7 @@ context default
     keyword whole sc.+ yellow
     keyword whole s8 yellow
     keyword whole s16 yellow
+    keyword whole sz16 yellow
     keyword whole v yellow
     keyword whole vl yellow
     keyword whole vz yellow

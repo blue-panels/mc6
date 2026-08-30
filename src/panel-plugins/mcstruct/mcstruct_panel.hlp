@@ -137,6 +137,7 @@ STL5, the def-file language:
   Types: c chars; b w d q hex of 1/2/4/8 bytes; i8..i64 and u8..u64
   decimal; t8..t64 bit fields; m8..m64 big-endian hex; f32 f64 f80
   float; sp Pascal string; sc C string; td tu DOS and unix time;
+  sz16 UTF-16 up to a NUL word, the follower a maximum (5.00);
   tu64 tf 64-bit unix time and Windows FILETIME (5.00); vz varint with
   bit 7 set on the last byte, as in zchunk (5.00);
   j8..j64 jumps; s8 s16 fixed-size UTF-8 and UTF-16 strings (5.00);
@@ -177,6 +178,8 @@ STL5, the def-file language:
                             gunzip / deflate, xor (from, len, key), rol
                             (from, len, bits), exec:command; Enter opens
                             it, Backspace comes back, it is read-only (5.00)
+    In an expression a string label (c sc sp s8 sz16) compared with a
+    literal compares the text: kt == 'ssh-rsa' (5.00).
     check expr name         OK or MISMATCH by the expression, no bytes
                             (5.00)
     #encoding cp866         text fields that follow are converted from

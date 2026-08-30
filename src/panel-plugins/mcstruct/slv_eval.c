@@ -313,6 +313,23 @@ eval_field (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
         nbytes = string_field_size (ctx, item, count);
         count = 1;
     }
+    else if (item->type == SLV_TYPE_STR16Z)
+    {
+        /* words up to a NUL word, at most count of them when count > 0 */
+        unsigned char wb[2];
+        gssize n = 0;
+
+        for (;;)
+        {
+            if (!slv_read_bytes (ctx->ev->reader, ctx->current_offset + n, wb, 2))
+                break;
+            n += 2;
+            if ((wb[0] == 0 && wb[1] == 0) || (count > 0 && n >= count * 2) || n >= MAX_FIELD_BYTES)
+                break;
+        }
+        nbytes = n;
+        count = 1;
+    }
     else if (item->type == SLV_TYPE_CHAR || item->type == SLV_TYPE_STR8
              || item->type == SLV_TYPE_STR16)
         nbytes = count > MAX_FIELD_BYTES ? MAX_FIELD_BYTES + 1 : (gssize) count * item->size;
@@ -374,6 +391,16 @@ eval_field (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
     g_free (buf);
 
     set_label (ctx, item, value, offset);
+    if (item->label != NULL
+        && (item->type == SLV_TYPE_CHAR || item->type == SLV_TYPE_CSTRING
+            || item->type == SLV_TYPE_PSTRING || item->type == SLV_TYPE_STR8
+            || item->type == SLV_TYPE_STR16Z))
+    {
+        slv_label_t *lab = g_hash_table_lookup (ctx->labels, item->label);
+
+        if (lab != NULL)
+            lab->text = g_strdup (n->text);
+    }
     ctx->current_offset = offset + nbytes;
 }
 
@@ -948,7 +975,10 @@ eval_items (slv_eval_ctx_t *ctx, GPtrArray *items, slv_node_t *parent)
 static void
 label_free (gpointer p)
 {
-    g_free (p);
+    slv_label_t *lab = p;
+
+    g_free (lab->text);
+    g_free (lab);
 }
 
 /* --------------------------------------------------------------------------------------------- */

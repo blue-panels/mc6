@@ -852,6 +852,44 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_text_labels)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/T\n"
+                              "kt: c 8 kind\n"
+                              "#if kt == 'ssh-rsa'\n"
+                              " :rsa seen\n"
+                              "#fi\n"
+                              "#if kt != 'ssh-rsa-long-name'\n"
+                              " :other seen\n"
+                              "#fi\n"
+                              "w: sz16 0 wide\n"
+                              "#if w == 'Ab'\n"
+                              " :wide seen\n"
+                              "#fi\n"
+                              " u8 1 next\n";
+    static const unsigned char data[] = { 's', 's', 'h', '-', 'r', 's', 'a', ' ',
+                                          'A', 0,   'b', 0,   0,   0,   0x77 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "T", &file, &reader);
+
+    ck_assert_int_eq (child (root, 1)->kind, SLV_NODE_REMARK);
+    ck_assert_str_eq (child (root, 1)->key, "rsa seen");
+    ck_assert_str_eq (child (root, 2)->key, "other seen");
+    ck_assert_str_eq (child (root, 3)->text, "Ab");
+    ck_assert_int_eq ((int) child (root, 3)->size, 6);
+    ck_assert_str_eq (child (root, 4)->key, "wide seen");
+    ck_assert_int_eq ((int) child (root, 5)->offset, 14);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -981,6 +1019,7 @@ main (void)
     tcase_add_test (tc_core, test_quoted_follower);
     tcase_add_test (tc_core, test_zchunk_varint);
     tcase_add_test (tc_core, test_nested_caption);
+    tcase_add_test (tc_core, test_text_labels);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

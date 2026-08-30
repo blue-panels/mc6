@@ -68,6 +68,7 @@ grid_col_width (const slv_node_t *leaf)
     case SLV_TYPE_CHAR:
     case SLV_TYPE_STR8:
     case SLV_TYPE_STR16:
+    case SLV_TYPE_STR16Z:
     case SLV_TYPE_PSTRING:
     case SLV_TYPE_CSTRING:
         /* the width the field has in this file */

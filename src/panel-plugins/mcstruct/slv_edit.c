@@ -486,6 +486,7 @@ slv_node_editable (const slv_node_t *node)
     case SLV_TYPE_VARINT:
     case SLV_TYPE_LEB128:
     case SLV_TYPE_ZVARINT:
+    case SLV_TYPE_STR16Z:
         return FALSE;
     case SLV_TYPE_FLOAT:
         return item->size != 10;

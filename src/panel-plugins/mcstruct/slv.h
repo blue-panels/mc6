@@ -41,6 +41,7 @@ typedef enum
     SLV_TYPE_JUMP,      /* j8 j16 j32 j64 */
     SLV_TYPE_STR8,      /* s8: fixed size, NUL padded UTF-8 (5.00) */
     SLV_TYPE_STR16,     /* s16: fixed size, NUL padded UTF-16LE (5.00) */
+    SLV_TYPE_STR16Z,    /* sz16: UTF-16LE up to a NUL word, follower = max chars (5.00) */
     SLV_TYPE_CHECK,     /* crc32 sum8 sum16 over a range (5.00) */
     SLV_TYPE_VARINT,    /* v: SQLite varint, big-endian 7-bit groups, up to 9 bytes (5.00) */
     SLV_TYPE_LEB128,    /* vl: unsigned LEB128, little-endian 7-bit groups (5.00) */

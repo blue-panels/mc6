@@ -648,8 +648,8 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
             add_error (ps, "'%s': pointers are always little-endian", id);
         if (ps->file->version_major < 5
             && (size == 8 || strchr (id, '.') != NULL || type == SLV_TYPE_STR8
-                || type == SLV_TYPE_STR16 || type == SLV_TYPE_CHECK || type == SLV_TYPE_VARINT
-                || type == SLV_TYPE_LEB128 || type == SLV_TYPE_ZVARINT))
+                || type == SLV_TYPE_STR16 || type == SLV_TYPE_STR16Z || type == SLV_TYPE_CHECK
+                || type == SLV_TYPE_VARINT || type == SLV_TYPE_LEB128 || type == SLV_TYPE_ZVARINT))
             add_error (ps, "'%s' needs STL 5.00", id);
 
         it = item_new (ps,
@@ -1537,6 +1537,12 @@ slv_parse_type_id (const char *id, slv_type_t *type, int *size, gboolean *big_en
     {
         *type = SLV_TYPE_ZVARINT;
         *size = 1;
+        return TRUE;
+    }
+    if (strcmp (base, "sz16") == 0)
+    {
+        *type = SLV_TYPE_STR16Z;
+        *size = 2;
         return TRUE;
     }
     if (strcmp (base, "s16") == 0)

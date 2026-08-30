@@ -175,8 +175,10 @@ parse_string (expr_parser_t *ps, char quote)
     {
         if (n >= 8)
         {
-            set_error (ps, "string literal longer than 8 bytes");
-            return NULL;
+            /* only the first 8 bytes make the number; the text is kept whole */
+            n++;
+            s++;
+            continue;
         }
         if (quote == '"')
             v = (v << 8) | (unsigned char) *s;
@@ -195,6 +197,7 @@ parse_string (expr_parser_t *ps, char quote)
     e = expr_new (SLV_EXPR_NUMBER);
     e->value = v;
     e->str_len = n;
+    e->name = g_strndup (ps->p - n - 1, n); /* the text, for comparisons with a string label */
     return e;
 }
 
@@ -880,6 +883,36 @@ slv_expr_eval (const slv_expr_t *e, const slv_eval_ctx_t *ctx, gint64 *out, char
     }
     default:
         break;
+    }
+
+    /* a string label against a literal: the texts are compared, trailing blanks and NULs
+       of the field do not count */
+    if ((e->op == SLV_EXPR_EQ || e->op == SLV_EXPR_NE) && e->left != NULL && e->right != NULL)
+    {
+        const slv_expr_t *a = e->left, *b = e->right;
+
+        if (a->op == SLV_EXPR_NUMBER && b->op == SLV_EXPR_LABEL)
+        {
+            a = e->right;
+            b = e->left;
+        }
+        if (a->op == SLV_EXPR_LABEL && b->op == SLV_EXPR_NUMBER && b->str_len > 0
+            && b->name != NULL)
+        {
+            const slv_label_t *lab = slv_ctx_lookup_label (ctx, a->name);
+
+            if (lab != NULL && lab->text != NULL)
+            {
+                gsize tl = strlen (lab->text);
+                gboolean same;
+
+                while (tl > 0 && (lab->text[tl - 1] == ' ' || lab->text[tl - 1] == '.'))
+                    tl--;
+                same = tl == strlen (b->name) && memcmp (lab->text, b->name, tl) == 0;
+                *out = e->op == SLV_EXPR_EQ ? same : !same;
+                return TRUE;
+            }
+        }
     }
 
     if (!slv_expr_eval (e->left, ctx, &l, error))

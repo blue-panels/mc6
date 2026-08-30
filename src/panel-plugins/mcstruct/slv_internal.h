@@ -76,6 +76,7 @@ typedef struct
 {
     gint64 value;
     off_t offset;
+    char *text; /* c / sc / sp / s8 / sz16 fields: the text, for comparisons with a literal */
 } slv_label_t;
 
 typedef struct slv_eval_ctx_t

@@ -358,6 +358,8 @@ slv_type_name (slv_type_t type, int size)
         return "s8";
     case SLV_TYPE_STR16:
         return "s16";
+    case SLV_TYPE_STR16Z:
+        return "sz16";
     case SLV_TYPE_CHECK:
         return "check";
     case SLV_TYPE_VARINT:
@@ -527,6 +529,7 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
     }
 
     case SLV_TYPE_STR16:
+    case SLV_TYPE_STR16Z:
     {
         gsize units = len / 2, l = 0;
         gunichar2 *u;
