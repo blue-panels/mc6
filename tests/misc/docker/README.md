@@ -22,6 +22,7 @@ leaves nothing in the working tree and reuses its object files between runs.
     sandbox.sh              the driver; it holds no list of environments
     common/                 what an environment should not have to write again
       build-mc.sh           copy the tree in, configure, make, install
+      check-plugins.sh      can every plugin the build installed be loaded
       features.ini          build profiles for build -f
       run-cases.sh          press the keys, read the screen, write the report
       ui.sh                 menus that compose a test command
@@ -32,6 +33,9 @@ leaves nothing in the working tree and reuses its object files between runs.
       debian-12/            docker-compose.yml, Dockerfile.mc, README.md, expect.tsv
     cases/
       archives/fixtures.sh  the files and the cases.tsv of one subject
+      editor/, terminal/    the same for mcedit and the embedded terminal
+      struct/               the same for the mcstruct plugin
+      panel/                the same for the panel: the quick filter, quick cd
     reports/                what a run leaves behind (not in git)
 
 Three axes, chosen independently: the **environment** (which image mc is
@@ -85,6 +89,36 @@ server.
 | `03-nested`    | an archive inside an archive, and one inside `uzip://`     |
 | `04-non-ascii` | Cyrillic and spaces in names, inside the archives and out  |
 
+### editor
+
+| directory     | what it is for                                              |
+|---------------|-------------------------------------------------------------|
+| `01-filter`   | the line filter: Alt-Shift-S by the word, Alt-S to lift it   |
+| `02-charset`  | 8-bit files, for a person to open and pick the encoding for  |
+| `03-search`   | the search dialog opening with the marked word              |
+
+### terminal
+
+| directory  | what it is for                                                   |
+|------------|------------------------------------------------------------------|
+| `01-shell` | a command in the terminal, Ctrl-L against Ctrl-Alt-L, the keybar, insert mode in the shell's line |
+
+### struct
+
+| directory    | what it is for                                                  |
+|--------------|------------------------------------------------------------------|
+| `01-formats` | the smallest u-boot image and MBR libmagic still names, so that magic.ini sends them to mcstruct |
+
+### panel
+
+| directory       | what it is for                                             |
+|-----------------|-------------------------------------------------------------|
+| `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
+| `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
+
+These four are local only: they press keys on mc itself, not on a file a
+server holds.
+
 **sftp** and **shell link** supply a stream, so an archive opens without being
 downloaded first. `01-formats/big.7z` is the case that only works because the
 stream can seek. **ftp** and **samba** have no `get_input_stream()` yet, so an
@@ -128,6 +162,28 @@ An environment that expects something else -- no archiver installed, so
 `small.7z` gives an error rather than a panel -- says so in its
 `envs/<name>/expect.tsv`: `dir/file`, key, expectation, and optionally the
 transports it applies to.
+
+### Under valgrind
+
+    sandbox.sh debian-12 build -f all,debug     # -O0 -g3, so a stack reads
+    sandbox.sh debian-12 test -g 01-formats     # the same cases under memcheck
+
+`-g` starts mc under `valgrind --tool=memcheck` with
+`common/valgrind.supp`, which holds what the libraries never free and nothing
+of mc's own.  Every wait is multiplied by six, `$SLOW` sets another factor,
+and mc is asked to quit with F10 instead of being killed, because a killed
+process writes no summary.  A case fails on an invalid read, write or free,
+on a jump on an uninitialised value, whatever the screen shows; what was
+definitely lost is written down and left to a person, since mc frees little
+on the way out by design.
+
+The log of each case is kept next to its screen as `<case>.<key>.valgrind`,
+`<transport>/valgrind.tsv` counts them, and `index.md` gains a Memory table
+with a link to every log worth opening.  Only `debian-12` has valgrind in its
+image; `-g` elsewhere says so and stops.
+
+A case takes minutes rather than seconds, so a run under memcheck is one
+directory at a time, not the whole subject over every transport.
 
 ### Reports
 

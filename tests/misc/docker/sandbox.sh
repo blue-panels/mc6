@@ -31,9 +31,10 @@ usage: sandbox.sh [env] <command> [args]
   up        build the images, start the remote host, build mc      (first run)
   mc        run mc against that environment                        (what you want)
   build     rebuild mc from the working tree: build [-f profiles]
-  check     ask every protocol for a listing, without a terminal
+  check     can every plugin be loaded, and does every protocol answer
   test      press the keys in the cases: test [-c subject] [-w transports]
-            [-l locale] [-o key=value]... [-k keymap] [dir...]
+            [-l locale] [-o key=value]... [-k keymap] [-g] [dir...]
+            -g runs mc under valgrind memcheck (slow; debian-12 has it)
   ui        the same, chosen from menus
   shell     a shell next to mc, with ssh, curl and smbclient in it
   remote    a shell on the remote host
@@ -110,11 +111,14 @@ build)
     ;;
 check)
     $COMPOSE up -d remote
-    $COMPOSE run --rm mc /usr/local/bin/check-remote.sh
+    $COMPOSE run --rm mc sh -c \
+        'sh /src/tests/misc/docker/common/check-plugins.sh && /usr/local/bin/check-remote.sh'
     ;;
 test)
     $COMPOSE up -d remote
-    $COMPOSE run --rm mc /usr/local/bin/run-cases.sh "$@"
+    # from the mounted tree, not from the image: an edit to the script takes
+    # effect at once, where a copy baked into the image needs it rebuilt
+    $COMPOSE run --rm mc sh /src/tests/misc/docker/common/run-cases.sh "$@"
     ;;
 shell)
     $COMPOSE up -d remote
