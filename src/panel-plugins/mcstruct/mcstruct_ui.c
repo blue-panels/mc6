@@ -796,6 +796,13 @@ ui_load_def (ui_t *ui, const char *path)
     ui->ev.file = file;
     g_free (ui->def_path);
     ui->def_path = g_strdup (path);
+    /* exec: providers only for def-files the user keeps in the config directory */
+    {
+        char *user_dir = g_build_filename (mc_config_get_path (), "mcstruct", (char *) NULL);
+
+        ui->ev.trust = g_str_has_prefix (path, user_dir) ? 1 : 0;
+        g_free (user_dir);
+    }
     widget_draw (WIDGET (ui->def));
     return TRUE;
 }

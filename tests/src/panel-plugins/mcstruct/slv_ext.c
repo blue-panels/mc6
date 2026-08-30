@@ -698,6 +698,35 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_call)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/C\n"
+                              " b 4 data\n"
+                              " = \"call('sum8', 0, 4)\" sum\n"
+                              " =x \"call('crc32', 0, 4)\" crc\n"
+                              " = \"call('find', 0, 4, 0x0403, 2)\" where\n"
+                              " = \"call('find', 0, 4, 0x99, 1)\" nowhere\n"
+                              " = \"call('exec:cat', 0, 4)\" refused\n";
+    static const unsigned char data[] = { 1, 2, 3, 4 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "C", &file, &reader);
+
+    ck_assert_str_eq (child (root, 1)->text, "10");
+    ck_assert_str_eq (child (root, 2)->text, "B63CFBCD");
+    ck_assert_str_eq (child (root, 3)->text, "2");
+    ck_assert_str_eq (child (root, 4)->text, "-1");
+    ck_assert_int_eq (child (root, 5)->kind, SLV_NODE_ERROR);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -822,6 +851,7 @@ main (void)
     tcase_add_test (tc_core, test_terminator_and_encoding);
     tcase_add_test (tc_core, test_check_expr);
     tcase_add_test (tc_core, test_time64);
+    tcase_add_test (tc_core, test_call);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

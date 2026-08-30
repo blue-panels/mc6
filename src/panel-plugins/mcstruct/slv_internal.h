@@ -38,7 +38,8 @@ typedef enum
     SLV_EXPR_LT,
     SLV_EXPR_GT,
     SLV_EXPR_LE,
-    SLV_EXPR_GE
+    SLV_EXPR_GE,
+    SLV_EXPR_CALL /* call('name', args...) (5.00) */
 } slv_expr_op_t;
 
 typedef enum
@@ -67,6 +68,8 @@ struct slv_expr_t
     gboolean struct_start;
     slv_expr_t *left;
     slv_expr_t *right;
+    /* CALL: name is the provider, args the arguments */
+    GPtrArray *args;
 };
 
 typedef struct
@@ -98,6 +101,12 @@ gboolean slv_parse_type_id (const char *id, slv_type_t *type, int *size, gboolea
 gboolean slv_expr_eval (const slv_expr_t *e, const slv_eval_ctx_t *ctx, gint64 *out, char **error);
 gboolean slv_read_bytes (const slv_reader_t *reader, off_t offset, void *buf, gsize len);
 const slv_label_t *slv_ctx_lookup_label (const slv_eval_ctx_t *ctx, const char *key);
+
+/* call providers (slv_call.c): a value, or bytes for a buffer */
+gboolean slv_call_value (const slv_eval_ctx_t *ctx, const char *name, const gint64 *args,
+                         guint nargs, gint64 *out, char **error);
+GBytes *slv_call_bytes (const slv_eval_ctx_t *ctx, const char *name, const gint64 *args,
+                        guint nargs, char **error);
 
 /* formatting (slv_format.c) */
 char *slv_format_value (const slv_item_t *item, const unsigned char *buf, gsize len,

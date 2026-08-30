@@ -362,6 +362,73 @@ parse_primary (expr_parser_t *ps)
             set_error (ps, "bad number");
             return NULL;
         }
+        /* call('name', args...) */
+        if (ps->p - start == 4 && strncmp (start, "call", 4) == 0)
+        {
+            const char *q = ps->p;
+
+            while (*q == ' ' || *q == '\t')
+                q++;
+            if (*q == '(')
+            {
+                const char *s;
+                char quote;
+
+                ps->p = q + 1;
+                skip_ws (ps);
+                quote = *ps->p;
+                if (quote != '\'' && quote != '"')
+                {
+                    set_error (ps, "call() needs a quoted name first");
+                    return NULL;
+                }
+                s = ps->p + 1;
+                while (*s != '\0' && *s != quote)
+                    s++;
+                if (*s != quote)
+                {
+                    set_error (ps, "unterminated call name");
+                    return NULL;
+                }
+                e = expr_new (SLV_EXPR_CALL);
+                e->name = g_strndup (ps->p + 1, s - ps->p - 1);
+                e->args = g_ptr_array_new_with_free_func ((GDestroyNotify) slv_expr_free);
+                ps->p = s + 1;
+                for (;;)
+                {
+                    skip_ws (ps);
+                    if (*ps->p == ')')
+                    {
+                        ps->p++;
+                        return e;
+                    }
+                    if (*ps->p != ',')
+                    {
+                        set_error (ps, "missing ',' or ')' in call()");
+                        slv_expr_free (e);
+                        return NULL;
+                    }
+                    ps->p++;
+                    if (++ps->depth > MAX_EXPR_DEPTH)
+                    {
+                        set_error (ps, "expression is nested too deep");
+                        slv_expr_free (e);
+                        return NULL;
+                    }
+                    {
+                        slv_expr_t *a = parse_or (ps);
+
+                        ps->depth--;
+                        if (a == NULL)
+                        {
+                            slv_expr_free (e);
+                            return NULL;
+                        }
+                        g_ptr_array_add (e->args, a);
+                    }
+                }
+            }
+        }
         e = expr_new (SLV_EXPR_LABEL);
         e->name = g_ascii_strdown (start, ps->p - start);
         return e;
@@ -750,6 +817,8 @@ slv_expr_free (slv_expr_t *e)
         return;
     slv_expr_free (e->left);
     slv_expr_free (e->right);
+    if (e->args != NULL)
+        g_ptr_array_free (e->args, TRUE);
     g_free (e->name);
     g_free (e);
 }
@@ -786,6 +855,21 @@ slv_expr_eval (const slv_expr_t *e, const slv_eval_ctx_t *ctx, gint64 *out, char
     case SLV_EXPR_FILE_SIZE:
         *out = ctx->ev->reader->size (ctx->ev->reader->ctx);
         return TRUE;
+    case SLV_EXPR_CALL:
+    {
+        gint64 vals[16];
+        guint i, n = e->args != NULL ? e->args->len : 0;
+
+        if (n > G_N_ELEMENTS (vals))
+        {
+            *error = g_strdup ("call() takes at most 16 arguments");
+            return FALSE;
+        }
+        for (i = 0; i < n; i++)
+            if (!slv_expr_eval (g_ptr_array_index (e->args, i), ctx, &vals[i], error))
+                return FALSE;
+        return slv_call_value (ctx, e->name, vals, n, out, error);
+    }
     default:
         break;
     }
@@ -927,6 +1011,24 @@ slv_expr_to_string (const slv_expr_t *e)
                                     : e->offset_kind == SLV_OFFSET_OUTER ? "^"
                                                                          : "",
                                 e->at_current ? "@" : "", e->name != NULL ? e->name : "");
+    case SLV_EXPR_CALL:
+    {
+        GString *out = g_string_new ("call('");
+        guint i;
+
+        g_string_append (out, e->name);
+        g_string_append_c (out, '\'');
+        for (i = 0; e->args != NULL && i < e->args->len; i++)
+        {
+            char *a = slv_expr_to_string (g_ptr_array_index (e->args, i));
+
+            g_string_append (out, ", ");
+            g_string_append (out, a);
+            g_free (a);
+        }
+        g_string_append_c (out, ')');
+        return g_string_free (out, FALSE);
+    }
     case SLV_EXPR_FILE_SIZE:
         return g_strdup ("$size");
     case SLV_EXPR_NEG:

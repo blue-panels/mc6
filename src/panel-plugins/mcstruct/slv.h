@@ -229,6 +229,7 @@ typedef struct
     const slv_reader_t *reader;
     gint64 lazy_rows; /* build children up to this many eagerly */
     const char *float_format;
+    int trust; /* call providers: 0 built-in only, 1 exec: allowed (user def-files) */
 } slv_eval_t;
 
 /*** global variables defined in .c file *********************************************************/

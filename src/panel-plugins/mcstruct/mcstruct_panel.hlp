@@ -163,6 +163,12 @@ STL5, the def-file language:
     #repeat N ... #end      N passes (5.00)
     #repeat while expr ... #end
     #set label = expr       a label without bytes (5.00)
+    call('name', args)      in an expression: crc32, crc16, adler32,
+                            sum8, sum16, sum32 (from, len); find (from,
+                            len, value, width) gives an offset or -1;
+                            exec:command (from, len) pipes the range
+                            through a program and reads a number back,
+                            for def-files in ~/.config/mc6/mcstruct only
     check expr name         OK or MISMATCH by the expression, no bytes
                             (5.00)
     #encoding cp866         text fields that follow are converted from

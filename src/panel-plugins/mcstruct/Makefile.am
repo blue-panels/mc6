@@ -4,6 +4,7 @@ libmcslv_la_SOURCES = \
 	slv.h \
 	slv_internal.h \
 	slv_expr.c \
+	slv_call.c \
 	slv_parser.c \
 	slv_eval.c \
 	slv_format.c \
@@ -17,7 +18,7 @@ libmcslv_la_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
 	-I$(top_srcdir) \
 	-DMC_PLUGIN_DIR=\"$(panel_plugins_dir)/mcstruct\"
-libmcslv_la_LIBADD = $(GLIB_LIBS) -lm
+libmcslv_la_LIBADD = $(GLIB_LIBS) $(ZLIB_LIBS) -lm
 
 mcstructdir = $(panel_plugins_dir)/mcstruct
 mcstruct_LTLIBRARIES = mc-panel-mcstruct.la
