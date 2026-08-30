@@ -571,6 +571,20 @@ ui_set_root (ui_t *ui, slv_node_t *root, int current)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* the labels of the structure a jump or buffer row belongs to: readable in the target */
+static GHashTable *
+ui_source_labels (const slv_node_t *n)
+{
+    const slv_node_t *p;
+
+    for (p = n->parent; p != NULL; p = p->parent)
+        if (p->labels != NULL)
+            return p->labels;
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* back from a buffer: the reader and the hex source of the level above */
 static void
 ui_leave_buffer (ui_t *ui, jump_t *j)
@@ -935,9 +949,10 @@ ui_follow_jump_node (ui_t *ui, slv_node_t *n)
         hexstrip_set_source (ui->hex, &src);
         ui->buffer_depth++;
         if (n->def->kind == SLV_DEF_TABLE)
-            root = slv_eval_table (&ui->ev, n->def, 0, n->rows > 0 ? n->rows : 1);
+            root = slv_eval_table_in (&ui->ev, n->def, 0, n->rows > 0 ? n->rows : 1,
+                                      ui_source_labels (n));
         else
-            root = slv_eval_struct (&ui->ev, n->def, 0);
+            root = slv_eval_struct_in (&ui->ev, n->def, 0, ui_source_labels (n));
         expand_default (root, 0);
         g_ptr_array_add (ui->jumps, j);
         ui_set_root (ui, root, 0);
@@ -953,9 +968,10 @@ ui_follow_jump_node (ui_t *ui, slv_node_t *n)
         return;
 
     if (n->def->kind == SLV_DEF_TABLE)
-        root = slv_eval_table (&ui->ev, n->def, n->jump_target, n->rows > 0 ? n->rows : 1);
+        root = slv_eval_table_in (&ui->ev, n->def, n->jump_target, n->rows > 0 ? n->rows : 1,
+                                  ui_source_labels (n));
     else
-        root = slv_eval_struct (&ui->ev, n->def, n->jump_target);
+        root = slv_eval_struct_in (&ui->ev, n->def, n->jump_target, ui_source_labels (n));
     expand_default (root, 0);
 
     j = g_new0 (jump_t, 1);

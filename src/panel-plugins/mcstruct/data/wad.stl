@@ -1,8 +1,7 @@
 STL 5.00
 ;
-;   Doom WAD: header and the lump directory. The typed lumps (THINGS,
-;   LINEDEFS, SIDEDEFS, VERTEXES, SECTORS) are separate structures: F3 at
-;   the lump offset. After kaitai_struct_formats game/doom_wad.ksy.
+;   Doom WAD: header and the lump directory; Enter on a lump offset shows
+;   THINGS, LINEDEFS, SIDEDEFS, VERTEXES and SECTORS by name. After kaitai_struct_formats game/doom_wad.ksy.
 ;
 
 /WAD
@@ -16,12 +15,24 @@ dir:    i32     1               directory offset
         *       n       _WAD_lump
 
 /_WAD_lump
-        j32     _WAD_raw=@      offset
-        i32     1               size
-        c       8               name
+        j32     _WAD_lump_data=@        offset
+lsz:    i32     1               size
+name:   c       8               name
 
-/_WAD_raw
-        :lump data; apply THINGS / LINEDEFS / SIDEDEFS / VERTEXES / SECTORS with F3
+/_WAD_lump_data
+#if name == 'THINGS'
+        *       "lsz / 10"      :wad_thing
+#elseif name == 'LINEDEFS'
+        *       "lsz / 14"      :wad_linedef
+#elseif name == 'SIDEDEFS'
+        *       "lsz / 30"      :wad_sidedef
+#elseif name == 'VERTEXES'
+        *       "lsz / 4"       :wad_vertex
+#elseif name == 'SECTORS'
+        *       "lsz / 26"      :wad_sector
+#else
+        :raw lump
+#fi
 
 /THINGS
 #repeat while ^@ + 10 <= $size

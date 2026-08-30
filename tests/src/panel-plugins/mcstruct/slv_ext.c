@@ -890,6 +890,45 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_lsb_and_jump_labels)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/L\n"
+                              " t8.lsb 44 low first\n"
+                              " t8 44 high first\n"
+                              "kind: c 4 kind\n"
+                              " j8 Target=@ where\n"
+                              "/Target\n"
+                              "#if kind == 'ABCD'\n"
+                              " :kind seen\n"
+                              "#fi\n"
+                              " u8 1 v\n";
+    static const unsigned char data[] = { 0x12, 0x12, 'A', 'B', 'C', 'D', 0, 0x99 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "L", &file, &reader);
+    slv_node_t *target;
+    slv_eval_t ev = { file, reader, 64, "%g", 0 };
+
+    ck_assert_str_eq (child (root, 0)->text, "0100.1000");
+    ck_assert_str_eq (child (root, 1)->text, "0001.0010");
+    target =
+        slv_eval_struct_in (&ev, child (root, 3)->def, child (root, 3)->jump_target, root->labels);
+    ck_assert_int_eq (child (target, 0)->kind, SLV_NODE_REMARK);
+    ck_assert_str_eq (child (target, 1)->text, "18"); /* the jump lands on offset 0 */
+    slv_node_free (target);
+    target = slv_eval_struct (&ev, child (root, 3)->def, child (root, 3)->jump_target);
+    ck_assert_int_eq (child (target, 0)->kind, SLV_NODE_ERROR); /* no labels: unknown 'kind' */
+    slv_node_free (target);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -1020,6 +1059,7 @@ main (void)
     tcase_add_test (tc_core, test_zchunk_varint);
     tcase_add_test (tc_core, test_nested_caption);
     tcase_add_test (tc_core, test_text_labels);
+    tcase_add_test (tc_core, test_lsb_and_jump_labels);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

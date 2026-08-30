@@ -378,7 +378,8 @@ slv_type_name (slv_type_t type, int size)
 /* bits of a little-endian value, most significant first, groups separated by '.'
    split: "" or "1" = no groups, "0" = every bit, "745" = 7+4+5 (A = 10 ... Z = 35) */
 char *
-slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, const char *split)
+slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, gboolean lsb_first,
+                 const char *split)
 {
     GString *out;
     guint64 v;
@@ -402,7 +403,9 @@ slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, const 
 
     for (i = nbits - 1; i >= 0; i--)
     {
-        g_string_append_c (out, (v >> i) & 1 ? '1' : '0');
+        int bit = lsb_first ? nbits - 1 - i : i;
+
+        g_string_append_c (out, (v >> bit) & 1 ? '1' : '0');
         if (group_left > 0)
         {
             group_left--;
@@ -582,7 +585,7 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
 
     case SLV_TYPE_BITS:
     {
-        char *bits = slv_format_bits (buf, size, big_endian, item->bits);
+        char *bits = slv_format_bits (buf, size, big_endian, item->lsb_first, item->bits);
 
         g_string_append (out, bits);
         g_free (bits);

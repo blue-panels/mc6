@@ -616,6 +616,7 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
         int max_len = 0, view = 0;
 
         int terminator = 0;
+        gboolean lsb_first = FALSE;
 
         /* table column 'c:max.view' */
         colon = strchr (id, ':');
@@ -625,6 +626,15 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
             max_len = atoi (colon + 1);
             if (strchr (colon + 1, '.') != NULL)
                 view = atoi (strchr (colon + 1, '.') + 1);
+        }
+
+        /* 't8.lsb': the bit split counts from bit 0 (5.00) */
+        if (id[0] == 't' && g_str_has_suffix (id, ".lsb"))
+        {
+            id[strlen (id) - 4] = '\0';
+            lsb_first = TRUE;
+            if (ps->file->version_major < 5)
+                add_error (ps, "'.lsb' needs STL 5.00");
         }
 
         /* 'sc.0a': a C string ended by that byte (5.00) */
@@ -658,6 +668,7 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
                                                     : SLV_ITEM_FIELD);
         it->type = type;
         it->terminator = terminator;
+        it->lsb_first = lsb_first;
         if (ps->encoding != NULL
             && (type == SLV_TYPE_CHAR || type == SLV_TYPE_CSTRING || type == SLV_TYPE_PSTRING
                 || type == SLV_TYPE_STR8))

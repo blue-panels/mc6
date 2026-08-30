@@ -1105,7 +1105,24 @@ slv_eval_struct (const slv_eval_t *ev, const slv_def_t *def, off_t offset)
 /* --------------------------------------------------------------------------------------------- */
 
 slv_node_t *
-slv_eval_table (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64 rows)
+slv_eval_struct_in (const slv_eval_t *ev, const slv_def_t *def, off_t offset, GHashTable *labels)
+{
+    slv_eval_ctx_t top;
+
+    if (def == NULL)
+        return NULL;
+    memset (&top, 0, sizeof (top));
+    top.ev = ev;
+    top.outer_base = offset;
+    top.labels = labels;
+    return eval_struct_node (&top, def, offset, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+slv_node_t *
+slv_eval_table_in (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64 rows,
+                   GHashTable *labels)
 {
     slv_eval_ctx_t top;
     slv_node_t *n;
@@ -1116,6 +1133,7 @@ slv_eval_table (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64
     top.ev = ev;
     top.outer_base = offset;
     top.current_offset = offset;
+    top.labels = labels;
 
     n = node_new (SLV_NODE_TABLE, NULL, NULL);
     n->def = def;
@@ -1127,6 +1145,14 @@ slv_eval_table (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64
     build_rows (&top, n, def, rows);
     n->size = top.current_offset - offset;
     return n;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+slv_node_t *
+slv_eval_table (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64 rows)
+{
+    return slv_eval_table_in (ev, def, offset, rows, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */

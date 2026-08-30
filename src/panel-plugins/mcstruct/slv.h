@@ -165,6 +165,8 @@ struct slv_item_t
     char *comment_title;
     /* 5.00: '* n Name via call(...)': the bytes the structure is read from */
     slv_expr_t *via;
+    /* 5.00: t8.lsb: the bit split starts at bit 0 */
+    gboolean lsb_first;
     /* 5.00: sc.XX ends the string at byte XX instead of NUL */
     int terminator;
     /* 5.00: #encoding in force for text fields, NULL = as is (UTF-8 / ASCII) */
@@ -261,6 +263,11 @@ gboolean slv_expr_constant (const slv_expr_t *expr, gint64 *value);
 /* evaluation */
 slv_node_t *slv_eval_struct (const slv_eval_t *ev, const slv_def_t *def, off_t offset);
 slv_node_t *slv_eval_table (const slv_eval_t *ev, const slv_def_t *def, off_t offset, gint64 rows);
+/* the same with the labels of the structure a jump or buffer came from readable inside */
+slv_node_t *slv_eval_struct_in (const slv_eval_t *ev, const slv_def_t *def, off_t offset,
+                                GHashTable *labels);
+slv_node_t *slv_eval_table_in (const slv_eval_t *ev, const slv_def_t *def, off_t offset,
+                               gint64 rows, GHashTable *labels);
 gboolean slv_node_expand (const slv_eval_t *ev, slv_node_t *node);
 /* size of a definition whose items all have constant sizes, -1 otherwise */
 gssize slv_def_fixed_size (const slv_def_t *def);

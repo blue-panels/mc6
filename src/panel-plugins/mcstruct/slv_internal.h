@@ -117,6 +117,7 @@ char *slv_format_value_endian (const slv_item_t *item, gboolean big_endian,
                                gint64 *first_value, double *dvalue);
 char *slv_format_legend (const slv_def_t *legend, gint64 value);
 char *slv_format_unix_time (gint64 v);
-char *slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, const char *split);
+char *slv_format_bits (const unsigned char *buf, int size, gboolean big_endian, gboolean lsb_first,
+                       const char *split);
 
 #endif

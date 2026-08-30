@@ -178,6 +178,9 @@ STL5, the def-file language:
                             gunzip / deflate, xor (from, len, key), rol
                             (from, len, bits), exec:command; Enter opens
                             it, Backspace comes back, it is read-only (5.00)
+    t8.lsb 44               the bit split counts from bit 0 (5.00)
+    A jump target and a buffer read the labels of the structure their
+    row is in, as a nested structure does (5.00).
     In an expression a string label (c sc sp s8 sz16) compared with a
     literal compares the text: kt == 'ssh-rsa' (5.00).
     check expr name         OK or MISMATCH by the expression, no bytes

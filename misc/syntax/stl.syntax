@@ -79,6 +79,7 @@ context default
     keyword whole check yellow
     keyword whole *.le yellow
     keyword whole *.be yellow
+    keyword whole *.lsb yellow
 
     # labels, legend references, jump targets
     keyword whole linestart +: brightgreen
