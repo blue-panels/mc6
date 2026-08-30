@@ -1,0 +1,80 @@
+STL 5.00
+;
+;   RTCP compound packet (RFC 3550): SR, RR, SDES decoded, others skipped.
+;   After kaitai_struct_formats network/rtcp_payload.ksy.
+;
+
+/RTCP
+#endian big
+#repeat while ^@ + 4 <= $size
+        :--- packet ---
+b0:     t8      215             version / padding / count
+pt:     u8      'rtcp_pt        payload type
+plen:   u16     1               length, 32-bit words - 1
+#set    pend = ^@ + plen * 4
+#set    cnt = b0 & 0x1F
+#if pt == 200
+        d       1               ssrc
+        u32     1               ntp timestamp, seconds
+        u32     1               ntp timestamp, fraction
+        u32     1               rtp timestamp
+        u32     1               sender packet count
+        u32     1               sender octet count
+        *       cnt     :rtcp_report
+#elseif pt == 201
+        d       1               ssrc
+        *       cnt     :rtcp_report
+#elseif pt == 202
+#repeat cnt
+        d       1               ssrc
+#repeat while @b != 0
+        u8      'rtcp_sdes      item
+ilen:   u8      1               length
+        c       ilen            value
+#end
+        u8      1               end of items
+        +       "(4 - ^@ % 4) % 4"
+#end
+#elseif pt == 203
+        d       cnt             ssrc
+#elseif pt == 205 || pt == 206
+        d       1               ssrc
+        d       1               media source ssrc
+#fi
+        +       "pend - ^@"
+#end
+
+/:rtcp_report
+d       1       source ssrc
+u8      1       fraction lost
+b       3       cumulative lost
+u32     1       highest sequence received
+u32     1       interarrival jitter
+u32     1       last SR timestamp
+u32     1       delay since last SR
+
+/'rtcp_pt
+192     FIR
+193     NACK
+195     IJ
+200     sender report
+201     receiver report
+202     source description
+203     goodbye
+204     application
+205     transport feedback
+206     payload specific feedback
+207     extended report
+208     AVB
+209     RSI
+
+/'rtcp_sdes
+0       end
+1       CNAME
+2       NAME
+3       EMAIL
+4       PHONE
+5       LOC
+6       TOOL
+7       NOTE
+8       PRIV

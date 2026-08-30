@@ -155,4 +155,13 @@ dist_mcstructdata_DATA = \
 	data/journal.stl \
 	data/swf.stl \
 	data/uefi_te.stl \
-	data/vdi.stl
+	data/vdi.stl \
+	data/lnk.stl \
+	data/wmf.stl \
+	data/ext2.stl \
+	data/iso9660.stl \
+	data/regf.stl \
+	data/rtcp.stl \
+	data/pcf.stl \
+	data/ppi.stl \
+	data/pyc27.stl
