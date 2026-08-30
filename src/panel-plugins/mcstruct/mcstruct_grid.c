@@ -255,7 +255,7 @@ ui_grid_build (ui_t *ui)
 {
     const WRect *tr = &WIDGET (ui->tree)->rect;
     table_column_def_t *defs;
-    table_datasource_t ds = { grid_get_nrows, grid_get_text, NULL, NULL, ui, NULL, NULL };
+    table_datasource_t ds = { grid_get_nrows, grid_get_text, NULL, NULL, ui, NULL };
     int n = 0, used = 0, c;
     int current = ui->grid != NULL ? table_get_current (ui->grid) : 0;
     /* a rebuild (resize, refresh) must not take the focus away from the hex or def-file zone */

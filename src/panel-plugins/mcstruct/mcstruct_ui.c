@@ -52,8 +52,8 @@ static int tree_get_nrows (const void *data);
 static const char *tree_get_text (const void *data, int row, int col);
 static int def_get_nrows (const void *data);
 static const char *def_get_text (const void *data, int row, int col);
-static int tree_get_color (const void *data, int row, int col);
-static int def_get_color (const void *data, int row, int col);
+static int tree_get_color (void *data, int row, int col);
+static int def_get_color (void *data, int row, int col);
 static void hex_on_cursor (WHexStrip *h, void *data);
 static void ui_set_root (ui_t *ui, slv_node_t *root, int current);
 static void ui_clear_jumps (ui_t *ui);
@@ -324,7 +324,7 @@ def_get_text (const void *data, int row, int col)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-tree_get_color (const void *data, int row, int col)
+tree_get_color (void *data, int row, int col)
 {
     const ui_t *ui = data;
     const slv_node_t *n;
@@ -366,7 +366,7 @@ tree_get_color (const void *data, int row, int col)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-def_get_color (const void *data, int row, int col)
+def_get_color (void *data, int row, int col)
 {
     const ui_t *ui = data;
     const char *line;
@@ -1340,11 +1340,8 @@ ui_create_widgets (ui_t *ui)
                                                 { 0, J_LEFT_FIT, TABLE_COL_TEXT } };
     table_column_def_t def_cols[DEF_COLS] = { { 6, J_RIGHT, TABLE_COL_TEXT },
                                               { 70, J_LEFT_FIT, TABLE_COL_TEXT } };
-    table_datasource_t tree_ds = { tree_get_nrows, tree_get_text, NULL, NULL, ui,
-                                   NULL,           tree_get_color };
-    table_datasource_t def_ds = {
-        def_get_nrows, def_get_text, NULL, NULL, ui, NULL, def_get_color
-    };
+    table_datasource_t tree_ds = { tree_get_nrows, tree_get_text, NULL, NULL, ui, NULL };
+    table_datasource_t def_ds = { def_get_nrows, def_get_text, NULL, NULL, ui, NULL };
     hexstrip_source_t hex_src;
 
     dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, listbox_colors, ui_dialog_callback,
@@ -1362,6 +1359,7 @@ ui_create_widgets (ui_t *ui)
 
     ui->tree = table_new (2, 0, 5, 80, TREE_COLS, tree_cols);
     table_set_datasource (ui->tree, tree_ds);
+    table_set_cell_color (ui->tree, tree_get_color);
     ui->tree->scrollbar = TRUE;
     ui->tree->scrollbar_on_frame = TRUE;
     group_add_widget (g, ui->tree);
@@ -1381,6 +1379,7 @@ ui_create_widgets (ui_t *ui)
     group_add_widget (g, ui->def_head);
     ui->def = table_new (15, 0, 5, 80, DEF_COLS, def_cols);
     table_set_datasource (ui->def, def_ds);
+    table_set_cell_color (ui->def, def_get_color);
     ui->def->scrollbar = TRUE;
     ui->def->scrollbar_on_frame = TRUE;
     group_add_widget (g, ui->def);
