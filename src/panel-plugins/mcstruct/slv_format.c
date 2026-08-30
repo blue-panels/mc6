@@ -667,3 +667,14 @@ slv_node_dump (const slv_node_t *node, int indent)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+
+char *
+slv_format_unix_time (gint64 v)
+{
+    GString *out = g_string_new (NULL);
+
+    format_unix_time (out, v);
+    return g_string_free (out, FALSE);
+}

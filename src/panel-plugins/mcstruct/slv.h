@@ -57,7 +57,8 @@ typedef enum
     SLV_ITEM_REPEAT, /* #repeat block (5.00) */
     SLV_ITEM_ENDIAN, /* #endian (5.00) */
     SLV_ITEM_SET,    /* #set label = expr (5.00) */
-    SLV_ITEM_CHECK   /* crc32 / sum8 / sum16 (5.00) */
+    SLV_ITEM_CHECK,  /* crc32 / sum8 / sum16 (5.00) */
+    SLV_ITEM_VALUE   /* '=' expr: a computed value shown as a row, no bytes (5.00) */
 } slv_item_kind_t;
 
 typedef enum
@@ -138,7 +139,8 @@ struct slv_item_t
     /* table columns: view width, 0 = auto */
     int view_width;
 
-    /* SLV_ITEM_SKIP: +1 / -1; SLV_ITEM_NESTED / SLV_ITEM_JUMP: target */
+    /* SLV_ITEM_SKIP: +1 / -1; SLV_ITEM_NESTED / SLV_ITEM_JUMP: target;
+       SLV_ITEM_VALUE: 0 decimal, 1 hex, 2 unix time */
     int direction; /* SKIP: +1 / -1; SEEK: 1 local, 2 absolute ('..') */
     char *target;  /* lower-cased key of the nested / jump target */
     gboolean target_is_table;

@@ -473,6 +473,7 @@ slv_def_fixed_size (const slv_def_t *def)
         case SLV_ITEM_ENDIAN:
         case SLV_ITEM_CHECK:
         case SLV_ITEM_SET:
+        case SLV_ITEM_VALUE:
             continue;
         case SLV_ITEM_FIELD:
             break;
@@ -852,6 +853,28 @@ eval_items (slv_eval_ctx_t *ctx, GPtrArray *items, slv_node_t *parent)
             break;
         case SLV_ITEM_CHECK:
             eval_check (ctx, it, parent);
+            break;
+        case SLV_ITEM_VALUE:
+            ctx->current_size = 0;
+            if (eval_expr (ctx, it->follower, parent, it, &v))
+            {
+                slv_node_t *n = node_new (SLV_NODE_FIELD, it, parent);
+
+                n->offset = ctx->current_offset;
+                n->size = 0;
+                n->value = v;
+                n->key = field_title (ctx, it);
+                n->hint = g_strdup (it->direction == 1 ? "=x" : it->direction == 2 ? "=t" : "=");
+                n->comment = g_strdup (it->comment);
+                n->big_endian = ctx->big_endian;
+                if (it->direction == 1)
+                    n->text = g_strdup_printf ("%llX", (unsigned long long) v);
+                else if (it->direction == 2)
+                    n->text = slv_format_unix_time (v);
+                else
+                    n->text = g_strdup_printf ("%lld", (long long) v);
+                set_label (ctx, it, v, ctx->current_offset);
+            }
             break;
         default:
             break;

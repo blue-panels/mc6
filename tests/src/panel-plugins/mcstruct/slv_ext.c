@@ -532,6 +532,46 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_value_rows)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/V\n"
+                              "lo: u16 1 low\n"
+                              "hi: u16 1 high\n"
+                              "all: = \"lo + (hi << 16)\" both words\n"
+                              " =x all hex\n"
+                              " =t 86400 a day after the epoch\n"
+                              "#if all == 0x00020001\n"
+                              " :label seen\n"
+                              "#fi\n"
+                              " u8 1 next\n";
+    static const unsigned char data[] = { 0x01, 0x00, 0x02, 0x00, 0x77 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "V", &file, &reader);
+    const slv_node_t *n;
+
+    n = child (root, 2);
+    ck_assert_int_eq (n->kind, SLV_NODE_FIELD);
+    ck_assert_int_eq ((int) n->size, 0);
+    ck_assert_int_eq ((int) n->offset, 4);
+    ck_assert_str_eq (n->key, "both words");
+    ck_assert_str_eq (n->text, "131073");
+    ck_assert_str_eq (n->hint, "=");
+    ck_assert (!slv_node_editable (n));
+    ck_assert_str_eq (child (root, 3)->text, "20001");
+    ck_assert_str_eq (child (root, 4)->text, "1970-01-02 00:00:00");
+    ck_assert_int_eq (child (root, 5)->kind, SLV_NODE_REMARK);
+    ck_assert_int_eq ((int) child (root, 6)->offset, 4);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -651,6 +691,7 @@ main (void)
     tcase_add_test (tc_core, test_set_and_linked_list);
     tcase_add_test (tc_core, test_outer_labels);
     tcase_add_test (tc_core, test_endian_float_and_bits);
+    tcase_add_test (tc_core, test_value_rows);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

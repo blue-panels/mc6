@@ -462,6 +462,46 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
         return;
     }
 
+    /* '=' expr: a computed value as a row; '=x' hex, '=t' unix time (5.00) */
+    if (tok[0] == '=')
+    {
+        char *operand;
+        int skip = 1;
+
+        it = item_new (ps, SLV_ITEM_VALUE);
+        if (ps->file->version_major < 5)
+            add_error (ps, "'=' needs STL 5.00");
+        if (tok[1] == 'x' || tok[1] == 't')
+        {
+            it->direction = tok[1] == 'x' ? 1 : 2;
+            skip = 2;
+        }
+        if (tok[skip] != '\0')
+            operand = g_strdup (tok + skip);
+        else
+            operand = next_token (&p);
+        if (operand == NULL)
+            add_error (ps, "'=' needs an expression");
+        else
+        {
+            char *err = NULL;
+
+            it->follower_kind = SLV_FOLLOWER_EXPR;
+            it->follower = slv_expr_parse (operand, &err);
+            if (it->follower == NULL)
+            {
+                add_error (ps, "bad expression '%s': %s", operand, err);
+                g_free (err);
+            }
+            g_free (operand);
+        }
+        it->name = rest_of_line (p);
+        it->comment = comment;
+        g_free (tok);
+        add_item (ps, it);
+        return;
+    }
+
     /* offset operations: '+', '-', '.', operand may be attached */
     if (tok[0] == '+' || tok[0] == '-' || tok[0] == '.')
     {

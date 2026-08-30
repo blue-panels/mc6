@@ -162,6 +162,8 @@ STL5, the def-file language:
     #repeat N ... #end      N passes (5.00)
     #repeat while expr ... #end
     #set label = expr       a label without bytes (5.00)
+    = expr name             a computed value as a row, no bytes;
+                            =x hex, =t unix time (5.00)
     #include "file"         (5.00)
     crc32 a..b == label     a check field, also sum8 and sum16 (5.00)
 
