@@ -24,7 +24,7 @@ alen:   u16     1               length
 #elseif atype == 1 || atype == 20
         b       16              uuid
 #elseif atype >= 9 && atype <= 12 && alen == 12
-        i64     1               seconds
+        tu64    1               seconds
         i32     1               nanoseconds
 #elseif alen == 8
         u64     1               value

@@ -11,7 +11,7 @@ STL 5.00
         c       4               signature
         u32     1               primary sequence number
         u32     1               secondary sequence number
-        q       1               last modification (FILETIME)
+        tf      1               last modification
         u32     1               major version
         u32     1               minor version
         u32     'regf_type      type
@@ -32,7 +32,7 @@ STL 5.00
 hsz:    u32     1               size
         u32     1               unknown
         u32     1               unknown
-        q       1               timestamp (FILETIME)
+        tf      1               timestamp
         u32     1               unknown
 #set    hend = 4096 + hsz
 #repeat while ^@ + 8 <= hend && @d != 0
@@ -47,7 +47,7 @@ csz:    i32     1               cell size (negative = allocated)
 #case 'nk'
         c       2               nk: named key
         t16     `regf_nk_flags  flags
-        q       1               last written (FILETIME)
+        tf      1               last written
         u32     1               unknown
         u32     1               parent key offset
         u32     1               subkeys

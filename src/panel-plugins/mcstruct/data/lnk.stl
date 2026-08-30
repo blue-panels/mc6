@@ -14,9 +14,9 @@ STL 5.00
         b       16              link clsid
 flags:  t32     `lnk_flags      link flags
         t32     `lnk_attr       file attributes
-        q       1               creation time (FILETIME)
-        q       1               access time (FILETIME)
-        q       1               write time (FILETIME)
+        tf      1               creation time
+        tf      1               access time
+        tf      1               write time
         u32     1               target file size
         i32     1               icon index
         u32     'lnk_show       show command

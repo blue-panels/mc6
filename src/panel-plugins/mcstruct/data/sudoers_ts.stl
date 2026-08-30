@@ -15,10 +15,10 @@ type:   u16     'sudo_ts_type   type
         u32     1               auth uid
         u32     1               session id
 #if ver == 2
-        i64     1               start time, seconds
+        tu64    1               start time, seconds
         i64     1               start time, nanoseconds
 #fi
-        i64     1               time stamp, seconds
+        tu64    1               time stamp, seconds
         i64     1               time stamp, nanoseconds
 #switch type
 #case 2

@@ -40,8 +40,8 @@ dofs:   i32     1               first directory sector
         i32     1               child
         b       16              clsid
         d       1               state bits
-        q       1               created (FILETIME)
-        q       1               modified (FILETIME)
+        tf      1               created
+        tf      1               modified
         i32     1               first sector
         u64     1               size
 

@@ -13,7 +13,7 @@ STL 5.00
         c       64              device
         u64     1               pid
         i16     'utmp_type      type
-        i64     1               timestamp (unix seconds)
+        tu64    1               timestamp
         i16     1               termination code
         i16     1               exit code
         c       256             host
