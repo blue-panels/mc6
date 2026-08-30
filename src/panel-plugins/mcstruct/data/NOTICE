@@ -44,6 +44,7 @@ dns.stl             network/dns_packet                         CC0-1.0
 dune2_pak.stl       game/dune_2_pak                            CC0-1.0
 edid.stl            hardware/edid                              CC0-1.0
 efi_siglist.stl     security/efivar_signature_list             CC0-1.0
+elf, exe, fat_boot, mbr, png, sqlite, uimage, wav, zip.
 ether.stl           network/ethernet_frame                     CC0-1.0
 exif.stl            image/exif                                 CC0-1.0
 ext2.stl            filesystem/ext2                            CC0-1.0
@@ -88,7 +89,10 @@ midi.stl            media/standard_midi_file                   CC0-1.0
 minidump.stl        windows/windows_minidump                   CC0-1.0
 mo.stl              database/gettext_mo                        BSD-2-Clause
 mov.stl             media/quicktime_mov                        CC0-1.0
+msgpack.stl         serialization/msgpack                      CC0-1.0
 nanoapp.stl         executable/android_nanoapp_header          Apache-2.0
+nitf.stl            image/nitf                                 CC0-1.0
+nt_mdt.stl          scientific/nt_mdt/nt_mdt                   Unlicense
 nt_mdt_pal.stl      scientific/nt_mdt/nt_mdt_pal               Unlicense
 ogg.stl             media/ogg                                  CC0-1.0
 op2.stl             media/genmidi_op2                          CC0-1.0
@@ -144,8 +148,8 @@ wmf.stl             image/wmf                                  CC0-1.0
 xar.stl             archive/xar                                CC0-1.0
 xm.stl              media/tracker_modules/fasttracker_xm_module Unlicense
 xwd.stl             image/xwd                                  CC0-1.0
+zchunk.stl          archive/zchunk                             CC0-1.0
 zisofs.stl          archive/zisofs                             CC0-1.0
 zx_tap.stl          filesystem/zx_spectrum_tap                 CC0-1.0
-
 Written from the format specifications, no gallery source: bmp, dbf, dtb,
 elf, exe, fat_boot, mbr, png, sqlite, uimage, wav, zip.

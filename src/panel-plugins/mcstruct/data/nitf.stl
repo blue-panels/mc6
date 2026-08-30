@@ -1,0 +1,144 @@
+STL 5.00
+;
+;   NITF 2.x: the file header (all fields are fixed-width text) and the
+;   segment table; the image subheaders are reached through the lengths.
+;   After kaitai_struct_formats image/nitf.ksy.
+;
+
+/NITF
+#if @d != 'NITF'
+        :ERROR!!! no NITF signature at this offset
+#fi
+        c       4               file profile name
+        c       5               file version
+        c       2               complexity level
+        c       4               standard type
+        c       10              originating station id
+        c       14              file date and time (CCYYMMDDhhmmss)
+        c       80              file title
+        *       1       _NITF_security
+        c       1               encryption
+        b       3               background color
+        c       24              originator name
+        c       18              originator phone
+        c       12              file length
+        c       6               file header length
+nis:    c       3               image segments
+#set    nimg = (@u8(^nis) - 48) * 100 + (@u8(^nis + 1) - 48) * 10 + (@u8(^nis + 2) - 48)
+#repeat nimg
+        c       6               image subheader length
+        c       10              image segment length
+#end
+ngs:    c       3               graphics segments
+#set    ngr = (@u8(^ngs) - 48) * 100 + (@u8(^ngs + 1) - 48) * 10 + (@u8(^ngs + 2) - 48)
+#repeat ngr
+        c       4               graphic subheader length
+        c       6               graphic segment length
+#end
+        c       3               reserved (000)
+nts:    c       3               text segments
+#set    ntx = (@u8(^nts) - 48) * 100 + (@u8(^nts + 1) - 48) * 10 + (@u8(^nts + 2) - 48)
+#repeat ntx
+        c       4               text subheader length
+        c       5               text segment length
+#end
+nds:    c       3               data extension segments
+#set    nde = (@u8(^nds) - 48) * 100 + (@u8(^nds + 1) - 48) * 10 + (@u8(^nds + 2) - 48)
+#repeat nde
+        c       4               data extension subheader length
+        c       9               data extension segment length
+#end
+nrs:    c       3               reserved extension segments
+#set    nre = (@u8(^nrs) - 48) * 100 + (@u8(^nrs + 1) - 48) * 10 + (@u8(^nrs + 2) - 48)
+#repeat nre
+        c       4               reserved extension subheader length
+        c       7               reserved extension segment length
+#end
+udl:    c       5               user defined header length
+#set    udhl = (@u8(^udl) - 48) * 10000 + (@u8(^udl + 1) - 48) * 1000 + (@u8(^udl + 2) - 48) * 100 + (@u8(^udl + 3) - 48) * 10 + (@u8(^udl + 4) - 48)
+#if udhl > 0
+        c       3               user defined header overflow
+        +       "udhl - 3"      user defined TREs
+#fi
+xhl:    c       5               extended header length
+#set    xhdl = (@u8(^xhl) - 48) * 10000 + (@u8(^xhl + 1) - 48) * 1000 + (@u8(^xhl + 2) - 48) * 100 + (@u8(^xhl + 3) - 48) * 10 + (@u8(^xhl + 4) - 48)
+#if xhdl > 0
+        c       3               extended header overflow
+        +       "xhdl - 3"      extended TREs
+#fi
+        =x      "^@ - ^"        image subheader offset (apply NITF_IMAGE there)
+
+/_NITF_security
+        c       1               classification
+        c       2               classification system
+        c       11              codewords
+        c       2               control and handling
+        c       20              releasability
+        c       2               declassification type
+        c       8               declassification date
+        c       4               declassification exemption
+        c       1               downgrade
+        c       8               downgrade date
+        c       43              classification text
+        c       1               classification authority type
+        c       40              classification authority
+        c       1               classification reason
+        c       8               security source date
+        c       15              security control number
+
+/NITF_IMAGE
+        c       2               file part type (IM)
+        c       10              image id 1
+        c       14              image date and time
+        c       17              target id
+        c       80              image id 2
+        *       1       _NITF_security
+        c       1               encryption
+        c       42              image source
+        c       8               significant rows
+        c       8               significant columns
+        c       3               pixel value type
+        c       8               image representation
+        c       8               image category
+        c       2               actual bits per pixel per band
+        c       1               pixel justification
+        c       1               image coordinate representation
+        c       60              image geographic location
+nic:    c       1               image comments
+#set    ncom = @u8(^nic) - 48
+#repeat ncom
+        c       80              image comment
+#end
+        c       2               image compression
+        c       4               compression rate code
+nb:     c       1               bands (0 = more than 9)
+#set    nbands = @u8(^nb) - 48
+#if nbands == 0
+xb:     c       5               bands
+#set    nbands = (@u8(^xb) - 48) * 10000 + (@u8(^xb + 1) - 48) * 1000 + (@u8(^xb + 2) - 48) * 100 + (@u8(^xb + 3) - 48) * 10 + (@u8(^xb + 4) - 48)
+#fi
+#repeat nbands
+        :--- band ---
+        c       2               representation
+        c       6               subcategory
+        c       1               image filter condition
+        c       3               standard image filter code
+nl:     c       1               lookup tables
+#set    nluts = @u8(^nl) - 48
+#if nluts > 0
+ne:     c       5               lookup table entries
+#set    nent = (@u8(^ne) - 48) * 10000 + (@u8(^ne + 1) - 48) * 1000 + (@u8(^ne + 2) - 48) * 100 + (@u8(^ne + 3) - 48) * 10 + (@u8(^ne + 4) - 48)
+        +       "nluts * nent"  lookup tables
+#fi
+#end
+        c       1               image sync code
+        c       1               image mode
+        c       4               blocks per row
+        c       4               blocks per column
+        c       4               pixels per block horizontal
+        c       4               pixels per block vertical
+        c       2               bits per pixel per band
+        c       3               display level
+        c       3               attachment level
+        c       10              image location
+        c       4               image magnification

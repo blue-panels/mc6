@@ -142,3 +142,7 @@ dicom.stl: *.dcm @128:4449434D
 openpgp.stl: *.gpg *.pgp
 java_class.stl: @0:CAFEBABE
 rtpdump.stl: *.rtpdump @0:2321727470706C6179
+zchunk.stl: *.zck @0:005A434B31 @0:005A485231
+msgpack.stl: *.msgpack *.mp
+nt_mdt.stl: *.mdt @0:01B093FF
+nitf.stl: *.ntf *.nitf @0:4E495446

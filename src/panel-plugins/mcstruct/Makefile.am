@@ -189,4 +189,8 @@ dist_mcstructdata_DATA = \
 	data/dicom.stl \
 	data/openpgp.stl \
 	data/java_class.stl \
-	data/rtpdump.stl
+	data/rtpdump.stl \
+	data/zchunk.stl \
+	data/msgpack.stl \
+	data/nt_mdt.stl \
+	data/nitf.stl
