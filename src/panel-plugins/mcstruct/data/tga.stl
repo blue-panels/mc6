@@ -19,8 +19,7 @@ cdepth: u8      1               color map entry bits
         t8      `tga_desc       image descriptor
         c       idlen           image id
 #if cmap == 1
-#set    cmapsize = ncmap * ((cdepth + 7) / 8)
-        +       cmapsize
+        *       ncmap   :tga_color step "(cdepth + 7) / 8" "color map"
 #fi
         :--- footer (TGA 2.0) ---
         .       "$size - 26"
@@ -57,6 +56,12 @@ extofs: u32     1               extension area offset
         u32     1               scan line offset
         u8      'tga_attr       attributes type
 #fi
+
+/:tga_color
+b       1       blue
+b       1       green
+b       1       red
+b       1       alpha
 
 /'tga_cmap
 0       none

@@ -562,12 +562,13 @@ build_rows (slv_eval_ctx_t *ctx, slv_node_t *n, const slv_def_t *def, gint64 row
         row = eval_struct_node (ctx, def, ctx->current_offset, n);
         if (row == NULL)
             break;
-        if (row->size == 0 && i + 1 < rows)
+        if (row->size == 0 && n->step == 0 && i + 1 < rows)
         {
             error_node (n, NULL, ctx->current_offset, g_strdup ("array element of zero size"));
             break;
         }
-        ctx->current_offset = row->offset + row->size;
+        ctx->current_offset =
+            n->step > 0 ? n->offset + (off_t) (i + 1) * n->step : row->offset + row->size;
         if (ctx->current_offset >= ctx->ev->reader->size (ctx->ev->reader->ctx) && i + 1 < rows)
         {
             error_node (n, NULL, ctx->current_offset, g_strdup ("end of file inside array"));
@@ -656,7 +657,25 @@ eval_nested (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
         return;
     }
 
-    fixed = def_fixed_size (def);
+    if (item->step != NULL)
+    {
+        gint64 st = 0;
+
+        ctx->current_size = 0;
+        if (!eval_expr (ctx, item->step, n, item, &st))
+            return;
+        if (st <= 0)
+        {
+            error_node (n, NULL, offset, g_strdup_printf ("step of %lld bytes", (long long) st));
+            return;
+        }
+        n->step = (off_t) st;
+        g_free (n->hint);
+        n->hint = g_strdup_printf ("%s%s[%lld]/%lld", def->kind == SLV_DEF_TABLE ? ":" : "",
+                                   def->name, (long long) rows, (long long) st);
+    }
+
+    fixed = n->step > 0 ? (gssize) n->step : def_fixed_size (def);
     if (fixed >= 0 && rows > ctx->ev->lazy_rows)
     {
         n->lazy = TRUE;

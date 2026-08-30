@@ -172,6 +172,9 @@ STL5, the def-file language:
                             exec:command (from, len) pipes the range
                             through a program and reads a number back,
                             for def-files in ~/.config/mc6/mcstruct only
+    * n Name step expr      records expr bytes apart, whatever their
+                            own size: a table whose entry size is a field
+                            of the header (5.00)
     * n Name "caption"      the row is titled by the caption (5.00)
     * n Name via call('p', args)  the structure is read from the bytes
                             the provider gives: raw (from, len), inflate /

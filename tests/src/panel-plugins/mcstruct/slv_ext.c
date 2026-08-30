@@ -929,6 +929,37 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_step)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/O\n"
+                              "esz: u8 1 entry size\n"
+                              " * 3 :Rec step esz \"records\"\n"
+                              " u8 1 after\n"
+                              "/:Rec\n"
+                              "u8 1 a\n"
+                              "u8 1 b\n";
+    static const unsigned char data[] = { 4, 1, 2, 0, 0, 3, 4, 0, 0, 5, 6, 0, 0, 0x77 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "O", &file, &reader);
+    const slv_node_t *tab = child (root, 1);
+
+    ck_assert_str_eq (tab->key, "records");
+    ck_assert_int_eq ((int) tab->size, 12);
+    ck_assert_str_eq (tab->hint, ":Rec[3]/4");
+    ck_assert_int_eq ((int) child (tab, 2)->offset, 9);
+    ck_assert_str_eq (child (child (tab, 2), 1)->text, "6");
+    ck_assert_int_eq ((int) child (root, 2)->offset, 13);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -1060,6 +1091,7 @@ main (void)
     tcase_add_test (tc_core, test_nested_caption);
     tcase_add_test (tc_core, test_text_labels);
     tcase_add_test (tc_core, test_lsb_and_jump_labels);
+    tcase_add_test (tc_core, test_step);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

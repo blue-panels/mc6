@@ -117,6 +117,7 @@ item_free (gpointer p)
     g_free (it->encoding);
     g_free (it->comment_title);
     slv_expr_free (it->via);
+    slv_expr_free (it->step);
     slv_expr_free (it->follower);
     slv_expr_free (it->rows);
     slv_expr_free (it->jump);
@@ -448,6 +449,26 @@ parse_nested_name (parser_t *ps, slv_item_t *it, const char *rest)
         }
         *via = '\0';
         g_strchomp (name);
+    }
+    /* "Name step expr": every record starts expr bytes after the one before (5.00) */
+    {
+        char *st = strstr (name, " step ");
+
+        if (st != NULL)
+        {
+            char *err = NULL;
+
+            if (ps->file->version_major < 5)
+                add_error (ps, "'step' needs STL 5.00");
+            it->step = slv_expr_parse (st + 6, &err);
+            if (it->step == NULL)
+            {
+                add_error (ps, "bad 'step' expression '%s': %s", st + 6, err);
+                g_free (err);
+            }
+            *st = '\0';
+            g_strchomp (name);
+        }
     }
     if (name[0] == ':')
     {

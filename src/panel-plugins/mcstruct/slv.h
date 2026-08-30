@@ -163,6 +163,8 @@ struct slv_item_t
     slv_expr_t *title_at;
     /* 5.00: '* n Name "caption"': the row title instead of the structure name */
     char *comment_title;
+    /* 5.00: '* n Name step expr': the distance between records */
+    slv_expr_t *step;
     /* 5.00: '* n Name via call(...)': the bytes the structure is read from */
     slv_expr_t *via;
     /* 5.00: t8.lsb: the bit split starts at bit 0 */
@@ -226,6 +228,7 @@ struct slv_node_t
     off_t jump_target;   /* SLV_NODE_JUMP */
     GBytes *buffer;      /* SLV_NODE_BUFFER: the bytes def is applied to, on Enter */
     gint64 rows;         /* NESTED / TABLE: element count */
+    off_t step;          /* NESTED / TABLE: record distance from 'step', 0 = packed */
 
     slv_node_t *parent;
     GPtrArray *children; /* slv_node_t * */
