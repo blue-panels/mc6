@@ -572,6 +572,44 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_switch)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/S\n"
+                              "#repeat 3\n"
+                              "t: u8 1 type\n"
+                              "#switch t\n"
+                              "#case 1\n"
+                              " u8 1 one\n"
+                              "#case 2, 3\n"
+                              " u16 1 two or three\n"
+                              "#default\n"
+                              " :other\n"
+                              "#end\n"
+                              "#end\n";
+    static const unsigned char data[] = { 1, 0xAA, 3, 0x34, 0x12, 9 };
+    static const char bad[] = "STL 5.00\n/B\n u8 1 x\n#switch x\n u8 1 stray\n#case 1\n#fi\n";
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "S", &file, &reader);
+    const slv_node_t *rep = child (root, 0);
+
+    ck_assert_str_eq (child (child (rep, 0), 1)->key, "one");
+    ck_assert_str_eq (child (child (rep, 1), 1)->text, "4660");
+    ck_assert_int_eq (child (child (rep, 2), 1)->kind, SLV_NODE_REMARK);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+
+    file = slv_file_parse (bad, strlen (bad), "bad.stl");
+    ck_assert_uint_ge (file->errors->len, 2); /* stray item, #fi inside #switch */
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -692,6 +730,7 @@ main (void)
     tcase_add_test (tc_core, test_outer_labels);
     tcase_add_test (tc_core, test_endian_float_and_bits);
     tcase_add_test (tc_core, test_value_rows);
+    tcase_add_test (tc_core, test_switch);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

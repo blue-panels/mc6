@@ -1103,6 +1103,31 @@ parse_directive (parser_t *ps, const char *code)
         return;
     }
 
+    /* #switch expr: an #if chain; every #case v1, v2 is "expr == v1 || expr == v2",
+       #default is #else, #end closes it */
+    if (directive_is (code, "#switch"))
+    {
+        const char *arg = code + 7;
+
+        while (*arg == ' ' || *arg == '\t')
+            arg++;
+        if (!v5)
+            add_error (ps, "#switch needs STL 5.00");
+        it = item_new (ps, SLV_ITEM_IF);
+        it->name = g_strdup (arg);
+        if (*arg == '\0')
+            add_error (ps, "#switch needs an expression");
+        it->branches = g_ptr_array_new ();
+        br = g_new0 (slv_branch_t, 1);
+        br->cond = slv_expr_parse ("0", NULL);
+        br->items = g_ptr_array_new_with_free_func (item_free);
+        g_ptr_array_add (it->branches, br);
+        g_ptr_array_add (ps->target, it);
+        if (push_block (ps, it))
+            ps->target = br->items;
+        return;
+    }
+
     if (directive_is (code, "#if"))
     {
         it = item_new (ps, SLV_ITEM_IF);
@@ -1124,11 +1149,62 @@ parse_directive (parser_t *ps, const char *code)
     }
     it = ps->if_stack[ps->if_depth - 1];
 
+    if (directive_is (code, "#case") || directive_is (code, "#default"))
+    {
+        gboolean is_default = directive_is (code, "#default");
+
+        if (it->kind != SLV_ITEM_IF || it->name == NULL)
+        {
+            add_error (ps, "'%s' outside of #switch", code);
+            return;
+        }
+        if (it->branches->len == 1)
+        {
+            const slv_branch_t *first = g_ptr_array_index (it->branches, 0);
+
+            if (first->items->len > 0)
+                add_error (ps, "items between #switch and the first #case");
+        }
+        br = g_new0 (slv_branch_t, 1);
+        if (!is_default)
+        {
+            const char *arg = code + 5;
+            char **vals;
+            GString *cond = g_string_new (NULL);
+            char *err = NULL;
+            guint i;
+
+            while (*arg == ' ' || *arg == '\t')
+                arg++;
+            vals = g_strsplit (arg, ",", -1);
+            for (i = 0; vals[i] != NULL; i++)
+            {
+                if (i > 0)
+                    g_string_append (cond, " || ");
+                g_string_append_printf (cond, "(%s) == (%s)", it->name, g_strstrip (vals[i]));
+            }
+            if (i == 0)
+                add_error (ps, "#case needs a value");
+            g_strfreev (vals);
+            br->cond = slv_expr_parse (cond->str, &err);
+            if (br->cond == NULL)
+            {
+                add_error (ps, "bad #case '%s': %s", arg, err);
+                g_free (err);
+            }
+            g_string_free (cond, TRUE);
+        }
+        br->items = g_ptr_array_new_with_free_func (item_free);
+        g_ptr_array_add (it->branches, br);
+        ps->target = br->items;
+        return;
+    }
+
     if (directive_is (code, "#end"))
     {
-        if (it->kind != SLV_ITEM_REPEAT)
+        if (it->kind != SLV_ITEM_REPEAT && !(it->kind == SLV_ITEM_IF && it->name != NULL))
         {
-            add_error (ps, "#end without #repeat");
+            add_error (ps, "#end without #repeat or #switch");
             return;
         }
         pop_block (ps);
@@ -1138,6 +1214,11 @@ parse_directive (parser_t *ps, const char *code)
     if (it->kind != SLV_ITEM_IF)
     {
         add_error (ps, "'%s' inside #repeat", code);
+        return;
+    }
+    if (it->name != NULL)
+    {
+        add_error (ps, "'%s' inside #switch", code);
         return;
     }
 
