@@ -37,6 +37,10 @@ gpointer g_memdup2 (gconstpointer mem, gsize byte_size);
 #define g_spawn_check_wait_status g_spawn_check_exit_status
 #endif
 
+#if !GLIB_CHECK_VERSION(2, 76, 0)
+void g_ptr_array_sort_values (GPtrArray *array, GCompareFunc compare_func);
+#endif
+
 #if !GLIB_CHECK_VERSION(2, 77, 0)
 GString *g_string_new_take (char *init);
 #endif

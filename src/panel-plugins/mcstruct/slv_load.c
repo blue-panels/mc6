@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "lib/global.h"
+#include "lib/glibcompat.h"  // g_ptr_array_sort_values() on GLib before 2.76
 #include "lib/mcconfig.h"
 
 #include "slv_load.h"
