@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   Protocol Buffers wire format: key/value pairs of one message level
 ;   (nested messages are shown as length-delimited blocks).
-;   After kaitai_struct_formats serialization/google_protobuf.ksy (MIT).
+;   After kaitai_struct_formats serialization/google_protobuf.ksy.
 ;
 
 /PROTOBUF

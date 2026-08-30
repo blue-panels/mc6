@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   VirtualBox VDI image header, version 1.x.
-;   After kaitai_struct_formats filesystem/vdi.ksy (GPL-3.0-or-later).
+;   After kaitai_struct_formats filesystem/vdi.ksy.
 ;
 
 /VDI

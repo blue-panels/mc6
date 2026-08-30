@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   Saints Row 2 .vpp_pc archive: header and the file table (Enter on a
 ;   name offset shows the name). After kaitai_struct_formats
-;   game/saints_row_2_vpp_pc.ksy (MIT).
+;   game/saints_row_2_vpp_pc.ksy.
 ;
 
 /VPP

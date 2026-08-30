@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   InfluxDB TSM file: header, and the index whose offset is in the last
-;   8 bytes. After kaitai_struct_formats database/tsm.ksy (MIT).
+;   8 bytes. After kaitai_struct_formats database/tsm.ksy.
 ;
 
 /TSM

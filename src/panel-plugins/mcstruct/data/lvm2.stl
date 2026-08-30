@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   LVM2 physical volume label (sector 1) and the metadata area header.
 ;   After the on-disk layout in the LVM2 sources (lib/label/label.h and
-;   lib/format_text/format-text.h, GPL-2.0).
+;   lib/format_text/format-text.h).
 ;
 
 /LVM2_PV

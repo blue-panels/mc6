@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   hashcat .hccapx WPA handshake records, 393 bytes each.
-;   After kaitai_struct_formats network/hccapx.ksy (Unlicense).
+;   After kaitai_struct_formats network/hccapx.ksy.
 ;
 
 /HCCAPX

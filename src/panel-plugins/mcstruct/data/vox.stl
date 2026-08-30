@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   MagicaVoxel .vox: MAIN chunk and the chunks inside it (PACK, SIZE,
 ;   XYZI, RGBA, MATT decoded). After kaitai_struct_formats
-;   media/magicavoxel_vox.ksy (MIT).
+;   media/magicavoxel_vox.ksy.
 ;
 
 /VOX

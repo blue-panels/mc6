@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   NT-MDT palette file: metadata records and the color tables.
-;   After kaitai_struct_formats scientific/nt_mdt/nt_mdt_pal.ksy (Unlicense).
+;   After kaitai_struct_formats scientific/nt_mdt/nt_mdt_pal.ksy.
 ;
 
 /NT_MDT_PAL

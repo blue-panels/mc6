@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   USGS SPECPR spectral library: 1536 byte records (data, text and
 ;   their continuations). After kaitai_struct_formats
-;   scientific/spectroscopy/specpr.ksy (Unlicense).
+;   scientific/spectroscopy/specpr.ksy.
 ;
 
 /SPECPR

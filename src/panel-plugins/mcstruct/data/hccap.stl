@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   hashcat .hccap WPA handshake records, 392 bytes each.
-;   After kaitai_struct_formats network/hccap.ksy (Unlicense).
+;   After kaitai_struct_formats network/hccap.ksy.
 ;
 
 /HCCAP

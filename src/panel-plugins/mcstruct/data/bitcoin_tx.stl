@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   Bitcoin transaction (legacy, single-byte counts): inputs, outputs,
-;   lock time. After kaitai_struct_formats network/bitcoin_transaction.ksy (MIT).
+;   lock time. After kaitai_struct_formats network/bitcoin_transaction.ksy.
 ;
 
 /BITCOIN_TX

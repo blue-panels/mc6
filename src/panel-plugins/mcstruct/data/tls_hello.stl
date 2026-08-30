@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   TLS ClientHello body (after the handshake header), big endian.
-;   After kaitai_struct_formats network/tls_client_hello.ksy (MIT).
+;   After kaitai_struct_formats network/tls_client_hello.ksy.
 ;
 
 /TLS_CLIENT_HELLO

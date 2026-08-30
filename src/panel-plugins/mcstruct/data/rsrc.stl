@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   Classic Mac OS resource fork: header, resource map, type list and
-;   reference lists. After kaitai_struct_formats macos/resource_fork.ksy (MIT).
+;   reference lists. After kaitai_struct_formats macos/resource_fork.ksy.
 ;
 
 /RSRC

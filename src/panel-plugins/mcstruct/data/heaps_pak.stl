@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   Heaps.io .pak archive: header and the root directory (one level).
-;   After kaitai_struct_formats game/heaps_pak.ksy (MIT).
+;   After kaitai_struct_formats game/heaps_pak.ksy.
 ;
 
 /HEAPS_PAK

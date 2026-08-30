@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   Classic Mac OS 'snd ' resource: format 1/2 header, sound commands and
 ;   the sound header (Enter on a buffer command with an offset).
-;   After kaitai_struct_formats macos/mac_os_resource_snd.ksy (MIT).
+;   After kaitai_struct_formats macos/mac_os_resource_snd.ksy.
 ;
 
 /SND

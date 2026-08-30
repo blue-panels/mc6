@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   MCAP container: records (header, schema, channel, message, chunk,
 ;   indexes, statistics, footer) with the top-level fields of each.
-;   After kaitai_struct_formats log/mcap.ksy (Apache-2.0).
+;   After kaitai_struct_formats log/mcap.ksy.
 ;
 
 /MCAP

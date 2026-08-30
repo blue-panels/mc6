@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   PIF (Portable Image Format) headers and color table.
-;   After kaitai_struct_formats image/pif.ksy (LGPL-2.1).
+;   After kaitai_struct_formats image/pif.ksy.
 ;
 
 /PIF

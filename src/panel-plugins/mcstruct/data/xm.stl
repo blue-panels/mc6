@@ -2,7 +2,7 @@ STL 5.00
 ;
 ;   FastTracker II .xm module: header, pattern headers and instrument
 ;   headers with their sample headers.
-;   After kaitai_struct_formats media/tracker_modules/fasttracker_xm_module.ksy (Unlicense).
+;   After kaitai_struct_formats media/tracker_modules/fasttracker_xm_module.ksy.
 ;
 
 /XM

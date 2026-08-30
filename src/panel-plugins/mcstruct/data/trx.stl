@@ -1,7 +1,7 @@
 STL 5.00
 ;
 ;   Broadcom TRX firmware image: header and the tail record.
-;   After kaitai_struct_formats firmware/broadcom_trx.ksy (GPL-2.0-or-later).
+;   After kaitai_struct_formats firmware/broadcom_trx.ksy.
 ;
 
 /TRX
