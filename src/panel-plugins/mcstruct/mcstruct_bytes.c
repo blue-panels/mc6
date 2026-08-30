@@ -31,6 +31,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mcstruct_ui_priv.h"
 
@@ -160,7 +161,7 @@ store_delete (mc_config_t *cfg, int id)
     char *path = bin_path (id);
     char *group = g_strdup_printf ("%d", id);
 
-    g_unlink (path);
+    unlink (path);
     mc_config_del_group (cfg, group);
     g_free (group);
     g_free (path);
