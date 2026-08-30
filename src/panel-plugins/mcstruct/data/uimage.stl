@@ -1,0 +1,132 @@
+STL 5.00
+;
+;   U-Boot legacy image header, big endian
+;
+
+/uImage
+#endian big
+magic:  d       1               magic
+#if magic != 0x27051956
+        :ERROR!!! not a U-Boot image
+#fi
+hcrc:   d       1               header crc
+        tu.le   1               timestamp
+size:   u32     1               data size
+        d       1               load address
+        d       1               entry point
+dcrc:   d       1               data crc
+        u8      'uimage_os      os
+        u8      'uimage_arch    architecture
+        u8      'uimage_type    image type
+        u8      'uimage_comp    compression
+        c       32              image name
+        :header crc is computed over the header with the crc field set to 0
+        crc32   64..64+size == dcrc    data crc check
+
+/'uimage_os
+0       invalid
+1       OpenBSD
+2       NetBSD
+3       FreeBSD
+4       4.4BSD
+5       Linux
+6       SVR4
+7       Esix
+8       Solaris
+9       Irix
+10      SCO
+11      Dell
+12      NCR
+13      LynxOS
+14      VxWorks
+15      pSOS
+16      QNX
+17      U-Boot
+18      RTEMS
+19      ARTOS
+20      Unity OS
+21      INTEGRITY
+22      OSE
+23      Plan 9
+24      OpenRTOS
+25      ARM Trusted Firmware
+26      Trusted Execution Environment
+27      OpenSBI
+28      EFI
+
+/'uimage_arch
+0       invalid
+1       Alpha
+2       ARM
+3       x86
+4       IA-64
+5       MIPS
+6       MIPS64
+7       PowerPC
+8       S390
+9       SuperH
+10      SPARC
+11      SPARC64
+12      M68K
+13      Nios
+14      MicroBlaze
+15      Nios-II
+16      Blackfin
+17      AVR32
+18      ST200
+19      Sandbox
+20      NDS32
+21      OpenRISC
+22      ARM64
+23      ARC
+24      x86-64
+25      Xtensa
+26      RISC-V
+
+/'uimage_type
+0       invalid
+1       standalone
+2       kernel
+3       ramdisk
+4       multi-file
+5       firmware
+6       script
+7       filesystem
+8       flat device tree
+9       kwbimage
+10      imximage
+11      ublimage
+12      omapimage
+13      aisimage
+14      kernel (noload)
+15      pblimage
+16      mxsimage
+17      gpimage
+18      atmelimage
+19      socfpgaimage
+20      x86 setup
+21      lpc32xx
+22      loadable
+23      mxs boot
+24      socfpga boot
+25      pmmc
+26      stm32image
+27      socfpga v1
+28      mtkimage
+29      imx8mimage
+30      imx8image
+31      copro
+32      sunxi egon
+33      sunxi toc0
+34      fdt legacy
+35      renesas spkgimage
+36      starfive spl
+
+/'uimage_comp
+0       none
+1       gzip
+2       bzip2
+3       lzma
+4       lzo
+5       lz4
+6       zstd

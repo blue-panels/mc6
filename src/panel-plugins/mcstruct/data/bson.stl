@@ -1,0 +1,80 @@
+STL 5.00
+;
+;   BSON document: the elements of the top level (embedded documents and
+;   arrays are shown as blocks). After kaitai_struct_formats
+;   serialization/bson.ksy.
+;
+
+/BSON
+dsz:    i32     1               document size
+#set    dend = ^@ - 4 + dsz
+#repeat while ^@ < dend - 1
+        :--- element ---
+et:     u8      'bson_type      type
+        sc      0               name
+#switch et
+#case 1
+        f64     1               double
+#case 2, 13, 14
+sl:     i32     1               string length
+        c       sl              string (with NUL)
+#case 3, 4
+bl:     i32     1               document size
+        +       "bl - 4"        document
+#case 5
+bl:     i32     1               binary length
+        u8      'bson_subtype   subtype
+        +       bl              binary
+#case 7
+        b       12              ObjectId
+#case 8
+        u8      1               boolean
+#case 9
+        i64     1               UTC datetime, ms
+#case 11
+        sc      0               regex pattern
+        sc      0               regex options
+#case 16
+        i32     1               int32
+#case 17
+        u64     1               timestamp
+#case 18
+        i64     1               int64
+#case 19
+        b       16              decimal128
+#end
+#end
+        u8      1               end of document
+
+/'bson_type
+1       double
+2       string
+3       document
+4       array
+5       binary
+6       undefined
+7       ObjectId
+8       boolean
+9       UTC datetime
+10      null
+11      regex
+12      DBPointer
+13      JavaScript
+14      symbol
+15      JavaScript with scope
+16      int32
+17      timestamp
+18      int64
+19      decimal128
+255     min key
+127     max key
+
+/'bson_subtype
+0       generic
+1       function
+2       binary (old)
+3       UUID (old)
+4       UUID
+5       MD5
+6       encrypted
+128     user defined

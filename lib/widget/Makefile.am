@@ -12,6 +12,7 @@ libmcwidget_la_SOURCES = \
 	gauge.c gauge.h \
 	group.c group.h \
 	groupbox.c groupbox.h \
+	hexstrip.c hexstrip.h \
 	hline.c hline.h \
 	history.c history.h \
 	input.c input.h \

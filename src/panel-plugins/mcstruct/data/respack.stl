@@ -1,0 +1,15 @@
+STL 5.00
+;
+;   Cocos2d / Hyphenate resource pack ("RS"): header and the JSON index.
+;   After kaitai_struct_formats archive/respack.ksy.
+;
+
+/RESPACK
+#if @w != 'RS'
+        :ERROR!!! no RS signature at this offset
+#fi
+        c       2               magic
+        b       8               unknown
+jlen:   u32     1               json length
+        c       32              md5
+        c       jlen            json

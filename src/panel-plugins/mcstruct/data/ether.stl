@@ -1,0 +1,114 @@
+STL 5.00
+;
+;   Ethernet II frame with an IPv4 or IPv6 header and the TCP / UDP header
+;   inside. After kaitai_struct_formats network/ethernet_frame.ksy,
+;   ipv4_packet.ksy, ipv6_packet.ksy, tcp_segment.ksy, udp_datagram.ksy.
+;
+
+/Ethernet
+#endian big
+        b       6               destination mac
+        b       6               source mac
+et1:    u16     'ether_type     ether type
+#set    etype = et1
+#if et1 == 0x8100
+        t16     `vlan_tci       802.1Q tag
+et2:    u16     'ether_type     ether type
+#set    etype = et2
+#fi
+#switch etype
+#case 0x0800
+        :--- IPv4 ---
+vihl:   t8      44              version / header length (x4)
+        t8      62              dscp / ecn
+tlen:   u16     1               total length
+        w       1               identification
+        t16     `ip_frag        flags / fragment offset
+        u8      1               ttl
+proto:  u8      'ip_proto       protocol
+        w       1               header checksum
+        b       4               source address
+        b       4               destination address
+#set    ihl = (vihl & 0x0F) * 4
+#if ihl > 20
+        b       "ihl - 20"      options
+#fi
+#case 0x86DD
+        :--- IPv6 ---
+        t32     4820            version / traffic class / flow label
+        u16     1               payload length
+proto:  u8      'ip_proto       next header
+        u8      1               hop limit
+        b       16              source address
+        b       16              destination address
+#default
+#set    proto = 0
+#end
+#switch proto
+#case 6
+        :--- TCP ---
+        u16     1               source port
+        u16     1               destination port
+        u32     1               sequence number
+        u32     1               acknowledgment number
+doff:   t8      44              data offset (x4) / reserved
+        t8      `tcp_flags      flags
+        u16     1               window size
+        w       1               checksum
+        u16     1               urgent pointer
+#set    tol = (doff >> 4) * 4 - 20
+#if tol > 0
+        b       tol             options
+#fi
+#case 17
+        :--- UDP ---
+        u16     1               source port
+        u16     1               destination port
+        u16     1               length
+        w       1               checksum
+#case 1
+        :--- ICMP ---
+        u8      1               type
+        u8      1               code
+        w       1               checksum
+#end
+
+/'ether_type
+0x0800  IPv4
+0x0806  ARP
+0x8100  802.1Q VLAN
+0x86DD  IPv6
+0x8847  MPLS
+0x88CC  LLDP
+
+/`vlan_tci
+0xE000  0xE000  priority bits
+0x1000          drop eligible
+0x0FFF  0x0FFF  vlan id bits
+
+/`ip_frag
+0x4000          don't fragment
+0x2000          more fragments
+
+/'ip_proto
+1       ICMP
+2       IGMP
+6       TCP
+17      UDP
+41      IPv6 encapsulation
+47      GRE
+50      ESP
+51      AH
+58      ICMPv6
+89      OSPF
+132     SCTP
+
+/`tcp_flags
+0x80            CWR
+0x40            ECE
+0x20            URG
+0x10            ACK
+0x08            PSH
+0x04            RST
+0x02            SYN
+0x01            FIN

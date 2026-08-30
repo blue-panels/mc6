@@ -1,0 +1,135 @@
+STL 5.00
+;
+;   MessagePack values, listed flat: a map or an array row says how many
+;   items follow it. After kaitai_struct_formats serialization/msgpack.ksy.
+;
+
+/MSGPACK
+#repeat while ^@ < $size
+b:      u8      'msgpack_type   type byte
+#if b < 0x80
+        =       b               positive fixint
+#elseif b >= 0xE0
+        =       "b - 256"       negative fixint
+#elseif b < 0x90
+        =       "b & 0x0F"      fixmap: pairs follow
+#elseif b < 0xA0
+        =       "b & 0x0F"      fixarray: items follow
+#elseif b < 0xC0
+        c       "b & 0x1F"      fixstr
+#else
+#switch b
+#case 0xC4
+l8:     u8      1               length
+        b       l8              bin
+#case 0xC5
+l16:    u16.be  1               length
+        b       l16             bin
+#case 0xC6
+l32:    u32.be  1               length
+        b       l32             bin
+#case 0xC7
+l8:     u8      1               length
+        i8      1               ext type
+        b       l8              ext data
+#case 0xC8
+l16:    u16.be  1               length
+        i8      1               ext type
+        b       l16             ext data
+#case 0xC9
+l32:    u32.be  1               length
+        i8      1               ext type
+        b       l32             ext data
+#case 0xCA
+        f32.be  1               float32
+#case 0xCB
+        f64.be  1               float64
+#case 0xCC
+        u8      1               uint8
+#case 0xCD
+        u16.be  1               uint16
+#case 0xCE
+        u32.be  1               uint32
+#case 0xCF
+        u64.be  1               uint64
+#case 0xD0
+        i8      1               int8
+#case 0xD1
+        i16.be  1               int16
+#case 0xD2
+        i32.be  1               int32
+#case 0xD3
+        i64.be  1               int64
+#case 0xD4
+        i8      1               ext type
+        b       1               fixext 1
+#case 0xD5
+        i8      1               ext type
+        b       2               fixext 2
+#case 0xD6
+        i8      1               ext type
+        b       4               fixext 4
+#case 0xD7
+        i8      1               ext type
+        b       8               fixext 8
+#case 0xD8
+        i8      1               ext type
+        b       16              fixext 16
+#case 0xD9
+l8:     u8      1               length
+        c       l8              str8
+#case 0xDA
+l16:    u16.be  1               length
+        c       l16             str16
+#case 0xDB
+l32:    u32.be  1               length
+        c       l32             str32
+#case 0xDC
+        u16.be  1               array16: items follow
+#case 0xDD
+        u32.be  1               array32: items follow
+#case 0xDE
+        u16.be  1               map16: pairs follow
+#case 0xDF
+        u32.be  1               map32: pairs follow
+#end
+#fi
+#end
+
+/'msgpack_type
+0x00    0x7F    positive fixint
+0x80    0x8F    fixmap
+0x90    0x9F    fixarray
+0xA0    0xBF    fixstr
+0xC0    nil
+0xC2    false
+0xC3    true
+0xC4    bin 8
+0xC5    bin 16
+0xC6    bin 32
+0xC7    ext 8
+0xC8    ext 16
+0xC9    ext 32
+0xCA    float 32
+0xCB    float 64
+0xCC    uint 8
+0xCD    uint 16
+0xCE    uint 32
+0xCF    uint 64
+0xD0    int 8
+0xD1    int 16
+0xD2    int 32
+0xD3    int 64
+0xD4    fixext 1
+0xD5    fixext 2
+0xD6    fixext 4
+0xD7    fixext 8
+0xD8    fixext 16
+0xD9    str 8
+0xDA    str 16
+0xDB    str 32
+0xDC    array 16
+0xDD    array 32
+0xDE    map 16
+0xDF    map 32
+0xE0    0xFF    negative fixint

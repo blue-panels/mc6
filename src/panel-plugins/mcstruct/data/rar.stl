@@ -1,0 +1,83 @@
+STL 5.00
+;
+;   RAR 1.5-4.x archive blocks. After kaitai_struct_formats archive/rar.ksy.
+;
+
+/RAR
+#if @d != 'Rar!'
+        :ERROR!!! no Rar! signature at this offset
+#fi
+        c       4               magic
+        b       3               1A 07 00 (v4) or 1A 07 01 (v5)
+#if @u8(^@ - 1) == 1
+        u8      1               v5 terminator
+        :RAR 5 blocks are not described here
+#else
+#repeat while ^@ + 7 <= $size
+        :--- block ---
+        w       1               crc16
+btype:  u8      'rar_block      type
+flags:  t16     `rar_flags      flags
+bsize:  u16     1               block size
+#set    bend = ^@ - 7 + bsize
+#if flags & 0x8000
+asize:  u32     1               added size
+#else
+#set    asize = 0
+#fi
+#if btype == 0x74
+        u32     1               unpacked size, low
+        u8      'rar_os         host os
+        d       1               file crc32
+        td      1               file time
+        u8      1               rar version
+        u8      'rar_method     method
+nlen:   u16     1               name size
+        d       1               attributes
+#if flags & 0x100
+        u32     1               packed size, high
+        u32     1               unpacked size, high
+#fi
+        c       nlen            file name
+#if flags & 0x400
+        q       1               salt
+#fi
+#fi
+        +       "bend - ^@"
+        +       asize
+#end
+#fi
+
+/'rar_block
+0x72    marker
+0x73    archive header
+0x74    file header
+0x75    old comment
+0x76    old authenticity
+0x77    old subblock
+0x78    old recovery
+0x79    old authenticity 2
+0x7A    subblock
+0x7B    terminator
+
+/`rar_flags
+0x8000          added size present
+0x0100          large file (64-bit sizes)
+0x0400          salt present
+0x0004          solid
+
+/'rar_os
+0       MS-DOS
+1       OS/2
+2       Windows
+3       Unix
+4       Mac OS
+5       BeOS
+
+/'rar_method
+0x30    stored
+0x31    fastest
+0x32    fast
+0x33    normal
+0x34    good
+0x35    best

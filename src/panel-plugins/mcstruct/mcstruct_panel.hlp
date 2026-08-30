@@ -1,0 +1,254 @@
+[mcstruct]
+
+Struct look: a structured view of a binary file
+
+mcstruct shows a binary file as a tree of named fields instead of a hex
+dump.  The layout comes from a text def-file written in STL5.  Fields can
+be edited in place and written back.  The def-file format is compatible
+with Struct Look 4.00.
+
+Starting it:
+
+  mcstruct FILE [DEF]      from the shell; DEF is a def-file name without
+                           .stl, or a path
+  F3 in the file panel     on a file that a magic.ini group hands to the
+                           plugin (uImage, DTB, MBR out of the box)
+  F9 -> Command -> Struct look   for any file
+  Shift-F4 in the viewer   opens the file here at the current offset;
+                           Shift-F4 goes back to the viewer at the
+                           byte you were on, F10 closes both
+
+The def-file is chosen in this order: the name from the command line or
+the magic.ini group ([mcstruct-mbr] means mbr.stl), a signature or a name
+pattern from stl.als, <extension>.stl, else a list to choose from.
+
+Def-files are searched in ~/.config/mc6/mcstruct/, /etc/mc/mcstruct/ and
+the plugin's own data directory; the first hit wins.  Put your own files
+and your stl.als into the first one.
+
+The screen:
+
+  Three zones, all in sync: the structure tree, the hex dump and the
+  def-file.  Moving in the tree highlights the bytes of the field in the
+  dump and the def-file line that produced it; moving the hex cursor
+  selects the field under it.  On terminals narrower than 120 columns the
+  def-file goes below the hex dump.
+
+Keys in the tree:
+
+  Up Down PgUp PgDn Home End   move
+  Right, Enter     expand; on an array, table or #repeat open it as a
+                   grid; on a jump follow it; on a string show the whole
+                   text
+  Left             collapse or go to the parent
+  Backspace        back from a jump
+  1..9, *          expand to depth, expand all
+  Tab              next zone (tree, hex, def-file)
+  F2               write pending edits
+  Shift-F2         save the bytes of the current row (a field, a
+                   structure, a table, an array element) as a numbered
+                   fragment, or to a file
+  Ctrl-F2          a saved fragment, or a file, into the current row;
+                   the size of the row does not change, F2 writes the
+                   result
+  F3               choose a structure and an offset to apply it at
+  F4               edit the current field
+  F5               go to an offset (an expression; labels of the current
+                   structure allowed)
+  F6, Shift-F6     choose a def-file; open the current one in mcedit at
+                   the current line
+  F7, Shift-F7     search a field name or value; next.  In the hex zone:
+                   search bytes (hex) or text from the cursor, the hit
+                   becomes the block
+  F8               hide or show the hex zone
+  F9               parse errors of the def-file, Enter opens mcedit at
+                   the line
+  Alt-=            calculator with the labels of the current structure
+  Alt-F9           zoom the focused zone
+  Ctrl-PgDn, Ctrl-PgUp   the same structure right after / before this one
+  Shift-F4         back to the viewer at the current byte
+  F10, Esc         quit; from the viewer, the viewer closes too (asks when
+                   edits are pending)
+
+Keys in the grid:
+
+  Left Right, Tab  move between cells
+  < >              scroll the columns
+  F4               edit the cell
+  Enter            follow a jump cell
+  Esc              back to the tree
+
+  The first column is the row number or the file offset of the row
+  (GridRowColumn in the settings).
+
+Keys in the hex zone:
+
+  Tab              switch between the hex and the text column
+  typing           edits the byte under the cursor
+  [ ]              start / end of a block at the cursor
+  *                clear the block
+  F7               search bytes or text, see above
+
+  A block is what Shift-F2 and Ctrl-F2 write or read while the hex zone
+  is focused.
+
+Saved fragments:
+
+  Shift-F2 keeps the bytes under a number that is never reused, with a
+  name (the structure by default), the file they came from and the
+  time. The set is shared by every mcstruct, so fragments taken from
+  one file can be put into another opened later. Ctrl-F2 lists them,
+  newest first: number, size (! when it differs from the target row),
+  name, structure, source file, time. Enter puts the fragment over the
+  current row, Delete drops it from the set, the last item reads a
+  file instead. Fragments older than the "Keep fragments" setting
+  (7 days by default, 0 keeps them) are dropped.
+
+Keys in the def-file zone:
+
+  Enter            go to the structure the line refers to
+                   (* N Name, jNN Name=expr, :Table)
+
+Editing:
+
+  F4 shows the value in the form of its type: hex for b w d q, decimal for
+  u* i*, text for strings, a bit string for t*, SEG:OFF for pointers,
+  YYYY-MM-DD HH:MM:SS for dates.  The bytes are replaced in place, the
+  structure is re-evaluated, F2 writes the file.  Only fixed-width edits:
+  the file never changes size.  The first edit takes the file lock as
+  mcedit does.
+
+STL5, the def-file language:
+
+  A def-file starts with a version line, "STL 4.00" (strict compatibility
+  mode) or "STL 5.00" (with the extensions marked 5.00 below), and holds
+  structures, tables and legends:
+
+    /Name              a structure
+    /_Hidden           not offered in the F3 list, but usable
+    /:Table            a table: one row per record
+    /'legend           a value legend (enum)
+    /`flags            a bit legend
+
+  A field line:
+
+    [label:]  TYPE  follower  [title]   ; comment
+
+  Types: c chars; b w d q hex of 1/2/4/8 bytes; i8..i64 and u8..u64
+  decimal; t8..t64 bit fields; m8..m64 big-endian hex; f32 f64 f80
+  float; sp Pascal string; sc C string; td tu DOS and unix time;
+  sz16 UTF-16 up to a NUL word, the follower a maximum (5.00);
+  tu64 tf 64-bit unix time and Windows FILETIME (5.00); vz varint with
+  bit 7 set on the last byte, as in zchunk (5.00);
+  j8..j64 jumps; s8 s16 fixed-size UTF-8 and UTF-16 strings (5.00);
+  v vl SQLite varint and LEB128 (5.00).  Any numeric type takes a .le or
+  .be suffix (5.00).
+
+  The follower is a count (for c a length, for sc a maximum), a label, an
+  expression, a legend reference ('name or `name), or for t* a bit split
+  like 745 (7+4+5 bits).  0 reads the field but hides it.
+
+  Other lines:
+
+    :text                   a remark row
+    + N   - N               skip forward or back
+    . N                     seek to a local offset (from the structure
+                            start)
+    .. N                    seek to an absolute file offset (5.00)
+    * N Struct              N nested structures, or  * N :Table
+    j32 Struct=expr title   a jump: the value; Enter opens Struct at expr
+
+  Directives:
+
+    #if expr / #elseif expr / #else / #fi
+    #endian big|little      byte order from here on (5.00)
+    #repeat N ... #end      N passes (5.00)
+    #repeat while expr ... #end
+    #set label = expr       a label without bytes (5.00)
+    call('name', args)      in an expression: crc32, crc16, adler32,
+                            sum8, sum16, sum32 (from, len); crc32z (from,
+                            len, hole, hole_len) with a field zeroed; find (from,
+                            len, value, width) gives an offset or -1;
+                            exec:command (from, len) pipes the range
+                            through a program and reads a number back,
+                            for def-files in ~/.config/mc6/mcstruct only
+    * n Name step expr      records expr bytes apart, whatever their
+                            own size: a table whose entry size is a field
+                            of the header (5.00)
+    * n Name "caption"      the row is titled by the caption (5.00)
+    * n Name via call('p', args)  the structure is read from the bytes
+                            the provider gives: raw (from, len), inflate /
+                            gunzip / deflate, xor (from, len, key), rol
+                            (from, len, bits), exec:command; Enter opens
+                            it, Backspace comes back, it is read-only (5.00)
+    t8.lsb 44               the bit split counts from bit 0 (5.00)
+    A jump target and a buffer read the labels of the structure their
+    row is in, as a nested structure does (5.00).
+    In an expression a string label (c sc sp s8 sz16) compared with a
+    literal compares the text: kt == 'ssh-rsa' (5.00).
+    check expr name         OK or MISMATCH by the expression, no bytes
+                            (5.00)
+    #encoding cp866         text fields that follow are converted from
+                            that charset (5.00)
+    sc.0A max name          a C string ended by byte 0A (5.00)
+    #switch expr ... #end   #case v1, v2 / #default branches on the
+                            value, the same as an #if chain (5.00)
+    = expr name             a computed value as a row, no bytes;
+                            =x hex, =t unix time (5.00)
+    #include "file"         (5.00)
+    crc32 a..b == label     a check field, also sum8 and sum16 (5.00)
+
+  Expressions: integers, + - * / % & | ^ ~ << >> ! && ||, comparisons,
+  labels, @ the value at the current offset, @u32 read as that type,
+  @u32(addr) read at an absolute offset (5.00), ^label the file offset of
+  a label, ^ the structure start, $size the file size.  "PK" is a packed
+  literal that compares equal to a little-endian read of the bytes PK.
+  An expression with spaces is quoted.
+
+  A title written as =expr is read from the file as a C string (5.00), so
+  a record layout that comes from the file can name its fields.  Nested
+  structures can read the labels of the structure they are in (5.00).
+
+  Example, a linked list:
+
+    STL 5.00
+    /Walker
+    #set ptr = 0x10
+    #repeat while ptr != 0
+            ..      ptr
+            *       1       Node
+    #set    ptr = @u32(ptr)
+    #end
+    /Node
+    next:   u32     1       next
+            u8      1       value
+
+  The shipped def-files (zip exe dbf elf mbr fat_boot uimage dtb png bmp
+  wav sqlite) are the reference for the language.
+
+Aliases and signatures, stl.als:
+
+    elf.stl: *.so *.o @0:7F454C46
+    png.stl: @0:89504E470D0A1A0A
+    mbr.stl: *.img @510:55AA
+
+  Name patterns match the file name, @offset:hexbytes the file contents.
+
+Settings, Manage plugins -> mcstruct, or ~/.config/mc6/mcstruct/mcstruct.ini:
+
+    [mcstruct]
+    TreeLines=14            rows of the tree, 0 = the rest
+    HexLines=4              rows of the hex zone, 0 hides it
+    DefLines=0              rows of the def-file zone, 0 = the rest
+    DefLayout=auto          auto (right of the tree when wide), right,
+                            bottom
+    DefWidth=45             percent, when on the right
+    NameWidth=16            the field name column
+    OffsetColumn=global     none, local, global
+    GridRowColumn=offset    first grid column: none, number, offset
+    ShowHiddenStructures=false
+    LazyRows=64             arrays longer than this are built on expand
+    FloatingPointFormat=%g
+
+Skin: three sections, one per zone, [mcstruct-tree], [mcstruct-hex] and
+[mcstruct-def]; a missing section falls back to the core colors.

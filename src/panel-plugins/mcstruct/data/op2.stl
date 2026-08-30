@@ -1,0 +1,38 @@
+STL 5.00
+;
+;   Doom GENMIDI.OP2: 175 OPL2 instrument entries and their names.
+;   After kaitai_struct_formats media/genmidi_op2.ksy.
+;
+
+/OP2
+#if @d != '#OPL'
+        :ERROR!!! no #OPL_II# signature at this offset
+#fi
+        c       8               magic
+        *       175     _OP2_instrument
+        *       175     :op2_name
+
+/_OP2_instrument
+        t16     `op2_flags      flags
+        u8      1               fine tune
+        u8      1               fixed note
+        :--- voice 1 ---
+        b       6               operator 1: tremolo/vibrato, attack/decay, sustain/release, wave, scale, level
+        u8      1               feedback / connection
+        b       6               operator 2
+        u8      1               unused
+        i16     1               base note offset
+        :--- voice 2 ---
+        b       6               operator 1
+        u8      1               feedback / connection
+        b       6               operator 2
+        u8      1               unused
+        i16     1               base note offset
+
+/:op2_name
+c:32.32         name
+
+/`op2_flags
+0x0001          fixed pitch
+0x0002          unused
+0x0004          double voice

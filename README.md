@@ -19,7 +19,7 @@ Full notes: **[Releases wiki](https://github.com/ilia-maslakov/mcdev/wiki/Releas
 
 - **Panel plugins.** Panel contents can come from a dynamically loaded plugin.
   Shipped: git, docker, Kubernetes, MongoDB, S3, FTP/FTPS, SFTP, Samba, systemd,
-  shell connections, External Panelize, and arcmc. The old built-in `ftpfs` and
+  shell connections, External Panelize, arcmc and mcstruct. The old built-in `ftpfs` and
   `sftpfs` VFS modules are replaced by the FTP and SFTP plugins.
 - **arcmc** — an archive manager on libarchive: browse, create, pack and extract
   (zip, 7z, tar.\*, cpio) with progress and cancel. The legacy built-in `tarfs`
@@ -28,6 +28,15 @@ Full notes: **[Releases wiki](https://github.com/ilia-maslakov/mcdev/wiki/Releas
   formats and helpers.
 
   ![arcmc](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/arcmc.gif)
+- **mcstruct**: a structured binary viewer and editor, a text def-file (STL5,
+  compatible with the DOS Struct Look) turns a firmware image, a header or a
+  table file into a tree of named fields, synced with a hex dump; fields are
+  edited in place. Shipped def-files for ELF, PE, ZIP, DBF, MBR, FAT, uImage,
+  DTB, PNG, BMP and WAV. Start it with `mcstruct FILE`, Shift-F4 in the viewer,
+  or F3 through `magic.ini`. See the
+  [mcstruct guide](https://github.com/ilia-maslakov/mcdev/wiki/Mcstruct).
+
+  ![mcstruct](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/mcstruct.gif)
 - **Editor** — code folding, an undo history browser, a macro explorer, and an
   editor plugin framework.
 - **Viewer** — a structured tree mode for JSON, YAML, XML and HTML, a grep-style

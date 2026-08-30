@@ -1,0 +1,54 @@
+STL 5.00
+;
+;   cpio archive, old binary format (magic 070707), little endian.
+;   After kaitai_struct_formats archive/cpio_old_le.ksy.
+;
+
+/CPIO
+#repeat while ^@ + 26 <= $size && @w == 070707
+        :--- entry ---
+        w       1               magic
+        u16     1               device
+        u16     1               inode
+        t16     `cpio_mode      mode
+        u16     1               uid
+        u16     1               gid
+        u16     1               links
+        u16     1               rdev
+mhi:    u16     1               mtime, high word
+mlo:    u16     1               mtime, low word
+        =t      "mlo + (mhi << 16)"     mtime
+nlen:   u16     1               name size
+fhi:    u16     1               file size, high word
+flo:    u16     1               file size, low word
+fsize:  =       "flo + (fhi << 16)"     file size
+        c       nlen            name
+#if nlen % 2 == 1
+        +       1
+#fi
+        +       fsize
+#if fsize % 2 == 1
+        +       1
+#fi
+#end
+
+/`cpio_mode
+0170000 0140000 socket
+0170000 0120000 symlink
+0170000 0100000 regular file
+0170000 0060000 block device
+0170000 0040000 directory
+0170000 0020000 character device
+0170000 0010000 fifo
+0004000         setuid
+0002000         setgid
+0001000         sticky
+0000400         owner read
+0000200         owner write
+0000100         owner exec
+0000040         group read
+0000020         group write
+0000010         group exec
+0000004         other read
+0000002         other write
+0000001         other exec

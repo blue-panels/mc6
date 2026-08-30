@@ -1,0 +1,59 @@
+STL 5.00
+;
+;   Python 2.7 .pyc header and the outer marshal object type; the marshal
+;   tree itself is recursive and is not walked.
+;   After kaitai_struct_formats executable/python_pyc_27.ksy.
+;
+
+/PYC27
+        u16     'pyc_version    version magic
+        w       1               CR LF (0A0D)
+        tu      1               source modification time
+        u8      'pyc_obj        object type
+#if @u8(^@ - 1) == 0x63
+        u32     1               argument count
+        u32     1               local count
+        u32     1               stack size
+        t32     `pyc_code_flags flags
+        u8      'pyc_obj        code string type
+clen:   u32     1               code length
+        +       clen            bytecode
+#fi
+
+/'pyc_version
+0xF303  Python 2.7
+
+/'pyc_obj
+0x30    null (0)
+0x4E    None (N)
+0x46    False (F)
+0x54    True (T)
+0x53    StopIteration (S)
+0x2E    Ellipsis (.)
+0x69    int (i)
+0x49    int64 (I)
+0x66    float (f)
+0x67    binary float (g)
+0x78    complex (x)
+0x79    binary complex (y)
+0x6C    long (l)
+0x73    string (s)
+0x74    interned string (t)
+0x52    string ref (R)
+0x28    tuple (()
+0x5B    list ([)
+0x7B    dict ({)
+0x63    code (c)
+0x75    unicode (u)
+0x3F    unknown (?)
+0x3C    set (<)
+0x3E    frozenset (>)
+
+/`pyc_code_flags
+0x0001          optimized
+0x0002          new locals
+0x0004          varargs
+0x0008          varkeywords
+0x0010          nested
+0x0020          generator
+0x0040          no free variables

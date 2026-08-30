@@ -1,0 +1,51 @@
+STL 5.00
+;
+;   RTP packet header (RFC 3550), big endian.
+;   After kaitai_struct_formats network/rtp_packet.ksy.
+;
+
+/RTP
+#endian big
+b0:     t8      2114            version / padding / extension / csrc count
+        t8      `rtp_pt         marker / payload type
+        u16     1               sequence number
+        u32     1               timestamp
+        d       1               ssrc
+#set    ncsrc = b0 & 0x0F
+#if ncsrc > 0
+        d       ncsrc           csrc
+#fi
+#if b0 & 0x10
+        w       1               extension id
+elen:   u16     1               extension length, words
+        +       "elen * 4"
+#fi
+        :payload to the end (minus the padding length in the last byte when padded)
+
+/`rtp_pt
+0x80            marker
+0x7F    0       PCMU
+0x7F    3       GSM
+0x7F    4       G.723
+0x7F    5       DVI4 8 kHz
+0x7F    6       DVI4 16 kHz
+0x7F    7       LPC
+0x7F    8       PCMA
+0x7F    9       G.722
+0x7F    10      L16 stereo
+0x7F    11      L16 mono
+0x7F    12      QCELP
+0x7F    13      CN
+0x7F    14      MPA
+0x7F    15      G.728
+0x7F    16      DVI4 11 kHz
+0x7F    17      DVI4 22 kHz
+0x7F    18      G.729
+0x7F    25      CelB
+0x7F    26      JPEG
+0x7F    28      nv
+0x7F    31      H.261
+0x7F    32      MPV
+0x7F    33      MP2T
+0x7F    34      H.263
+0x7F    96      dynamic 96

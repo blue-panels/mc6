@@ -5,7 +5,7 @@
    Free Software Foundation, Inc.
 
    Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026.
+   Ilia Maslakov <il.smind@gmail.com>, 2025-2026.
 
    This file is part of the Midnight Commander.
 
@@ -125,6 +125,41 @@ mc_panel_plugin_try_load (const gchar *so_path, const gchar *filename)
  * Scan plugins_dir for subdirectories containing .so files.
  * Each plugin lives in its own subdirectory (e.g. panel-plugins/s3/mc-panel-s3.so).
  */
+/* one package directory: every native module in it */
+static void
+mc_panel_plugins_load_package (const gchar *entry_path, const gchar *entry_name)
+{
+    GDir *subdir;
+    const gchar *sub_name;
+
+    if (!g_file_test (entry_path, G_FILE_TEST_IS_DIR))
+        return;
+
+    /* A user package shadows the system package with the same ID.  Do not
+       even open the duplicate: its register() callback may have process-wide
+       side effects before mc_panel_plugin_add() can reject it. */
+    if (mc_panel_plugin_find_by_name (entry_name) != NULL)
+        return;
+
+    subdir = g_dir_open (entry_path, 0, NULL);
+    if (subdir == NULL)
+        return;
+    while ((sub_name = g_dir_read_name (subdir)) != NULL)
+    {
+        if (module_filename_has_native_suffix (sub_name))
+        {
+            gchar *so_path;
+
+            so_path = g_build_filename (entry_path, sub_name, (char *) NULL);
+            mc_panel_plugin_try_load (so_path, sub_name);
+            g_free (so_path);
+        }
+    }
+    g_dir_close (subdir);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 mc_panel_plugins_load_from_dir (const gchar *plugins_dir)
 {
@@ -138,47 +173,22 @@ mc_panel_plugins_load_from_dir (const gchar *plugins_dir)
     while ((entry_name = g_dir_read_name (dir)) != NULL)
     {
         gchar *entry_path;
-        GDir *subdir;
-        const gchar *sub_name;
 
         entry_path = g_build_filename (plugins_dir, entry_name, (char *) NULL);
-
-        if (!g_file_test (entry_path, G_FILE_TEST_IS_DIR))
-        {
-            g_free (entry_path);
-            continue;
-        }
-
-        /* A user package shadows the system package with the same ID.  Do not
-           even open the duplicate: its register() callback may have process-wide
-           side effects before mc_panel_plugin_add() can reject it. */
-        if (mc_panel_plugin_find_by_name (entry_name) != NULL)
-        {
-            g_free (entry_path);
-            continue;
-        }
-
-        subdir = g_dir_open (entry_path, 0, NULL);
-        if (subdir != NULL)
-        {
-            while ((sub_name = g_dir_read_name (subdir)) != NULL)
-            {
-                if (module_filename_has_native_suffix (sub_name))
-                {
-                    gchar *so_path;
-
-                    so_path = g_build_filename (entry_path, sub_name, (char *) NULL);
-                    mc_panel_plugin_try_load (so_path, sub_name);
-                    g_free (so_path);
-                }
-            }
-            g_dir_close (subdir);
-        }
-
+        mc_panel_plugins_load_package (entry_path, entry_name);
         g_free (entry_path);
     }
 
     g_dir_close (dir);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gchar *
+mc_panel_plugins_user_dir (void)
+{
+    return g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "panel-plugins",
+                             (char *) NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -189,17 +199,49 @@ mc_panel_plugins_load (void)
     gchar *system_dir;
     gchar *user_dir;
 
-    panel_plugin_modules = g_ptr_array_new ();
+    if (panel_plugin_modules == NULL)
+        panel_plugin_modules = g_ptr_array_new ();
 
     /* Load user packages first so they can shadow system packages. */
-    user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
-                                 "panel-plugins", (char *) NULL);
+    user_dir = mc_panel_plugins_user_dir ();
     mc_panel_plugins_load_from_dir (user_dir);
     g_free (user_dir);
 
     system_dir = g_build_filename (MC_PANEL_PLUGINS_DIR, (char *) NULL);
     mc_panel_plugins_load_from_dir (system_dir);
     g_free (system_dir);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Load one package by name, the user copy first; the rest stay unloaded. */
+const mc_panel_plugin_t *
+mc_panel_plugin_load_named (const char *name)
+{
+    gchar *dir, *path;
+    const mc_panel_plugin_t *plugin;
+
+    plugin = mc_panel_plugin_find_by_name (name);
+    if (plugin != NULL)
+        return plugin;
+
+    if (panel_plugin_modules == NULL)
+        panel_plugin_modules = g_ptr_array_new ();
+
+    dir = mc_panel_plugins_user_dir ();
+    path = g_build_filename (dir, name, (char *) NULL);
+    mc_panel_plugins_load_package (path, name);
+    g_free (path);
+    g_free (dir);
+
+    if (mc_panel_plugin_find_by_name (name) == NULL)
+    {
+        path = g_build_filename (MC_PANEL_PLUGINS_DIR, name, (char *) NULL);
+        mc_panel_plugins_load_package (path, name);
+        g_free (path);
+    }
+
+    return mc_panel_plugin_find_by_name (name);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -292,6 +334,15 @@ void
 mc_panel_plugins_load (void)
 {
     // GModule not available - dynamic panel plugins disabled
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const mc_panel_plugin_t *
+mc_panel_plugin_load_named (const char *name)
+{
+    (void) name;
+    return NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -1,0 +1,139 @@
+STL 5.00
+;
+;   Java class file: header, constant pool, access flags, this / super
+;   class, interfaces and the field / method / attribute counts.
+;   After kaitai_struct_formats executable/java_class.ksy.
+;
+
+/JAVA_CLASS
+#endian big
+#if @d.le != 0xBEBAFECA
+        :ERROR!!! no CAFEBABE magic at this offset
+#fi
+        d       1               magic
+        u16     1               minor version
+        u16     'java_version   major version
+ncp:    u16     1               constant pool count (+1)
+#set    i = 1
+#repeat while i < ncp
+ct:     u8      'java_cp_tag    tag
+#switch ct
+#case 1
+sl:     u16     1               length
+        c       sl              utf8
+#case 3, 4
+        u32     1               value
+#case 5, 6
+        u64     1               value (takes two slots)
+#set    i = i + 1
+#case 7, 8, 16, 19, 20
+        u16     1               index
+#case 9, 10, 11, 12, 17, 18
+        u16     1               index 1
+        u16     1               index 2
+#case 15
+        u8      1               reference kind
+        u16     1               reference index
+#end
+#set    i = i + 1
+#end
+        t16     `java_access    access flags
+        u16     1               this class
+        u16     1               super class
+nif:    u16     1               interfaces
+#if nif > 0
+        u16     nif             interface indexes
+#fi
+nfld:   u16     1               fields
+#repeat nfld
+        :--- field ---
+        t16     `java_access    access flags
+        u16     1               name index
+        u16     1               descriptor index
+na:     u16     1               attributes
+#repeat na
+        u16     1               attribute name index
+al:     u32     1               attribute length
+        +       al
+#end
+#end
+nmth:   u16     1               methods
+#repeat nmth
+        :--- method ---
+        t16     `java_access    access flags
+        u16     1               name index
+        u16     1               descriptor index
+na:     u16     1               attributes
+#repeat na
+        u16     1               attribute name index
+al:     u32     1               attribute length
+        +       al
+#end
+#end
+nat:    u16     1               class attributes
+#repeat nat
+        u16     1               attribute name index
+al:     u32     1               attribute length
+        +       al
+#end
+
+/'java_version
+45      1.1
+46      1.2
+47      1.3
+48      1.4
+49      5
+50      6
+51      7
+52      8
+53      9
+54      10
+55      11
+56      12
+57      13
+58      14
+59      15
+60      16
+61      17
+62      18
+63      19
+64      20
+65      21
+66      22
+
+/'java_cp_tag
+1       Utf8
+3       Integer
+4       Float
+5       Long
+6       Double
+7       Class
+8       String
+9       Fieldref
+10      Methodref
+11      InterfaceMethodref
+12      NameAndType
+15      MethodHandle
+16      MethodType
+17      Dynamic
+18      InvokeDynamic
+19      Module
+20      Package
+
+/`java_access
+0x0001          public
+0x0002          private
+0x0004          protected
+0x0008          static
+0x0010          final
+0x0020          super / synchronized
+0x0040          volatile / bridge
+0x0080          transient / varargs
+0x0100          native
+0x0200          interface
+0x0400          abstract
+0x0800          strict
+0x1000          synthetic
+0x2000          annotation
+0x4000          enum
+0x8000          module

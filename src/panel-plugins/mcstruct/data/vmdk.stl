@@ -1,0 +1,35 @@
+STL 5.00
+;
+;   VMware VMDK sparse extent header (KDMV). After kaitai_struct_formats
+;   filesystem/vmware_vmdk.ksy.
+;
+
+/VMDK
+#if @d != 'KDMV'
+        :ERROR!!! no KDMV signature at this offset
+#fi
+        c       4               magic
+        i32     1               version
+        t32     `vmdk_flags     flags
+        i64     1               capacity, sectors
+        i64     1               grain size, sectors
+        i64     1               descriptor offset, sectors
+        i64     1               descriptor size, sectors
+        i32     1               grain table entries
+        i64     1               secondary grain directory offset
+        i64     1               primary grain directory offset
+        i64     1               overhead, sectors
+        u8      1               unclean shutdown
+        b       4               newline test
+        u16     'vmdk_comp      compression
+
+/`vmdk_flags
+0x00000001      valid newline test
+0x00000002      redundant grain table
+0x00000004      zeroed grain table entries
+0x00010000      compressed grains
+0x00020000      markers in stream
+
+/'vmdk_comp
+0       none
+1       deflate

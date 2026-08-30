@@ -1,0 +1,23 @@
+STL 5.00
+;
+;   glTF binary (.glb): header and chunks (JSON, BIN).
+;   After kaitai_struct_formats 3d/gltf_binary.ksy.
+;
+
+/GLB
+#if @d != 'glTF'
+        :ERROR!!! no glTF signature at this offset
+#fi
+        c       4               magic
+        u32     1               version
+        u32     1               length
+#repeat while ^@ + 8 <= $size
+        :--- chunk ---
+clen:   u32     1               length
+ctype:  d       1               type (4E4F534A = JSON, 004E4942 = BIN)
+#if ctype == 0x4E4F534A
+        c       clen            json
+#else
+        +       clen
+#fi
+#end

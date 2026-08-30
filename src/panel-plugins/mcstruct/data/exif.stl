@@ -1,0 +1,98 @@
+STL 5.00
+;
+;   TIFF / Exif: byte order mark, IFD0 entries, Exif sub-IFD by jump.
+;   After kaitai_struct_formats image/exif.ksy.
+;
+
+/EXIF
+#if @w == 0x4D4D
+#endian big
+#elseif @w != 0x4949
+        :ERROR!!! no TIFF byte order mark at this offset
+#fi
+        c       2               byte order (II / MM)
+        u16     1               magic (42)
+ifd0:   u32     1               IFD0 offset
+        .       ifd0
+n:      u16     1               entries
+        *       n       _EXIF_entry
+        u32     1               next IFD offset
+
+/_EXIF_entry
+tag:    u16     'exif_tag       tag
+        u16     'exif_type      type
+        u32     1               count
+#if tag == 0x8769 || tag == 0x8825 || tag == 0xA005
+        j32     _EXIF_ifd=@     sub-IFD offset
+#else
+        d       1               value / offset
+#fi
+
+/_EXIF_ifd
+n:      u16     1               entries
+        *       n       _EXIF_entry
+        u32     1               next IFD offset
+
+/'exif_type
+1       BYTE
+2       ASCII
+3       SHORT
+4       LONG
+5       RATIONAL
+6       SBYTE
+7       UNDEFINED
+8       SSHORT
+9       SLONG
+10      SRATIONAL
+11      FLOAT
+12      DOUBLE
+
+/'exif_tag
+0x0100  ImageWidth
+0x0101  ImageLength
+0x0102  BitsPerSample
+0x0103  Compression
+0x0106  PhotometricInterpretation
+0x010E  ImageDescription
+0x010F  Make
+0x0110  Model
+0x0111  StripOffsets
+0x0112  Orientation
+0x0115  SamplesPerPixel
+0x0116  RowsPerStrip
+0x0117  StripByteCounts
+0x011A  XResolution
+0x011B  YResolution
+0x011C  PlanarConfiguration
+0x0128  ResolutionUnit
+0x0131  Software
+0x0132  DateTime
+0x013B  Artist
+0x0201  JPEGInterchangeFormat
+0x0202  JPEGInterchangeFormatLength
+0x0213  YCbCrPositioning
+0x8298  Copyright
+0x8769  ExifIFD
+0x8825  GPSIFD
+0x829A  ExposureTime
+0x829D  FNumber
+0x8822  ExposureProgram
+0x8827  ISOSpeedRatings
+0x9000  ExifVersion
+0x9003  DateTimeOriginal
+0x9004  DateTimeDigitized
+0x9201  ShutterSpeedValue
+0x9202  ApertureValue
+0x9204  ExposureBiasValue
+0x9207  MeteringMode
+0x9209  Flash
+0x920A  FocalLength
+0x927C  MakerNote
+0x9286  UserComment
+0xA000  FlashpixVersion
+0xA001  ColorSpace
+0xA002  PixelXDimension
+0xA003  PixelYDimension
+0xA005  InteropIFD
+0xA405  FocalLengthIn35mmFilm
+0xA420  ImageUniqueID

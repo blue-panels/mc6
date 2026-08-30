@@ -239,9 +239,12 @@ gboolean panel_plugin_open_local_file_auto (WPanel *panel, const char *display_n
 gboolean panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname,
                                                const char *plugin_name, const char *operation_name,
                                                char *local_copy, char **view_path);
+gboolean panel_plugin_view_operation_usable (const char *plugin_name, const char *operation_name,
+                                             gboolean allow_show);
 gboolean panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_name,
                                                     const char *local_path, const char *plugin_name,
-                                                    const char *operation_name, char **view_path);
+                                                    const char *operation_name, const char *hint,
+                                                    gboolean allow_show, char **view_path);
 gboolean panel_plugin_restore_stream_source (WPanel *panel);
 gboolean panel_plugin_activate_by_name (WPanel *panel, const char *plugin_name,
                                         const char *open_path);

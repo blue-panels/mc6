@@ -1,0 +1,152 @@
+STL 5.00
+;
+;   Windows shortcut (.lnk): header, link target id list, link info and
+;   the string data. After kaitai_struct_formats windows/windows_lnk_file.ksy.
+;
+
+#include "shell_items.stl"
+
+/LNK
+#if @d != 0x4C
+        :ERROR!!! no shell link header at this offset
+#fi
+        u32     1               header size (76)
+        b       16              link clsid
+flags:  t32     `lnk_flags      link flags
+        t32     `lnk_attr       file attributes
+        tf      1               creation time
+        tf      1               access time
+        tf      1               write time
+        u32     1               target file size
+        i32     1               icon index
+        u32     'lnk_show       show command
+        w       1               hot key
+        b       10              reserved
+#if flags & 0x01
+        :--- link target id list ---
+idl:    u16     1               id list size
+#set    idend = ^@ + idl
+#repeat while ^@ + 2 <= idend && @w != 0
+        :--- item ---
+ilen:   u16     1               item length
+#set    iend = ^@ - 2 + ilen
+code:   u8      'shi_code       class type
+#if code == 0x1F
+        u8      1               sort index
+        b       16              shell folder guid
+#elseif (code & 0x70) == 0x20
+        t8      `shi_volume     volume flags
+#elseif (code & 0x70) == 0x30
+        u8      1               unknown
+        u32     1               file size
+        td      1               modified
+        t16     `shi_attr       attributes
+        sc      "iend - ^@"     name
+#fi
+        +       "iend - ^@"
+#end
+        u16     1               terminator
+        +       "idend - ^@"
+#fi
+#if flags & 0x02
+        :--- link info ---
+lisz:   u32     1               link info size
+#set    liend = ^@ - 4 + lisz
+lihs:   u32     1               link info header size
+lif:    t32     `lnk_info_flags link info flags
+        u32     1               volume id offset
+        u32     1               local base path offset
+        u32     1               common network relative link offset
+        u32     1               common path suffix offset
+#if lihs >= 36
+        u32     1               local base path offset (unicode)
+        u32     1               common path suffix offset (unicode)
+#fi
+#if lif & 0x01
+        :--- volume id ---
+        u32     1               volume id size
+        u32     'lnk_drive      drive type
+        d       1               drive serial number
+vlo:    u32     1               volume label offset
+#if vlo == 0x14
+        u32     1               volume label offset (unicode)
+        sz16    0               volume label
+#else
+        sc      0               volume label
+#fi
+        sc      0               local base path
+#fi
+        +       "liend - ^@"
+#fi
+#if flags & 0x04
+nl:     u16     1               name length, chars
+        s16     nl              name
+#fi
+#if flags & 0x08
+rl:     u16     1               relative path length, chars
+        s16     rl              relative path
+#fi
+#if flags & 0x10
+wl:     u16     1               working directory length, chars
+        s16     wl              working directory
+#fi
+#if flags & 0x20
+al:     u16     1               arguments length, chars
+        s16     al              arguments
+#fi
+#if flags & 0x40
+il:     u16     1               icon location length, chars
+        s16     il              icon location
+#fi
+
+/`lnk_flags
+0x00000001      has link target id list
+0x00000002      has link info
+0x00000004      has name
+0x00000008      has relative path
+0x00000010      has working directory
+0x00000020      has arguments
+0x00000040      has icon location
+0x00000080      unicode
+0x00000100      force no link info
+0x00000200      has exp string
+0x00000400      run in separate process
+0x00001000      has darwin id
+0x00002000      run as user
+0x00004000      has exp icon
+0x00008000      no pidl alias
+0x00020000      run with shim layer
+0x00040000      force no link track
+0x00080000      enable target metadata
+
+/`lnk_attr
+0x00000001      read only
+0x00000002      hidden
+0x00000004      system
+0x00000010      directory
+0x00000020      archive
+0x00000080      normal
+0x00000100      temporary
+0x00000400      reparse point
+0x00000800      compressed
+0x00001000      offline
+0x00002000      not content indexed
+0x00004000      encrypted
+
+/'lnk_show
+1       normal
+3       maximized
+7       minimized, no activate
+
+/`lnk_info_flags
+0x00000001      volume id and local base path
+0x00000002      common network relative link
+
+/'lnk_drive
+0       unknown
+1       no root directory
+2       removable
+3       fixed
+4       remote
+5       CD-ROM
+6       RAM disk

@@ -37,6 +37,7 @@ typedef struct WGroup WGroup;
 #include "lib/widget/quick.h"
 #include "lib/widget/wtools.h"
 #include "lib/widget/table.h"
+#include "lib/widget/hexstrip.h"
 #include "lib/widget/dialog-switch.h"
 
 /*** typedefs(not structures) and defined constants **********************************************/

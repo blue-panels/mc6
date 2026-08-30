@@ -67,6 +67,7 @@
 #include "src/execute.h"
 #include "src/filemanager/mcterm_overlay.h"  // mcterm_overlay_show_terminal()
 #include "src/keymap.h"
+#include "lib/panel-plugin.h"
 #include "src/runtime-host.h"
 
 #include "internal.h"
@@ -78,6 +79,8 @@
 /*** file scope type declarations ****************************************************************/
 
 /*** forward declarations (file scope functions) *************************************************/
+
+static void mcview_struct_view (WView *view);
 
 /*** file scope variables ************************************************************************/
 
@@ -431,6 +434,9 @@ mcview_execute_cmd (WView *view, long command)
         break;
     case CK_StructMode:
         mcview_toggle_structured_mode (view);
+        break;
+    case CK_StructView:
+        mcview_struct_view (view);
         break;
     case CK_HexMode:
         // Toggle between hex view and text view
@@ -795,6 +801,92 @@ mcview_ok_to_quit (WView *view)
     default:
         return FALSE;
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Shift-F4: the same file in the mcstruct plugin, at the current offset */
+static void
+mcview_struct_view (WView *view)
+{
+    const mc_panel_plugin_t *plugin;
+    char *path, *command;
+    char *hint;
+    off_t offset;
+    gboolean back = FALSE, ok = FALSE;
+    dir_list *dir;
+    int *dir_idx;
+    int i;
+
+    if (view->filename_vpath == NULL || !vfs_file_is_local (view->filename_vpath))
+    {
+        message (D_ERROR, MSG_ERROR, "%s", _ ("The structure viewer works on local files only"));
+        return;
+    }
+    if (!mcview_ok_to_quit (view))
+        return;
+    plugin = mc_panel_plugin_load_named ("mcstruct");
+    if (plugin == NULL)
+    {
+        message (D_ERROR, MSG_ERROR, _ ("Plugin %s is not available"), "mcstruct");
+        return;
+    }
+    path = g_strdup (vfs_path_as_str (view->filename_vpath));
+    offset = view->mode_flags.hex ? view->hex_cursor : view->dpy_start;
+    hint = g_strdup_printf ("@0x%llx", (unsigned long long) offset);
+    for (i = 0; i < plugin->file_operation_count; i++)
+    {
+        const mc_pp_file_operation_t *op = &plugin->file_operations[i];
+
+        if (op->kind == MC_PP_FILE_OPERATION_SHOW && op->show != NULL)
+        {
+            mc_panel_host_t host;
+
+            memset (&host, 0, sizeof (host));
+            ok = op->show (&host, x_basename (path), path, hint) == MC_PPR_OK;
+            /* Shift-F4 there reports the byte the user was on as "@offset"; a quit reports nothing
+             */
+            if (host.focus_after != NULL && host.focus_after[0] == '@')
+            {
+                offset = (off_t) g_ascii_strtoll (host.focus_after + 1, NULL, 0);
+                back = TRUE;
+            }
+            g_free (host.focus_after);
+            break;
+        }
+    }
+    g_free (hint);
+    if (!ok)
+    {
+        /* the plugin could not open the file: stay where we were */
+        g_free (path);
+        view->dirty++;
+        return;
+    }
+    if (!back && !mcview_is_in_panel (view))
+    {
+        g_free (path);
+        dlg_close (DIALOG (WIDGET (view)->owner));
+        return;
+    }
+    /* the file may have been edited there: reload it and come back to the same byte */
+    command = g_strdup (view->command);
+    dir = view->dir;
+    dir_idx = view->dir_idx;
+    view->dir = NULL;
+    view->dir_idx = NULL;
+    mcview_done (view);
+    mcview_init (view);
+    mcview_load (view, command, path, 0, 0, 0);
+    view->dir = dir;
+    view->dir_idx = dir_idx;
+    g_free (command);
+    g_free (path);
+    mcview_moveto_offset (view, offset);
+    if (view->mode_flags.hex)
+        view->hex_cursor = offset;
+    view->dirty++;
+    widget_draw (WIDGET (WIDGET (view)->owner));
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -17,6 +17,7 @@ TESTS = \
 	complete_engine \
 	hotkey_equal \
 	group_init_destroy \
+	hexstrip \
 	table_datasource \
 	widget_find_by_id \
 	widget_make_global_local
@@ -34,6 +35,9 @@ group_init_destroy_SOURCES = \
 
 table_datasource_SOURCES = \
 	table_datasource.c
+
+hexstrip_SOURCES = \
+	hexstrip.c
 
 widget_find_by_id_SOURCES = \
 	widget_find_by_id.c

@@ -1,0 +1,35 @@
+STL 5.00
+;
+;   AIX utmp / wtmp records, 648 bytes each, big endian.
+;   After kaitai_struct_formats log/aix_utmp.ksy.
+;
+
+/AIX_UTMP
+#endian big
+#repeat while ^@ + 648 <= $size
+        :--- record ---
+        c       256             user
+        c       14              inittab id
+        c       64              device
+        u64     1               pid
+        i16     'utmp_type      type
+        tu64    1               timestamp
+        i16     1               termination code
+        i16     1               exit code
+        c       256             host
+        i32     1               padding
+        b       8               reserved
+        b       24              reserved
+#end
+
+/'utmp_type
+0       empty
+1       run level
+2       boot time
+3       old time
+4       new time
+5       init process
+6       login process
+7       user process
+8       dead process
+9       accounting

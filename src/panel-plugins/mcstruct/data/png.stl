@@ -1,0 +1,37 @@
+STL 5.00
+;
+;   PNG: signature and chunks, big endian
+;
+
+/PNG
+#endian big
+        c       8               signature
+#repeat while ^@ + 12 <= $size
+len:    u32     1               length
+#if @d.le == 'IHDR'
+type:   c       4               type
+        u32     1               width
+        u32     1               height
+        u8      1               bit depth
+        u8      'png_color      color type
+        u8      1               compression
+        u8      1               filter
+        u8      'png_interlace  interlace
+#else
+type:   c       4               type
+        +       len
+#fi
+crc:    d       1               crc
+        crc32   ^type..^type+4+len == crc     crc check
+#end
+
+/'png_color
+0       grayscale
+2       RGB
+3       palette
+4       grayscale + alpha
+6       RGB + alpha
+
+/'png_interlace
+0       none
+1       Adam7

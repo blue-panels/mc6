@@ -1,0 +1,72 @@
+STL 5.00
+;
+;   Creative Voice File (.voc): header and the block list.
+;   After kaitai_struct_formats media/creative_voice_file.ksy.
+;
+
+/VOC
+#if @d != 'Crea'
+        :ERROR!!! no Creative Voice File signature at this offset
+#fi
+        c       19              magic
+        u8      1               0x1A
+hlen:   u16     1               header size
+        w       1               version
+        w       1               checksum
+        .       hlen
+#repeat while ^@ < $size && @b != 0
+btype:  u8      'voc_block      block type
+bsz1:   u16     1               body size, low word
+bsz2:   u8      1               body size, high byte
+#set    bend = ^@ + bsz1 + (bsz2 << 16)
+#switch btype
+#case 1
+fd:     u8      1               frequency divisor
+        =       "1000000 / (256 - fd)"  sample rate, Hz
+        u8      'voc_codec      codec
+#case 3
+        u16     1               duration, samples
+fd:     u8      1               frequency divisor
+        =       "1000000 / (256 - fd)"  sample rate, Hz
+#case 4
+        u16     1               marker id
+#case 6
+        u16     1               repeat count - 1
+#case 8
+        u16     1               frequency divisor
+        u8      'voc_codec      codec
+        u8      1               channels - 1
+#case 9
+        u32     1               sample rate
+        u8      1               bits per sample
+        u8      1               channels
+        u16     'voc_codec      codec
+        b       4               reserved
+#end
+        +       "bend - ^@"
+#end
+#if ^@ < $size
+        u8      'voc_block      terminator
+#fi
+
+/'voc_block
+0       terminator
+1       sound data
+2       sound data continuation
+3       silence
+4       marker
+5       text
+6       repeat start
+7       repeat end
+8       extra info
+9       sound data (new)
+
+/'voc_codec
+0       8-bit unsigned PCM
+1       4-bit ADPCM
+2       2.6-bit ADPCM
+3       2-bit ADPCM
+4       16-bit signed PCM
+6       A-law
+7       mu-law
+512     4-bit to 16-bit ADPCM

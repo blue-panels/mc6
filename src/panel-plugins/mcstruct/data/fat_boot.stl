@@ -1,0 +1,52 @@
+STL 4.00
+;
+;   FAT12/16/32 boot sector (BIOS parameter block)
+;
+
+/FAT boot sector
+        b       3               jump
+        c       8               OEM name
+        u16     1               bytes per sector
+        u8      1               sectors per cluster
+        u16     1               reserved sectors
+        u8      1               FATs
+        u16     1               root entries
+        u16     1               total sectors (16 bit)
+        b       'media           media descriptor
+spf:    u16     1               sectors per FAT (16 bit)
+        u16     1               sectors per track
+        u16     1               heads
+        u32     1               hidden sectors
+        u32     1               total sectors (32 bit)
+#if spf == 0
+        :--- FAT32 extended BPB ---
+        u32     1               sectors per FAT
+        w       1               flags
+        w       1               version
+        u32     1               root directory cluster
+        u16     1               FSInfo sector
+        u16     1               backup boot sector
+        b       12              reserved
+#fi
+        u8      1               drive number
+        u8      1               reserved
+        b       1               extended boot signature
+        d       1               volume id
+        c       11              volume label
+        c       8               file system type
+        .       510
+sig:    w       1               boot signature
+#if sig != 0xAA55
+        :ERROR!!! boot signature is not AA55
+#fi
+
+/'media
+0xF0    removable
+0xF8    fixed disk
+0xF9    3.5" 720K / 5.25" 1.2M
+0xFA    5.25" 320K
+0xFB    3.5" 640K
+0xFC    5.25" 180K
+0xFD    5.25" 360K
+0xFE    5.25" 160K
+0xFF    5.25" 320K

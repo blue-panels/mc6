@@ -1,0 +1,72 @@
+STL 5.00
+;
+;   Quake II MD2 model: header, then the tables reached by their offsets
+;   (skins, texture coordinates, triangles, frames, GL commands).
+;   After kaitai_struct_formats game/quake2_md2.ksy.
+;
+
+/MD2
+#if @d != 'IDP2'
+        :ERROR!!! no IDP2 signature at this offset
+#fi
+        c       4               magic
+        u32     1               version (8)
+        u32     1               skin width
+        u32     1               skin height
+fsz:    u32     1               bytes per frame
+nskin:  u32     1               skins
+nvert:  u32     1               vertices per frame
+ntex:   u32     1               texture coordinates
+ntri:   u32     1               triangles
+ngl:    u32     1               GL command words
+nfrm:   u32     1               frames
+oskin:  u32     1               skins offset
+otex:   u32     1               texture coordinates offset
+otri:   u32     1               triangles offset
+ofrm:   u32     1               frames offset
+ogl:    u32     1               GL commands offset
+        u32     1               end offset
+        :--- skins ---
+        .       oskin
+        *       nskin   :md2_skin
+        :--- texture coordinates ---
+        .       otex
+        *       ntex    :md2_texcoord
+        :--- triangles ---
+        .       otri
+        *       ntri    :md2_triangle
+        :--- frames ---
+        .       ofrm
+#repeat nfrm
+#set    fend = ^@ + fsz
+        f32     3               scale
+        f32     3               translate
+        sc      16              name
+        +       "fend - ^@"     vertices (x, y, z, normal index) x vertices per frame
+#end
+        :--- GL commands ---
+        .       ogl
+#repeat while @i32 != 0
+ncmd:   i32     1               vertices (negative = triangle fan)
+#if ncmd < 0
+#set    n = 0 - ncmd
+#else
+#set    n = ncmd
+#fi
+#repeat n
+        f32     2               texture coordinates
+        u32     1               vertex index
+#end
+#end
+        i32     1               end of commands
+
+/:md2_skin
+c:64.32         name
+
+/:md2_texcoord
+u16     1       s
+u16     1       t
+
+/:md2_triangle
+u16     3       vertices
+u16     3       texture points

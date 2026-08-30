@@ -1,0 +1,160 @@
+STL 5.00
+;
+;   NT-MDT .mdt scan file: header and the frames (MDA frames with their
+;   calibrations and the spectroscopy frame variables decoded).
+;   After kaitai_struct_formats scientific/nt_mdt/nt_mdt.ksy.
+;
+
+/NT_MDT
+#if @d != 0xFF93B001
+        :ERROR!!! no NT-MDT signature at this offset
+#fi
+        d       1               signature
+fsz:    u32     1               frames size
+        b       4               reserved
+last:   u16     1               last frame index
+        b       18              reserved
+        u8      1               reserved
+#repeat "last + 1"
+        :--- frame ---
+sz:     u32     1               frame size
+#set    fend = ^@ - 4 + sz
+ft:     u16     'mdt_frame      type
+        u8      1               version minor
+        u8      1               version major
+        u16     1               year
+        u16     1               month
+        u16     1               day
+        u16     1               hour
+        u16     1               minute
+        u16     1               second
+vsz:    u16     1               variables size
+#switch ft
+#case 106
+        u32     1               head size
+        u32     1               total length
+        b       16              guid
+        b       16              guid
+        b       4               frame status
+nsz:    u32     1               name size
+csz:    u32     1               comment size
+        u32     1               view info size
+        u32     1               spec size
+        u32     1               source info size
+        u32     1               variables size
+        u32     1               data offset
+        u32     1               data size
+        c       nsz             title
+        c       csz             xml comment
+        u32     1               struct length
+        u64     1               array size
+        u32     1               cell size
+ndim:   u32     1               dimensions
+nmes:   u32     1               measurands
+#repeat "ndim + nmes"
+        :--- calibration ---
+        u32     1               total length
+        u32     1               struct length
+nl:     u32     1               name length
+cl:     u32     1               comment length
+ul:     u32     1               unit length
+        u64     1               si unit
+        f64     1               accuracy
+        u64     1               function id and dimensions
+        f64     1               bias
+        f64     1               scale
+        u64     1               min index
+        u64     1               max index
+        u32     'mdt_data_type  data type
+al:     u32     1               author length
+        c       nl              name
+        c       cl              comment
+        c       ul              unit
+        c       al              author
+#end
+#case 1, 201
+        f32     1               x offset
+        f32     1               x step
+        i16     'mdt_unit       x unit
+        f32     1               y offset
+        f32     1               y step
+        i16     'mdt_unit       y unit
+        f32     1               z offset
+        f32     1               z step
+        i16     'mdt_unit       z unit
+        u16     1               sp mode
+        u16     1               sp filter
+        f32     1               u begin
+        f32     1               u end
+        i16     1               z up
+        i16     1               z down
+        u16     1               sp averaging
+        u8      1               sp repeat
+        u8      1               sp back
+        i16     1               sp 4nx
+        u8      1               sp osc
+        u8      1               sp n4
+        f32     1               sp 4x0
+        f32     1               sp 4xr
+        i16     1               sp 4u
+        i16     1               sp 4i
+        i16     1               sp nx
+#case 190
+nblk:   u32     1               blocks
+        *       nblk    :mdt_block
+#end
+        +       "fend - ^@"
+#end
+
+/:mdt_block
+u32     1       name length
+u32     1       data length
+
+/'mdt_frame
+0       scanned
+1       spectroscopy
+3       text
+105     old MDA
+106     MDA
+107     palette
+190     curves (new)
+201     curves
+
+/'mdt_data_type
+0xFFFFFFFF      int8
+0xFFFFFFFE      int16
+0xFFFFFFFC      int32
+0xFFFFFFF8      int64
+1       uint8
+2       uint16
+4       uint32
+8       uint64
+0xFFFFE8FC      float32
+0xFFFFDBFC      float64
+
+/'mdt_unit
+1       raman shift
+2       reserved
+3       reserved
+4       reserved
+5       meter
+6       centimeter
+7       millimeter
+8       micrometer
+9       nanometer
+10      angstrom
+11      nanoampere
+12      volt
+13      none
+14      kilohertz
+15      degrees
+16      percent
+17      celsius
+18      volt (high)
+19      second
+20      millisecond
+21      microsecond
+22      nanosecond
+23      counts
+24      pixels
+25      reserved

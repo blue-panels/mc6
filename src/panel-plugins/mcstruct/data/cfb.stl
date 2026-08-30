@@ -1,0 +1,56 @@
+STL 5.00
+;
+;   Microsoft Compound File (OLE2): header and the first directory
+;   sector. After kaitai_struct_formats serialization/microsoft_cfb.ksy.
+;
+
+/CFB
+#if @d != 0xE011CFD0
+        :ERROR!!! no compound file signature at this offset
+#fi
+        b       8               signature
+        b       16              clsid
+        u16     1               minor version
+        u16     1               major version
+        w       1               byte order (FFFE)
+shift:  u16     1               sector shift (9 = 512, 12 = 4096)
+        u16     1               mini sector shift
+        b       6               reserved
+        i32     1               directory sectors
+        i32     1               FAT sectors
+dofs:   i32     1               first directory sector
+        i32     1               transaction signature
+        i32     1               mini stream cutoff
+        i32     1               first mini FAT sector
+        i32     1               mini FAT sectors
+        i32     1               first DIFAT sector
+        i32     1               DIFAT sectors
+        i32     109             DIFAT
+        :--- directory ---
+        .       "(dofs + 1) << shift"
+        *       "(1 << shift) / 128"    _CFB_dir_entry
+
+/_CFB_dir_entry
+        s16     32              name
+        u16     1               name length, bytes
+        u8      'cfb_object     object type
+        u8      'cfb_color      color
+        i32     1               left sibling
+        i32     1               right sibling
+        i32     1               child
+        b       16              clsid
+        d       1               state bits
+        tf      1               created
+        tf      1               modified
+        i32     1               first sector
+        u64     1               size
+
+/'cfb_object
+0       unknown / unallocated
+1       storage
+2       stream
+5       root storage
+
+/'cfb_color
+0       red
+1       black

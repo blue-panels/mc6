@@ -1,0 +1,26 @@
+STL 5.00
+;
+;   Protocol Buffers wire format: key/value pairs of one message level
+;   (nested messages are shown as length-delimited blocks).
+;   After kaitai_struct_formats serialization/google_protobuf.ksy.
+;
+
+/PROTOBUF
+#repeat while ^@ < $size
+        :--- field ---
+key:    vl      1               key (field number << 3 | wire type)
+#set    wt = key & 7
+#switch wt
+#case 0
+        vl      1               varint value
+#case 1
+        u64     1               64-bit value
+#case 2
+len:    vl      1               length
+        b       len             bytes (string, message or packed values)
+#case 5
+        u32     1               32-bit value
+#default
+        :ERROR!!! unsupported wire type (groups)
+#end
+#end

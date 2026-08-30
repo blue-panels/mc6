@@ -1,0 +1,58 @@
+STL 4.00
+;
+;   Master boot record: partition table and signature
+;
+
+/MBR
+        :--- bootstrap code, 440 bytes ---
+        +       440
+        d       1               disk signature
+        w       1               reserved
+        *       4               :Partition
+sig:    w       1               boot signature
+#if sig != 0xAA55
+        :ERROR!!! boot signature is not AA55
+#fi
+
+/:Partition
+b       'boot_flag      status
+b       1               start head
+w       1               start sector/cylinder
+b       'part_type      type
+b       1               end head
+w       1               end sector/cylinder
+u32     1               first LBA
+u32     1               sector count
+
+/'boot_flag
+0       inactive
+0x80    bootable
+
+/'part_type
+0x00    empty
+0x01    FAT12
+0x04    FAT16 <32M
+0x05    extended
+0x06    FAT16
+0x07    NTFS/exFAT
+0x0B    FAT32
+0x0C    FAT32 LBA
+0x0E    FAT16 LBA
+0x0F    extended LBA
+0x11    hidden FAT12
+0x14    hidden FAT16 <32M
+0x16    hidden FAT16
+0x1B    hidden FAT32
+0x1C    hidden FAT32 LBA
+0x82    Linux swap
+0x83    Linux
+0x85    Linux extended
+0x8E    Linux LVM
+0xA5    FreeBSD
+0xA6    OpenBSD
+0xA8    macOS UFS
+0xA9    NetBSD
+0xAF    macOS HFS+
+0xEE    GPT protective
+0xEF    EFI system
+0xFD    Linux RAID

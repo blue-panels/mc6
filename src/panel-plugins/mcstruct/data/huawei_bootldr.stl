@@ -1,0 +1,26 @@
+STL 5.00
+;
+;   Huawei bootloader package (UPDATE.APP style meta header and image
+;   table). After kaitai_struct_formats archive/android_bootldr_huawei.ksy.
+;
+
+/HUAWEI_BOOTLDR
+#if @d != 0xCE1AD63C
+        :ERROR!!! no Huawei bootloader signature at this offset
+#fi
+        d       1               magic
+        u16     1               version major
+        u16     1               version minor
+        sc      64              image version
+mlen:   u16     1               meta header length
+ilen:   u16     1               image header length
+        .       mlen
+#set    iend = ^@ + ilen
+#repeat while ^@ + 80 <= iend
+        *       1       _HW_image
+#end
+
+/_HW_image
+        sc      72              name
+        u32     1               body offset
+        u32     1               body length

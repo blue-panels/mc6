@@ -1,0 +1,13 @@
+STL 5.00
+;
+;   Monomakh-SAPR .chg container: title and a list of embedded files.
+;   After kaitai_struct_formats cad/monomakh_sapr_chg.ksy.
+;
+
+/CHG
+        c       10              title
+#repeat while ^@ + 21 <= $size
+        c       13              header
+fsize:  u64     1               file size
+        +       fsize
+#end

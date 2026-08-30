@@ -1,0 +1,40 @@
+STL 5.00
+;
+;   Android boot image header (ANDROID!), versions 0-2.
+;   After kaitai_struct_formats archive/android_img.ksy.
+;
+
+/ANDROID_IMG
+#if @d != 'ANDR'
+        :ERROR!!! no ANDROID! signature at this offset
+#fi
+        c       8               magic
+ksize:  u32     1               kernel size
+kaddr:  d       1               kernel load address
+rsize:  u32     1               ramdisk size
+        d       1               ramdisk load address
+ssize:  u32     1               second stage size
+        d       1               second stage load address
+        d       1               tags load address
+page:   u32     1               page size
+hver:   u32     1               header version
+        t32     77774          os version: major, minor, patch, then year - 2000 and month (4 bits)
+        sc      16              product name
+        sc      512             kernel command line
+        b       32              sha1 of the images
+        sc      1024            extra command line
+#if hver > 0
+dsize:  u32     1               recovery dtbo size
+        u64     1               recovery dtbo offset
+        u32     1               boot header size
+#fi
+#if hver > 1
+        u32     1               dtb size
+        u64     1               dtb load address
+#fi
+        =x      page            kernel offset
+        =x      "((page + ksize + page - 1) / page) * page"      ramdisk offset
+#if ssize > 0
+        =x      "((page + ksize + rsize + page - 1) / page) * page"      second stage offset
+#fi
+

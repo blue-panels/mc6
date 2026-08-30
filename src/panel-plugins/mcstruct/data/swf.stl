@@ -1,0 +1,73 @@
+STL 5.00
+;
+;   SWF (Flash) file: header and the tag list (Enter on the body row;
+;   zlib bodies are inflated, lzma is not).
+;   After kaitai_struct_formats executable/swf.ksy.
+;
+
+/SWF
+comp:   u8      'swf_comp       compression
+        c       2               signature (WS)
+ver:    u8      1               version
+        u32     1               file length
+#switch comp
+#case 0x46
+        *       1       _SWF_body via call('raw', 8, $size - 8)
+#case 0x43
+        *       1       _SWF_body via call('inflate', 8, $size - 8)
+#default
+        :lzma body is not decoded
+#end
+
+/_SWF_body
+b1:     u8      1               frame size: bits per field (high 5 bits)
+        +       "(((b1 >> 3) * 4 - 3) + 7) / 8"
+        u16     1               frame rate (8.8)
+        u16     1               frame count
+#repeat while ^@ + 2 <= $size && (@w >> 6) != 0
+        :--- tag ---
+th:     u16     1               tag code and length
+#set    ttype = th >> 6
+#set    tlen = th & 63
+#if tlen == 63
+blen:   i32     1               length
+#set    tlen = blen
+#fi
+#set    tend = ^@ + tlen
+#switch ttype
+#case 9
+        u8      1               background red
+        u8      1               background green
+        u8      1               background blue
+#case 65
+        u16     1               max recursion depth
+        u16     1               script timeout, seconds
+#case 69
+        t32     `swf_attr       file attributes
+#case 76, 56
+nsym:   u16     1               symbols
+#repeat nsym
+        u16     1               tag
+        sc      0               name
+#end
+#case 82
+        u32     1               flags
+        sc      0               name
+#case 43
+        sc      0               label
+#end
+        +       "tend - ^@"
+#end
+        u16     1               end tag
+
+/'swf_comp
+0x46    none (FWS)
+0x43    zlib (CWS)
+0x5A    lzma (ZWS)
+
+/`swf_attr
+0x00000008      ActionScript 3
+0x00000010      has metadata
+0x00000001      use network
+0x00000020      use GPU
+0x00000040      use direct blit

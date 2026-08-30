@@ -1,0 +1,28 @@
+STL 5.00
+;
+;   Flattened device tree blob: header and memory reservation map, big endian
+;
+
+/DTB
+#endian big
+magic:  d       1               magic
+#if magic != 0xD00DFEED
+        :ERROR!!! not a device tree blob
+#fi
+        u32     1               total size
+struct_off: u32 1               offset of dt_struct
+strings_off: u32 1              offset of dt_strings
+rsv_off: u32    1               offset of memory reservation map
+        u32     1               version
+        u32     1               last compatible version
+        u32     1               boot cpu id
+        u32     1               size of dt_strings
+        u32     1               size of dt_struct
+        :--- memory reservation map (address, size), ends with 0, 0 ---
+        .       rsv_off
+#repeat while @q != 0
+        q       1               address
+        q       1               size
+#end
+        q       1               address (end)
+        q       1               size (end)

@@ -1,0 +1,37 @@
+STL 5.00
+;
+;   InfluxDB TSM file: header, and the index whose offset is in the last
+;   8 bytes. After kaitai_struct_formats database/tsm.ksy.
+;
+
+/TSM
+#endian big
+#if @d.le != 0xD116D116
+        :ERROR!!! no TSM signature at this offset
+#fi
+        d       1               magic
+        u8      1               version
+        .       "$size - 8"
+iofs:   u64     1               index offset
+        .       iofs
+#repeat while ^@ + 5 <= $size - 8
+        :--- index block ---
+klen:   u16     1               key length
+        c       klen            key
+        u8      'tsm_type       type
+n:      u16     1               entries
+        *       n       :tsm_entry
+#end
+
+/:tsm_entry
+u64     1       min time
+u64     1       max time
+u64     1       block offset
+u32     1       block size
+
+/'tsm_type
+0       float
+1       integer
+2       boolean
+3       string
+4       unsigned

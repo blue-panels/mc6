@@ -1,0 +1,87 @@
+STL 5.00
+;
+;   btrfs send stream: header and commands with their TLV attributes.
+;   After kaitai_struct_formats filesystem/btrfs_stream.ksy.
+;
+
+/BTRFS_STREAM
+#if @d != 'btrf'
+        :ERROR!!! no btrfs-stream signature at this offset
+#fi
+        c       13              magic
+        u32     1               version
+#repeat while ^@ + 10 <= $size
+        :--- command ---
+clen:   u32     1               data length
+        u16     'btrfs_cmd      command
+        d       1               crc32
+#set    cend = ^@ + clen
+#repeat while ^@ + 4 <= cend
+atype:  u16     'btrfs_attr     attribute
+alen:   u16     1               length
+#if atype == 13 || atype == 15 || atype == 16 || atype == 17 || atype == 22
+        c       alen            value
+#elseif atype == 1 || atype == 20
+        b       16              uuid
+#elseif atype >= 9 && atype <= 12 && alen == 12
+        tu64    1               seconds
+        i32     1               nanoseconds
+#elseif alen == 8
+        u64     1               value
+#else
+        +       alen            value
+#fi
+#end
+#end
+
+/'btrfs_cmd
+0       unspec
+1       subvol
+2       snapshot
+3       mkfile
+4       mkdir
+5       mknod
+6       mkfifo
+7       mksock
+8       symlink
+9       rename
+10      link
+11      unlink
+12      rmdir
+13      set xattr
+14      remove xattr
+15      write
+16      clone
+17      truncate
+18      chmod
+19      chown
+20      utimes
+21      end
+22      update extent
+
+/'btrfs_attr
+0       unspec
+1       uuid
+2       ctransid
+3       ino
+4       size
+5       mode
+6       uid
+7       gid
+8       rdev
+9       ctime
+10      mtime
+11      atime
+12      otime
+13      xattr name
+14      xattr data
+15      path
+16      path to
+17      path link
+18      file offset
+19      data
+20      clone uuid
+21      clone ctransid
+22      clone path
+23      clone offset
+24      clone len

@@ -1,4 +1,4 @@
-SUBDIRS = ftp arcmc samba docker pp_common
+SUBDIRS = ftp arcmc samba docker pp_common mcstruct
 
 if ENABLE_PANEL_PLUGIN_MONGO
 SUBDIRS += mongo

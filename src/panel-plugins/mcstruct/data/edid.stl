@@ -1,0 +1,138 @@
+STL 5.00
+;
+;   EDID 1.x display descriptor, 128 bytes. After kaitai_struct_formats
+;   hardware/edid.ksy.
+;
+
+/EDID
+#if @d != 0xFFFFFF00 || @u32(^@ + 4) != 0x00FFFFFF
+        :ERROR!!! no EDID header at this offset
+#fi
+        b       8               header
+mfg:    m16     1               manufacturer id (3 x 5 bit letters, 'A' = 1)
+        w       1               product code
+        d       1               serial number
+        u8      1               week of manufacture
+year:   u8      1               year of manufacture - 1990
+        u8      1               EDID version
+        u8      1               EDID revision
+        t8      `edid_input     video input
+        u8      1               horizontal size, cm
+        u8      1               vertical size, cm
+        u8      1               gamma x 100 - 100 (255 = none)
+        t8      `edid_features  features
+        :--- chromaticity, 10 bit values: low 2 bits then high 8 ---
+        t8      2222            red x/y, green x/y low bits
+        t8      2222            blue x/y, white x/y low bits
+        u8      1               red x high
+        u8      1               red y high
+        u8      1               green x high
+        u8      1               green y high
+        u8      1               blue x high
+        u8      1               blue y high
+        u8      1               white x high
+        u8      1               white y high
+        t8      `edid_est1      established timings 1
+        t8      `edid_est2      established timings 2
+        t8      `edid_est3      established timings 3
+        *       8       :edid_std
+        *       4       _EDID_detail
+        u8      1               extension blocks
+        u8      1               checksum (sum of all 128 bytes = 0)
+        check   "call('sum8', ^, 128) == 0"  checksum check
+
+/:edid_std
+u8      1       h pixels / 8 - 31 (1 = unused)
+t8      26      aspect, refresh - 60
+
+/_EDID_detail
+pclk:   u16     1               pixel clock, 10 kHz (0 = descriptor)
+#if pclk == 0
+        u8      1               reserved
+type:   u8      'edid_desc      descriptor type
+        u8      1               reserved
+        c       13              text / data
+#else
+        u8      1               h active low
+        u8      1               h blanking low
+        t8      44              h active / blanking high
+        u8      1               v active low
+        u8      1               v blanking low
+        t8      44              v active / blanking high
+        u8      1               h sync offset low
+        u8      1               h sync width low
+        t8      44              v sync offset / width low
+        t8      2222            h/v sync high bits
+        u8      1               h size mm low
+        u8      1               v size mm low
+        t8      44              h / v size high
+        u8      1               h border
+        u8      1               v border
+        t8      `edid_dtd       flags
+#fi
+
+/`edid_input
+0x80            digital
+0x60    0x00    analog 0.7/0.3 V
+0x60    0x20    analog 0.714/0.286 V
+0x60    0x40    analog 1.0/0.4 V
+0x60    0x60    analog 0.7/0.0 V
+0x10            blank to black
+0x08            separate sync
+0x04            composite sync
+0x02            sync on green
+0x01            vsync serrated
+
+/`edid_features
+0x80            standby
+0x40            suspend
+0x20            active off
+0x18    0x00    monochrome
+0x18    0x08    RGB color
+0x18    0x10    non-RGB color
+0x04            sRGB default
+0x02            preferred timing mode
+0x01            continuous frequency
+
+/`edid_est1
+0x80            720x400 70 Hz
+0x40            720x400 88 Hz
+0x20            640x480 60 Hz
+0x10            640x480 67 Hz
+0x08            640x480 72 Hz
+0x04            640x480 75 Hz
+0x02            800x600 56 Hz
+0x01            800x600 60 Hz
+
+/`edid_est2
+0x80            800x600 72 Hz
+0x40            800x600 75 Hz
+0x20            832x624 75 Hz
+0x10            1024x768 87 Hz interlaced
+0x08            1024x768 60 Hz
+0x04            1024x768 70 Hz
+0x02            1024x768 75 Hz
+0x01            1280x1024 75 Hz
+
+/`edid_est3
+0x80            1152x870 75 Hz
+
+/'edid_desc
+0xFF    serial number
+0xFE    text
+0xFD    range limits
+0xFC    monitor name
+0xFB    color point
+0xFA    standard timings
+0x10    dummy
+
+/`edid_dtd
+0x80            interlaced
+0x60    0x00    no stereo
+0x60    0x20    field sequential, right on sync
+0x60    0x40    field sequential, left on sync
+0x60    0x60    interleaved
+0x18    0x00    analog composite sync
+0x18    0x08    bipolar analog composite sync
+0x18    0x10    digital composite sync
+0x18    0x18    digital separate sync

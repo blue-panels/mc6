@@ -1,0 +1,23 @@
+STL 5.00
+;
+;   Qualcomm Android bootloader package (BOOTLDR!): image headers, the
+;   bodies follow each other from the body offset.
+;   After kaitai_struct_formats archive/android_bootldr_qcom.ksy.
+;
+
+/QCOM_BOOTLDR
+#if @d != 'BOOT'
+        :ERROR!!! no BOOTLDR! signature at this offset
+#fi
+        c       8               magic
+n:      u32     1               images
+bofs:   u32     1               image bodies offset
+        u32     1               bootloader size
+#set    pos = bofs
+#repeat n
+        :--- image ---
+        sc      64              name
+blen:   u32     1               body length
+        =x      pos             body offset
+#set    pos = pos + blen
+#end

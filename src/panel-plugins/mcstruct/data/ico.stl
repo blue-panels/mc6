@@ -1,0 +1,58 @@
+STL 5.00
+;
+;   Windows icon (ICO) and cursor (CUR) directory; Enter on an entry opens
+;   the image (DIB header or an embedded PNG).
+;   After kaitai_struct_formats image/ico.ksy.
+;
+
+/ICO
+        u16     1               reserved
+        u16     'ico_type       type
+n:      u16     1               image count
+        *       n       _ICO_entry "entries"
+
+/_ICO_entry
+        u8      1               width (0 = 256)
+        u8      1               height (0 = 256)
+        u8      1               palette colors (0 = none)
+        u8      1               reserved
+        u16     1               planes / hotspot x
+        u16     1               bits per pixel / hotspot y
+        u32     1               image size
+        j32     _ICO_image=@     image offset
+
+/_ICO_image
+#if @d == 0x474E5089
+        :--- embedded PNG ---
+        c       8               signature
+#endian big
+        u32     1               IHDR length
+        c       4               IHDR
+        u32     1               width
+        u32     1               height
+        u8      1               bit depth
+        u8      1               color type
+#else
+        :--- DIB header ---
+        u32     1               header size
+        i32     1               width
+        i32     1               height (image + mask)
+        u16     1               planes
+        u16     1               bits per pixel
+        u32     'ico_dib_comp   compression
+        u32     1               image size
+        i32     1               x pixels per meter
+        i32     1               y pixels per meter
+        u32     1               colors used
+        u32     1               colors important
+#fi
+
+/'ico_type
+1       icon
+2       cursor
+
+/'ico_dib_comp
+0       BI_RGB
+1       BI_RLE8
+2       BI_RLE4
+3       BI_BITFIELDS

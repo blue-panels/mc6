@@ -1,0 +1,61 @@
+STL 5.00
+;
+;   X Window Dump (xwd) header and color map, big endian.
+;   After kaitai_struct_formats image/xwd.ksy.
+;
+
+/XWD
+#endian big
+hlen:   u32     1               header length
+        u32     1               file version
+        u32     'xwd_format     pixmap format
+        u32     1               pixmap depth
+        u32     1               pixmap width
+        u32     1               pixmap height
+        u32     1               x offset
+        u32     'xwd_order      byte order
+        u32     1               bitmap unit
+        u32     'xwd_order      bitmap bit order
+        u32     1               bitmap pad
+        u32     1               bits per pixel
+        u32     1               bytes per line
+        u32     'xwd_visual     visual class
+        d       1               red mask
+        d       1               green mask
+        d       1               blue mask
+        u32     1               bits per rgb
+        u32     1               colors
+ncmap:  u32     1               color map entries
+        u32     1               window width
+        u32     1               window height
+        i32     1               window x
+        i32     1               window y
+        u32     1               window border width
+        sc      "hlen - 100"    creator
+        .       hlen
+        *       ncmap   :xwd_color
+
+/:xwd_color
+u32     1       entry
+u16     1       red
+u16     1       green
+u16     1       blue
+u8      1       flags
+u8      1       padding
+
+/'xwd_format
+0       XYBitmap
+1       XYPixmap
+2       ZPixmap
+
+/'xwd_order
+0       LSB first
+1       MSB first
+
+/'xwd_visual
+0       StaticGray
+1       GrayScale
+2       StaticColor
+3       PseudoColor
+4       TrueColor
+5       DirectColor

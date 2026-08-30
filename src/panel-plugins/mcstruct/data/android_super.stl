@@ -1,0 +1,54 @@
+STL 5.00
+;
+;   Android dynamic partition metadata (super.img): geometry at 4096,
+;   the primary metadata header of slot 0 and its partition table.
+;   After kaitai_struct_formats filesystem/android_super.ksy.
+;
+
+/ANDROID_SUPER
+        .       4096
+#if @d != 'gDla'
+        :ERROR!!! no geometry signature at offset 4096
+#fi
+        c       4               geometry magic
+        u32     1               struct size
+        b       32              checksum
+mmax:   u32     1               metadata max size
+        u32     1               metadata slots
+        u32     1               logical block size
+        :--- primary metadata, slot 0 ---
+        .       12288
+        c       4               metadata magic (0PLA)
+        u16     1               major version
+        u16     1               minor version
+hsz:    u32     1               header size
+        b       32              header checksum
+        u32     1               tables size
+        b       32              tables checksum
+pofs:   u32     1               partitions offset
+pn:     u32     1               partitions
+psz:    u32     1               partition entry size
+        u32     1               extents offset
+        u32     1               extents
+        u32     1               extent entry size
+        u32     1               groups offset
+        u32     1               groups
+        u32     1               group entry size
+        u32     1               block devices offset
+        u32     1               block devices
+        u32     1               block device entry size
+        .       "12288 + hsz + pofs"
+        *       pn      _SUPER_partition
+
+/_SUPER_partition
+        sc      36              name
+        t32     `super_attr     attributes
+        u32     1               first extent
+        u32     1               extents
+        u32     1               group
+
+/`super_attr
+0x00000001      read only
+0x00000002      slot suffixed
+0x00000004      updated
+0x00000008      disabled

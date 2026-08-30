@@ -1,0 +1,27 @@
+STL 5.00
+;
+;   Amlogic eMMC partition table (MPT). After kaitai_struct_formats
+;   filesystem/amlogic_emmc_partitions.ksy.
+;
+
+/AMLOGIC_MPT
+#if @d != 'MPT'
+        :ERROR!!! no MPT signature at this offset
+#fi
+        c       4               magic
+        sc      12              version
+n:      i32     1               partitions
+        d       1               checksum
+        *       n       _MPT_part
+
+/_MPT_part
+        sc      16              name
+        u64     1               size
+        u64     1               offset
+        t32     `mpt_flags      flags
+        b       4               padding
+
+/`mpt_flags
+0x01            code
+0x02            cache
+0x04            data

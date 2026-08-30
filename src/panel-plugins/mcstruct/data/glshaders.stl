@@ -1,0 +1,29 @@
+STL 5.00
+;
+;   Android OpenGL shader cache (EGL$): header and the entry list.
+;   After kaitai_struct_formats media/android_opengl_shaders_cache.ksy.
+;
+
+/GL_SHADER_CACHE
+#if @d != 'EGL$'
+        :ERROR!!! no EGL$ signature at this offset
+#fi
+        c       4               magic
+        d       1               crc32
+        c       4               cache magic ($bB_)
+ver:    u32     1               version
+        u32     1               device version
+n:      u32     1               entries
+#if ver >= 3
+blen:   u32     1               build id length
+        sc      blen            build id
+        +       "((^@ + 3) & 0xFFFFFFFC) - ^@"
+#fi
+#repeat n
+        :--- entry ---
+klen:   u32     1               key length
+vlen:   u32     1               value length
+        +       klen            key
+        +       vlen            value
+        +       "((^@ + 3) & 0xFFFFFFFC) - ^@"
+#end

@@ -1,0 +1,113 @@
+STL 5.00
+;
+;   ext2/3/4 superblock (at 1024) and the block group descriptor table.
+;   After kaitai_struct_formats filesystem/ext2.ksy.
+;
+
+/EXT2
+        .       1024
+#if @u16(^@ + 56) != 0xEF53
+        :ERROR!!! no ext2 magic at offset 1080
+#fi
+        u32     1               inodes
+nblk:   u32     1               blocks
+        u32     1               reserved blocks
+        u32     1               free blocks
+        u32     1               free inodes
+        u32     1               first data block
+lbs:    u32     1               log block size (block = 1024 << n)
+        u32     1               log fragment size
+bpg:    u32     1               blocks per group
+        u32     1               fragments per group
+        u32     1               inodes per group
+        tu      1               mount time
+        tu      1               write time
+        u16     1               mount count
+        u16     1               max mount count
+        w       1               magic (EF53)
+        u16     'ext2_state     state
+        u16     'ext2_errors    errors
+        u16     1               minor revision
+        tu      1               last check
+        u32     1               check interval
+        u32     'ext2_os        creator os
+        u32     1               revision
+        u16     1               default reserved uid
+        u16     1               default reserved gid
+        u32     1               first inode
+        u16     1               inode size
+        u16     1               block group number
+        t32     `ext2_compat    compatible features
+        t32     `ext2_incompat  incompatible features
+        t32     `ext2_ro_compat read-only compatible features
+        b       16              uuid
+        sc      16              volume name
+        sc      64              last mounted
+        u32     1               algorithm bitmap
+        u8      1               preallocated blocks
+        u8      1               preallocated directory blocks
+        u16     1               padding
+        b       16              journal uuid
+        u32     1               journal inode
+        u32     1               journal device
+        u32     1               last orphan
+        :--- block group descriptors ---
+#set    ngrp = (nblk + bpg - 1) / bpg
+#if lbs == 0
+        .       2048
+#else
+        .       "1024 << lbs"
+#fi
+        *       ngrp    :ext2_bgd
+
+/:ext2_bgd
+u32     1       block bitmap
+u32     1       inode bitmap
+u32     1       inode table
+u16     1       free blocks
+u16     1       free inodes
+u16     1       used directories
+u16     1       padding
+b       12      reserved
+
+/'ext2_state
+1       clean
+2       errors
+
+/'ext2_errors
+1       continue
+2       remount read-only
+3       panic
+
+/'ext2_os
+0       Linux
+1       Hurd
+2       Masix
+3       FreeBSD
+4       Lites
+
+/`ext2_compat
+0x0001          directory preallocation
+0x0002          imagic inodes
+0x0004          has journal
+0x0008          extended attributes
+0x0010          resize inode
+0x0020          directory index
+
+/`ext2_incompat
+0x0001          compression
+0x0002          file type in directory entries
+0x0004          needs recovery
+0x0008          journal device
+0x0010          meta block groups
+0x0040          extents
+0x0080          64-bit
+0x0200          flexible block groups
+
+/`ext2_ro_compat
+0x0001          sparse superblock
+0x0002          large files
+0x0004          btree directories
+0x0008          huge files
+0x0010          group descriptor checksums
+0x0040          extra inode size

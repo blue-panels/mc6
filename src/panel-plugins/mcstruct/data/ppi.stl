@@ -1,0 +1,91 @@
+STL 5.00
+;
+;   PPI (Per-Packet Information) header with the 802.11 radio fields,
+;   then the frame body. After kaitai_struct_formats network/packet_ppi.ksy.
+;
+
+/PPI
+        u8      1               version
+        t8      `ppi_flags      flags
+hlen:   u16     1               header length
+        u32     'pcap_linktype  data link type
+#set    hend = ^@ - 8 + hlen
+#repeat while ^@ + 4 <= hend
+        :--- field ---
+ft:     u16     'ppi_field      type
+flen:   u16     1               length
+#set    fend = ^@ + flen
+#switch ft
+#case 2
+        u64     1               tsf timer
+        t16     `ppi_common_flags  flags
+        u16     1               rate, 500 kbps units
+        u16     1               channel frequency, MHz
+        t16     `ppi_channel    channel flags
+        u8      1               fhss hopset
+        u8      1               fhss pattern
+        i8      1               antenna signal, dBm
+        i8      1               antenna noise, dBm
+#case 3
+        t32     `ppi_mac_flags  mac flags
+        u32     1               a-mpdu id
+        u8      1               delimiters
+        b       3               reserved
+#case 4
+        t32     `ppi_mac_flags  mac flags
+        u32     1               a-mpdu id
+        u8      1               delimiters
+        u8      1               mcs
+        u8      1               streams
+        u8      1               rssi combined
+        u8      4               rssi antenna control
+        u8      4               rssi antenna extension
+        u16     1               extension channel frequency
+        t16     `ppi_channel    extension channel flags
+        b       8               rf signal / noise per antenna
+        u32     4               evm
+#end
+        +       "fend - ^@"
+#end
+        :frame body follows (Ethernet or 802.11 with F3)
+
+/`ppi_flags
+0x01            32-bit aligned
+
+/'ppi_field
+2       802.11 common
+3       802.11n MAC extension
+4       802.11n MAC+PHY extension
+5       spectrum map
+6       process info
+7       capture info
+
+/`ppi_common_flags
+0x0001          FCS present
+0x0002          TSF in ms
+0x0004          FCS invalid
+0x0008          PHY error
+
+/`ppi_channel
+0x0080          2 GHz
+0x0040          OFDM
+0x0020          CCK
+0x0010          turbo
+0x0800          GFSK
+0x0400          dynamic CCK-OFDM
+0x0200          passive scan only
+0x0100          5 GHz
+
+/`ppi_mac_flags
+0x00000002      aggregate delimiter
+0x00000004      more aggregates
+0x00000008      aggregate
+0x00000010      duplicate rx
+0x00000020      short guard interval
+0x00000040      HT 40
+0x00000080      greenfield
+
+/'pcap_linktype
+1       ethernet
+105     IEEE 802.11
+192     PPI

@@ -1,0 +1,18 @@
+STL 5.00
+;
+;   FTL (Faster Than Light) .dat archive: offsets to file records; Enter
+;   on one opens it. After kaitai_struct_formats game/ftl_dat.ksy.
+;
+
+/FTL_DAT
+n:      u32     1               files
+        *       n       _FTL_slot
+
+/_FTL_slot
+        j32     _FTL_file=@     record offset (0 = empty)
+
+/_FTL_file
+flen:   u32     1               file length
+nlen:   u32     1               name length
+        c       nlen            name
+        +       flen

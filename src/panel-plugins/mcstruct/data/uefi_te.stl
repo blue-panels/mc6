@@ -1,0 +1,74 @@
+STL 5.00
+;
+;   UEFI TE (Terse Executable) header and sections.
+;   After kaitai_struct_formats executable/uefi_te.ksy.
+;
+
+/UEFI_TE
+#if @w != 'VZ'
+        :ERROR!!! no VZ signature at this offset
+#fi
+        c       2               magic
+        u16     'te_machine     machine
+nsec:   u8      1               sections
+        u8      'te_subsystem   subsystem
+        u16     1               stripped size
+        d       1               entry point
+        d       1               base of code
+        q       1               image base
+        d       1               base relocation table address
+        u32     1               base relocation table size
+        d       1               debug directory address
+        u32     1               debug directory size
+        *       nsec    _TE_section
+
+/_TE_section
+        c       8               name
+        u32     1               virtual size
+        d       1               virtual address
+        u32     1               raw data size
+        d       1               raw data pointer
+        d       1               relocations pointer
+        d       1               line numbers pointer
+        u16     1               relocations
+        u16     1               line numbers
+        t32     `pe_section     characteristics
+
+/'te_machine
+0x014C  i386
+0x01C0  ARM
+0x01C2  Thumb
+0x01C4  ARM NT
+0x0200  IA-64
+0x0EBC  EFI byte code
+0x5032  RISC-V 32
+0x5064  RISC-V 64
+0x5128  RISC-V 128
+0x6232  LoongArch 32
+0x6264  LoongArch 64
+0x8664  x86-64
+0xAA64  ARM64
+
+/'te_subsystem
+0       unknown
+1       native
+2       Windows GUI
+3       Windows CUI
+7       POSIX CUI
+9       Windows CE GUI
+10      EFI application
+11      EFI boot service driver
+12      EFI runtime driver
+13      EFI ROM
+14      Xbox
+16      Windows boot application
+
+/`pe_section
+0x00000020      code
+0x00000040      initialized data
+0x00000080      uninitialized data
+0x02000000      discardable
+0x10000000      shared
+0x20000000      executable
+0x40000000      readable
+0x80000000      writable

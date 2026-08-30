@@ -1,0 +1,64 @@
+STL 5.00
+;
+;   TLS ClientHello body (after the handshake header), big endian.
+;   After kaitai_struct_formats network/tls_client_hello.ksy.
+;
+
+/TLS_CLIENT_HELLO
+#endian big
+        u8      1               version major
+        u8      1               version minor
+        tu      1               gmt unix time
+        b       28              random
+sidl:   u8      1               session id length
+#if sidl > 0
+        b       sidl            session id
+#fi
+csl:    u16     1               cipher suites length
+        u16     "csl / 2"       cipher suites
+cml:    u8      1               compression methods length
+#if cml > 0
+        b       cml             compression methods
+#fi
+#if ^@ + 2 <= $size
+elen:   u16     1               extensions length
+#set    eend = ^@ + elen
+#repeat while ^@ + 4 <= eend
+        :--- extension ---
+etype:  u16     'tls_ext        type
+xlen:   u16     1               length
+#switch etype
+#case 0
+        u16     1               server name list length
+        u8      1               name type
+hlen:   u16     1               host name length
+        c       hlen            host name
+#case 16
+        u16     1               protocol list length
+#set    aend = ^@ - 2 + xlen
+#repeat while ^@ < aend
+plen:   u8      1               protocol name length
+        c       plen            protocol
+#end
+#default
+        +       xlen
+#end
+#end
+#fi
+
+/'tls_ext
+0       server name
+1       max fragment length
+5       status request
+10      supported groups
+11      ec point formats
+13      signature algorithms
+16      ALPN
+18      signed certificate timestamp
+21      padding
+23      extended master secret
+35      session ticket
+43      supported versions
+45      psk key exchange modes
+51      key share
+65281   renegotiation info

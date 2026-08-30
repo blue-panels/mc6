@@ -121,6 +121,7 @@ EXTRA_DIST = $(SRC_maintainer) $(SRC_charset)
 install-exec-hook:
 	$(MAKE) install_mcview
 	$(MAKE) install_mctree
+	$(MAKE) install_mcstruct
 if USE_INTERNAL_EDIT
 	$(MAKE) install_mcedit
 endif
@@ -137,6 +138,9 @@ install_mcview:
 install_mctree:
 	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mctree && $(LN_S) mc mctree
 
+install_mcstruct:
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcstruct && $(LN_S) mc mcstruct
+
 install_mcedit:
 	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit && $(LN_S) mc mcedit
 
@@ -146,6 +150,7 @@ install_mcdiff:
 uninstall-hook:
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcview
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mctree
+	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcstruct
 if USE_INTERNAL_EDIT
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcedit
 endif

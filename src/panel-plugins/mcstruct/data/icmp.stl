@@ -1,0 +1,55 @@
+STL 5.00
+;
+;   ICMP message header, big endian. After kaitai_struct_formats
+;   network/icmp_packet.ksy.
+;
+
+/ICMP
+#endian big
+type:   u8      'icmp_type      type
+#switch type
+#case 3
+        u8      'icmp_unreach   code
+#case 11
+        u8      'icmp_exceeded  code
+#default
+        u8      1               code
+#end
+        w       1               checksum
+#if type == 0 || type == 8
+        u16     1               identifier
+        u16     1               sequence number
+#fi
+
+/'icmp_type
+0       echo reply
+3       destination unreachable
+4       source quench
+5       redirect
+8       echo
+11      time exceeded
+12      parameter problem
+13      timestamp
+14      timestamp reply
+
+/'icmp_unreach
+0       net unreachable
+1       host unreachable
+2       protocol unreachable
+3       port unreachable
+4       fragmentation needed and DF set
+5       source route failed
+6       destination network unknown
+7       destination host unknown
+8       source host isolated
+9       network prohibited
+10      host prohibited
+11      network unreachable for TOS
+12      host unreachable for TOS
+13      communication prohibited
+14      host precedence violation
+15      precedence cutoff in effect
+
+/'icmp_exceeded
+0       TTL exceeded in transit
+1       fragment reassembly time exceeded

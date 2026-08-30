@@ -1,0 +1,33 @@
+STL 5.00
+;
+;   Saints Row 2 .vpp_pc archive: header and the file table (Enter on a
+;   name offset shows the name). After kaitai_struct_formats
+;   game/saints_row_2_vpp_pc.ksy.
+;
+
+/VPP
+#if @d != 0x51890ACE
+        :ERROR!!! no VPP signature at this offset
+#fi
+        b       5               magic
+        +       335
+n:      i32     1               files
+        i32     1               container size
+olen:   i32     1               offset table length
+nlen:   i32     1               file names length
+elen:   i32     1               extensions length
+        i32     5               unknown
+fnames: =x      "((0x800 + olen) & 0xFFFFF800) + 0x800"        file names block
+exts:   =x      "((fnames + nlen) & 0xFFFFF800) + 0x800"      extensions block
+        =x      "((exts + elen) & 0xFFFFF800) + 0x800"        data start
+        .       0x800
+        *       n       _VPP_entry
+
+/_VPP_entry
+        u32     1               name offset (in the names block)
+        u32     1               extension offset (in the extensions block)
+        i32     1               unknown
+        i32     1               body offset (from the data start)
+        i32     1               body length
+        i32     1               always -1
+        i32     1               always 0

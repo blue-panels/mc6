@@ -1,0 +1,97 @@
+STL 5.00
+;
+;   DNS message (RFC 1035): header, questions and resource records; names
+;   are listed label by label, a compression pointer ends a name.
+;   After kaitai_struct_formats network/dns_packet.ksy.
+;
+
+/DNS
+#endian big
+        w       1               transaction id
+        t16     `dns_flags      flags
+qd:     u16     1               questions
+an:     u16     1               answers
+ns:     u16     1               authority records
+ar:     u16     1               additional records
+#repeat qd
+        :--- question ---
+#repeat while @b != 0 && (@b & 0xC0) != 0xC0
+llen:   u8      1               label length
+        c       llen            label
+#end
+#if @b == 0
+        u8      1               end of name
+#else
+        m16     1               name pointer (0xC000 + offset)
+#fi
+        u16     'dns_type       type
+        u16     'dns_class      class
+#end
+#set    nrr = an + ns + ar
+#repeat nrr
+        :--- resource record ---
+#repeat while @b != 0 && (@b & 0xC0) != 0xC0
+llen:   u8      1               label length
+        c       llen            label
+#end
+#if @b == 0
+        u8      1               end of name
+#else
+        m16     1               name pointer (0xC000 + offset)
+#fi
+rtype:  u16     'dns_type       type
+        u16     'dns_class      class
+        u32     1               ttl
+rdlen:  u16     1               data length
+#if rtype == 1 && rdlen == 4
+        b       4               address
+#elseif rtype == 28 && rdlen == 16
+        b       16              address
+#else
+        b       rdlen           data
+#fi
+#end
+
+/`dns_flags
+0x8000          response
+0x7800  0x0000  opcode: query
+0x7800  0x0800  opcode: inverse query
+0x7800  0x1000  opcode: status
+0x7800  0x2800  opcode: update
+0x0400          authoritative answer
+0x0200          truncated
+0x0100          recursion desired
+0x0080          recursion available
+0x0020          authentic data
+0x0010          checking disabled
+0x000F  0x0000  rcode: no error
+0x000F  0x0001  rcode: format error
+0x000F  0x0002  rcode: server failure
+0x000F  0x0003  rcode: name error
+0x000F  0x0004  rcode: not implemented
+0x000F  0x0005  rcode: refused
+
+/'dns_type
+1       A
+2       NS
+5       CNAME
+6       SOA
+12      PTR
+15      MX
+16      TXT
+28      AAAA
+33      SRV
+41      OPT
+43      DS
+46      RRSIG
+47      NSEC
+48      DNSKEY
+65      HTTPS
+252     AXFR
+255     ANY
+
+/'dns_class
+1       IN
+3       CH
+4       HS
+255     ANY

@@ -1,0 +1,49 @@
+STL 5.00
+;
+;   LHA / LZH archive records, header levels 0 and 2.
+;   After kaitai_struct_formats archive/lzh.ksy.
+;
+
+/LZH
+#repeat while ^@ < $size && @b != 0
+        :--- record ---
+hlen:   u8      1               header length
+        u8      1               header checksum
+        c       5               method
+csize:  u32     1               compressed size
+        u32     1               uncompressed size
+        td      1               timestamp
+        u8      1               attributes
+level:  u8      'lzh_level      header level
+#switch level
+#case 0
+fnlen:  u8      1               file name length
+        c       fnlen           file name
+        w       1               crc16
+#case 2
+        w       1               crc16
+        u8      'lzh_os         os
+        u16     1               first extended header size
+#end
+        .       "^@ - ^hlen + hlen + 2"
+        +       csize
+#end
+
+/'lzh_level
+0       level 0
+1       level 1
+2       level 2
+
+/'lzh_os
+0x4D    MS-DOS
+0x32    OS/2
+0x39    OS-9
+0x4B    OS/68K
+0x33    OS/386
+0x48    Human68k
+0x55    Unix
+0x43    CP/M
+0x46    FLEX
+0x6D    Macintosh
+0x52    Runser
+0x4A    Java

@@ -876,10 +876,30 @@ panel_plugin_view_entry_by_operation (WPanel *panel, const char *fname, const ch
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* TRUE when the magic.ini operation can run here; otherwise the caller falls back to mc.ext.ini */
+gboolean
+panel_plugin_view_operation_usable (const char *plugin_name, const char *operation_name,
+                                    gboolean allow_show)
+{
+    const mc_panel_plugin_t *target;
+    const mc_pp_file_operation_t *operation;
+
+    target = mc_panel_plugin_find_by_name (plugin_name);
+    operation = panel_plugin_find_file_operation (target, operation_name);
+    if (operation == NULL)
+        return FALSE;
+    if (operation->kind == MC_PP_FILE_OPERATION_SHOW)
+        return allow_show && operation->show != NULL;
+    return operation->kind == MC_PP_FILE_OPERATION_VIEW && operation->view_input_stream != NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_name,
                                            const char *local_path, const char *plugin_name,
-                                           const char *operation_name, char **view_path)
+                                           const char *operation_name, const char *hint,
+                                           gboolean allow_show, char **view_path)
 {
     const mc_panel_plugin_t *target;
     const mc_pp_file_operation_t *operation;
@@ -894,8 +914,25 @@ panel_plugin_view_local_file_by_operation (WPanel *panel, const char *display_na
 
     target = mc_panel_plugin_find_by_name (plugin_name);
     operation = panel_plugin_find_file_operation (target, operation_name);
-    if (operation == NULL || operation->kind != MC_PP_FILE_OPERATION_VIEW
-        || operation->view_input_stream == NULL)
+    if (operation == NULL)
+        return FALSE;
+
+    if (operation->kind == MC_PP_FILE_OPERATION_SHOW)
+    {
+        mc_panel_host_t *host;
+        mc_pp_result_t result;
+
+        if (!allow_show || operation->show == NULL)
+            return FALSE;
+        host = g_new0 (mc_panel_host_t, 1);
+        panel_plugin_init_host (host, panel);
+        result = operation->show (host, display_name, local_path, hint);
+        g_free (host->focus_after);
+        g_free (host);
+        return result == MC_PPR_OK;
+    }
+
+    if (operation->kind != MC_PP_FILE_OPERATION_VIEW || operation->view_input_stream == NULL)
         return FALSE;
 
     stream = mc_pp_input_stream_new_for_file (local_path, FALSE);

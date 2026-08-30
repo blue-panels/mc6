@@ -1,0 +1,142 @@
+STL 5.00
+;
+;   RPM package: lead, signature header and the main header (index
+;   entries listed). After kaitai_struct_formats archive/rpm.ksy.
+;
+
+/RPM
+#endian big
+#if @d != 0xEDABEEDB
+        :ERROR!!! no RPM lead at this offset
+#fi
+        d       1               magic
+        u8      1               version major
+        u8      1               version minor
+        u16     'rpm_type       type
+        u16     1               architecture
+        sc      66              name
+        u16     'rpm_os         os
+        u16     1               signature type (5 = header)
+        b       16              reserved
+        :--- signature header ---
+        d       1               magic (8EADE801)
+        b       4               reserved
+nsig:   u32     1               index entries
+ssz:    u32     1               data size
+        *       nsig    :rpm_sig_entry
+        +       ssz             signature data
+        +       "(8 - ^@ % 8) % 8"
+        :--- header ---
+        d       1               magic (8EADE801)
+        b       4               reserved
+nhdr:   u32     1               index entries
+        u32     1               data size
+        *       nhdr    :rpm_hdr_entry
+        :header data and the payload (cpio, compressed) follow
+
+/:rpm_sig_entry
+u32     'rpm_sig_tag    tag
+u32     'rpm_data_type  type
+u32     1       offset
+u32     1       count
+
+/:rpm_hdr_entry
+u32     'rpm_hdr_tag    tag
+u32     'rpm_data_type  type
+u32     1       offset
+u32     1       count
+
+/'rpm_type
+0       binary
+1       source
+
+/'rpm_os
+1       Linux
+2       IRIX
+3       Solaris
+4       SunOS
+5       AmigaOS
+6       AIX
+7       HP-UX
+8       OSF/1
+9       FreeBSD
+10      SCO
+11      IRIX64
+12      NextStep
+13      BSD/OS
+14      Machten
+15      CygwinNT
+16      Cygwin9x
+17      Unixware
+18      MP-RAS
+19      MiNT
+20      OS/390
+21      VM/ESA
+
+/'rpm_data_type
+0       null
+1       char
+2       int8
+3       int16
+4       int32
+5       int64
+6       string
+7       binary
+8       string array
+9       i18n string
+
+/'rpm_sig_tag
+62      header signatures
+267     DSA
+268     RSA
+269     SHA1
+273     long size
+1000    size
+1004    MD5
+1005    GPG
+1007    payload size
+1010    long payload size
+1016    reserved space
+
+/'rpm_hdr_tag
+1000    name
+1001    version
+1002    release
+1004    summary
+1005    description
+1006    build time
+1007    build host
+1009    size
+1010    distribution
+1011    vendor
+1014    license
+1016    group
+1020    url
+1021    os
+1022    arch
+1023    pre-install script
+1024    post-install script
+1027    file names (old)
+1028    file sizes
+1030    file modes
+1034    file digests
+1035    file mtimes
+1037    file flags
+1039    file user names
+1040    file group names
+1047    provide names
+1049    require names
+1080    changelog times
+1081    changelog names
+1082    changelog texts
+1090    require flags
+1095    file device numbers
+1098    directory names
+1116    directory indexes
+1117    base names
+1118    directory names
+1124    payload format
+1125    payload compressor
+1126    payload flags
+5011    file digest algorithm
+5046    build arch

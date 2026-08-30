@@ -1,0 +1,186 @@
+STL 5.00
+;
+;   Windows executables: the MZ stub, then the PE image header and its
+;   section table, after the Microsoft PE/COFF specification.
+;
+
+/EXE
+sig:    w       1               MZ signature
+#if sig != 0x5A4D
+        :ERROR!!! not an MZ executable
+#else
+        u16     1               bytes in last page
+        u16     1               pages
+nreloc: u16     1               relocations
+        u16     1               header paragraphs
+        u16     1               minimum paragraphs
+        u16     1               maximum paragraphs
+        w       1               initial ss
+        w       1               initial sp
+        w       1               checksum
+        w       1               initial ip
+        w       1               initial cs
+        j16     :MzReloc[nreloc]=@   relocation table offset
+        u16     1               overlay
+        .       0x3C
+        j32     PE=@            PE header offset
+#fi
+
+/PE
+sig:    d       1               PE signature
+#if sig != 0x00004550
+        :ERROR!!! no PE header here
+#else
+        :--- COFF file header ---
+        u16     'pe_machine     machine
+nsect:  u16     1               sections
+        tu      1               link time
+        d       1               symbol table offset
+        u32     1               symbols
+opt:    u16     1               optional header size
+        t16     `pe_chars       characteristics
+        :--- optional header ---
+magic:  u16     'pe_magic       magic
+        u8      1               linker major
+        u8      1               linker minor
+        u32     1               code size
+        u32     1               initialized data size
+        u32     1               uninitialized data size
+        d       1               entry point rva
+        d       1               code base
+#if magic == 0x10B
+        d       1               data base
+        d       1               image base
+#else
+        q       1               image base
+#fi
+        u32     1               section alignment
+        u32     1               file alignment
+        u16     1               os major
+        u16     1               os minor
+        u16     1               image major
+        u16     1               image minor
+        u16     1               subsystem major
+        u16     1               subsystem minor
+        u32     1               win32 version
+        u32     1               image size
+        u32     1               headers size
+        d       1               checksum
+        u16     'pe_subsystem   subsystem
+        t16     `pe_dll_chars   dll characteristics
+#if magic == 0x10B
+        u32     1               stack reserve
+        u32     1               stack commit
+        u32     1               heap reserve
+        u32     1               heap commit
+#else
+        u64     1               stack reserve
+        u64     1               stack commit
+        u64     1               heap reserve
+        u64     1               heap commit
+#fi
+        u32     1               loader flags
+ndirs:  u32     1               data directories
+        *       ndirs           :DataDirectory
+        :--- section table ---
+        .       "24 + opt"
+        *       nsect           :Section
+#fi
+
+/:MzReloc
+w       1       offset
+w       1       segment
+
+/:DataDirectory
+d       1       rva
+u32     1       size
+
+/:Section
+c:8             name
+u32     1       virtual size
+d       1       virtual address
+u32     1       raw size
+d       1       raw offset
+d       1       relocations offset
+d       1       line numbers offset
+u16     1       relocations
+u16     1       line numbers
+t32     `sect_chars     characteristics
+
+/'pe_machine
+0x0000  unknown
+0x014C  i386
+0x0166  MIPS R4000
+0x01A2  SH3
+0x01A6  SH4
+0x01C0  ARM
+0x01C2  Thumb
+0x01C4  ARM Thumb-2
+0x0200  IA-64
+0x0284  Alpha 64
+0x01F0  PowerPC
+0x5032  RISC-V 32
+0x5064  RISC-V 64
+0x6232  LoongArch 32
+0x6264  LoongArch 64
+0x8664  x86-64
+0xAA64  ARM64
+
+/'pe_magic
+0x10B   PE32
+0x20B   PE32+
+0x107   ROM image
+
+/'pe_subsystem
+0       unknown
+1       native
+2       Windows GUI
+3       Windows console
+5       OS/2 console
+7       POSIX console
+9       Windows CE
+10      EFI application
+11      EFI boot driver
+12      EFI runtime driver
+13      EFI ROM
+14      Xbox
+16      Windows boot application
+
+/`pe_chars
+0x0001          relocations stripped
+0x0002          executable image
+0x0004          line numbers stripped
+0x0008          symbols stripped
+0x0020          large address aware
+0x0100          32-bit machine
+0x0200          debug stripped
+0x0400          run from swap if on removable media
+0x0800          run from swap if on network
+0x1000          system file
+0x2000          DLL
+0x4000          uniprocessor only
+
+/`pe_dll_chars
+0x0020          high entropy VA
+0x0040          dynamic base
+0x0080          force integrity
+0x0100          NX compatible
+0x0200          no isolation
+0x0400          no SEH
+0x0800          no bind
+0x1000          app container
+0x2000          WDM driver
+0x4000          control flow guard
+0x8000          terminal server aware
+
+/`sect_chars
+0x00000020      code
+0x00000040      initialized data
+0x00000080      uninitialized data
+0x02000000      discardable
+0x04000000      not cached
+0x08000000      not paged
+0x10000000      shared
+0x20000000      executable
+0x40000000      readable
+0x80000000      writable

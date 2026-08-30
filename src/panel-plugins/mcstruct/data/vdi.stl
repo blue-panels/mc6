@@ -1,0 +1,53 @@
+STL 5.00
+;
+;   VirtualBox VDI image header, version 1.x.
+;   After kaitai_struct_formats filesystem/vdi.ksy.
+;
+
+/VDI
+        c       64              text
+#if @d != 0xBEDA107F
+        :ERROR!!! no VDI signature at offset 64
+#fi
+        d       1               signature
+maj:    u16     1               version major
+        u16     1               version minor
+#if maj >= 1
+hsz:    u32     1               header size
+        u32     'vdi_type       image type
+        t32     `vdi_flags      flags
+        c       256             description
+        u32     1               blocks map offset
+        u32     1               data offset
+        u32     1               cylinders
+        u32     1               heads
+        u32     1               sectors
+        u32     1               sector size
+        u32     1               reserved
+        u64     1               disk size
+        u32     1               block data size
+        u32     1               block metadata size
+        u32     1               blocks in image
+        u32     1               blocks allocated
+        b       16              image uuid
+        b       16              last snapshot uuid
+        b       16              link uuid
+        b       16              parent uuid
+#if hsz >= 400
+        u32     1               legacy cylinders
+        u32     1               legacy heads
+        u32     1               legacy sectors
+        u32     1               legacy sector size
+#fi
+#else
+        :version 0 header is not described
+#fi
+
+/'vdi_type
+1       dynamic
+2       fixed
+3       undo
+4       differencing
+
+/`vdi_flags
+0x00000001      zero expand

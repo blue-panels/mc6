@@ -1,0 +1,45 @@
+STL 5.00
+;
+;   rtpdump capture (rtptools): the text header line, the binary file
+;   header and the packet records; Enter on a packet is not needed, the
+;   RTP header is inlined. After kaitai_struct_formats network/rtpdump.ksy
+;   and rtp_packet.ksy.
+;
+
+/RTPDUMP
+#endian big
+#if @d.le != '#!rt'
+        :ERROR!!! no #!rtpplay signature at this offset
+#fi
+        c       12              shebang (#!rtpplay1.0)
+        c       1               space
+        sc.2f   0               address
+        sc.0a   0               port
+        tu      1               start time, seconds
+        u32     1               start time, microseconds
+        b       4               source address
+        u16     1               source port
+        u16     1               padding
+#repeat while ^@ + 8 <= $size
+        :--- packet ---
+        u16     1               record length
+plen:   u16     1               payload length
+        u32     1               offset from start, ms
+#set    pend = ^@ + plen
+b0:     t8      2114            version / padding / extension / csrc count
+        t8      `rtp_pt         marker / payload type
+        u16     1               sequence number
+        u32     1               timestamp
+        d       1               ssrc
+        +       "pend - ^@"     payload
+#end
+
+/`rtp_pt
+0x80            marker
+0x7F    0       PCMU
+0x7F    8       PCMA
+0x7F    9       G.722
+0x7F    26      JPEG
+0x7F    31      H.261
+0x7F    34      H.263
+0x7F    96      dynamic 96

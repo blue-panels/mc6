@@ -1,0 +1,137 @@
+STL 5.00
+;
+;   ZIP archive records, after PKWARE APPNOTE.TXT.
+;   Every record starts with a signature; open the structure at a record
+;   boundary and follow the offset jumps between local headers, the central
+;   directory and its end record.
+;
+
+/Zip
+sig:    d       1               signature
+#switch sig
+#case 0x04034B50
+        :--- local file header ---
+        u16     1               version needed
+        t16     `zip_flags      flags
+        u16     'zip_method     method
+        td      1               modified
+        d       1               crc-32
+csize:  u32     1               compressed size
+        u32     1               uncompressed size
+nlen:   u16     1               name length
+xlen:   u16     1               extra length
+        c       nlen            name
+        c       xlen            extra
+        +       csize
+#case 0x02014B50
+        :--- central directory entry ---
+        u8      1               version made by
+        u8      'zip_host       made on
+        u16     1               version needed
+        t16     `zip_flags      flags
+        u16     'zip_method     method
+        td      1               modified
+        d       1               crc-32
+        u32     1               compressed size
+        u32     1               uncompressed size
+nlen:   u16     1               name length
+xlen:   u16     1               extra length
+clen:   u16     1               comment length
+        u16     1               disk number
+        t16     `zip_internal   internal attributes
+        d       1               external attributes
+        j32     Zip=@           local header offset
+        c       nlen            name
+        c       xlen            extra
+        c       clen            comment
+#case 0x06054B50
+        :--- end of central directory ---
+        u16     1               this disk
+        u16     1               central directory disk
+        u16     1               entries on this disk
+        u16     1               entries total
+        u32     1               central directory size
+        j32     Zip=@           central directory offset
+clen:   u16     1               comment length
+        c       clen            comment
+#case 0x08074B50
+        :--- data descriptor ---
+        d       1               crc-32
+        u32     1               compressed size
+        u32     1               uncompressed size
+#case 0x06064B50
+        :--- zip64 end of central directory ---
+        u64     1               record size
+        u16     1               version made by
+        u16     1               version needed
+        u32     1               this disk
+        u32     1               central directory disk
+        u64     1               entries on this disk
+        u64     1               entries total
+        u64     1               central directory size
+        j64     Zip=@           central directory offset
+#case 0x07064B50
+        :--- zip64 end of central directory locator ---
+        u32     1               zip64 end record disk
+        j64     Zip=@           zip64 end record offset
+        u32     1               disks total
+#default
+        :ERROR!!! no ZIP record at this offset
+#end
+
+/'zip_method
+0       stored
+1       shrunk
+2       reduced 1
+3       reduced 2
+4       reduced 3
+5       reduced 4
+6       imploded
+8       deflated
+9       deflate64
+12      bzip2
+14      lzma
+18      ibm terse
+19      lz77
+93      zstandard
+94      mp3
+95      xz
+96      jpeg
+97      wavpack
+98      ppmd
+99      aes encrypted
+
+/`zip_flags
+0x0001          encrypted
+0x0002          compression option 1
+0x0004          compression option 2
+0x0008          sizes in data descriptor
+0x0020          compressed patched data
+0x0040          strong encryption
+0x0800          utf-8 names
+0x2000          central directory encrypted
+
+/`zip_internal
+0x0001          text file
+
+/'zip_host
+0       MS-DOS / OS/2 FAT
+1       Amiga
+2       OpenVMS
+3       Unix
+4       VM/CMS
+5       Atari ST
+6       OS/2 HPFS
+7       Macintosh
+8       Z-System
+9       CP/M
+10      Windows NTFS
+11      MVS
+12      VSE
+13      Acorn RISC OS
+14      VFAT
+15      alternate MVS
+16      BeOS
+17      Tandem
+18      OS/400
+19      OS X Darwin

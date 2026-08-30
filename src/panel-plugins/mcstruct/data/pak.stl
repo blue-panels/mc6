@@ -1,0 +1,20 @@
+STL 5.00
+;
+;   Quake PAK archive: header and the file index.
+;   After kaitai_struct_formats game/quake_pak.ksy.
+;
+
+/PAK
+#if @d != 'PACK'
+        :ERROR!!! no PACK signature at this offset
+#fi
+        c       4               magic
+iofs:   u32     1               index offset
+ilen:   u32     1               index length
+        .       iofs
+        *       "ilen / 64"     :pak_entry
+
+/:pak_entry
+c:56.32         name
+u32             offset
+u32             size

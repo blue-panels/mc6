@@ -1,0 +1,72 @@
+STL 5.00
+;
+;   AVI (RIFF) chunk walk: LIST headers are entered, avih and strh are
+;   decoded, other chunks are skipped. After kaitai_struct_formats
+;   media/avi.ksy and common/riff.ksy.
+;
+
+/AVI
+#if @d != 'RIFF'
+        :ERROR!!! no RIFF signature at this offset
+#fi
+        c       4               RIFF
+rsz:    u32     1               file size - 8
+        c       4               form type
+#set    rend = 8 + rsz
+#repeat while ^@ + 8 <= rend
+#switch @d
+#case 'LIST'
+        c       4               chunk
+        u32     1               list size
+        c       4               list type
+#case 'avih'
+        c       4               chunk
+        u32     1               size
+        u32     1               microseconds per frame
+        u32     1               max bytes per second
+        u32     1               padding granularity
+        t32     `avi_flags      flags
+        u32     1               total frames
+        u32     1               initial frames
+        u32     1               streams
+        u32     1               suggested buffer size
+        u32     1               width
+        u32     1               height
+        b       16              reserved
+#case 'strh'
+        c       4               chunk
+        u32     1               size
+        c       4               stream type
+        c       4               handler
+        t32     `strh_flags     flags
+        u16     1               priority
+        u16     1               language
+        u32     1               initial frames
+        u32     1               scale
+        u32     1               rate
+        u32     1               start
+        u32     1               length
+        u32     1               suggested buffer size
+        u32     1               quality
+        u32     1               sample size
+        i16     1               frame left
+        i16     1               frame top
+        i16     1               frame right
+        i16     1               frame bottom
+#default
+        c       4               chunk
+csz:    u32     1               size
+        +       "csz + (csz & 1)"
+#end
+#end
+
+/`avi_flags
+0x00000010      has index
+0x00000020      must use index
+0x00000100      interleaved
+0x00010000      captured file
+0x00020000      copyrighted
+
+/`strh_flags
+0x00000001      disabled
+0x00010000      palette changes

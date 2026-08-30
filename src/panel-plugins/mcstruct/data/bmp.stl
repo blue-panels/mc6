@@ -1,0 +1,40 @@
+STL 4.00
+;
+;   Windows bitmap: file header and BITMAPINFOHEADER
+;
+
+/BMP
+        c       2               signature
+        u32     1               file size
+        w       2               reserved
+        u32     1               pixel data offset
+hsize:  u32     1               DIB header size
+#if hsize == 12
+        u16     1               width
+        u16     1               height
+        u16     1               planes
+        u16     1               bits per pixel
+#else
+        i32     1               width
+        i32     1               height
+        u16     1               planes
+        u16     1               bits per pixel
+        u32     'bmp_compression compression
+        u32     1               image size
+        i32     1               x pixels per meter
+        i32     1               y pixels per meter
+        u32     1               colors used
+        u32     1               important colors
+#fi
+
+/'bmp_compression
+0       none
+1       RLE8
+2       RLE4
+3       bitfields
+4       JPEG
+5       PNG
+6       alpha bitfields
+11      CMYK
+12      CMYK RLE8
+13      CMYK RLE4

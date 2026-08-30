@@ -1,0 +1,43 @@
+STL 5.00
+;
+;   RenderWare binary stream (.dff, .txd): chunk headers walked flat,
+;   containers entered. After kaitai_struct_formats
+;   game/renderware_binary_stream.ksy.
+;
+
+/RW_STREAM
+#repeat while ^@ + 12 <= $size
+        :--- chunk ---
+code:   u32     'rw_chunk       type
+csz:    u32     1               size
+        d       1               library id stamp (version)
+#switch code
+#case 0x10, 0x0F, 0x14, 0x0E, 0x1A, 0x1B, 0x03, 0x06, 0x08, 0x16
+        :container, the chunks inside follow
+#case 0x01
+        +       csz             struct data
+#default
+        +       csz
+#end
+#end
+
+/'rw_chunk
+0x01    struct
+0x02    string
+0x03    extension
+0x05    camera
+0x06    texture
+0x07    material
+0x08    material list
+0x0A    frame list
+0x0E    atomic
+0x0F    geometry
+0x10    clump
+0x14    geometry list
+0x15    texture native
+0x16    texture dictionary
+0x1A    animation
+0x1B    HAnim
+0x0253F2FE      bin mesh
+0x0253F2FF      native data
+0x0253F2FC      material effects

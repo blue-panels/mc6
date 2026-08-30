@@ -1,0 +1,85 @@
+STL 5.00
+;
+;   zchunk (.zck) file: lead, preface, index with the chunk table, then
+;   the dict and the chunks themselves.
+;   After kaitai_struct_formats archive/zchunk.ksy.
+;
+
+/ZCHUNK
+#if @u8(^@ + 1) != 0x5A || @u8(^@ + 2) != 0x43 && @u8(^@ + 2) != 0x48
+        :ERROR!!! no zchunk signature at this offset
+#fi
+        b       5               magic (00 ZCK1, or ZHR1 for a detached header)
+ct:     vz      1               overall checksum type (0 sha1, 1 sha256, 2 sha512, 3 sha512/128)
+hlen:   vz      1               header length after the lead
+#switch ct
+#case 0
+        b       20              header checksum
+#case 1
+        b       32              header checksum
+#case 2
+        b       64              header checksum
+#default
+        b       16              header checksum
+#end
+#set    hend = ^@ + hlen
+        :--- preface ---
+#switch ct
+#case 0
+        b       20              data checksum
+#case 1
+        b       32              data checksum
+#case 2
+        b       64              data checksum
+#default
+        b       16              data checksum
+#end
+fl:     vz      1               flags (1 data streams, 2 optional elements, 4 uncompressed source)
+        vz      1               compression type (0 none, 2 zstd)
+#if fl & 2
+nopt:   vz      1               optional elements
+#repeat nopt
+        vz      1               element id
+olen:   vz      1               element length
+        +       olen
+#end
+#fi
+        :--- index ---
+ilen:   vz      1               index length
+cct:    vz      1               chunk checksum type
+#set    csz = 20
+#if cct == 1
+#set    csz = 32
+#elseif cct == 2
+#set    csz = 64
+#elseif cct == 3
+#set    csz = 16
+#fi
+nchk:   vz      1               chunks (including the dict)
+#if fl & 1
+        vz      1               dict stream
+#fi
+        b       csz             dict checksum
+#if fl & 4
+        b       csz             uncompressed dict checksum
+#fi
+dlen:   vz      1               dict length
+        vz      1               uncompressed dict length
+#set    total = dlen
+#repeat "nchk - 1"
+        :--- chunk ---
+#if fl & 1
+        vz      1               stream
+#fi
+        b       csz             checksum
+#if fl & 4
+        b       csz             uncompressed checksum
+#fi
+clen:   vz      1               length
+        vz      1               uncompressed length
+#set    total = total + clen
+#end
+        vz      1               signatures (0)
+        .       hend
+        =x      hend            data start
+        =       total           dict and chunks, bytes

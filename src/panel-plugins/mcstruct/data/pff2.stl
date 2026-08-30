@@ -1,0 +1,49 @@
+STL 5.00
+;
+;   GRUB2 font (PFF2): sections up to DATA, and the character index.
+;   After kaitai_struct_formats font/grub2_font.ksy.
+;
+
+/PFF2
+#endian big
+#if @d.le != 'FILE'
+        :ERROR!!! no PFF2 signature at this offset
+#fi
+        c       12              magic (FILE, 4, PFF2)
+#repeat while ^@ + 8 <= $size && @d != "DATA"
+        :--- section ---
+#switch @d
+#case "NAME", "FAMI", "WEIG", "SLAN"
+        c       4               type
+slen:   u32     1               length
+        sc      slen            text
+#case "CHIX"
+        c       4               type
+slen:   u32     1               length
+        *       "slen / 9"      _PFF2_char
+#default
+        c       4               type
+slen:   u32     1               length
+        u16     1               value
+        +       "slen - 2"
+#end
+#end
+        c       4               type
+        u32     1               length (bitmap data follows)
+
+/_PFF2_char
+        u32     1               code point
+        t8      `pff2_char_flags  flags
+        j32     _PFF2_glyph=@   definition offset
+
+/_PFF2_glyph
+#endian big
+w:      u16     1               width
+h:      u16     1               height
+        i16     1               x offset
+        i16     1               y offset
+        i16     1               device width
+        +       "(w * h + 7) / 8"       bitmap
+
+/`pff2_char_flags
+0x03    0x00    storage: uncompressed

@@ -1,0 +1,34 @@
+STL 5.00
+;
+;   LUKS1 partition header (592 bytes), big endian.
+;   After kaitai_struct_formats filesystem/luks.ksy.
+;
+
+/LUKS
+#if @d.le != 'LUKS'
+        :ERROR!!! no LUKS signature at this offset
+#fi
+#endian big
+        b       6               magic
+        u16     1               version
+        c       32              cipher name
+        c       32              cipher mode
+        c       32              hash
+        u32     1               payload offset, sectors
+        u32     1               master key bytes
+        b       20              master key checksum
+        b       32              master key salt
+        u32     1               master key iterations
+        c       40              uuid
+        *       8       _LUKS_slot
+
+/_LUKS_slot
+        u32     'luks_slot      state
+        u32     1               iterations
+        b       32              salt
+        u32     1               key material sector
+        u32     1               anti-forensic stripes
+
+/'luks_slot
+0x0000DEAD      disabled
+0x00AC71F3      enabled

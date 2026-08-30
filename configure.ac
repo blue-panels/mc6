@@ -605,6 +605,25 @@ AC_CHECK_HEADERS([magic.h], [
 AC_SUBST([LIBMAGIC_LIBS])
 AC_SUBST([LIBMAGIC_CFLAGS])
 
+dnl Optional zlib: mcstruct inflates compressed blocks for "via call('inflate')"
+have_zlib=no
+ZLIB_LIBS=""
+AC_CHECK_HEADERS([zlib.h], [
+    mc_saved_LIBS="$LIBS"
+    LIBS="$LIBS -lz"
+    AC_MSG_CHECKING([for inflateInit_ in -lz])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <zlib.h>]],
+                                    [[z_stream z; memset (&z, 0, sizeof (z));
+                                      inflateInit (&z); inflateEnd (&z);]])],
+        [AC_MSG_RESULT([yes])
+         AC_DEFINE([HAVE_ZLIB], [1], [Define if zlib is available])
+         ZLIB_LIBS="-lz"
+         have_zlib=yes],
+        [AC_MSG_RESULT([no])])
+    LIBS="$mc_saved_LIBS"
+])
+AC_SUBST([ZLIB_LIBS])
+
 AC_PATH_PROG([CHAFA], [chafa])
 AM_CONDITIONAL([ENABLE_LUA_CHAFA],
                [test x"$have_lua_plugin" = xyes && test -n "$CHAFA" && test x"$CHAFA" != xno])
@@ -1162,6 +1181,7 @@ src/filemanager/Makefile
 src/panel-plugins/Makefile
 src/panel-plugins/hello/Makefile
 src/panel-plugins/panelize/Makefile
+src/panel-plugins/mcstruct/Makefile
 src/panel-plugins/samba/Makefile
 src/panel-plugins/ftp/Makefile
 src/panel-plugins/systemd/Makefile
@@ -1286,6 +1306,7 @@ tests/src/vfs/extfs/helpers-list/misc/Makefile
 tests/src/panel-plugins/Makefile
 tests/src/panel-plugins/ftp/Makefile
 tests/src/panel-plugins/arcmc/Makefile
+tests/src/panel-plugins/mcstruct/Makefile
 tests/src/panel-plugins/samba/Makefile
 tests/src/panel-plugins/docker/Makefile
 tests/src/panel-plugins/mongo/Makefile

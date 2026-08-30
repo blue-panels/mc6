@@ -1,0 +1,32 @@
+STL 5.00
+;
+;   hashcat .hccapx WPA handshake records, 393 bytes each.
+;   After kaitai_struct_formats network/hccapx.ksy.
+;
+
+/HCCAPX
+#repeat while ^@ + 393 <= $size
+        :--- record ---
+        c       4               magic (HCPX)
+        u32     1               version
+        t8      `hccapx_mp      message pair
+elen:   u8      1               essid length
+        c       32              essid (padded)
+        u8      'hccap_keyver   key version
+        b       16              key mic
+        b       6               ap mac
+        b       32              ap nonce
+        b       6               station mac
+        b       32              station nonce
+        u16     1               eapol length
+        b       256             eapol (padded)
+#end
+
+/`hccapx_mp
+0x80            ignore replay counter
+0x7F    0x7F    message pair bits
+
+/'hccap_keyver
+1       WPA (HMAC-MD5)
+2       WPA2 (HMAC-SHA1)
+3       WPA2 (AES-CMAC)

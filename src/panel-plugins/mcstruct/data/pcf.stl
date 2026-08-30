@@ -1,0 +1,48 @@
+STL 5.00
+;
+;   X11 PCF font: table of contents; Enter on a table opens its header.
+;   After kaitai_struct_formats font/pcf_font.ksy.
+;
+
+/PCF
+#if @d != 0x70636601
+        :ERROR!!! no PCF signature at this offset
+#fi
+        c       4               magic
+n:      u32     1               tables
+        *       n       _PCF_table
+
+/_PCF_table
+        u32     'pcf_table      type
+        t32     `pcf_format     format
+        u32     1               length
+        j32     _PCF_body=@     offset
+
+/_PCF_body
+        t32     `pcf_format     format
+        u32     1               count (properties / glyphs / entries)
+
+/'pcf_table
+0x001   properties
+0x002   accelerators
+0x004   metrics
+0x008   bitmaps
+0x010   ink metrics
+0x020   bdf encodings
+0x040   swidths
+0x080   glyph names
+0x100   bdf accelerators
+
+/`pcf_format
+0x0000000F      0x00000000      default format
+0x0000000F      0x00000002      inkbounds
+0x0000000F      0x00000001      accel w/ inkbounds
+0x0000000F      0x00000004      compressed metrics
+0x00000004      big endian bytes
+0x00000008      big endian bits
+0x00000003      0x00000003      glyph pad 8 bytes
+0x00000003      0x00000002      glyph pad 4 bytes
+0x00000003      0x00000001      glyph pad 2 bytes
+0x00000030      0x00000030      scan unit 8 bytes
+0x00000030      0x00000020      scan unit 4 bytes
+0x00000030      0x00000010      scan unit 2 bytes

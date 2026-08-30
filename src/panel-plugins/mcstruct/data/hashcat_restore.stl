@@ -1,0 +1,18 @@
+STL 5.00
+;
+;   hashcat .restore file (x86-64 layout) with its LF-terminated arguments.
+;   After kaitai_struct_formats log/hashcat_restore.ksy.
+;
+
+/HASHCAT_RESTORE
+        u32     1               version
+        sc      256             working directory
+        u32     1               dictionaries position
+        u32     1               masks position
+        b       4               padding
+        u64     1               restore point
+argc:   u32     1               arguments
+        b       12              padding
+#repeat argc
+        sc.0a   0               argument
+#end

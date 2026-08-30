@@ -1,0 +1,50 @@
+STL 5.00
+;
+;   Android sparse image: file header and chunk headers.
+;   After kaitai_struct_formats archive/android_sparse.ksy.
+;
+
+/SPARSE
+#if @d != 0xED26FF3A
+        :ERROR!!! no sparse image signature at this offset
+#fi
+        d       1               magic
+        u16     1               major version (1)
+        u16     1               minor version
+hlen:   u16     1               file header size
+chlen:  u16     1               chunk header size
+bsz:    u32     1               block size
+        u32     1               blocks
+nchunk: u32     1               chunks
+        d       1               image checksum
+        .       hlen
+#repeat nchunk
+        :--- chunk ---
+ctype:  u16     'sparse_chunk   type
+        u16     1               reserved
+cblk:   u32     1               blocks
+clen:   u32     1               chunk length (header + body)
+#set    body = clen - chlen
+#switch ctype
+#case 0xCAC1
+        check   "body == bsz * cblk"    length check
+#case 0xCAC2, 0xCAC4
+        check   "body == 4"     length check
+#case 0xCAC3
+        check   "body == 0"     length check
+#end
+#switch ctype
+#case 0xCAC2
+        d       1               fill value
+#case 0xCAC4
+        d       1               crc32
+#default
+        +       body
+#end
+#end
+
+/'sparse_chunk
+0xCAC1  raw
+0xCAC2  fill
+0xCAC3  don't care
+0xCAC4  crc32
