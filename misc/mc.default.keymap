@@ -557,6 +557,8 @@ PageDown = pgdn
 Top = ctrl-home
 Bottom = ctrl-end
 Clear = ctrl-l
+# The screen and the scrollback both, where Clear keeps the scrollback.
+ClearAll = ctrl-shift-l; ctrl-alt-l
 # The output cut down to the rows that match the mark, or the word under the cursor.
 FilterWord = alt-shift-s
 FilterToggle = alt-s

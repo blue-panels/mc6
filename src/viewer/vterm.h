@@ -112,6 +112,9 @@ mcview_terminal_buffer_t *mcview_vterm_compose_scrollback (const mcview_vterm_t 
 void mcview_vterm_reset (mcview_vterm_t *vt);
 // A page of newlines: the screen goes into the history, the last @keep rows stay at the bottom.
 void mcview_vterm_page_up (mcview_vterm_t *vt, int keep);
+/* Drop the history. What is on the screen stays, and so does the count of the rows
+   that ever left it: what is pointed at by number is pointed at still. */
+void mcview_vterm_clear_history (mcview_vterm_t *vt);
 const char *mcview_vterm_osc7_raw (const mcview_vterm_t *vt);
 guint mcview_vterm_osc7_generation (const mcview_vterm_t *vt);
 /* The last semantic prompt mark (OSC 133) as it arrived, and a counter of them. */

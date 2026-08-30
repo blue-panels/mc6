@@ -82,6 +82,7 @@ enum
     CK_BackSpace,
     CK_Redo,
     CK_Clear,
+    CK_ClearAll,
     CK_Menu,
     CK_MenuLastSelected,
     CK_UserMenu,

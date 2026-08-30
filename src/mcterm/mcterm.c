@@ -1423,6 +1423,35 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A page of newlines: the screen goes into the history, the prompt line stays.
+   With @whole_buffer the history goes too, and nothing is left to scroll back to. */
+static void
+mcterm_clear_screen (WMcTerm *t, gboolean whole_buffer)
+{
+    const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
+    const int cursor_row = mcview_vterm_cursor_row (t->vterm);
+    const gint64 first_row = (t->shell_at_prompt && t->input_start_valid)
+        ? MAX (t->input_start_row - scrolled, 0)
+        : cursor_row;
+
+    mcterm_follow_end (t);
+    if (t->sel.anchored)
+        mcterm_sel_clear (&t->sel);
+
+    mcview_vterm_page_up (t->vterm, (int) (cursor_row - first_row) + 1);
+    if (whole_buffer)
+        mcview_vterm_clear_history (t->vterm);
+
+    // The line moved down with its rows.
+    t->input_start_row += mcview_vterm_scrolled_rows (t->vterm) - scrolled
+        + (mcview_vterm_cursor_row (t->vterm) - cursor_row);
+    t->cursor_valid = FALSE;
+    widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* What to filter by: the marked text when it is of one row, and the word under
    the cursor when there is no such mark. NULL when neither says anything. */
 static char *
@@ -1976,29 +2005,12 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 return MSG_HANDLED;
 
             case CK_Clear:
-            {
-                // A page of newlines: the screen goes into the history, the prompt line stays.
-                const gint64 scrolled = mcview_vterm_scrolled_rows (t->vterm);
-                const int cursor_row = mcview_vterm_cursor_row (t->vterm);
-                const gint64 first_row = (t->shell_at_prompt && t->input_start_valid)
-                    ? MAX (t->input_start_row - scrolled, 0)
-                    : cursor_row;
-
+            case CK_ClearAll:
                 // A panel over the terminal: the key is someone else's.
                 if (!t->scroll_allowed)
                     break;
-                mcterm_follow_end (t);
-                if (t->sel.anchored)
-                    mcterm_sel_clear (&t->sel);
-                mcview_vterm_page_up (t->vterm, (int) (cursor_row - first_row) + 1);
-                // The line moved down with its rows.
-                t->input_start_row += mcview_vterm_scrolled_rows (t->vterm) - scrolled
-                    + (mcview_vterm_cursor_row (t->vterm) - cursor_row);
-                t->cursor_valid = FALSE;
-                widget_draw (WIDGET (t));
-                send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+                mcterm_clear_screen (t, command == CK_ClearAll);
                 return MSG_HANDLED;
-            }
 
             case CK_FilterWord:
                 if (!t->scroll_allowed)
@@ -2390,6 +2402,7 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_Top:
     case CK_Bottom:
     case CK_Clear:
+    case CK_ClearAll:
         // Looking back at the output does not need the focus, typing goes on.
         return command;
 
