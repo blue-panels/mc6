@@ -1,0 +1,39 @@
+STL 5.00
+;
+;   SSH public key blob (the base64 part of an authorized_keys line,
+;   decoded): RSA, DSA, ECDSA and Ed25519.
+;   After kaitai_struct_formats security/ssh_public_key.ksy. Under #endian big
+;   a "quoted" literal matches the bytes as read, so "ssh-" is the key name.
+;
+
+/SSH_PUBKEY
+#endian big
+klen:   u32     1               key type length
+kt:     c       klen            key type
+#if @u32(^kt) == "ssh-" && (@u32(^kt + 4) >> 8) == "rsa"
+        :--- RSA ---
+elen:   u32     1               e length
+        b       elen            e
+nlen:   u32     1               n length
+        b       nlen            n
+#elseif @u32(^kt) == "ssh-" && (@u32(^kt + 4) >> 8) == "dss"
+        :--- DSA ---
+plen:   u32     1               p length
+        b       plen            p
+qlen:   u32     1               q length
+        b       qlen            q
+glen:   u32     1               g length
+        b       glen            g
+ylen:   u32     1               y length
+        b       ylen            y
+#elseif @u32(^kt) == "ecds"
+        :--- ECDSA ---
+clen:   u32     1               curve name length
+        c       clen            curve name
+qlen:   u32     1               point length
+        b       qlen            point (0x04, x, y)
+#elseif @u32(^kt) == "ssh-" && @u32(^kt + 4) == "ed25"
+        :--- Ed25519 ---
+plen:   u32     1               public key length
+        b       plen            public key
+#fi

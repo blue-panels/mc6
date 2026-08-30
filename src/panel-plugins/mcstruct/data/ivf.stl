@@ -1,0 +1,26 @@
+STL 5.00
+;
+;   Duck IVF (VP8 / VP9 / AV1) container: header and frame headers.
+;   After kaitai_struct_formats media/vp8_duck_ivf.ksy.
+;
+
+/IVF
+#if @d != 'DKIF'
+        :ERROR!!! no DKIF signature at this offset
+#fi
+        c       4               magic
+        u16     1               version
+hlen:   u16     1               header length
+        c       4               codec
+        u16     1               width
+        u16     1               height
+        u32     1               frame rate
+        u32     1               time scale
+nfrm:   u32     1               frames
+        u32     1               unused
+        .       hlen
+#repeat while ^@ + 12 <= $size
+flen:   u32     1               frame length
+        u64     1               timestamp
+        +       flen
+#end

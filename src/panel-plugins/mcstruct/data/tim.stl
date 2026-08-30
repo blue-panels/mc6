@@ -1,0 +1,33 @@
+STL 5.00
+;
+;   PlayStation TIM image: flags, the CLUT and the pixel data block.
+;   After kaitai_struct_formats image/psx_tim.ksy.
+;
+
+/TIM
+#if @d != 0x10
+        :ERROR!!! no TIM signature at this offset
+#fi
+        d       1               magic
+flags:  t32     `tim_flags      flags
+#if flags & 8
+        :--- CLUT ---
+        *       1       _TIM_block
+#fi
+        :--- image ---
+        *       1       _TIM_block
+
+/_TIM_block
+len:    u32     1               block length
+        u16     1               origin x
+        u16     1               origin y
+        u16     1               width (16-bit units)
+        u16     1               height
+        +       "len - 12"
+
+/`tim_flags
+0x03    0x00    4 bits per pixel
+0x03    0x01    8 bits per pixel
+0x03    0x02    16 bits per pixel
+0x03    0x03    24 bits per pixel
+0x08            has CLUT

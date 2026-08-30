@@ -1,0 +1,71 @@
+STL 5.00
+;
+;   Quake MDL model: header, skins, texture coordinates, triangles and
+;   frames. After kaitai_struct_formats game/quake_mdl.ksy.
+;
+
+/MDL
+#if @d != 'IDPO'
+        :ERROR!!! no IDPO signature at this offset
+#fi
+        c       4               ident
+        i32     1               version (6)
+        f32     3               scale
+        f32     3               origin
+        f32     1               radius
+        f32     3               eye position
+nskin:  i32     1               skins
+sw:     i32     1               skin width
+sh:     i32     1               skin height
+nvert:  i32     1               vertices
+ntri:   i32     1               triangles
+nfrm:   i32     1               frames
+        i32     'mdl_sync       sync type
+        i32     1               flags
+        f32     1               size
+#set    skinsz = sw * sh
+#repeat nskin
+        :--- skin ---
+grp:    i32     1               group
+#if grp == 0
+        +       skinsz
+#else
+nsf:    u32     1               frames
+        f32     nsf             frame times
+        +       "nsf * skinsz"
+#fi
+#end
+        *       nvert   :mdl_texcoord
+        *       ntri    :mdl_triangle
+#repeat nfrm
+        :--- frame ---
+ftype:  i32     1               type (0 = simple, else group of N)
+#set    nsimple = 1
+#if ftype != 0
+        b       4               bbox min
+        b       4               bbox max
+        f32     ftype           times
+#set    nsimple = ftype
+#fi
+#repeat nsimple
+        b       4               bbox min
+        b       4               bbox max
+        c       16              name
+        +       "nvert * 4"
+#end
+#end
+
+/:mdl_texcoord
+i32     1       on seam
+i32     1       s
+i32     1       t
+
+/:mdl_triangle
+i32     1       faces front
+i32     1       vertex 0
+i32     1       vertex 1
+i32     1       vertex 2
+
+/'mdl_sync
+0       sync
+1       random

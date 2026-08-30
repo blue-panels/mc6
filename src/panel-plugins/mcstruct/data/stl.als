@@ -28,3 +28,16 @@ utmp.stl: *.wtmp *.btmp
 midi.stl: *.mid *.midi *.smf @0:4D546864
 cramfs.stl: @0:453DCD28
 lzh.stl: *.lha @2:2D6C68
+voc.stl: @0:437265617469766520566F6963652046696C65
+ivf.stl: @0:444B4946
+tim.stl: @0:10000000
+xwd.stl: *.xwd
+mdl.stl: @0:4944504F
+trx.stl: @0:48445230
+sparse.stl: *.simg @0:3AFF26ED
+android_img.stl: *.img @0:414E44524F494421
+hashcat_restore.stl: *.restore
+aix_utmp.stl:
+ether.stl: *.eth *.frame
+dns.stl: *.dns
+ssh_pubkey.stl: *.sshkey

@@ -1,0 +1,31 @@
+STL 5.00
+;
+;   Broadcom TRX firmware image: header and the tail record.
+;   After kaitai_struct_formats firmware/broadcom_trx.ksy (GPL-2.0-or-later).
+;
+
+/TRX
+#if @d != 'HDR0'
+        :ERROR!!! no HDR0 signature at this offset
+#fi
+        c       4               magic
+        u32     1               length
+        d       1               crc32
+        u16     1               version
+        t16     `trx_flags      flags
+        u32     4               partition offsets (0 = none)
+        :--- tail ---
+        .       "$size - 64"
+        b       4               version (major.minor.patch.tweak)
+        sc      12              product id
+        *       4       :trx_hw
+        b       32              reserved
+
+/:trx_hw
+u8      1       min major
+u8      1       min minor
+u8      1       max major
+u8      1       max minor
+
+/`trx_flags
+0x0001          flag 0

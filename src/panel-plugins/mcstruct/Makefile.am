@@ -73,4 +73,17 @@ dist_mcstructdata_DATA = \
 	data/utmp.stl \
 	data/midi.stl \
 	data/cramfs.stl \
-	data/lzh.stl
+	data/lzh.stl \
+	data/voc.stl \
+	data/ivf.stl \
+	data/tim.stl \
+	data/xwd.stl \
+	data/mdl.stl \
+	data/trx.stl \
+	data/sparse.stl \
+	data/android_img.stl \
+	data/hashcat_restore.stl \
+	data/aix_utmp.stl \
+	data/ether.stl \
+	data/dns.stl \
+	data/ssh_pubkey.stl
