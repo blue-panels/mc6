@@ -115,3 +115,7 @@ wmf.stl: @0:D7CDC69A
 ext2.stl: @1080:53EF
 iso9660.stl: @32769:4344303031
 regf.stl: @0:72656766
+rtcp.stl:
+pcf.stl: *.pcf @0:01666370
+ppi.stl:
+pyc27.stl: *.pyc @0:03F30D0A
