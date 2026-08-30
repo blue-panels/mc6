@@ -13,21 +13,13 @@ vsz:    u32     1               value size
         w       1               type: numeric
         u16     'res_type       type id
 #else
-        :string type (UTF-16 characters)
-#repeat while @w != 0
-        w       1               char
-#end
-        w       1               terminator
+        sz16    0               type
 #fi
 #if @w == 0xFFFF
         w       1               name: numeric
         u16     1               name id
 #else
-        :string name (UTF-16 characters)
-#repeat while @w != 0
-        w       1               char
-#end
-        w       1               terminator
+        sz16    0               name
 #fi
         +       "(4 - ^@ % 4) % 4"
         u32     1               format version

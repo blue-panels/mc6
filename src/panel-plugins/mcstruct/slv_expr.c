@@ -903,12 +903,14 @@ slv_expr_eval (const slv_expr_t *e, const slv_eval_ctx_t *ctx, gint64 *out, char
 
             if (lab != NULL && lab->text != NULL)
             {
-                gsize tl = strlen (lab->text);
+                gsize tl = strlen (lab->text), bl = strlen (b->name);
                 gboolean same;
 
                 while (tl > 0 && (lab->text[tl - 1] == ' ' || lab->text[tl - 1] == '.'))
                     tl--;
-                same = tl == strlen (b->name) && memcmp (lab->text, b->name, tl) == 0;
+                while (bl > 0 && b->name[bl - 1] == ' ')
+                    bl--;
+                same = tl == bl && memcmp (lab->text, b->name, tl) == 0;
                 *out = e->op == SLV_EXPR_EQ ? same : !same;
                 return TRUE;
             }

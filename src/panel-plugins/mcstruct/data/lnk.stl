@@ -67,8 +67,13 @@ lif:    t32     `lnk_info_flags link info flags
         u32     1               volume id size
         u32     'lnk_drive      drive type
         d       1               drive serial number
-        u32     1               volume label offset
+vlo:    u32     1               volume label offset
+#if vlo == 0x14
+        u32     1               volume label offset (unicode)
+        sz16    0               volume label
+#else
         sc      0               volume label
+#fi
         sc      0               local base path
 #fi
         +       "liend - ^@"
