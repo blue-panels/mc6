@@ -1,0 +1,44 @@
+STL 5.00
+;
+;   GNU gettext .mo catalog: header, the original and translated string
+;   tables (Enter on an entry shows the string), the hash table.
+;   After kaitai_struct_formats database/gettext_mo.ksy.
+;
+
+/MO
+sig:    d       1               signature
+#if sig == 0x950412DE
+#endian little
+#elseif sig == 0xDE120495
+#endian big
+#else
+        :ERROR!!! no gettext .mo signature at this offset
+#fi
+        u16     1               minor version
+        u16     1               major version
+n:      u32     1               strings
+oofs:   u32     1               originals table offset
+tofs:   u32     1               translations table offset
+nhash:  u32     1               hash table size
+hofs:   u32     1               hash table offset
+        :--- originals ---
+        .       oofs
+        *       n       _MO_desc
+        :--- translations ---
+        .       tofs
+        *       n       _MO_desc
+#if nhash != 0
+        :--- hash table (index + 1, 0 = empty) ---
+        .       hofs
+        *       nhash   :mo_hash
+#fi
+
+/_MO_desc
+        u32     1               length
+        j32     _MO_string=@    offset
+
+/_MO_string
+        sc      0               string
+
+/:mo_hash
+u32             entry

@@ -1,0 +1,96 @@
+STL 5.00
+;
+;   Doom WAD: header and the lump directory. The typed lumps (THINGS,
+;   LINEDEFS, SIDEDEFS, VERTEXES, SECTORS) are separate structures: F3 at
+;   the lump offset. After kaitai_struct_formats game/doom_wad.ksy.
+;
+
+/WAD
+#if (@d >> 8) != 'WAD'
+        :ERROR!!! no WAD signature at this offset
+#fi
+        c       4               magic (IWAD / PWAD)
+n:      i32     1               lumps
+dir:    i32     1               directory offset
+        .       dir
+        *       n       _WAD_lump
+
+/_WAD_lump
+        j32     _WAD_raw=@      offset
+        i32     1               size
+        c       8               name
+
+/_WAD_raw
+        :lump data; apply THINGS / LINEDEFS / SIDEDEFS / VERTEXES / SECTORS with F3
+
+/THINGS
+#repeat while ^@ + 10 <= $size
+        *       1       :wad_thing
+#end
+
+/:wad_thing
+i16             x
+i16             y
+u16             angle
+u16             type
+t16     `wad_thing_flags  flags
+
+/`wad_thing_flags
+0x0001          skill 1-2
+0x0002          skill 3
+0x0004          skill 4-5
+0x0008          deaf
+0x0010          multiplayer only
+
+/LINEDEFS
+        *       "($size - ^@) / 14"     :wad_linedef
+
+/:wad_linedef
+u16             start vertex
+u16             end vertex
+t16     `wad_line_flags  flags
+u16             type
+u16             sector tag
+u16             right sidedef
+u16             left sidedef
+
+/`wad_line_flags
+0x0001          impassable
+0x0002          blocks monsters
+0x0004          two sided
+0x0008          upper unpegged
+0x0010          lower unpegged
+0x0020          secret
+0x0040          blocks sound
+0x0080          never on map
+0x0100          always on map
+
+/SIDEDEFS
+        *       "($size - ^@) / 30"     :wad_sidedef
+
+/:wad_sidedef
+i16             x offset
+i16             y offset
+c:8.8           upper texture
+c:8.8           lower texture
+c:8.8           middle texture
+i16             sector
+
+/VERTEXES
+        *       "($size - ^@) / 4"      :wad_vertex
+
+/:wad_vertex
+i16             x
+i16             y
+
+/SECTORS
+        *       "($size - ^@) / 26"     :wad_sector
+
+/:wad_sector
+i16             floor height
+i16             ceiling height
+c:8.8           floor flat
+c:8.8           ceiling flat
+i16             light
+u16             special
+u16             tag

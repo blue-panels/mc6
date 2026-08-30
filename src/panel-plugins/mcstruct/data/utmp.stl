@@ -1,0 +1,35 @@
+STL 5.00
+;
+;   glibc utmp / wtmp / btmp records, 384 bytes each (x86-64 layout).
+;   After kaitai_struct_formats log/glibc_utmp.ksy.
+;
+
+/UTMP
+#repeat while ^@ + 384 <= $size
+        :--- record ---
+        i32     'utmp_type      type
+        i32     1               pid
+        c       32              line
+        c       4               id
+        c       32              user
+        c       256             host
+        u16     1               exit termination
+        u16     1               exit status
+        i32     1               session
+        tu      1               time
+        i32     1               microseconds
+        b       16              address
+        b       20              reserved
+#end
+
+/'utmp_type
+0       empty
+1       run level
+2       boot time
+3       new time
+4       old time
+5       init process
+6       login process
+7       user process
+8       dead process
+9       accounting

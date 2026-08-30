@@ -1,0 +1,96 @@
+STL 5.00
+;
+;   Standard MIDI file: header and the event list of every track, with
+;   running status. After kaitai_struct_formats media/standard_midi_file.ksy.
+;
+
+/MIDI
+#endian big
+#if @d.le != 'MThd'
+        :ERROR!!! no MThd header at this offset
+#fi
+        c       4               magic
+hlen:   u32     1               header length
+        u16     'midi_format    format
+ntrk:   u16     1               tracks
+        i16     1               division (ticks per quarter, < 0: SMPTE)
+        .       "8 + hlen"
+#set    status = 0
+#repeat ntrk
+        :--- track ---
+        c       4               MTrk
+tlen:   u32     1               length
+#set    tend = ^@ + tlen
+#repeat while ^@ < tend
+        v       1               delta time
+#if @b & 0x80
+st:     u8      'midi_status    status
+#set    status = st
+#fi
+#if status == 0xFF
+        u8      'midi_meta      meta type
+mlen:   v       1               length
+        +       mlen
+#elseif status == 0xF0 || status == 0xF7
+slen:   v       1               sysex length
+        +       slen
+#elseif (status & 0xF0) == 0xC0
+        u8      1               program
+#elseif (status & 0xF0) == 0xD0
+        u8      1               channel pressure
+#elseif (status & 0xF0) == 0xB0
+        u8      'midi_cc        controller
+        u8      1               value
+#elseif (status & 0xF0) == 0xE0
+        u8      1               pitch bend low
+        u8      1               pitch bend high
+#else
+        u8      1               note
+        u8      1               velocity
+#fi
+#end
+#end
+
+/'midi_format
+0       single track
+1       multiple tracks, one song
+2       multiple songs
+
+/'midi_status
+0x80    0x8F    note off
+0x90    0x9F    note on
+0xA0    0xAF    polyphonic pressure
+0xB0    0xBF    controller
+0xC0    0xCF    program change
+0xD0    0xDF    channel pressure
+0xE0    0xEF    pitch bend
+0xF0    sysex
+0xF7    sysex escape
+0xFF    meta
+
+/'midi_meta
+0x00    sequence number
+0x01    text
+0x02    copyright
+0x03    track name
+0x04    instrument name
+0x05    lyrics
+0x06    marker
+0x07    cue point
+0x20    channel prefix
+0x2F    end of track
+0x51    tempo
+0x54    SMPTE offset
+0x58    time signature
+0x59    key signature
+0x7F    sequencer specific
+
+/'midi_cc
+0       bank select
+1       modulation
+7       volume
+10      pan
+11      expression
+64      sustain pedal
+121     reset controllers
+123     all notes off

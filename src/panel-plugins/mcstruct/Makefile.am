@@ -64,4 +64,13 @@ dist_mcstructdata_DATA = \
 	data/pcx.stl \
 	data/au.stl \
 	data/ines.stl \
-	data/gpt.stl
+	data/gpt.stl \
+	data/edid.stl \
+	data/id3v1.stl \
+	data/wad.stl \
+	data/pak.stl \
+	data/mo.stl \
+	data/utmp.stl \
+	data/midi.stl \
+	data/cramfs.stl \
+	data/lzh.stl

@@ -19,3 +19,12 @@ pcx.stl: @0:0A
 au.stl: *.snd @0:2E736E64
 ines.stl: @0:4E45531A
 gpt.stl: @512:4546492050415254
+edid.stl: *.bin @0:00FFFFFFFFFFFF00
+id3v1.stl: *.mp3
+wad.stl: @1:574144
+pak.stl: @0:5041434B
+mo.stl: *.gmo @0:DE120495 @0:950412DE
+utmp.stl: *.wtmp *.btmp
+midi.stl: *.mid *.midi *.smf @0:4D546864
+cramfs.stl: @0:453DCD28
+lzh.stl: *.lha @2:2D6C68
