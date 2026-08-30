@@ -73,3 +73,17 @@ tsm.stl: *.tsm @0:16D116D1
 op2.stl: *.op2 @0:234F504C5F494923
 vmdk.stl: @0:4B444D56
 zx_tap.stl: *.tap
+shell_items.stl:
+nt_mdt_pal.stl: *.pal @0:4E542D4D44542050616C6574746520
+vpp.stl: *.vpp_pc @0:CE0A895104
+websocket.stl:
+hccapx.stl: *.hccapx @0:48435058
+huawei_bootldr.stl: @0:3CD61ACE
+apm.stl: @512:504D
+ogg.stl: *.oga *.ogv *.opus *.spx @0:4F676753
+chrome_pak.stl: *.pak
+dime.stl:
+sudoers_ts.stl:
+mar.stl: @0:4D415231
+xar.stl: *.pkg @0:78617221
+gbr.stl: @20:47494D50

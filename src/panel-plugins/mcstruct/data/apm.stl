@@ -1,0 +1,45 @@
+STL 5.00
+;
+;   Apple partition map: entries of 512 bytes from sector 1 (open at
+;   offset 512). After kaitai_struct_formats filesystem/apm_partition_table.ksy.
+;
+
+/APM
+#endian big
+#if @w != "PM"
+        :ERROR!!! no PM signature at this offset
+#fi
+#set    n = @u32(^@ + 4)
+#repeat n
+        *       1       _APM_entry
+#end
+
+/_APM_entry
+        c       2               signature
+        b       2               reserved
+        u32     1               partitions
+        u32     1               partition start, sectors
+        u32     1               partition size, sectors
+        sc      32              name
+        sc      32              type
+        u32     1               data start
+        u32     1               data size
+        t32     `apm_status     status
+        u32     1               boot code start
+        u32     1               boot code size
+        d       1               boot loader address
+        b       4               reserved
+        d       1               boot code entry
+        b       4               reserved
+        d       1               boot code checksum
+        sc      16              processor type
+        +       376             reserved
+
+/`apm_status
+0x00000001      valid
+0x00000002      allocated
+0x00000004      in use
+0x00000008      bootable
+0x00000010      readable
+0x00000020      writable
+0x00000040      boot code position independent

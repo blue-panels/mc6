@@ -118,4 +118,18 @@ dist_mcstructdata_DATA = \
 	data/tsm.stl \
 	data/op2.stl \
 	data/vmdk.stl \
-	data/zx_tap.stl
+	data/zx_tap.stl \
+	data/shell_items.stl \
+	data/nt_mdt_pal.stl \
+	data/vpp.stl \
+	data/websocket.stl \
+	data/hccapx.stl \
+	data/huawei_bootldr.stl \
+	data/apm.stl \
+	data/ogg.stl \
+	data/chrome_pak.stl \
+	data/dime.stl \
+	data/sudoers_ts.stl \
+	data/mar.stl \
+	data/xar.stl \
+	data/gbr.stl

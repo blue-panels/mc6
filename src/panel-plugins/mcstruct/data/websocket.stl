@@ -1,0 +1,44 @@
+STL 5.00
+;
+;   WebSocket frames (RFC 6455): a message up to its final frame.
+;   After kaitai_struct_formats network/websocket.ksy.
+;
+
+/WEBSOCKET
+#endian big
+#set    fin = 0
+#repeat while fin == 0 && ^@ + 2 <= $size
+        :--- frame ---
+b0:     t8      `ws_b0          fin / rsv / opcode
+b1:     t8      `ws_b1          mask / length
+#set    fin = b0 & 0x80
+#set    plen = b1 & 0x7F
+#if plen == 126
+elen:   u16     1               extended length
+#set    plen = elen
+#elseif plen == 127
+elen:   u64     1               extended length
+#set    plen = elen
+#fi
+#if b1 & 0x80
+        d       1               mask key
+#fi
+        +       plen            payload
+#end
+
+/`ws_b0
+0x80            final fragment
+0x40            rsv1
+0x20            rsv2
+0x10            rsv3
+0x0F    0x00    continuation
+0x0F    0x01    text
+0x0F    0x02    binary
+0x0F    0x08    close
+0x0F    0x09    ping
+0x0F    0x0A    pong
+
+/`ws_b1
+0x80            masked
+0x7F    126     length in the next 2 bytes
+0x7F    127     length in the next 8 bytes

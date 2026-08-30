@@ -1,0 +1,58 @@
+STL 5.00
+;
+;   Mozilla archive (MAR1): header, signatures, additional sections and
+;   the index. After kaitai_struct_formats archive/mozilla_mar.ksy.
+;
+
+/MAR
+#endian big
+#if @d.le != 'MAR1'
+        :ERROR!!! no MAR1 signature at this offset
+#fi
+        c       4               magic
+iofs:   u32     1               index offset
+        u64     1               file size
+nsig:   u32     1               signatures
+#repeat nsig
+        u32     'mar_sigalg     algorithm
+slen:   u32     1               signature length
+        +       slen
+#end
+nadd:   u32     1               additional sections
+#repeat nadd
+blen:   u32     1               block length
+bid:    u32     'mar_block      block id
+#if bid == 1
+        sc      64              channel name
+        sc      32              product version
+#else
+        +       "blen - 8"
+#fi
+#end
+        .       iofs
+ilen:   u32     1               index length
+#set    iend = ^@ + ilen
+#repeat while ^@ + 13 <= iend
+        u32     1               content offset
+        u32     1               content length
+        t32     `mar_flags      flags
+        sc      0               file name
+#end
+
+/'mar_sigalg
+1       RSA PKCS1 SHA1
+2       RSA PKCS1 SHA384
+
+/'mar_block
+1       product information
+
+/`mar_flags
+0000400         owner read
+0000200         owner write
+0000100         owner exec
+0000040         group read
+0000020         group write
+0000010         group exec
+0000004         other read
+0000002         other write
+0000001         other exec

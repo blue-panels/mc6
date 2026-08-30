@@ -1,0 +1,28 @@
+STL 5.00
+;
+;   Ogg container pages. After kaitai_struct_formats media/ogg.ksy.
+;
+
+/OGG
+#repeat while ^@ + 27 <= $size && @d == 'OggS'
+        :--- page ---
+        c       4               capture pattern
+        u8      1               version
+        t8      `ogg_flags      header type
+        u64     1               granule position
+        d       1               bitstream serial
+        u32     1               page sequence
+        d       1               crc32
+nseg:   u8      1               segments
+#set    total = 0
+#repeat nseg
+sl:     u8      1               segment length
+#set    total = total + sl
+#end
+        +       total           page body
+#end
+
+/`ogg_flags
+0x01            continued packet
+0x02            first page of the stream
+0x04            last page of the stream

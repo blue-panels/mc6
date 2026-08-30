@@ -1,0 +1,41 @@
+STL 5.00
+;
+;   NT-MDT palette file: metadata records and the color tables.
+;   After kaitai_struct_formats scientific/nt_mdt/nt_mdt_pal.ksy (Unlicense).
+;
+
+/NT_MDT_PAL
+#endian big
+        c       26              signature
+n:      u32     1               palettes
+        *       n       _MDT_pal_meta
+        u8      1               unknown
+#set    i = 0
+#repeat n
+        :--- color table ---
+#set    cc = @u8(30 + i * 16 + 8) + (@u8(30 + i * 16 + 9) << 8)
+#set    ns = @u16(30 + i * 16 + 14)
+        u8      1               size 1
+        u8      1               unknown
+        s16     "ns / 2"        title
+        u16     1               unknown
+        *       "cc - 1"        :mdt_color
+#set    i = i + 1
+#end
+
+/_MDT_pal_meta
+        b       3               unknown
+        b       2               unknown
+        u8      1               unknown
+        u8      1               unknown
+        u16.le  1               colors
+        b       2               unknown
+        u8      1               unknown
+        b       2               unknown
+        u16     1               name size, bytes
+
+/:mdt_color
+u8      1       red
+u8      1       unknown
+u8      1       blue
+u8      1       green

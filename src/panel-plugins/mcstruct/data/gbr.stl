@@ -1,0 +1,22 @@
+STL 5.00
+;
+;   GIMP brush (.gbr) version 2 header, big endian.
+;   After kaitai_struct_formats image/gimp_brush.ksy.
+;
+
+/GBR
+#endian big
+hlen:   u32     1               header length
+        u32     1               version (2)
+w:      u32     1               width
+h:      u32     1               height
+bpp:    u32     'gbr_depth      bytes per pixel
+        c       4               magic (GIMP)
+        u32     1               spacing
+        sc      "hlen - 28"     brush name
+        .       hlen
+        +       "w * h * bpp"   pixels
+
+/'gbr_depth
+1       grayscale
+4       RGBA

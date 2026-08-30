@@ -1,0 +1,35 @@
+STL 5.00
+;
+;   Chromium .pak resource bundle (versions 4 and 5): resource table and
+;   aliases. After kaitai_struct_formats serialization/chrome_pak.ksy.
+;
+
+/CHROME_PAK
+ver:    u32     1               version (4 or 5)
+#if ver == 4
+n:      u32     1               resources
+        u8      'pak_enc        encoding
+#set    na = 0
+#elseif ver == 5
+        u8      'pak_enc        encoding
+        b       3               padding
+n:      u16     1               resources
+na:     u16     1               aliases
+#else
+        :ERROR!!! unknown pak version
+#fi
+        *       "n + 1" :pak_resource
+        *       na      :pak_alias
+
+/:pak_resource
+u16     1       id
+u32     1       offset
+
+/:pak_alias
+u16     1       id
+u16     1       resource index
+
+/'pak_enc
+0       binary
+1       UTF-8
+2       UTF-16

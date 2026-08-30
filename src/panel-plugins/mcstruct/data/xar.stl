@@ -1,0 +1,29 @@
+STL 5.00
+;
+;   xar archive header; the table of contents after it is zlib
+;   compressed XML and is not decoded here.
+;   After kaitai_struct_formats archive/xar.ksy.
+;
+
+/XAR
+#endian big
+#if @d.le != 'xar!'
+        :ERROR!!! no xar! signature at this offset
+#fi
+        c       4               magic
+hlen:   u16     1               header length
+        u16     1               version (1)
+tlen:   u64     1               toc compressed length
+        u64     1               toc uncompressed length
+calg:   u32     'xar_cksum      checksum algorithm
+#if calg == 3 && hlen >= 32
+        sc      "hlen - 28"     checksum algorithm name
+#fi
+        .       hlen
+        +       tlen            toc (zlib)
+
+/'xar_cksum
+0       none
+1       SHA-1
+2       MD5
+3       other (named)

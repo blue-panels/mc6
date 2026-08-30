@@ -1,0 +1,38 @@
+STL 5.00
+;
+;   DIME (Direct Internet Message Encapsulation) records, big endian.
+;   After kaitai_struct_formats network/dime_message.ksy.
+;
+
+/DIME
+#endian big
+#repeat while ^@ + 12 <= $size
+        :--- record ---
+        t8      `dime_b0        version / flags
+        t8      `dime_b1        type format / reserved
+olen:   u16     1               options length
+ilen:   u16     1               id length
+tlen:   u16     1               type length
+dlen:   u32     1               data length
+        +       olen            options
+        +       "(4 - ^@ % 4) % 4"
+        c       ilen            id
+        +       "(4 - ^@ % 4) % 4"
+        c       tlen            type
+        +       "(4 - ^@ % 4) % 4"
+        +       dlen            data
+        +       "(4 - ^@ % 4) % 4"
+#end
+
+/`dime_b0
+0xF8    0xF8    version bits
+0x04            first record
+0x02            last record
+0x01            chunk record
+
+/`dime_b1
+0xF0    0x00    type: unchanged
+0xF0    0x10    type: media type
+0xF0    0x20    type: absolute URI
+0xF0    0x30    type: unknown
+0xF0    0x40    type: none

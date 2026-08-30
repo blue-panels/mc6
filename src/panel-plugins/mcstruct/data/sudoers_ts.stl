@@ -1,0 +1,39 @@
+STL 5.00
+;
+;   sudo time stamp records (/run/sudo/ts), versions 1 and 2.
+;   After kaitai_struct_formats log/sudoers_ts.ksy.
+;
+
+/SUDOERS_TS
+#repeat while ^@ + 4 <= $size
+        :--- record ---
+ver:    u16     1               version
+rlen:   u16     1               record length
+#set    rend = ^@ - 4 + rlen
+type:   u16     'sudo_ts_type   type
+        t16     `sudo_ts_flags  flags
+        u32     1               auth uid
+        u32     1               session id
+#if ver == 2
+        i64     1               start time, seconds
+        i64     1               start time, nanoseconds
+#fi
+        i64     1               time stamp, seconds
+        i64     1               time stamp, nanoseconds
+#if type == 2
+        u32     1               tty device
+#elseif type == 3
+        u32     1               parent pid
+#fi
+        +       "rend - ^@"
+#end
+
+/'sudo_ts_type
+1       global
+2       tty
+3       ppid
+4       lock exclusive
+
+/`sudo_ts_flags
+0x0001          disabled
+0x0002          any uid
