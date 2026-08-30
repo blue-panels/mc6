@@ -10,6 +10,7 @@ RUN apt-get update \
         check rsync file openssh-client curl sshpass smbclient ca-certificates \
         zsh libarchive-tools procps unzip zip tmux \
         valgrind \
+        liblua5.4-dev \
         locales \
     && sed -i 's/^# *\(en_US.UTF-8\|ru_RU.UTF-8\|ru_RU.KOI8-R\)/\1/' /etc/locale.gen \
     && locale-gen \

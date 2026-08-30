@@ -36,6 +36,7 @@ leaves nothing in the working tree and reuses its object files between runs.
       editor/, terminal/    the same for mcedit and the embedded terminal
       struct/               the same for the mcstruct plugin
       panel/                the same for the panel: the quick filter, quick cd
+      lua/                  the same for the viewers written in Lua
     reports/                what a run leaves behind (not in git)
 
 Three axes, chosen independently: the **environment** (which image mc is
@@ -116,7 +117,20 @@ server.
 | `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
 | `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
 
-These four are local only: they press keys on mc itself, not on a file a
+### lua
+
+| directory | what it is for                                                    |
+|-----------|--------------------------------------------------------------------|
+| `01-dbf`  | a dBase III table written byte by byte, which lua-dbf decodes itself and draws on `mc.ui.screen` |
+| `02-elf`  | an ELF and a symbolic link to it, which lua-readelf runs `readelf` on |
+
+lua-dbf needs nothing but the Lua runtime, lua-readelf needs `readelf` from
+binutils.  The image carries `liblua5.4-dev` for both.  lua-sixel is left out:
+a picture drawn in sixel goes to the terminal as a DCS the screen library never
+sees, so a captured screen cannot show it.  lua-chafa and the Java class viewer
+are left out with their tools.
+
+These five are local only: they press keys on mc itself, not on a file a
 server holds.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
