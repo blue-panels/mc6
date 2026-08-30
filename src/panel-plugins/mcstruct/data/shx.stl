@@ -15,7 +15,7 @@ STL 5.00
         m32     1               file length, 16-bit words
         u32.le  1               version (1000)
         u32.le  'shp_type       shape type
-        m64     8               bounds x min/max, y, z, m (big endian doubles, shown as hex: A11)
+        f64     8               bounds: x min/max, y, z, m
 #repeat while ^@ + 8 <= $size
         *       1       :shx_record
 #end

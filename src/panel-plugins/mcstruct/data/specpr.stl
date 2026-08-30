@@ -9,7 +9,7 @@ STL 5.00
 #endian big
 #repeat while ^@ + 1536 <= $size
         :--- record ---
-fl:     u32     1               icflag (bit 0 text, bit 1 continuation)
+fl:     t32     `specpr_flags   icflag
 #set    rend = ^@ - 4 + 1536
 #if (fl & 3) == 0
         c       40              title
