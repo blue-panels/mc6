@@ -26,7 +26,7 @@ ofs:    u32     1               offset
 #end
 
 /_F2_data
-        sc      "$size - 0"     data
+        sc      $size           data
 
 /'f2_comp
 0       none

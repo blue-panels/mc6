@@ -23,7 +23,7 @@ calg:   u32     'xar_cksum      checksum algorithm
         *       1       _XAR_toc via call('inflate', hlen, tlen)
 
 /_XAR_toc
-        c       "$size - 0"     xml
+        c       $size           xml
 
 /'xar_cksum
 0       none

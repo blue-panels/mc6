@@ -778,6 +778,30 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_quoted_follower)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/Q\n"
+                              " c \"$size\" all\n"
+                              "#if @w == \"KP\"\n"
+                              " :literal seen\n"
+                              "#fi\n";
+    static const unsigned char data[] = { 'P', 'K', '!' };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "Q", &file, &reader);
+
+    ck_assert_int_eq ((int) child (root, 0)->size, 3);         /* "$size" is the expression */
+    ck_assert_int_eq (child (root, 1)->kind, SLV_NODE_REMARK); /* "KP" is still a literal */
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -904,6 +928,7 @@ main (void)
     tcase_add_test (tc_core, test_time64);
     tcase_add_test (tc_core, test_call);
     tcase_add_test (tc_core, test_via_buffer);
+    tcase_add_test (tc_core, test_quoted_follower);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

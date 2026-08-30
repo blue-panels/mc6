@@ -738,17 +738,25 @@ slv_expr_parse (const char *text, char **error)
     gsize len;
     char *unquoted = NULL;
 
-    /* an expression with spaces is written in quotes; strip them */
+    /* an expression in quotes: strip them. "PK" stays a string literal; anything with
+       a space, an operator, '$', '@', '^' or more than 8 characters is an expression */
     while (*t == ' ' || *t == '\t')
         t++;
     len = strlen (t);
     while (len > 0 && (t[len - 1] == ' ' || t[len - 1] == '\t'))
         len--;
-    if (len >= 2 && t[0] == '"' && t[len - 1] == '"' && strchr (t + 1, '"') == t + len - 1
-        && (memchr (t, ' ', len) != NULL || memchr (t, '\t', len) != NULL))
+    if (len >= 2 && t[0] == '"' && t[len - 1] == '"' && strchr (t + 1, '"') == t + len - 1)
     {
-        unquoted = g_strndup (t + 1, len - 2);
-        t = unquoted;
+        gsize i;
+        gboolean expr = len - 2 > 8;
+
+        for (i = 1; i < len - 1 && !expr; i++)
+            expr = strchr (" \t$@^()+-*/%&|<>!=~,", t[i]) != NULL;
+        if (expr)
+        {
+            unquoted = g_strndup (t + 1, len - 2);
+            t = unquoted;
+        }
     }
 
     ps.p = t;
