@@ -1029,7 +1029,7 @@ hex_on_edit (WHexStrip *h, off_t offset, unsigned char value, void *data)
     if (ui->buffer_depth > 0)
     {
         message (D_NORMAL, _ ("Struct look"), _ ("A buffer is read-only"));
-        return;
+        return FALSE;
     }
     ui_note_change (ui);
     slv_file_reader_set_byte (ui->fr, offset, value);
