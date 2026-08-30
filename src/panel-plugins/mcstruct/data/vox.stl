@@ -1,0 +1,85 @@
+STL 5.00
+;
+;   MagicaVoxel .vox: MAIN chunk and the chunks inside it (PACK, SIZE,
+;   XYZI, RGBA, MATT decoded). After kaitai_struct_formats
+;   media/magicavoxel_vox.ksy (MIT).
+;
+
+/VOX
+#if @d != 'VOX '
+        :ERROR!!! no VOX signature at this offset
+#fi
+        c       4               magic
+        u32     1               version
+        c       4               MAIN
+        u32     1               content size
+        u32     1               children size
+#repeat while ^@ + 12 <= $size
+        :--- chunk ---
+#if @d == 'SIZE'
+        c       4               id
+        u32     1               content size
+        u32     1               children size
+        u32     1               size x
+        u32     1               size y
+        u32     1               size z
+#elseif @d == 'XYZI'
+        c       4               id
+        u32     1               content size
+        u32     1               children size
+nvox:   u32     1               voxels
+        *       nvox    :vox_voxel
+#elseif @d == 'RGBA'
+        c       4               id
+        u32     1               content size
+        u32     1               children size
+        *       256     :vox_color
+#elseif @d == 'PACK'
+        c       4               id
+        u32     1               content size
+        u32     1               children size
+        u32     1               models
+#elseif @d == 'MATT'
+        c       4               id
+csz:    u32     1               content size
+        u32     1               children size
+        u32     1               material id
+        u32     'vox_material   material type
+        f32     1               weight
+        t32     `vox_props      property bits
+        +       "csz - 16"      property values (f32 each, in bit order)
+#else
+        c       4               id
+csz:    u32     1               content size
+        u32     1               children size
+        +       csz
+#fi
+#end
+
+/:vox_voxel
+u8      1       x
+u8      1       y
+u8      1       z
+u8      1       color
+
+/:vox_color
+u8      1       r
+u8      1       g
+u8      1       b
+u8      1       a
+
+/'vox_material
+0       diffuse
+1       metal
+2       glass
+3       emissive
+
+/`vox_props
+0x01            plastic
+0x02            roughness
+0x04            specular
+0x08            ior
+0x10            attenuation
+0x20            power
+0x40            glow
+0x80            is total power

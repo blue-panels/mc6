@@ -145,4 +145,14 @@ dist_mcstructdata_DATA = \
 	data/efi_siglist.stl \
 	data/pif.stl \
 	data/lvm2.stl \
-	data/rar.stl
+	data/rar.stl \
+	data/btrfs_stream.stl \
+	data/allegro_dat.stl \
+	data/qcom_bootldr.stl \
+	data/blend.stl \
+	data/vox.stl \
+	data/android_super.stl \
+	data/journal.stl \
+	data/swf.stl \
+	data/uefi_te.stl \
+	data/vdi.stl

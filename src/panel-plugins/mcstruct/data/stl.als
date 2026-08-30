@@ -100,3 +100,13 @@ efi_siglist.stl:
 pif.stl: @0:50494600
 lvm2.stl: @512:4C4142454C4F4E45
 rar.stl: @0:526172211A07
+btrfs_stream.stl: @0:62747266732D73747265616D00
+allegro_dat.stl: @4:414C4C2E
+qcom_bootldr.stl:
+blend.stl: @0:424C454E444552
+vox.stl: @0:564F5820
+android_super.stl: @4096:67446C61
+journal.stl: *.journal @0:4C504B5348485248
+swf.stl: @1:5753
+uefi_te.stl: *.efi @0:565A
+vdi.stl: @64:7F10DABE

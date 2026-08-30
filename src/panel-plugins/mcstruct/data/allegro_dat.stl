@@ -1,0 +1,28 @@
+STL 5.00
+;
+;   Allegro 4 .dat (unpacked): objects with their properties.
+;   After kaitai_struct_formats game/allegro_dat.ksy.
+;
+
+/ALLEGRO_DAT
+#endian big
+        u32     'allegro_pack   pack magic
+        c       4               dat magic (ALL.)
+n:      u32     1               objects
+#repeat n
+        :--- object ---
+#repeat while @d == "prop"
+        c       4               prop
+        c       4               property type
+plen:   u32     1               length
+        c       plen            value
+#end
+        c       4               type
+clen:   i32     1               compressed length
+        i32     1               uncompressed length
+        +       clen            body
+#end
+
+/'allegro_pack
+0x736C682E      unpacked (slh.)
+0x736C682B      packed (slh+)

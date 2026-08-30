@@ -1,0 +1,104 @@
+STL 5.00
+;
+;   systemd journal file: header and the object list (data objects
+;   decoded). After kaitai_struct_formats log/systemd_journal.ksy.
+;
+
+/JOURNAL
+#if @d != 'LPKS'
+        :ERROR!!! no LPKSHHRH signature at this offset
+#fi
+        c       8               signature
+        t32     `journal_compat  compatible flags
+        t32     `journal_incompat  incompatible flags
+        u8      'journal_state  state
+        b       7               reserved
+        b       16              file id
+        b       16              machine id
+        b       16              boot id
+        b       16              seqnum id
+hlen:   u64     1               header size
+        u64     1               arena size
+        u64     1               data hash table offset
+        u64     1               data hash table size
+        u64     1               field hash table offset
+        u64     1               field hash table size
+        u64     1               tail object offset
+nobj:   u64     1               objects
+        u64     1               entries
+        u64     1               tail entry seqnum
+        u64     1               head entry seqnum
+        u64     1               entry array offset
+        u64     1               head entry realtime
+        u64     1               tail entry realtime
+        u64     1               tail entry monotonic
+#if hlen >= 240
+        u64     1               data objects
+        u64     1               field objects
+        u64     1               tag objects
+        u64     1               entry arrays
+#fi
+        .       hlen
+#repeat nobj
+        +       "(8 - ^@ % 8) % 8"
+        :--- object ---
+otype:  u8      'journal_object object type
+        t8      `journal_oflags flags
+        b       6               reserved
+olen:   u64     1               object size
+#set    oend = ^@ - 16 + olen
+#if otype == 1
+        q       1               hash
+        u64     1               next hash offset
+        u64     1               head field offset
+        u64     1               entry offset
+        u64     1               entry array offset
+        u64     1               entries
+        c       "oend - ^@"     payload
+#elseif otype == 2
+        q       1               hash
+        u64     1               next hash offset
+        u64     1               head data offset
+        c       "oend - ^@"     payload
+#elseif otype == 3
+        u64     1               seqnum
+        u64     1               realtime
+        u64     1               monotonic
+        b       16              boot id
+        q       1               xor hash
+        +       "oend - ^@"     items
+#else
+        +       "oend - ^@"
+#fi
+#end
+
+/`journal_compat
+0x00000001      sealed
+0x00000002      tail entry boot id
+
+/`journal_incompat
+0x00000001      compressed xz
+0x00000002      compressed lz4
+0x00000004      keyed hash
+0x00000008      compressed zstd
+0x00000010      compact
+
+/'journal_state
+0       offline
+1       online
+2       archived
+
+/'journal_object
+0       unused
+1       data
+2       field
+3       entry
+4       data hash table
+5       field hash table
+6       entry array
+7       tag
+
+/`journal_oflags
+0x01            compressed xz
+0x02            compressed lz4
+0x04            compressed zstd

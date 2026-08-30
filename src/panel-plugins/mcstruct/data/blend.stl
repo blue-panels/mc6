@@ -1,0 +1,37 @@
+STL 5.00
+;
+;   Blender .blend: file header and the block headers up to ENDB.
+;   After kaitai_struct_formats media/blender_blend.ksy.
+;
+
+/BLEND
+#if @d != 'BLEN'
+        :ERROR!!! no BLENDER signature at this offset
+#fi
+        c       7               magic
+psz:    u8      'blend_ptr      pointer size
+        u8      'blend_endian   endianness
+        c       3               version
+#if psz == 45
+#set    plen = 8
+#else
+#set    plen = 4
+#fi
+#repeat while ^@ + 16 + plen <= $size && @d != 'ENDB'
+        :--- block ---
+        c       4               code
+blen:   u32     1               length
+        b       plen            old memory address
+        u32     1               SDNA index
+        u32     1               count
+        +       blen
+#end
+        c       4               ENDB
+
+/'blend_ptr
+95      32-bit (_)
+45      64-bit (-)
+
+/'blend_endian
+118     little endian (v)
+86      big endian (V)
