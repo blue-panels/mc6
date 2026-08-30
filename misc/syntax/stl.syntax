@@ -15,6 +15,7 @@ context default
     keyword whole linestart #endian brightmagenta
     keyword whole linestart #set brightmagenta
     keyword whole linestart #switch brightmagenta
+    keyword whole linestart #encoding brightmagenta
     keyword whole linestart #case brightmagenta
     keyword whole linestart #default brightmagenta
     keyword whole linestart = brightmagenta

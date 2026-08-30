@@ -98,6 +98,47 @@ append_text (GString *out, const unsigned char *b, gsize len)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* text in the item's #encoding, converted to UTF-8; control characters become '.' */
+static void
+append_encoded (GString *out, const slv_item_t *item, const unsigned char *b, gsize len)
+{
+    char *conv;
+    gsize out_len = 0;
+    const char *p, *end;
+
+    if (item->encoding == NULL)
+    {
+        append_text (out, b, len);
+        return;
+    }
+    conv =
+        g_convert ((const char *) b, (gssize) len, "UTF-8", item->encoding, NULL, &out_len, NULL);
+    if (conv == NULL)
+    {
+        append_text (out, b, len);
+        return;
+    }
+    for (p = conv, end = conv + out_len; p < end;)
+    {
+        gunichar u = g_utf8_get_char_validated (p, end - p);
+
+        if (u == (gunichar) -1 || u == (gunichar) -2)
+        {
+            g_string_append_c (out, '.');
+            p++;
+            continue;
+        }
+        if (u < 0x20 || u == 0x7F)
+            g_string_append_c (out, '.');
+        else
+            g_string_append_unichar (out, u);
+        p = g_utf8_next_char (p);
+    }
+    g_free (conv);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 format_dos_time (GString *out, guint32 v)
 {
@@ -466,7 +507,10 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
 
         while (l < len && buf[l] != '\0')
             l++;
-        append_utf8 (out, (const char *) buf, l);
+        if (item->encoding != NULL)
+            append_encoded (out, item, buf, l);
+        else
+            append_utf8 (out, (const char *) buf, l);
         *first_value = (gint64) l;
         break;
     }
@@ -494,7 +538,7 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
     }
 
     case SLV_TYPE_CHAR:
-        append_text (out, buf, len);
+        append_encoded (out, item, buf, len);
         if (len > 0)
             *first_value = buf[0];
         break;
@@ -506,7 +550,7 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
 
             if (l > len - 1)
                 l = len - 1;
-            append_text (out, buf + 1, l);
+            append_encoded (out, item, buf + 1, l);
             *first_value = buf[0];
         }
         break;
@@ -515,9 +559,9 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
     {
         gsize l = 0;
 
-        while (l < len && buf[l] != '\0')
+        while (l < len && buf[l] != (unsigned char) item->terminator)
             l++;
-        append_text (out, buf, l);
+        append_encoded (out, item, buf, l);
         *first_value = (gint64) l;
         break;
     }

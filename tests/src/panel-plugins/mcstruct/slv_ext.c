@@ -610,6 +610,38 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_terminator_and_encoding)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/T\n"
+                              " sc.0a 0 line\n"
+                              " sc 0 plain\n"
+                              "#encoding cp866\n"
+                              " c 2 dos\n"
+                              " sc 0 dosz\n"
+                              "#encoding utf-8\n"
+                              " c 2 raw\n";
+    /* "ab\n", "c\0", cp866 "AB" (0x80 0x81), cp866 "B\0", raw 0x80 0x81 */
+    static const unsigned char data[] = { 'a', 'b', 0x0A, 'c', 0, 0x80, 0x81, 0x81, 0, 0x80, 0x81 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "T", &file, &reader);
+
+    ck_assert_str_eq (child (root, 0)->text, "ab");
+    ck_assert_int_eq ((int) child (root, 0)->size, 3);
+    ck_assert_str_eq (child (root, 1)->text, "c");
+    ck_assert_str_eq (child (root, 2)->text, "\xd0\x90\xd0\x91");
+    ck_assert_str_eq (child (root, 3)->text, "\xd0\x91");
+    ck_assert_str_eq (child (root, 4)->text, "..");
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -731,6 +763,7 @@ main (void)
     tcase_add_test (tc_core, test_endian_float_and_bits);
     tcase_add_test (tc_core, test_value_rows);
     tcase_add_test (tc_core, test_switch);
+    tcase_add_test (tc_core, test_terminator_and_encoding);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

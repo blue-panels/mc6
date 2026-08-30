@@ -157,6 +157,10 @@ struct slv_item_t
     slv_expr_t *expected;
     /* 5.00: title "=expr": the name is the C string at that file offset */
     slv_expr_t *title_at;
+    /* 5.00: sc.XX ends the string at byte XX instead of NUL */
+    int terminator;
+    /* 5.00: #encoding in force for text fields, NULL = as is (UTF-8 / ASCII) */
+    char *encoding;
 };
 
 struct slv_def_t

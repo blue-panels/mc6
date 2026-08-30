@@ -239,7 +239,7 @@ string_field_size (slv_eval_ctx_t *ctx, const slv_item_t *item, gint64 max)
             if (!slv_read_bytes (ctx->ev->reader, ctx->current_offset + n, &b, 1))
                 return n; /* unterminated: take what is there */
             n++;
-            if (b == '\0')
+            if (b == (unsigned char) item->terminator)
                 return n;
             if (n >= MAX_FIELD_BYTES)
                 return n;
