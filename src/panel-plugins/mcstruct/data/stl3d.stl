@@ -1,0 +1,17 @@
+STL 5.00
+;
+;   Binary STL (stereolithography) mesh: 80 byte header and triangles.
+;   After kaitai_struct_formats media/stl.ksy.
+;
+
+/STL3D
+        c       80              header
+n:      u32     1               triangles
+        *       n       _STL_triangle
+
+/_STL_triangle
+        f32     3               normal
+        f32     3               vertex 1
+        f32     3               vertex 2
+        f32     3               vertex 3
+        u16     1               attribute byte count

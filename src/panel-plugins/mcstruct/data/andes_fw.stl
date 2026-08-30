@@ -1,0 +1,15 @@
+STL 5.00
+;
+;   Andes Technology firmware image: 32 byte header, ILM and DLM blocks.
+;   After kaitai_struct_formats firmware/andes_firmware.ksy.
+;
+
+/ANDES_FW
+ilm:    u32     1               ILM length
+dlm:    u32     1               DLM length
+        u16     1               firmware version
+        u16     1               build version
+        u32     1               extra
+        c       16              build time
+        +       ilm             ILM
+        +       dlm             DLM

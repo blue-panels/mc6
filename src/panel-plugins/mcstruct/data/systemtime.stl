@@ -1,0 +1,38 @@
+STL 5.00
+;
+;   Windows SYSTEMTIME, 16 bytes. After kaitai_struct_formats
+;   windows/windows_systemtime.ksy.
+;
+
+/SYSTEMTIME
+        u16     1               year
+        u16     'st_month       month
+        u16     'st_dow         day of week
+        u16     1               day
+        u16     1               hour
+        u16     1               minute
+        u16     1               second
+        u16     1               milliseconds
+
+/'st_month
+1       January
+2       February
+3       March
+4       April
+5       May
+6       June
+7       July
+8       August
+9       September
+10      October
+11      November
+12      December
+
+/'st_dow
+0       Sunday
+1       Monday
+2       Tuesday
+3       Wednesday
+4       Thursday
+5       Friday
+6       Saturday

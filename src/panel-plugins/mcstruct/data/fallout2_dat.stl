@@ -1,0 +1,24 @@
+STL 5.00
+;
+;   Fallout 2 .dat archive: footer at the end of the file, then the index
+;   before it. After kaitai_struct_formats game/fallout2_dat.ksy.
+;
+
+/FALLOUT2_DAT
+        .       "$size - 8"
+isz:    u32     1               index size
+        u32     1               file size
+        .       "$size - 8 - isz"
+n:      u32     1               files
+#repeat n
+nlen:   u32     1               name length
+        c       nlen            name
+        u8      'f2_comp        compression
+        u32     1               unpacked size
+        u32     1               packed size
+        u32     1               offset
+#end
+
+/'f2_comp
+0       none
+1       zlib

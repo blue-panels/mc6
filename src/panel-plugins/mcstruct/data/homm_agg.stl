@@ -1,0 +1,22 @@
+STL 5.00
+;
+;   Heroes of Might and Magic .agg archive: entry table and the file names
+;   stored after the last file. After kaitai_struct_formats
+;   game/heroes_of_might_and_magic_agg.ksy.
+;
+
+/HOMM_AGG
+n:      u16     1               files
+        *       n       :agg_entry
+#set    last = 2 + (n - 1) * 14
+        .       "@u32(last + 2) + @u32(last + 6)"
+        *       n       :agg_name
+
+/:agg_entry
+w       1       hash
+u32     1       offset
+u32     1       size
+u32     1       size 2
+
+/:agg_name
+sc      15      name

@@ -1,0 +1,35 @@
+STL 5.00
+;
+;   Fallout 1 .dat archive, big endian: folder names, then the file list
+;   of every folder. After kaitai_struct_formats game/fallout_dat.ksy.
+;
+
+/FALLOUT_DAT
+#endian big
+nf:     u32     1               folders
+        u32     1               unknown
+        u32     1               unknown
+        u32     1               timestamp
+#repeat nf
+fnl:    u8      1               folder name length
+        c       fnl             folder name
+#end
+#repeat nf
+        :--- folder ---
+nfile:  u32     1               files
+        u32     1               unknown
+        u32     1               flags
+        u32     1               timestamp
+#repeat nfile
+nl:     u8      1               name length
+        c       nl              name
+        u32     'fo_comp        compression
+        u32     1               offset
+        u32     1               unpacked size
+        u32     1               packed size
+#end
+#end
+
+/'fo_comp
+32      none
+64      LZSS

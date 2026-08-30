@@ -1,0 +1,36 @@
+STL 5.00
+;
+;   Mach-O universal (fat) binary header, big endian.
+;   After kaitai_struct_formats executable/mach_o_fat.ksy.
+;
+
+/MACHO_FAT
+#endian big
+#if @d.le != 0xBEBAFECA
+        :ERROR!!! no fat magic at this offset
+#fi
+        d       1               magic
+n:      u32     1               architectures
+        *       n       :fat_arch
+
+/:fat_arch
+u32     'macho_cpu      cpu type
+d       1       cpu subtype
+u32     1       offset
+u32     1       size
+u32     1       align (2^n)
+
+/'macho_cpu
+1       VAX
+6       MC680x0
+7       i386
+0x01000007      x86_64
+10      MC98000
+11      HPPA
+12      ARM
+0x0100000C      ARM64
+13      MC88000
+14      SPARC
+15      i860
+18      PowerPC
+0x01000012      PowerPC 64

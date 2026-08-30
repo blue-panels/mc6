@@ -86,4 +86,21 @@ dist_mcstructdata_DATA = \
 	data/aix_utmp.stl \
 	data/ether.stl \
 	data/dns.stl \
-	data/ssh_pubkey.stl
+	data/ssh_pubkey.stl \
+	data/homm_bmp.stl \
+	data/respack.stl \
+	data/andes_fw.stl \
+	data/dcx.stl \
+	data/chg.stl \
+	data/ftl_dat.stl \
+	data/nanoapp.stl \
+	data/homm_agg.stl \
+	data/systemtime.stl \
+	data/dune2_pak.stl \
+	data/macho_fat.stl \
+	data/gt_vol.stl \
+	data/hccap.stl \
+	data/stl3d.stl \
+	data/asus_bootldr.stl \
+	data/fallout_dat.stl \
+	data/fallout2_dat.stl

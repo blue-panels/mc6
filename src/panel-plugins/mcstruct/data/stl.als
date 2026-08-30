@@ -41,3 +41,20 @@ aix_utmp.stl:
 ether.stl: *.eth *.frame
 dns.stl: *.dns
 ssh_pubkey.stl: *.sshkey
+homm_bmp.stl:
+respack.stl: @0:5253
+andes_fw.stl:
+dcx.stl: @0:B168DE3A
+chg.stl: *.chg
+ftl_dat.stl:
+nanoapp.stl: *.napp @4:4E414E4F
+homm_agg.stl: *.agg
+systemtime.stl:
+dune2_pak.stl:
+macho_fat.stl: @0:CAFEBABE
+gt_vol.stl: *.vol @0:47544653
+hccap.stl: *.hccap
+stl3d.stl:
+asus_bootldr.stl: @0:424F4F544C445221
+fallout_dat.stl:
+fallout2_dat.stl:

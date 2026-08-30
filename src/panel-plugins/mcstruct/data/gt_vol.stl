@@ -1,0 +1,27 @@
+STL 5.00
+;
+;   Gran Turismo 1/2 .vol archive: header, the offset table and the
+;   directory. After kaitai_struct_formats game/gran_turismo_vol.ksy.
+;
+
+/GT_VOL
+#if @d != 'GTFS'
+        :ERROR!!! no GTFS signature at this offset
+#fi
+        c       8               magic
+nfiles: u16     1               offsets
+nent:   u16     1               directory entries
+        u32     1               reserved
+        u32     nfiles          offsets (low 11 bits are flags)
+        .       "@u32(20) & 0xFFFFF800"
+        *       nent    :gt_file
+
+/:gt_file
+u32     1       timestamp
+u16     1       offset index
+t8      `gt_flags       flags
+c:25.25         name
+
+/`gt_flags
+0x01            directory
+0x80            last entry

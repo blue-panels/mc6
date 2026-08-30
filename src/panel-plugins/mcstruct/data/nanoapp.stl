@@ -1,0 +1,21 @@
+STL 5.00
+;
+;   Android CHRE nanoapp header. After kaitai_struct_formats
+;   executable/android_nanoapp_header.ksy (Apache-2.0).
+;
+
+/NANOAPP
+        u32     1               header version (1)
+        c       4               magic (NANO)
+        q       1               app id
+        u32     1               app version
+        t32     `nanoapp_flags  flags
+        q       1               hub type
+        u8      1               CHRE API major version
+        u8      1               CHRE API minor version
+        b       6               reserved
+
+/`nanoapp_flags
+0x00000001      signed
+0x00000002      encrypted
+0x00000004      TCM capable

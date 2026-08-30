@@ -1,0 +1,15 @@
+STL 5.00
+;
+;   Dune II .pak archive directory: offset and name per file, the list
+;   ends with a zero offset. After kaitai_struct_formats game/dune_2_pak.ksy.
+;
+
+/DUNE2_PAK
+#set    dend = @u32(0)
+#repeat while ^@ + 4 <= dend && @d != 0
+ofs:    u32     1               offset
+#if ofs != 0
+        sc      0               name
+#fi
+#end
+        u32     1               end of list

@@ -1,0 +1,17 @@
+STL 5.00
+;
+;   ZSoft DCX: a list of offsets to PCX pictures; Enter on an offset opens
+;   the picture. After kaitai_struct_formats image/pcx_dcx.ksy.
+;
+
+#include "pcx.stl"
+
+/DCX
+#if @d != 0x3ADE68B1
+        :ERROR!!! no DCX signature at this offset
+#fi
+        d       1               magic
+#repeat while @d != 0
+        j32     PCX=@           picture offset
+#end
+        u32     1               end of list

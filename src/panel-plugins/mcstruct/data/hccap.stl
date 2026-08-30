@@ -1,0 +1,24 @@
+STL 5.00
+;
+;   hashcat .hccap WPA handshake records, 392 bytes each.
+;   After kaitai_struct_formats network/hccap.ksy (Unlicense).
+;
+
+/HCCAP
+#repeat while ^@ + 392 <= $size
+        :--- record ---
+        c       36              essid
+        b       6               ap mac
+        b       6               station mac
+        b       32              station nonce
+        b       32              ap nonce
+        b       256             eapol frame
+        u32     1               eapol length
+        u32     'hccap_keyver   key version
+        b       16              key mic
+#end
+
+/'hccap_keyver
+1       WPA (HMAC-MD5)
+2       WPA2 (HMAC-SHA1)
+3       WPA2 (AES-CMAC)

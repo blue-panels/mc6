@@ -1,0 +1,25 @@
+STL 5.00
+;
+;   ASUS Android bootloader package (BOOTLDR!): three image chunks.
+;   After kaitai_struct_formats archive/android_bootldr_asus.ksy.
+;
+
+/ASUS_BOOTLDR
+#if @d != 'BOOT'
+        :ERROR!!! no BOOTLDR! signature at this offset
+#fi
+        c       8               magic
+        u16     1               revision
+        u16     1               reserved
+        u32     1               reserved
+#repeat 3
+        :--- image ---
+        c       8               chunk id (IFWI!!!!, DROIDBT!, SPLASHS!)
+blen:   u32     1               body length
+        t8      `asus_flags     flags
+        b       3               reserved
+        +       blen
+#end
+
+/`asus_flags
+0x01            present
