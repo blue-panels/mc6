@@ -87,3 +87,16 @@ sudoers_ts.stl:
 mar.stl: @0:4D415231
 xar.stl: *.pkg @0:78617221
 gbr.stl: @20:47494D50
+applesd.stl: @0:00051600 @0:00051607
+tls_hello.stl:
+pff2.stl: *.pf2 @0:46494C4500000004504646
+id3v2.stl: @0:494433
+cfb.stl: *.doc *.xls *.ppt *.msi *.msg @0:D0CF11E0A1B11AE1
+bitcoin_tx.stl:
+avi.stl: @8:41564920
+winres.stl: *.res
+trdos.stl: *.trd
+efi_siglist.stl:
+pif.stl: @0:50494600
+lvm2.stl: @512:4C4142454C4F4E45
+rar.stl: @0:526172211A07

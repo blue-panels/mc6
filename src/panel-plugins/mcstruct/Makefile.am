@@ -132,4 +132,17 @@ dist_mcstructdata_DATA = \
 	data/sudoers_ts.stl \
 	data/mar.stl \
 	data/xar.stl \
-	data/gbr.stl
+	data/gbr.stl \
+	data/applesd.stl \
+	data/tls_hello.stl \
+	data/pff2.stl \
+	data/id3v2.stl \
+	data/cfb.stl \
+	data/bitcoin_tx.stl \
+	data/avi.stl \
+	data/winres.stl \
+	data/trdos.stl \
+	data/efi_siglist.stl \
+	data/pif.stl \
+	data/lvm2.stl \
+	data/rar.stl

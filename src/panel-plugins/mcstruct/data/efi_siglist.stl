@@ -1,0 +1,32 @@
+STL 5.00
+;
+;   EFI variable holding signature lists (db, dbx, KEK, PK): the variable
+;   attributes and the EFI_SIGNATURE_LIST records.
+;   After kaitai_struct_formats security/efivar_signature_list.ksy.
+;
+
+/EFI_SIGLIST
+        t32     `efi_var_attr   variable attributes
+#repeat while ^@ + 28 <= $size
+        :--- signature list ---
+        b       16              signature type guid
+llen:   u32     1               list length
+hlen:   u32     1               header length
+slen:   u32     1               signature length
+        +       hlen            header
+#set    n = (llen - hlen - 28) / slen
+#repeat n
+        b       16              owner guid
+        +       "slen - 16"     data
+#end
+#end
+
+/`efi_var_attr
+0x00000001      non volatile
+0x00000002      boot service access
+0x00000004      runtime access
+0x00000008      hardware error record
+0x00000010      authenticated write access
+0x00000020      time based authenticated write access
+0x00000040      append write
+0x00000080      enhanced authenticated access

@@ -1,0 +1,69 @@
+STL 5.00
+;
+;   Windows .res resource file: resource records with numeric or string
+;   type and name. After kaitai_struct_formats windows/windows_resource_file.ksy.
+;
+
+/WINRES
+#repeat while ^@ + 8 <= $size
+        :--- resource ---
+vsz:    u32     1               value size
+        u32     1               header size
+#if @w == 0xFFFF
+        w       1               type: numeric
+        u16     'res_type       type id
+#else
+        :string type (UTF-16 characters)
+#repeat while @w != 0
+        w       1               char
+#end
+        w       1               terminator
+#fi
+#if @w == 0xFFFF
+        w       1               name: numeric
+        u16     1               name id
+#else
+        :string name (UTF-16 characters)
+#repeat while @w != 0
+        w       1               char
+#end
+        w       1               terminator
+#fi
+        +       "(4 - ^@ % 4) % 4"
+        u32     1               format version
+        t16     `res_flags      memory flags
+        u16     1               language
+        u32     1               value version
+        u32     1               characteristics
+        +       vsz             value
+        +       "(4 - ^@ % 4) % 4"
+#end
+
+/'res_type
+1       cursor
+2       bitmap
+3       icon
+4       menu
+5       dialog
+6       string table
+7       font directory
+8       font
+9       accelerators
+10      rcdata
+11      message table
+12      group cursor
+14      group icon
+16      version
+17      dialog include
+19      plug and play
+20      VXD
+21      animated cursor
+22      animated icon
+23      HTML
+24      manifest
+
+/`res_flags
+0x0010          moveable
+0x0020          pure
+0x0040          preload
+0x1000          discardable

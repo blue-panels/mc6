@@ -1,0 +1,39 @@
+STL 5.00
+;
+;   TR-DOS disk image (.trd) catalog and the volume info sector.
+;   After kaitai_struct_formats filesystem/tr_dos_image.ksy.
+;
+
+/TRDOS
+#repeat while ^@ + 16 <= 2048 && @b != 0
+        *       1       :trdos_file
+#end
+        :--- volume info (sector 8) ---
+        .       2048
+        u8      1               catalog end (0)
+        +       224
+        u8      1               first free sector
+        u8      1               first free track
+        t8      `trdos_disk     disk type
+        u8      1               files
+        u16     1               free sectors
+        u8      1               TR-DOS id (16)
+        b       2               unused
+        c       9               password
+        u8      1               unused
+        u8      1               deleted files
+        c       8               label
+        b       3               unused
+
+/:trdos_file
+c:8.8           name (01 = deleted)
+c:1.1           extension
+u16     1       start / reserved
+u16     1       length
+u8      1       sectors
+u8      1       first sector
+u8      1       first track
+
+/`trdos_disk
+0x01            40 tracks
+0x08            single sided

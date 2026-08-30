@@ -1,0 +1,71 @@
+STL 5.00
+;
+;   ID3v2.3 / 2.4 tag at the start of an MP3: header, extended header
+;   and the frames. After kaitai_struct_formats media/id3v2_3.ksy.
+;
+
+/ID3v2
+#endian big
+#if (@d.le & 0xFFFFFF) != 'ID3'
+        :ERROR!!! no ID3 tag at this offset
+#fi
+        c       3               magic
+maj:    u8      1               version major
+        u8      1               revision
+flags:  t8      `id3_flags      flags
+        b       4               size (synchsafe)
+#set    tsz = (@u8(^@ - 4) << 21) | (@u8(^@ - 3) << 14) | (@u8(^@ - 2) << 7) | @u8(^@ - 1)
+#set    tend = ^@ + tsz
+#if flags & 0x40
+        :--- extended header ---
+xsz:    u32     1               size
+#if maj == 3
+        t16     `id3_exflags    flags
+        u32     1               padding size
+#if @u16(^@ - 6) & 0x8000
+        d       1               crc32
+#fi
+#else
+        +       "xsz - 4"
+#fi
+#fi
+#repeat while ^@ + 10 <= tend && @d != 0
+        :--- frame ---
+        c       4               id
+        b       4               size
+#if maj == 4
+#set    fsz = (@u8(^@ - 4) << 21) | (@u8(^@ - 3) << 14) | (@u8(^@ - 2) << 7) | @u8(^@ - 1)
+#else
+#set    fsz = @u32(^@ - 4)
+#fi
+        t16     `id3_frame_flags  flags
+#if @b <= 3
+        u8      'id3_encoding   text encoding
+        c       "fsz - 1"       text
+#else
+        +       fsz
+#fi
+#end
+
+/`id3_flags
+0x80            unsynchronisation
+0x40            extended header
+0x20            experimental
+0x10            footer present (2.4)
+
+/`id3_exflags
+0x8000          crc present
+
+/`id3_frame_flags
+0x8000          discard on tag alteration
+0x4000          discard on file alteration
+0x2000          read only
+0x0080          compressed
+0x0040          encrypted
+0x0020          grouping
+
+/'id3_encoding
+0       ISO-8859-1
+1       UTF-16 with BOM
+2       UTF-16BE
+3       UTF-8

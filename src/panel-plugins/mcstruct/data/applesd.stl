@@ -1,0 +1,60 @@
+STL 5.00
+;
+;   AppleSingle / AppleDouble header and entry table, big endian.
+;   After kaitai_struct_formats filesystem/apple_single_double.ksy.
+;
+
+/APPLESD
+#endian big
+        u32     'asd_magic      magic
+        u32     1               version
+        b       16              filler
+n:      u16     1               entries
+        *       n       :asd_entry
+
+/:asd_entry
+u32     'asd_kind       type
+u32     1       offset
+u32     1       length
+
+/'asd_magic
+0x00051600      AppleSingle
+0x00051607      AppleDouble
+
+/'asd_kind
+1       data fork
+2       resource fork
+3       real name
+4       comment
+5       icon, b/w
+6       icon, color
+8       file dates
+9       Finder info
+10      Macintosh file info
+11      ProDOS file info
+12      MS-DOS file info
+13      AFP short name
+14      AFP file info
+15      AFP directory id
+
+/FinderInfo
+#endian big
+        c       4               file type
+        c       4               file creator
+        t16     `finder_flags   flags
+        u16     1               location y
+        u16     1               location x
+        u16     1               folder id
+
+/`finder_flags
+0x0001          on desktop
+0x000E  0x000E  color bits
+0x0040          shared
+0x0080          no INITs
+0x0100          inited
+0x0400          custom icon
+0x0800          stationery
+0x1000          name locked
+0x2000          has bundle
+0x4000          invisible
+0x8000          alias

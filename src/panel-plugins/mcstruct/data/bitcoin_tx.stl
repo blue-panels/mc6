@@ -1,0 +1,25 @@
+STL 5.00
+;
+;   Bitcoin transaction (legacy, single-byte counts): inputs, outputs,
+;   lock time. After kaitai_struct_formats network/bitcoin_transaction.ksy (MIT).
+;
+
+/BITCOIN_TX
+        u32     1               version
+nin:    u8      1               inputs
+#repeat nin
+        :--- input ---
+        b       32              previous txid
+        u32     1               previous output index
+sl:     u8      1               script length
+        +       sl              scriptSig
+        d       1               sequence
+#end
+nout:   u8      1               outputs
+#repeat nout
+        :--- output ---
+        u64     1               amount, satoshi
+sl:     u8      1               script length
+        +       sl              scriptPubKey
+#end
+        u32     1               lock time

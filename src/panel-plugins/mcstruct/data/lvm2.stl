@@ -1,0 +1,48 @@
+STL 5.00
+;
+;   LVM2 physical volume label (sector 1) and the metadata area header.
+;   After kaitai_struct_formats filesystem/lvm2.ksy (GFDL-1.3-or-later).
+;
+
+/LVM2_PV
+        .       512
+#if @d != 'LABE'
+        :ERROR!!! no LABELONE signature in sector 1
+#fi
+        c       8               signature
+        u64     1               sector number
+        d       1               checksum
+        u32     1               data offset
+        c       8               type (LVM2 001)
+        c       32              pv uuid
+        u64     1               device size
+        :--- data area descriptors (end with zeros) ---
+#repeat while @u64(^@) != 0 || @u64(^@ + 8) != 0
+        u64     1               offset
+        u64     1               size
+#end
+        u64     1               end
+        u64     1               end
+        :--- metadata area descriptors (end with zeros) ---
+#repeat while @u64(^@) != 0 || @u64(^@ + 8) != 0
+        u64     1               offset
+        u64     1               size
+#end
+        u64     1               end
+        u64     1               end
+
+/LVM2_MDA
+        d       1               checksum
+        c       16              signature
+        u32     1               version
+        u64     1               metadata area offset
+        u64     1               metadata area size
+#repeat while @u64(^@) != 0 || @u64(^@ + 8) != 0
+        u64     1               offset
+        u64     1               size
+        d       1               checksum
+        t32     `lvm_raw_flags  flags
+#end
+
+/`lvm_raw_flags
+0x00000001      ignored
