@@ -222,6 +222,39 @@ g_memdup2 (gconstpointer mem, gsize byte_size)
 
 /* --------------------------------------------------------------------------------------------- */
 
+#if !GLIB_CHECK_VERSION(2, 76, 0)
+/**
+ * Compare two elements of a pointer array, given the addresses of the pointers.
+ */
+static int
+ptr_array_compare_values (gconstpointer a, gconstpointer b, gpointer user_data)
+{
+    GCompareFunc compare_func = (GCompareFunc) user_data;
+
+    return compare_func (*(gconstpointer *) a, *(gconstpointer *) b);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * g_ptr_array_sort_values:
+ * @array: the #GPtrArray to sort.
+ * @compare_func: the function to compare two elements with.
+ *
+ * Sorts @array, comparing the elements themselves rather than the addresses
+ * they are held at, which is what g_ptr_array_sort() passes on.
+ */
+void
+g_ptr_array_sort_values (GPtrArray *array, GCompareFunc compare_func)
+{
+    g_return_if_fail (array != NULL);
+
+    g_ptr_array_sort_with_data (array, ptr_array_compare_values, (gpointer) compare_func);
+}
+#endif
+
+/* --------------------------------------------------------------------------------------------- */
+
 #if !GLIB_CHECK_VERSION(2, 77, 0)
 /**
  * g_string_new_take:

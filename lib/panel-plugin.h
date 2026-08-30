@@ -396,6 +396,9 @@ const mc_panel_plugin_t *mc_panel_plugin_find_by_name (const char *name);
 const mc_panel_plugin_t *mc_panel_plugin_find_by_prefix (const char *prefix);
 
 /* Loader */
+/* The widgets a plugin puts on a dialog and mc itself never does; see the definition. */
+extern void (*const mc_plugin_widgets[]) (void);
+
 void mc_panel_plugins_load (void);
 /* load one package by name without the others; NULL when there is none */
 const mc_panel_plugin_t *mc_panel_plugin_load_named (const char *name);
