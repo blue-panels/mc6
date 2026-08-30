@@ -1,6 +1,7 @@
 STL 5.00
 ;
-;   SWF (Flash) file: header and, for uncompressed files, the tag list.
+;   SWF (Flash) file: header and the tag list (Enter on the body row;
+;   zlib bodies are inflated, lzma is not).
 ;   After kaitai_struct_formats executable/swf.ksy.
 ;
 
@@ -9,7 +10,16 @@ comp:   u8      'swf_comp       compression
         c       2               signature (WS)
 ver:    u8      1               version
         u32     1               file length
-#if comp == 0x46
+#switch comp
+#case 0x46
+        *       1       _SWF_body via call('raw', 8, $size - 8)
+#case 0x43
+        *       1       _SWF_body via call('inflate', 8, $size - 8)
+#default
+        :lzma body is not decoded
+#end
+
+/_SWF_body
 b1:     u8      1               frame size: bits per field (high 5 bits)
         +       "(((b1 >> 3) * 4 - 3) + 7) / 8"
         u16     1               frame rate (8.8)
@@ -49,9 +59,6 @@ nsym:   u16     1               symbols
         +       "tend - ^@"
 #end
         u16     1               end tag
-#else
-        :compressed body (zlib / lzma) is not decoded
-#fi
 
 /'swf_comp
 0x46    none (FWS)

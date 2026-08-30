@@ -1,7 +1,7 @@
 STL 5.00
 ;
-;   xar archive header; the table of contents after it is zlib
-;   compressed XML and is not decoded here.
+;   xar archive header and the table of contents (zlib compressed XML,
+;   Enter on the TOC row shows it).
 ;   After kaitai_struct_formats archive/xar.ksy.
 ;
 
@@ -20,7 +20,10 @@ calg:   u32     'xar_cksum      checksum algorithm
         sc      "hlen - 28"     checksum algorithm name
 #fi
         .       hlen
-        +       tlen            toc (zlib)
+        *       1       _XAR_toc via call('inflate', hlen, tlen)
+
+/_XAR_toc
+        c       "$size - 0"     xml
 
 /'xar_cksum
 0       none

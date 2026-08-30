@@ -13,11 +13,20 @@ n:      u32     1               files
 #repeat n
 nlen:   u32     1               name length
         c       nlen            name
-        u8      'f2_comp        compression
-        u32     1               unpacked size
-        u32     1               packed size
-        u32     1               offset
+cmp:    u8      'f2_comp        compression
+usz:    u32     1               unpacked size
+psz:    u32     1               packed size
+ofs:    u32     1               offset
+#switch cmp
+#case 0
+        *       1       _F2_data via call('raw', ofs, usz)
+#case 1
+        *       1       _F2_data via call('inflate', ofs, psz)
 #end
+#end
+
+/_F2_data
+        sc      "$size - 0"     data
 
 /'f2_comp
 0       none
