@@ -272,13 +272,19 @@ slv_varint_value (gboolean leb128, const unsigned char *buf, gsize len)
 
 /* how many bytes the varint at @buf takes, @avail bytes available; 0 when unterminated */
 gsize
-slv_varint_size (gboolean leb128, const unsigned char *buf, gsize avail)
+slv_varint_size (int kind, const unsigned char *buf, gsize avail)
 {
-    gsize i, max = leb128 ? 10 : 9;
+    gsize i, max = kind != 0 ? 10 : 9;
 
     for (i = 0; i < avail && i < max; i++)
-        if ((buf[i] & 0x80) == 0 || (!leb128 && i == 8))
+    {
+        gboolean last = (buf[i] & 0x80) == 0;
+
+        if (kind == 2)
+            last = !last;
+        if (last || (kind == 0 && i == 8))
             return i + 1;
+    }
     return 0;
 }
 
@@ -358,6 +364,8 @@ slv_type_name (slv_type_t type, int size)
         return "v";
     case SLV_TYPE_LEB128:
         return "vl";
+    case SLV_TYPE_ZVARINT:
+        return "vz";
     default:
         return "?";
     }
@@ -495,8 +503,9 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
     {
     case SLV_TYPE_VARINT:
     case SLV_TYPE_LEB128:
+    case SLV_TYPE_ZVARINT:
     {
-        gint64 v = slv_varint_value (item->type == SLV_TYPE_LEB128, buf, len);
+        gint64 v = slv_varint_value (item->type != SLV_TYPE_VARINT, buf, len);
 
         g_string_append_printf (out, "%lld", (long long) v);
         *first_value = v;

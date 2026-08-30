@@ -287,7 +287,8 @@ eval_field (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
     if (legend == NULL && item->legend != NULL)
         legend = find_legend (ctx, item);
 
-    if (item->type == SLV_TYPE_VARINT || item->type == SLV_TYPE_LEB128)
+    if (item->type == SLV_TYPE_VARINT || item->type == SLV_TYPE_LEB128
+        || item->type == SLV_TYPE_ZVARINT)
     {
         unsigned char vb[10];
         gsize avail = 0, got;
@@ -295,7 +296,10 @@ eval_field (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
         while (avail < sizeof (vb)
                && slv_read_bytes (ctx->ev->reader, offset + avail, vb + avail, 1))
             avail++;
-        got = slv_varint_size (item->type == SLV_TYPE_LEB128, vb, avail);
+        got = slv_varint_size (item->type == SLV_TYPE_VARINT       ? 0
+                                   : item->type == SLV_TYPE_LEB128 ? 1
+                                                                   : 2,
+                               vb, avail);
         if (got == 0)
         {
             error_node (parent, item, offset, g_strdup ("unterminated varint"));
@@ -480,7 +484,8 @@ slv_def_fixed_size (const slv_def_t *def)
         default:
             return -1;
         }
-        if (it->type == SLV_TYPE_VARINT || it->type == SLV_TYPE_LEB128)
+        if (it->type == SLV_TYPE_VARINT || it->type == SLV_TYPE_LEB128
+            || it->type == SLV_TYPE_ZVARINT)
             return -1;
         if (it->type == SLV_TYPE_BITS)
         {

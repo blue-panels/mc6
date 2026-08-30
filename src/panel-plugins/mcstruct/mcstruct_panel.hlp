@@ -137,7 +137,8 @@ STL5, the def-file language:
   Types: c chars; b w d q hex of 1/2/4/8 bytes; i8..i64 and u8..u64
   decimal; t8..t64 bit fields; m8..m64 big-endian hex; f32 f64 f80
   float; sp Pascal string; sc C string; td tu DOS and unix time;
-  tu64 tf 64-bit unix time and Windows FILETIME (5.00);
+  tu64 tf 64-bit unix time and Windows FILETIME (5.00); vz varint with
+  bit 7 set on the last byte, as in zchunk (5.00);
   j8..j64 jumps; s8 s16 fixed-size UTF-8 and UTF-16 strings (5.00);
   v vl SQLite varint and LEB128 (5.00).  Any numeric type takes a .le or
   .be suffix (5.00).

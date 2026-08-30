@@ -43,7 +43,8 @@ typedef enum
     SLV_TYPE_STR16,     /* s16: fixed size, NUL padded UTF-16LE (5.00) */
     SLV_TYPE_CHECK,     /* crc32 sum8 sum16 over a range (5.00) */
     SLV_TYPE_VARINT,    /* v: SQLite varint, big-endian 7-bit groups, up to 9 bytes (5.00) */
-    SLV_TYPE_LEB128     /* vl: unsigned LEB128, little-endian 7-bit groups (5.00) */
+    SLV_TYPE_LEB128,    /* vl: unsigned LEB128, little-endian 7-bit groups (5.00) */
+    SLV_TYPE_ZVARINT    /* vz: LEB128 groups, bit 7 set on the last one (zchunk) (5.00) */
 } slv_type_t;
 
 typedef enum
@@ -273,7 +274,7 @@ const char *slv_type_name (slv_type_t type, int size);
 /* zlib polynomial; start with 0xFFFFFFFF and xor the result with 0xFFFFFFFF */
 guint32 slv_crc32 (guint32 crc, const unsigned char *buf, gsize len);
 gint64 slv_varint_value (gboolean leb128, const unsigned char *buf, gsize len);
-gsize slv_varint_size (gboolean leb128, const unsigned char *buf, gsize avail);
+gsize slv_varint_size (int kind, const unsigned char *buf, gsize avail);
 char *slv_node_dump (const slv_node_t *node, int indent);
 
 #endif

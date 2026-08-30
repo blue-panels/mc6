@@ -802,6 +802,27 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_zchunk_varint)
+{
+    static const char def[] = "STL 5.00\n/Z\n vz 1 one\n vz 1 two\n u8 1 next\n";
+    static const unsigned char data[] = { 0x85, 0x01, 0x82, 0x77 }; /* 5, then 1 | 2 << 7 = 257 */
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "Z", &file, &reader);
+
+    ck_assert_str_eq (child (root, 0)->text, "5");
+    ck_assert_int_eq ((int) child (root, 0)->size, 1);
+    ck_assert_str_eq (child (root, 1)->text, "257");
+    ck_assert_int_eq ((int) child (root, 2)->offset, 3);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -929,6 +950,7 @@ main (void)
     tcase_add_test (tc_core, test_call);
     tcase_add_test (tc_core, test_via_buffer);
     tcase_add_test (tc_core, test_quoted_follower);
+    tcase_add_test (tc_core, test_zchunk_varint);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);
