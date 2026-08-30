@@ -1,0 +1,134 @@
+STL 5.00
+;
+;   Windows registry hive (regf): file header and the cells of the first
+;   hive bin. After kaitai_struct_formats windows/regf.ksy.
+;
+
+/REGF
+#if @d != 'regf'
+        :ERROR!!! no regf signature at this offset
+#fi
+        c       4               signature
+        u32     1               primary sequence number
+        u32     1               secondary sequence number
+        q       1               last modification (FILETIME)
+        u32     1               major version
+        u32     1               minor version
+        u32     'regf_type      type
+        u32     'regf_format    format
+        u32     1               root key offset (from hbin data)
+        u32     1               hive bins data size
+        u32     1               clustering factor
+        s16     32              file name
+        b       396             unknown
+        d       1               checksum
+        b       3576            reserved
+        u32     1               boot type
+        u32     1               boot recover
+        :--- first hive bin ---
+        .       4096
+        c       4               hbin signature
+        u32     1               offset
+hsz:    u32     1               size
+        u32     1               unknown
+        u32     1               unknown
+        q       1               timestamp (FILETIME)
+        u32     1               unknown
+#set    hend = 4096 + hsz
+#repeat while ^@ + 8 <= hend && @d != 0
+        :--- cell ---
+csz:    i32     1               cell size (negative = allocated)
+#if csz < 0
+#set    cend = ^@ - 4 - csz
+#else
+#set    cend = ^@ - 4 + csz
+#fi
+#if @w == 'nk'
+        c       2               nk: named key
+        t16     `regf_nk_flags  flags
+        q       1               last written (FILETIME)
+        u32     1               unknown
+        u32     1               parent key offset
+        u32     1               subkeys
+        u32     1               volatile subkeys
+        u32     1               subkey list offset
+        u32     1               values
+        u32     1               values list offset
+        u32     1               security key offset
+        u32     1               class name offset
+        u32     1               largest subkey name length
+        u32     1               largest subkey class name length
+        u32     1               largest value name length
+        u32     1               largest value data size
+        u32     1               unknown
+knl:    u16     1               key name length
+        u16     1               class name length
+        c       knl             key name
+#elseif @w == 'vk'
+        c       2               vk: value
+vnl:    u16     1               value name length
+        u32     1               data size (bit 31: data in the offset field)
+        u32     1               data offset
+        u32     'regf_value_type  data type
+        t16     `regf_vk_flags  flags
+        u16     1               unknown
+#if vnl > 0
+        c       vnl             value name
+#fi
+#elseif @w == 'lf' || @w == 'lh'
+        c       2               lf/lh: subkey list
+nel:    u16     1               elements
+        *       nel     :regf_lf_entry
+#elseif @w == 'li' || @w == 'ri'
+        c       2               li/ri: subkey list
+nel:    u16     1               elements
+        u32     nel             offsets
+#elseif @w == 'sk'
+        c       2               sk: security key
+        u16     1               unknown
+        u32     1               previous security key offset
+        u32     1               next security key offset
+        u32     1               reference count
+        u32     1               security descriptor size
+#else
+        c       2               identifier
+#fi
+        +       "cend - ^@"
+#end
+
+/:regf_lf_entry
+u32     1       key offset
+d       1       hash
+
+/'regf_type
+0       normal
+1       transaction log
+
+/'regf_format
+1       direct memory load
+
+/`regf_nk_flags
+0x0001          volatile
+0x0002          mount point
+0x0004          root key
+0x0008          cannot delete
+0x0010          symbolic link
+0x0020          ascii name
+0x0040          predefined handle
+
+/'regf_value_type
+0       REG_NONE
+1       REG_SZ
+2       REG_EXPAND_SZ
+3       REG_BINARY
+4       REG_DWORD
+5       REG_DWORD_BIG_ENDIAN
+6       REG_LINK
+7       REG_MULTI_SZ
+8       REG_RESOURCE_LIST
+9       REG_FULL_RESOURCE_DESCRIPTOR
+10      REG_RESOURCE_REQUIREMENTS_LIST
+11      REG_QWORD
+
+/`regf_vk_flags
+0x0001          ascii name

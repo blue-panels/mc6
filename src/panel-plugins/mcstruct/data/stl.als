@@ -110,3 +110,8 @@ journal.stl: *.journal @0:4C504B5348485248
 swf.stl: @1:5753
 uefi_te.stl: *.efi @0:565A
 vdi.stl: @64:7F10DABE
+lnk.stl: @0:4C0000000114020000000000C000000000000046
+wmf.stl: @0:D7CDC69A
+ext2.stl: @1080:53EF
+iso9660.stl: @32769:4344303031
+regf.stl: @0:72656766

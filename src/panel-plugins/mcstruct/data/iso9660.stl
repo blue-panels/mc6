@@ -1,0 +1,111 @@
+STL 5.00
+;
+;   ISO 9660: the primary volume descriptor at sector 16 with the root
+;   directory record; Enter on the root extent lists the directory.
+;   After kaitai_struct_formats filesystem/iso9660.ksy.
+;
+
+/ISO9660
+        .       0x8000
+#if (@u32(^@ + 1) & 0xFFFFFF) != 'CD0'
+        :ERROR!!! no CD001 descriptor at sector 16
+#fi
+        u8      'iso_vd_type    descriptor type
+        c       5               magic
+        u8      1               version
+        u8      1               unused
+        c       32              system id
+        c       32              volume id
+        b       8               unused
+        u32     1               volume space size (LE)
+        u32.be  1               volume space size (BE)
+        b       32              unused
+        u16     1               volume set size
+        u16.be  1               volume set size (BE)
+        u16     1               volume sequence number
+        u16.be  1               volume sequence number (BE)
+        u16     1               logical block size
+        u16.be  1               logical block size (BE)
+        u32     1               path table size
+        u32.be  1               path table size (BE)
+ptl:    u32     1               L path table lba
+        u32     1               optional L path table lba
+        u32.be  1               M path table lba
+        u32.be  1               optional M path table lba
+        :--- root directory record ---
+        u8      1               record length
+        u8      1               extended attribute length
+        j32     ISO_DIR=@*2048  extent lba
+        u32.be  1               extent lba (BE)
+        u32     1               extent size
+        u32.be  1               extent size (BE)
+        b       7               date (years since 1900, m, d, h, m, s, tz)
+        t8      `iso_file_flags file flags
+        u8      1               file unit size
+        u8      1               interleave gap
+        u16     1               volume sequence number
+        u16.be  1               volume sequence number (BE)
+        u8      1               name length
+        c       1               name
+        c       128             volume set id
+        c       128             publisher id
+        c       128             data preparer id
+        c       128             application id
+        c       38              copyright file id
+        c       36              abstract file id
+        c       37              bibliographic file id
+        c       17              creation date (YYYYMMDDHHMMSSss + tz)
+        c       17              modification date
+        c       17              expiration date
+        c       17              effective date
+        u8      1               file structure version
+        u8      1               unused
+        b       512             application area
+        :--- L path table ---
+        .       "ptl * 2048"
+#repeat while @b != 0
+nlen:   u8      1               directory name length
+        u8      1               extended attribute length
+        u32     1               extent lba
+        u16     1               parent directory index
+        c       nlen            directory name
+#if nlen % 2 == 1
+        u8      1               padding
+#fi
+#end
+
+/ISO_DIR
+#repeat while @b != 0
+        :--- record ---
+rlen:   u8      1               record length
+#set    rend = ^@ - 1 + rlen
+        u8      1               extended attribute length
+        j32     ISO_DIR=@*2048  extent lba
+        u32.be  1               extent lba (BE)
+        u32     1               extent size
+        u32.be  1               extent size (BE)
+        b       7               date
+        t8      `iso_file_flags file flags
+        u8      1               file unit size
+        u8      1               interleave gap
+        u16     1               volume sequence number
+        u16.be  1               volume sequence number (BE)
+nlen:   u8      1               name length
+        c       nlen            name
+        +       "rend - ^@"     padding / system use
+#end
+
+/'iso_vd_type
+0       boot record
+1       primary
+2       supplementary
+3       partition
+255     terminator
+
+/`iso_file_flags
+0x01            hidden
+0x02            directory
+0x04            associated file
+0x08            record format
+0x10            protection
+0x80            multi-extent

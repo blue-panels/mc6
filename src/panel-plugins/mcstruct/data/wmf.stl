@@ -1,0 +1,160 @@
+STL 5.00
+;
+;   Windows metafile (.wmf) with the placeable header: records up to EOF.
+;   After kaitai_struct_formats image/wmf.ksy.
+;
+
+/WMF
+#if @d != 0x9AC6CDD7
+        :ERROR!!! no placeable WMF signature at this offset
+#fi
+        d       1               magic
+        u16     1               handle
+        i16     1               left
+        i16     1               top
+        i16     1               right
+        i16     1               bottom
+        u16     1               units per inch
+        u32     1               reserved
+        w       1               checksum
+        :--- header ---
+        u16     'wmf_type       metafile type
+        u16     1               header size, words
+        w       1               version
+        u32     1               size, words
+        u16     1               objects
+        u32     1               max record size, words
+        u16     1               members
+#repeat while ^@ + 6 <= $size && @u16(^@ + 4) != 0
+        :--- record ---
+rsz:    u32     1               size, words
+fn:     u16     'wmf_func       function
+#set    rend = ^@ - 6 + rsz * 2
+#if fn == 0x0325 || fn == 0x0324
+np:     i16     1               points
+        *       np      :wmf_point
+#elseif fn == 0x0201
+        u8      1               red
+        u8      1               green
+        u8      1               blue
+        u8      1               reserved
+#elseif fn == 0x0102
+        u16     'wmf_mix        background mode
+#elseif fn == 0x0106
+        u16     'wmf_polyfill   polygon fill mode
+#elseif fn == 0x0104
+        u16     'wmf_rop2       draw mode
+#elseif fn == 0x020C || fn == 0x020B
+        i16     1               y
+        i16     1               x
+#fi
+        +       "rend - ^@"
+#end
+        u32     1               size, words
+        u16     'wmf_func       function (EOF)
+
+/:wmf_point
+i16     1       x
+i16     1       y
+
+/'wmf_type
+1       memory metafile
+2       disk metafile
+
+/'wmf_func
+0x0000  EOF
+0x001E  SaveDC
+0x0035  RealizePalette
+0x0037  SetPaletteEntries
+0x0102  SetBkMode
+0x0103  SetMapMode
+0x0104  SetROP2
+0x0105  SetRelAbs
+0x0106  SetPolyFillMode
+0x0107  SetStretchBltMode
+0x0108  SetTextCharExtra
+0x0127  RestoreDC
+0x012A  InvertRegion
+0x012B  PaintRegion
+0x012C  SelectClipRegion
+0x012D  SelectObject
+0x012E  SetTextAlign
+0x0139  ResizePalette
+0x0142  DIBCreatePatternBrush
+0x0149  SetLayout
+0x01F0  DeleteObject
+0x01F7  CreatePalette
+0x01F9  CreatePatternBrush
+0x0201  SetBkColor
+0x0209  SetTextColor
+0x020A  SetTextJustification
+0x020B  SetWindowOrg
+0x020C  SetWindowExt
+0x020D  SetViewportOrg
+0x020E  SetViewportExt
+0x020F  OffsetWindowOrg
+0x0211  OffsetViewportOrg
+0x0213  LineTo
+0x0214  MoveTo
+0x0220  OffsetClipRgn
+0x0228  FillRegion
+0x0231  SetMapperFlags
+0x0234  SelectPalette
+0x02FA  CreatePenIndirect
+0x02FB  CreateFontIndirect
+0x02FC  CreateBrushIndirect
+0x0324  Polygon
+0x0325  Polyline
+0x0410  ScaleWindowExt
+0x0412  ScaleViewportExt
+0x0415  ExcludeClipRect
+0x0416  IntersectClipRect
+0x0418  Ellipse
+0x0419  FloodFill
+0x041B  Rectangle
+0x041F  SetPixel
+0x0429  FrameRegion
+0x0436  AnimatePalette
+0x0521  TextOut
+0x0538  PolyPolygon
+0x0548  ExtFloodFill
+0x061C  RoundRect
+0x061D  PatBlt
+0x0626  Escape
+0x06FF  CreateRegion
+0x0817  Arc
+0x081A  Pie
+0x0830  Chord
+0x0922  BitBlt
+0x0940  DIBBitBlt
+0x0A32  ExtTextOut
+0x0B23  StretchBlt
+0x0B41  DIBStretchBlt
+0x0D33  SetDIBToDev
+0x0F43  StretchDIB
+
+/'wmf_mix
+1       transparent
+2       opaque
+
+/'wmf_polyfill
+1       alternate
+2       winding
+
+/'wmf_rop2
+1       black
+2       not merge pen
+3       mask not pen
+4       not copy pen
+5       mask pen not
+6       not
+7       xor pen
+8       not mask pen
+9       mask pen
+10      not xor pen
+11      nop
+12      merge not pen
+13      copy pen
+14      merge pen not
+15      merge pen
+16      white
