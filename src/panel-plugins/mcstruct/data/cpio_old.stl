@@ -15,12 +15,13 @@ STL 5.00
         u16     1               gid
         u16     1               links
         u16     1               rdev
-        u16     1               mtime, high word
-        u16     1               mtime, low word
+mhi:    u16     1               mtime, high word
+mlo:    u16     1               mtime, low word
+        =t      "mlo + (mhi << 16)"     mtime
 nlen:   u16     1               name size
 fhi:    u16     1               file size, high word
 flo:    u16     1               file size, low word
-#set    fsize = flo + (fhi << 16)
+fsize:  =       "flo + (fhi << 16)"     file size
         c       nlen            name
 #if nlen % 2 == 1
         +       1

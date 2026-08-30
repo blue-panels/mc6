@@ -13,7 +13,20 @@ STL 5.00
         d       1               crc32
         u16     1               version
         t16     `trx_flags      flags
-        u32     4               partition offsets (0 = none)
+p0:     u32     1               partition 0 offset
+p1:     u32     1               partition 1 offset (0 = none)
+p2:     u32     1               partition 2 offset (0 = none)
+p3:     u32     1               partition 3 offset (0 = none)
+#if p1 != 0
+        =       "p1 - p0"       partition 0 size
+#else
+        =       "$size - p0"    partition 0 size
+#fi
+#if p2 != 0
+        =       "p2 - p1"       partition 1 size
+#elseif p1 != 0
+        =       "$size - p1"    partition 1 size
+#fi
         :--- tail ---
         .       "$size - 64"
         b       4               version (major.minor.patch.tweak)

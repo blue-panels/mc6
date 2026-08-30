@@ -32,5 +32,9 @@ dsize:  u32     1               recovery dtbo size
         u32     1               dtb size
         u64     1               dtb load address
 #fi
-        :kernel at page 1, ramdisk and second stage on the page boundaries after it
+        =x      page            kernel offset
+        =x      "((page + ksize + page - 1) / page) * page"      ramdisk offset
+#if ssize > 0
+        =x      "((page + ksize + rsize + page - 1) / page) * page"      second stage offset
+#fi
 

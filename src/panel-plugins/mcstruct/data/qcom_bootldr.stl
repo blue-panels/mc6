@@ -11,10 +11,13 @@ STL 5.00
 #fi
         c       8               magic
 n:      u32     1               images
-        u32     1               image bodies offset
+bofs:   u32     1               image bodies offset
         u32     1               bootloader size
-        *       n       _QCOM_img
-
-/_QCOM_img
+#set    pos = bofs
+#repeat n
+        :--- image ---
         sc      64              name
-        u32     1               body length
+blen:   u32     1               body length
+        =x      pos             body offset
+#set    pos = pos + blen
+#end

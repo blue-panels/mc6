@@ -17,6 +17,7 @@ f7:     t8      `ines_f7        flags 7
         t8      `ines_f9        flags 9
         t8      `ines_f10       flags 10
         b       5               reserved
+        =       "(f6 >> 4) | (f7 & 0xF0)"       mapper
 #if f6 & 0x04
         +       512             trainer
 #fi

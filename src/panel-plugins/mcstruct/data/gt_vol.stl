@@ -14,13 +14,15 @@ nent:   u16     1               directory entries
         u32     1               reserved
         u32     nfiles          offsets (low 11 bits are flags)
         .       "@u32(20) & 0xFFFFF800"
-        *       nent    :gt_file
-
-/:gt_file
-u32     1       timestamp
-u16     1       offset index
-t8      `gt_flags       flags
-c:25.25         name
+#repeat nent
+        :--- entry ---
+        tu      1               timestamp
+oi:     u16     1               offset index
+        t8      `gt_flags       flags
+        sc      25              name
+        =x      "@u32(16 + oi * 4) & 0xFFFFF800"        offset
+        =       "(@u32(20 + oi * 4) & 0xFFFFF800) - (@u32(16 + oi * 4) & 0xFFFFF800)"     size
+#end
 
 /`gt_flags
 0x01            directory

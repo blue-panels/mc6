@@ -20,11 +20,13 @@ bsz1:   u16     1               body size, low word
 bsz2:   u8      1               body size, high byte
 #set    bend = ^@ + bsz1 + (bsz2 << 16)
 #if btype == 1
-        u8      1               frequency divisor (rate = 1000000 / (256 - x))
+fd:     u8      1               frequency divisor
+        =       "1000000 / (256 - fd)"  sample rate, Hz
         u8      'voc_codec      codec
 #elseif btype == 3
         u16     1               duration, samples
-        u8      1               frequency divisor
+fd:     u8      1               frequency divisor
+        =       "1000000 / (256 - fd)"  sample rate, Hz
 #elseif btype == 4
         u16     1               marker id
 #elseif btype == 6

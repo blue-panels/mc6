@@ -17,8 +17,9 @@ olen:   i32     1               offset table length
 nlen:   i32     1               file names length
 elen:   i32     1               extensions length
         i32     5               unknown
-#set    fnames = ((0x800 + olen) & 0xFFFFF800) + 0x800
-#set    exts = ((fnames + nlen) & 0xFFFFF800) + 0x800
+fnames: =x      "((0x800 + olen) & 0xFFFFF800) + 0x800"        file names block
+exts:   =x      "((fnames + nlen) & 0xFFFFF800) + 0x800"      extensions block
+        =x      "((exts + elen) & 0xFFFFF800) + 0x800"        data start
         .       0x800
         *       n       _VPP_entry
 

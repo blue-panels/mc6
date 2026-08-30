@@ -22,6 +22,8 @@ STL 5.00
         t16     `cramfs_mode    mode
         u16     1               uid
 rsz:    u32     1               size (24 bits) + gid (8 bits)
+        =       "rsz & 0xFFFFFF"        size
+        =       "rsz >> 24"     gid
 rno:    u32     1               name length / 4 (6 bits) + offset / 4 (26 bits)
 #set    rnl = (rno & 0x3F) << 2
 #set    rdir = (rno >> 6) << 2
@@ -32,7 +34,9 @@ rno:    u32     1               name length / 4 (6 bits) + offset / 4 (26 bits)
 #repeat while ^@ + 12 <= dend
         t16     `cramfs_mode    mode
         u16     1               uid
-        u32     1               size (24 bits) + gid (8 bits)
+esg:    u32     1               size (24 bits) + gid (8 bits)
+        =       "esg & 0xFFFFFF"        size
+        =       "esg >> 24"     gid
 eno:    u32     1               name length / 4 (6 bits) + offset / 4 (26 bits)
 #set    enl = (eno & 0x3F) << 2
         c       enl             name
