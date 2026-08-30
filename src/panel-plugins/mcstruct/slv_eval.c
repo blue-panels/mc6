@@ -729,9 +729,35 @@ eval_check (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
     guint64 sum = 0;
     off_t pos, size = ctx->ev->reader->size (ctx->ev->reader->ctx);
     guint64 value;
-    static const char *const names[] = { "crc32", "sum8", "sum16" };
+    static const char *const names[] = { "crc32", "sum8", "sum16", "check" };
 
     ctx->current_size = 0;
+    if (item->check_kind == 3)
+    {
+        char *err = NULL;
+
+        n = node_new (SLV_NODE_FIELD, item, parent);
+        n->offset = ctx->current_offset;
+        n->size = 0;
+        n->key = g_strdup (item->name != NULL && item->name[0] != '\0' ? item->name
+                               : item->label != NULL                   ? item->label
+                                                                       : "check");
+        n->hint = g_strdup ("check");
+        n->comment = g_strdup (item->comment);
+        if (item->expected == NULL || !slv_expr_eval (item->expected, ctx, &expected, &err))
+        {
+            n->text = g_strdup ("");
+            n->legend = err != NULL ? err : g_strdup ("bad expression");
+        }
+        else
+        {
+            n->value = expected;
+            n->text = g_strdup_printf ("%lld", (long long) expected);
+            n->legend = g_strdup (expected != 0 ? "OK" : "MISMATCH");
+        }
+        set_label (ctx, item, expected, ctx->current_offset);
+        return;
+    }
     if (!eval_expr (ctx, item->range_from, parent, item, &from)
         || !eval_expr (ctx, item->range_to, parent, item, &to))
         return;

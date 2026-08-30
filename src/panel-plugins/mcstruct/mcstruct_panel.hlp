@@ -162,6 +162,8 @@ STL5, the def-file language:
     #repeat N ... #end      N passes (5.00)
     #repeat while expr ... #end
     #set label = expr       a label without bytes (5.00)
+    check expr name         OK or MISMATCH by the expression, no bytes
+                            (5.00)
     #encoding cp866         text fields that follow are converted from
                             that charset (5.00)
     sc.0A max name          a C string ended by byte 0A (5.00)

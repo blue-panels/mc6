@@ -627,6 +627,31 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
         it->view_width = view;
         it->comment = comment;
 
+        if (type == SLV_TYPE_CHECK && strcmp (id, "check") == 0)
+        {
+            /* check expr [name]: OK when the expression is true (5.00) */
+            char *cond = next_token (&p);
+            char *err = NULL;
+
+            it->check_kind = 3;
+            if (cond == NULL)
+                add_error (ps, "check needs an expression");
+            else
+            {
+                it->expected = slv_expr_parse (cond, &err);
+                if (it->expected == NULL)
+                {
+                    add_error (ps, "bad check '%s': %s", cond, err);
+                    g_free (err);
+                }
+            }
+            g_free (cond);
+            it->name = rest_of_line (p);
+            g_free (id);
+            add_item (ps, it);
+            return;
+        }
+
         if (type == SLV_TYPE_CHECK)
         {
             /* crc32 from..to [== expr] [name] */
@@ -1442,7 +1467,8 @@ slv_parse_type_id (const char *id, slv_type_t *type, int *size, gboolean *big_en
         *endian_set = TRUE;
     }
 
-    if (strcmp (base, "crc32") == 0 || strcmp (base, "sum8") == 0 || strcmp (base, "sum16") == 0)
+    if (strcmp (base, "crc32") == 0 || strcmp (base, "sum8") == 0 || strcmp (base, "sum16") == 0
+        || strcmp (base, "check") == 0)
     {
         *type = SLV_TYPE_CHECK;
         *size = 0;

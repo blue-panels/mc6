@@ -129,7 +129,7 @@ struct slv_item_t
     gboolean big_endian;
     gboolean endian_set; /* .le / .be suffix or a fixed-order type: ignore #endian */
     gboolean hidden;     /* follower == 0 */
-    int check_kind;      /* SLV_ITEM_CHECK: 0 crc32, 1 sum8, 2 sum16 */
+    int check_kind;      /* SLV_ITEM_CHECK: 0 crc32, 1 sum8, 2 sum16, 3 check expr (5.00) */
 
     slv_follower_kind_t follower_kind;
     slv_expr_t *follower; /* SLV_FOLLOWER_EXPR */

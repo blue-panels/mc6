@@ -642,6 +642,33 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_check_expr)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/C\n"
+                              "m: w 1 magic\n"
+                              " check \"m == 0x5A4D\" magic check\n"
+                              "ok: check \"m == 1\"\n"
+                              " u8 1 next\n";
+    static const unsigned char data[] = { 0x4D, 0x5A, 0x77 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "C", &file, &reader);
+
+    ck_assert_str_eq (child (root, 1)->key, "magic check");
+    ck_assert_str_eq (child (root, 1)->legend, "OK");
+    ck_assert_int_eq ((int) child (root, 1)->size, 0);
+    ck_assert_str_eq (child (root, 2)->legend, "MISMATCH");
+    ck_assert_int_eq ((int) child (root, 3)->offset, 2);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -764,6 +791,7 @@ main (void)
     tcase_add_test (tc_core, test_value_rows);
     tcase_add_test (tc_core, test_switch);
     tcase_add_test (tc_core, test_terminator_and_encoding);
+    tcase_add_test (tc_core, test_check_expr);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);
