@@ -791,8 +791,8 @@ START_TEST (test_quoted_follower)
     slv_reader_t *reader;
     slv_node_t *root = eval_text (def, data, sizeof (data), "Q", &file, &reader);
 
-    ck_assert_int_eq ((int) child (root, 0)->size, 3);         /* "$size" is the expression */
-    ck_assert_int_eq (child (root, 1)->kind, SLV_NODE_REMARK); /* "KP" is still a literal */
+    ck_assert_int_eq (child (root, 0)->kind, SLV_NODE_REMARK); /* "KP" is still a literal */
+    ck_assert_int_eq ((int) child (root, 1)->size, 3);         /* "$size" is the expression */
 
     slv_node_free (root);
     slv_reader_free (reader);
