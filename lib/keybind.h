@@ -286,6 +286,7 @@ enum
     CK_FoldToggle,
     CK_UnfoldAll,
     CK_FilterToggle,
+    CK_FilterWord,
     // mark commands
     CK_MarkColumn,
     CK_MarkWord,

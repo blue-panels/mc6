@@ -536,6 +536,7 @@ static const global_keymap_ini_t default_editor_keymap[] = {
     { "FoldToggle", "alt-shift-f" },
     { "UnfoldAll", "alt-shift-u" },
     { "FilterToggle", "alt-s" },
+    { "FilterWord", "alt-shift-s" },
     { "ExtendedKeyMap", "ctrl-x" },
     {
         NULL,

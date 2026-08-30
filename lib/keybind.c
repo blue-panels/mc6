@@ -322,6 +322,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (FoldToggle, N_ ("Toggle code fold")),
     ADD_KEYMAP_NAME_DESC (UnfoldAll, N_ ("Unfold all")),
     ADD_KEYMAP_NAME_DESC (FilterToggle, N_ ("Toggle line filter")),
+    ADD_KEYMAP_NAME_DESC (FilterWord, N_ ("Filter by selection or word")),
     ADD_KEYMAP_NAME_DESC (MarkToFileBegin, N_ ("Select to file start")),
     ADD_KEYMAP_NAME_DESC (MarkToFileEnd, N_ ("Select to file end")),
     ADD_KEYMAP_NAME_DESC (MarkToPageBegin, N_ ("Select to page start")),

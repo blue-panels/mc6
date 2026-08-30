@@ -636,6 +636,45 @@ edit_filter_apply (WEdit *edit, mc_search_t *search)
 /* --------------------------------------------------------------------------------------------- */
 
 /**
+ * The text between two offsets as a filter pattern: a single line of a sensible length.
+ * Result must be g_free'd; NULL if the range spans lines, is empty or is too long.
+ */
+
+static char *
+edit_filter_get_text (WEdit *edit, off_t start, off_t end)
+{
+    GString *pattern;
+
+    if (end <= start || end - start > BUF_MEDIUM)
+        return NULL;
+
+    pattern = g_string_sized_new (end - start);
+
+    for (off_t i = start; i < end; i++)
+    {
+        const int c = edit_buffer_get_byte (&edit->buffer, i);
+
+        if (c == '\n' || c == '\r')
+        {
+            g_string_free (pattern, TRUE);
+            return NULL;
+        }
+
+        g_string_append_c (pattern, (gchar) c);
+    }
+
+    if (pattern->len == 0)
+    {
+        g_string_free (pattern, TRUE);
+        return NULL;
+    }
+
+    return g_string_free (pattern, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
  * Lift the filter if one is on; otherwise put the last search back on as a filter,
  * or ask for one when there has been no search yet.
  */
@@ -651,6 +690,40 @@ edit_filter_toggle (WEdit *edit)
         (void) edit_filter_apply (edit, edit->search);
     else
         edit_search_cmd (edit, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Filter by the selected text, or by the word under the cursor when there is no selection
+ * to take a pattern from. No dialog: the filter goes on right away.
+ */
+void
+edit_filter_word (WEdit *edit)
+{
+    off_t start, end;
+    char *pattern = NULL;
+
+    if (!edit->column_highlight && eval_marks (edit, &start, &end))
+        pattern = edit_filter_get_text (edit, start, end);
+
+    if (pattern == NULL)
+    {
+        edit_get_current_word_extents (edit, &start, &end);
+        pattern = edit_filter_get_text (edit, start, end);
+    }
+
+    if (pattern == NULL)
+        return;
+
+    edit_search_deinit (edit);
+    edit->last_search_string = pattern;
+
+    if (edit_search_init (edit, edit->last_search_string) && edit_filter_apply (edit, edit->search))
+    {
+        edit->search_start = edit->buffer.curs1;
+        edit->found_len = 0;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
