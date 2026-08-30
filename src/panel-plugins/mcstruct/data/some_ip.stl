@@ -1,0 +1,124 @@
+STL 5.00
+;
+;   SOME/IP message header and, for service discovery messages, the SD
+;   entries and options. After kaitai_struct_formats network/some_ip/*.ksy.
+;
+
+/SOME_IP
+#endian big
+        u16     1               service id
+mid:    u16     1               method / event id (bit 15: event)
+len:    u32     1               length
+        u16     1               client id
+        u16     1               session id
+        u8      1               protocol version
+        u8      1               interface version
+        u8      'someip_type    message type
+        u8      'someip_ret     return code
+#set    pend = ^@ - 8 + len
+#if @u16(^@ - 16) == 0xFFFF && mid == 0x8100
+        :--- service discovery ---
+        t8      `sd_flags       flags
+        b       3               reserved
+elen:   u32     1               entries length
+#set    eend = ^@ + elen
+#repeat while ^@ + 16 <= eend
+        :--- entry ---
+et:     u8      'sd_entry       type
+        u8      1               first options index
+        u8      1               second options index
+        t8      44              first / second option counts
+        u16     1               service id
+        u16     1               instance id
+        u8      1               major version
+        b       3               ttl
+#if et == 6 || et == 7
+        u8      1               reserved
+        t8      1304            initial data / reserved / counter
+        u16     1               event group id
+#else
+        u32     1               minor version
+#fi
+#end
+olen:   u32     1               options length
+#set    oend = ^@ + olen
+#repeat while ^@ + 3 <= oend
+        :--- option ---
+ol:     u16     1               length
+ot:     u8      'sd_option      type
+#set    optend = ^@ + ol
+        u8      1               reserved
+#if ot == 4 || ot == 20 || ot == 36
+        b       4               ipv4 address
+        u8      1               reserved
+        u8      'sd_l4          protocol
+        u16     1               port
+#elseif ot == 6 || ot == 22 || ot == 38
+        b       16              ipv6 address
+        u8      1               reserved
+        u8      'sd_l4          protocol
+        u16     1               port
+#elseif ot == 2
+        u16     1               priority
+        u16     1               weight
+#elseif ot == 1
+#repeat while @b != 0
+cl:     u8      1               length
+        c       cl              key=value
+#end
+        u8      1               end
+#fi
+        +       "optend - ^@"
+#end
+#fi
+        +       "pend - ^@"     payload
+
+/'someip_type
+0x00    request
+0x01    request, no return
+0x02    notification
+0x40    request ack
+0x41    request no return ack
+0x42    notification ack
+0x80    response
+0x81    error
+0xC0    response ack
+0xC1    error ack
+
+/'someip_ret
+0       ok
+1       not ok
+2       unknown service
+3       unknown method
+4       not ready
+5       not reachable
+6       timeout
+7       wrong protocol version
+8       wrong interface version
+9       malformed message
+10      wrong message type
+
+/`sd_flags
+0x80            reboot
+0x40            unicast
+0x20            initial data
+
+/'sd_entry
+0       find service
+1       offer service
+6       subscribe eventgroup
+7       subscribe eventgroup ack
+
+/'sd_option
+1       configuration
+2       load balancing
+4       ipv4 endpoint
+6       ipv6 endpoint
+20      ipv4 multicast
+22      ipv6 multicast
+36      ipv4 SD endpoint
+38      ipv6 SD endpoint
+
+/'sd_l4
+6       TCP
+17      UDP

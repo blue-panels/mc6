@@ -124,3 +124,6 @@ xm.stl: @0:457874656E646564204D6F64756C653A20
 protobuf.stl: *.pb
 bson.stl: *.bson
 asn1_der.stl: *.der *.cer *.crt
+some_ip.stl:
+specpr.stl:
+mcap.stl: @0:894D43415030

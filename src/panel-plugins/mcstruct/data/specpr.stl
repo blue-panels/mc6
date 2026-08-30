@@ -1,0 +1,68 @@
+STL 5.00
+;
+;   USGS SPECPR spectral library: 1536 byte records (data, text and
+;   their continuations). After kaitai_struct_formats
+;   scientific/spectroscopy/specpr.ksy (Unlicense).
+;
+
+/SPECPR
+#endian big
+#repeat while ^@ + 1536 <= $size
+        :--- record ---
+fl:     u32     1               icflag (bit 0 text, bit 1 continuation)
+#set    rend = ^@ - 4 + 1536
+#if (fl & 3) == 0
+        c       40              title
+        c       8               user name
+        i32     1               start time a, 24000 s units
+        i32     1               start time b
+        i32     1               julian date a
+        i32     1               julian date b
+        i32     1               end time
+        i32     1               right ascension
+        i32     1               declination
+        i32     1               channels
+        i32     1               air mass x 1000
+        i32     1               revolutions
+        i32     2               band
+        i32     1               wavelength record
+        i32     1               resolution record
+        i32     1               record number
+        i32     1               text pointer
+        c       60              history
+        c       74              history 1
+        c       74              history 2
+        c       74              history 3
+        c       74              history 4
+        i32     1               runs
+        i32     1               source angle, 1/6000 s
+        i32     1               emission angle, 1/6000 s
+        i32     1               phase angle, 1/1500 s
+        i32     1               wavelength type
+        i32     1               time channel
+        f32     1               normalization
+        f32     1               scan time
+        f32     1               time interval
+        f32     1               temperature
+        f32     256             data
+#elseif (fl & 3) == 2
+        f32     383             data continuation
+#elseif (fl & 3) == 1
+        c       40              title
+        c       8               user name
+        u32     1               text pointer
+        i32     1               text characters
+        c       1476            text
+#else
+        c       1532            text continuation
+#fi
+        +       "rend - ^@"
+#end
+
+/`specpr_flags
+0x00000001      text
+0x00000002      continuation
+0x00000004      errors
+0x00000008      coordinate mode
+0x00000010      iscta type
+0x00000020      isctb type

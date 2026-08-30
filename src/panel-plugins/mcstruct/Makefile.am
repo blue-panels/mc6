@@ -169,4 +169,7 @@ dist_mcstructdata_DATA = \
 	data/xm.stl \
 	data/protobuf.stl \
 	data/bson.stl \
-	data/asn1_der.stl
+	data/asn1_der.stl \
+	data/some_ip.stl \
+	data/specpr.stl \
+	data/mcap.stl
