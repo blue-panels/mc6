@@ -45,6 +45,7 @@
 #include "lib/widget/mouse.h"
 
 #include "src/execute.h"
+#include "src/keymap.h"
 #include "src/mcterm/mcterm.h"
 #include "src/mcterm/mcterm_cwd.h"
 
@@ -57,6 +58,8 @@
 
 static WMcTerm *mcterm_panel = NULL;
 static gboolean mcterm_mode = FALSE;
+/* Which set of names the button bar carries: -1 until it carries one at all. */
+static int mcterm_bar_kind = -1;
 /* A command of ours is running; the panels are to be re-read once it is over. */
 static gboolean mcterm_exec_needs_panel_reload = FALSE;
 /* The panels stepped aside for the command; they come back when it is over. */
@@ -75,6 +78,7 @@ static int mcterm_parked_left = 0;
 
 static gboolean mcterm_overlay_any_panel_visible (void);
 static void mcterm_overlay_park_shell_line (void);
+static void mcterm_overlay_set_buttonbar (void);
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -687,6 +691,62 @@ mcterm_overlay_any_panel_visible (void)
     return (pw != NULL && widget_get_state (pw, WST_VISIBLE));
 }
 
+/* --------------------------------------------------------------------------------------------- */
+
+/* These act on the file the cursor of the current panel stands on. While that panel is off the
+   screen there is no cursor to look at, so the file that would be viewed, copied, moved or
+   deleted is anybody's guess: the key goes to the terminal instead and does nothing here. The
+   other panel being up is no help - the cursor that counts is still out of sight. */
+gboolean
+mcterm_overlay_command_needs_panel_cursor (long command)
+{
+    if (current_panel != NULL && widget_get_state (WIDGET (current_panel), WST_VISIBLE))
+        return FALSE;
+
+    switch (command)
+    {
+    // Its entries reach for the file under the cursor through %f and %d.
+    case CK_UserMenu:
+    case CK_View:
+    case CK_Edit:
+    /* The panel keymap names these, so they never come out of a lookup on the file manager and
+       are already the shell's while the panels are down. Named here for the day it changes. */
+    case CK_ViewRaw:
+    case CK_Copy:
+    case CK_CopySingle:
+    case CK_Move:
+    case CK_MoveSingle:
+    case CK_Delete:
+    case CK_DeleteSingle:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What the terminal does to its own output, and what it hands out of it. None of it depends on
+   who holds the focus - the mark and the filter belong to the view, not to the typing. */
+static gboolean
+mcterm_overlay_terminal_owns (long command)
+{
+    switch (command)
+    {
+    case CK_Store:
+    case CK_MarkAll:
+    case CK_FilterWord:
+    case CK_FilterToggle:
+    case CK_Clear:
+    case CK_ClearAll:
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 mcterm_overlay_panel_focused (Widget *focused)
 {
@@ -903,6 +963,7 @@ mcterm_overlay_toggle (void)
         widget_hide (get_panel_widget (1));
         widget_hide (WIDGET (the_hint));
 
+        mcterm_overlay_set_buttonbar ();
         do_refresh ();
     }
     else
@@ -934,6 +995,7 @@ mcterm_overlay_toggle (void)
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
         layout_change ();
         widget_select (WIDGET (current_panel));
+        mcterm_overlay_set_buttonbar ();
         do_refresh ();
     }
 }
@@ -945,6 +1007,7 @@ mcterm_overlay_destroy (void)
 {
     mcterm_panel = NULL;
     mcterm_mode = FALSE;
+    mcterm_bar_kind = -1;
     g_clear_pointer (&mcterm_parked_line, g_free);
 }
 
@@ -974,11 +1037,56 @@ mcterm_overlay_draw_panel_slot (int idx, const WPanel *active_panel)
         widget_draw (pw);
 }
 
+/* The button bar names the keys that are on offer, and with no panel on screen those are the
+   terminal's own: F2 to F7 mark the output, cut it down and clear it. Help, the pull-down menu
+   and the way out stay the file manager's wherever the keys are typed, and F8 is left empty -
+   the reach for Delete is too well worn to give it another meaning here. */
+static void
+mcterm_overlay_set_buttonbar (void)
+{
+    /* An alt-screen application has the keys itself, the function keys among them: the bar
+       would name commands that are not on offer. */
+    const int kind = (mcterm_mode && mcterm_panel != NULL && !mcterm_in_alt_screen (mcterm_panel)
+                      && !mcterm_overlay_any_panel_visible ())
+        ? 1
+        : 0;
+
+    if (the_bar == NULL || mcterm_bar_kind == kind)
+        return;
+
+    mcterm_bar_kind = kind;
+
+    if (kind == 0)
+        midnight_set_buttonbar (the_bar);
+    else
+    {
+        Widget *fw = WIDGET (filemanager);
+        Widget *tw = mcterm_overlay_widget ();
+
+        buttonbar_set_label (the_bar, 1, Q_ ("ButtonBar|Help"), fw->keymap, NULL);
+        buttonbar_set_label (the_bar, 2, Q_ ("ButtonBar|Copy"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 3, Q_ ("ButtonBar|Mark"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 4, Q_ ("ButtonBar|Filter"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 5, Q_ ("ButtonBar|UnFilt"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 6, Q_ ("ButtonBar|ClrAll"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 7, Q_ ("ButtonBar|Clear"), mcterm_map, tw);
+        buttonbar_clear_label (the_bar, 8, NULL);
+        buttonbar_set_label (the_bar, 9, Q_ ("ButtonBar|PullDn"), fw->keymap, NULL);
+        buttonbar_set_label (the_bar, 10, Q_ ("ButtonBar|Quit"), fw->keymap, NULL);
+    }
+
+    widget_draw (WIDGET (the_bar));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 mcterm_overlay_draw_visible_panels (void)
 {
     if (mcterm_panel != NULL)
         mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
+
+    mcterm_overlay_set_buttonbar ();
 
     WPanel *active_panel;
 
@@ -1112,6 +1220,12 @@ mcterm_overlay_show_panel_if_hidden (int idx)
         return FALSE;
 
     widget_show (pw);
+    /* The panel that comes up is the one to work on: leaving the current one hidden would put
+       the cursor that commands read back out of sight. */
+    if (get_panel_type (idx) == view_listing
+        && (current_panel == NULL || !widget_get_state (WIDGET (current_panel), WST_VISIBLE)))
+        current_panel = PANEL (pw);
+
     mcterm_overlay_draw_visible_panels ();
     tty_refresh ();
 
@@ -1315,6 +1429,7 @@ mcterm_overlay_exec_command (const char *cmd)
 
     if (panels_hidden)
     {
+        mcterm_overlay_set_buttonbar ();
         widget_draw (mcterm_overlay_widget ());
         tty_refresh ();
     }
@@ -1544,9 +1659,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         // the focus - at the command line those same keys move and edit the shell's own line.
         term_cmd = mcterm_key_command (mcterm_panel, parm);
 
-        // The page-up of the output is the terminal's whoever is typing: the line stays put.
+        /* Clearing the output, marking it and cutting it down are the terminal's whoever is
+           typing: the line stays put, and the view is not dragged back to the end first. */
         if (!in_alt && !mcterm_overlay_any_panel_visible ()
-            && (term_cmd == CK_Clear || term_cmd == CK_ClearAll))
+            && mcterm_overlay_terminal_owns (term_cmd))
             return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
 
         if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey
@@ -1578,8 +1694,13 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         return MSG_HANDLED;
     }
 
+    /* With no panel on screen the terminal's keymap comes first: what it names is the
+       terminal's, and the file manager's key of the same name never gets to run. */
+    if (term_cmd != CK_IgnoreKey && !mcterm_overlay_any_panel_visible ())
+        return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+
     cmd = widget_lookup_key (w, parm);
-    if (cmd != CK_IgnoreKey)
+    if (cmd != CK_IgnoreKey && !mcterm_overlay_command_needs_panel_cursor (cmd))
         return execute_command (cmd, data);
 
     if (mcterm_overlay_starts_cmdline_input (parm))
@@ -1686,6 +1807,13 @@ gboolean
 mcterm_overlay_show_panel_if_hidden (int idx)
 {
     (void) idx;
+    return FALSE;
+}
+
+gboolean
+mcterm_overlay_command_needs_panel_cursor (long command)
+{
+    (void) command;
     return FALSE;
 }
 

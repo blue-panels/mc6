@@ -35,6 +35,9 @@ void mcterm_overlay_resize (const WRect *r);
 gboolean mcterm_overlay_complete_or_cycle_focus (void);
 cb_ret_t mcterm_overlay_send_enter_if_cmdline_empty (void);
 gboolean mcterm_overlay_show_panel_if_hidden (int idx);
+/* Whether @command works on the file the panel's cursor stands on and so must not run while no
+   panel is on screen. */
+gboolean mcterm_overlay_command_needs_panel_cursor (long command);
 gboolean mcterm_overlay_toggle_panel_command (gboolean right_panel_command);
 
 mcterm_overlay_cmdline_result_t mcterm_overlay_run_cmdline (const char *cmd, gboolean is_cd,

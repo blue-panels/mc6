@@ -534,7 +534,10 @@ SelectCodepage = alt-e
 # Every key not named here is typed into the shell.
 # The cursor keys and the marking keys work while the terminal holds the focus;
 # the view keys work whoever is typing.
-Store = ctrl-insert; enter
+# The function keys are the terminal's own while no panel is on screen: the file
+# manager's would work on a cursor nobody can see.
+Store = ctrl-insert; enter; f2
+MarkAll = f3
 Unmark = ctrl-shift-u
 MarkLeft = shift-left
 MarkRight = shift-right
@@ -558,9 +561,9 @@ PageUp = pgup
 PageDown = pgdn
 Top = ctrl-home
 Bottom = ctrl-end
-Clear = ctrl-l
+Clear = ctrl-l; f7
 # The screen and the scrollback both, where Clear keeps the scrollback.
-ClearAll = ctrl-shift-l; ctrl-alt-l
+ClearAll = ctrl-shift-l; ctrl-alt-l; f6
 # The output cut down to the rows that match the mark, or the word under the cursor.
-FilterWord = alt-shift-s
-FilterToggle = alt-s
+FilterWord = alt-shift-s; f4
+FilterToggle = alt-s; f5

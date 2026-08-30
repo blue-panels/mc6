@@ -1538,18 +1538,22 @@ mcterm_filter_set (WMcTerm *t, const char *pattern)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Filter by the marked text, or by the word under the cursor. */
-static void
+/* Filter by the marked text, or by the word under the cursor. FALSE when there was nothing to
+   filter by: the key is the shell's. */
+static gboolean
 mcterm_filter_by_word (WMcTerm *t)
 {
     char *pattern;
+    gboolean ok;
 
     pattern = mcterm_filter_pattern (t);
     if (pattern == NULL)
-        return;
+        return FALSE;
 
-    (void) mcterm_filter_set (t, pattern);
+    ok = mcterm_filter_set (t, pattern);
     g_free (pattern);
+
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1840,6 +1844,218 @@ mcterm_send_encoded_key (WMcTerm *t, int key)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------------------------- */
+
+/* The whole output becomes the mark, and a second press takes it back. Under a filter the mark
+   runs from the first row shown to the last, so what lies hidden in between is marked too: a
+   mark is one unbroken run of rows and knows no holes. */
+static gboolean
+mcterm_mark_all (WMcTerm *t)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    mcterm_geom_t g;
+    gint64 oldest, newest;
+
+    if (t->sel.anchored)
+    {
+        mcterm_sel_clear (&t->sel);
+        widget_draw (WIDGET (t));
+        return TRUE;
+    }
+
+    if (r->cols <= 0 || !mcterm_geometry (t, &g))
+        return FALSE;
+
+    if (g.filtered)
+    {
+        const int len = mcterm_filter_len (&t->filter);
+
+        if (len <= 0)
+            return FALSE;
+
+        oldest = mcterm_filter_row (&t->filter, 0);
+        newest = mcterm_filter_row (&t->filter, len - 1);
+    }
+    else
+    {
+        oldest = mcview_vterm_scrolled_rows (t->vterm) - mcview_vterm_history_len (t->vterm);
+        newest = MAX (g.newest_abs, oldest);
+    }
+
+    if (oldest < 0 || newest < oldest)
+        return FALSE;
+
+    mcterm_sel_start (&t->sel, oldest, 0);
+    mcterm_sel_extend (&t->sel, newest, r->cols - 1);
+
+    // Reading goes on from the end of what was marked.
+    t->cursor_row = newest;
+    t->cursor_col = r->cols - 1;
+    t->cursor_valid = TRUE;
+    mcterm_show_row (t, newest);
+    widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Carry out a command of the terminal's own, whether it came from a key of its keymap or from
+   the button bar, which has no key to name and passes 0. MSG_NOT_HANDLED for one it has no use
+   for: the key that stands for it belongs to the shell and is typed into it. */
+static cb_ret_t
+mcterm_execute_cmd (WMcTerm *t, long command, int key)
+{
+    const int page = WIDGET (t)->rect.lines - 1;
+
+    switch (command)
+    {
+    case CK_Store:
+        // A panel over it, or nothing marked: the key is someone else's.
+        if (!t->scroll_allowed || !t->sel.active)
+        {
+            /* Enter is the shell's line and follows the output down to where that line is
+               typed; the other keys of this command leave the view where it is. */
+            if (key == '\n' || key == KEY_ENTER)
+                mcterm_follow_end (t);
+            break;
+        }
+        // Copied and done with: what is on the clipfile needs no marker.
+        mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols);
+        mcterm_sel_clear (&t->sel);
+        widget_draw (WIDGET (t));
+        return MSG_HANDLED;
+
+    case CK_Unmark:
+        if (!t->sel.anchored)
+        {
+            mcterm_follow_end (t);
+            break;
+        }
+        mcterm_sel_clear (&t->sel);
+        widget_draw (WIDGET (t));
+        return MSG_HANDLED;
+
+    case CK_MarkAll:
+        // A panel over it: the key is someone else's.
+        if (!t->scroll_allowed)
+        {
+            mcterm_follow_end (t);
+            break;
+        }
+        if (!mcterm_mark_all (t))
+            break;
+        return MSG_HANDLED;
+
+    case CK_MarkLeft:
+    case CK_MarkRight:
+    case CK_MarkUp:
+    case CK_MarkDown:
+    case CK_MarkPageUp:
+    case CK_MarkPageDown:
+    case CK_MarkToHome:
+    case CK_MarkToEnd:
+        // A panel over the terminal owns these keys, see CK_Store above.
+        if (!t->scroll_allowed)
+        {
+            mcterm_follow_end (t);
+            break;
+        }
+        mcterm_cursor_move (t, command, TRUE);
+        return MSG_HANDLED;
+
+    case CK_Left:
+    case CK_Right:
+    case CK_Up:
+    case CK_Down:
+    case CK_WordLeft:
+    case CK_WordRight:
+    case CK_Home:
+    case CK_End:
+        if (!t->scroll_allowed)
+        {
+            mcterm_follow_end (t);
+            break;
+        }
+        mcterm_cursor_move (t, command, FALSE);
+        return MSG_HANDLED;
+
+    case CK_Clear:
+    case CK_ClearAll:
+        // A panel over the terminal: the key is someone else's.
+        if (!t->scroll_allowed)
+            break;
+        mcterm_clear_screen (t, command == CK_ClearAll);
+        return MSG_HANDLED;
+
+    case CK_FilterWord:
+        if (!t->scroll_allowed)
+        {
+            mcterm_follow_end (t);
+            break;
+        }
+        if (!mcterm_filter_by_word (t))
+            break;
+        return MSG_HANDLED;
+
+    case CK_FilterToggle:
+        // Without a filter of its own the terminal has no use for the key.
+        if (!t->scroll_allowed || !mcterm_filter_toggle (t))
+            break;
+        return MSG_HANDLED;
+
+    case CK_ScrollUp:
+    case CK_ScrollDown:
+    case CK_PageUp:
+    case CK_PageDown:
+    case CK_Top:
+    case CK_Bottom:
+    {
+        const int hist = mcterm_filter_active (&t->filter) ? mcterm_filter_len (&t->filter)
+                                                           : mcview_vterm_history_len (t->vterm);
+        int delta;
+
+        if (command == CK_ScrollUp)
+            delta = -1;
+        else if (command == CK_ScrollDown)
+            delta = 1;
+        else if (command == CK_PageUp)
+            delta = -page;
+        else if (command == CK_PageDown)
+            delta = page;
+        else if (command == CK_Top)
+            delta = -hist;
+        else
+            delta = hist;
+
+        if (mcterm_scroll_view (t, delta))
+        {
+            mcterm_cursor_into_view (t);
+            send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+            return MSG_HANDLED;
+        }
+
+        // Held back, the key is ours; at the end, only these two are.
+        if (t->scrollback > 0 || mcterm_filter_active (&t->filter) || command == CK_ScrollUp
+            || command == CK_ScrollDown)
+            return MSG_HANDLED;
+        break;
+    }
+
+    default:
+        mcterm_follow_end (t);
+        if (t->sel.anchored)
+        {
+            mcterm_sel_clear (&t->sel);
+            widget_draw (WIDGET (t));
+        }
+        break;
+    }
+
+    return MSG_NOT_HANDLED;
+}
+
 static cb_ret_t
 mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
 {
@@ -1941,145 +2157,19 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             return MSG_NOT_HANDLED;
 
         // An alt-screen application gets every key itself.
-        if (t->vterm != NULL && !mcview_vterm_in_alt_screen (t->vterm))
-        {
-            const int page = WIDGET (t)->rect.lines - 1;
-            const long command = mcterm_key_command (t, parm);
-
-            switch (command)
-            {
-            case CK_Store:
-                // A panel over it, or nothing marked: the key is someone else's.
-                if (!t->scroll_allowed || !t->sel.active)
-                {
-                    mcterm_follow_end (t);
-                    break;
-                }
-                // Copied and done with: what is on the clipfile needs no marker.
-                mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols);
-                mcterm_sel_clear (&t->sel);
-                widget_draw (WIDGET (t));
-                return MSG_HANDLED;
-
-            case CK_Unmark:
-                if (!t->sel.anchored)
-                {
-                    mcterm_follow_end (t);
-                    break;
-                }
-                mcterm_sel_clear (&t->sel);
-                widget_draw (WIDGET (t));
-                return MSG_HANDLED;
-
-            case CK_MarkLeft:
-            case CK_MarkRight:
-            case CK_MarkUp:
-            case CK_MarkDown:
-            case CK_MarkPageUp:
-            case CK_MarkPageDown:
-            case CK_MarkToHome:
-            case CK_MarkToEnd:
-                // A panel over the terminal owns these keys, see CK_Store above.
-                if (!t->scroll_allowed)
-                {
-                    mcterm_follow_end (t);
-                    break;
-                }
-                mcterm_cursor_move (t, command, TRUE);
-                return MSG_HANDLED;
-
-            case CK_Left:
-            case CK_Right:
-            case CK_Up:
-            case CK_Down:
-            case CK_WordLeft:
-            case CK_WordRight:
-            case CK_Home:
-            case CK_End:
-                if (!t->scroll_allowed)
-                {
-                    mcterm_follow_end (t);
-                    break;
-                }
-                mcterm_cursor_move (t, command, FALSE);
-                return MSG_HANDLED;
-
-            case CK_Clear:
-            case CK_ClearAll:
-                // A panel over the terminal: the key is someone else's.
-                if (!t->scroll_allowed)
-                    break;
-                mcterm_clear_screen (t, command == CK_ClearAll);
-                return MSG_HANDLED;
-
-            case CK_FilterWord:
-                if (!t->scroll_allowed)
-                {
-                    mcterm_follow_end (t);
-                    break;
-                }
-                mcterm_filter_by_word (t);
-                return MSG_HANDLED;
-
-            case CK_FilterToggle:
-                // Without a filter of its own the terminal has no use for the key.
-                if (!t->scroll_allowed || !mcterm_filter_toggle (t))
-                    break;
-                return MSG_HANDLED;
-
-            case CK_ScrollUp:
-            case CK_ScrollDown:
-            case CK_PageUp:
-            case CK_PageDown:
-            case CK_Top:
-            case CK_Bottom:
-            {
-                const int hist = mcterm_filter_active (&t->filter)
-                    ? mcterm_filter_len (&t->filter)
-                    : mcview_vterm_history_len (t->vterm);
-                int delta;
-
-                if (command == CK_ScrollUp)
-                    delta = -1;
-                else if (command == CK_ScrollDown)
-                    delta = 1;
-                else if (command == CK_PageUp)
-                    delta = -page;
-                else if (command == CK_PageDown)
-                    delta = page;
-                else if (command == CK_Top)
-                    delta = -hist;
-                else
-                    delta = hist;
-
-                if (mcterm_scroll_view (t, delta))
-                {
-                    mcterm_cursor_into_view (t);
-                    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
-                    return MSG_HANDLED;
-                }
-
-                // Held back, the key is ours; at the end, only these two are.
-                if (t->scrollback > 0 || mcterm_filter_active (&t->filter) || command == CK_ScrollUp
-                    || command == CK_ScrollDown)
-                    return MSG_HANDLED;
-                break;
-            }
-
-            default:
-                mcterm_follow_end (t);
-                if (t->sel.anchored)
-                {
-                    mcterm_sel_clear (&t->sel);
-                    widget_draw (WIDGET (t));
-                }
-                break;
-            }
-        }
+        if (t->vterm != NULL && !mcview_vterm_in_alt_screen (t->vterm)
+            && mcterm_execute_cmd (t, mcterm_key_command (t, parm), parm) == MSG_HANDLED)
+            return MSG_HANDLED;
 
         if (t->child_dead || t->pty_master < 0)
             return MSG_NOT_HANDLED;
         return mcterm_send_encoded_key (t, parm) ? MSG_HANDLED : MSG_NOT_HANDLED;
+
+    case MSG_ACTION:
+        // The button bar names the terminal's commands while no panel is on screen.
+        if (t->vterm == NULL || mcview_vterm_in_alt_screen (t->vterm))
+            return MSG_NOT_HANDLED;
+        return mcterm_execute_cmd (t, parm, 0);
 
     case MSG_FOCUS:
         // Reading starts where the shell is typing.
@@ -2423,6 +2513,17 @@ mcterm_key_command (const WMcTerm *t, int key)
         /* Ctrl-Left and Ctrl-Right navigate the terminal output even when
          * the command line owns text input. */
         return command;
+
+    case CK_Store:
+    case CK_MarkAll:
+    case CK_FilterWord:
+    case CK_FilterToggle:
+        /* Marking the output, cutting it down and taking it out are the terminal's whoever is
+         * typing, as long as it has the screen to itself. Enter is the exception: it is the
+         * shell's own key and stays with whoever holds the focus. */
+        if (t->scroll_allowed && key != '\n' && key != KEY_ENTER)
+            return command;
+        return widget_get_state (CONST_WIDGET (t), WST_FOCUSED) ? command : CK_IgnoreKey;
 
     default:
         // The cursor and the mark are its own only while it holds the focus.
