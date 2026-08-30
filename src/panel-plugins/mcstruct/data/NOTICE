@@ -1,0 +1,151 @@
+mcstruct def-files: sources and licenses
+
+The def-files in this directory are part of GNU Midnight Commander and are
+distributed under the GNU General Public License, version 3 or later (see
+COPYING at the top of the tree).
+
+Most of them were written after the format descriptions of the Kaitai Struct
+formats gallery, https://github.com/kaitai-io/kaitai_struct_formats, each
+under the license its .ksy file names. Those licenses (CC0-1.0, MIT,
+BSD-2-Clause, Apache-2.0, Unlicense, WTFPL, GPL-2.0-or-later,
+GPL-3.0-or-later, LGPL-2.1) allow this use and ask that the notice be kept:
+Copyright (c) the Kaitai Struct formats gallery contributors, used under
+the license named next to each file.
+
+def-file            source (.ksy)                              license
+aix_utmp.stl        log/aix_utmp                               CC0-1.0
+allegro_dat.stl     game/allegro_dat                           CC0-1.0
+amlogic_mpt.stl     filesystem/amlogic_emmc_partitions         CC0-1.0
+andes_fw.stl        firmware/andes_firmware                    CC0-1.0
+android_dto.stl     archive/android_dto                        CC0-1.0
+android_img.stl     archive/android_img                        CC0-1.0
+android_super.stl   filesystem/android_super                   CC0-1.0
+apm.stl             filesystem/apm_partition_table             CC0-1.0
+applesd.stl         filesystem/apple_single_double             CC0-1.0
+asn1_der.stl        serialization/asn1/asn1_der                CC0-1.0
+asus_bootldr.stl    archive/android_bootldr_asus               CC0-1.0
+au.stl              media/au                                   CC0-1.0
+avantes_roh60.stl   scientific/spectroscopy/avantes_roh60      CC0-1.0
+avi.stl             media/avi                                  CC0-1.0
+bitcoin_tx.stl      network/bitcoin_transaction                MIT
+blend.stl           media/blender_blend                        CC0-1.0
+bson.stl            serialization/bson                         CC0-1.0
+btrfs_stream.stl    filesystem/btrfs_stream                    CC0-1.0
+cfb.stl             serialization/microsoft_cfb                CC0-1.0
+chg.stl             cad/monomakh_sapr_chg                      CC0-1.0
+chrome_pak.stl      serialization/chrome_pak                   CC0-1.0
+cpio_old.stl        archive/cpio_old_le                        CC0-1.0
+cramfs.stl          filesystem/cramfs                          MIT
+dcx.stl             image/pcx_dcx                              CC0-1.0
+dex.stl             executable/dex                             CC0-1.0
+dicom.stl           image/dicom                                CC0-1.0
+dime.stl            network/dime_message                       CC0-1.0
+dns.stl             network/dns_packet                         CC0-1.0
+dune2_pak.stl       game/dune_2_pak                            CC0-1.0
+edid.stl            hardware/edid                              CC0-1.0
+efi_siglist.stl     security/efivar_signature_list             CC0-1.0
+ether.stl           network/ethernet_frame                     CC0-1.0
+exif.stl            image/exif                                 CC0-1.0
+ext2.stl            filesystem/ext2                            CC0-1.0
+fallout2_dat.stl    game/fallout2_dat                          CC0-1.0
+fallout_dat.stl     game/fallout_dat                           CC0-1.0
+ftl_dat.stl         game/ftl_dat                               CC0-1.0
+gbr.stl             image/gimp_brush                           CC0-1.0
+gif.stl             image/gif                                  CC0-1.0
+glb.stl             3d/gltf_binary                             MIT
+glshaders.stl       media/android_opengl_shaders_cache         Apache-2.0
+gpt.stl             filesystem/gpt_partition_table             CC0-1.0
+gt_vol.stl          game/gran_turismo_vol                      CC0-1.0
+gzip.stl            archive/gzip                               CC0-1.0
+hashcat_restore.stl log/hashcat_restore                        CC0-1.0
+hccap.stl           network/hccap                              Unlicense
+hccapx.stl          network/hccapx                             Unlicense
+heaps_pak.stl       game/heaps_pak                             MIT
+homm_agg.stl        game/heroes_of_might_and_magic_agg         CC0-1.0
+homm_bmp.stl        game/heroes_of_might_and_magic_bmp         CC0-1.0
+huawei_bootldr.stl  archive/android_bootldr_huawei             CC0-1.0
+icc.stl             image/icc_4                                CC0-1.0
+icmp.stl            network/icmp_packet                        CC0-1.0
+ico.stl             image/ico                                  CC0-1.0
+id3v1.stl           media/id3v1_1                              CC0-1.0
+id3v2.stl           media/id3v2_3                              CC0-1.0
+ines.stl            firmware/ines                              WTFPL
+iso9660.stl         filesystem/iso9660                         CC0-1.0
+ivf.stl             media/vp8_duck_ivf                         CC0-1.0
+java_class.stl      executable/java_class                      CC0-1.0
+journal.stl         log/systemd_journal                        CC0-1.0
+lnk.stl             windows/windows_lnk_file                   CC0-1.0
+luks.stl            filesystem/luks                            CC0-1.0
+lvm2.stl            filesystem/lvm2                            GPL-2.0 (LVM2 sources)
+lzh.stl             archive/lzh                                CC0-1.0
+macho.stl           executable/mach_o                          CC0-1.0
+macho_fat.stl       executable/mach_o_fat                      CC0-1.0
+mar.stl             archive/mozilla_mar                        CC0-1.0
+mcap.stl            log/mcap                                   Apache-2.0
+md2.stl             game/quake2_md2                            CC0-1.0
+mdl.stl             game/quake_mdl                             CC0-1.0
+midi.stl            media/standard_midi_file                   CC0-1.0
+minidump.stl        windows/windows_minidump                   CC0-1.0
+mo.stl              database/gettext_mo                        BSD-2-Clause
+mov.stl             media/quicktime_mov                        CC0-1.0
+nanoapp.stl         executable/android_nanoapp_header          Apache-2.0
+nt_mdt_pal.stl      scientific/nt_mdt/nt_mdt_pal               Unlicense
+ogg.stl             media/ogg                                  CC0-1.0
+op2.stl             media/genmidi_op2                          CC0-1.0
+openpgp.stl         security/openpgp_message                   CC0-1.0
+pak.stl             game/quake_pak                             CC0-1.0
+pcap.stl            network/pcap                               CC0-1.0
+pcf.stl             font/pcf_font                              CC0-1.0
+pcx.stl             image/pcx                                  CC0-1.0
+pff2.stl            font/grub2_font                            CC0-1.0
+pif.stl             image/pif                                  LGPL-2.1
+ppi.stl             network/packet_ppi                         CC0-1.0
+protobuf.stl        serialization/google_protobuf              MIT
+pyc27.stl           executable/python_pyc_27                   CC0-1.0
+qcom_bootldr.stl    archive/android_bootldr_qcom               CC0-1.0
+rar.stl             archive/rar                                CC0-1.0
+regf.stl            windows/regf                               CC0-1.0
+respack.stl         archive/respack                            CC0-1.0
+rpm.stl             archive/rpm                                CC0-1.0
+rsrc.stl            macos/resource_fork                        MIT
+rtcp.stl            network/rtcp_payload                       CC0-1.0
+rtp.stl             network/rtp_packet                         Unlicense
+rtpdump.stl         network/rtpdump                            Unlicense
+rwstream.stl        game/renderware_binary_stream              CC0-1.0
+shell_items.stl     windows/windows_shell_items                CC0-1.0
+shx.stl             geospatial/shapefile_index                 CC0-1.0
+snd.stl             macos/mac_os_resource_snd                  MIT
+some_ip.stl         network/some_ip/*                          CC0-1.0
+sparse.stl          archive/android_sparse                     CC0-1.0
+specpr.stl          scientific/spectroscopy/specpr             Unlicense
+ssh_pubkey.stl      security/ssh_public_key                    CC0-1.0
+stl3d.stl           media/stl                                  CC0-1.0
+sudoers_ts.stl      log/sudoers_ts                             CC0-1.0
+swf.stl             executable/swf                             CC0-1.0
+systemtime.stl      windows/windows_systemtime                 CC0-1.0
+tga.stl             image/tga                                  CC0-1.0
+tim.stl             image/psx_tim                              CC0-1.0
+tls_hello.stl       network/tls_client_hello                   MIT
+trdos.stl           filesystem/tr_dos_image                    CC0-1.0
+trx.stl             firmware/broadcom_trx                      GPL-2.0-or-later
+tsm.stl             database/tsm                               MIT
+ttf.stl             font/ttf                                   CC0-1.0
+uefi_te.stl         executable/uefi_te                         CC0-1.0
+utmp.stl            log/glibc_utmp                             CC0-1.0
+vdi.stl             filesystem/vdi                             GPL-3.0-or-later
+vmdk.stl            filesystem/vmware_vmdk                     CC0-1.0
+voc.stl             media/creative_voice_file                  CC0-1.0
+vox.stl             media/magicavoxel_vox                      MIT
+vpp.stl             game/saints_row_2_vpp_pc                   MIT
+wad.stl             game/doom_wad                              CC0-1.0
+websocket.stl       network/websocket                          CC0-1.0
+winres.stl          windows/windows_resource_file              CC0-1.0
+wmf.stl             image/wmf                                  CC0-1.0
+xar.stl             archive/xar                                CC0-1.0
+xm.stl              media/tracker_modules/fasttracker_xm_module Unlicense
+xwd.stl             image/xwd                                  CC0-1.0
+zisofs.stl          archive/zisofs                             CC0-1.0
+zx_tap.stl          filesystem/zx_spectrum_tap                 CC0-1.0
+
+Written from the format specifications, no gallery source: bmp, dbf, dtb,
+elf, exe, fat_boot, mbr, png, sqlite, uimage, wav, zip.

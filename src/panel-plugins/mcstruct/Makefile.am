@@ -43,6 +43,7 @@ mc_panel_mcstruct_la_LIBADD = libmcslv.la $(GLIB_LIBS)
 mcstructdatadir = $(panel_plugins_dir)/mcstruct/data
 dist_mcstructdata_DATA = \
 	data/mcstruct.ini \
+	data/NOTICE \
 	data/stl.als \
 	data/zip.stl \
 	data/exe.stl \
