@@ -66,7 +66,7 @@ def case_dirs(subject):
 def load_state():
     st = {"env": "debian-12", "subject": "archives", "transports": "local",
           "locale": "ru_RU.UTF-8", "profile": "keep", "toggles": "", "extra": "",
-          "keymap": "none", "dirs": ""}
+          "keymap": "none", "dirs": "", "memcheck": "none"}
     try:
         for line in open(STATE):
             if "=" in line:
@@ -81,7 +81,7 @@ def save_state(st):
     os.makedirs(os.path.dirname(STATE), exist_ok=True)
     with open(STATE, "w") as f:
         for k in ("env", "subject", "transports", "locale", "profile", "toggles",
-                  "extra", "keymap", "dirs"):
+                  "extra", "keymap", "dirs", "memcheck"):
             f.write("%s=%s\n" % (k, st[k]))
 
 
@@ -120,7 +120,8 @@ class Form:
         # a rebuild is asked for each time, not remembered: it costs minutes
         self.radios = {"env": self.st["env"], "subject": self.st["subject"],
                        "locale": self.st["locale"], "profile": "keep",
-                       "keymap": self.st["keymap"] or "none"}
+                       "keymap": self.st["keymap"] or "none",
+                       "memcheck": self.st["memcheck"] or "none"}
         self.checks = {"transports": set(filter(None, self.st["transports"].split(","))),
                        "toggles": set(filter(None, self.st["toggles"].split(","))),
                        "dirs": set(filter(None, self.st["dirs"].split(",")))}
@@ -155,6 +156,10 @@ class Form:
         for tag, value, desc in toggles():
             it.append(Item("check", "toggles", tag, tag, "%s  (%s)" % (desc, value)))
         it.append(Item("text", None, "extra", "more ini", "[section.]key=value, space separated"))
+        it.append(Item("head", None, None, "Memory check"))
+        it.append(Item("radio", "memcheck", "none", "none", "mc runs as it is"))
+        it.append(Item("radio", "memcheck", "valgrind", "valgrind",
+                       "memcheck: invalid accesses fail a case; slow, minutes per case"))
         it.append(Item("head", None, None, "Keymap"))
         it.append(Item("radio", "keymap", "none", "none", "mc's own bindings"))
         for f in sorted(os.listdir(os.path.join(ROOT, "common", "keymaps"))):
@@ -359,6 +364,7 @@ class Form:
         st["toggles"] = ",".join(t for t, _, _ in toggles() if t in self.checks["toggles"])
         st["extra"] = self.texts["extra"]
         st["keymap"] = self.radios["keymap"]
+        st["memcheck"] = self.radios["memcheck"]
         st["dirs"] = ",".join(d for d in case_dirs(st["subject"]) if d in self.checks["dirs"])
         return " && ".join(shlex.join(c) for c in self.commands())
 
@@ -376,6 +382,8 @@ class Form:
             test += ["-o", v]
         if st["keymap"] != "none":
             test += ["-k", st["keymap"]]
+        if st["memcheck"] == "valgrind":
+            test += ["-g"]
         test += [d for d in st["dirs"].split(",") if d]
         out = []
         if st["profile"] != "keep":

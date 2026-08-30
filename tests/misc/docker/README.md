@@ -129,6 +129,28 @@ An environment that expects something else -- no archiver installed, so
 `envs/<name>/expect.tsv`: `dir/file`, key, expectation, and optionally the
 transports it applies to.
 
+### Under valgrind
+
+    sandbox.sh debian-12 build -f all,debug     # -O0 -g3, so a stack reads
+    sandbox.sh debian-12 test -g 01-formats     # the same cases under memcheck
+
+`-g` starts mc under `valgrind --tool=memcheck` with
+`common/valgrind.supp`, which holds what the libraries never free and nothing
+of mc's own.  Every wait is multiplied by six, `$SLOW` sets another factor,
+and mc is asked to quit with F10 instead of being killed, because a killed
+process writes no summary.  A case fails on an invalid read, write or free,
+on a jump on an uninitialised value, whatever the screen shows; what was
+definitely lost is written down and left to a person, since mc frees little
+on the way out by design.
+
+The log of each case is kept next to its screen as `<case>.<key>.valgrind`,
+`<transport>/valgrind.tsv` counts them, and `index.md` gains a Memory table
+with a link to every log worth opening.  Only `debian-12` has valgrind in its
+image; `-g` elsewhere says so and stops.
+
+A case takes minutes rather than seconds, so a run under memcheck is one
+directory at a time, not the whole subject over every transport.
+
 ### Reports
 
 Every run writes `reports/<stamp>-<env>/`: `index.md` with a table per

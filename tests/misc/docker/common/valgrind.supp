@@ -1,0 +1,182 @@
+# Suppressions for running mc under memcheck in the sandbox.
+#
+# Only noise that is not ours: one-time tables the libraries never free, and
+# the reads their hand-written string and terminal code does past the end of a
+# word.  Nothing here hides an invalid access in mc itself, so a rule names the
+# library function it starts from, never a frame of mc.
+
+# ------------------------------------------------------------------ glib ---
+
+{
+   glib-quark-table-is-never-freed
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:g_quark_init
+}
+{
+   glib-type-registry-is-never-freed
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:g_type_init_with_debug_flags
+}
+{
+   glib-type-register-static
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:g_type_register_static
+}
+{
+   glib-slice-allocator-keeps-its-magazines
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:g_slice_alloc
+   ...
+   fun:g_thread_proxy
+}
+{
+   glib-once-init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_once_init_enter
+}
+{
+   glib-main-context-default
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:g_main_context_new
+}
+
+# ------------------------------------------------------- terminal libraries ---
+
+{
+   ncurses-terminfo-tables-are-never-freed
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible,definite
+   ...
+   obj:*/libncurses*
+}
+{
+   ncurses-tinfo-tables-are-never-freed
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible,definite
+   ...
+   obj:*/libtinfo*
+}
+{
+   ncurses-setupterm
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible,definite
+   ...
+   fun:setupterm
+}
+{
+   slang-terminfo-tables-are-never-freed
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible,definite
+   ...
+   obj:*/libslang*
+}
+{
+   slang-reads-a-word-at-a-time
+   Memcheck:Addr8
+   obj:*/libslang*
+}
+
+# ---------------------------------------------------------------- libc, ld ---
+
+{
+   dl-open-keeps-what-it-loaded
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:_dl_open
+}
+{
+   dl-init-keeps-what-it-loaded
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:_dl_init
+}
+{
+   iconv-keeps-its-tables
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:__gconv_open
+}
+{
+   setlocale-keeps-the-locale
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:setlocale
+}
+{
+   strlen-reads-a-word-at-a-time
+   Memcheck:Addr8
+   fun:__strlen_avx2
+}
+{
+   strcmp-reads-a-word-at-a-time
+   Memcheck:Addr8
+   fun:__strcmp_avx2
+}
+
+# --------------------------------------------------- what the plugins pull in ---
+
+{
+   libmagic-keeps-its-database
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible,definite
+   ...
+   fun:magic_load
+}
+{
+   openssl-keeps-its-tables
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   obj:*/libcrypto*
+}
+{
+   gnutls-keeps-its-tables
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   obj:*/libgnutls*
+}
+{
+   samba-keeps-its-context
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   obj:*/libsmbclient*
+}
+{
+   samba-talloc-pool
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   obj:*/libtalloc*
+}
+{
+   curl-global-init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:curl_global_init
+}
+{
+   lua-keeps-its-state
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   fun:luaL_newstate
+}

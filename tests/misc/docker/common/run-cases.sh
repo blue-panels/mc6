@@ -2,15 +2,16 @@
 # Walk the cases.tsv files and press the keys.  Runs inside the mc container.
 #
 # usage: run-cases.sh [-c subject] [-w transports] [-l locale] [-o [sec.]key=val]...
-#                     [-k keymap] [-r report] [-v] [case-dir...]
+#                     [-k keymap] [-r report] [-g] [-v] [case-dir...]
 #
 # Each row of a cases.tsv is "file, keys, expect, why, transports".  mc is
 # started under tmux with the panel in that directory, the file is found by
 # quick search, the keys are pressed in order and the screen is read.  A key
 # is Enter, F3, F5, C-o, ".." (up one level), "on <name>" (the cursor goes
-# there), "cd <path>" (through the Quick cd box), "type <text>".  Rows whose
-# keys or expectation this script does not know are reported as skipped; a
-# row with transports named runs only over those.
+# there), "cd <path>" (through the Quick cd box), "type <text>", or
+# "key <name>" for anything tmux can send: F4, M-S, C-M-l, Escape, C-F1.
+# Rows whose keys or expectation this script does not know are reported as
+# skipped; a row with transports named runs only over those.
 #
 #   -c   the subject under cases/ (default archives)
 #   -w   comma separated: local, sftp, ftp, smb, sh (default local)
@@ -19,6 +20,10 @@
 #        unless given: -o old_esc_mode=true -o Layout.message_visible=false
 #   -k   a keymap from common/keymaps/ put in place as mc.keymap
 #   -r   report directory (default /reports/<stamp>-<env>)
+#   -g   run mc under valgrind memcheck: every wait is stretched, mc is asked
+#        to quit instead of being killed so the summary is written, and a case
+#        fails on an invalid access whatever the screen shows.  The log of
+#        each case is kept next to its screen.
 #
 # The environment's envs/<env>/expect.tsv overrides expectations: columns
 # "dir/file, key, expect, transports" (the last one optional, comma separated);
@@ -29,7 +34,8 @@
 # What must come of it: "archive panel", "listing", "error dialog",
 # "nothing, no error", "the panel it came from", "extfs panel", "copy to the
 # other panel" (the file is then in /tmp, the same size), "the name as
-# written" (the file's name is on the screen, in the shell's output).  mc's
+# written" (the file's name is on the screen, in the shell's output),
+# "text: <what the screen must show>" and "no text: <what it must not>".  mc's
 # stderr is read too: an assertion or a critical warning fails the case
 # whatever the screen says.
 set -u
@@ -44,8 +50,12 @@ keymap=
 report=
 verbose=0
 options=
+memcheck=0
+# valgrind makes mc some twenty times slower to start; every wait is
+# multiplied by this, and $SLOW overrides it for a slow machine
+slow=1
 
-while getopts "c:w:l:o:k:r:v" opt; do
+while getopts "c:w:l:o:k:r:vg" opt; do
     case "$opt" in
     c) subject=$OPTARG ;;
     w) transports=$OPTARG ;;
@@ -55,12 +65,33 @@ $OPTARG" ;;
     k) keymap=$OPTARG ;;
     r) report=$OPTARG ;;
     v) verbose=1 ;;
+    g) memcheck=1 ;;
     *) exit 2 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 [ -x "$MC" ] || { echo "run-cases.sh: no mc at $MC, run build first" >&2; exit 2; }
+
+if [ $memcheck = 1 ]; then
+    command -v valgrind >/dev/null 2>&1 \
+        || { echo "run-cases.sh: -g needs valgrind in the image" >&2; exit 2; }
+    slow=${SLOW:-6}
+    # F10 must not stop at a question, or mc never exits and nothing is written
+    options="$options
+confirm_exit=false"
+fi
+[ "$slow" -ge 1 ] 2>/dev/null || slow=1
+
+# a wait written for a plain run, stretched for a run under valgrind
+nap ()
+{
+    if [ "$slow" = 1 ]; then
+        sleep "$1"
+    else
+        sleep "$(awk -v a="$1" -v s="$slow" 'BEGIN { printf "%.2f", a * s }')"
+    fi
+}
 [ -d "/work/local/$subject" ] || { echo "run-cases.sh: no local fixtures for $subject" >&2; exit 2; }
 
 stamp=$(date +%Y-%m-%dT%H-%M-%S)
@@ -92,6 +123,35 @@ if [ -n "$keymap" ]; then
         || { echo "run-cases.sh: no keymap $keymap in common/keymaps" >&2; exit 2; }
 fi
 
+# What mc calls a learned key: this terminal sends a function key with a
+# modifier as CSI 1;<mod><letter> for F1 to F4 and CSI <n>;<mod>~ above that,
+# which the built-in table does not have.  mod 2 is shift, 3 alt, 5 ctrl.
+# Without these, ctrl-f1 and its like reach mc as nothing at all.
+term_keys ()
+{
+    mkdir -p "$config/term"
+    {
+        echo "[keys]"
+        for mod in 2:shift 3:alt 5:ctrl; do
+            n=${mod%%:*}
+            name=${mod#*:}
+            i=1
+            for letter in P Q R S; do
+                # printf, not echo: the escape has to reach the file as \e
+                printf '%s-f%d=\\e[1;%s%s\n' "$name" "$i" "$n" "$letter"
+                i=$((i + 1))
+            done
+            i=5
+            for code in 15 17 18 19 20 21 23 24; do
+                printf '%s-f%d=\\e[%s;%s~\n' "$name" "$i" "$code" "$n"
+                i=$((i + 1))
+            done
+        done
+    } > "$config/term/xterm-256color"
+}
+
+term_keys
+
 # the connection each plugin reads on start; plain passwords are accepted
 printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nuse_agent=false\n' "$subject" \
     > "$config/sftp-connections.ini"
@@ -116,10 +176,10 @@ screen ()
     $T capture-pane -t mc -p
 }
 
-# wait until the screen shows $1, up to $2 seconds
+# wait until the screen shows $1, up to $2 seconds of a plain run
 wait_for ()
 {
-    n=$(( ${2:-10} * 5 ))
+    n=$(( ${2:-10} * 5 * slow ))
     while [ "$n" -gt 0 ]; do
         screen | grep -qF -- "$1" && return 0
         sleep 0.2
@@ -128,19 +188,59 @@ wait_for ()
     return 1
 }
 
-# quick search puts the cursor on a name; the key that follows ends the search
+# Under memcheck the panel is drawn while mc is still coming up: the shell in
+# the terminal has not printed its prompt yet, and a key pressed before that is
+# dropped.  A plain run is past this by the time the panel shows.
+settle ()
+{
+    [ $memcheck = 1 ] || return 0
+    nap 2
+}
+
+# quick search puts the cursor on a name; the key that follows ends the search.
+# While it is on, the mini status of the panel reads "/pattern", which is how
+# a search that was not taken is told from one that was.
 select_entry ()
 {
-    $T send-keys -t mc C-s
-    sleep 0.2
-    $T send-keys -t mc -l "$1"
-    sleep 0.3
+    n=2
+    while [ "$n" -gt 0 ]; do
+        $T send-keys -t mc C-s
+        nap 0.2
+        $T send-keys -t mc -l "$1"
+        nap 0.3
+        screen | grep -qF "/$1" && return 0
+        $T send-keys -t mc Escape
+        nap 0.5
+        n=$((n - 1))
+    done
+    echo "        quick search did not take: $1" >&2
+    return 1
+}
+
+# the memcheck run, written to $vg_log; empty when -g was not given
+#
+# --child-silent-after-fork: mc forks a shell and the helpers of the plugins,
+# and their logs would land in the same file.  --keep-debuginfo: a panel plugin
+# is dlclosed before mc exits, and without it its frames are addresses.
+vg_log=
+vg_prefix ()
+{
+    [ $memcheck = 1 ] || return 0
+    printf '%s' "valgrind --tool=memcheck --log-file='$vg_log' \
+        --suppressions=$SRC/common/valgrind.supp \
+        --child-silent-after-fork=yes --keep-debuginfo=yes \
+        --leak-check=full --show-leak-kinds=definite --errors-for-leak-kinds=none \
+        --track-origins=yes --num-callers=30 --error-limit=no "
 }
 
 # start mc with the panel in case directory $1 over transport $2; stderr to $3
 start_mc ()
 {
     $T kill-server 2>/dev/null
+    # What mc keeps between runs is state one case would hand the next: the
+    # cursor position per file, the history of every dialog.  A killed mc never
+    # wrote any of it; one that is asked to quit, as it is under memcheck, does.
+    rm -rf "${XDG_DATA_HOME:-$HOME/.local/share}/mc6"
     case "$2" in
     local) open_path=/work/local/$subject/$1 ;;
     *) open_path="$2:" ;;
@@ -148,37 +248,78 @@ start_mc ()
     # messages in English so that the screen can be read, the charset as asked
     $T new-session -d -s mc -x 120 -y 40 \
         "env -u LC_ALL LANG=$locale LC_CTYPE=$locale LC_MESSAGES=en_US.UTF-8 TERM=xterm-256color \
-         $MC -S default '$open_path' /tmp 2>'$3'"
+         $(vg_prefix)$MC -S default '$open_path' /tmp 2>'$3'"
     case "$2" in
     local)
         wait_for cases.tsv 10 || return 1
+        settle
         ;;
     *)
         # the plugin lists its connections; Enter on ours opens the subject
         # a listing shows up before the panel takes keys again, hence the sleeps
         wait_for sandbox 10 || return 1
+        settle
         select_entry sandbox
         $T send-keys -t mc Enter
         wait_for "$subject" 30 || return 1
-        sleep 1
+        nap 1
         # the samba share is the whole cases tree; the others land in the subject
         if [ "$2" = smb ]; then
             select_entry "$subject"
             $T send-keys -t mc Enter
             wait_for "cases/$subject" 30 || return 1
-            sleep 1
+            nap 1
         fi
         select_entry "$1"
         $T send-keys -t mc Enter
         wait_for cases.tsv 30 || return 1
-        sleep 1
+        nap 1
+        settle
         ;;
     esac
     return 0
 }
 
+# A killed process writes no valgrind summary, so mc is asked to leave: Esc
+# closes whatever dialog the case put up, F10 quits (confirm_exit is off).  If
+# it is still there, SIGTERM still gets the summary out; SIGKILL never does.
+# keep the screen of a case, unless it was kept before mc was asked to quit
+save_screen ()
+{
+    [ -f "$out/$slug.screen" ] || screen > "$out/$slug.screen"
+}
+
 stop_mc ()
 {
+    if [ $memcheck = 0 ]; then
+        $T kill-server 2>/dev/null
+        return
+    fi
+    $T has-session -t mc 2>/dev/null || return
+    # a case may have left the editor, the viewer or a dialog on screen, and
+    # each of them takes an F10 of its own before the file manager sees one
+    try=3
+    while [ "$try" -gt 0 ] && $T has-session -t mc 2>/dev/null; do
+        $T send-keys -t mc Escape
+        nap 0.3
+        $T send-keys -t mc Escape
+        nap 0.3
+        $T send-keys -t mc F10
+        n=$(( 14 * slow ))
+        while [ "$n" -gt 0 ] && $T has-session -t mc 2>/dev/null; do
+            sleep 0.5
+            n=$((n - 1))
+        done
+        try=$((try - 1))
+    done
+    if $T has-session -t mc 2>/dev/null; then
+        pkill -TERM -f 'memcheck-.*-linux' 2>/dev/null
+        n=$(( 20 * slow ))
+        while [ "$n" -gt 0 ] && $T has-session -t mc 2>/dev/null; do
+            sleep 0.5
+            n=$((n - 1))
+        done
+    fi
     $T kill-server 2>/dev/null
 }
 
@@ -208,7 +349,7 @@ check ()
         # the copy lands in /tmp, the other panel, and must be as big as the
         # size mc shows for the source; give it a moment to finish
         want=$(screen | grep -F " $2 " | head -1 | awk -F'│' '{gsub(/ /, "", $3); print $3}')
-        n=150
+        n=$(( 150 * slow ))
         while [ "$n" -gt 0 ]; do
             have=$(stat -c %s "/tmp/$2" 2>/dev/null)
             case "$want" in
@@ -224,6 +365,12 @@ check ()
     "the name as written")
         screen | grep -qF -- "$2"
         ;;
+    "text: "*)
+        screen | grep -qF -- "${1#text: }"
+        ;;
+    "no text: "*)
+        ! screen | grep -qF -- "${1#no text: }"
+        ;;
     *)
         return 2
         ;;
@@ -235,7 +382,7 @@ steps_known ()
 {
     echo "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
-        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "*) ;;
+        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "*) ;;
         *) exit 1 ;;
         esac
     done
@@ -256,7 +403,7 @@ press ()
         ..)
             # the first entry of a listing is ".."
             $T send-keys -t mc Home
-            sleep 0.3
+            nap 0.3
             $T send-keys -t mc Enter
             ;;
         "on "*)
@@ -266,15 +413,64 @@ press ()
             $T send-keys -t mc M-c
             wait_for "cd:" 5 >/dev/null
             $T send-keys -t mc -l "${step#cd }"
-            sleep 0.3
+            nap 0.3
             $T send-keys -t mc Enter
             ;;
         "type "*)
             $T send-keys -t mc -l "${step#type }"
             ;;
+        # anything tmux has a name for: F4, M-S, C-M-l, Escape, C-F1
+        "key "*)
+            $T send-keys -t mc "${step#key }"
+            ;;
         esac
-        sleep 1.5
+        nap 1.5
     done
+}
+
+# What memcheck says about the log $1, as "errors invalid opaque lost".
+#
+# An error whose whole stack is addresses without a name is code no one can
+# point at: pcre2 compiles a regex to machine code of its own, and reads the
+# subject a word at a time past its end, which memcheck sees as a jump on
+# uninitialised bytes.  It cannot be suppressed by name either, since a
+# suppression that matches an unnamed frame matches every error there is.  So
+# it is counted apart: "opaque" is written down, "invalid" fails the case.
+#
+# A leak is written down as well and left to a person: mc frees little on the
+# way out by design.
+vg_counts ()
+{
+    [ -s "$1" ] || { echo "- - - -"; return; }
+    awk '
+        function flush(  ) {
+            if (in_error) { if (named) invalid++; else opaque++ }
+            in_error = 0
+            in_head = 0
+            named = 0
+        }
+        # the head of an error: one space after the pid, then what it is
+        /^==[0-9]+== (Invalid read|Invalid write|Invalid free|Mismatched free|Conditional jump|Use of uninitialised|Jump to the invalid|Syscall param|Source and destination overlap|Process terminating)/ {
+            flush()
+            in_error = 1
+            in_head = 1
+            next
+        }
+        # a frame of the stack; "???" is an address with no name to it
+        /^==[0-9]+==    (at|by) 0x/ {
+            if (in_head && $0 !~ /: \?\?\?[[:space:]]*$/) named = 1
+            next
+        }
+        # two spaces: where the value came from, whose frames are not the error
+        /^==[0-9]+==  [A-Z]/ { in_head = 0; next }
+        /^==[0-9]+==[[:space:]]*$/ { flush(); next }
+        /^==[0-9]+== ERROR SUMMARY:/ { errs = $4 }
+        /^==[0-9]+==[[:space:]]*definitely lost:/ { lost = $4; gsub(/,/, "", lost) }
+        END {
+            flush()
+            printf "%s %d %d %s", (errs == "" ? "-" : errs), invalid + 0, opaque + 0, (lost == "" ? "-" : lost)
+        }
+    ' "$1"
 }
 
 # the environment's own expectation for dir/file + key over transport $3
@@ -311,6 +507,7 @@ total_run=0
     [ -n "$options" ] && echo "- ini: $(echo "$options" | grep . | tr '\n' ' ')"
     [ -n "$keymap" ] && echo "- keymap: $keymap"
     echo "- mc: $(readlink /work/opt/mc)"
+    [ $memcheck = 1 ] && echo "- valgrind: memcheck, waits x$slow"
     echo
     echo "| transport | passed | failed | known | fixed | skipped |"
     echo "|-----------|--------|--------|-------|-------|---------|"
@@ -322,6 +519,8 @@ for where in $(echo "$transports" | tr ',' ' '); do
     mkdir -p "$out"
     results=$out/results.tsv
     printf 'case\tkey\texpect\tverdict\tms\twhy\n' > "$results"
+    memory=$out/valgrind.tsv
+    [ $memcheck = 1 ] && printf 'case\tkey\terrors\tinvalid\topaque\tlost\tlog\n' > "$memory"
 
     echo "cases: $subject over $where"
     for d in "$@"; do
@@ -362,7 +561,8 @@ for where in $(echo "$transports" | tr ',' ' '); do
             fi
             case "$expect" in
             "archive panel" | listing | "nothing, no error" | "error dialog" | "the panel it came from" \
-                | "extfs panel" | "copy to the other panel" | "the name as written") ;;
+                | "extfs panel" | "copy to the other panel" | "the name as written" \
+                | "text: "* | "no text: "*) ;;
             *)
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$expect"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
@@ -372,6 +572,9 @@ for where in $(echo "$transports" | tr ',' ' '); do
 
             slug=$(echo "$name.$key" | tr '/ ' '..')
             stderr=$out/$slug.stderr
+            vg_log=
+            [ $memcheck = 1 ] && vg_log=$out/$slug.valgrind
+            rm -f "$vg_log"
             t0=$(now_ms)
             if ! start_mc "$d" "$where" "$stderr"; then
                 screen > "$out/$slug.screen"
@@ -388,13 +591,15 @@ for where in $(echo "$transports" | tr ',' ' '); do
             select_entry "$file"
             press "$key"
             sleep 1
-            # a remote file takes a moment to arrive: wait for what is expected
-            if [ "$where" != local ]; then
+            # a remote file takes a moment to arrive, and under memcheck so does
+            # a local one: wait for what is expected before reading the screen
+            if [ "$where" != local ] || [ $memcheck = 1 ]; then
                 case "$expect" in
                 "archive panel") wait_for "Arcmc:" 20 >/dev/null ;;
                 listing) wait_for "4Hex" 20 >/dev/null ;;
                 "error dialog") wait_for " Error " 20 >/dev/null ;;
                 "the panel it came from") wait_for "cases.tsv" 20 >/dev/null ;;
+                "text: "*) wait_for "${expect#text: }" 20 >/dev/null ;;
                 esac
             fi
             ms=$(( $(now_ms) - t0 ))
@@ -405,6 +610,28 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 verdict=FAIL
                 fatal=1
                 why="$why; stderr: $(grep -m1 -E 'assert|CRITICAL|Segmentation|AddressSanitizer|runtime error' "$stderr")"
+            fi
+            # mc is asked to quit here, so that the summary is in the log
+            if [ $memcheck = 1 ]; then
+                # the screen goes first: quitting takes it away
+                screen > "$out/$slug.screen"
+                stop_mc
+                vg_out=$(vg_counts "$vg_log")
+                vg_errs=$(echo "$vg_out" | cut -d' ' -f1)
+                vg_bad=$(echo "$vg_out" | cut -d' ' -f2)
+                vg_opaque=$(echo "$vg_out" | cut -d' ' -f3)
+                vg_lost=$(echo "$vg_out" | cut -d' ' -f4)
+                printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+                    "$name" "$key" "$vg_errs" "$vg_bad" "$vg_opaque" "$vg_lost" "$slug.valgrind" >> "$memory"
+                if [ "$vg_errs" = "-" ]; then
+                    why="$why; valgrind wrote no summary (mc did not quit)"
+                elif [ "$vg_bad" != 0 ]; then
+                    verdict=FAIL
+                    fatal=1
+                    why="$why; valgrind: $vg_bad invalid access(es), $vg_errs errors"
+                elif [ "$vg_lost" != "-" ] && [ "$vg_lost" != 0 ]; then
+                    why="$why; valgrind: $vg_lost bytes definitely lost"
+                fi
             fi
             # a known failure is one that was understood; a crash never is
             if [ -n "$known" ] && [ $fatal = 0 ]; then
@@ -419,18 +646,22 @@ for where in $(echo "$transports" | tr ',' ' '); do
             case $verdict in
             ok)
                 printf '  ok    %-30s %-8s %s  %sms\n' "$name" "$key" "$expect" "$ms"
-                [ $verbose = 1 ] && screen > "$out/$slug.screen"
+                if [ $verbose = 1 ]; then
+                    save_screen
+                else
+                    rm -f "$out/$slug.screen"
+                fi
                 ;;
             known)
                 printf '  known %-30s %-8s %s\n' "$name" "$key" "$known"
-                screen > "$out/$slug.screen"
+                save_screen
                 ;;
             FIXED)
                 printf '  FIXED %-30s %-8s passes now, drop it from expect.tsv: %s\n' "$name" "$key" "$known"
                 ;;
             *)
                 printf '  FAIL  %-30s %-8s expected: %s\n' "$name" "$key" "$expect"
-                screen > "$out/$slug.screen"
+                save_screen
                 sed 's/^/        | /' "$out/$slug.screen"
                 ;;
             esac
@@ -463,6 +694,25 @@ done
                 echo "- $where: $name $key, expected $expect ($why) - [screen]($where/$slug.screen)"
             done
         done
+    fi
+    if [ $memcheck = 1 ]; then
+        echo
+        echo "## Memory"
+        echo
+        echo "| transport | case | key | errors | invalid | opaque | definitely lost |"
+        echo "|-----------|------|-----|--------|---------|--------|-----------------|"
+        for where in $(echo "$transports" | tr ',' ' '); do
+            [ -f "$report/$where/valgrind.tsv" ] || continue
+            tail -n +2 "$report/$where/valgrind.tsv" \
+            | while IFS="$(printf '\t')" read -r name key errs bad opaque lost log; do
+                # a case with nothing to say is not worth a row
+                [ "$errs" = 0 ] && [ "$lost" = 0 ] && continue
+                echo "| $where | [$name]($where/$log) | $key | $errs | $bad | $opaque | $lost |"
+            done
+        done
+        echo
+        echo "opaque: an error with no named frame in its stack, which is the"
+        echo "regex engine reading its subject a word at a time; it fails nothing."
     fi
     if grep -q "$(printf "\tknown\t\|\tFIXED\t")" "$report"/*/results.tsv; then
         echo
