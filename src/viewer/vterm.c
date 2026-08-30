@@ -2159,6 +2159,19 @@ mcview_vterm_page_up (mcview_vterm_t *vt, int keep)
 
 /* --------------------------------------------------------------------------------------------- */
 
+void
+mcview_vterm_clear_history (mcview_vterm_t *vt)
+{
+    if (vt == NULL || vt->history == NULL)
+        return;
+
+    g_ptr_array_set_size (vt->history, 0);
+    g_array_set_size (vt->history_wrapped, 0);
+    vt->history_cells = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 const char *
 mcview_vterm_osc7_raw (const mcview_vterm_t *vt)
 {

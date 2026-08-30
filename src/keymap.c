@@ -742,6 +742,7 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "Top", "ctrl-home" },
     { "Bottom", "ctrl-end" },
     { "Clear", "ctrl-l" },
+    { "ClearAll", "ctrl-shift-l; ctrl-alt-l" },
     // the output cut down to the rows that match
     { "FilterWord", "alt-shift-s" },
     { "FilterToggle", "alt-s" },

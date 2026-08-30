@@ -100,6 +100,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME (BackSpace),
     ADD_KEYMAP_NAME (Redo),
     ADD_KEYMAP_NAME (Clear),
+    ADD_KEYMAP_NAME_DESC (ClearAll, N_ ("Clear screen and scrollback")),
     ADD_KEYMAP_NAME_DESC (Menu, N_ ("Main menu")),
     ADD_KEYMAP_NAME_DESC (MenuLastSelected, N_ ("Last selected menu item")),
     ADD_KEYMAP_NAME_DESC (UserMenu, N_ ("User-defined menu")),
