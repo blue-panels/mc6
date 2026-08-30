@@ -115,6 +115,7 @@ item_free (gpointer p)
     g_free (it->bits);
     g_free (it->target);
     g_free (it->encoding);
+    slv_expr_free (it->via);
     slv_expr_free (it->follower);
     slv_expr_free (it->rows);
     slv_expr_free (it->jump);
@@ -404,10 +405,34 @@ parse_jump_target (parser_t *ps, slv_item_t *it, const char *tok)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-parse_nested_name (slv_item_t *it, const char *rest)
+parse_nested_name (parser_t *ps, slv_item_t *it, const char *rest)
 {
     char *name = rest_of_line (rest);
+    char *via;
 
+    /* "Name via call('provider', args)": the structure is read from those bytes */
+    via = strstr (name, " via ");
+    if (via != NULL)
+    {
+        char *err = NULL;
+
+        if (ps->file->version_major < 5)
+            add_error (ps, "'via' needs STL 5.00");
+        it->via = slv_expr_parse (via + 5, &err);
+        if (it->via == NULL)
+        {
+            add_error (ps, "bad 'via' expression '%s': %s", via + 5, err);
+            g_free (err);
+        }
+        else if (it->via->op != SLV_EXPR_CALL)
+        {
+            add_error (ps, "'via' needs call('provider', ...)");
+            slv_expr_free (it->via);
+            it->via = NULL;
+        }
+        *via = '\0';
+        g_strchomp (name);
+    }
     if (name[0] == ':')
     {
         it->target_is_table = TRUE;
@@ -554,7 +579,7 @@ parse_field_line (parser_t *ps, const char *code, char *comment)
             it->type = SLV_TYPE_NONE;
             set_follower (ps, it, count);
             g_free (count);
-            parse_nested_name (it, p);
+            parse_nested_name (ps, it, p);
             if (it->target == NULL || it->target[0] == '\0')
                 add_error (ps, "'*' needs a structure name");
         }

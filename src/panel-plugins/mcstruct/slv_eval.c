@@ -573,6 +573,36 @@ eval_nested (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
         return;
     }
 
+    if (item->via != NULL)
+    {
+        gint64 vals[16];
+        guint i, nargs = item->via->args != NULL ? item->via->args->len : 0;
+        char *err = NULL;
+        GBytes *bytes;
+
+        ctx->current_size = 0;
+        for (i = 0; i < nargs && i < G_N_ELEMENTS (vals); i++)
+            if (!eval_expr (ctx, g_ptr_array_index (item->via->args, i), parent, item, &vals[i]))
+                return;
+        bytes = slv_call_bytes (ctx, item->via->name, vals, nargs, &err);
+        if (bytes == NULL)
+        {
+            error_node (parent, item, offset, err);
+            return;
+        }
+        n = node_new (SLV_NODE_BUFFER, item, parent);
+        n->def = def;
+        n->offset = offset;
+        n->size = 0;
+        n->rows = rows;
+        n->buffer = bytes;
+        n->key = g_strdup (def->name);
+        n->hint = g_strdup_printf ("via %s", item->via->name);
+        n->text = g_strdup_printf ("%lld bytes", (long long) g_bytes_get_size (bytes));
+        n->comment = g_strdup (item->comment);
+        return;
+    }
+
     n = node_new (def->kind == SLV_DEF_TABLE ? SLV_NODE_TABLE : SLV_NODE_NESTED, item, parent);
     n->def = def;
     n->offset = offset;
@@ -1098,6 +1128,8 @@ slv_node_free (slv_node_t *node)
         g_ptr_array_free (node->children, TRUE);
     if (node->labels != NULL)
         g_hash_table_destroy (node->labels);
+    if (node->buffer != NULL)
+        g_bytes_unref (node->buffer);
     g_free (node->key);
     g_free (node->hint);
     g_free (node->text);

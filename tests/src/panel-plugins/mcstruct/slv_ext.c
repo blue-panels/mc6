@@ -727,6 +727,57 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_via_buffer)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/O\n"
+                              " u8 1 lead\n"
+                              " * 1 In via call('raw', 1, 2)\n"
+                              " * 1 In via call('xor', 1, 2, 0xFF)\n"
+                              " * 1 In via call('nosuch', 1, 2)\n"
+                              " u8 1 after\n"
+                              "/In\n"
+                              " u8 1 a\n"
+                              " u8 1 b\n";
+    static const unsigned char data[] = { 9, 1, 2, 3 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "O", &file, &reader);
+    const slv_node_t *n = child (root, 1);
+    gsize len = 0;
+    const unsigned char *b;
+
+    ck_assert_int_eq (n->kind, SLV_NODE_BUFFER);
+    ck_assert_str_eq (n->text, "2 bytes");
+    ck_assert_str_eq (n->hint, "via raw");
+    b = g_bytes_get_data (n->buffer, &len);
+    ck_assert_uint_eq (len, 2);
+    ck_assert_int_eq (b[0], 1);
+    b = g_bytes_get_data (child (root, 2)->buffer, &len);
+    ck_assert_int_eq (b[1], 0xFD);
+    ck_assert_int_eq (child (root, 3)->kind, SLV_NODE_ERROR);
+    ck_assert_int_eq ((int) child (root, 4)->offset, 1); /* a buffer takes no bytes */
+
+    /* the structure inside is read from the buffer, offsets start at 0 */
+    {
+        slv_reader_t *mem = slv_reader_new_memory (g_bytes_get_data (n->buffer, NULL), 2);
+        slv_eval_t ev = { file, mem, 64, "%g", 0 };
+        slv_node_t *in = slv_eval_struct (&ev, n->def, 0);
+
+        ck_assert_str_eq (child (in, 1)->text, "2");
+        ck_assert_int_eq ((int) child (in, 1)->offset, 1);
+        slv_node_free (in);
+        slv_reader_free (mem);
+    }
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -852,6 +903,7 @@ main (void)
     tcase_add_test (tc_core, test_check_expr);
     tcase_add_test (tc_core, test_time64);
     tcase_add_test (tc_core, test_call);
+    tcase_add_test (tc_core, test_via_buffer);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

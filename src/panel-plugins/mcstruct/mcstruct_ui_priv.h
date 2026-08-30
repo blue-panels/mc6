@@ -91,6 +91,10 @@ typedef struct
 {
     slv_node_t *root;
     int current;
+    /* a buffer entered: the reader and hex source to come back to */
+    const slv_reader_t *outer_reader;
+    slv_reader_t *mem_reader;
+    hexstrip_source_t outer_src;
 } jump_t;
 
 typedef struct
@@ -114,6 +118,7 @@ typedef struct
     slv_node_t *root;
     GArray *rows;     /* row_t */
     GPtrArray *jumps; /* jump_t * */
+    int buffer_depth; /* inside a buffer: read-only */
     GString *cell;    /* scratch for the datasource */
     gboolean syncing;
     gboolean hex_hidden;

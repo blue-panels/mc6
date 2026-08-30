@@ -128,6 +128,7 @@ collect_leaves (slv_node_t *node, GPtrArray *out)
             g_ptr_array_add (out, c);
             break;
         case SLV_NODE_JUMP:
+        case SLV_NODE_BUFFER:
         case SLV_NODE_ERROR:
             g_ptr_array_add (out, c);
             break;

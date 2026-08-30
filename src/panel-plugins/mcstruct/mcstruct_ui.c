@@ -284,6 +284,8 @@ tree_get_text (const void *data, int row, int col)
             g_string_append_printf (ui->cell, " (%s)", n->legend);
         if (n->kind == SLV_NODE_JUMP)
             g_string_append_printf (ui->cell, " -> %08llX", (unsigned long long) n->jump_target);
+        if (n->kind == SLV_NODE_BUFFER)
+            g_string_append (ui->cell, " -> Enter");
         if (n->lazy)
             g_string_append (ui->cell, " ...");
         return ui->cell->str;
@@ -344,6 +346,7 @@ tree_get_color (void *data, int row, int col)
     case SLV_NODE_REPEAT:
         return col == COL_OFFSET ? ui->colors.tree_offset : ui->colors.tree_struct;
     case SLV_NODE_JUMP:
+    case SLV_NODE_BUFFER:
         return col == COL_OFFSET ? ui->colors.tree_offset : ui->colors.tree_jump;
     default:
         break;
@@ -568,15 +571,31 @@ ui_set_root (ui_t *ui, slv_node_t *root, int current)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* back from a buffer: the reader and the hex source of the level above */
+static void
+ui_leave_buffer (ui_t *ui, jump_t *j)
+{
+    if (j->mem_reader == NULL)
+        return;
+    ui->ev.reader = j->outer_reader;
+    hexstrip_set_source (ui->hex, &j->outer_src);
+    slv_reader_free (j->mem_reader);
+    j->mem_reader = NULL;
+    ui->buffer_depth--;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 ui_clear_jumps (ui_t *ui)
 {
     guint i;
 
-    for (i = 0; i < ui->jumps->len; i++)
+    for (i = ui->jumps->len; i > 0; i--)
     {
-        jump_t *j = g_ptr_array_index (ui->jumps, i);
+        jump_t *j = g_ptr_array_index (ui->jumps, i - 1);
 
+        ui_leave_buffer (ui, j);
         slv_node_free (j->root);
         g_free (j);
     }
@@ -892,8 +911,38 @@ ui_follow_jump_node (ui_t *ui, slv_node_t *n)
     slv_node_t *root;
     jump_t *j;
 
-    if (n == NULL || n->kind != SLV_NODE_JUMP || n->def == NULL)
+    if (n == NULL || (n->kind != SLV_NODE_JUMP && n->kind != SLV_NODE_BUFFER) || n->def == NULL)
         return;
+    if (ui->jumps->len >= 256)
+        return;
+    if (n->kind == SLV_NODE_BUFFER)
+    {
+        gsize len = 0;
+        const void *data = g_bytes_get_data (n->buffer, &len);
+        hexstrip_source_t src;
+
+        j = g_new0 (jump_t, 1);
+        j->root = ui->root;
+        j->current = table_get_current (ui->tree);
+        j->outer_reader = ui->ev.reader;
+        j->outer_src = ui->hex->source;
+        j->mem_reader = slv_reader_new_memory (data, len);
+        ui->ev.reader = j->mem_reader;
+        src.get_size = j->mem_reader->size;
+        src.read = j->mem_reader->read;
+        src.is_changed = NULL;
+        src.ctx = j->mem_reader->ctx;
+        hexstrip_set_source (ui->hex, &src);
+        ui->buffer_depth++;
+        if (n->def->kind == SLV_DEF_TABLE)
+            root = slv_eval_table (&ui->ev, n->def, 0, n->rows > 0 ? n->rows : 1);
+        else
+            root = slv_eval_struct (&ui->ev, n->def, 0);
+        expand_default (root, 0);
+        g_ptr_array_add (ui->jumps, j);
+        ui_set_root (ui, root, 0);
+        return;
+    }
     if (n->jump_target < 0 || n->jump_target >= ui->fr->size)
     {
         message (D_ERROR, _ ("Struct look"), _ ("Jump target 0x%llX is outside the file"),
@@ -928,6 +977,7 @@ ui_jump_back (ui_t *ui)
     j = g_ptr_array_index (ui->jumps, ui->jumps->len - 1);
     g_ptr_array_remove_index (ui->jumps, ui->jumps->len - 1);
     slv_node_free (ui->root);
+    ui_leave_buffer (ui, j);
     ui_set_root (ui, j->root, j->current);
     g_free (j);
 }
@@ -941,7 +991,7 @@ ui_activate_row (ui_t *ui)
 
     if (r == NULL)
         return;
-    if (r->node->kind == SLV_NODE_JUMP)
+    if (r->node->kind == SLV_NODE_JUMP || r->node->kind == SLV_NODE_BUFFER)
         ui_follow_jump (ui);
     else if (node_is_text (r->node))
         ui_view_text (ui, r->node);
@@ -960,6 +1010,11 @@ hex_on_edit (WHexStrip *h, off_t offset, unsigned char value, void *data)
     off_t cursor = h->cursor, top = h->top;
     gboolean in_text = h->in_text;
 
+    if (ui->buffer_depth > 0)
+    {
+        message (D_NORMAL, _ ("Struct look"), _ ("A buffer is read-only"));
+        return;
+    }
     ui_note_change (ui);
     slv_file_reader_set_byte (ui->fr, offset, value);
     /* the refresh re-syncs the mark from the tree, which moves the cursor to the
@@ -1121,7 +1176,7 @@ ui_key (ui_t *ui, int key)
             slv_node_t *n =
                 ui_grid_cell_node (ui, table_get_current (ui->grid), ui->grid->current_col);
 
-            if (n != NULL && n->kind == SLV_NODE_JUMP)
+            if (n != NULL && (n->kind == SLV_NODE_JUMP || n->kind == SLV_NODE_BUFFER))
             {
                 ui_close_grid (ui);
                 ui_follow_jump_node (ui, n);
@@ -1188,7 +1243,7 @@ ui_key (ui_t *ui, int key)
     {
         row_t *r = ui_current_row (ui);
 
-        if (r != NULL && r->node->kind == SLV_NODE_JUMP)
+        if (r != NULL && (r->node->kind == SLV_NODE_JUMP || r->node->kind == SLV_NODE_BUFFER))
             ui_follow_jump (ui);
         else
             ui_toggle_node (ui, TRUE);

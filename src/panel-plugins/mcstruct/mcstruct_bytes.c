@@ -218,7 +218,7 @@ read_range (ui_t *ui, const char *what, off_t offset, off_t size)
 {
     unsigned char *buf = g_malloc ((gsize) size);
 
-    if (ui->fr->reader.read (ui->fr->reader.ctx, offset, buf, (gsize) size) == (gssize) size)
+    if (ui->ev.reader->read (ui->ev.reader->ctx, offset, buf, (gsize) size) == (gssize) size)
         return buf;
     message (D_ERROR, what, _ ("Cannot read the bytes"));
     g_free (buf);
@@ -279,6 +279,11 @@ apply_bytes (ui_t *ui, off_t offset, off_t size, const unsigned char *data, gsiz
     unsigned char *orig;
     gsize i;
 
+    if (ui->buffer_depth > 0)
+    {
+        message (D_NORMAL, _ ("Read bytes"), _ ("A buffer is read-only"));
+        return;
+    }
     if (len > (gsize) size)
     {
         if (query_dialog (_ ("Read bytes"),

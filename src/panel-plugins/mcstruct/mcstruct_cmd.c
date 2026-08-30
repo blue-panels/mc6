@@ -61,6 +61,11 @@ ui_cmd_edit_field (ui_t *ui)
     {
         row_t *r = ui_current_row (ui);
 
+        if (ui->buffer_depth > 0)
+        {
+            message (D_NORMAL, _ ("Edit"), _ ("A buffer is read-only"));
+            return;
+        }
         ui_edit_node (ui, r != NULL ? r->node : NULL);
     }
 }

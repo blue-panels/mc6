@@ -87,7 +87,8 @@ typedef enum
     SLV_NODE_TABLE,  /* table: children are STRUCT rows */
     SLV_NODE_JUMP,
     SLV_NODE_REPEAT, /* #repeat: children are one STRUCT node per iteration */
-    SLV_NODE_ERROR
+    SLV_NODE_ERROR,
+    SLV_NODE_BUFFER /* '*' N Struct via call(...): the structure is read from buffer (5.00) */
 } slv_node_kind_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -158,6 +159,8 @@ struct slv_item_t
     slv_expr_t *expected;
     /* 5.00: title "=expr": the name is the C string at that file offset */
     slv_expr_t *title_at;
+    /* 5.00: '* n Name via call(...)': the bytes the structure is read from */
+    slv_expr_t *via;
     /* 5.00: sc.XX ends the string at byte XX instead of NUL */
     int terminator;
     /* 5.00: #encoding in force for text fields, NULL = as is (UTF-8 / ASCII) */
@@ -215,6 +218,7 @@ struct slv_node_t
     gboolean expanded;
     gboolean big_endian; /* byte order the field was read with */
     off_t jump_target;   /* SLV_NODE_JUMP */
+    GBytes *buffer;      /* SLV_NODE_BUFFER: the bytes def is applied to, on Enter */
     gint64 rows;         /* NESTED / TABLE: element count */
 
     slv_node_t *parent;
