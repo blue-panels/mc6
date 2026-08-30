@@ -36,7 +36,8 @@ typedef enum
     SLV_TYPE_PSTRING,   /* sp */
     SLV_TYPE_CSTRING,   /* sc */
     SLV_TYPE_TIME_DOS,  /* td */
-    SLV_TYPE_TIME_UNIX, /* tu */
+    SLV_TYPE_TIME_UNIX, /* tu, tu64 (5.00) */
+    SLV_TYPE_TIME_FILE, /* tf: Windows FILETIME, 100 ns since 1601 (5.00) */
     SLV_TYPE_JUMP,      /* j8 j16 j32 j64 */
     SLV_TYPE_STR8,      /* s8: fixed size, NUL padded UTF-8 (5.00) */
     SLV_TYPE_STR16,     /* s16: fixed size, NUL padded UTF-16LE (5.00) */

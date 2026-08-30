@@ -343,7 +343,9 @@ slv_type_name (slv_type_t type, int size)
     case SLV_TYPE_TIME_DOS:
         return "td";
     case SLV_TYPE_TIME_UNIX:
-        return "tu";
+        return size == 8 ? "tu64" : "tu";
+    case SLV_TYPE_TIME_FILE:
+        return "tf";
     case SLV_TYPE_JUMP:
         return size == 1 ? "j8" : size == 2 ? "j16" : size == 4 ? "j32" : "j64";
     case SLV_TYPE_STR8:
@@ -633,10 +635,23 @@ slv_format_value_endian (const slv_item_t *item, gboolean big_endian, const unsi
                     *first_value = (gint64) read_uint (b, 4, big_endian);
                 break;
             case SLV_TYPE_TIME_UNIX:
-                format_unix_time (out, (gint64) read_uint (b, 4, big_endian));
+                format_unix_time (out, (gint64) read_uint (b, size, big_endian));
                 if (i == 0)
-                    *first_value = (gint64) read_uint (b, 4, big_endian);
+                    *first_value = (gint64) read_uint (b, size, big_endian);
                 break;
+            case SLV_TYPE_TIME_FILE:
+            {
+                guint64 ft = read_uint (b, 8, big_endian);
+
+                /* 100 ns units since 1601-01-01; 0 is "no time" */
+                if (ft == 0)
+                    g_string_append (out, "0");
+                else
+                    format_unix_time (out, (gint64) (ft / 10000000) - 11644473600LL);
+                if (i == 0)
+                    *first_value = (gint64) ft;
+                break;
+            }
             case SLV_TYPE_FLOAT:
             case SLV_TYPE_MSBIN:
             {

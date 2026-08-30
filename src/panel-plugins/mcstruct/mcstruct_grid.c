@@ -92,6 +92,7 @@ grid_col_width (const slv_node_t *leaf)
         break;
     case SLV_TYPE_TIME_DOS:
     case SLV_TYPE_TIME_UNIX:
+    case SLV_TYPE_TIME_FILE:
         w = 19;
         break;
     default:

@@ -669,6 +669,35 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_time64)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/T\n"
+                              " tu64 1 unix\n"
+                              " tf 1 win\n"
+                              " tf 1 none\n";
+    /* 86400 as u64; FILETIME of 1970-01-02 00:00:00: (11644473600 + 86400) * 1e7 */
+    static const unsigned char data[] = { 0x80, 0x51, 0x01, 0,    0,    0,    0,    0,
+                                          0x00, 0x40, 0xA8, 0xFF, 0xA7, 0xB2, 0x9D, 0x01,
+                                          0,    0,    0,    0,    0,    0,    0,    0 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "T", &file, &reader);
+
+    ck_assert_str_eq (child (root, 0)->text, "1970-01-02 00:00:00");
+    ck_assert_str_eq (child (root, 0)->hint, "tu64");
+    ck_assert_str_eq (child (root, 1)->text, "1970-01-02 00:00:00");
+    ck_assert (!slv_node_editable (child (root, 1)));
+    ck_assert_str_eq (child (root, 2)->text, "0");
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_varint)
 {
     static const char def[] =
@@ -792,6 +821,7 @@ main (void)
     tcase_add_test (tc_core, test_switch);
     tcase_add_test (tc_core, test_terminator_and_encoding);
     tcase_add_test (tc_core, test_check_expr);
+    tcase_add_test (tc_core, test_time64);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

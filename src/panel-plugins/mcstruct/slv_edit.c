@@ -491,6 +491,8 @@ slv_node_editable (const slv_node_t *node)
     case SLV_TYPE_TIME_DOS:
     case SLV_TYPE_TIME_UNIX:
         return node->size == 4;
+    case SLV_TYPE_TIME_FILE:
+        return FALSE;
     default:
         return TRUE;
     }

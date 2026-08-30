@@ -1552,6 +1552,18 @@ slv_parse_type_id (const char *id, slv_type_t *type, int *size, gboolean *big_en
         *size = 4;
         return TRUE;
     }
+    if (strcmp (base, "tu64") == 0)
+    {
+        *type = SLV_TYPE_TIME_UNIX;
+        *size = 8;
+        return TRUE;
+    }
+    if (strcmp (base, "tf") == 0)
+    {
+        *type = SLV_TYPE_TIME_FILE;
+        *size = 8;
+        return TRUE;
+    }
     if (strcmp (base, "p32") == 0)
     {
         *type = SLV_TYPE_PTR;
