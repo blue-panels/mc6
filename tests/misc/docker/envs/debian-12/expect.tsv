@@ -1,2 +1,3 @@
 case	key	expect	transports
 04-non-ascii/архив с пробелами.7z	Enter	known: the ftp plugin cannot fetch a name with spaces	ftp
+01-shell/readme.txt	key C-o,type echo mc-marker-42,key Enter,key C-l,key PageUp	known: PageUp at the command line reaches the shell as a tilde instead of scrolling the terminal back	local

@@ -32,6 +32,9 @@ leaves nothing in the working tree and reuses its object files between runs.
       debian-12/            docker-compose.yml, Dockerfile.mc, README.md, expect.tsv
     cases/
       archives/fixtures.sh  the files and the cases.tsv of one subject
+      editor/, terminal/    the same for mcedit and the embedded terminal
+      struct/               the same for the mcstruct plugin
+      panel/                the same for the panel: the quick filter, quick cd
     reports/                what a run leaves behind (not in git)
 
 Three axes, chosen independently: the **environment** (which image mc is
@@ -84,6 +87,36 @@ server.
 | `02-content`   | archives with no extension, and plain text named as one    |
 | `03-nested`    | an archive inside an archive, and one inside `uzip://`     |
 | `04-non-ascii` | Cyrillic and spaces in names, inside the archives and out  |
+
+### editor
+
+| directory     | what it is for                                              |
+|---------------|-------------------------------------------------------------|
+| `01-filter`   | the line filter: Alt-Shift-S by the word, Alt-S to lift it   |
+| `02-charset`  | 8-bit files, for a person to open and pick the encoding for  |
+| `03-search`   | the search dialog opening with the marked word              |
+
+### terminal
+
+| directory  | what it is for                                                   |
+|------------|------------------------------------------------------------------|
+| `01-shell` | a command in the terminal, Ctrl-L against Ctrl-Alt-L, the keybar, insert mode in the shell's line |
+
+### struct
+
+| directory    | what it is for                                                  |
+|--------------|------------------------------------------------------------------|
+| `01-formats` | the smallest u-boot image and MBR libmagic still names, so that magic.ini sends them to mcstruct |
+
+### panel
+
+| directory       | what it is for                                             |
+|-----------------|-------------------------------------------------------------|
+| `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
+| `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
+
+These four are local only: they press keys on mc itself, not on a file a
+server holds.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
 downloaded first. `01-formats/big.7z` is the case that only works because the
