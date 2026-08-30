@@ -782,10 +782,10 @@ START_TEST (test_quoted_follower)
 {
     static const char def[] = "STL 5.00\n"
                               "/Q\n"
-                              " c \"$size\" all\n"
                               "#if @w == \"KP\"\n"
                               " :literal seen\n"
-                              "#fi\n";
+                              "#fi\n"
+                              " c \"$size\" all\n";
     static const unsigned char data[] = { 'P', 'K', '!' };
     slv_file_t *file;
     slv_reader_t *reader;
