@@ -22,12 +22,10 @@ oofs:   u32     1               originals table offset
 tofs:   u32     1               translations table offset
 nhash:  u32     1               hash table size
 hofs:   u32     1               hash table offset
-        :--- originals ---
         .       oofs
-        *       n       _MO_desc
-        :--- translations ---
+        *       n       _MO_desc "originals"
         .       tofs
-        *       n       _MO_desc
+        *       n       _MO_desc "translations"
 #if nhash != 0
         :--- hash table (index + 1, 0 = empty) ---
         .       hofs

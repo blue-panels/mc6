@@ -274,6 +274,7 @@ inflate_range (const slv_eval_ctx_t *ctx, int wbits, gint64 from, gint64 len, ch
 
 /* value providers:
    crc32 / crc16 / adler32 / sum8 / sum16 / sum32 (from, len): checksums of a range
+   crc32z (from, len, hole_from, hole_len): crc32 with a field inside taken as zero
    find (from, len, value, width): offset of the little-endian value, -1 when absent
    exec:command (from, len): the range on stdin, a number on stdout */
 gboolean
@@ -327,6 +328,26 @@ slv_call_value (const slv_eval_ctx_t *ctx, const char *name, const gint64 *args,
                 break;
             }
         g_bytes_unref (data);
+        return TRUE;
+    }
+    /* crc32z (from, len, hole_from, hole_len): crc32 with the hole taken as zero bytes */
+    if (strcmp (name, "crc32z") == 0)
+    {
+        unsigned char *b2;
+        gint64 h0, h1;
+
+        if (!need_args (name, nargs, 4, error))
+            return FALSE;
+        data = read_range (ctx, args[0], args[1], error);
+        if (data == NULL)
+            return FALSE;
+        b2 = g_bytes_unref_to_data (data, &len);
+        h0 = MAX (args[2] - args[0], 0);
+        h1 = MIN (args[2] + args[3] - args[0], (gint64) len);
+        if (h0 < h1)
+            memset (b2 + h0, 0, (gsize) (h1 - h0));
+        *out = slv_crc32 (0xFFFFFFFFu, b2, len) ^ 0xFFFFFFFFu;
+        g_free (b2);
         return TRUE;
     }
     if (strcmp (name, "crc32") == 0 || strcmp (name, "crc16") == 0 || strcmp (name, "adler32") == 0

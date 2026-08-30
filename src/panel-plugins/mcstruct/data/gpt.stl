@@ -12,7 +12,7 @@ STL 5.00
         c       8               signature
         u32     1               revision
 hsize:  u32     1               header size
-        d       1               header crc32
+hcrc:   d       1               header crc32
         u32     1               reserved
 cur:    u64     1               current lba
         u64     1               backup lba
@@ -22,7 +22,9 @@ cur:    u64     1               current lba
 estart: u64     1               entries start lba
 ecount: u32     1               entries count
 esize:  u32     1               entry size
-        d       1               entries crc32
+ecrc:   d       1               entries crc32
+        check   "call('crc32z', ^, hsize, ^ + 16, 4) == hcrc"      header crc check
+        check   "call('crc32', estart * 512, ecount * esize) == ecrc"        entries crc check
 
         :--- entries ---
         .       "(estart - cur) * 512"

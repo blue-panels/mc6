@@ -11,11 +11,9 @@ STL 5.00
         d       1               magic
 flags:  t32     `tim_flags      flags
 #if flags & 8
-        :--- CLUT ---
-        *       1       _TIM_block
+        *       1       _TIM_block "CLUT"
 #fi
-        :--- image ---
-        *       1       _TIM_block
+        *       1       _TIM_block "image"
 
 /_TIM_block
 len:    u32     1               block length

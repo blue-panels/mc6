@@ -115,6 +115,7 @@ item_free (gpointer p)
     g_free (it->bits);
     g_free (it->target);
     g_free (it->encoding);
+    g_free (it->comment_title);
     slv_expr_free (it->via);
     slv_expr_free (it->follower);
     slv_expr_free (it->rows);
@@ -410,6 +411,21 @@ parse_nested_name (parser_t *ps, slv_item_t *it, const char *rest)
     char *name = rest_of_line (rest);
     char *via;
 
+    /* "Name \"caption\"": the row is titled by the caption, not the structure (5.00) */
+    {
+        gsize nl = strlen (name);
+        char *q = strrchr (name, '"');
+
+        if (nl >= 2 && name[nl - 1] == '"' && q != NULL
+            && (q = g_strrstr_len (name, nl - 1, "\"")) != NULL)
+        {
+            it->comment_title = g_strndup (q + 1, name + nl - 1 - q - 1);
+            *q = '\0';
+            g_strchomp (name);
+            if (ps->file->version_major < 5)
+                add_error (ps, "a caption on '*' needs STL 5.00");
+        }
+    }
     /* "Name via call('provider', args)": the structure is read from those bytes */
     via = strstr (name, " via ");
     if (via != NULL)

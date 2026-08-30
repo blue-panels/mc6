@@ -9,7 +9,7 @@ STL 5.00
         u16     1               reserved
         u16     'ico_type       type
 n:      u16     1               image count
-        *       n       _ICO_entry
+        *       n       _ICO_entry "entries"
 
 /_ICO_entry
         u8      1               width (0 = 256)

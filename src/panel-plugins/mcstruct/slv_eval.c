@@ -601,7 +601,7 @@ eval_nested (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
         n->size = 0;
         n->rows = rows;
         n->buffer = bytes;
-        n->key = g_strdup (def->name);
+        n->key = g_strdup (item->comment_title != NULL ? item->comment_title : def->name);
         n->hint = g_strdup_printf ("via %s", item->via->name);
         n->text = g_strdup_printf ("%lld bytes", (long long) g_bytes_get_size (bytes));
         n->comment = g_strdup (item->comment);
@@ -612,7 +612,7 @@ eval_nested (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
     n->def = def;
     n->offset = offset;
     n->rows = rows;
-    n->key = g_strdup (def->name);
+    n->key = g_strdup (item->comment_title != NULL ? item->comment_title : def->name);
     n->hint = g_strdup_printf ("%s%s[%lld]", def->kind == SLV_DEF_TABLE ? ":" : "", def->name,
                                (long long) rows);
     n->comment = g_strdup (item->comment);

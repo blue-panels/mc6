@@ -39,6 +39,7 @@ year:   u8      1               year of manufacture - 1990
         *       4       _EDID_detail
         u8      1               extension blocks
         u8      1               checksum (sum of all 128 bytes = 0)
+        check   "call('sum8', ^, 128) == 0"  checksum check
 
 /:edid_std
 u8      1       h pixels / 8 - 31 (1 = unused)

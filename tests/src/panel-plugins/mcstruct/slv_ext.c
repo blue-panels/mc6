@@ -707,7 +707,8 @@ START_TEST (test_call)
                               " =x \"call('crc32', 0, 4)\" crc\n"
                               " = \"call('find', 0, 4, 0x0403, 2)\" where\n"
                               " = \"call('find', 0, 4, 0x99, 1)\" nowhere\n"
-                              " = \"call('exec:cat', 0, 4)\" refused\n";
+                              " = \"call('exec:cat', 0, 4)\" refused\n"
+                              " =x \"call('crc32z', 0, 4, 1, 2)\" crc with a hole\n";
     static const unsigned char data[] = { 1, 2, 3, 4 };
     slv_file_t *file;
     slv_reader_t *reader;
@@ -718,6 +719,7 @@ START_TEST (test_call)
     ck_assert_str_eq (child (root, 3)->text, "2");
     ck_assert_str_eq (child (root, 4)->text, "-1");
     ck_assert_int_eq (child (root, 5)->kind, SLV_NODE_ERROR);
+    ck_assert_str_eq (child (root, 6)->text, "9E957C60"); /* crc32 of 01 00 00 04 */
 
     slv_node_free (root);
     slv_reader_free (reader);
@@ -814,6 +816,33 @@ START_TEST (test_zchunk_varint)
     ck_assert_int_eq ((int) child (root, 0)->size, 1);
     ck_assert_str_eq (child (root, 1)->text, "257");
     ck_assert_int_eq ((int) child (root, 2)->offset, 3);
+
+    slv_node_free (root);
+    slv_reader_free (reader);
+    slv_file_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_nested_caption)
+{
+    static const char def[] = "STL 5.00\n"
+                              "/O\n"
+                              " * 1 In \"first one\"\n"
+                              " * 1 In\n"
+                              " * 1 In via call('raw', 0, 1) \"in a buffer\"\n"
+                              "/In\n"
+                              " u8 1 a\n";
+    static const unsigned char data[] = { 1, 2 };
+    slv_file_t *file;
+    slv_reader_t *reader;
+    slv_node_t *root = eval_text (def, data, sizeof (data), "O", &file, &reader);
+
+    ck_assert_str_eq (child (root, 0)->key, "first one");
+    ck_assert_str_eq (child (root, 1)->key, "In");
+    ck_assert_str_eq (child (root, 2)->key, "in a buffer");
+    ck_assert_int_eq (child (root, 2)->kind, SLV_NODE_BUFFER);
 
     slv_node_free (root);
     slv_reader_free (reader);
@@ -951,6 +980,7 @@ main (void)
     tcase_add_test (tc_core, test_via_buffer);
     tcase_add_test (tc_core, test_quoted_follower);
     tcase_add_test (tc_core, test_zchunk_varint);
+    tcase_add_test (tc_core, test_nested_caption);
     tcase_add_test (tc_core, test_varint);
     tcase_add_test (tc_core, test_expr_limits);
     tcase_add_test (tc_core, test_literal_with_space);

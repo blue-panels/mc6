@@ -160,6 +160,8 @@ struct slv_item_t
     slv_expr_t *expected;
     /* 5.00: title "=expr": the name is the C string at that file offset */
     slv_expr_t *title_at;
+    /* 5.00: '* n Name "caption"': the row title instead of the structure name */
+    char *comment_title;
     /* 5.00: '* n Name via call(...)': the bytes the structure is read from */
     slv_expr_t *via;
     /* 5.00: sc.XX ends the string at byte XX instead of NUL */
