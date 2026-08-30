@@ -13,7 +13,7 @@ n:      u32     1               palettes
 #set    i = 0
 #repeat n
         :--- color table ---
-#set    cc = @u8(30 + i * 16 + 8) + (@u8(30 + i * 16 + 9) << 8)
+#set    cc = @u8(30 + i * 16 + 7) + (@u8(30 + i * 16 + 8) << 8)
 #set    ns = @u16(30 + i * 16 + 14)
         u8      1               size 1
         u8      1               unknown
