@@ -77,20 +77,76 @@ static gboolean search_apply_filter = FALSE;
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The selected text as the default of the search input: a single-line, non-column selection
+ * of a sensible length. Result must be g_free'd; NULL if there is no such selection.
+ */
+
+static char *
+edit_search_get_selection (WEdit *edit)
+{
+    off_t start_mark, end_mark;
+    GString *sel;
+
+    if (edit->column_highlight || !eval_marks (edit, &start_mark, &end_mark)
+        || end_mark - start_mark > BUF_MEDIUM)
+        return NULL;
+
+    sel = g_string_sized_new (end_mark - start_mark);
+
+    for (off_t i = start_mark; i < end_mark; i++)
+    {
+        const int c = edit_buffer_get_byte (&edit->buffer, i);
+
+        if (c == '\n' || c == '\r')
+        {
+            g_string_free (sel, TRUE);
+            return NULL;
+        }
+
+        g_string_append_c (sel, (gchar) c);
+    }
+
+    if (sel->len == 0)
+    {
+        g_string_free (sel, TRUE);
+        return NULL;
+    }
+
+    {
+        GString *disp;
+
+        disp = str_convert_to_display (sel->str);
+        if (disp != NULL && disp->len != 0)
+        {
+            g_string_free (sel, TRUE);
+            return g_string_free (disp, FALSE);
+        }
+        if (disp != NULL)
+            g_string_free (disp, TRUE);
+    }
+
+    return g_string_free (sel, FALSE);
+}
+
 static gboolean
 edit_dialog_search_show (WEdit *edit)
 {
     char *search_text = NULL;
+    char *selection;
     size_t num_of_types = 0;
     gchar **list_of_types;
     int dialog_result;
 
     list_of_types = mc_search_get_types_strings_array (&num_of_types);
+    selection = edit_search_get_selection (edit);
 
     {
         quick_widget_t quick_widgets[] = {
             // clang-format off
-            QUICK_LABELED_INPUT (_ ("Enter search string:"), input_label_above, INPUT_LAST_TEXT,
+            QUICK_LABELED_INPUT (_ ("Enter search string:"), input_label_above,
+                                 selection != NULL ? selection : INPUT_LAST_TEXT,
                                  MC_HISTORY_SHARED_SEARCH, &search_text, NULL, FALSE, FALSE,
                                  INPUT_COMPLETE_NONE),
             QUICK_SEPARATOR (TRUE),
@@ -128,6 +184,7 @@ edit_dialog_search_show (WEdit *edit)
     }
 
     g_strfreev (list_of_types);
+    g_free (selection);
 
     if (dialog_result == B_CANCEL || search_text == NULL || search_text[0] == '\0')
     {
