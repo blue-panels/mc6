@@ -141,3 +141,4 @@ icc.stl: *.icm @36:61637370
 dicom.stl: *.dcm @128:4449434D
 openpgp.stl: *.gpg *.pgp
 java_class.stl: @0:CAFEBABE
+rtpdump.stl: *.rtpdump @0:2321727470706C6179

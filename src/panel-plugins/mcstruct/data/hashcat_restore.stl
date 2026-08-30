@@ -1,7 +1,6 @@
 STL 5.00
 ;
-;   hashcat .restore file (x86-64 layout). The argument list is a run of
-;   LF-terminated strings; it is listed as one block here.
+;   hashcat .restore file (x86-64 layout) with its LF-terminated arguments.
 ;   After kaitai_struct_formats log/hashcat_restore.ksy.
 ;
 
@@ -14,4 +13,6 @@ STL 5.00
         u64     1               restore point
 argc:   u32     1               arguments
         b       12              padding
-        c       "$size - ^@"    arguments, LF separated
+#repeat argc
+        sc.0a   0               argument
+#end
