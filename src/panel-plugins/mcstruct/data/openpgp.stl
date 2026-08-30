@@ -1,0 +1,127 @@
+STL 5.00
+;
+;   OpenPGP packets (RFC 4880): old and new format headers, with the
+;   body of public key, signature and user id packets decoded.
+;   After kaitai_struct_formats security/openpgp_message.ksy.
+;
+
+/OPENPGP
+#endian big
+#repeat while ^@ + 2 <= $size && (@b & 0x80)
+        :--- packet ---
+h:      t8      `pgp_header     header
+#if h & 0x40
+#set    tag = h & 0x3F
+l1:     u8      1               length byte 1
+#if l1 < 192
+#set    plen = l1
+#elseif l1 < 224
+l2:     u8      1               length byte 2
+#set    plen = ((l1 - 192) << 8) + l2 + 192
+#elseif l1 == 255
+l4:     u32     1               length
+#set    plen = l4
+#else
+        :partial body length, not followed
+#set    plen = 1 << (l1 & 0x1F)
+#fi
+#else
+#set    tag = (h >> 2) & 0x0F
+#if (h & 3) == 0
+l1:     u8      1               length
+#set    plen = l1
+#elseif (h & 3) == 1
+l2:     u16     1               length
+#set    plen = l2
+#elseif (h & 3) == 2
+l4:     u32     1               length
+#set    plen = l4
+#else
+#set    plen = $size - ^@
+#fi
+#fi
+#set    pend = ^@ + plen
+#if tag == 6 || tag == 14
+        u8      1               version
+        tu      1               creation time
+alg:    u8      'pgp_pubkey_alg algorithm
+#if alg == 1 || alg == 2 || alg == 3
+nb:     u16     1               n bits
+        +       "(nb + 7) / 8"  n
+eb:     u16     1               e bits
+        +       "(eb + 7) / 8"  e
+#elseif alg == 22 || alg == 18 || alg == 19
+ol:     u8      1               curve OID length
+        b       ol              curve OID
+qb:     u16     1               point bits
+        +       "(qb + 7) / 8"  point
+#fi
+#elseif tag == 13
+        c       plen            user id
+#elseif tag == 2
+        u8      1               version
+        u8      'pgp_sig_type   signature type
+        u8      'pgp_pubkey_alg public key algorithm
+        u8      'pgp_hash_alg   hash algorithm
+        u16     1               hashed subpackets length
+#elseif tag == 1
+        u8      1               version
+        q       1               key id
+        u8      'pgp_pubkey_alg algorithm
+#elseif tag == 9 || tag == 18
+        :encrypted data
+#fi
+        +       "pend - ^@"
+#end
+
+/`pgp_header
+0x80            packet
+0x40            new format
+0x3C    0x04    old tag: public key encrypted session key
+0x3C    0x08    old tag: signature
+0x3C    0x14    old tag: secret key
+0x3C    0x18    old tag: public key
+0x3C    0x1C    old tag: secret subkey
+0x3C    0x20    old tag: compressed data
+0x3C    0x24    old tag: symmetrically encrypted data
+0x3C    0x2C    old tag: literal data
+0x3C    0x30    old tag: trust
+0x3C    0x34    old tag: user id
+0x3C    0x38    old tag: public subkey
+0x03    0x00    old length: 1 byte
+0x03    0x01    old length: 2 bytes
+0x03    0x02    old length: 4 bytes
+0x03    0x03    old length: to the end
+
+/'pgp_pubkey_alg
+1       RSA
+2       RSA encrypt only
+3       RSA sign only
+16      ElGamal
+17      DSA
+18      ECDH
+19      ECDSA
+22      EdDSA
+
+/'pgp_sig_type
+0x00    binary document
+0x01    text document
+0x10    generic certification
+0x11    persona certification
+0x12    casual certification
+0x13    positive certification
+0x18    subkey binding
+0x19    primary key binding
+0x1F    direct key
+0x20    key revocation
+0x28    subkey revocation
+0x30    certification revocation
+
+/'pgp_hash_alg
+1       MD5
+2       SHA1
+3       RIPEMD160
+8       SHA256
+9       SHA384
+10      SHA512
+11      SHA224

@@ -1,0 +1,63 @@
+STL 5.00
+;
+;   ICC color profile: 128 byte header and the tag table; Enter on a tag
+;   opens its data block (type signature and size).
+;   After kaitai_struct_formats image/icc_4.ksy.
+;
+
+/ICC
+#endian big
+        u32     1               profile size
+        c       4               preferred CMM
+        d       1               version (major.minor.bugfix in the first 3 bytes)
+        c       4               device class (scnr, mntr, prtr, link, spac, abst, nmcl)
+        c       4               color space
+        c       4               connection space
+        u16     1               year
+        u16     1               month
+        u16     1               day
+        u16     1               hour
+        u16     1               minute
+        u16     1               second
+        c       4               signature (acsp)
+        c       4               primary platform
+        t32     `icc_flags      flags
+        c       4               device manufacturer
+        c       4               device model
+        t64     `icc_device     device attributes
+        u32     'icc_intent     rendering intent
+        i32     1               illuminant X (s15.16)
+        i32     1               illuminant Y (s15.16)
+        i32     1               illuminant Z (s15.16)
+        c       4               creator
+        b       16              profile id (MD5)
+        b       28              reserved
+        :--- tag table ---
+n:      u32     1               tags
+        *       n       _ICC_tag
+
+/_ICC_tag
+        c       4               signature
+        j32     _ICC_data=@     offset
+        u32     1               size
+
+/_ICC_data
+#endian big
+        c       4               type
+        b       4               reserved
+
+/`icc_flags
+0x00000001      embedded
+0x00000002      cannot be used independently
+
+/`icc_device
+0x0000000000000001      transparency
+0x0000000000000002      matte
+0x0000000000000004      negative
+0x0000000000000008      black and white
+
+/'icc_intent
+0       perceptual
+1       relative colorimetric
+2       saturation
+3       absolute colorimetric

@@ -1,0 +1,59 @@
+STL 5.00
+;
+;   DICOM part 10 file: preamble, DICM, and the data elements with
+;   explicit VR (the meta group and, when the transfer syntax keeps
+;   explicit VR, the data set). After kaitai_struct_formats image/dicom.ksy.
+;
+
+/DICOM
+        .       128
+#if @d != 'DICM'
+        :ERROR!!! no DICM prefix at offset 128
+#fi
+        c       4               prefix
+#repeat while ^@ + 8 <= $size
+        :--- element ---
+        u16     1               group
+        u16     'dicom_tag      element
+vr:     w       1               VR (two letters)
+#if vr == 'OB' || vr == 'OW' || vr == 'OF' || vr == 'SQ' || vr == 'UT' || vr == 'UN' || vr == 'OD' || vr == 'OL' || vr == 'UC' || vr == 'UR'
+        u16     1               reserved
+elen:   u32     1               length
+#else
+elen:   u16     1               length
+#fi
+#if vr == 'SQ' || elen == 0xFFFFFFFF
+        :sequence, the items inside follow
+#elseif vr == 'UL' && elen == 4
+        u32     1               value
+#elseif vr == 'US' && elen == 2
+        u16     1               value
+#elseif vr == 'SL' && elen == 4
+        i32     1               value
+#elseif vr == 'SS' && elen == 2
+        i16     1               value
+#elseif vr == 'FL' && elen == 4
+        f32     1               value
+#elseif vr == 'FD' && elen == 8
+        f64     1               value
+#elseif vr == 'OB' || vr == 'OW' || vr == 'UN' || vr == 'OF'
+        +       elen            value
+#else
+        c       elen            value
+#fi
+#end
+
+/'dicom_tag
+0x0000  group length
+0x0001  file meta information version
+0x0002  media storage SOP class UID
+0x0003  media storage SOP instance UID
+0x0010  transfer syntax UID
+0x0012  implementation class UID
+0x0013  implementation version name
+0x0016  source application entity title
+0x0020  study date
+0x0030  study time
+0x0060  modality
+0x0070  manufacturer
+0x0080  institution name

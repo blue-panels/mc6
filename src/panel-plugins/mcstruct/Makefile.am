@@ -181,4 +181,9 @@ dist_mcstructdata_DATA = \
 	data/ttf.stl \
 	data/macho.stl \
 	data/dex.stl \
-	data/exif.stl
+	data/exif.stl \
+	data/rpm.stl \
+	data/icc.stl \
+	data/dicom.stl \
+	data/openpgp.stl \
+	data/java_class.stl

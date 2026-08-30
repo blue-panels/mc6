@@ -136,3 +136,8 @@ ttf.stl: *.otf @0:00010000 @0:4F54544F @0:74727565
 macho.stl: *.dylib @0:FEEDFACE @0:FEEDFACF @0:CEFAEDFE @0:CFFAEDFE
 dex.stl: @0:6465780A
 exif.stl: *.tif *.tiff @0:49492A00 @0:4D4D002A
+rpm.stl: @0:EDABEEDB
+icc.stl: *.icm @36:61637370
+dicom.stl: *.dcm @128:4449434D
+openpgp.stl: *.gpg *.pgp
+java_class.stl: @0:CAFEBABE
