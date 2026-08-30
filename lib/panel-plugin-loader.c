@@ -39,12 +39,24 @@
 #include "lib/fileloc.h"
 #include "lib/editor-plugin.h"
 #include "lib/panel-plugin.h"
+#include "lib/widget/hexstrip.h"  // named in mc_plugin_widgets below
 
 #ifdef HAVE_GMODULE
 
 #include <gmodule.h>
 
 /*** global variables ****************************************************************************/
+
+/* The widgets a plugin puts on a dialog and mc itself never does.
+ *
+ * lib/ is linked as a static archive, and a linker takes out of an archive only what the program
+ * refers to.  A widget no part of mc uses is left behind, and the plugin that wanted it then fails
+ * to load with an undefined symbol.  Naming one here is what keeps it in.
+ */
+void (*const mc_plugin_widgets[]) (void) = {
+    (void (*) (void)) hexstrip_new,
+    NULL,
+};
 
 /*** file scope macro definitions ****************************************************************/
 
