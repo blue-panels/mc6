@@ -119,3 +119,8 @@ rtcp.stl:
 pcf.stl: *.pcf @0:01666370
 ppi.stl:
 pyc27.stl: *.pyc @0:03F30D0A
+md2.stl: @0:49445032
+xm.stl: @0:457874656E646564204D6F64756C653A20
+protobuf.stl: *.pb
+bson.stl: *.bson
+asn1_der.stl: *.der *.cer *.crt

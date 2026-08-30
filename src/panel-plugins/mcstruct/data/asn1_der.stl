@@ -1,0 +1,60 @@
+STL 5.00
+;
+;   ASN.1 DER: TLV elements; constructed elements are entered, so the
+;   tree is listed flat. After kaitai_struct_formats serialization/asn1/asn1_der.ksy.
+;
+
+/ASN1_DER
+#repeat while ^@ + 2 <= $size
+        :--- element ---
+tag:    t8      `asn1_tag       tag
+l0:     u8      1               length byte
+#if l0 < 0x80
+#set    len = l0
+#elseif l0 == 0x81
+l1:     u8      1               length
+#set    len = l1
+#elseif l0 == 0x82
+l2:     u16.be  1               length
+#set    len = l2
+#elseif l0 == 0x83
+        u8      1               length, high byte
+l3:     u16.be  1               length, low word
+#set    len = (@u8(^@ - 3) << 16) | l3
+#else
+l4:     u32.be  1               length
+#set    len = l4
+#fi
+#if tag & 0x20
+        :constructed, the elements inside follow
+#elseif (tag & 0x1F) == 0x02 && len <= 8
+        b       len             integer
+#elseif (tag & 0x1F) == 0x13 || (tag & 0x1F) == 0x0C || (tag & 0x1F) == 0x16 || (tag & 0x1F) == 0x17 || (tag & 0x1F) == 0x18
+        c       len             text
+#elseif (tag & 0x1F) == 0x06
+        b       len             object identifier
+#else
+        +       len             content
+#fi
+#end
+
+/`asn1_tag
+0xC0    0x00    class: universal
+0xC0    0x40    class: application
+0xC0    0x80    class: context specific
+0xC0    0xC0    class: private
+0x20            constructed
+0x1F    0x01    BOOLEAN
+0x1F    0x02    INTEGER
+0x1F    0x03    BIT STRING
+0x1F    0x04    OCTET STRING
+0x1F    0x05    NULL
+0x1F    0x06    OBJECT IDENTIFIER
+0x1F    0x0A    ENUMERATED
+0x1F    0x0C    UTF8String
+0x1F    0x10    SEQUENCE
+0x1F    0x11    SET
+0x1F    0x13    PrintableString
+0x1F    0x16    IA5String
+0x1F    0x17    UTCTime
+0x1F    0x18    GeneralizedTime

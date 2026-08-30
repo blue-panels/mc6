@@ -1,0 +1,106 @@
+STL 5.00
+;
+;   FastTracker II .xm module: header, pattern headers and instrument
+;   headers with their sample headers.
+;   After kaitai_struct_formats media/tracker_modules/fasttracker_xm_module.ksy (Unlicense).
+;
+
+/XM
+#if @d != 'Exte'
+        :ERROR!!! no Extended Module signature at this offset
+#fi
+        c       17              signature
+        sc      20              module name
+        u8      1               0x1A
+        sc      20              tracker name
+ver:    w       1               version
+hsz:    u32     1               header size
+#set    hend = ^@ - 4 + hsz
+        u16     1               song length
+        u16     1               restart position
+nch:    u16     1               channels
+npat:   u16     1               patterns
+nins:   u16     1               instruments
+        t16     `xm_flags       flags
+        u16     1               default tempo
+        u16     1               default bpm
+        b       256             pattern order table
+        +       "hend - ^@"
+#repeat npat
+        :--- pattern ---
+phl:    u32     1               header length
+        u8      1               packing type
+#if ver == 0x0102
+        u8      1               rows - 1
+#else
+        u16     1               rows
+#fi
+plen:   u16     1               packed size
+        +       "phl - 9"
+        +       plen            packed data
+#end
+#repeat nins
+        :--- instrument ---
+ihs:    u32     1               header size
+#set    iend = ^@ - 4 + ihs
+        sc      22              name
+        u8      1               type
+nsmp:   u16     1               samples
+#if nsmp > 0
+        u32     1               sample header size
+        b       96              sample per note
+        u16     24              volume envelope points (x, y)
+        u16     24              panning envelope points (x, y)
+        u8      1               volume points
+        u8      1               panning points
+        u8      1               volume sustain point
+        u8      1               volume loop start
+        u8      1               volume loop end
+        u8      1               panning sustain point
+        u8      1               panning loop start
+        u8      1               panning loop end
+        t8      `xm_env         volume type
+        t8      `xm_env         panning type
+        u8      1               vibrato type
+        u8      1               vibrato sweep
+        u8      1               vibrato depth
+        u8      1               vibrato rate
+        u16     1               volume fadeout
+        u16     1               reserved
+#fi
+        +       "iend - ^@"
+#set    total = 0
+#repeat nsmp
+        :--- sample header ---
+slen:   u32     1               length
+        u32     1               loop start
+        u32     1               loop length
+        u8      1               volume
+        i8      1               fine tune
+st:     t8      `xm_sample      type
+        u8      1               panning
+        i8      1               relative note
+        u8      1               reserved
+        sc      22              name
+#if st & 0x10
+#set    total = total + slen * 2
+#else
+#set    total = total + slen
+#fi
+#end
+        +       total           sample data
+#end
+
+/`xm_flags
+0x0001          linear frequency table
+
+/`xm_env
+0x01            on
+0x02            sustain
+0x04            loop
+
+/`xm_sample
+0x03    0x00    no loop
+0x03    0x01    forward loop
+0x03    0x02    ping-pong loop
+0x10            16-bit

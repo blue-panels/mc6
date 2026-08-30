@@ -164,4 +164,9 @@ dist_mcstructdata_DATA = \
 	data/rtcp.stl \
 	data/pcf.stl \
 	data/ppi.stl \
-	data/pyc27.stl
+	data/pyc27.stl \
+	data/md2.stl \
+	data/xm.stl \
+	data/protobuf.stl \
+	data/bson.stl \
+	data/asn1_der.stl
