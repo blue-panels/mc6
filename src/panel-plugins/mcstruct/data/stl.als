@@ -127,3 +127,5 @@ asn1_der.stl: *.der *.cer *.crt
 some_ip.stl:
 specpr.stl:
 mcap.stl: @0:894D43415030
+minidump.stl: *.dmp *.mdmp @0:4D444D5093A7
+rsrc.stl: *.rsrc

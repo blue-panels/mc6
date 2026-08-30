@@ -1,0 +1,170 @@
+STL 5.00
+;
+;   Windows minidump (MDMP): header and the stream directory; Enter on a
+;   stream opens its typed body. After kaitai_struct_formats
+;   windows/windows_minidump.ksy.
+;
+
+/MINIDUMP
+#if @d != 'MDMP'
+        :ERROR!!! no MDMP signature at this offset
+#fi
+        c       4               magic
+        w       1               magic 2 (A793)
+        u16     1               version
+n:      u32     1               streams
+sofs:   u32     1               stream directory offset
+        d       1               checksum
+        tu      1               timestamp
+        t64     `mdmp_flags     flags
+        .       sofs
+        *       n       _MDMP_dir
+
+/_MDMP_dir
+st:     u32     'mdmp_stream    stream type
+        u32     1               length
+#if st == 7
+        j32     _MDMP_system_info=@     offset
+#elseif st == 15
+        j32     _MDMP_misc_info=@       offset
+#elseif st == 3
+        j32     _MDMP_thread_list=@     offset
+#elseif st == 5
+        j32     _MDMP_memory_list=@     offset
+#elseif st == 9
+        j32     _MDMP_memory64_list=@   offset
+#elseif st == 6
+        j32     _MDMP_exception=@       offset
+#else
+        u32     1               offset
+#fi
+
+/_MDMP_system_info
+        u16     'mdmp_cpu       cpu architecture
+        u16     1               cpu level
+        u16     1               cpu revision
+        u8      1               cpus
+        u8      1               os type
+        u32     1               os major
+        u32     1               os minor
+        u32     1               os build
+        u32     1               os platform
+        u32     1               service pack string offset
+        u16     1               suite mask
+        u16     1               reserved
+
+/_MDMP_misc_info
+        u32     1               size
+        t32     `mdmp_misc      flags
+        u32     1               process id
+        tu      1               process create time
+        u32     1               process user time
+        u32     1               process kernel time
+        u32     1               cpu max MHz
+        u32     1               cpu current MHz
+        u32     1               cpu limit MHz
+        u32     1               cpu max idle state
+        u32     1               cpu current idle state
+
+/_MDMP_thread_list
+n:      u32     1               threads
+        *       n       :mdmp_thread
+
+/:mdmp_thread
+u32     1       thread id
+u32     1       suspend count
+u32     1       priority class
+u32     1       priority
+u64     1       teb
+u64     1       stack address
+u32     1       stack length
+u32     1       stack offset
+u32     1       context length
+u32     1       context offset
+
+/_MDMP_memory_list
+n:      u32     1               ranges
+        *       n       :mdmp_memory
+
+/:mdmp_memory
+u64     1       address
+u32     1       length
+u32     1       offset
+
+/_MDMP_memory64_list
+n:      u64     1               ranges
+        u64     1               base offset
+        *       n       :mdmp_memory64
+
+/:mdmp_memory64
+u64     1       address
+u64     1       length
+
+/_MDMP_exception
+        u32     1               thread id
+        u32     1               reserved
+        d       1               exception code
+        d       1               exception flags
+        q       1               inner exception
+        q       1               address
+        u32     1               parameters
+        u32     1               reserved
+        q       15              parameters
+        u32     1               context length
+        u32     1               context offset
+
+/'mdmp_stream
+0       unused
+3       thread list
+4       module list
+5       memory list
+6       exception
+7       system info
+8       thread ex list
+9       memory 64 list
+10      comment A
+11      comment W
+12      handle data
+13      function table
+14      unloaded module list
+15      misc info
+16      memory info list
+17      thread info list
+18      handle operation list
+19      token
+21      system memory info
+22      process vm counters
+24      thread names
+0x47670001      breakpad info
+0x47670002      assertion info
+0x47670003      linux cpu info
+0x47670004      linux proc status
+0x47670005      linux lsb release
+0x47670006      linux cmd line
+0x47670007      linux environ
+0x47670008      linux auxv
+0x47670009      linux maps
+0x4767000A      linux dso debug
+0x43500001      crashpad info
+
+/'mdmp_cpu
+0       x86
+5       ARM
+6       IA-64
+9       x86-64
+12      ARM64
+65535   unknown
+
+/`mdmp_flags
+0x0000000000000001      with data segments
+0x0000000000000002      with full memory
+0x0000000000000004      with handle data
+0x0000000000000010      with unloaded modules
+0x0000000000000040      with process thread data
+0x0000000000000800      with full memory info
+0x0000000000001000      with thread info
+
+/`mdmp_misc
+0x00000001      process id
+0x00000002      process times
+0x00000004      processor power info

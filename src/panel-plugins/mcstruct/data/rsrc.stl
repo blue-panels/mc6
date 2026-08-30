@@ -1,0 +1,52 @@
+STL 5.00
+;
+;   Classic Mac OS resource fork: header, resource map, type list and
+;   reference lists. After kaitai_struct_formats macos/resource_fork.ksy (MIT).
+;
+
+/RSRC
+#endian big
+        u32     1               data blocks offset
+mofs:   u32     1               resource map offset
+        u32     1               data blocks length
+        u32     1               resource map length
+        b       112             system data
+        b       128             application data
+        :--- resource map ---
+        .       mofs
+        b       16              header copy
+        u32     1               next map handle
+        u16     1               file reference
+        t16     `rsrc_attr      attributes
+tlo:    u16     1               type list offset (from the map)
+        u16     1               name list offset (from the map)
+        .       "mofs + tlo"
+ntyp:   u16     1               types - 1
+#repeat "ntyp + 1"
+        :--- type ---
+        c       4               type
+nref:   u16     1               resources - 1
+        u16     1               reference list offset (from the type list)
+#end
+        :--- reference lists follow: id, name offset, attributes + data offset (3 bytes), handle ---
+#repeat while ^@ + 12 <= mofs + 256
+        i16     1               id
+        i16     1               name offset (-1 = none)
+        t8      `rsrc_res_attr  attributes
+        b       3               data block offset
+        u32     1               handle
+#end
+
+/`rsrc_attr
+0x0080          read only
+0x0040          compact
+0x0020          changed
+
+/`rsrc_res_attr
+0x40            system heap
+0x20            purgeable
+0x10            locked
+0x08            protected
+0x04            preload
+0x02            changed
+0x01            compressed
