@@ -1,0 +1,100 @@
+STL 5.00
+;
+;   QuickTime / MP4 atoms: containers are entered, so the tree is listed
+;   flat; ftyp, mvhd and tkhd are decoded.
+;   After kaitai_struct_formats media/quicktime_mov.ksy.
+;
+
+/MOV
+#endian big
+#repeat while ^@ + 8 <= $size
+        :--- atom ---
+l32:    u32     1               size
+#if l32 == 1
+        c       4               type
+l64:    u64     1               size (64-bit)
+#set    aend = ^@ - 16 + l64
+#set    atype = @u32(^@ - 12)
+#elseif l32 == 0
+        c       4               type
+#set    aend = $size
+#set    atype = @u32(^@ - 4)
+#else
+        c       4               type
+#set    aend = ^@ - 8 + l32
+#set    atype = @u32(^@ - 4)
+#fi
+#if atype == "moov" || atype == "trak" || atype == "mdia" || atype == "minf" || atype == "stbl" || atype == "dinf" || atype == "moof" || atype == "traf" || atype == "udta" || atype == "edts"
+        :container, the atoms inside follow
+#elseif atype == "ftyp"
+        c       4               major brand
+        u32     1               minor version
+        c       "aend - ^@"     compatible brands
+#elseif atype == "mvhd"
+        u8      1               version
+        b       3               flags
+        u32     1               creation time (seconds since 1904)
+        u32     1               modification time
+        u32     1               time scale
+        u32     1               duration
+        u16     1               preferred rate, integer part
+        u16     1               preferred rate, fraction
+        u8      1               preferred volume, integer part
+        u8      1               preferred volume, fraction
+        b       10              reserved
+        b       36              matrix
+        u32     1               preview time
+        u32     1               preview duration
+        u32     1               poster time
+        u32     1               selection time
+        u32     1               selection duration
+        u32     1               current time
+        u32     1               next track id
+        +       "aend - ^@"
+#elseif atype == "tkhd"
+        u8      1               version
+        b       3               flags (bit 0 enabled, 1 in movie, 2 in preview)
+        u32     1               creation time
+        u32     1               modification time
+        u32     1               track id
+        b       4               reserved
+        u32     1               duration
+        b       8               reserved
+        u16     1               layer
+        u16     1               alternate group
+        u16     1               volume (8.8)
+        u16     1               reserved
+        b       36              matrix
+        u16     1               width, integer part
+        u16     1               width, fraction
+        u16     1               height, integer part
+        u16     1               height, fraction
+        +       "aend - ^@"
+#elseif atype == "hdlr"
+        u8      1               version
+        b       3               flags
+        c       4               component type
+        c       4               handler type
+        b       12              reserved
+        sc      "aend - ^@"     name
+        +       "aend - ^@"
+#elseif atype == "mdhd"
+        u8      1               version
+        b       3               flags
+        u32     1               creation time
+        u32     1               modification time
+        u32     1               time scale
+        u32     1               duration
+        u16     1               language (packed ISO 639)
+        u16     1               quality
+        +       "aend - ^@"
+#else
+        +       "aend - ^@"
+#fi
+#end
+
+/`mov_tkhd_flags
+0x00000001      enabled
+0x00000002      in movie
+0x00000004      in preview
+0x00000008      in poster

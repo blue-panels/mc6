@@ -129,3 +129,5 @@ specpr.stl:
 mcap.stl: @0:894D43415030
 minidump.stl: *.dmp *.mdmp @0:4D444D5093A7
 rsrc.stl: *.rsrc
+mov.stl: *.mov *.mp4 *.m4a *.m4v *.3gp @4:66747970
+snd.stl: *.snd

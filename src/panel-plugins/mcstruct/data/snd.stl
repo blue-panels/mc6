@@ -1,0 +1,101 @@
+STL 5.00
+;
+;   Classic Mac OS 'snd ' resource: format 1/2 header, sound commands and
+;   the sound header (Enter on a buffer command with an offset).
+;   After kaitai_struct_formats macos/mac_os_resource_snd.ksy (MIT).
+;
+
+/SND
+#endian big
+fmt:    u16     1               format (1 or 2)
+#if fmt == 1
+ndf:    u16     1               data formats
+        *       ndf     :snd_data_format
+#elseif fmt == 2
+        u16     1               reference count
+#fi
+ncmd:   u16     1               sound commands
+#repeat ncmd
+        :--- command ---
+cmd:    t16     `snd_cmd        command (bit 15: param2 is an offset)
+        u16     1               param 1
+#if (cmd & 0x8000) != 0 && (cmd & 0x7FFF) == 81
+        j32     _SND_header=@   param 2: sound header offset
+#else
+        u32     1               param 2
+#fi
+#end
+
+/:snd_data_format
+u16     'snd_data_type  id
+d       1       init options
+
+/_SND_header
+#endian big
+        u32     1               sample pointer (0 = follows)
+n:      u32     1               samples / channels
+        u16     1               sample rate, integer part
+        u16     1               sample rate, fraction
+        u32     1               loop start
+        u32     1               loop end
+enc:    u8      'snd_encode     encode
+        u8      1               base midi note
+#if enc == 0
+        :samples follow (8-bit unsigned)
+#else
+        u32     1               frames
+        b       10              AIFF sample rate (80-bit float)
+        u32     1               marker chunk
+#if enc == 0xFE
+        c       4               compression format
+        b       4               reserved
+        u32     1               state vars pointer
+        u32     1               left over samples pointer
+        u16     'snd_compression  compression id (65534 variable, 65535 fixed)
+        u16     1               packet size
+        u16     1               synthesizer id
+        u16     1               bits per sample
+#else
+        u32     1               instrument chunk pointer
+        u32     1               AES recording pointer
+        u16     1               bits per sample
+        b       14              reserved
+#fi
+#fi
+
+/'snd_data_type
+1       square wave synth
+3       wave table synth
+5       sampled synth
+
+/`snd_cmd
+0x8000          param 2 is an offset
+0x7FFF  3       quiet
+0x7FFF  4       flush
+0x7FFF  5       reinit
+0x7FFF  10      wait
+0x7FFF  11      pause
+0x7FFF  12      resume
+0x7FFF  13      callback
+0x7FFF  14      sync
+0x7FFF  40      note
+0x7FFF  41      rest
+0x7FFF  42      frequency
+0x7FFF  43      amplitude
+0x7FFF  44      timbre
+0x7FFF  60      wave table
+0x7FFF  80      sound
+0x7FFF  81      buffer
+0x7FFF  82      rate
+
+/'snd_encode
+0x00    standard
+0xFF    extended
+0xFE    compressed
+
+/'snd_compression
+65534   variable compression
+65535   fixed compression
+0       none
+3       3:1
+4       6:1

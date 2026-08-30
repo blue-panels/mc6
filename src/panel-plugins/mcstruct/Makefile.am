@@ -174,4 +174,6 @@ dist_mcstructdata_DATA = \
 	data/specpr.stl \
 	data/mcap.stl \
 	data/minidump.stl \
-	data/rsrc.stl
+	data/rsrc.stl \
+	data/mov.stl \
+	data/snd.stl
