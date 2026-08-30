@@ -317,17 +317,18 @@ eval_field (slv_eval_ctx_t *ctx, const slv_item_t *item, slv_node_t *parent)
     {
         /* words up to a NUL word, at most count of them when count > 0 */
         unsigned char wb[2];
-        gssize n = 0;
+        gssize got = 0;
 
         for (;;)
         {
-            if (!slv_read_bytes (ctx->ev->reader, ctx->current_offset + n, wb, 2))
+            if (!slv_read_bytes (ctx->ev->reader, ctx->current_offset + got, wb, 2))
                 break;
-            n += 2;
-            if ((wb[0] == 0 && wb[1] == 0) || (count > 0 && n >= count * 2) || n >= MAX_FIELD_BYTES)
+            got += 2;
+            if ((wb[0] == 0 && wb[1] == 0) || (count > 0 && got >= count * 2)
+                || got >= MAX_FIELD_BYTES)
                 break;
         }
-        nbytes = n;
+        nbytes = got;
         count = 1;
     }
     else if (item->type == SLV_TYPE_CHAR || item->type == SLV_TYPE_STR8
