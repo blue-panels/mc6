@@ -3,7 +3,7 @@ STL 5.00
 ;   rtpdump capture (rtptools): the text header line, the binary file
 ;   header and the packet records; Enter on a packet is not needed, the
 ;   RTP header is inlined. After kaitai_struct_formats network/rtpdump.ksy
-;   (Unlicense) and rtp_packet.ksy.
+;   and rtp_packet.ksy.
 ;
 
 /RTPDUMP

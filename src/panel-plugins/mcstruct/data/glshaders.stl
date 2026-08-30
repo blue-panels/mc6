@@ -1,8 +1,7 @@
 STL 5.00
 ;
 ;   Android OpenGL shader cache (EGL$): header and the entry list.
-;   After kaitai_struct_formats media/android_opengl_shaders_cache.ksy
-;   (Apache-2.0).
+;   After kaitai_struct_formats media/android_opengl_shaders_cache.ksy.
 ;
 
 /GL_SHADER_CACHE
