@@ -1876,7 +1876,7 @@ midnight_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *
         cb_ret_t v = MSG_NOT_HANDLED;
 
         command = widget_lookup_key (w, parm);
-        if (command != CK_IgnoreKey)
+        if (command != CK_IgnoreKey && !mcterm_overlay_command_needs_panel_cursor (command))
             v = midnight_execute_cmd (NULL, command);
 
         if (v == MSG_NOT_HANDLED && command_prompt && !is_cmdline_mute ())

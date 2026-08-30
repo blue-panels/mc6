@@ -2516,6 +2516,48 @@ time with the sequence C\-o and jump back to Midnight Commander, if
 you interrupt an application, you will not be able to run other
 external commands until you quit the application you interrupted.
 .PP
+Behind the panels the terminal keeps a scrollback of everything the shell
+has printed, and while no panel is on screen it can be read, marked and
+cleared.  The cursor keys walk the output and the shifted cursor keys mark
+it, both while the terminal itself holds the focus; the keys that only move
+the view work whoever is typing.  Every key not named below is typed into
+the shell.
+.PP
+.nf
+C\-Insert     copy the marked output to the clipboard
+C\-S\-u        take the mark back
+A\-S\-s        cut the output down to the rows that match the mark,
+             or the word under the cursor
+A\-s          turn that filter off, and on again
+C\-l          clear the screen, keeping the scrollback
+C\-S\-l        clear the screen and the scrollback both
+             (also C\-A\-l)
+.fi
+.PP
+With no panel on screen the function keys are the terminal's own and the
+button bar names them.  The file manager's View, Edit, Copy, RenMov and
+Delete are not on offer there: they work on the file the panel cursor
+stands on, and that cursor cannot be seen.  F8 is left empty on purpose,
+so that the reach for Delete does nothing rather than something else.
+.PP
+.nf
+F2           copy the marked output to the clipboard
+F3           mark the whole output, or take back the mark there is
+F4           cut the output down to the rows that match the mark,
+             or the word under the cursor
+F5           turn that filter off, and on again
+F6           clear the screen and the scrollback both
+F7           clear the screen, keeping the scrollback
+.fi
+.PP
+F1, F9 and F10 stay the file manager's while the shell waits at its prompt.
+Once a command is running the screen and every key on it are that command's,
+these among them.  The six above are the exception: they stay the terminal's
+while a command is running.  A full\-screen application, an editor or a pager,
+takes every key itself, those included.  All of them are listed in the
+.B [mcterm]
+section of the keymap file and can be redefined there.
+.PP
 If you type
 .B mc
 without arguments at the shell prompt behind the hidden panels, the running
