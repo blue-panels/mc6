@@ -79,6 +79,8 @@
 #define MCTERM_WHEEL_ROWS                 3
 /* How often the host is woken while a command runs, in nanoseconds. */
 #define MCTERM_BUSY_TICK_NSEC (200L * 1000L * 1000L)
+/* How long a shell started with startup files has to say it read them. */
+#define MCTERM_SETUP_TIMEOUT_USEC (10 * G_USEC_PER_SEC)
 
 /* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
    step the columns of terminal output tend to fall on. */
@@ -128,6 +130,9 @@ struct WMcTerm
     void *on_after_redraw_data;
     gboolean pending_internal_sync;
     gboolean waiting_for_initial_osc7;
+    // What zsh was started with, and by when it must say it read the startup files.
+    mcterm_shell_rc_t *shell_rc;
+    gint64 setup_deadline;
     mcview_terminal_buffer_t *sync_snapshot_buf; /* owned, freed in mcterm_free */
     int sync_snapshot_cursor_row;
     gint64 internal_sync_deadline;
@@ -477,6 +482,7 @@ mcterm_handle_osc7_generation (WMcTerm *t)
 
         t->waiting_for_initial_osc7 = FALSE;
         t->internal_sync_deadline = 0;
+        t->setup_deadline = 0;
 
         if (t->pending_internal_sync)
         {
@@ -657,9 +663,28 @@ mcterm_handle_osc133_generation (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+// The shell never said it read our startup files: it runs without the protocol.
+static void
+mcterm_check_setup_deadline (WMcTerm *t)
+{
+    if (!t->waiting_for_initial_osc7 || t->setup_deadline == 0
+        || g_get_monotonic_time () < t->setup_deadline)
+        return;
+
+    t->setup_deadline = 0;
+    t->waiting_for_initial_osc7 = FALSE;
+    t->osc7_capable = FALSE;
+    t->osc133_capable = FALSE;
+    t->shell_at_prompt = TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 mcterm_handle_stalled_internal_sync (WMcTerm *t)
 {
+    mcterm_check_setup_deadline (t);
+
     if (!t->pending_internal_sync)
         return TRUE;
 
@@ -702,7 +727,7 @@ mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_terminal_buffer_t
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcterm_exec_shell (int pty_slave, const char *start_dir)
+mcterm_exec_shell (int pty_slave, const char *start_dir, const mcterm_shell_rc_t *rc)
 {
     const char *shell;
     char tty_name[MC_MAXPATHLEN];
@@ -760,43 +785,21 @@ mcterm_exec_shell (int pty_slave, const char *start_dir)
     { /* fallback: shell starts in mc's cwd */
     }
 
-    execl (shell, shell, NULL);
-    _exit (127);
-}
+    // The startup files go in on the command line, or through the environment.
+    mcterm_shell_rc_child_env (rc);
 
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Copy the shell setup with every placeholder replaced by the session token.
- *
- * The setup is written as a plain shell literal, printf escapes and all, so the token cannot be
- * spliced in with g_strdup_printf() without doubling every percent sign in it.
- */
-
-static char *
-mcterm_setup_with_token (const char *setup, const char *token)
-{
-    static const size_t ph_len = sizeof (MCTERM_TOKEN_PLACEHOLDER) - 1;
-    GString *out;
-    const char *p = setup;
-
-    out = g_string_sized_new (strlen (setup) + 64);
-
-    while (TRUE)
     {
-        const char *ph = strstr (p, MCTERM_TOKEN_PLACEHOLDER);
+        const char *argv[8];
+        guint argc = 1;
 
-        if (ph == NULL)
-        {
-            g_string_append (out, p);
-            break;
-        }
+        argv[0] = shell;
+        argc += mcterm_shell_rc_args (rc, argv + 1, G_N_ELEMENTS (argv) - 2);
+        argv[argc] = NULL;
 
-        g_string_append_len (out, p, ph - p);
-        g_string_append (out, token);
-        p = ph + ph_len;
+        execv (shell, (char *const *) argv);
     }
 
-    return g_string_free (out, FALSE);
+    _exit (127);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -822,6 +825,21 @@ mcterm_write_silent (int master, const char *data, size_t len)
     if (echo_was_on)
         (void) tcsetattr (master, TCSANOW, &tt);
     return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* A shell started with our startup files says it has read them with the first OSC 7;
+   nothing is typed into it, so there is nothing to keep off the screen. */
+static void
+mcterm_arm_protocol (WMcTerm *t)
+{
+    t->osc7_capable = TRUE;
+    t->osc133_capable = TRUE;
+    t->shell_at_prompt = FALSE;
+    t->waiting_for_initial_osc7 = TRUE;
+    t->pending_internal_sync = FALSE;
+    t->setup_deadline = g_get_monotonic_time () + MCTERM_SETUP_TIMEOUT_USEC;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2222,6 +2240,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
             }
         }
         mcterm_busy_tick_set (t, FALSE);
+        g_clear_pointer (&t->shell_rc, mcterm_shell_rc_free);
         tty_painter_remove (mcterm_paint_pictures, t);
         if (t->pictures_shown)
             tty_touch_screen (); /* the pixels go with the next refresh */
@@ -2251,15 +2270,25 @@ mcterm_new (const WRect *r, const char *start_dir)
     Widget *w;
     int master = -1, slave = -1;
     pid_t pid;
+    const shell_type_t shell_type = (mc_global.shell != NULL) ? mc_global.shell->type : SHELL_NONE;
+    char *token;
+    mcterm_shell_rc_t *shell_rc;
 
     mcterm_key_table_init (mc_global.profile_name, mc_global.main_config);
+
+    token = g_strdup_printf ("%08x%08x", g_random_int (), g_random_int ());
+    shell_rc = mcterm_shell_rc_new (shell_type, token);
 
     {
         struct winsize ws;
 
         mcterm_winsize (r, &ws);
         if (openpty (&master, &slave, NULL, NULL, &ws) < 0)
+        {
+            mcterm_shell_rc_free (shell_rc);
+            g_free (token);
             return NULL;
+        }
     }
 
     pid = fork ();
@@ -2267,13 +2296,15 @@ mcterm_new (const WRect *r, const char *start_dir)
     {
         close (master);
         close (slave);
+        mcterm_shell_rc_free (shell_rc);
+        g_free (token);
         return NULL;
     }
 
     if (pid == 0)
     {
         close (master);
-        mcterm_exec_shell (slave, start_dir);
+        mcterm_exec_shell (slave, start_dir, shell_rc);
         /* not reached */
     }
 
@@ -2288,6 +2319,8 @@ mcterm_new (const WRect *r, const char *start_dir)
 
     t->pty_master = master;
     t->child_pid = pid;
+    t->osc7_token = token;
+    t->shell_rc = shell_rc;
     t->child_dead = FALSE;
     t->shell_at_prompt = TRUE;
     t->last_osc7_gen = 0;
@@ -2322,18 +2355,14 @@ mcterm_new (const WRect *r, const char *start_dir)
 
     add_select_channel (master, mcterm_pty_ready_cb, t);
 
+    if (shell_rc != NULL)
+        mcterm_arm_protocol (t);
+    else
     {
-        const shell_type_t shell_type =
-            (mc_global.shell != NULL) ? mc_global.shell->type : SHELL_NONE;
+        const char *setup = mcterm_shell_setup (shell_type);
 
-        t->osc7_token = g_strdup_printf ("%08x%08x", g_random_int (), g_random_int ());
-
-        {
-            const char *setup = mcterm_shell_setup (shell_type);
-
-            if (setup != NULL)
-                mcterm_enable_osc7 (t, master, setup);
-        }
+        if (setup != NULL)
+            mcterm_enable_osc7 (t, master, setup);
     }
 
     return t;
