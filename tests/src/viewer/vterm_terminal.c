@@ -1462,6 +1462,47 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* ESC ( 0 designates the DEC line-drawing set into G0: the letters stand for
+   the frame characters until ESC ( B takes it back. */
+START_TEST (test_dec_graphics_letters_draw_lines)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 4, 20);
+
+    FEED (vt, "\033(0lqk\033(Bab");
+
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 0x250C); /* l */
+    ck_assert_uint_eq (cell_ch (vt, 0, 1), 0x2500); /* q */
+    ck_assert_uint_eq (cell_ch (vt, 0, 2), 0x2510); /* k */
+    ck_assert_uint_eq (cell_ch (vt, 0, 3), 'a');
+    ck_assert_uint_eq (cell_ch (vt, 0, 4), 'b');
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* SO prints from G1 and SI from G0 again, each set keeping its own designation. */
+START_TEST (test_shift_out_prints_from_g1)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+
+    mcview_vterm_set_size (vt, 4, 20);
+
+    FEED (vt, "\033)0x\016x\017x");
+
+    ck_assert_uint_eq (cell_ch (vt, 0, 0), 'x');    /* G0 is still ASCII */
+    ck_assert_uint_eq (cell_ch (vt, 0, 1), 0x2502); /* SO: G1 draws a line */
+    ck_assert_uint_eq (cell_ch (vt, 0, 2), 'x');    /* SI: G0 again */
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -1517,6 +1558,8 @@ main (void)
     tcase_add_test (tc_core, test_sixel_wider_than_the_screen_keeps_its_width);
     tcase_add_test (tc_core, test_the_pictures_kept_are_so_many);
     tcase_add_test (tc_core, test_a_screen_made_taller_brings_the_pictures_down_with_the_rows);
+    tcase_add_test (tc_core, test_dec_graphics_letters_draw_lines);
+    tcase_add_test (tc_core, test_shift_out_prints_from_g1);
 
     return mctest_run_all (tc_core);
 }
