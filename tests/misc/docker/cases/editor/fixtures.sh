@@ -39,6 +39,7 @@ log.txt	key F4,key M-S	no text: chaff only	Alt-Shift-S filters by the word under
 log.txt	key F4,key M-S,key M-s	text: chaff only	Alt-S lifts the filter	local
 log.txt	key F4,key F7,type needle,key Enter	text: needle	the search dialog finds the word	local
 log.txt	key F4,key F3,key Down,key F3,key F7	text: line 01	the search dialog opens with the selected text	local
+log.txt	key F4,key F3,key End,key F3,key C-Insert	clipfile: needle at the top	Ctrl-Insert copies the marked text into the clipfile	local
 EOF
 
 # ---------------------------------------------------------------- prefill ---

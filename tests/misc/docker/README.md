@@ -36,6 +36,8 @@ leaves nothing in the working tree and reuses its object files between runs.
       editor/, terminal/    the same for mcedit and the embedded terminal
       struct/               the same for the mcstruct plugin
       panel/                the same for the panel: the quick filter, quick cd
+      lua/                  the same for the viewers written in Lua
+      sqlite/, arcmc/       the same for the sqlite plugin and arcmc.ini
     reports/                what a run leaves behind (not in git)
 
 Three axes, chosen independently: the **environment** (which image mc is
@@ -116,7 +118,43 @@ server.
 | `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
 | `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
 
-These four are local only: they press keys on mc itself, not on a file a
+### lua
+
+| directory | what it is for                                                    |
+|-----------|--------------------------------------------------------------------|
+| `01-dbf`  | a dBase III table written byte by byte, which lua-dbf decodes itself and draws on `mc.ui.screen` |
+| `02-elf`  | an ELF and a symbolic link to it, which lua-readelf runs `readelf` on |
+| `03-image`| an 8x8 true colour PNG, drawn in chafa's characters, with `i` for the properties and F1 for the script's help |
+
+lua-dbf needs nothing but the Lua runtime, lua-readelf needs `readelf` from
+binutils, the picture needs `chafa`; the image carries `liblua5.4-dev` and
+`chafa` for them.  magic.ini sends every image to the script that draws it in
+sixel where the terminal can and in chafa's characters where it cannot: this
+terminal cannot, so what the cases read is the characters.  A picture drawn in
+sixel is not checked at all and cannot be: it reaches the terminal as a DCS the
+screen library never sees.  The Java class viewer is left out with its tools,
+which would cost the image a JRE.
+
+The PNG is in true colour on purpose: chafa's loader turns down a paletted
+one.
+
+### sqlite
+
+| directory     | what it is for                                              |
+|---------------|--------------------------------------------------------------|
+| `01-tables`   | a database of two tables and a view: the tree down to one row as JSON, the schema at every level, and the same bytes under a name the rule does not know |
+
+### arcmc
+
+| directory           | what it is for                                        |
+|---------------------|--------------------------------------------------------|
+| `01-runtime-format` | a suffix that only `arcmc.ini` knows, opened with Ctrl+PgDn without a rebuild and without a magic.ini rule |
+
+`cases/arcmc/config/arcmc.ini` is how it is registered: a subject may carry a
+`config/` of its own, and what is in it is copied over mc's configuration
+before the run.
+
+These seven are local only: they press keys on mc itself, not on a file a
 server holds.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
@@ -144,12 +182,22 @@ presses the keys and reads what came of it. A `cases.tsv` row is file, keys,
 expectation, reason, and optionally the transports it is for. The keys go
 comma separated, in order: `Enter`, `F3`, `F5`, `C-o`, `..` (up one level),
 `on <name>` (the cursor goes there), `cd <path>` (the Quick cd box),
-`type <text>`. The expectations: `archive panel`, `listing`, `error dialog`,
-`nothing, no error`, `the panel it came from`, `extfs panel`, `copy to the
-other panel` (the file is then in `/tmp`, as big as mc said), `the name as
-written` (the shell printed it). mc's stderr is read as well; an assertion
+`type <text>`, `key <name>` for anything tmux can send (`F4`, `M-S`, `C-M-l`,
+`C-Insert`, `Escape`), and `width <n>` for a narrower terminal. The
+expectations: `archive panel`, `listing`, `error dialog`, `nothing, no error`,
+`the panel it came from`, `extfs panel`, `copy to the other panel` (the file
+is then in `/tmp`, as big as mc said), `the name as written` (the shell
+printed it), `text: <what the screen must show>`, `no text: <what it must
+not>`, and `clipfile: <what mc copied>`, which is read from the file mc keeps
+a copy in rather than off the screen. mc's stderr is read as well; an assertion
 or a critical warning fails the case whatever the screen shows. A row with
 keys or an expectation the script does not know is listed as skipped.
+
+The sequences this terminal sends for a function key with a modifier are
+written into `~/.config/mc6/term` before mc starts, so that `C-F1` and
+`C-Insert` reach mc at all, and what mc saves between runs is thrown away
+before each case, so one case does not hand the next the cursor position it
+left in a file.
 
 `-o` writes ini values before mc starts (`section.key=value`, the section
 `Midnight-Commander` when left out), `-k` puts a keymap from `common/keymaps/`
