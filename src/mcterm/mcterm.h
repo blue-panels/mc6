@@ -38,6 +38,7 @@ gboolean mcterm_send_internal_line (WMcTerm *t, const char *line);
 void mcterm_set_command_hint (WMcTerm *t, const char *command);
 char *mcterm_running_command (const WMcTerm *t, int max_width);
 gboolean mcterm_shell_at_prompt (const WMcTerm *t);
+gboolean mcterm_shell_draws_below_line (const WMcTerm *t);
 /* Whether the shell's own line editor holds nothing typed yet: TRUE at a fresh prompt, FALSE once
    a command has been entered on it. Also TRUE when there is no prompt to speak of. */
 gboolean mcterm_shell_line_is_empty (WMcTerm *t);
@@ -131,6 +132,12 @@ mcterm_running_command (const WMcTerm *t, int max_width)
 }
 static inline gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
+{
+    (void) t;
+    return FALSE;
+}
+static inline gboolean
+mcterm_shell_draws_below_line (const WMcTerm *t)
 {
     (void) t;
     return FALSE;

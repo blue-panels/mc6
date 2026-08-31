@@ -1058,6 +1058,39 @@ mcterm_follow_end (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+mcterm_row_is_blank (const mcview_terminal_buffer_t *buf, int row, int cols)
+{
+    int col;
+
+    for (col = 0; col < cols; col++)
+    {
+        const mcview_vterm_cell_t *cell = mcview_terminal_buffer_get (buf, row, col);
+
+        if (cell != NULL && cell->ch != 0 && cell->ch != ' ')
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+// The last row the shell has drawn on; rows it has cleared again do not count.
+static int
+mcterm_shell_last_row (const mcview_terminal_buffer_t *buf, int cursor_row, int cols)
+{
+    int row;
+
+    for (row = mcview_terminal_buffer_max_row (buf); row > cursor_row; row--)
+        if (!mcterm_row_is_blank (buf, row, cols))
+            return row;
+
+    return cursor_row;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Fit the rows through @cursor_row into the widget and return the last content row. */
 static int
 mcterm_fit_content (const WMcTerm *t, const mcview_terminal_buffer_t *buf, int cursor_row,
@@ -1066,11 +1099,10 @@ mcterm_fit_content (const WMcTerm *t, const mcview_terminal_buffer_t *buf, int c
     const int max_row = mcview_terminal_buffer_max_row (buf);
     int effective_max;
 
-    /* The row the shell types on is the host's when it types elsewhere, drawn on its command line
-       by mcterm_draw_prompt_row(); shown full screen the terminal draws that row itself. */
+    // Typing elsewhere, the host draws the shell's last row on its command line.
     if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
         && !mcview_vterm_in_alt_screen (t->vterm))
-        effective_max = cursor_row - 1;
+        effective_max = mcterm_shell_last_row (buf, cursor_row, CONST_WIDGET (t)->rect.cols) - 1;
     else
         effective_max = (cursor_row > max_row) ? cursor_row : max_row;
 
@@ -2115,7 +2147,8 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 }
             }
         }
-        if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere)
+        if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
+            && !mcterm_shell_draws_below_line (t))
             return MSG_NOT_HANDLED;
         if (t->vterm != NULL && !t->child_dead)
         {
@@ -2728,6 +2761,24 @@ mcterm_shell_at_prompt (const WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcterm_shell_draws_below_line (const WMcTerm *t)
+{
+    if (t == NULL || t->vterm == NULL || t->child_dead || !t->shell_at_prompt || !t->osc7_capable
+        || !t->typing_elsewhere || mcview_vterm_in_alt_screen (t->vterm))
+        return FALSE;
+
+    {
+        const int cursor_row = mcview_vterm_cursor_row (t->vterm);
+
+        return (mcterm_shell_last_row (mcview_vterm_buf (t->vterm), cursor_row,
+                                       CONST_WIDGET (t)->rect.cols)
+                > cursor_row);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Keys just sent are not on the screen until the shell echoes them. Before the line is read off
    the screen, give the shell a moment to answer. */
 static void
@@ -3002,7 +3053,7 @@ mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section
 
     r = &CONST_WIDGET (t)->rect;
     buf = mcview_vterm_buf (t->vterm);
-    cursor_row = mcview_vterm_cursor_row (t->vterm);
+    cursor_row = mcterm_shell_last_row (buf, mcview_vterm_cursor_row (t->vterm), r->cols);
 
     /* The row belongs to the host, and so do its colors: it stands next to
        whatever the host puts on the rest of that row. */

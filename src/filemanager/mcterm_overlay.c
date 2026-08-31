@@ -399,7 +399,7 @@ mcterm_overlay_cmdline_takes_key (int parm)
 static void
 mcterm_overlay_place_cursor (void)
 {
-    if (mcterm_overlay_terminal_focused ())
+    if (mcterm_overlay_terminal_focused () || mcterm_shell_draws_below_line (mcterm_panel))
         send_message (mcterm_overlay_widget (), NULL, MSG_CURSOR, 0, NULL);
     else if (command_prompt)
         send_message (WIDGET (cmdline), NULL, MSG_CURSOR, 0, NULL);
