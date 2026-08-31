@@ -8,8 +8,9 @@
 # started under tmux with the panel in that directory, the file is found by
 # quick search, the keys are pressed in order and the screen is read.  A key
 # is Enter, F3, F5, C-o, ".." (up one level), "on <name>" (the cursor goes
-# there), "cd <path>" (through the Quick cd box), "type <text>", or
-# "key <name>" for anything tmux can send: F4, M-S, C-M-l, Escape, C-F1.
+# there), "cd <path>" (through the Quick cd box), "type <text>",
+# "key <name>" for anything tmux can send (F4, M-S, C-M-l, Escape, C-F1), or
+# "width <n>" to make the terminal that many columns wide.
 # Rows whose keys or expectation this script does not know are reported as
 # skipped; a row with transports named runs only over those.
 #
@@ -35,7 +36,9 @@
 # "nothing, no error", "the panel it came from", "extfs panel", "copy to the
 # other panel" (the file is then in /tmp, the same size), "the name as
 # written" (the file's name is on the screen, in the shell's output),
-# "text: <what the screen must show>" and "no text: <what it must not>".  mc's
+# "text: <what the screen must show>", "no text: <what it must not>" and
+# "clipfile: <what mc copied>", which is read from the file mc keeps it in
+# rather than off the screen.  mc's
 # stderr is read too: an assertion or a critical warning fails the case
 # whatever the screen says.
 set -u
@@ -105,6 +108,9 @@ expect_file=$SRC/envs/$env_name/expect.tsv
 config=${XDG_CONFIG_HOME:-$HOME/.config}/mc6
 mkdir -p "$config"
 
+# where a copy lands: the same file the editor and the terminal write
+clipfile=${XDG_DATA_HOME:-$HOME/.local/share}/mc6/mcedit/mcedit.clip
+
 # -o values, grouped by section
 if [ -n "$options" ]; then
     echo "$options" | grep . | awk -F= '
@@ -145,6 +151,13 @@ term_keys ()
             for code in 15 17 18 19 20 21 23 24; do
                 printf '%s-f%d=\\e[%s;%s~\n' "$name" "$i" "$code" "$n"
                 i=$((i + 1))
+            done
+            # the editing keys carry the modifier the same way: insert is what
+            # the terminal's own copy and paste hang on
+            printf '%s-insert=\\e[2;%s~\n' "$name" "$n"
+            printf '%s-delete=\\e[3;%s~\n' "$name" "$n"
+            for pair in A:up B:down C:right D:left H:home F:end; do
+                printf '%s-%s=\\e[1;%s%s\n' "$name" "${pair#*:}" "$n" "${pair%%:*}"
             done
         done
     } > "$config/term/xterm-256color"
@@ -371,6 +384,9 @@ check ()
     "no text: "*)
         ! screen | grep -qF -- "${1#no text: }"
         ;;
+    "clipfile: "*)
+        grep -qF -- "${1#clipfile: }" "$clipfile" 2>/dev/null
+        ;;
     *)
         return 2
         ;;
@@ -382,7 +398,7 @@ steps_known ()
 {
     echo "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
-        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "*) ;;
+        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
         *) exit 1 ;;
         esac
     done
@@ -422,6 +438,10 @@ press ()
         # anything tmux has a name for: F4, M-S, C-M-l, Escape, C-F1
         "key "*)
             $T send-keys -t mc "${step#key }"
+            ;;
+        # a narrower terminal, for what has to be laid out again
+        "width "*)
+            $T resize-window -t mc -x "${step#width }" -y 40
             ;;
         esac
         nap 1.5
@@ -562,7 +582,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
             case "$expect" in
             "archive panel" | listing | "nothing, no error" | "error dialog" | "the panel it came from" \
                 | "extfs panel" | "copy to the other panel" | "the name as written" \
-                | "text: "* | "no text: "*) ;;
+                | "text: "* | "no text: "* | "clipfile: "*) ;;
             *)
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$expect"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"

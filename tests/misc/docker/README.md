@@ -165,12 +165,22 @@ presses the keys and reads what came of it. A `cases.tsv` row is file, keys,
 expectation, reason, and optionally the transports it is for. The keys go
 comma separated, in order: `Enter`, `F3`, `F5`, `C-o`, `..` (up one level),
 `on <name>` (the cursor goes there), `cd <path>` (the Quick cd box),
-`type <text>`. The expectations: `archive panel`, `listing`, `error dialog`,
-`nothing, no error`, `the panel it came from`, `extfs panel`, `copy to the
-other panel` (the file is then in `/tmp`, as big as mc said), `the name as
-written` (the shell printed it). mc's stderr is read as well; an assertion
+`type <text>`, `key <name>` for anything tmux can send (`F4`, `M-S`, `C-M-l`,
+`C-Insert`, `Escape`), and `width <n>` for a narrower terminal. The
+expectations: `archive panel`, `listing`, `error dialog`, `nothing, no error`,
+`the panel it came from`, `extfs panel`, `copy to the other panel` (the file
+is then in `/tmp`, as big as mc said), `the name as written` (the shell
+printed it), `text: <what the screen must show>`, `no text: <what it must
+not>`, and `clipfile: <what mc copied>`, which is read from the file mc keeps
+a copy in rather than off the screen. mc's stderr is read as well; an assertion
 or a critical warning fails the case whatever the screen shows. A row with
 keys or an expectation the script does not know is listed as skipped.
+
+The sequences this terminal sends for a function key with a modifier are
+written into `~/.config/mc6/term` before mc starts, so that `C-F1` and
+`C-Insert` reach mc at all, and what mc saves between runs is thrown away
+before each case, so one case does not hand the next the cursor position it
+left in a file.
 
 `-o` writes ini values before mc starts (`section.key=value`, the section
 `Midnight-Commander` when left out), `-k` puts a keymap from `common/keymaps/`
