@@ -123,12 +123,19 @@ server.
 |-----------|--------------------------------------------------------------------|
 | `01-dbf`  | a dBase III table written byte by byte, which lua-dbf decodes itself and draws on `mc.ui.screen` |
 | `02-elf`  | an ELF and a symbolic link to it, which lua-readelf runs `readelf` on |
+| `03-image`| an 8x8 true colour PNG, drawn in chafa's characters, with `i` for the properties and F1 for the script's help |
 
 lua-dbf needs nothing but the Lua runtime, lua-readelf needs `readelf` from
-binutils.  The image carries `liblua5.4-dev` for both.  lua-sixel is left out:
-a picture drawn in sixel goes to the terminal as a DCS the screen library never
-sees, so a captured screen cannot show it.  lua-chafa and the Java class viewer
-are left out with their tools.
+binutils, the picture needs `chafa`; the image carries `liblua5.4-dev` and
+`chafa` for them.  magic.ini sends every image to the script that draws it in
+sixel where the terminal can and in chafa's characters where it cannot: this
+terminal cannot, so what the cases read is the characters.  A picture drawn in
+sixel is not checked at all and cannot be: it reaches the terminal as a DCS the
+screen library never sees.  The Java class viewer is left out with its tools,
+which would cost the image a JRE.
+
+The PNG is in true colour on purpose: chafa's loader turns down a paletted
+one.
 
 These five are local only: they press keys on mc itself, not on a file a
 server holds.

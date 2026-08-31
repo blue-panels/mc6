@@ -73,4 +73,27 @@ program.bin	F3	text: Section Headers	the sections are in the same view	local
 link-to-program	F3	text: ELF Header	a symbolic link is followed when the type is looked up	local
 EOF
 
+mkdir -p 03-image
+
+# An 8x8 PNG in true colour, written from base64 so that no image tool is
+# needed to make it: chafa's loader turns down a paletted one.  magic.ini sends every image/ to lua-sixel, which draws
+# it in sixel where the terminal can and in chafa's characters where it
+# cannot: this terminal cannot, so what lands on the screen is characters.
+base64 -d > 03-image/tiles.png <<'PNG'
+iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAc0lEQVR42g2OQREAMAjDIgUplYIU
+pCAFKXXS7dvrJSGQIiINAwsH/iuVqqjSxRRbXOH/RSlFSosRK074E+hUR51uptnmGn/uB9egoScz
+2clN/G1fV4uW3sxmN7fxb/gRdejoy1z2chf/sp9WRqadcdY5x37B21fhjdwhmwAAAABJRU5ErkJg
+gg==
+PNG
+
+cat > 03-image/cases.tsv <<'EOF'
+file	key	expect	why	transports
+tiles.png	F3	text: PNG image data	the line about the picture, from file when ImageMagick is not there	local
+tiles.png	F3	no text: Install chafa	the picture itself is drawn, in chafa's characters, not a note asking for it	local
+tiles.png	F3	text: 8 x 8	and the size it read out of it	local
+tiles.png	F3,key i	text: Install exif	i asks for the full properties, which this image has no tool for	local
+tiles.png	F3,key F1	text: Image viewer	F1 opens the help file of the script itself	local
+tiles.png	F3,key F1	text: switch between the picture	which says what the keys of this viewer do	local
+EOF
+
 echo "lua cases in $dir"
