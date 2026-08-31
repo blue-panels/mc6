@@ -255,11 +255,16 @@ sqlite_update_title (sqlite_data_t *data)
     g_free (data->title);
 
     if (data->object_name == NULL)
-        data->title = base;
-    else if (data->level == SQLITE_LEVEL_ROWS)
-        data->title = g_strdup_printf ("%s / %s / rows", base, data->object_name);
+        data->title = base;  // the title takes it over
     else
-        data->title = g_strdup_printf ("%s / %s", base, data->object_name);
+    {
+        if (data->level == SQLITE_LEVEL_ROWS)
+            data->title = g_strdup_printf ("%s / %s / rows", base, data->object_name);
+        else
+            data->title = g_strdup_printf ("%s / %s", base, data->object_name);
+
+        g_free (base);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
