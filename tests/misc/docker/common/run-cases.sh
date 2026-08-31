@@ -156,6 +156,8 @@ term_keys ()
             # the terminal's own copy and paste hang on
             printf '%s-insert=\\e[2;%s~\n' "$name" "$n"
             printf '%s-delete=\\e[3;%s~\n' "$name" "$n"
+            printf '%s-pgup=\\e[5;%s~\n' "$name" "$n"
+            printf '%s-pgdn=\\e[6;%s~\n' "$name" "$n"
             for pair in A:up B:down C:right D:left H:home F:end; do
                 printf '%s-%s=\\e[1;%s%s\n' "$name" "${pair#*:}" "$n" "${pair%%:*}"
             done
@@ -164,6 +166,13 @@ term_keys ()
 }
 
 term_keys
+
+# A subject may carry configuration of its own in cases/<name>/config: what is
+# there is copied over mc's, which is how a format known only to arcmc.ini or a
+# rule known only to magic.ini gets in front of mc without touching the build.
+if [ -d "$SRC/cases/$subject/config" ]; then
+    cp -r "$SRC/cases/$subject/config/." "$config/"
+fi
 
 # the connection each plugin reads on start; plain passwords are accepted
 printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nuse_agent=false\n' "$subject" \

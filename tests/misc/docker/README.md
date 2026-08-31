@@ -37,6 +37,7 @@ leaves nothing in the working tree and reuses its object files between runs.
       struct/               the same for the mcstruct plugin
       panel/                the same for the panel: the quick filter, quick cd
       lua/                  the same for the viewers written in Lua
+      sqlite/, arcmc/       the same for the sqlite plugin and arcmc.ini
     reports/                what a run leaves behind (not in git)
 
 Three axes, chosen independently: the **environment** (which image mc is
@@ -137,7 +138,23 @@ which would cost the image a JRE.
 The PNG is in true colour on purpose: chafa's loader turns down a paletted
 one.
 
-These five are local only: they press keys on mc itself, not on a file a
+### sqlite
+
+| directory     | what it is for                                              |
+|---------------|--------------------------------------------------------------|
+| `01-tables`   | a database of two tables and a view: the tree down to one row as JSON, the schema at every level, and the same bytes under a name the rule does not know |
+
+### arcmc
+
+| directory           | what it is for                                        |
+|---------------------|--------------------------------------------------------|
+| `01-runtime-format` | a suffix that only `arcmc.ini` knows, opened with Ctrl+PgDn without a rebuild and without a magic.ini rule |
+
+`cases/arcmc/config/arcmc.ini` is how it is registered: a subject may carry a
+`config/` of its own, and what is in it is copied over mc's configuration
+before the run.
+
+These seven are local only: they press keys on mc itself, not on a file a
 server holds.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
