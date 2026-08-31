@@ -4,7 +4,9 @@
 # What the embedded terminal got in this milestone: a keybar of its own, the
 # panels back on Ctrl-F1 from the command line, Ctrl-Alt-L clearing the
 # scrollback along with the screen, and insert mode so that editing in the
-# middle of a shell line draws right.
+# middle of a shell line draws right.  Since then the host shows the last row
+# the shell draws, not the one it types on: a wrapped line keeps its tail, and
+# what the line editor puts up for a history search is on screen.
 set -e
 
 dir="${1:-/home/mc/cases/terminal}"
@@ -32,6 +34,8 @@ readme.txt	key C-o,type echo COPYMARK,key Enter,key F3,key F2	clipfile: COPYMARK
 readme.txt	key C-o,type echo COPYMARK,key Enter,key F3,key C-Insert	clipfile: COPYMARK	Ctrl-Insert stores it as well, which is what the keymap binds	local
 readme.txt	key C-o	a mark made with Shift-arrows is stored the same way	for a person: pressed from a script it leaves the clipfile empty, so what it needs is not the key alone	local
 readme.txt	key C-o	the output marked with the mouse lands in the clipfile the same way	for a person: the mouse is not something this script presses	local
+readme.txt	key C-o,type echo aaaaaaaaaa1bbbbbbbbbb2cccccccccc3dddddddddd4eeeeeeeeee5ffffffffff6gggggggggg7hhhhhhhhhh8iiiiiiiiii9jjjjjjjjjj0kkkkkkkkkk1llllllllll2mmmmmmmmmm3nnnnnnnnnn4ZZZTAIL,key Home	text: ZZZTAIL	a line longer than the row keeps its tail on screen when the cursor goes back to its start	local
+readme.txt	key C-o,type echo mc-marker-42,key Enter,key C-r,type mc-marker	text: i-search	Ctrl-R reaches the shell's line editor and what it puts up is on screen	local
 EOF
 
 echo "terminal cases in $dir"

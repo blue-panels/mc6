@@ -1,9 +1,16 @@
 /*
    Midnight Commander - the shell integration mcterm writes into each shell.
 
-   The strings here teach bash, zsh, fish and the POSIX shells to report their
-   working directory (OSC 7) and mark their prompts and commands (OSC 133), each
-   carrying the session token so the host tells its own shell from any other.
+   The strings here make bash, fish and the POSIX shells report their working
+   directory (OSC 7) and mark their prompts and commands (OSC 133).  Every mark
+   carries the session token, so the host can tell its own shell from any other
+   one.  They are typed into the shell at its first prompt.
+
+   zsh is started with startup files of its own instead: what is typed at the
+   prompt can be read by the startup script of the user, and it is also saved
+   in the shell history.  Those files live in mc's data directory and are the
+   same for every session; the token of the session reaches them in the
+   environment, as $MC_TERM_TOKEN.
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -34,7 +41,9 @@
 #include <config.h>
 
 #include "lib/global.h"
-#include "lib/shell.h"  // shell_type_t, SHELL_*
+#include "lib/fileloc.h"   // MC_ZDOTDIR_SUBDIR
+#include "lib/mcconfig.h"  // mc_config_get_data_path()
+#include "lib/shell.h"     // shell_type_t, SHELL_*
 
 #include "mcterm.h"        // MCTERM_OSC7_TOKEN_PREFIX
 #include "mcterm_proto.h"  // MCTERM_MARK_TOKEN_KEY
@@ -47,6 +56,161 @@
 #define MC_MARK_TOK MCTERM_MARK_TOKEN_KEY MCTERM_TOKEN_PLACEHOLDER
 #define MC_OSC7_TOK MCTERM_OSC7_TOKEN_PREFIX MCTERM_TOKEN_PLACEHOLDER
 
+/*** file scope type declarations ****************************************************************/
+
+struct mcterm_shell_rc
+{
+    GPtrArray *env;   // name, value, name, value ... the child starts with
+    GPtrArray *args;  // what the shell's own argv gets after argv[0]
+};
+
+/*** file scope functions ************************************************************************/
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The integration zsh reads from the startup files below. */
+static const char *
+mcterm_zsh_integration (void)
+{
+    static const char setup[] =
+        // Started by hand, and not by the terminal: there is no session to report to.
+        "[[ -n $MC_TERM_TOKEN ]] || return 0\n"
+        "__mc_tok=$MC_TERM_TOKEN\n"
+        /* A command of the terminal's own goes in behind a leading space, and this is
+           what keeps such a line out of the user's history. */
+        "setopt hist_ignore_space\n"
+        "__mc_pe(){\n"
+        " local s=$1 o='' c i\n"
+        " for (( i=1; i<=${#s}; i++ )); do\n"
+        "  c=${s[i]}\n"
+        "  case $c in\n"
+        "  [a-zA-Z0-9/_~.-]) o+=$c;;\n"
+        "  *) printf -v o '%s%%%02X' \"$o\" \"'$c\";;\n"
+        "  esac\n"
+        " done\n"
+        " printf %s \"$o\"\n"
+        "}\n"
+        "__mc_precmd(){\n"
+        " local e=$?\n"
+        " printf '\\033]133;D;%s;" MCTERM_MARK_TOKEN_KEY "%s\\007' \"$e\" \"$__mc_tok\"\n"
+        " printf '\\033]7;file://%s" MCTERM_OSC7_TOKEN_PREFIX "%s\\007'"
+        " \"$(__mc_pe \"$PWD\")\" \"$__mc_tok\"\n"
+        /* An assignment to PROMPT throws the marks away: put them back. */
+        " [[ $PROMPT == *\"133;B;" MCTERM_MARK_TOKEN_KEY "$__mc_tok\"* ]]"
+        " || PROMPT=$'%{\\e]133;A;" MCTERM_MARK_TOKEN_KEY "'$__mc_tok$'\\a%}'$PROMPT"
+        "$'%{\\e]133;B;" MCTERM_MARK_TOKEN_KEY "'$__mc_tok$'\\a%}'\n"
+        "}\n"
+        "precmd_functions+=(__mc_precmd)\n"
+        "__mc_preexec(){ printf '\\033]133;C;" MCTERM_MARK_TOKEN_KEY "%s\\007' \"$__mc_tok\" }\n"
+        "preexec_functions+=(__mc_preexec)\n"
+        "printf '\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX "%s\\007' \"$__mc_tok\"\n";
+
+    return setup;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Put one startup file where the shell will read it. It is written only when it is not
+   already there word for word, so that a running shell does not have the file pulled from
+   under it, and an mc that has not been updated does not rewrite it at every start. */
+static gboolean
+mcterm_rc_install (const char *dir, const char *name, const char *contents)
+{
+    char *path = g_build_filename (dir, name, (char *) NULL);
+    char *found = NULL;
+    gboolean ok = TRUE;
+
+    if (!g_file_get_contents (path, &found, NULL, NULL) || strcmp (found, contents) != 0)
+        ok = g_file_set_contents (path, contents, -1, NULL);
+
+    g_free (found);
+    g_free (path);
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_rc_env (mcterm_shell_rc_t *rc, const char *name, const char *value)
+{
+    g_ptr_array_add (rc->env, g_strdup (name));
+    g_ptr_array_add (rc->env, g_strdup (value));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What every stub below starts with: the user had ZDOTDIR the way the environment says. */
+#define MC_ZSH_RESTORE                                                                             \
+    "if [ -n \"${MC_ZDOTDIR-}\" ]; then\n"                                                         \
+    " ZDOTDIR=$MC_ZDOTDIR\n"                                                                       \
+    "else\n"                                                                                       \
+    " unset ZDOTDIR\n"                                                                             \
+    "fi\n"
+
+/* A file zsh reads before .zshrc. It hands ZDOTDIR back for the user's own file of that name
+   and then takes it again: the files after it would otherwise be looked for in the user's
+   directory, and ours never read. */
+static char *
+mcterm_rc_zsh_early (const char *name)
+{
+    return g_strconcat ("# Midnight Commander: the terminal starts the shell here.\n"
+                        "__mc_zdotdir=$ZDOTDIR\n" MC_ZSH_RESTORE "if [ -r \"${ZDOTDIR:-$HOME}/",
+                        name,
+                        "\" ]; then\n"
+                        " . \"${ZDOTDIR:-$HOME}/",
+                        name,
+                        "\"\n"
+                        "fi\n"
+                        "ZDOTDIR=$__mc_zdotdir\n"
+                        "unset __mc_zdotdir\n",
+                        (char *) NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* zsh reads a whole directory, not a file: every startup file it would have read before .zshrc
+   has to be stood in for, and each of them hands the user's own back its say. What the user had
+   on ZDOTDIR comes in the environment, so that the files are the same for everyone.
+
+   .zlogin and .zlogout need no stub of ours: they are read after .zshrc, which has handed
+   ZDOTDIR back for good, so zsh looks for them where the user keeps them. */
+static gboolean
+mcterm_rc_zsh (mcterm_shell_rc_t *rc, const char *dir)
+{
+    const char *orig = g_getenv ("ZDOTDIR");
+    char *zshenv = mcterm_rc_zsh_early (".zshenv");
+    char *zprofile = mcterm_rc_zsh_early (".zprofile");
+    char *zshrc;
+    gboolean ok;
+
+    /* The integration goes in last, after everything the user's own .zshrc does, so that a
+       prompt or a hook set there is the one it wraps. */
+    zshrc =
+        g_strconcat ("# Midnight Commander: the terminal starts the shell here.\n" MC_ZSH_RESTORE
+                     "unset MC_ZDOTDIR\n"
+                     "if [ -r \"${ZDOTDIR:-$HOME}/.zshrc\" ]; then\n"
+                     " . \"${ZDOTDIR:-$HOME}/.zshrc\"\n"
+                     "fi\n",
+                     mcterm_zsh_integration (), (char *) NULL);
+
+    ok = (mcterm_rc_install (dir, ".zshenv", zshenv)
+          && mcterm_rc_install (dir, ".zprofile", zprofile)
+          && mcterm_rc_install (dir, ".zshrc", zshrc));
+    if (ok)
+    {
+        mcterm_rc_env (rc, "ZDOTDIR", dir);
+        if (orig != NULL)
+            mcterm_rc_env (rc, "MC_ZDOTDIR", orig);
+    }
+
+    g_free (zshenv);
+    g_free (zprofile);
+    g_free (zshrc);
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /*** public functions ****************************************************************************/
 
 /* --------------------------------------------------------------------------------------------- */
@@ -55,6 +219,37 @@
  * The shell integration to write into a shell of type @shell_type, with MCTERM_TOKEN_PLACEHOLDER
  * standing where the per-session token goes; NULL for a shell the terminal cannot drive.
  */
+
+char *
+mcterm_setup_with_token (const char *setup, const char *token)
+{
+    static const size_t ph_len = sizeof (MCTERM_TOKEN_PLACEHOLDER) - 1;
+    GString *out;
+    const char *p = setup;
+
+    out = g_string_sized_new (strlen (setup) + 64);
+
+    while (TRUE)
+    {
+        const char *ph = strstr (p, MCTERM_TOKEN_PLACEHOLDER);
+
+        if (ph == NULL)
+        {
+            g_string_append (out, p);
+            break;
+        }
+
+        g_string_append_len (out, p, ph - p);
+        g_string_append (out, token);
+        p = ph + ph_len;
+    }
+
+    return g_string_free (out, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
 
 const char *
 mcterm_shell_setup (shell_type_t shell_type)
@@ -104,32 +299,8 @@ mcterm_shell_setup (shell_type_t shell_type)
     }
 
     case SHELL_ZSH:
-    {
-        static const char setup[] =
-            // Enabled first and on its own line, so the rest of this setup - and later mc's
-            // own commands - stay out of the history behind the leading space that follows.
-            "setopt hist_ignore_space\r"
-            " __mc_pe(){local s=$1 o='' c i;for (( i=1; i<=${#s}; i++ )); do c=${s[i]};"
-            "case $c in [a-zA-Z0-9/_~.-])o+=$c;;*)printf -v o '%s%%%02X' \"$o\" \"'$c\";"
-            ";esac;done;printf %s \"$o\";}; \\\n"
-            " __mc_first=1;__mc_precmd(){local e=$?;if (( __mc_first ));then printf "
-            "'\\033[2J\\033[H';"
-            "__mc_first=0;fi;"
-            "printf '\\033]133;D;%s;" MC_MARK_TOK "\\007' \"$e\";"
-            "printf '\\033]7;file://%s" MC_OSC7_TOK "\\007' \"$(__mc_pe \"$PWD\")\";"
-            /* An assignment to PROMPT throws the marks away: put them back. */
-            "[[ $PROMPT == *'133;B;" MC_MARK_TOK "'* ]]"
-            " || PROMPT=$'%{\\e]133;A;" MC_MARK_TOK "\\a%}'$PROMPT$'%{\\e]133;B;" MC_MARK_TOK
-            "\\a%}';};"
-            "precmd_functions+=(__mc_precmd); \\\n"
-            " __mc_preexec(){printf "
-            "'\\033]133;C;" MC_MARK_TOK "\\007';};"
-            "preexec_functions+=(__mc_preexec); \\\n"
-            " printf "
-            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\007'\r";
-
-        return setup;
-    }
+        // zsh is started with startup files of its own, see mcterm_shell_rc_new().
+        return NULL;
 
     case SHELL_FISH:
     {
@@ -185,6 +356,88 @@ mcterm_shell_setup (shell_type_t shell_type)
         return NULL;
     }
 }
+
+mcterm_shell_rc_t *
+mcterm_shell_rc_new (shell_type_t shell_type, const char *token)
+{
+    mcterm_shell_rc_t *rc;
+    char *dir;
+    gboolean ok;
+
+    if (shell_type != SHELL_ZSH || token == NULL)
+        return NULL;
+
+    dir = g_build_filename (mc_config_get_data_path (), MC_ZDOTDIR_SUBDIR, (char *) NULL);
+    if (g_mkdir_with_parents (dir, 0700) != 0)
+    {
+        g_free (dir);
+        return NULL;
+    }
+
+    rc = g_new0 (mcterm_shell_rc_t, 1);
+    rc->env = g_ptr_array_new_with_free_func (g_free);
+    rc->args = g_ptr_array_new_with_free_func (g_free);
+
+    ok = mcterm_rc_zsh (rc, dir);
+    if (ok)
+        // What the startup files put in every mark they make the shell send.
+        mcterm_rc_env (rc, "MC_TERM_TOKEN", token);
+
+    g_free (dir);
+
+    if (!ok)
+    {
+        mcterm_shell_rc_free (rc);
+        return NULL;
+    }
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_shell_rc_child_env (const mcterm_shell_rc_t *rc)
+{
+    guint i;
+
+    if (rc == NULL)
+        return;
+
+    for (i = 0; i + 1 < rc->env->len; i += 2)
+        g_setenv (g_ptr_array_index (rc->env, i), g_ptr_array_index (rc->env, i + 1), TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+guint
+mcterm_shell_rc_args (const mcterm_shell_rc_t *rc, const char **argv, guint argv_size)
+{
+    guint i;
+
+    if (rc == NULL)
+        return 0;
+
+    for (i = 0; i < rc->args->len && i < argv_size; i++)
+        argv[i] = g_ptr_array_index (rc->args, i);
+
+    return i;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_shell_rc_free (mcterm_shell_rc_t *rc)
+{
+    if (rc == NULL)
+        return;
+
+    g_ptr_array_free (rc->env, TRUE);
+    g_ptr_array_free (rc->args, TRUE);
+    g_free (rc);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 #undef MC_MARK_TOK
 #undef MC_OSC7_TOK
