@@ -702,9 +702,11 @@ mongo_conn_bucket_auto (mongoc_client_t *client, const char *db_name, const char
                         gint64 target_fanout, char **err_out)
 {
     bson_t pipeline = BSON_INITIALIZER;
+    bson_t stages;
     bson_t stage_match, match_filter;
     bson_t stage_bucket, bucket_args;
-    bson_array_builder_t *arr;
+    char idx[16];
+    guint n = 0;
     mongoc_collection_t *coll;
     mongoc_cursor_t *cursor;
     const bson_t *doc;
@@ -721,25 +723,27 @@ mongo_conn_bucket_auto (mongoc_client_t *client, const char *db_name, const char
         return NULL;
     }
 
-    bson_append_array_builder_begin (&pipeline, "pipeline", -1, &arr);
+    BSON_APPEND_ARRAY_BEGIN (&pipeline, "pipeline", &stages);
 
     if (lo != NULL || hi != NULL || has_extra)
     {
-        bson_array_builder_append_document_begin (arr, &stage_match);
+        g_snprintf (idx, sizeof (idx), "%u", n++);
+        BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage_match);
         BSON_APPEND_DOCUMENT_BEGIN (&stage_match, "$match", &match_filter);
         build_id_range_filter (&match_filter, lo, hi, filter_extra);
         bson_append_document_end (&stage_match, &match_filter);
-        bson_array_builder_append_document_end (arr, &stage_match);
+        bson_append_document_end (&stages, &stage_match);
     }
 
-    bson_array_builder_append_document_begin (arr, &stage_bucket);
+    g_snprintf (idx, sizeof (idx), "%u", n++);
+    BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage_bucket);
     BSON_APPEND_DOCUMENT_BEGIN (&stage_bucket, "$bucketAuto", &bucket_args);
     BSON_APPEND_UTF8 (&bucket_args, "groupBy", "$_id");
     BSON_APPEND_INT64 (&bucket_args, "buckets", target_fanout);
     bson_append_document_end (&stage_bucket, &bucket_args);
-    bson_array_builder_append_document_end (arr, &stage_bucket);
+    bson_append_document_end (&stages, &stage_bucket);
 
-    bson_append_array_builder_end (&pipeline, arr);
+    bson_append_array_end (&pipeline, &stages);
 
     coll = mongoc_client_get_collection (client, db_name, coll_name);
     cursor = mongoc_collection_aggregate (coll, MONGOC_QUERY_NONE, &pipeline, NULL, NULL);
@@ -836,8 +840,10 @@ mongo_conn_distinct_values (mongoc_client_t *client, const char *db_name, const 
                             gboolean *capped_out, char **err_out)
 {
     bson_t pipeline = BSON_INITIALIZER;
+    bson_t stages;
     bson_t stage, body;
-    bson_array_builder_t *arr;
+    char idx[16];
+    guint n = 0;
     char *path;
     mongoc_collection_t *coll;
     mongoc_cursor_t *cursor;
@@ -861,33 +867,37 @@ mongo_conn_distinct_values (mongoc_client_t *client, const char *db_name, const 
 
     path = g_strconcat ("$", field, NULL);
 
-    bson_append_array_builder_begin (&pipeline, "pipeline", -1, &arr);
+    BSON_APPEND_ARRAY_BEGIN (&pipeline, "pipeline", &stages);
 
     if (has_extra)
     {
-        bson_array_builder_append_document_begin (arr, &stage);
+        g_snprintf (idx, sizeof (idx), "%u", n++);
+        BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage);
         BSON_APPEND_DOCUMENT (&stage, "$match", filter_extra);
-        bson_array_builder_append_document_end (arr, &stage);
+        bson_append_document_end (&stages, &stage);
     }
 
     /* $unwind handles arrays (one row per element) and, since 3.2, treats a
        scalar as a single-element array; missing paths are dropped. */
-    bson_array_builder_append_document_begin (arr, &stage);
+    g_snprintf (idx, sizeof (idx), "%u", n++);
+    BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage);
     BSON_APPEND_UTF8 (&stage, "$unwind", path);
-    bson_array_builder_append_document_end (arr, &stage);
+    bson_append_document_end (&stages, &stage);
 
-    bson_array_builder_append_document_begin (arr, &stage);
+    g_snprintf (idx, sizeof (idx), "%u", n++);
+    BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage);
     BSON_APPEND_DOCUMENT_BEGIN (&stage, "$group", &body);
     BSON_APPEND_UTF8 (&body, "_id", path);
     bson_append_document_end (&stage, &body);
-    bson_array_builder_append_document_end (arr, &stage);
+    bson_append_document_end (&stages, &stage);
 
     /* Fetch one past the limit so the caller can tell the list was truncated. */
-    bson_array_builder_append_document_begin (arr, &stage);
+    g_snprintf (idx, sizeof (idx), "%u", n++);
+    BSON_APPEND_DOCUMENT_BEGIN (&stages, idx, &stage);
     BSON_APPEND_INT64 (&stage, "$limit", limit + 1);
-    bson_array_builder_append_document_end (arr, &stage);
+    bson_append_document_end (&stages, &stage);
 
-    bson_append_array_builder_end (&pipeline, arr);
+    bson_append_array_end (&pipeline, &stages);
 
     coll = mongoc_client_get_collection (client, db_name, coll_name);
     cursor = mongoc_collection_aggregate (coll, MONGOC_QUERY_NONE, &pipeline, NULL, NULL);
