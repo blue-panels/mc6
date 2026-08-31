@@ -74,6 +74,12 @@ struct mcview_vterm_struct
     gboolean in_dcs_esc;
     gboolean csi_gt;
     gboolean in_esc_char;
+    /* Which of G0..G3 the designation being read names, -1 when it names none. */
+    int esc_charset_slot;
+    /* What each of G0..G3 was designated as; '0' is the DEC line-drawing set. */
+    unsigned char charset[4];
+    /* The one of them the shifts (SO, SI) print from. */
+    int charset_gl;
 
     int params[MCVIEW_VTERM_MAX_PARAMS];
     int param_count;
@@ -419,6 +425,41 @@ vterm_dispatch_csi (mcview_vterm_t *vt, unsigned char final_byte)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The DEC Special Graphics set that ESC ( 0 designates: the letters stand for
+   the line-drawing and other characters an application draws frames with.
+   Outside 0x5F..0x7E the set is plain ASCII. */
+static gunichar
+vterm_dec_graphic (unsigned char byte)
+{
+    static const gunichar map[] = {
+        0x00A0, /* _ */ 0x25C6, /* ` */ 0x2592, /* a */ 0x2409, /* b */
+        0x240C, /* c */ 0x240D, /* d */ 0x240A, /* e */ 0x00B0, /* f */
+        0x00B1, /* g */ 0x2424, /* h */ 0x240B, /* i */ 0x2518, /* j */
+        0x2510, /* k */ 0x250C, /* l */ 0x2514, /* m */ 0x253C, /* n */
+        0x23BA, /* o */ 0x23BB, /* p */ 0x2500, /* q */ 0x23BC, /* r */
+        0x23BD, /* s */ 0x251C, /* t */ 0x2524, /* u */ 0x2534, /* v */
+        0x252C, /* w */ 0x2502, /* x */ 0x2264, /* y */ 0x2265, /* z */
+        0x03C0, /* { */ 0x2260, /* | */ 0x00A3, /* } */ 0x00B7, /* ~ */
+    };
+
+    if (byte < 0x5Fu || byte > 0x7Eu)
+        return (gunichar) byte;
+    return map[byte - 0x5Fu];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What a printed byte stands for in the character set now in use. */
+static gunichar
+vterm_charset_char (const mcview_vterm_t *vt, unsigned char byte)
+{
+    if (vt->charset[vt->charset_gl] != '0')
+        return (gunichar) byte;
+    return vterm_dec_graphic (byte);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 utf8_seq_len (unsigned char b)
 {
@@ -487,7 +528,7 @@ vterm_handle_utf8 (mcview_vterm_t *vt, unsigned char byte)
         if (expected == 1)
         {
             vterm_event_t ev = vterm_make (vt, VTERM_CHAR);
-            ev.ch = (gunichar) byte;
+            ev.ch = vterm_charset_char (vt, byte);
             return ev;
         }
 
@@ -1230,6 +1271,8 @@ mcview_vterm_new (void)
     vt->term_cols = 80;
     vt->scroll_top = 0;
     vt->scroll_bottom = 23;
+    vt->esc_charset_slot = -1;
+    memset (vt->charset, 'B', sizeof (vt->charset));
     vt->cell_width = MCVIEW_VTERM_DEFAULT_CELL_WIDTH;
     vt->cell_height = MCVIEW_VTERM_DEFAULT_CELL_HEIGHT;
     vt->sixel = g_string_new (NULL);
@@ -1285,6 +1328,9 @@ mcview_vterm_reset (mcview_vterm_t *vt)
     vterm_images_clear (vt);
     vt->csi_gt = FALSE;
     vt->in_esc_char = FALSE;
+    vt->esc_charset_slot = -1;
+    memset (vt->charset, 'B', sizeof (vt->charset));
+    vt->charset_gl = 0;
     vt->param_count = 0;
     vt->current_param = 0;
     vt->has_current = FALSE;
@@ -1522,6 +1568,8 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
     if (vt->in_esc_char)
     {
         vt->in_esc_char = FALSE;
+        if (vt->esc_charset_slot >= 0)
+            vt->charset[vt->esc_charset_slot] = byte;
         mcview_ansi_parse_char (&vt->ansi, (int) byte);
         return vterm_make (vt, VTERM_CONSUMED);
     }
@@ -1557,7 +1605,9 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         }
         else if (byte == '(' || byte == ')' || byte == '*' || byte == '+')
         {
-            vt->in_esc_char = TRUE; /* charset designations: consume next byte */
+            /* Charset designation: the next byte says which set the slot holds. */
+            vt->in_esc_char = TRUE;
+            vt->esc_charset_slot = (byte == '(') ? 0 : (byte == ')') ? 1 : (byte == '*') ? 2 : 3;
         }
         else if (byte == 'M')
         {
@@ -1614,6 +1664,16 @@ mcview_vterm_feed (mcview_vterm_t *vt, unsigned char byte)
         return vterm_make (vt, VTERM_CONSUMED);
     }
 
+    if (byte == 0x0Eu) /* SO: print from G1 */
+    {
+        vt->charset_gl = 1;
+        return vterm_make (vt, VTERM_CONSUMED);
+    }
+    if (byte == 0x0Fu) /* SI: print from G0 again */
+    {
+        vt->charset_gl = 0;
+        return vterm_make (vt, VTERM_CONSUMED);
+    }
     if (byte == '\r')
         return vterm_make (vt, VTERM_CR);
     if (byte == '\n')
