@@ -34,7 +34,7 @@ jobs:
     if: github.repository == 'ilia-maslakov/mcdev'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install gawk
         # The notes are grouped with asorti, which mawk, the default awk on

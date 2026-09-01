@@ -35,7 +35,7 @@ jobs:
       # No ref: the recipes are repository tooling, kept out of the archive by
       # export-ignore, and release-source.sh takes the release content from the
       # tag itself. Checking the tag out would mean older tags cannot be built.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # release-source.sh reads the tag object; prepare.sh reads every tag.
           fetch-depth: 0
@@ -133,7 +133,7 @@ jobs:
           apt-get install -y --no-install-recommends \
               git ca-certificates build-essential dpkg-dev lintian
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -207,7 +207,7 @@ jobs:
       - name: Install the build tooling
         run: dnf install -y git rpm-build rpmlint 'dnf-command(builddep)'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -256,7 +256,7 @@ jobs:
       - name: Install the build tooling
         run: pacman -Syu --noconfirm git sudo
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -703,7 +703,7 @@ jobs:
       VERSION: ${{ needs.archive.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
