@@ -77,11 +77,36 @@ printf 'кириллица в utf-8\nвторая строка\n' > 02-charset/u
 printf 'кириллица в utf-8\nвторая строка\n' | iconv -f UTF-8 -t CP1251 > 02-charset/cp1251.txt
 printf 'кириллица в utf-8\nвторая строка\n' | iconv -f UTF-8 -t KOI8-R > 02-charset/koi8r.txt
 
+# Every byte CP866 draws, a row per high nibble.  The row that matters is 80:
+# that is where CP866 keeps А to П and where the ISO 8859 codepages have
+# control characters instead, so a viewer that decides what is printable from
+# the terminal rather than from the codepage draws the first two rows of
+# Cyrillic as dots and the rest of the alphabet, at E0, as letters.  The bytes
+# are written one by one: iconv would need a table of the characters, and this
+# needs the codepage to say what they are.
+{
+    hi=32
+    while [ "$hi" -lt 256 ]; do
+        printf '%02X ' "$hi"
+        lo=0
+        while [ "$lo" -lt 16 ]; do
+            printf ' '
+            printf "\\$(printf '%03o' $((hi + lo)))"
+            lo=$((lo + 1))
+        done
+        printf '\n'
+        hi=$((hi + 16))
+    done
+} > 02-charset/cp866-table.txt
+
 cat > 02-charset/cases.tsv <<'EOF'
 file	key	expect	why	transports
 utf8.txt	key F4	text: кириллица	a UTF-8 file on a UTF-8 terminal	local
 cp1251.txt	key F4	the text, not dots, once Ctrl-T picks CP1251	for a person: the encoding is picked from a list	local
 koi8r.txt	key F4	the text, not dots, once Ctrl-T picks KOI8-R	for a person: same, in the other encoding	local
+cp866-table.txt	key F3,key M-e,type 9	text: IBM866	CP 866 is entry 9 of the codepage list, and the viewer names the codepage it was given	local
+cp866-table.txt	key F3,key M-e,type 9	no text: 80  .	the 80 row is Cyrillic, and a viewer that reads it as the ISO 8859 control range draws dots	local
+cp866-table.txt	key F3,key M-e,type 9	the whole table, with letters at 80, 90, A0, E0 and F0	for a person: tmux keeps no 8-bit byte, so only a terminal shows the rows themselves	local
 EOF
 
 echo "editor cases in $dir"

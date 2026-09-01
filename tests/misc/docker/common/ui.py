@@ -21,7 +21,8 @@ TRANSPORTS = [("local", "a local panel, no server"), ("sftp", "the sftp plugin, 
               ("sh", "shell-link, a stream"), ("ftp", "the ftp plugin, a local copy"),
               ("smb", "the samba plugin, a local copy")]
 LOCALES = [("ru_RU.UTF-8", "UTF-8, Cyrillic"), ("en_US.UTF-8", "UTF-8"),
-           ("ru_RU.KOI8-R", "8-bit, Cyrillic"), ("C", "no locale at all")]
+           ("ru_RU.KOI8-R", "8-bit, Cyrillic"), ("ru_RU.CP866", "8-bit, the DOS codepage"),
+           ("C", "no locale at all")]
 
 
 def ini_sections(path):
