@@ -84,6 +84,12 @@
 #define MC_RUNTIME_HOST_SERVICES_EDITOR_TAB_WIDTH_SIZE                                             \
     (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, editor_tab_width)                             \
      + sizeof (((mc_runtime_host_services_v1_t *) NULL)->editor_tab_width))
+#define MC_RUNTIME_HOST_SERVICES_EDITOR_OVERWRITE_SIZE                                             \
+    (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, editor_overwrite)                             \
+     + sizeof (((mc_runtime_host_services_v1_t *) NULL)->editor_overwrite))
+#define MC_RUNTIME_HOST_SERVICES_EDITOR_SET_OVERWRITE_SIZE                                         \
+    (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, editor_set_overwrite)                         \
+     + sizeof (((mc_runtime_host_services_v1_t *) NULL)->editor_set_overwrite))
 #define MC_RUNTIME_HOST_SERVICES_EDITOR_TEXT_SIZE                                                  \
     (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, editor_text)                                  \
      + sizeof (((mc_runtime_host_services_v1_t *) NULL)->editor_text))
@@ -903,6 +909,44 @@ mc_runtime_host_editor_tab_width (mc_runtime_plugin_context_t *context,
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
+mc_runtime_host_editor_overwrite (mc_runtime_plugin_context_t *context,
+                                  const mc_runtime_handle_t *editor, gboolean *overwrite,
+                                  const char **error)
+{
+    if (!mc_runtime_host_objects_prepare (context, error))
+        return FALSE;
+    if (mc_runtime_host_services->struct_size < MC_RUNTIME_HOST_SERVICES_EDITOR_OVERWRITE_SIZE
+        || mc_runtime_host_services->editor_overwrite == NULL)
+    {
+        if (error != NULL)
+            *error = "not_supported";
+        return FALSE;
+    }
+    return mc_runtime_host_services->editor_overwrite (editor, overwrite, error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mc_runtime_host_editor_set_overwrite (mc_runtime_plugin_context_t *context,
+                                      const mc_runtime_handle_t *editor, gboolean overwrite,
+                                      const char **error)
+{
+    if (!mc_runtime_host_objects_prepare (context, error))
+        return FALSE;
+    if (mc_runtime_host_services->struct_size < MC_RUNTIME_HOST_SERVICES_EDITOR_SET_OVERWRITE_SIZE
+        || mc_runtime_host_services->editor_set_overwrite == NULL)
+    {
+        if (error != NULL)
+            *error = "not_supported";
+        return FALSE;
+    }
+    return mc_runtime_host_services->editor_set_overwrite (editor, overwrite, error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
 mc_runtime_host_editor_text (mc_runtime_plugin_context_t *context,
                              const mc_runtime_handle_t *editor,
                              const mc_runtime_editor_range_t *range, gboolean has_revision,
@@ -1540,6 +1584,8 @@ static mc_runtime_host_api_v1_t mc_runtime_host_api = {
     .screen_run = mc_runtime_host_screen_run,
     .screen_update = mc_runtime_host_screen_update,
     .screen_close = mc_runtime_host_screen_close,
+    .editor_overwrite = mc_runtime_host_editor_overwrite,
+    .editor_set_overwrite = mc_runtime_host_editor_set_overwrite,
 };
 
 /* --------------------------------------------------------------------------------------------- */

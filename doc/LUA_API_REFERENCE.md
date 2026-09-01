@@ -25,6 +25,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `editor:info() -> DocumentInfo\|nil, error?` | Return document metadata and the current revision. | `editor` | no |
 | `editor:insert(text) -> boolean\|nil, error?` | Insert text at the cursor using the compatibility API. | `editor` | yes |
 | `editor:is_readonly() -> boolean\|nil, error?` | Report whether the document is read-only. | `editor` | no |
+| `editor:overwrite() -> boolean\|nil, error?` | Report whether typing overwrites instead of inserting. | `editor` | no |
 | `editor:path() -> string\|nil, error?` | Return the document path. | `editor` | no |
 | `editor:replace(range, text) -> EditResult\|nil, error?` | Replace a byte range in the editor buffer. | `editor` | yes |
 | `editor:replace_selection(text, options?) -> EditResult\|nil, error?` | Replace the selection, or insert when it is empty. | `editor` | yes |
@@ -32,6 +33,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `editor:selected_text() -> string\|nil, error?` | Read selected text using the compatibility API. | `editor` | no |
 | `editor:selection() -> Selection\|nil, error?` | Return the current selection snapshot. | `editor` | no |
 | `editor:set_cursor(position) -> boolean\|nil, error?` | Move the cursor to a validated position. | `editor` | yes |
+| `editor:set_overwrite(flag) -> boolean\|nil, error?` | Switch typing between overwrite and insert. | `editor` | yes |
 | `editor:tab_width() -> integer\|nil, error?` | Return the configured tab width. | `editor` | no |
 | `editor:text(range?) -> string\|nil, error?` | Read the complete buffer or a byte range. | `editor` | no |
 | `mc.editor.current() -> editor\|nil, error?` | Return the editor associated with the active callback. | `editor` | no |

@@ -107,6 +107,12 @@
 #define MC_LUA_HOST_API_EDITOR_TAB_WIDTH_SIZE                                                      \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, editor_tab_width)                                  \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->editor_tab_width))
+#define MC_LUA_HOST_API_EDITOR_OVERWRITE_SIZE                                                      \
+    (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, editor_overwrite)                                  \
+     + sizeof (((mc_runtime_host_api_v1_t *) NULL)->editor_overwrite))
+#define MC_LUA_HOST_API_EDITOR_SET_OVERWRITE_SIZE                                                  \
+    (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, editor_set_overwrite)                              \
+     + sizeof (((mc_runtime_host_api_v1_t *) NULL)->editor_set_overwrite))
 #define MC_LUA_HOST_API_EDITOR_TEXT_SIZE                                                           \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, editor_text)                                       \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->editor_text))
@@ -1745,6 +1751,63 @@ mc_lua_editor_tab_width (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua editor:overwrite() -> boolean|nil, error? @workspace mcedit @capability editor @mutation no
+ * @summary Report whether typing overwrites instead of inserting. */
+static int
+mc_lua_editor_overwrite (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_runtime_handle_t handle;
+    gboolean overwrite;
+    const char *error = NULL;
+
+    if (!mc_lua_require_active_context (lua, package)
+        || !mc_lua_get_handle (lua, 1, MC_RUNTIME_HANDLE_EDITOR, &handle))
+        return 2;
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_EDITOR,
+                                     MC_LUA_HOST_API_EDITOR_OVERWRITE_SIZE)
+        || package->runtime->host->editor_overwrite == NULL)
+        return mc_lua_return_error (lua, "not_ready");
+    if (!package->runtime->host->editor_overwrite (package->runtime->context, &handle, &overwrite,
+                                                   &error))
+        return mc_lua_return_error (lua, error != NULL ? error : "failed");
+
+    lua_pushboolean (lua, overwrite);
+    return 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** @lua editor:set_overwrite(flag) -> boolean|nil, error? @workspace mcedit @capability editor
+ * @mutation yes @summary Switch typing between overwrite and insert. */
+static int
+mc_lua_editor_set_overwrite (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_runtime_handle_t handle;
+    const char *error = NULL;
+
+    if (!mc_lua_require_active_context (lua, package)
+        || !mc_lua_require_object_capability (lua, package, MC_RUNTIME_HOST_CAP_EDITOR)
+        || !mc_lua_mutation_is_allowed (lua, package)
+        || !mc_lua_get_handle (lua, 1, MC_RUNTIME_HANDLE_EDITOR, &handle))
+        return 2;
+
+    luaL_checktype (lua, 2, LUA_TBOOLEAN);
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_EDITOR,
+                                     MC_LUA_HOST_API_EDITOR_SET_OVERWRITE_SIZE)
+        || package->runtime->host->editor_set_overwrite == NULL)
+        return mc_lua_return_error (lua, "not_ready");
+    if (!package->runtime->host->editor_set_overwrite (package->runtime->context, &handle,
+                                                       lua_toboolean (lua, 2), &error))
+        return mc_lua_return_error (lua, error != NULL ? error : "failed");
+
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** @lua editor:get_text() -> string|nil, error? @workspace mcedit @capability editor @mutation no
  * @summary Read the complete buffer using the compatibility API. */
 static int
@@ -2007,6 +2070,10 @@ mc_lua_handle_index (lua_State *lua)
             lua_pushcfunction (lua, mc_lua_editor_is_readonly);
         else if (strcmp (method, "tab_width") == 0)
             lua_pushcfunction (lua, mc_lua_editor_tab_width);
+        else if (strcmp (method, "overwrite") == 0)
+            lua_pushcfunction (lua, mc_lua_editor_overwrite);
+        else if (strcmp (method, "set_overwrite") == 0)
+            lua_pushcfunction (lua, mc_lua_editor_set_overwrite);
         else if (strcmp (method, "get_text") == 0)
             lua_pushcfunction (lua, mc_lua_editor_get_text);
         else if (strcmp (method, "selected_text") == 0)
