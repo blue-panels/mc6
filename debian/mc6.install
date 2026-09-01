@@ -13,3 +13,6 @@ usr/lib/mc/mc-wrapper.csh
 usr/lib/mc/mc-wrapper.fish
 usr/lib/mc/mc-wrapper.sh
 etc/mc/
+usr/share/doc/mc/LUA_API_REFERENCE.md usr/share/doc/mc6/
+usr/share/doc/mc/LUA_PLUGINS.md usr/share/doc/mc6/
+usr/share/doc/mc/lua-api.json usr/share/doc/mc6/

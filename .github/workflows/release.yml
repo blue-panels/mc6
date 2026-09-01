@@ -568,11 +568,17 @@ jobs:
           fi
           tail -n 20 dylibbundler.log
 
+          # grep -q closes the pipe on the first match, awk is then killed by
+          # EPIPE, and under pipefail the whole pipeline fails although the
+          # path was there.  Read the list into a variable and match on that.
+          rpaths() {
+              otool -l "$1" | awk '$2 == "LC_RPATH" { getline; getline; print $2 }'
+          }
+
           add_rpath() {
               file=$1
               rpath=$2
-              if ! otool -l "$file" | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
-                  | grep -Fqx "$rpath"; then
+              if ! grep -Fqx "$rpath" <<<"$(rpaths "$file")"; then
                   install_name_tool -add_rpath "$rpath" "$file"
               fi
           }
@@ -584,9 +590,7 @@ jobs:
               if ! file -b "$file" | grep -q 'Mach-O'; then
                   continue
               fi
-              while otool -l "$file" \
-                  | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
-                  | grep -Fqx '@rpath/'; do
+              while grep -Fqx '@rpath/' <<<"$(rpaths "$file")"; do
                   install_name_tool -delete_rpath '@rpath/' "$file"
               done
           done < <(find "$stage_prefix" -type f -print0)
@@ -620,9 +624,7 @@ jobs:
                   | grep -E '/opt/homebrew|/usr/local/(Cellar|opt|lib)'; then
                   audit_failed=yes
               fi
-              if otool -l "$file" \
-                  | awk '$2 == "LC_RPATH" { getline; getline; print $2 }' \
-                  | grep -Fqx '@rpath/'; then
+              if grep -Fqx '@rpath/' <<<"$(rpaths "$file")"; then
                   echo "Unresolved LC_RPATH in $file"
                   audit_failed=yes
               fi

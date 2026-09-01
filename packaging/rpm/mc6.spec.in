@@ -74,6 +74,10 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
 find %{buildroot} -name '*.la' -delete
 # The gettext domain is mc, not mc6.
 %find_lang mc
+# doc/Makefile.am installs the Lua documentation into %{_docdir}/mc, which is
+# the documentation directory of the distribution mc.  It is listed as %%doc
+# below instead, so that it lands in the directory of this package.
+rm -rf %{buildroot}%{_docdir}/mc
 
 %check
 %make_build check
@@ -81,6 +85,7 @@ find %{buildroot} -name '*.la' -delete
 %files -f mc.lang
 %license COPYING
 %doc README.md CHANGELOG.md
+%doc doc/LUA_API_REFERENCE.md doc/LUA_PLUGINS.md doc/lua-api.json
 %{_bindir}/mc
 %{_bindir}/mcedit
 %{_bindir}/mcview
@@ -96,6 +101,8 @@ find %{buildroot} -name '*.la' -delete
 %dir %{_libdir}/mc/
 
 %files plugins
+# A symbolic link to mc, which opens the mcstruct plugin.
+%{_bindir}/mcstruct
 %{_libdir}/mc/panel-plugins/
 
 %changelog
