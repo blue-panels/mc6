@@ -816,6 +816,36 @@ edit_block_delete (WEdit *edit, off_t start_mark, off_t end_mark)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/**
+ * Offset of the first character of a line that begins at or after @column.
+ *
+ * A character that straddles the margin -- a tab, a double width character -- belongs to the side
+ * its first column is on.  The margin is a character boundary in any case: a byte of a multibyte
+ * character is not a column of its own, and cutting a line between two of them loses the character.
+ */
+
+static off_t
+edit_line_column_margin (WEdit *edit, const off_t bol, const off_t eol, const long column)
+{
+    off_t offset;
+    long col;
+
+    offset = edit_get_line_offset (edit, bol, column, &col);
+
+    if (col < column && offset < eol)
+    {
+        int char_length = 1;
+
+        if (edit->utf8)
+            (void) edit_buffer_get_utf (&edit->buffer, offset, &char_length);
+
+        offset = MIN (offset + char_length, eol);
+    }
+
+    return offset;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Return a null terminated length of text. Result must be g_free'd */
 
 static GString *
@@ -837,16 +867,13 @@ edit_get_block (WEdit *edit, const off_t start, const off_t finish)
              bol = edit_get_line_eol (edit, bol) + 1)
         {
             const off_t eol = edit_get_line_eol (edit, bol);
-            long col;
-            off_t i;
+            off_t i, e;
 
-            for (i = edit_get_line_offset (edit, bol, col1, &col);
-                 i < eol && i < finish && col < col2; i++)
-            {
-                if (col >= col1 && i >= start)
-                    g_string_append_c (r, (gchar) edit_buffer_get_byte (&edit->buffer, i));
-                col = edit_layout_advance_byte (edit, i, col);
-            }
+            i = MAX (edit_line_column_margin (edit, bol, eol, col1), start);
+            e = MIN (edit_line_column_margin (edit, bol, eol, col2), MIN (eol, finish));
+
+            for (; i < e; i++)
+                g_string_append_c (r, (gchar) edit_buffer_get_byte (&edit->buffer, i));
 
             if (eol >= start && eol < finish)
                 g_string_append_c (r, '\n');

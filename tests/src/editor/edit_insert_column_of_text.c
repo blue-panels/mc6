@@ -488,6 +488,58 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @Test */
+/* a three byte character is copied whole: the block margins are character boundaries */
+START_TEST (test_save_block_utf8_wide_encoding)
+{
+    char *clip = make_clip_path ();
+    off_t start_mark, end_mark;
+    int fd;
+    char buf[128];
+    ssize_t n;
+    gboolean old_disp;
+
+    test_edit->utf8 = TRUE;
+    old_disp = mc_global.utf8_display;
+    mc_global.utf8_display = TRUE;
+
+    // box drawing characters take three bytes each; the first line is shorter than the block
+    for (const char *ti = "╔══╗\n╙──╫──┐\n  ┌╫──┘\n"; *ti != '\0'; ti++)
+    {
+        edit_buffer_insert (&test_edit->buffer, *ti);
+        if (*ti == '\n')
+            test_edit->buffer.lines++;
+    }
+
+    // the whole rectangle: columns [0, 7) over the three lines
+    test_edit->column_highlight = 1;
+    test_edit->column1 = 0;
+    test_edit->column2 = 7;
+    test_edit->mark1 = 0;
+    test_edit->mark2 = 52;  // (line 2, column 7) byte offset
+    test_edit->end_mark_curs = -1;
+    edit_update_curs_col (test_edit);
+
+    eval_marks (test_edit, &start_mark, &end_mark);
+    edit_save_block (test_edit, clip, start_mark, end_mark);
+
+    // every character survives; the short line is padded to the block width
+    fd = open (clip, O_RDONLY);
+    n = read (fd, buf, sizeof (buf) - 1);
+    close (fd);
+    buf[n < 0 ? 0 : n] = '\0';
+    mctest_assert_str_eq (buf + 5,  // skip VERTICAL_MAGIC {\1\1\1\1\n}
+                          "╔══╗   \n"
+                          "╙──╫──┐\n"
+                          "  ┌╫──┘");
+    unlink (clip);
+    g_free (clip);
+    mc_global.utf8_display = old_disp;
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -504,6 +556,7 @@ main (void)
     tcase_add_test (tc_core, test_save_block_pads_to_selection_width);
     tcase_add_test (tc_core, test_save_block_tab_width);
     tcase_add_test (tc_core, test_save_block_tab_offset);
+    tcase_add_test (tc_core, test_save_block_utf8_wide_encoding);
     // ***********************************
 
     return mctest_run_all (tc_core);
