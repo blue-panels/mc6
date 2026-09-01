@@ -900,6 +900,8 @@ typedef struct
      * overwrites, FALSE while it inserts. */
     gboolean (*editor_overwrite) (const mc_runtime_handle_t *editor, gboolean *overwrite,
                                   const char **error);
+    gboolean (*editor_set_overwrite) (const mc_runtime_handle_t *editor, gboolean overwrite,
+                                      const char **error);
 } mc_runtime_host_services_v1_t;
 
 typedef struct
@@ -1077,6 +1079,9 @@ typedef struct
     gboolean (*editor_overwrite) (mc_runtime_plugin_context_t *context,
                                   const mc_runtime_handle_t *editor, gboolean *overwrite,
                                   const char **error);
+    gboolean (*editor_set_overwrite) (mc_runtime_plugin_context_t *context,
+                                      const mc_runtime_handle_t *editor, gboolean overwrite,
+                                      const char **error);
 } mc_runtime_host_api_v1_t;
 
 typedef struct

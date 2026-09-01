@@ -138,6 +138,14 @@
       "summary": "Report whether typing overwrites instead of inserting."
     },
     {
+      "signature": "editor:set_overwrite(flag) -> boolean|nil, error?",
+      "workspace": "mcedit",
+      "capability": "editor",
+      "mutation": "yes",
+      "errors": [],
+      "summary": "Switch typing between overwrite and insert."
+    },
+    {
       "signature": "editor:get_text() -> string|nil, error?",
       "workspace": "mcedit",
       "capability": "editor",

@@ -1303,6 +1303,28 @@ runtime_host_editor_overwrite (const mc_runtime_handle_t *handle, gboolean *over
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
+runtime_host_editor_set_overwrite (const mc_runtime_handle_t *handle, gboolean overwrite,
+                                   const char **error)
+{
+#ifdef USE_INTERNAL_EDIT
+    WEdit *editor = runtime_host_editor_resolve (handle, error);
+
+    if (editor == NULL)
+        return FALSE;
+
+    editor->overwrite = overwrite ? 1 : 0;
+    runtime_host_editor_redraw (editor);
+    return TRUE;
+#else
+    (void) handle;
+    (void) overwrite;
+    return runtime_host_set_error (error, "not_supported");
+#endif
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
 runtime_host_editor_get_text (const mc_runtime_handle_t *handle, gint64 from, gint64 to,
                               mc_runtime_string_t *text, const char **error)
 {
@@ -2293,6 +2315,7 @@ runtime_host_services_init (void)
         .ui_refresh = runtime_host_ui_refresh,
         .editor_tab_width = runtime_host_editor_tab_width,
         .editor_overwrite = runtime_host_editor_overwrite,
+        .editor_set_overwrite = runtime_host_editor_set_overwrite,
         .editor_text = runtime_host_editor_text,
         .editor_edit = runtime_host_editor_edit,
         .editor_replace_selection_v2 = runtime_host_editor_replace_selection_v2,
@@ -2350,6 +2373,7 @@ runtime_host_services_init (void)
         services.editor_edit = NULL;
         services.editor_replace_selection_v2 = NULL;
         services.editor_overwrite = NULL;
+        services.editor_set_overwrite = NULL;
     }
 
     if (mc_global.mc_run_mode != MC_RUN_FULL && mc_global.mc_run_mode != MC_RUN_VIEWER)
