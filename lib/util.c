@@ -80,26 +80,6 @@
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-static inline int
-is_iso_printable (unsigned char c)
-{
-    return ((c > 31 && c < 127) || c >= 160);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static inline int
-is_8bit_printable (unsigned char c)
-{
-    // "Full 8 bits output" doesn't work on xterm
-    if (mc_global.tty.xterm_flag)
-        return is_iso_printable (c);
-
-    return isprint (c);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 static char *
 resolve_symlinks (const vfs_path_t *vpath)
 {
@@ -211,7 +191,25 @@ mc_util_write_backup_content (const char *from_file_name, const char *to_file_na
 int
 is_printable (int c)
 {
-    return is_8bit_printable (c & 0xff);
+    c &= 0xff;
+
+    // 0x80..0x9F is a control range in the ISO 8859 family and a range of
+    // letters in the DOS and Windows codepages: CP866 keeps the upper case
+    // Cyrillic there.  Where mc draws with an 8-bit codepage, that codepage is
+    // the one the locale describes, and the locale is the only thing that
+    // tells the two apart -- it is also what the panel already draws file
+    // names by, so the viewer and the editor answer the same way.
+    if (!mc_global.utf8_display && mc_global.display_codepage > 0)
+        return isprint (c);
+
+    // Without one -- a 7-bit locale, or no codepage list at all -- mc knows
+    // nothing about the terminal, and what it did before stands: pass the high
+    // bytes through rather than draw the screen as dots.
+    if (mc_global.tty.xterm_flag)
+        // "Full 8 bits output" doesn't work on xterm
+        return (c > 31 && c < 127) || c >= 160;
+
+    return isprint (c);
 }
 
 /* --------------------------------------------------------------------------------------------- */

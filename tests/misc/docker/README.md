@@ -96,7 +96,7 @@ server.
 | directory     | what it is for                                              |
 |---------------|-------------------------------------------------------------|
 | `01-filter`   | the line filter: Alt-Shift-S by the word, Alt-S to lift it   |
-| `02-charset`  | 8-bit files, for a person to open and pick the encoding for  |
+| `02-charset`  | 8-bit files, and every byte CP866 draws, laid out as a table |
 | `03-search`   | the search dialog opening with the marked word              |
 
 ### terminal
@@ -173,6 +173,7 @@ open it.
     sandbox.sh debian-12 test -w local,sftp,ftp,smb,sh # over every transport
     sandbox.sh debian-12 test -w sh 01-formats         # one directory
     sandbox.sh debian-12 test -l ru_RU.KOI8-R          # an 8-bit locale
+    sandbox.sh debian-12 test -c editor -l ru_RU.CP866 # the DOS codepage
     sandbox.sh debian-12 test -o old_esc_mode=true -k shift-tab-complete
     sandbox.sh debian-12 build -f all,ncurses && sandbox.sh debian-12 test
 

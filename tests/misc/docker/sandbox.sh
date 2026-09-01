@@ -59,7 +59,7 @@ list ()
     echo "transports:   local sftp ftp smb sh"
     echo "profiles:     $(sed -n 's/^\[\(.*\)\]$/\1/p' "$root/common/features.ini" | tr '\n' ' ')"
     echo "keymaps:      $(ls "$root"/common/keymaps/ 2>/dev/null | sed 's/\.keymap$//' | tr '\n' ' ')"
-    echo "locales:      ru_RU.UTF-8 en_US.UTF-8 ru_RU.KOI8-R C"
+    echo "locales:      ru_RU.UTF-8 en_US.UTF-8 ru_RU.KOI8-R ru_RU.CP866 C"
 }
 
 # The environment may be named first; otherwise the default one is used.

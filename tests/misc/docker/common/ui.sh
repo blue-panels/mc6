@@ -69,10 +69,11 @@ transports=$(echo "$transports" | tr -d '"' | tr ' ' ',')
 [ -n "$transports" ] || transports=local
 
 # 4. locale
-locale=$(ask --radiolist "Locale mc runs in (messages stay English)" 12 60 4 \
+locale=$(ask --radiolist "Locale mc runs in (messages stay English)" 13 60 5 \
     ru_RU.UTF-8 "UTF-8, Cyrillic" "$(on_off ru_RU.UTF-8 "$locale")" \
     en_US.UTF-8 "UTF-8" "$(on_off en_US.UTF-8 "$locale")" \
     ru_RU.KOI8-R "8-bit, Cyrillic" "$(on_off ru_RU.KOI8-R "$locale")" \
+    ru_RU.CP866 "8-bit, the DOS codepage" "$(on_off ru_RU.CP866 "$locale")" \
     C "no locale at all" "$(on_off C "$locale")") || exit 0
 
 # 5. build profile

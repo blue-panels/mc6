@@ -15,6 +15,9 @@ RUN apt-get update \
         locales \
     && sed -i 's/^# *\(en_US.UTF-8\|ru_RU.UTF-8\|ru_RU.KOI8-R\)/\1/' /etc/locale.gen \
     && locale-gen \
+    # CP866 is not in the list locale-gen walks; it is what mc draws with
+    # when the terminal speaks the DOS codepage
+    && localedef -f IBM866 -i ru_RU ru_RU.CP866 \
     && rm -rf /var/lib/apt/lists/*
 
 # The packages stay (libtool depends on file), the programs go.
