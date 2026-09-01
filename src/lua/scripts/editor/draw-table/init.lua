@@ -65,6 +65,8 @@ local function render(state)
     return glyph_for[state_key(normalized)] or "┼"
 end
 
+local opposite_side = { [LEFT] = RIGHT, [RIGHT] = LEFT, [UP] = DOWN, [DOWN] = UP }
+
 local directions = {
     left = { line = 0, column = -1, here = LEFT, there = RIGHT },
     right = { line = 0, column = 1, here = RIGHT, there = LEFT },
@@ -129,7 +131,12 @@ local function add_connection(line, column, connection, style)
     if line[column] == "" then return false end
     local previous = connections[line[column]] or connections[" "]
     local state = { previous[1], previous[2], previous[3], previous[4] }
-    state[connection] = style == "double" and 2 or 1
+    local weight = style == "double" and 2 or 1
+
+    state[connection] = weight
+    -- The axis being drawn takes the active weight, so a single line redraws
+    -- a double one instead of being promoted back to it.
+    if state[opposite_side[connection]] ~= 0 then state[opposite_side[connection]] = weight end
     line[column] = render(state)
     return true
 end
