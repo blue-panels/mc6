@@ -180,10 +180,10 @@ end
 local function expand(editor)
     if active_style == nil then return mc.PASS end
 
-    -- While Insert is on a space is just a space; the table widens only when
-    -- typing overwrites, where a space would otherwise erase a character.
-    -- A host that cannot report the typing mode always widens.
-    if editor.overwrite ~= nil and editor:overwrite() == false then return mc.PASS end
+    -- In overwrite mode a space replaces the character under the cursor, which
+    -- is how a frame is rubbed out, so the table widens only while Insert is
+    -- on. A host that cannot report the typing mode always widens.
+    if editor.overwrite ~= nil and editor:overwrite() then return mc.PASS end
 
     local line, column = editor:cursor()
     if line == nil then return mc.PASS end
