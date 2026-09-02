@@ -13,6 +13,9 @@ on:
         description: 'Upload to the PPA as well'
         type: boolean
         default: false
+      ppa_revision:
+        description: 'Debian revision of the PPA upload; raise it to upload the same version again'
+        default: '1'
 
 permissions:
   contents: write
@@ -96,24 +99,28 @@ jobs:
           - name: Debian Trixie amd64
             container: debian:trixie
             distribution: trixie
+            lintian_profile: debian
             suffix: ~debian13.1
             artifact: debian-trixie-amd64-packages
             runs-on: ubuntu-latest
           - name: Debian Trixie arm64
             container: debian:trixie
             distribution: trixie
+            lintian_profile: debian
             suffix: ~debian13.1
             artifact: debian-trixie-arm64-packages
             runs-on: ubuntu-24.04-arm
           - name: Ubuntu 26.04 amd64
             container: ubuntu:26.04
             distribution: resolute
+            lintian_profile: ubuntu
             suffix: ~ubuntu26.04.1
             artifact: ubuntu-resolute-amd64-packages
             runs-on: ubuntu-latest
           - name: Ubuntu 26.04 arm64
             container: ubuntu:26.04
             distribution: resolute
+            lintian_profile: ubuntu
             suffix: ~ubuntu26.04.1
             artifact: ubuntu-resolute-arm64-packages
             runs-on: ubuntu-24.04-arm
@@ -169,7 +176,10 @@ jobs:
           su build -c "cd '$build/mc6-$VERSION' && dpkg-buildpackage -us -uc"
 
           cd ..
-          lintian --fail-on error --profile debian ./*.changes || lintian_failed=1
+          # The series of the changes file is known to the vendor data of its
+          # own distribution: the debian profile does not have resolute.
+          lintian --fail-on error --profile "${{ matrix.lintian_profile }}" ./*.changes \
+              || lintian_failed=1
           mkdir -p "$GITHUB_WORKSPACE/out"
           cp ./*.deb ./*.dsc ./*.debian.tar.* ./*.changes "$GITHUB_WORKSPACE/out/"
           test -z "${lintian_failed:-}"
@@ -736,6 +746,10 @@ jobs:
           # publish: a PPA keeps every version it has ever accepted, so an
           # accidental upload cannot be taken back.
           REQUESTED: ${{ github.event_name != 'workflow_dispatch' || inputs.upload_to_ppa }}
+          # A PPA takes a version once. The recipes it was built with live
+          # outside the tag, so a fixed recipe reaches it as a new revision of
+          # the same version.
+          PPA_REVISION: ${{ github.event.inputs.ppa_revision || '1' }}
         run: |
           if test "$REQUESTED" = true; then
               upload=yes
