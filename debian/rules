@@ -5,6 +5,11 @@
 # the header from the Debian version would also put a series suffix such as
 # ~ubuntu24.04.1 into the version banner.
 
+# Ubuntu turns link time optimisation on by default; Debian does not.  With it,
+# gcc 15 leaves the recursion in mctree_node_expand_to_depth unrun, so a tree
+# opens collapsed and the mctree_view test fails.  Nothing here needs LTO.
+export DEB_BUILD_MAINT_OPTIONS = optimize=-lto
+
 %:
 	dh $@
 
