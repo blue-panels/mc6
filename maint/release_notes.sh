@@ -31,7 +31,7 @@
 
 set -e
 
-REPO="ilia-maslakov/mcdev"
+REPO="blue-panels/mc6"
 # The repository is mcdev; the thing it builds is mc6. A release is named after
 # the program, not after the place its source happens to live.
 PRODUCT="mc6"

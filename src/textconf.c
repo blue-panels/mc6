@@ -114,7 +114,7 @@ show_version (void)
     printf ("%s %s\n", PACKAGE_NAME, mc_global.mc_version);
 
     printf (_ ("Midnight Commander with Plugins, a fork of GNU Midnight Commander\n"
-               "(ilia-maslakov/mcdev), changes since 2026-02.\n"));
+               "(blue-panels/mc6), changes since 2026-02.\n"));
 
     printf (_ ("Built with GLib %d.%d.%d (using GLib %u.%u.%u)\n"), GLIB_MAJOR_VERSION,
             GLIB_MINOR_VERSION, GLIB_MICRO_VERSION, glib_major_version, glib_minor_version,

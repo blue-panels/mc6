@@ -24,13 +24,13 @@ edit made in the wiki is overwritten by the next release; the release
 pages themselves are written once and left alone.
 
 Browsing PRs by label:
-[Feature](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3AFeature),
-[Bug fix](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3A%22Bug+fix%22),
-[Plugin](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3APlugin),
-[mcedit](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcedit),
-[mcview](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcview),
-[mcterm](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Amcterm),
-[panel](https://github.com/ilia-maslakov/mcdev/pulls?q=is%3Apr+label%3Apanel)
+[Feature](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3AFeature),
+[Bug fix](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3A%22Bug+fix%22),
+[Plugin](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3APlugin),
+[mcedit](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3Amcedit),
+[mcview](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3Amcview),
+[mcterm](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3Amcterm),
+[panel](https://github.com/blue-panels/mc6/pulls?q=is%3Apr+label%3Apanel)
 
 ## Release list
 

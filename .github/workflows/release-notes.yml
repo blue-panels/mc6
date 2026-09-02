@@ -31,7 +31,7 @@ jobs:
   notes:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: github.repository == 'ilia-maslakov/mcdev'
+    if: github.repository == 'blue-panels/mc6'
 
     steps:
       - uses: actions/checkout@v7

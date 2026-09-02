@@ -30,7 +30,7 @@ jobs:
   archive:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.repository == 'ilia-maslakov/mcdev'
+    if: github.repository == 'blue-panels/mc6'
     outputs:
       version: ${{ steps.build.outputs.version }}
 

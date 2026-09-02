@@ -6,6 +6,6 @@
     <name>Ilia Maslakov</name>
   </maintainer>
   <upstream>
-    <remote-id type="github">ilia-maslakov/mcdev</remote-id>
+    <remote-id type="github">blue-panels/mc6</remote-id>
   </upstream>
 </pkgmetadata>

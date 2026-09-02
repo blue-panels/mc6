@@ -11,8 +11,8 @@ dnl noun phrase. The full title of the fork belongs where it reads as a title.
 dnl The fourth argument is PACKAGE and must remain mc: the gettext domain and
 dnl the data paths are built from it.
 AC_INIT([Midnight Commander], m4_esyscmd_s([./version.sh .]),
-        [https://github.com/ilia-maslakov/mcdev/issues], [mc],
-        [https://github.com/ilia-maslakov/mcdev/wiki])
+        [https://github.com/blue-panels/mc6/issues], [mc],
+        [https://github.com/blue-panels/mc6/wiki])
 
 m4_pattern_forbid(MC_)
 AC_CONFIG_MACRO_DIR([m4])

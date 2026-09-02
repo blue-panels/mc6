@@ -11,11 +11,11 @@ This fork is not an official GNU package. Report issues here, not upstream.
 
 Own version numbering starts at `v6.0.1`, independent of upstream.
 
-![Git panel with inline diff](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/git-panel.gif)
+![Git panel with inline diff](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/git-panel.gif)
 
 ## What this fork adds
 
-Full notes: **[Releases wiki](https://github.com/ilia-maslakov/mcdev/wiki/Releases)**.
+Full notes: **[Releases wiki](https://github.com/blue-panels/mc6/wiki/Releases)**.
 
 - **Panel plugins.** Panel contents can come from a dynamically loaded plugin.
   Shipped: git, docker, Kubernetes, MongoDB, S3, FTP/FTPS, SFTP, Samba, systemd,
@@ -27,31 +27,31 @@ Full notes: **[Releases wiki](https://github.com/ilia-maslakov/mcdev/wiki/Releas
   [arcmc documentation](src/panel-plugins/arcmc/README.md) for external archive
   formats and helpers.
 
-  ![arcmc](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/arcmc.gif)
+  ![arcmc](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/arcmc.gif)
 - **mcstruct**: a structured binary viewer and editor, a text def-file (STL5,
   compatible with the DOS Struct Look) turns a firmware image, a header or a
   table file into a tree of named fields, synced with a hex dump; fields are
   edited in place. Shipped def-files for ELF, PE, ZIP, DBF, MBR, FAT, uImage,
   DTB, PNG, BMP and WAV. Start it with `mcstruct FILE`, Shift-F4 in the viewer,
   or F3 through `magic.ini`. See the
-  [mcstruct guide](https://github.com/ilia-maslakov/mcdev/wiki/Mcstruct).
+  [mcstruct guide](https://github.com/blue-panels/mc6/wiki/Mcstruct).
 
-  ![mcstruct](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/mcstruct.gif)
+  ![mcstruct](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/mcstruct.gif)
 - **Editor** — code folding, an undo history browser, a macro explorer, and an
   editor plugin framework.
 - **Viewer** — a structured tree mode for JSON, YAML, XML and HTML, a grep-style
   live filter, ANSI colour and terminal replay, and streaming of never-ending
   command output.
 
-  ![Structured tree viewer](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/viewer-tree.gif)
+  ![Structured tree viewer](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-tree.gif)
 
-  ![Grep-style live filter](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/viewer-filter.gif)
+  ![Grep-style live filter](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-filter.gif)
 - **Embedded terminal** — run a shell inside the file manager, panels stay in
   sync with its directory.
 - **Panels** — user-editable view modes, dialogs for managing key bindings and
   learning terminal keys, and the classic hide-a-panel / run-a-command flow.
 
-  ![Hide a panel, run a command](https://raw.githubusercontent.com/wiki/ilia-maslakov/mcdev/assets/panel-hide.gif)
+  ![Hide a panel, run a command](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/panel-hide.gif)
 
 ## Building
 
@@ -93,13 +93,13 @@ skip the dependency and replacement handling.
 
 ## Documentation
 
-- [Wiki](https://github.com/ilia-maslakov/mcdev/wiki)
+- [Wiki](https://github.com/blue-panels/mc6/wiki)
 - Built-in help: press `F1` inside mc
 - Manual pages: `mc(1)`, `mcedit(1)`, `mcview(1)`
 
 ## Reporting problems
 
-Open an issue: <https://github.com/ilia-maslakov/mcdev/issues>
+Open an issue: <https://github.com/blue-panels/mc6/issues>
 
 Include `mc --version`, your OS and distribution, and the compiler and
 configure flags if you know them. For a crash, attach a `gdb` backtrace

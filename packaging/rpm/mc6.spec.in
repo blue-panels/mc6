@@ -4,8 +4,8 @@ Version:         @VERSION@
 Release:         1%{?dist}
 Summary:         Midnight Commander with Plugins
 License:         GPL-3.0-or-later
-URL:             https://github.com/ilia-maslakov/mcdev/wiki
-Source0:         https://github.com/ilia-maslakov/mcdev/releases/download/v%{version}/mc6-%{version}.tar.gz
+URL:             https://github.com/blue-panels/mc6/wiki
+Source0:         https://github.com/blue-panels/mc6/releases/download/v%{version}/mc6-%{version}.tar.gz
 
 BuildRequires:   check-devel
 BuildRequires:   perl

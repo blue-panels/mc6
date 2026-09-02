@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: mc6
-Source: https://github.com/ilia-maslakov/mcdev
+Source: https://github.com/blue-panels/mc6
 
 Files: *
 Copyright: 1994-2026 The Midnight Commander developers

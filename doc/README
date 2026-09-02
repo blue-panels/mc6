@@ -24,7 +24,7 @@ it's simple enough to be run over a telnet or ssh session.
 This distribution is a modified fork of GNU Midnight Commander, based on
 version 4.8.33 and maintained at:
 
-* https://github.com/ilia-maslakov/mcdev
+* https://github.com/blue-panels/mc6
 
 Changes since 2026-02.  It is not an official GNU package; please report
 issues with this fork to the address in "Reporting problems" below, not
@@ -109,7 +109,7 @@ Fork additions
 This fork adds the following on top of GNU Midnight Commander 4.8.33.
 See the release notes for the full list:
 
-* https://github.com/ilia-maslakov/mcdev/wiki/Releases
+* https://github.com/blue-panels/mc6/wiki/Releases
 
 	* Panel plugins: panel contents can be supplied by a dynamically
 	  loaded plugin.  Shipped plugins include git, docker, Kubernetes,
@@ -170,8 +170,8 @@ Where to get more information
 
 This fork is developed at:
 
-* https://github.com/ilia-maslakov/mcdev
-* https://github.com/ilia-maslakov/mcdev/wiki
+* https://github.com/blue-panels/mc6
+* https://github.com/blue-panels/mc6/wiki
 
 For the upstream project that this fork is based on, see GNU Midnight
 Commander at:
@@ -184,7 +184,7 @@ Reporting problems
 
 Report bugs in this fork on its issue tracker:
 
-https://github.com/ilia-maslakov/mcdev/issues
+https://github.com/blue-panels/mc6/issues
 
 Do not report fork-specific problems to the upstream project.
 

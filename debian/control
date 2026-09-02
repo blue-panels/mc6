@@ -21,7 +21,7 @@ Build-Depends: debhelper-compat (= 13),
                libbson-dev
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://github.com/ilia-maslakov/mcdev/wiki
+Homepage: https://github.com/blue-panels/mc6/wiki
 
 Package: mc6
 Architecture: any

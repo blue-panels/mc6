@@ -5,7 +5,7 @@ pkgver=@VERSION@
 pkgrel=1
 pkgdesc='Midnight Commander with Plugins'
 arch=('x86_64' 'aarch64')
-url='https://github.com/ilia-maslakov/mcdev/wiki'
+url='https://github.com/blue-panels/mc6/wiki'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'e2fsprogs' 'libssh2' 'curl' 'samba'
