@@ -56,6 +56,14 @@ jobs:
           MODELS_ENDPOINT: ${{ vars.MODELS_ENDPOINT }}
           MODELS_MODEL: ${{ vars.MODELS_MODEL }}
           MODELS_TOKEN: ${{ secrets.MODELS_TOKEN }}
+          # Room for the two answers that cover the whole release at once.
+          # A reasoning model spends it on its thinking before it writes a
+          # word, so the default of the script leaves the answer empty rather
+          # than short: v6.0.4 came back with finish_reason "length" and no
+          # text, and the notes fell back to the pull request titles. The page
+          # keeps the default: it asks once per entry, and a budget this size
+          # would put the run over its timeout.
+          WHOLE_RELEASE_MAX_TOKENS: ${{ vars.MODELS_MAX_TOKENS || '32000' }}
           CF_ACCOUNT_ID: ${{ vars.CF_ACCOUNT_ID }}
           # Through the environment, not through ${{ }} inside the script: a
           # milestone name is typed by hand and would otherwise be pasted into
@@ -75,7 +83,8 @@ jobs:
           # is unavailable, or answers with something else, the notes are still
           # written -- with the titles as their authors typed them.
           titles=""
-          if maint/rewrite_titles.sh prs.json titles.json; then
+          if MODELS_MAX_TOKENS="$WHOLE_RELEASE_MAX_TOKENS" \
+              maint/rewrite_titles.sh prs.json titles.json; then
               titles="--titles-from titles.json"
           else
               echo "::warning::the entries were not rewritten; using the pull request titles"
@@ -105,7 +114,8 @@ jobs:
           # With prs.json as well: the headline has to know about the work the
           # notes leave out as infrastructure, or a release made mostly of
           # packaging will advertise a small fix instead.
-          if ! maint/summarize_release.sh notes.md summary.txt --context prs.json; then
+          if ! MODELS_MAX_TOKENS="$WHOLE_RELEASE_MAX_TOKENS" \
+              maint/summarize_release.sh notes.md summary.txt --context prs.json; then
               echo "::warning::no summary was written"
               : > summary.txt
           fi
