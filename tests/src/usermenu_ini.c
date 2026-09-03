@@ -354,6 +354,63 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_a_submenu_and_its_entries_are_written_and_read_back)
+{
+    char *file;
+    GPtrArray *entries;
+    user_menu_entry_t *box, *child, *top;
+    GKeyFile *keys;
+
+    file = write_temp_file (NULL);
+    ck_assert_ptr_ne (file, NULL);
+
+    entries = entries_new ();
+
+    box = entry_new ("Archives", 'a', "");
+    box->is_submenu = TRUE;
+    g_ptr_array_add (entries, box);
+
+    child = entry_new ("Pack it", 'p', "tar caf x.tgz %s");
+    child->parent = g_strdup ("Archives");
+    g_ptr_array_add (entries, child);
+
+    g_ptr_array_add (entries, entry_new ("Top one", '1', "echo one"));
+
+    ck_assert (user_menu_ini_save_file (file, entries, 0));
+    g_ptr_array_free (entries, TRUE);
+
+    // a submenu holds no command; an entry at the top has no parent
+    keys = g_key_file_new ();
+    ck_assert (g_key_file_load_from_file (keys, file, G_KEY_FILE_NONE, NULL));
+    ck_assert (g_key_file_get_boolean (keys, "Archives", "submenu", NULL));
+    ck_assert (!g_key_file_has_key (keys, "Archives", "command", NULL));
+    ck_assert (!g_key_file_has_key (keys, "Top one", "parent", NULL));
+    g_key_file_free (keys);
+
+    entries = entries_new ();
+    user_menu_ini_load_file (entries, file, 0);
+    ck_assert_uint_eq (entries->len, 3);
+
+    box = g_ptr_array_index (entries, 0);
+    ck_assert (box->is_submenu);
+    ck_assert_ptr_eq (box->parent, NULL);
+
+    child = g_ptr_array_index (entries, 1);
+    ck_assert (!child->is_submenu);
+    ck_assert_str_eq (child->parent, "Archives");
+    ck_assert_str_eq (child->command, "tar caf x.tgz %s");
+
+    top = g_ptr_array_index (entries, 2);
+    ck_assert_ptr_eq (top->parent, NULL);
+
+    g_ptr_array_free (entries, TRUE);
+    unlink (file);
+    g_free (file);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -368,6 +425,7 @@ main (void)
     tcase_add_test (tc_core, test_a_key_of_a_later_version_is_kept);
     tcase_add_test (tc_core, test_a_file_that_is_not_there_gives_no_entries);
     tcase_add_test (tc_core, test_a_menu_written_by_hand_is_imported);
+    tcase_add_test (tc_core, test_a_submenu_and_its_entries_are_written_and_read_back);
 
     return mctest_run_all (tc_core);
 }

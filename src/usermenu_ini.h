@@ -20,6 +20,8 @@ typedef struct
     char *command;
     gboolean view;
     gboolean silent;
+    gboolean is_submenu;  // a container of other entries, not a command
+    char *parent;         // the label of the submenu it belongs to; NULL at the top
     int level;
 } user_menu_entry_t;
 

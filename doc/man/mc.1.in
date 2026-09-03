@@ -1634,6 +1634,14 @@ The label is shown with those substitutions put in as well, so a label of
 What the file holds does not change, and %{...} is left as it is written:
 a list is no place to ask anything.
 .PP
+An entry can be a submenu instead of a command: Ins asks which of the two
+to add. A submenu is shown with a slash after its name, the way a
+directory is; Enter opens it, and the title names the submenus you are
+inside. Esc goes up a level, and out of the menu at the top. Deleting a
+submenu deletes what is in it. In the file, a submenu is a group with
+submenu=true and no command, and an entry inside it names the submenu
+in parent=.
+.PP
 The commands are a field of several lines: Enter opens a new one, and the
 arrows, Home and End walk the text. Shift and a motion mark what the
 motion goes over, the mouse marks by dragging, and Ctrl\-Insert,

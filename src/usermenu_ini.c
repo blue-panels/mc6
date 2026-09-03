@@ -70,6 +70,8 @@
 #define UM_KEY_COMMAND   "command"
 #define UM_KEY_VIEW      "view"
 #define UM_KEY_SILENT    "silent"
+#define UM_KEY_SUBMENU   "submenu"
+#define UM_KEY_PARENT    "parent"
 
 /*** file scope type declarations ****************************************************************/
 
@@ -173,6 +175,7 @@ user_menu_entry_free (user_menu_entry_t *entry)
 
     g_free (entry->label);
     g_free (entry->command);
+    g_free (entry->parent);
     g_free (entry);
 }
 
@@ -282,6 +285,8 @@ user_menu_ini_load_file (GPtrArray *entries, const char *file, int level)
             entry->command = g_strdup ("");
         entry->view = g_key_file_get_boolean (keys, groups[i], UM_KEY_VIEW, NULL);
         entry->silent = g_key_file_get_boolean (keys, groups[i], UM_KEY_SILENT, NULL);
+        entry->is_submenu = g_key_file_get_boolean (keys, groups[i], UM_KEY_SUBMENU, NULL);
+        entry->parent = g_key_file_get_string (keys, groups[i], UM_KEY_PARENT, NULL);
         entry->level = level;
 
         hotkey = g_key_file_get_string (keys, groups[i], UM_KEY_HOTKEY, NULL);
@@ -376,9 +381,25 @@ user_menu_ini_save_file (const char *file, GPtrArray *entries, int level)
 
         hotkey[0] = entry->hotkey;
         g_key_file_set_string (keys, entry->label, UM_KEY_HOTKEY, hotkey);
-        g_key_file_set_string (keys, entry->label, UM_KEY_COMMAND, entry->command);
-        g_key_file_set_boolean (keys, entry->label, UM_KEY_VIEW, entry->view);
-        g_key_file_set_boolean (keys, entry->label, UM_KEY_SILENT, entry->silent);
+
+        if (entry->parent != NULL && *entry->parent != '\0')
+            g_key_file_set_string (keys, entry->label, UM_KEY_PARENT, entry->parent);
+        else
+            g_key_file_remove_key (keys, entry->label, UM_KEY_PARENT, NULL);
+
+        if (entry->is_submenu)
+        {
+            g_key_file_set_boolean (keys, entry->label, UM_KEY_SUBMENU, TRUE);
+            g_key_file_remove_key (keys, entry->label, UM_KEY_COMMAND, NULL);
+            g_key_file_remove_key (keys, entry->label, UM_KEY_VIEW, NULL);
+            g_key_file_remove_key (keys, entry->label, UM_KEY_SILENT, NULL);
+        }
+        else
+        {
+            g_key_file_set_string (keys, entry->label, UM_KEY_COMMAND, entry->command);
+            g_key_file_set_boolean (keys, entry->label, UM_KEY_VIEW, entry->view);
+            g_key_file_set_boolean (keys, entry->label, UM_KEY_SILENT, entry->silent);
+        }
     }
 
     ok = g_key_file_save_to_file (keys, file, NULL);
@@ -510,7 +531,7 @@ typedef struct
     WDialog *dlg;
     WInput *hotkey;
     WInput *label;
-    WTextArea *commands;
+    WTextArea *commands;  // NULL for a submenu, which has none
     WCheck *view;
     WCheck *silent;
 } um_form_t;
@@ -519,13 +540,14 @@ typedef struct
 
 /** The row of buttons, centred by their own widths. */
 static void
-um_form_buttons (WGroup *group, int y, int width)
+um_form_buttons (WGroup *group, int y, int width, gboolean with_editor)
 {
     WButton *buttons[3];
     int count = 0, i, total = 0, x;
 
     buttons[count++] = button_new (y, 0, B_ENTER, DEFPUSH_BUTTON, _ ("&OK"), NULL);
-    buttons[count++] = button_new (y, 0, B_USER, NORMAL_BUTTON, _ ("&Editor"), NULL);
+    if (with_editor)
+        buttons[count++] = button_new (y, 0, B_USER, NORMAL_BUTTON, _ ("&Editor"), NULL);
     buttons[count++] = button_new (y, 0, B_CANCEL, NORMAL_BUTTON, _ ("&Cancel"), NULL);
 
     for (i = 0; i < count; i++)
@@ -552,21 +574,25 @@ um_form_buttons (WGroup *group, int y, int width)
 /**
  * The dialog of one entry: a hotkey, a label and the commands, and what to do
  * with the output.  No masks and no conditions: what the dialog cannot say,
- * the file still can, and the Editor button opens it.
+ * the file still can, and the Editor button opens it.  A submenu has only the
+ * hotkey and the label.
  */
 static void
-um_form_build (um_form_t *form, const um_draft_t *draft, gboolean is_new)
+um_form_build (um_form_t *form, const um_draft_t *draft, gboolean is_submenu, gboolean is_new)
 {
     const int width = 64;
     const int inner = width - 6;
+    const int lines = is_submenu ? 10 : UM_DIALOG_LINES;
     const char *title;
     WGroup *group;
     char hotkey_text[2] = { draft->hotkey, '\0' };
     int y = 2;
 
-    title = is_new ? _ ("Add a user menu entry") : _ ("Edit the user menu entry");
+    title = is_submenu ? (is_new ? _ ("Add a submenu") : _ ("Edit the submenu"))
+        : is_new       ? _ ("Add a user menu entry")
+                       : _ ("Edit the user menu entry");
 
-    form->dlg = dlg_create (TRUE, 0, 0, UM_DIALOG_LINES, width, WPOS_CENTER, FALSE, dialog_colors,
+    form->dlg = dlg_create (TRUE, 0, 0, lines, width, WPOS_CENTER, FALSE, dialog_colors,
                             um_dialog_callback, NULL, "[Edit Menu File]", title);
     group = GROUP (form->dlg);
 
@@ -580,6 +606,11 @@ um_form_build (um_form_t *form, const um_draft_t *draft, gboolean is_new)
                              INPUT_COMPLETE_NONE);
     group_add_widget (group, form->label);
 
+    form->commands = NULL;
+    form->view = NULL;
+    form->silent = NULL;
+
+    if (!is_submenu)
     {
         group_add_widget (group, label_new (y++, 3, _ ("Commands:")));
         form->commands = textarea_new (y, 3, UM_COMMAND_LINES, inner, draft->command);
@@ -596,7 +627,7 @@ um_form_build (um_form_t *form, const um_draft_t *draft, gboolean is_new)
     }
 
     group_add_widget (group, hline_new (y++, -1, -1));
-    um_form_buttons (group, y, width);
+    um_form_buttons (group, y, width, !is_submenu);
 
     widget_select (WIDGET (form->label));
 }
@@ -616,6 +647,7 @@ um_form_read (const um_form_t *form, um_draft_t *draft)
     g_free (draft->label);
     draft->label = input_get_text (form->label);
 
+    if (form->commands != NULL)
     {
         g_free (draft->command);
         draft->command = textarea_get_text (form->commands);
@@ -643,7 +675,7 @@ um_entry_edit (user_menu_entry_t *entry, gboolean is_new)
         um_form_t form;
         int result;
 
-        um_form_build (&form, &draft, is_new);
+        um_form_build (&form, &draft, entry->is_submenu, is_new);
         result = dlg_run (form.dlg);
         um_form_read (&form, &draft);
         widget_destroy (WIDGET (form.dlg));
@@ -837,7 +869,7 @@ um_list_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *d
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-um_list_run (GPtrArray *entries, int current)
+um_list_run (GPtrArray *entries, int current, const char *title)
 {
     Listbox *listbox;
     guint i;
@@ -859,7 +891,7 @@ um_list_run (GPtrArray *entries, int current)
     width = MAX (width + 9, 40);
     width = MIN (width, COLS - 6);
 
-    listbox = listbox_window_new (MIN ((int) entries->len, LINES - 10), width, _ ("User menu"),
+    listbox = listbox_window_new (MAX (1, MIN ((int) entries->len, LINES - 10)), width, title,
                                   "[Edit Menu File]");
     WIDGET (listbox->dlg)->callback = um_list_callback;
 
@@ -869,10 +901,11 @@ um_list_run (GPtrArray *entries, int current)
         char *text;
         char *label;
 
-        // The key stands in a column of its own, as the entries of mc.menu do.
+        // The key stands in a column of its own, as the entries of mc.menu do;
+        // a submenu carries a trailing slash, the way a directory does.
         label = um_label_expand (entry->label);
-        text = entry->hotkey != '\0' ? g_strdup_printf ("%c  %s", entry->hotkey, label)
-                                     : g_strdup_printf ("   %s", label);
+        text = g_strdup_printf ("%c  %s%s", entry->hotkey != '\0' ? entry->hotkey : ' ', label,
+                                entry->is_submenu ? "/" : "");
         LISTBOX_APPEND_TEXT (listbox, (unsigned char) entry->hotkey, text, entry, FALSE);
         g_free (text);
         g_free (label);
@@ -1271,6 +1304,112 @@ um_import (const char *old_menu)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/** A NULL parent and an empty one are the top level, and the same thing. */
+static gboolean
+um_parent_eq (const user_menu_entry_t *entry, const char *parent)
+{
+    const char *own;
+
+    own = (entry->parent != NULL && *entry->parent != '\0') ? entry->parent : NULL;
+
+    if (own == NULL || parent == NULL)
+        return own == parent;
+
+    return strcmp (own, parent) == 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The entries shown at one level, in the order of the file. Borrowed pointers. */
+static GPtrArray *
+um_view (GPtrArray *entries, const char *parent)
+{
+    GPtrArray *view;
+    guint i;
+
+    view = g_ptr_array_new ();
+
+    for (i = 0; i < entries->len; i++)
+    {
+        user_menu_entry_t *entry = g_ptr_array_index (entries, i);
+
+        if (um_parent_eq (entry, parent))
+            g_ptr_array_add (view, entry);
+    }
+
+    return view;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static int
+um_index_of (GPtrArray *entries, const user_menu_entry_t *entry)
+{
+    guint i;
+
+    for (i = 0; i < entries->len; i++)
+        if (g_ptr_array_index (entries, i) == entry)
+            return (int) i;
+
+    return -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The submenu entry a level belongs to, so a new child can take its level. */
+static user_menu_entry_t *
+um_find_by_label (GPtrArray *entries, const char *label)
+{
+    guint i;
+
+    if (label == NULL)
+        return NULL;
+
+    for (i = 0; i < entries->len; i++)
+    {
+        user_menu_entry_t *entry = g_ptr_array_index (entries, i);
+
+        if (strcmp (entry->label, label) == 0)
+            return entry;
+    }
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Remove an entry, and everything under it when it is a submenu. */
+static void
+um_remove_subtree (GPtrArray *entries, user_menu_entry_t *entry)
+{
+    if (entry->is_submenu)
+    {
+        guint i = 0;
+
+        while (i < entries->len)
+        {
+            user_menu_entry_t *child = g_ptr_array_index (entries, i);
+
+            if (um_parent_eq (child, entry->label))
+            {
+                um_remove_subtree (entries, child);
+                i = 0;  // the array shifted under us; scan it again
+            }
+            else
+                i++;
+        }
+    }
+
+    {
+        int idx = um_index_of (entries, entry);
+
+        if (idx >= 0)
+            g_ptr_array_remove_index (entries, idx);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -1418,17 +1557,27 @@ gboolean
 user_menu_ini_cmd (void)
 {
     GPtrArray *entries;
+    GPtrArray *path;  // the labels of the submenus we are inside
+    GArray *saved;    // the row each of those was left on
     int current = 0;
     gboolean done = FALSE;
     gboolean res = FALSE;
 
     entries = um_entries_load ();
+    path = g_ptr_array_new_with_free_func (g_free);
+    saved = g_array_new (FALSE, FALSE, sizeof (int));
 
     while (!done)
     {
+        const char *parent;
+        GPtrArray *view;
+        char *title;
         int selected;
         user_menu_entry_t *entry = NULL;
 
+        parent = path->len != 0 ? g_ptr_array_index (path, path->len - 1) : NULL;
+
+        // the empty menu: offer to add or to import
         if (entries->len == 0)
         {
             user_menu_entry_t *new_entry;
@@ -1479,59 +1628,131 @@ user_menu_ini_cmd (void)
                 break;
             }
 
-            if (done)
-                break;
-
             continue;
         }
 
-        selected = um_list_run (entries, current);
-        if (selected < 0)
-            break;
+        view = um_view (entries, parent);
 
-        current = selected;
-        entry = g_ptr_array_index (entries, selected);
+        // the title names the submenus we are inside
+        if (parent == NULL)
+            title = g_strdup (_ ("User menu"));
+        else
+        {
+            GString *t;
+            guint i;
+
+            t = g_string_new (_ ("User menu"));
+            for (i = 0; i < path->len; i++)
+            {
+                g_string_append (t, " / ");
+                g_string_append (t, (const char *) g_ptr_array_index (path, i));
+            }
+            title = g_string_free (t, FALSE);
+        }
+
+        if (current >= (int) view->len)
+            current = (int) view->len - 1;
+        if (current < 0)
+            current = 0;
+
+        selected = um_list_run (view, current, title);
+        g_free (title);
+
+        if (selected >= 0 && selected < (int) view->len)
+        {
+            current = selected;
+            entry = g_ptr_array_index (view, selected);
+        }
+
+        // Esc, or nothing to choose from: up a level, or out of the menu at the top
+        if (entry == NULL && um_action != UM_ACTION_ADD && um_action != UM_ACTION_IMPORT)
+        {
+            g_ptr_array_free (view, TRUE);
+
+            if (path->len == 0)
+                break;
+
+            g_ptr_array_remove_index (path, path->len - 1);
+            current = g_array_index (saved, int, saved->len - 1);
+            g_array_remove_index (saved, saved->len - 1);
+            continue;
+        }
 
         switch (um_action)
         {
         case UM_ACTION_RUN:
-        {
-            char *script;
+            if (entry->is_submenu)
+            {
+                // step into it, remembering the row to come back to
+                g_array_append_val (saved, current);
+                g_ptr_array_add (path, g_strdup (entry->label));
+                current = 0;
+            }
+            else
+            {
+                char *script;
 
-            script = um_entry_script (entry);
-            user_menu_execute (NULL, script, !entry->silent);
-            g_free (script);
-            res = TRUE;
-            done = TRUE;
+                script = um_entry_script (entry);
+                user_menu_execute (NULL, script, !entry->silent);
+                g_free (script);
+                res = TRUE;
+                done = TRUE;
+            }
             break;
-        }
 
         case UM_ACTION_ADD:
         {
             user_menu_entry_t *new_entry;
+            menu_level_t level;
+            int answer;
+
+            // the file a new entry goes into: the one of its neighbour, or of
+            // the submenu it is added to, or the user's own
+            if (entry != NULL)
+                level = entry->level;
+            else
+            {
+                user_menu_entry_t *box = um_find_by_label (entries, parent);
+
+                level = box != NULL ? box->level : MENU_LEVEL_USER;
+            }
+            if (!um_level_writable (level))
+                level = MENU_LEVEL_USER;
+
+            answer = query_dialog (
+                _ ("User menu"), _ ("Add a command, or a submenu to hold other entries?"), D_NORMAL,
+                3, _ ("Add a &command"), _ ("Add a &submenu"), _ ("&Cancel"));
+            if (answer != 0 && answer != 1)
+                break;
 
             new_entry = g_new0 (user_menu_entry_t, 1);
             new_entry->label = g_strdup ("");
             new_entry->command = g_strdup ("");
-            // next to the entry it was added at, or in the menu of the user
-            // when that file is not his to write
-            new_entry->level = um_level_writable (entry->level) ? entry->level : MENU_LEVEL_USER;
+            new_entry->is_submenu = answer == 1;
+            new_entry->parent = parent != NULL ? g_strdup (parent) : NULL;
+            new_entry->level = level;
 
             switch (um_entry_edit (new_entry, TRUE))
             {
             case UM_EDIT_OK:
+            {
+                int at;
+
                 um_label_fix (entries, new_entry);
-                g_ptr_array_insert (entries, selected + 1, new_entry);
+                at = entry != NULL ? um_index_of (entries, entry) + 1 : (int) entries->len;
+                g_ptr_array_insert (entries, at, new_entry);
                 um_level_save (entries, new_entry->level);
-                current = selected + 1;
+                if (entry != NULL)
+                    current++;
                 break;
+            }
 
             case UM_EDIT_FILE:
             {
-                menu_level_t level = new_entry->level;
+                menu_level_t lvl = new_entry->level;
 
                 user_menu_entry_free (new_entry);
-                um_level_edit_file (level);
+                um_level_edit_file (lvl);
                 g_ptr_array_free (entries, TRUE);
                 entries = um_entries_load ();
                 break;
@@ -1566,16 +1787,16 @@ user_menu_ini_cmd (void)
 
         case UM_ACTION_DELETE:
             if (um_entry_is_mine (entry)
-                && query_dialog (_ ("User menu"), _ ("Delete this entry?"), D_ERROR, 2, _ ("&Yes"),
-                                 _ ("&No"))
+                && query_dialog (_ ("User menu"),
+                                 entry->is_submenu ? _ ("Delete this submenu and everything in it?")
+                                                   : _ ("Delete this entry?"),
+                                 D_ERROR, 2, _ ("&Yes"), _ ("&No"))
                     == 0)
             {
                 menu_level_t level = entry->level;
 
-                g_ptr_array_remove_index (entries, selected);
+                um_remove_subtree (entries, entry);
                 um_level_save (entries, level);
-                if (current >= (int) entries->len)
-                    current = (int) entries->len - 1;
             }
             break;
 
@@ -1584,15 +1805,19 @@ user_menu_ini_cmd (void)
         {
             int other;
 
+            // the neighbour at this level; the two swap places in the file
             other = um_action == UM_ACTION_UP ? selected - 1 : selected + 1;
-            if (um_entry_is_mine (entry) && other >= 0 && other < (int) entries->len)
+            if (um_entry_is_mine (entry) && other >= 0 && other < (int) view->len)
             {
-                user_menu_entry_t *neighbour = g_ptr_array_index (entries, other);
+                user_menu_entry_t *neighbour = g_ptr_array_index (view, other);
 
                 if (neighbour->level == entry->level)
                 {
-                    g_ptr_array_index (entries, selected) = neighbour;
-                    g_ptr_array_index (entries, other) = entry;
+                    int a = um_index_of (entries, entry);
+                    int b = um_index_of (entries, neighbour);
+
+                    g_ptr_array_index (entries, a) = neighbour;
+                    g_ptr_array_index (entries, b) = entry;
                     um_level_save (entries, entry->level);
                     current = other;
                 }
@@ -1618,8 +1843,12 @@ user_menu_ini_cmd (void)
         default:
             break;
         }
+
+        g_ptr_array_free (view, TRUE);
     }
 
+    g_array_free (saved, TRUE);
+    g_ptr_array_free (path, TRUE);
     g_ptr_array_free (entries, TRUE);
     do_refresh ();
 
