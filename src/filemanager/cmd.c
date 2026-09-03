@@ -62,6 +62,7 @@
 #include "lib/event.h"    // mc_event_raise()
 
 #include "src/setup.h"
+#include "src/usermenu_ini.h"
 #include "src/execute.h"  // toggle_panels()
 #include "src/history.h"
 #include "src/util.h"  // check_for_default(), file_error_message()
@@ -1328,6 +1329,26 @@ edit_mc_menu_cmd (void)
     vfs_path_t *buffer_vpath;
     vfs_path_t *menufile_vpath;
     int dir = 0;
+
+    // The menu that edits itself keeps files of its own, and F2 opens those.
+    if (user_menu_ini_own_exists ())
+    {
+        char *file;
+
+        query_set_sel (1);
+        dir = query_dialog (_ ("Menu edit"), _ ("Which menu file do you want to edit?"), D_NORMAL,
+                            2, _ ("&Local"), _ ("&User"));
+        if (dir < 0)
+            return;
+
+        file = user_menu_ini_path (dir == 0);
+        buffer_vpath = vfs_path_from_str (file);
+        g_free (file);
+
+        edit_file_at_line (buffer_vpath, TRUE, 1);
+        vfs_path_free (buffer_vpath, TRUE);
+        return;
+    }
 
     query_set_sel (1);
     dir = query_dialog (_ ("Menu edit"), _ ("Which menu file do you want to edit?"), D_NORMAL,

@@ -1593,12 +1593,78 @@ here.
 .\"NODE "    Edit Menu File"
 .SH "    Edit Menu File"
 The user menu is a menu of useful actions that can be customized by
-the user. When you access the user menu, the
-file .mc.menu from the current directory is used if it exists,
-but only if it is owned by user or root and is not world\-writable.
-If no such file found, ~/.config/mc6/menu is tried in the same way,
-and otherwise mc uses the default system\-wide menu
-%pkgdatadir%/mc.menu.
+the user. It comes in two forms: a menu that edits itself, kept in a key
+file, and the older menu file written by hand. Where a key file exists,
+that is the menu F2 opens; where none does, the old file is read as it
+always was.
+.PP
+.B The menu that edits itself
+.PP
+The entries are kept in .mc6menu of the current directory and in
+~/.config/mc6/menu.ini, and the two are shown together. A .mc6menu is read only where it
+belongs to this user or to root and nobody else can write it, because
+its entries run commands. Nothing else is
+read: the menu holds what its owner put there, and mc6 ships no entries
+at all, so the menu of a new user is empty and asks for its first one.
+Inside the menu:
+.PP
+.nf
+Enter       run the entry
+Ins         add an entry
+F4          edit the entry
+F5          import entries from a menu file written by hand
+Shift\-F4    open the file the entry is kept in
+Del         delete the entry
+Ctrl\-Up     move the entry up
+Ctrl\-Down   move the entry down
+.fi
+.PP
+An entry is a hotkey, a label and the commands, and the dialog asks for
+no more than that: there are no conditions and no file masks. The
+commands take the same substitutions the old menu takes, %f, %s,
+%{prompt} and the rest, described in
+.\"LINK2"
+macro substitution\&.
+.\"Macro Substitution"
+Two checkboxes say what to do with the output: whether it goes to the
+viewer, and whether the command runs without the shell of the panel.
+.PP
+The label is shown with those substitutions put in as well, so a label of
+"print %f" stands in the list with the name of the file under the cursor.
+What the file holds does not change, and %{...} is left as it is written:
+a list is no place to ask anything.
+.PP
+The commands are a field of several lines: Enter opens a new one, and the
+arrows, Home and End walk the text. Shift and a motion mark what the
+motion goes over, the mouse marks by dragging, and Ctrl\-Insert,
+Shift\-Insert and Shift\-Delete copy, paste and cut through the clipboard
+file, as they do on an input line. The Editor button leaves the dialog
+and opens the file the entry is kept in, for what is easier to write
+there.
+.PP
+An entry is written back to the file it came from, and the order of the
+list is the order of the file. Conditions and masks belong to the older
+form: what the dialog cannot say, the file still can, and Shift\-F4 opens
+it.
+.PP
+.B The menu file written by hand
+.PP
+The installation no longer ships one; what is described here is read
+where somebody keeps a menu of his own in the older form:
+the file .mc.menu from the current directory is used if it exists, but
+only if it is owned by user or root and is not world\-writable. If no
+such file found, ~/.config/mc6/menu is tried in the same way.
+.PP
+Where the menu that edits itself has no file yet and another menu is
+found - his own written by hand, the mc.menu of an installed mc, or a
+menu.ini an older mc6 installed - mc offers once in a session to import
+it; F5 in the menu, and the Import button of the empty menu, ask for it
+at any time, for that file or one named by hand. It then lists what the file holds: Space
+marks an entry, Ins marks it and steps down, '*' turns every mark over,
+and Enter takes the marked ones into ~/.config/mc6/menu.ini, where the
+dialog can edit them. The file they came from is left where it is, and
+conditions and masks are dropped, because the dialog has no place for
+them.
 .PP
 The format of the menu file is very simple. Lines that start with
 anything but space or tab are considered entries for the menu (in
@@ -4232,14 +4298,16 @@ from here instead of the system\-wide startup file.
 .IP
 This file contains the hints displayed by the program.
 .PP
-.I %pkgdatadir%/mc.menu
-.IP
-This file contains the default system\-wide applications menu.
-.PP
 .I ~/.config/mc6/menu
 .IP
 User's own application menu. If this file is present it is used instead
 of the system\-wide applications menu.
+.PP
+.I ~/.config/mc6/menu.ini
+.IP
+The user menu that edits itself, one group per entry. Where this file
+exists, it is the menu F2 opens, and a .mc6menu of the current directory
+is shown along with it.
 .PP
 .I ~/.cache/mc6/Tree
 .IP

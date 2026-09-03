@@ -1,12 +1,13 @@
 /*
    User Menu implementation
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
    Slava Zanko <slavazanko@gmail.com>, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2013
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
    This file is part of the Midnight Commander.
 
@@ -60,6 +61,7 @@
 #include "src/filemanager/layout.h"
 
 #include "usermenu.h"
+#include "usermenu_ini.h"
 
 /*** global variables ****************************************************************************/
 
@@ -638,6 +640,18 @@ menu_file_own (char *path)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Run the commands of one menu entry: the substitutions, %view and the shell
+ * are the ones the menu has always used.  The text is what the file holds for
+ * an entry, a title line and the commands indented under it.
+ */
+
+void
+user_menu_execute (const Widget *edit_widget, const char *commands, gboolean show_prompt)
+{
+    execute_menu_command (edit_widget, commands, show_prompt);
+}
+
 /*  Formats defined:
 
     mc.menu formats:
@@ -1035,6 +1049,12 @@ user_menu_cmd (const Widget *edit_widget, const char *menu_file, int selected_en
         message (D_ERROR, MSG_ERROR, "%s", _ ("Cannot execute commands on non-local filesystems"));
         return FALSE;
     }
+
+    // The menu that edits itself, where that is the one to open. The panel
+    // only: the editor menu has entries of its own and stays with the old file.
+    if (edit_widget == NULL && menu_file == NULL && selected_entry < 0
+        && user_menu_ini_preferred ())
+        return user_menu_ini_cmd ();
 
     menu = g_strdup (menu_file != NULL         ? menu_file
                          : edit_widget != NULL ? EDIT_LOCAL_MENU
