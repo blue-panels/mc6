@@ -646,9 +646,7 @@ just a clear, screen is blanked.
    parameters is enough (it will take you to your home directory).
 
    GNU Midnight Commander closes ftp connection automatically after a
-   timeout or on exit.  It's possible to force disconnect by selecting
-   "Command" -> "Active VFS List" in the menu and using the "Free VFSs
-   Now" button.
+   timeout or on exit.  The timeout is set in "Options" -> "Virtual FS".
 
 7.5 Why aren't the contents of ftp panel updated?
 

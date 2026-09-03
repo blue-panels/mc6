@@ -280,6 +280,8 @@ create_command_menu (void)
     entries = g_list_prepend (
         entries, menu_entry_new (_ ("Viewed/edited files hi&story"), CK_EditorViewerHistory));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Hot&list"), CK_HotList));
+    entries = g_list_prepend (entries,
+                              menu_entry_new (_ ("Add current &path to hotlist"), CK_HotListAdd));
 #ifdef ENABLE_BACKGROUND
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Background jobs"), CK_Jobs));
 #endif
