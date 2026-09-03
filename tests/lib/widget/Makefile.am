@@ -19,6 +19,7 @@ TESTS = \
 	group_init_destroy \
 	hexstrip \
 	table_datasource \
+	textarea \
 	widget_find_by_id \
 	widget_make_global_local
 
@@ -35,6 +36,9 @@ group_init_destroy_SOURCES = \
 
 table_datasource_SOURCES = \
 	table_datasource.c
+
+textarea_SOURCES = \
+	textarea.c
 
 hexstrip_SOURCES = \
 	hexstrip.c

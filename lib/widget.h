@@ -25,6 +25,7 @@ typedef struct WGroup WGroup;
 #include "lib/widget/button.h"
 #include "lib/widget/buttonbar.h"
 #include "lib/widget/check.h"
+#include "lib/widget/textarea.h"
 #include "lib/widget/hline.h"
 #include "lib/widget/gauge.h"
 #include "lib/widget/groupbox.h"
