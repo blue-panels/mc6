@@ -108,6 +108,7 @@ libinternal_la_SOURCES = \
 	setup.c setup.h \
 	textconf.c textconf.h \
 	usermenu.c usermenu.h \
+	usermenu_ini.c usermenu_ini.h \
 	util.c util.h
 
 if ENABLE_BACKGROUND

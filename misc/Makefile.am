@@ -17,11 +17,9 @@ pkgdata_DATA = \
 	$(PKGDATA_OUT)
 
 SCRIPTS_IN = \
-	mc.menu.in \
 	mcedit.menu.in
 
 SCRIPTS_OUT = \
-	mc.menu \
 	mcedit.menu
 
 LIBFILES_CONST = \

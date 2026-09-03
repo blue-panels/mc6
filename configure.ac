@@ -1157,7 +1157,6 @@ contrib/Makefile
 
 misc/Makefile
 misc/mc.charsets
-misc/mc.menu
 misc/mcedit.menu
 misc/skins/Makefile
 misc/ext.d/Makefile

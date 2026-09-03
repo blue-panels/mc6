@@ -37,6 +37,7 @@ TESTS = \
 	mctree_model \
 	mctree_resolver \
 	mctree_view \
+	usermenu_ini \
 	term_key_merge \
 	usermenu__test_condition \
 	usermenu__test_expand_format
@@ -91,6 +92,9 @@ mctree_resolver_SOURCES = \
 
 mctree_view_SOURCES = \
 	mctree_view.c
+
+usermenu_ini_SOURCES = \
+	usermenu_ini.c
 
 term_key_merge_SOURCES = \
 	term_key_merge.c
