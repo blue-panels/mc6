@@ -81,6 +81,7 @@
 #define B_MOVE        (B_USER + 8)
 #define B_EDIT        (B_USER + 9)
 #define B_SORT        (B_USER + 10)
+#define B_MOVE_HERE   (B_USER + 11)
 
 #define TKN_GROUP     0
 #define TKN_ENTRY     1
@@ -156,7 +157,7 @@ static WPanel *our_panel;
 static gboolean hotlist_has_dot_dot = TRUE;
 
 static WDialog *hotlist_dlg, *movelist_dlg;
-static WGroupbox *movelist_group;
+static struct hotlist *moving_item;
 static WHLine *info_line;
 static WListbox *l_hotlist, *l_movelist;
 static WLabel *pname, *pkind;
@@ -170,13 +171,7 @@ static struct
 } hotlist_but[] = {
     // Move dialog only, the hotlist itself has no buttons.
     // y and x are computed by layout_buttons() in this order, Cancel goes right
-    { B_ENTER, DEFPUSH_BUTTON, 0, 0, 0, N_ ("C&hange to"), LIST_MOVELIST,
-      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-    { B_INSERT, NORMAL_BUTTON, 0, 0, 0, N_ ("&Insert"), LIST_MOVELIST,
-      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-    { B_APPEND, NORMAL_BUTTON, 0, 0, 0, N_ ("A&ppend"), LIST_MOVELIST,
-      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-    { B_UP_GROUP, NORMAL_BUTTON, 0, 0, 0, N_ ("&Up"), LIST_MOVELIST,
+    { B_MOVE_HERE, NORMAL_BUTTON, 0, 0, 0, N_ ("&Move"), LIST_MOVELIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
     { B_CANCEL, NORMAL_BUTTON, 0, 0, 0, N_ ("&Cancel"), LIST_MOVELIST,
       WPOS_KEEP_RIGHT | WPOS_KEEP_BOTTOM },
@@ -201,6 +196,7 @@ static int list_level = 0;
 /* --------------------------------------------------------------------------------------------- */
 
 static void init_movelist (struct hotlist *item);
+static void done_movelist (void);
 static void add_new_group_cmd (void);
 static void add_new_entry_cmd (WPanel *panel);
 static void remove_from_hotlist (struct hotlist *entry);
@@ -252,36 +248,59 @@ entry_kind (const struct hotlist *hlp)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* "Hotlist" for the top level, "Hotlist: a/b" inside groups. */
+/* The current group as "a/b", "" for the top level. */
+static char *
+group_path (void)
+{
+    GString *path;
+    const struct hotlist *grp;
+
+    path = g_string_new ("");
+    for (grp = current_group; grp != hotlist && grp != NULL; grp = grp->up)
+    {
+        if (path->len != 0)
+            g_string_prepend (path, PATH_SEP_STR);
+        g_string_prepend (path, grp->label);
+    }
+
+    g_string_prepend_c (path, PATH_SEP);
+
+    return g_string_free (path, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* "Hotlist" for the top level, "Hotlist: a/b" inside groups; the Move dialog
+   says where the item goes. */
 static void
 update_title (void)
 {
+    WDialog *dlg = hotlist_state.moving ? movelist_dlg : hotlist_dlg;
     GString *title;
-    const struct hotlist *grp;
+    char *path;
 
+    path = group_path ();
     title = g_string_new ("");
-    for (grp = current_group; grp != hotlist && grp != NULL; grp = grp->up)
-    {
-        if (title->len != 0)
-            g_string_prepend (title, PATH_SEP_STR);
-        g_string_prepend (title, grp->label);
-    }
-    if (title->len != 0)
-        g_string_prepend (title, ": ");
-    g_string_prepend (title, _ ("Hotlist"));
+    if (hotlist_state.moving)
+        g_string_printf (title, _ ("Move \"%s\" to %s"), moving_item->label, path);
+    else if (current_group == hotlist)
+        g_string_assign (title, _ ("Hotlist"));
+    else
+        g_string_printf (title, "%s: %s", _ ("Hotlist"), path);
+    g_free (path);
 
     // the same form frame_set_title() stores: stripped, a space on each side
     g_strstrip (title->str);
     g_string_set_size (title, strlen (title->str));
-    g_string_assign (title, str_trunc (title->str, WIDGET (hotlist_dlg)->rect.cols - 6));
+    g_string_assign (title, str_trunc (title->str, WIDGET (dlg)->rect.cols - 6));
     g_string_prepend_c (title, ' ');
     g_string_append_c (title, ' ');
 
     // frame_set_title() repaints the frame over the widgets, so do it only on change
-    if (g_strcmp0 (FRAME (hotlist_dlg->bg)->title, title->str) != 0)
+    if (g_strcmp0 (FRAME (dlg->bg)->title, title->str) != 0)
     {
-        frame_set_title (FRAME (hotlist_dlg->bg), title->str);
-        widget_draw (WIDGET (hotlist_dlg));
+        frame_set_title (FRAME (dlg->bg), title->str);
+        widget_draw (WIDGET (dlg));
     }
     g_string_free (title, TRUE);
 }
@@ -310,13 +329,7 @@ update_path_name (void)
     }
 
     if (hotlist_state.moving)
-    {
-        char *p;
-
-        p = g_strconcat (" ", current_group->label, " ", (char *) NULL);
-        groupbox_set_title (movelist_group, str_trunc (p, w->rect.cols - 2));
-        g_free (p);
-    }
+        update_title ();
     else
     {
         char *kind;
@@ -360,8 +373,14 @@ fill_listbox (WListbox *list)
     struct hotlist *current;
 
     for (current = current_group->head; current != NULL; current = current->next)
+    {
+        // the Move dialog shows where an item can go: groups, not the item itself
+        if (hotlist_state.moving && list == l_movelist
+            && (current->type == HL_TYPE_ENTRY || current == moving_item))
+            continue;
         if (entry_is_listed (current) || current->type == HL_TYPE_DOTDOT)
             add_list_item (list, LISTBOX_APPEND_AT_END, current);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -381,6 +400,26 @@ unlink_entry (struct hotlist *entry)
             current->next = entry->next;
     }
     entry->next = entry->up = NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+link_entry_last (struct hotlist *entry, struct hotlist *group)
+{
+    entry->up = group;
+    entry->next = NULL;
+
+    if (group->head == NULL)
+        group->head = entry;
+    else
+    {
+        struct hotlist *p = group->head;
+
+        while (p->next != NULL)
+            p = p->next;
+        p->next = entry;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -560,69 +599,36 @@ hotlist_run_cmd (int action)
     {
         struct hotlist *saved = current_group;
         struct hotlist *item = NULL;
-        struct hotlist *moveto_item = NULL;
-        struct hotlist *moveto_group = NULL;
+        struct hotlist *moveto_group;
         int ret;
 
-        if (listbox_is_empty (l_hotlist))
-            return 0;  // empty group - nothing to do
-
         listbox_get_current (l_hotlist, NULL, (void **) &item);
-        init_movelist (item);
-        hotlist_state.moving = TRUE;
-        ret = dlg_run (movelist_dlg);
-        hotlist_state.moving = FALSE;
-        listbox_get_current (l_movelist, NULL, (void **) &moveto_item);
-        moveto_group = current_group;
-        widget_destroy (WIDGET (movelist_dlg));
-        current_group = saved;
-        if (ret == B_CANCEL)
+        if (item == NULL || !entry_is_listed (item))
             return 0;
-        if (moveto_item == item)
-            return 0; /* If we insert/append a before/after a
-                         it hardly changes anything ;) */
-        // ".." stays first: inserting before it means after it
-        if (ret == B_INSERT && moveto_item != NULL && moveto_item->type == HL_TYPE_DOTDOT)
-            ret = B_APPEND;
+
+        init_movelist (item);
+        if (listbox_is_empty (l_movelist))
+        {
+            done_movelist ();
+            message (D_NORMAL, _ ("Hotlist"), _ ("There is no group to move \"%s\" to"),
+                     item->label);
+            return 0;
+        }
+
+        ret = dlg_run (movelist_dlg);
+        moveto_group = current_group;
+        done_movelist ();
+        current_group = saved;
+        if (ret != B_MOVE_HERE)
+            return 0;
+
+        // the same group too: the item goes to its end
         unlink_entry (item);
-        listbox_remove_current (l_hotlist);
-        item->up = moveto_group;
-        if (moveto_group->head == NULL)
-            moveto_group->head = item;
-        else if (moveto_item == NULL)
-        {  // we have group with just comments
-            struct hotlist *p = moveto_group->head;
-
-            // skip comments
-            while (p->next != NULL)
-                p = p->next;
-            p->next = item;
-        }
-        else if (ret == B_ENTER || ret == B_APPEND)
-        {
-            if (moveto_item->next == NULL)
-                moveto_item->next = item;
-            else
-            {
-                item->next = moveto_item->next;
-                moveto_item->next = item;
-            }
-        }
-        else if (moveto_group->head == moveto_item)
-        {
-            moveto_group->head = item;
-            item->next = moveto_item;
-        }
+        link_entry_last (item, moveto_group);
+        if (moveto_group == current_group)
+            refill_listbox (l_hotlist, item);
         else
-        {
-            struct hotlist *p = moveto_group->head;
-
-            while (p->next != moveto_item)
-                p = p->next;
-            item->next = p->next;
-            p->next = item;
-        }
-        refill_listbox (l_hotlist, item);
+            listbox_remove_current (l_hotlist);
         repaint_screen ();
         hotlist_state.modified = TRUE;
         return 0;
@@ -780,8 +786,13 @@ hotlist_handle_key (WDialog *h, int key)
     case KEY_F (6):
     case ALT ('m'):
         if (hotlist_state.moving)
-            return MSG_NOT_HANDLED;
-        hotlist_button_callback (NULL, B_MOVE);
+        {
+            // in the Move dialog F6 is the Move button
+            h->ret_value = B_MOVE_HERE;
+            dlg_close (h);
+        }
+        else
+            hotlist_button_callback (NULL, B_MOVE);
         return MSG_HANDLED;
 
     case KEY_F (9):
@@ -1096,45 +1107,49 @@ init_hotlist (void)
 static void
 init_movelist (struct hotlist *item)
 {
-    char *hdr;
     int lines, cols;
+    int rows;
     int y;
     WGroup *g;
-    Widget *movelist_widget;
+
+    moving_item = item;
+    hotlist_state.moving = TRUE;
 
     do_refresh ();
 
     lines = LINES - 6;
-    cols = COLS - 6;
-    layout_buttons (LIST_MOVELIST, cols - 2 * UX);
-
-    hdr = g_strdup_printf (_ ("Moving %s"), item->label);
+    cols = COLS - 10;
+    rows = layout_buttons (LIST_MOVELIST, cols - 2 * UX);
 
     movelist_dlg = dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, FALSE, dialog_colors,
-                               hotlist_callback, NULL, "[Hotlist]", hdr);
+                               hotlist_callback, NULL, "[Hotlist]", "");
     g = GROUP (movelist_dlg);
 
-    g_free (hdr);
-
     y = UY;
-    movelist_group = groupbox_new (y, UX, lines - 7, cols - 2 * UX, _ ("Directory label"));
-    movelist_widget = WIDGET (movelist_group);
-    group_add_widget_autopos (g, movelist_widget, WPOS_KEEP_ALL, NULL);
-
-    l_movelist = listbox_new (y + 1, UX + 1, movelist_widget->rect.lines - 2,
-                              movelist_widget->rect.cols - 2, FALSE, hotlist_listbox_callback);
+    l_movelist =
+        listbox_new (y, UY, lines - 5 - rows, cols - 2 * UY, FALSE, hotlist_listbox_callback);
     l_movelist->quick_search = TRUE;
     fill_listbox (l_movelist);
-    // insert before groupbox to view scrollbar
     group_add_widget_autopos (g, l_movelist, WPOS_KEEP_ALL, NULL);
+    y += WIDGET (l_movelist)->rect.lines;
 
-    y += movelist_widget->rect.lines;
-
-    group_add_widget_autopos (g, hline_new (y++, -1, -1), WPOS_KEEP_BOTTOM, NULL);
+    group_add_widget_autopos (g, hline_new (y++, -1, -1), WPOS_KEEP_BOTTOM | WPOS_KEEP_HORZ, NULL);
 
     add_buttons (g, LIST_MOVELIST, y);
 
     widget_select (WIDGET (l_movelist));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+done_movelist (void)
+{
+    widget_destroy (WIDGET (movelist_dlg));
+    movelist_dlg = NULL;
+    l_movelist = NULL;
+    moving_item = NULL;
+    hotlist_state.moving = FALSE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1226,14 +1241,7 @@ add2hotlist (char *label, char *directory, enum HotListType type, listbox_append
         p->next = new;
     }
     else
-    {  // append at the end
-        struct hotlist *p = current_group->head;
-
-        while (p->next != NULL)
-            p = p->next;
-
-        p->next = new;
-    }
+        link_entry_last (new, current_group);
 
     if (hotlist_state.running && type != HL_TYPE_COMMENT && type != HL_TYPE_DOTDOT)
     {

@@ -1585,7 +1585,9 @@ F4           edit the label and location of the selected entry
 Delete       remove the selected entry
 Ctrl\-Up      move the selected entry one line up
 Ctrl\-Down    move the selected entry one line down
-F6           move the selected entry elsewhere, into another group too
+F6           move the selected entry into another group: the dialog lists
+             the groups, Enter opens one, Move or F6 again puts the entry at
+             the end of the group shown, the starting group included
 F9           sort the current group by label, groups first
 Ctrl\-s       search the list as you type, Ctrl\-s again finds the next match
 Right, Left  enter and leave a group
