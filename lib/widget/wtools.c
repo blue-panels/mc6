@@ -305,7 +305,8 @@ query_dialog (const char *header, const char *text, int flags, int count, ...)
                 defbutton = button;
         }
 
-        g_ptr_array_free (buttons, FALSE);
+        // the buttons belong to the dialog now, free the array only
+        g_ptr_array_free (buttons, TRUE);
 
         // do resize before running and selecting any widget
         send_message (query_dlg, NULL, MSG_RESIZE, 0, NULL);

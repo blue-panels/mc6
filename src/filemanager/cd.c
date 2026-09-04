@@ -217,6 +217,26 @@ handle_cdpath (const char *path)
  * @param path path to cd
  */
 
+/* A directory named like a plugin address, e.g. "git:notes", is still a directory. */
+static gboolean
+local_dir_exists (const char *name)
+{
+    vfs_path_t *vpath;
+    struct stat st;
+    gboolean ok;
+
+    if (IS_PATH_SEP (*name))
+        vpath = vfs_path_from_str (name);
+    else
+        vpath = vfs_path_append_new (current_panel->cwd_vpath, name, (char *) NULL);
+    ok = mc_stat (vpath, &st) == 0 && S_ISDIR (st.st_mode);
+    vfs_path_free (vpath, TRUE);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 cd_to (const char *path)
 {
@@ -264,6 +284,8 @@ cd_to (const char *path)
 
         vfs_path_free (new_vpath, TRUE);
     }
+    else if (panel_plugin_find_by_path (p) != NULL && !local_dir_exists (p))
+        panel_navigate_to_path (current_panel, p, TRUE, TRUE);
     else
     {
         GString *s_path;

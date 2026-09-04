@@ -49,7 +49,6 @@ void edit_cmd_force_internal (const WPanel *panel);
 #endif
 void mkdir_cmd (WPanel *panel);
 void reread_cmd (void);
-void vfs_list (WPanel *panel);
 void ext_cmd (void);
 void edit_mc_menu_cmd (void);
 void edit_fhl_cmd (void);

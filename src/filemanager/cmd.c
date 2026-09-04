@@ -1446,54 +1446,45 @@ edit_fhl_cmd (void)
 void
 hotlist_cmd (WPanel *panel)
 {
-    char *target;
+    char *target, *path;
+    gboolean to_other = FALSE;
 
-    target = hotlist_show (LIST_HOTLIST, panel);
+    target = hotlist_show (panel, &to_other);
     if (target == NULL)
         return;
 
-    if (get_current_type () == view_tree)
+    // a plugin address goes as it is, a path through the parser of the old VFS syntax
+    if (panel_plugin_find_by_path (target) != NULL)
+        path = target;
+    else
     {
         vfs_path_t *vpath;
 
-        vpath = vfs_path_from_str (target);
+        vpath = vfs_path_from_str_flags (target, VPF_USE_DEPRECATED_PARSER);
+        path = g_strdup (vfs_path_as_str (vpath));
+        vfs_path_free (vpath, TRUE);
+        g_free (target);
+    }
+
+    if (to_other)
+    {
+        if (get_other_type () != view_listing)
+            create_panel (get_other_index (), view_listing);
+        panel_navigate_to_path (other_panel, path, TRUE, TRUE);
+    }
+    else if (get_current_type () == view_tree)
+    {
+        vfs_path_t *vpath;
+
+        vpath = vfs_path_from_str (path);
         tree_chdir (the_tree, vpath);
         vfs_path_free (vpath, TRUE);
     }
     else
-    {
-        vfs_path_t *deprecated_vpath;
-        const char *deprecated_path;
+        cd_to (path);  // knows plugin addresses too
 
-        deprecated_vpath = vfs_path_from_str_flags (target, VPF_USE_DEPRECATED_PARSER);
-        deprecated_path = vfs_path_as_str (deprecated_vpath);
-        cd_to (deprecated_path);
-        vfs_path_free (deprecated_vpath, TRUE);
-    }
-
-    g_free (target);
+    g_free (path);
 }
-
-/* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_VFS
-void
-vfs_list (WPanel *panel)
-{
-    char *target;
-    vfs_path_t *target_vpath;
-
-    target = hotlist_show (LIST_VFSLIST, panel);
-    if (target == NULL)
-        return;
-
-    target_vpath = vfs_path_from_str (target);
-    if (!panel_cd (current_panel, target_vpath, cd_exact))
-        cd_error_message (target);
-    vfs_path_free (target_vpath, TRUE);
-    g_free (target);
-}
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 

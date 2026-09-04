@@ -9,7 +9,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_EDITOR_PLUGIN_API_VERSION 4
+#define MC_EDITOR_PLUGIN_API_VERSION 5
 #define MC_EDITOR_PLUGIN_ENTRY       "mc_editor_plugin_register"
 #define MC_EDITOR_PLUGIN_CMD_BASE    30000L /* Plugins-menu: base + plugin_index */
 #define MC_EDITOR_PLUGIN_ACTION_BASE 31000L /* per-action menu commands           */

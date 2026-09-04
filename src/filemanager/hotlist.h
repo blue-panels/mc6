@@ -13,9 +13,8 @@
 
 typedef enum
 {
-    LIST_VFSLIST = 0x01,
-    LIST_HOTLIST = 0x02,
-    LIST_MOVELIST = 0x04
+    LIST_HOTLIST = 0x01,
+    LIST_MOVELIST = 0x02
 } hotlist_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -25,7 +24,7 @@ typedef enum
 /*** declarations of public functions ************************************************************/
 
 void add2hotlist_cmd (WPanel *panel);
-char *hotlist_show (hotlist_t list_type, WPanel *panel);
+char *hotlist_show (WPanel *panel, gboolean *to_other);
 gboolean save_hotlist (void);
 void done_hotlist (void);
 

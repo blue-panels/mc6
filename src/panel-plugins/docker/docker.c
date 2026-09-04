@@ -54,6 +54,7 @@ static mc_pp_result_t docker_save_file (void *plugin_data, const char *local_pat
                                         const char *remote_name);
 static mc_pp_result_t docker_delete_items (void *plugin_data, const char **names, int count);
 static const char *docker_get_title (void *plugin_data);
+static char *docker_get_location (void *plugin_data);
 static mc_pp_result_t docker_handle_key (void *plugin_data, int key);
 static mc_pp_result_t docker_create_item (void *plugin_data);
 static const mc_panel_column_t *docker_get_columns (void *plugin_data, size_t *count);
@@ -96,6 +97,7 @@ static const mc_panel_plugin_t docker_plugin = {
     .save_file = docker_save_file,
     .delete_items = docker_delete_items,
     .get_title = docker_get_title,
+    .get_location = docker_get_location,
     .handle_key = docker_handle_key,
     .create_item = docker_create_item,
     .get_help_info = docker_get_help_info,
@@ -2268,6 +2270,22 @@ docker_delete_items (void *plugin_data, const char **names, int count)
     }
 
     return MC_PPR_NOT_SUPPORTED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The same id-based path the plugin puts in the directory history. */
+static char *
+docker_get_location (void *plugin_data)
+{
+    docker_data_t *data = (docker_data_t *) plugin_data;
+    const char *path;
+
+    path = docker_get_path (data);
+    if (path == NULL)
+        return NULL;
+
+    return g_strdup_printf ("%s%s", docker_plugin.prefix, path);
 }
 
 /* --------------------------------------------------------------------------------------------- */

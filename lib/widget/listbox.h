@@ -39,6 +39,7 @@ typedef struct WLEntry
     int hotkey;
     void *data;          // Client information
     gboolean free_data;  // Whether to free the data on entry's removal
+    gboolean emphasis;   // Draw in the hot color, e.g. a group among plain items
 } WLEntry;
 
 typedef struct WListbox
@@ -52,6 +53,10 @@ typedef struct WListbox
     gboolean deletable;         // Can list entries be deleted?
     lcback_fn callback;         // The callback function
     int cursor_x, cursor_y;     // Cache the values
+    gboolean quick_search;      // Ctrl-s search is enabled
+    GString *search;            // Quick search text, NULL when not searching
+    char search_ch[MB_LEN_MAX + 1];
+    int search_chpoint;
 } WListbox;
 
 /*** global variables defined in .c file *********************************************************/
@@ -63,6 +68,8 @@ extern const global_keymap_t *listbox_map;
 WListbox *listbox_new (int y, int x, int height, int width, gboolean deletable, lcback_fn callback);
 int listbox_search_text (WListbox *l, const char *text);
 int listbox_search_data (WListbox *l, const void *data);
+void listbox_search_stop (WListbox *l);
+void listbox_set_emphasis (WListbox *l, int pos, gboolean emphasis);
 void listbox_select_first (WListbox *l);
 void listbox_select_last (WListbox *l);
 void listbox_set_current (WListbox *l, int dest);

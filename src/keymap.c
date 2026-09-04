@@ -178,9 +178,6 @@ static const global_keymap_ini_t default_filemanager_x_keymap[] = {
 #ifdef USE_DIFF_VIEW
     { "CompareFiles", "ctrl-d" },
 #endif
-#ifdef ENABLE_VFS
-    { "VfsList", "a" },
-#endif
     { "PutCurrentPath", "p" },
     { "PutOtherPath", "ctrl-p" },
     { "PutCurrentTagged", "t" },
@@ -345,6 +342,7 @@ static const global_keymap_ini_t default_listbox_keymap[] = {
     { "View", "f3" },
     { "Edit", "f4" },
     { "Enter", "enter" },
+    { "Search", "ctrl-s; alt-s" },
     {
         NULL,
         NULL,

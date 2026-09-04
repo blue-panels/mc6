@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 15
+#define MC_PANEL_PLUGIN_API_VERSION 16
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.

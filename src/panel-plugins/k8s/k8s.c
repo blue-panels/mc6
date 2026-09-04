@@ -52,6 +52,7 @@ static mc_pp_result_t k8s_get_help_info (void *plugin_data, const char **filenam
                                          const char **node);
 static mc_pp_result_t k8s_delete_items (void *plugin_data, const char **names, int count);
 static const char *k8s_get_title (void *plugin_data);
+static char *k8s_get_location (void *plugin_data);
 static mc_pp_result_t k8s_handle_key (void *plugin_data, int key);
 static mc_pp_result_t k8s_create_item (void *plugin_data);
 static const mc_panel_column_t *k8s_get_columns (void *plugin_data, size_t *count);
@@ -92,6 +93,7 @@ static const mc_panel_plugin_t k8s_plugin = {
     .save_file = NULL,
     .delete_items = k8s_delete_items,
     .get_title = k8s_get_title,
+    .get_location = k8s_get_location,
     .handle_key = k8s_handle_key,
     .create_item = k8s_create_item,
 
@@ -1098,6 +1100,22 @@ k8s_get_title (void *plugin_data)
 {
     k8s_data_t *data = (k8s_data_t *) plugin_data;
     return k8s_get_path (data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The same path the plugin puts in the directory history. */
+static char *
+k8s_get_location (void *plugin_data)
+{
+    k8s_data_t *data = (k8s_data_t *) plugin_data;
+    const char *path;
+
+    path = k8s_get_path (data);
+    if (path == NULL)
+        return NULL;
+
+    return g_strdup_printf ("%s:%s", k8s_plugin.proto, path);
 }
 
 /* --------------------------------------------------------------------------------------------- */

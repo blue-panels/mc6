@@ -249,6 +249,7 @@ gboolean panel_plugin_restore_stream_source (WPanel *panel);
 gboolean panel_plugin_activate_by_name (WPanel *panel, const char *plugin_name,
                                         const char *open_path);
 const mc_panel_plugin_t *panel_plugin_find_by_path (const char *open_path);
+char *panel_plugin_location (const WPanel *panel);
 gboolean panel_plugin_activate_by_path (WPanel *panel, const char *open_path);
 void panel_plugin_close (WPanel *panel);
 void panel_plugin_dispose (WPanel *panel);
