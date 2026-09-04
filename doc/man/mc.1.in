@@ -1340,7 +1340,7 @@ can also be accessed by typing Alt\-p or Alt\-n.
 .PP
 The
 .\"LINK2"
-"Directory hotlist"
+"Hotlist"
 .\"Hotlist"
 command makes changing of the current directory to often used directories
 faster.
@@ -1559,13 +1559,15 @@ which you want the command to be saved. Next time, you just choose that
 command from the list and do not have to type it again.
 .\"NODE "    Hotlist"
 .SH "    Hotlist"
-The Directory hotlist command shows the labels of the directories
-in the directory hotlist. Midnight Commander will change to the
-directory corresponding to the selected label.  From the hotlist dialog,
-you can remove already created label/directory pairs and add new ones.
-To add new directories quickly, you can use the Add to hotlist command
-(C\-x h), which adds the current directory into the directory hotlist,
-asking just for the label for the directory.
+The Hotlist command shows the labels of the locations in the hotlist.
+Midnight Commander will change to the location corresponding to the
+selected label. A location is a directory, a path inside a virtual file
+system, or a panel plugin address such as
+.IR sftp:host/dir .
+From the hotlist dialog, you can remove already created label/location
+pairs and add new ones. To add new locations quickly, you can use the Add
+to hotlist command (C\-x h), which adds the current directory or plugin
+panel location into the hotlist, asking just for the label.
 .PP
 This makes cd to often used directories faster. You may consider using the
 CDPATH variable as described in

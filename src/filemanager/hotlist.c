@@ -1,5 +1,5 @@
 /*
-   Directory hotlist -- for the Midnight Commander
+   Hotlist -- for the Midnight Commander
 
    Copyright (C) 1994-2025
    Free Software Foundation, Inc.
@@ -79,20 +79,16 @@
 #define B_INSERT      (B_USER + 6)
 #define B_APPEND      (B_USER + 7)
 #define B_MOVE        (B_USER + 8)
-#ifdef ENABLE_VFS
-#define B_FREE_ALL_VFS (B_USER + 9)
-#define B_REFRESH_VFS  (B_USER + 10)
-#endif
 
-#define TKN_GROUP    0
-#define TKN_ENTRY    1
-#define TKN_STRING   2
-#define TKN_URL      3
-#define TKN_ENDGROUP 4
-#define TKN_COMMENT  5
-#define TKN_EOL      125
-#define TKN_EOF      126
-#define TKN_UNKNOWN  127
+#define TKN_GROUP     0
+#define TKN_ENTRY     1
+#define TKN_STRING    2
+#define TKN_URL       3
+#define TKN_ENDGROUP  4
+#define TKN_COMMENT   5
+#define TKN_EOL       125
+#define TKN_EOF       126
+#define TKN_UNKNOWN   127
 
 #define SKIP_TO_EOL                                                                                \
     {                                                                                              \
@@ -135,7 +131,6 @@ static struct
                              update listbox */
     gboolean moving;      // we are in moving hotlist currently
     gboolean modified;    // hotlist was modified
-    hotlist_t type;       // LIST_HOTLIST || LIST_VFSLIST
 } hotlist_state;
 
 /* Directory hotlist */
@@ -169,20 +164,14 @@ static struct
     int type;
     widget_pos_flags_t pos_flags;
 } hotlist_but[] = {
-    { B_ENTER, DEFPUSH_BUTTON, 0, 0, 0, N_ ("Change &to"),
-      LIST_HOTLIST | LIST_VFSLIST | LIST_MOVELIST, WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-#ifdef ENABLE_VFS
-    { B_FREE_ALL_VFS, NORMAL_BUTTON, 0, 20, 0, N_ ("&Free VFSs now"), LIST_VFSLIST,
+    { B_ENTER, DEFPUSH_BUTTON, 0, 0, 0, N_ ("Change &to"), LIST_HOTLIST | LIST_MOVELIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-    { B_REFRESH_VFS, NORMAL_BUTTON, 0, 43, 0, N_ ("&Refresh"), LIST_VFSLIST,
-      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-#endif
     { B_ADD_CURRENT, NORMAL_BUTTON, 0, 20, 0, N_ ("&Add current"), LIST_HOTLIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
     { B_UP_GROUP, NORMAL_BUTTON, 0, 42, 0, N_ ("&Up"), LIST_HOTLIST | LIST_MOVELIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
-    { B_CANCEL, NORMAL_BUTTON, 0, 53, 0, N_ ("&Cancel"),
-      LIST_HOTLIST | LIST_VFSLIST | LIST_MOVELIST, WPOS_KEEP_RIGHT | WPOS_KEEP_BOTTOM },
+    { B_CANCEL, NORMAL_BUTTON, 0, 53, 0, N_ ("&Cancel"), LIST_HOTLIST | LIST_MOVELIST,
+      WPOS_KEEP_RIGHT | WPOS_KEEP_BOTTOM },
     { B_NEW_GROUP, NORMAL_BUTTON, 1, 0, 0, N_ ("New &group"), LIST_HOTLIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
     { B_NEW_ENTRY, NORMAL_BUTTON, 1, 15, 0, N_ ("New &entry"), LIST_HOTLIST,
@@ -194,7 +183,7 @@ static struct
     { B_REMOVE, NORMAL_BUTTON, 1, 30, 0, N_ ("&Remove"), LIST_HOTLIST,
       WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
     { B_MOVE, NORMAL_BUTTON, 1, 42, 0, N_ ("&Move"), LIST_HOTLIST,
-      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM }
+      WPOS_KEEP_LEFT | WPOS_KEEP_BOTTOM },
 };
 
 static const size_t hotlist_but_num = G_N_ELEMENTS (hotlist_but);
@@ -308,16 +297,6 @@ unlink_entry (struct hotlist *entry)
     }
     entry->next = entry->up = NULL;
 }
-
-/* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_VFS
-static void
-add_name_to_list (const char *path)
-{
-    listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, path, NULL, FALSE);
-}
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -453,19 +432,6 @@ hotlist_run_cmd (int action)
         return 0;
     }
 
-#ifdef ENABLE_VFS
-    case B_FREE_ALL_VFS:
-        vfs_expire (TRUE);
-        MC_FALLTHROUGH;
-
-    case B_REFRESH_VFS:
-        listbox_remove_list (l_hotlist);
-        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), NULL,
-                          FALSE);
-        vfs_fill_names (add_name_to_list);
-        return 0;
-#endif
-
     default:
         return 1;
     }
@@ -505,14 +471,10 @@ hotlist_handle_key (WDialog *h, int key)
 
     case KEY_RIGHT:
         // enter to the group
-        if (hotlist_state.type == LIST_VFSLIST)
-            return MSG_NOT_HANDLED;
         return hotlist_button_callback (NULL, B_ENTER_GROUP) == 0 ? MSG_HANDLED : MSG_NOT_HANDLED;
 
     case KEY_LEFT:
         // leave the group
-        if (hotlist_state.type == LIST_VFSLIST)
-            return MSG_NOT_HANDLED;
         return hotlist_button_callback (NULL, B_UP_GROUP) == 0 ? MSG_HANDLED : MSG_NOT_HANDLED;
 
     case KEY_DC:
@@ -743,13 +705,11 @@ init_i18n_stuff (int list_type, int cols)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-init_hotlist (hotlist_t list_type)
+init_hotlist (void)
 {
     size_t i;
-    const char *title, *help_node;
     int lines, cols;
     int y;
-    int dh = 0;
     WGroup *g;
     WGroupbox *path_box;
     Widget *hotlist_widget;
@@ -757,52 +717,28 @@ init_hotlist (hotlist_t list_type)
     do_refresh ();
 
     lines = LINES - 2;
-    cols = init_i18n_stuff (list_type, COLS - 6);
-
-#ifdef ENABLE_VFS
-    if (list_type == LIST_VFSLIST)
-    {
-        title = _ ("Active VFS directories");
-        help_node = "[vfshot]";  // FIXME - no such node
-        dh = 1;
-    }
-    else
-#endif
-    {
-        title = _ ("Directory hotlist");
-        help_node = "[Hotlist]";
-    }
+    cols = init_i18n_stuff (LIST_HOTLIST, COLS - 6);
 
     hotlist_dlg = dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, FALSE, dialog_colors,
-                              hotlist_callback, NULL, help_node, title);
+                              hotlist_callback, NULL, "[Hotlist]", _ ("Hotlist"));
     g = GROUP (hotlist_dlg);
 
     y = UY;
-    hotlist_group = groupbox_new (y, UX, lines - 10 + dh, cols - 2 * UX, _ ("Top level group"));
+    hotlist_group = groupbox_new (y, UX, lines - 10, cols - 2 * UX, _ ("Top level group"));
     hotlist_widget = WIDGET (hotlist_group);
     group_add_widget_autopos (g, hotlist_widget, WPOS_KEEP_ALL, NULL);
 
     l_hotlist = listbox_new (y + 1, UX + 1, hotlist_widget->rect.lines - 2,
                              hotlist_widget->rect.cols - 2, FALSE, hotlist_listbox_callback);
 
-    // Fill the hotlist with the active VFS or the hotlist
-#ifdef ENABLE_VFS
-    if (list_type == LIST_VFSLIST)
-    {
-        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), NULL,
-                          FALSE);
-        vfs_fill_names (add_name_to_list);
-    }
-    else
-#endif
-        fill_listbox (l_hotlist);
+    fill_listbox (l_hotlist);
 
     // insert before groupbox to view scrollbar
     group_add_widget_autopos (g, l_hotlist, WPOS_KEEP_ALL, NULL);
 
     y += hotlist_widget->rect.lines;
 
-    path_box = groupbox_new (y, UX, 3, hotlist_widget->rect.cols, _ ("Directory path"));
+    path_box = groupbox_new (y, UX, 3, hotlist_widget->rect.cols, _ ("Location"));
     group_add_widget_autopos (g, path_box, WPOS_KEEP_BOTTOM | WPOS_KEEP_HORZ, NULL);
 
     pname = label_new (y + 1, UX + 2, NULL);
@@ -812,7 +748,7 @@ init_hotlist (hotlist_t list_type)
     group_add_widget_autopos (g, hline_new (y++, -1, -1), WPOS_KEEP_BOTTOM, NULL);
 
     for (i = 0; i < hotlist_but_num; i++)
-        if ((hotlist_but[i].type & list_type) != 0)
+        if ((hotlist_but[i].type & LIST_HOTLIST) != 0)
             group_add_widget_autopos (g,
                                       button_new (y + hotlist_but[i].y, UX + hotlist_but[i].x,
                                                   hotlist_but[i].ret_cmd, hotlist_but[i].flags,
@@ -1601,7 +1537,9 @@ add2hotlist_cmd (WPanel *panel)
     our_panel = panel;
 
     l = str_term_width1 (cp);
-    label_string = vfs_path_to_str_flags (panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
+    label_string = panel_plugin_location (panel);
+    if (label_string == NULL)
+        label_string = vfs_path_to_str_flags (panel->cwd_vpath, 0, VPF_STRIP_PASSWORD);
     lc_prompt = g_strdup_printf (cp, str_trunc (label_string, COLS - 2 * UX - (l + 8)));
     label = input_dialog (_ ("Add to hotlist"), lc_prompt, MC_HISTORY_HOTLIST_ADD, label_string,
                           INPUT_COMPLETE_NONE);
@@ -1622,7 +1560,7 @@ add2hotlist_cmd (WPanel *panel)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-hotlist_show (hotlist_t list_type, WPanel *panel)
+hotlist_show (WPanel *panel)
 {
     char *target = NULL;
     int res;
@@ -1630,10 +1568,9 @@ hotlist_show (hotlist_t list_type, WPanel *panel)
     // extra variable to use it in the button callback
     our_panel = panel;
 
-    hotlist_state.type = list_type;
     load_hotlist ();
 
-    init_hotlist (list_type);
+    init_hotlist ();
 
     // display file info
     tty_setcolor (CORE_SELECTED_COLOR);

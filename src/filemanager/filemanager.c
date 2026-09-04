@@ -279,10 +279,7 @@ create_command_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("Command &history"), CK_History));
     entries = g_list_prepend (
         entries, menu_entry_new (_ ("Viewed/edited files hi&story"), CK_EditorViewerHistory));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Di&rectory hotlist"), CK_HotList));
-#ifdef ENABLE_VFS
-    entries = g_list_prepend (entries, menu_entry_new (_ ("&Active VFS list"), CK_VfsList));
-#endif
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Hot&list"), CK_HotList));
 #ifdef ENABLE_BACKGROUND
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Background jobs"), CK_Jobs));
 #endif
@@ -1491,11 +1488,6 @@ midnight_execute_cmd (Widget *sender, long command)
     case CK_Reread:
         reread_cmd ();
         break;
-#ifdef ENABLE_VFS
-    case CK_VfsList:
-        vfs_list (current_panel);
-        break;
-#endif
     case CK_SaveSetup:
         save_setup_cmd ();
         break;

@@ -1448,7 +1448,7 @@ hotlist_cmd (WPanel *panel)
 {
     char *target;
 
-    target = hotlist_show (LIST_HOTLIST, panel);
+    target = hotlist_show (panel);
     if (target == NULL)
         return;
 
@@ -1460,6 +1460,8 @@ hotlist_cmd (WPanel *panel)
         tree_chdir (the_tree, vpath);
         vfs_path_free (vpath, TRUE);
     }
+    else if (panel_plugin_find_by_path (target) != NULL)
+        panel_navigate_to_path (current_panel, target, TRUE, TRUE);
     else
     {
         vfs_path_t *deprecated_vpath;
@@ -1473,27 +1475,6 @@ hotlist_cmd (WPanel *panel)
 
     g_free (target);
 }
-
-/* --------------------------------------------------------------------------------------------- */
-
-#ifdef ENABLE_VFS
-void
-vfs_list (WPanel *panel)
-{
-    char *target;
-    vfs_path_t *target_vpath;
-
-    target = hotlist_show (LIST_VFSLIST, panel);
-    if (target == NULL)
-        return;
-
-    target_vpath = vfs_path_from_str (target);
-    if (!panel_cd (current_panel, target_vpath, cd_exact))
-        cd_error_message (target);
-    vfs_path_free (target_vpath, TRUE);
-    g_free (target);
-}
-#endif
 
 /* --------------------------------------------------------------------------------------------- */
 

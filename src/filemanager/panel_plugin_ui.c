@@ -1115,6 +1115,19 @@ panel_plugin_find_by_path (const char *open_path)
     return plugin;
 }
 
+/* Where the plugin panel is, in the form open() accepts back. Caller frees. */
+char *
+panel_plugin_location (const WPanel *panel)
+{
+    if (panel == NULL || !panel->is_plugin_panel || panel->plugin == NULL
+        || panel->plugin_data == NULL || panel->plugin->get_location == NULL)
+        return NULL;
+
+    return panel->plugin->get_location (panel->plugin_data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 gboolean
 panel_plugin_activate_by_path (WPanel *panel, const char *open_path)
 {

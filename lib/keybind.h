@@ -179,7 +179,6 @@ enum
     CK_ListMode,
     CK_CdQuick,
     CK_PanelQuickView,
-    CK_VfsList,
     CK_SaveSetup,
     CK_LinkSymbolic,
     CK_ShowHidden,

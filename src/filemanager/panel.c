@@ -4403,10 +4403,7 @@ chdir_other_panel (WPanel *panel)
     if (get_other_type () != view_listing)
         create_panel (get_other_index (), view_listing);
 
-    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
-        && panel->plugin->get_location != NULL)
-        location = panel->plugin->get_location (panel->plugin_data);
-
+    location = panel_plugin_location (panel);
     if (location != NULL)
     {
         /* On a file the branch below goes to the parent directory. Here it
@@ -4472,10 +4469,7 @@ panel_sync_other (const WPanel *panel)
     if (get_other_type () != view_listing)
         create_panel (get_other_index (), view_listing);
 
-    if (panel->is_plugin_panel && panel->plugin != NULL && panel->plugin_data != NULL
-        && panel->plugin->get_location != NULL)
-        location = panel->plugin->get_location (panel->plugin_data);
-
+    location = panel_plugin_location (panel);
     if (location == NULL)
         location = g_strdup (vfs_path_as_str (panel->cwd_vpath));
 
