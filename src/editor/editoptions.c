@@ -173,6 +173,8 @@ edit_options_dialog (WDialog *h)
                     QUICK_CHECKBOX (_ ("&Visible trailing spaces"), &edit_options.visible_tws,
                                     NULL),
                     QUICK_CHECKBOX (_ ("Visible &tabs"), &edit_options.visible_tabs, NULL),
+                    QUICK_CHECKBOX (_ ("S&how control characters"),
+                                    &edit_options.show_control_chars, NULL),
                     QUICK_CHECKBOX (_ ("Synta&x highlighting"), &edit_options.syntax_highlighting,
                                     NULL),
                     QUICK_CHECKBOX (_ ("C&ursor after inserted block"),

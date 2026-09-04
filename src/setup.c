@@ -339,6 +339,7 @@ static const struct
     { "editor_simple_statusbar", &edit_options.simple_statusbar },
     { "editor_check_new_line", &edit_options.check_nl_at_eof },
     { "editor_show_right_margin", &edit_options.show_right_margin },
+    { "editor_show_control_chars", &edit_options.show_control_chars },
     { "editor_group_undo", &edit_options.group_undo },
     { "editor_state_full_filename", &edit_options.state_full_filename },
 #endif

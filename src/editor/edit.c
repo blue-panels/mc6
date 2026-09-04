@@ -100,6 +100,7 @@ edit_options_t edit_options = {
     .visible_tabs = TRUE,
     .visible_tws = TRUE,
     .show_right_margin = FALSE,
+    .show_control_chars = TRUE,
     .simple_statusbar = FALSE,
     .check_nl_at_eof = FALSE,
 };
@@ -3697,7 +3698,7 @@ edit_layout_advance_byte (const WEdit *edit, off_t offset, long column)
     if (c == '\t')
         return column + TAB_SIZE - column % TAB_SIZE;
     if ((c < 32 || c == 127) && (orig_c == c || (!mc_global.utf8_display && !edit->utf8)))
-        return column + 2;
+        return column + edit_control_char_width ();
 
     return column + 1;
 }
@@ -4055,9 +4056,8 @@ edit_move_forward3 (const WEdit *edit, off_t current, long cols, off_t upto)
         if (c == '\t')
             col += TAB_SIZE - col % TAB_SIZE;
         else if ((c < 32 || c == 127) && (orig_c == c || (!mc_global.utf8_display && !edit->utf8)))
-            // '\r' is shown as ^M, so we must advance 2 characters
-            // Caret notation for control characters
-            col += 2;
+            // '\r' is shown as ^M or as one blank cell
+            col += edit_control_char_width ();
         else
             col++;
     }
@@ -4098,6 +4098,25 @@ gboolean
 edit_has_single_line_layout (const WEdit *edit)
 {
     return edit->buffer.lines == 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+int
+edit_control_char_width (void)
+{
+    return edit_options.show_control_chars ? 2 : 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Drop cached column layout after a change in how characters are displayed */
+
+void
+edit_layout_reset (WEdit *edit)
+{
+    edit_layout_cache_invalidate (edit);
+    edit_update_curs_col (edit);
+    edit->force |= REDRAW_PAGE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

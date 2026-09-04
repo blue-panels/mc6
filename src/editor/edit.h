@@ -58,6 +58,7 @@ typedef struct
     gboolean visible_tabs;
     gboolean visible_tws;
     gboolean show_right_margin;
+    gboolean show_control_chars;
     gboolean simple_statusbar;  // statusbar draw style
     gboolean check_nl_at_eof;
 } edit_options_t;

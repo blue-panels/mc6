@@ -572,6 +572,11 @@ as '.'
 .I editor_visible_tabs
 Toggle "show visible tabs".  If editor_visible_tabs=1, tabs are shown as '<\-\-\-\->'
 .TP
+.I editor_show_control_chars
+Show control characters in caret notation, for example '^M' or '^L'.
+If editor_show_control_chars=0, each of them takes one blank cell instead.
+The "Toggle control characters" item of the Command menu switches this option.
+.TP
 .I editor_persistent_selections
 Do not remove block selection after cursor movement.
 .TP

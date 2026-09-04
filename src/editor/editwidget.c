@@ -1286,6 +1286,9 @@ edit_dialog_command_execute (WDialog *h, long command)
     case CK_ShowMargin:
         edit_show_margin_cmd (h);
         break;
+    case CK_ShowControlChars:
+        edit_show_control_chars_cmd (h);
+        break;
     case CK_ShowNumbers:
         edit_show_numbers_cmd (h);
         break;
