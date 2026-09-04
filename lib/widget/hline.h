@@ -6,6 +6,8 @@
 #ifndef MC__WIDGET_HLINE_H
 #define MC__WIDGET_HLINE_H
 
+#include "lib/strutil.h"  // align_crt_t
+
 /*** typedefs(not structures) and defined constants **********************************************/
 
 #define HLINE(x) ((WHLine *) (x))
@@ -21,6 +23,7 @@ typedef struct
     gboolean auto_adjust_cols;  // Compute widget.cols from parent width?
     gboolean transparent;       // Paint in the default color fg/bg
     int text_color_idx;         // DLG_COLOR_* index for text, or -1 for default (DLG_COLOR_FRAME)
+    align_crt_t text_align;     // J_LEFT, J_CENTER (default) or J_RIGHT
 } WHLine;
 
 /*** global variables defined in .c file *********************************************************/

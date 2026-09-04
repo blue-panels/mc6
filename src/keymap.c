@@ -342,6 +342,7 @@ static const global_keymap_ini_t default_listbox_keymap[] = {
     { "View", "f3" },
     { "Edit", "f4" },
     { "Enter", "enter" },
+    { "Search", "ctrl-s; alt-s" },
     {
         NULL,
         NULL,

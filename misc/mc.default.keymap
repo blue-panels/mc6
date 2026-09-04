@@ -203,6 +203,7 @@ Clear = shift-delete; shift-d
 View = f3
 Edit = f4
 Enter = enter
+Search = ctrl-s; alt-s
 
 [radio]
 Up = up; ctrl-p

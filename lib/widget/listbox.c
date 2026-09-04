@@ -34,6 +34,7 @@
 
 #include <config.h>
 
+#include <limits.h>  // MB_LEN_MAX
 #include <stdlib.h>
 
 #include "lib/global.h"
@@ -76,6 +77,20 @@ listbox_entry_cmp (const void *a, const void *b, void *user_data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Rows that show items: the search text takes the last one. */
+static int
+listbox_visible_lines (const WListbox *l)
+{
+    int lines = CONST_WIDGET (l)->rect.lines;
+
+    if (l->search != NULL && lines > 1)
+        lines--;
+
+    return lines;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 listbox_entry_free (void *data)
 {
@@ -109,7 +124,7 @@ listbox_drawscroll (const WListbox *l)
 
     // Are we at the bottom?
     widget_gotoyx (w, max_line, w->cols);
-    if (l->top + w->lines == length || w->lines >= length)
+    if (l->top + listbox_visible_lines (l) >= length)
         tty_print_one_vline (TRUE);
     else
         tty_print_char ('v');
@@ -164,37 +179,192 @@ listbox_draw (WListbox *l, gboolean focused)
     for (i = 0; i < w->lines; i++)
     {
         const char *text = "";
+        gboolean is_sel;
+        gboolean emphasis = FALSE;
 
-        // Display the entry
-        if (pos == l->current && sel_line == -1)
-        {
+        is_sel = (pos == l->current && sel_line == -1);
+        if (is_sel)
             sel_line = i;
-            tty_setcolor (selc);
-        }
-        else
-            tty_setcolor (normalc);
-
-        widget_gotoyx (l, i, 1);
 
         if (l->list != NULL && le != NULL && (i == 0 || pos < length))
         {
             WLEntry *e = LENTRY (le->data);
 
             text = e->text;
+            emphasis = e->emphasis;
             le = g_list_next (le);
             pos++;
         }
+
+        if (disabled)
+            tty_setcolor (CORE_DISABLED_COLOR);
+        else if (emphasis)
+            tty_setcolor (colors[is_sel ? DLG_COLOR_HOT_FOCUS : DLG_COLOR_HOT_NORMAL]);
+        else
+            tty_setcolor (is_sel ? selc : normalc);
+
+        widget_gotoyx (l, i, 1);
 
         tty_print_string (str_fit_to_term (text, w->cols - 2, J_LEFT_FIT));
     }
 
     l->cursor_y = sel_line;
+    l->cursor_x = 0;
+
+    // the search text takes the last line, in the same columns as the items
+    if (l->search != NULL && w->lines > 1)
+    {
+        char *text;
+
+        text = g_strconcat ("/", l->search->str, (char *) NULL);
+        tty_setcolor (disabled ? CORE_DISABLED_COLOR : colors[DLG_COLOR_HOT_NORMAL]);
+        widget_gotoyx (l, w->lines - 1, 1);
+        tty_print_string (str_fit_to_term (text, w->cols - 2, J_LEFT_FIT));
+        l->cursor_y = w->lines - 1;
+        l->cursor_x = 1 + MIN (str_term_width1 (text), w->cols - 2);
+        g_free (text);
+    }
 
     if (l->scrollbar && length > w->lines)
     {
         tty_setcolor (scrollbarc);
         listbox_drawscroll (l);
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+listbox_search_start (WListbox *l)
+{
+    if (l->search != NULL)
+        return;
+
+    l->search = g_string_new ("");
+    l->search_chpoint = 0;
+    widget_set_options (WIDGET (l), WOP_IS_INPUT, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* First item containing the search text, starting at @from and wrapping around. */
+static int
+listbox_search_find (WListbox *l, int from)
+{
+    int length;
+    GList *le;
+    char *needle;
+    int i;
+    int found = -1;
+
+    length = listbox_get_length (l);
+    if (length == 0)
+        return -1;
+    if (l->search->len == 0)
+        return l->current;
+
+    needle = str_create_search_needle (l->search->str, FALSE);
+
+    from %= length;
+    le = g_queue_peek_nth_link (l->list, (guint) from);
+    for (i = 0; i < length; i++)
+    {
+        int pos = (from + i) % length;
+
+        if (str_search_first (LENTRY (le->data)->text, needle, FALSE) != NULL)
+        {
+            found = pos;
+            break;
+        }
+        le = g_list_next (le);
+        if (le == NULL)
+            le = g_queue_peek_head_link (l->list);
+    }
+
+    str_release_search_needle (needle, FALSE);
+
+    return found;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+listbox_search_remove_last_char (WListbox *l)
+{
+    char *act;
+
+    if (l->search->len == 0)
+        return;
+
+    act = l->search->str + l->search->len;
+    str_prev_noncomb_char (&act, l->search->str);
+    g_string_set_size (l->search, act - l->search->str);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Returns TRUE when the search text has changed. Bytes of one multibyte
+   character are collected until they make a valid character. */
+static gboolean
+listbox_search_change (WListbox *l, int key)
+{
+    if (key == KEY_BACKSPACE)
+    {
+        listbox_search_remove_last_char (l);
+        l->search_chpoint = 0;
+        return TRUE;
+    }
+
+    if ((gsize) l->search_chpoint < sizeof (l->search_ch))
+        l->search_ch[l->search_chpoint++] = (char) key;
+
+    switch (str_is_valid_char (l->search_ch, l->search_chpoint))
+    {
+    case -2:
+        return FALSE;
+    case -1:
+        l->search_chpoint = 0;
+        return FALSE;
+    default:
+        g_string_append_len (l->search, l->search_ch, l->search_chpoint);
+        l->search_chpoint = 0;
+        return TRUE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static cb_ret_t
+listbox_search_key (WListbox *l, int key)
+{
+    int pos;
+
+    if (key == KEY_BACKSPACE || (key >= ' ' && key < 256))
+    {
+        if (listbox_search_change (l, key))
+        {
+            pos = listbox_search_find (l, l->current);
+            if (pos >= 0)
+                listbox_set_current (l, pos);
+            else if (key != KEY_BACKSPACE)
+                listbox_search_remove_last_char (l);
+        }
+        return MSG_HANDLED;
+    }
+
+    if (widget_lookup_key (WIDGET (l), key) == CK_Search)
+    {
+        // next match
+        pos = listbox_search_find (l, l->current + 1);
+        if (pos >= 0)
+            listbox_set_current (l, pos);
+        return MSG_HANDLED;
+    }
+
+    listbox_search_stop (l);
+
+    // Esc only leaves the search, any other key is handled as usual
+    return key == ESC_CHAR ? MSG_HANDLED : MSG_NOT_HANDLED;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -278,7 +448,6 @@ static cb_ret_t
 listbox_execute_cmd (WListbox *l, long command)
 {
     cb_ret_t ret = MSG_HANDLED;
-    const WRect *w = &CONST_WIDGET (l)->rect;
 
     if (l->list == NULL || g_queue_is_empty (l->list))
         return MSG_NOT_HANDLED;
@@ -298,13 +467,15 @@ listbox_execute_cmd (WListbox *l, long command)
         listbox_select_last (l);
         break;
     case CK_PageUp:
-        listbox_back_n (l, w->lines - 1);
+        listbox_back_n (l, listbox_visible_lines (l) - 1);
         break;
     case CK_PageDown:
-        listbox_fwd_n (l, w->lines - 1);
+        listbox_fwd_n (l, listbox_visible_lines (l) - 1);
         break;
     case CK_Delete:
-        if (l->deletable)
+        if (!l->deletable)
+            ret = MSG_NOT_HANDLED;
+        else
         {
             gboolean is_last, is_more;
             int length;
@@ -312,7 +483,7 @@ listbox_execute_cmd (WListbox *l, long command)
             length = g_queue_get_length (l->list);
 
             is_last = (l->current + 1 >= length);
-            is_more = (l->top + w->lines >= length);
+            is_more = (l->top + listbox_visible_lines (l) >= length);
 
             listbox_remove_current (l);
             if ((l->top > 0) && (is_last || is_more))
@@ -320,19 +491,29 @@ listbox_execute_cmd (WListbox *l, long command)
         }
         break;
     case CK_Clear:
-        if (l->deletable
-            && mc_global.widget.confirm_history_cleanup
-            // TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
-            && (query_dialog (Q_ ("DialogTitle|History cleanup"),
-                              _ ("Do you want clean this history?"), D_ERROR, 2, _ ("&Yes"),
-                              _ ("&No"))
-                == 0))
+        if (!l->deletable)
+            ret = MSG_NOT_HANDLED;
+        else if (mc_global.widget.confirm_history_cleanup
+                 // TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
+                 && (query_dialog (Q_ ("DialogTitle|History cleanup"),
+                                   _ ("Do you want clean this history?"), D_ERROR, 2, _ ("&Yes"),
+                                   _ ("&No"))
+                     == 0))
             listbox_remove_list (l);
         break;
     case CK_View:
     case CK_Edit:
     case CK_Enter:
         ret = send_message (WIDGET (l)->owner, l, MSG_NOTIFY, command, NULL);
+        break;
+    case CK_Search:
+        if (!l->quick_search)
+            ret = MSG_NOT_HANDLED;
+        else
+        {
+            listbox_search_start (l);
+            listbox_set_current (l, l->current);  // keep it above the search line
+        }
         break;
     default:
         ret = MSG_NOT_HANDLED;
@@ -351,6 +532,9 @@ listbox_key (WListbox *l, int key)
 
     if (l->list == NULL)
         return MSG_NOT_HANDLED;
+
+    if (l->search != NULL && listbox_search_key (l, key) == MSG_HANDLED)
+        return MSG_HANDLED;
 
     // focus on listbox item N by '0'..'9' keys
     if (key >= '0' && key <= '9')
@@ -488,12 +672,16 @@ listbox_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *d
         return listbox_execute_cmd (l, parm);
 
     case MSG_CURSOR:
-        widget_gotoyx (l, l->cursor_y, 0);
+        widget_gotoyx (l, l->cursor_y, l->cursor_x);
         return MSG_HANDLED;
 
     case MSG_DRAW:
         listbox_draw (l, widget_get_state (w, WST_FOCUSED));
         return MSG_HANDLED;
+
+    case MSG_UNFOCUS:
+        listbox_search_stop (l);
+        return widget_default_callback (w, sender, msg, parm, data);
 
     case MSG_DESTROY:
         listbox_destroy (l);
@@ -518,6 +706,11 @@ listbox_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
     {
     case MSG_MOUSE_DOWN:
         widget_select (w);
+        if (l->search != NULL)
+        {
+            listbox_search_stop (l);
+            old_current = -1;  // redraw: the search line is gone
+        }
         listbox_set_current (l, listbox_y_pos (l, event->y));
         break;
 
@@ -573,8 +766,38 @@ listbox_new (int y, int x, int height, int width, gboolean deletable, lcback_fn 
     l->callback = callback;
     l->allow_duplicates = TRUE;
     l->scrollbar = !mc_global.tty.slow_terminal;
+    l->cursor_x = l->cursor_y = 0;
+    l->search = NULL;
+    l->search_chpoint = 0;
+    l->quick_search = FALSE;
 
     return l;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+listbox_set_emphasis (WListbox *l, int pos, gboolean emphasis)
+{
+    WLEntry *e;
+
+    e = listbox_get_nth_entry (l, pos);
+    if (e != NULL)
+        e->emphasis = emphasis;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+listbox_search_stop (WListbox *l)
+{
+    if (l->search == NULL)
+        return;
+
+    g_string_free (l->search, TRUE);
+    l->search = NULL;
+    l->search_chpoint = 0;
+    widget_set_options (WIDGET (l), WOP_IS_INPUT, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -642,7 +865,7 @@ listbox_select_first (WListbox *l)
 void
 listbox_select_last (WListbox *l)
 {
-    int lines = WIDGET (l)->rect.lines;
+    int lines = listbox_visible_lines (l);
     int length;
 
     length = listbox_get_length (l);
@@ -676,7 +899,7 @@ listbox_set_current (WListbox *l, int dest)
                 l->top = l->current;
             else
             {
-                int lines = WIDGET (l)->rect.lines;
+                int lines = listbox_visible_lines (l);
 
                 if (l->current - l->top >= lines)
                     l->top = l->current - lines + 1;
@@ -805,6 +1028,7 @@ listbox_remove_list (WListbox *l)
         }
 
         l->current = l->top = 0;
+        listbox_search_stop (l);
     }
 }
 
@@ -862,6 +1086,7 @@ listbox_add_item_take (WListbox *l, listbox_append_t pos, int hotkey, char *text
     entry->data = data;
     entry->free_data = free_data;
     entry->hotkey = hotkey;
+    entry->emphasis = FALSE;
 
     listbox_add_entry (l, entry, pos);
 

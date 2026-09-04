@@ -133,7 +133,12 @@ hline_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
             }
 
             text_width = str_term_width1 (l->text);
-            widget_gotoyx (w, 0, (w->rect.cols - text_width) / 2);
+            if (l->text_align == J_LEFT)
+                widget_gotoyx (w, 0, 2);
+            else if (l->text_align == J_RIGHT)
+                widget_gotoyx (w, 0, w->rect.cols - text_width - 2);
+            else
+                widget_gotoyx (w, 0, (w->rect.cols - text_width) / 2);
             tty_print_string (l->text);
         }
         return MSG_HANDLED;
@@ -166,6 +171,7 @@ hline_new (int y, int x, int width)
     l->auto_adjust_cols = (width < 0);
     l->transparent = FALSE;
     l->text_color_idx = -1;
+    l->text_align = J_CENTER;
 
     return l;
 }
