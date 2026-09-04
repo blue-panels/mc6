@@ -111,6 +111,7 @@ static mc_pp_result_t git_get_help_info (void *plugin_data, const char **filenam
                                          const char **node);
 static mc_pp_result_t git_get_local_copy (void *plugin_data, const char *fname, char **local_path);
 static const char *git_get_title (void *plugin_data);
+static char *git_get_location (void *plugin_data);
 static mc_pp_result_t git_handle_key (void *plugin_data, int key);
 static mc_pp_result_t git_create_item (void *plugin_data);
 static mc_pp_result_t git_delete_items (void *plugin_data, const char **names, int count);
@@ -147,6 +148,7 @@ static const mc_panel_plugin_t git_plugin = {
     .save_file = NULL,
     .delete_items = git_delete_items,
     .get_title = git_get_title,
+    .get_location = git_get_location,
     .handle_key = git_handle_key,
     .create_item = git_create_item,
     .get_columns = git_get_columns,
@@ -860,7 +862,7 @@ git_add_virtual_dir (git_data_t *data, dir_list *list, const char *name, git_ite
     st.st_gid = getgid ();
     st.st_nlink = 1;
 
-    (void) dir_list_append (list, g_strdup (name), &st, TRUE, FALSE);
+    (void) dir_list_append (list, name, &st, TRUE, FALSE);
 
     info = g_new0 (git_entry_info_t, 1);
     info->kind = kind;
@@ -887,7 +889,7 @@ git_add_branch_entry (git_data_t *data, dir_list *list, const char *display_name
     st.st_gid = getgid ();
     st.st_nlink = 1;
 
-    (void) dir_list_append (list, g_strdup (display_name), &st, TRUE, FALSE);
+    (void) dir_list_append (list, display_name, &st, TRUE, FALSE);
 
     info = g_new0 (git_entry_info_t, 1);
     info->kind = GIT_ITEM_BRANCH_ENTRY;
@@ -1262,7 +1264,7 @@ git_add_commit_parent_entry (git_data_t *data, dir_list *list, const char *paren
     st.st_nlink = 1;
 
     g_strlcpy (short_sha, parent_sha, sizeof (short_sha));
-    (void) dir_list_append (list, g_strdup (short_sha), &st, TRUE, FALSE);
+    (void) dir_list_append (list, short_sha, &st, TRUE, FALSE);
 
     info = g_new0 (git_entry_info_t, 1);
     info->kind = GIT_ITEM_COMMIT_PARENT_ENTRY;
@@ -2706,6 +2708,20 @@ git_get_title (void *plugin_data)
 {
     git_data_t *data = (git_data_t *) plugin_data;
     return data->title;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The repository this panel shows, as "git:/path"; NULL in the favorites view. */
+static char *
+git_get_location (void *plugin_data)
+{
+    git_data_t *data = (git_data_t *) plugin_data;
+
+    if (data->repo_root == NULL)
+        return NULL;
+
+    return g_strdup_printf ("%s%s", git_plugin.prefix, data->repo_root);
 }
 
 /* --------------------------------------------------------------------------------------------- */

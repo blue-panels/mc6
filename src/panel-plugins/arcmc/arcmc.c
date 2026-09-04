@@ -63,6 +63,7 @@ static mc_pp_result_t arcmc_put_file (void *plugin_data, const char *local_path,
                                       const char *dest_name);
 static mc_pp_result_t arcmc_delete_items (void *plugin_data, const char **names, int count);
 static const char *arcmc_get_title (void *plugin_data);
+static char *arcmc_get_location (void *plugin_data);
 static mc_pp_result_t arcmc_handle_key (void *plugin_data, int key);
 static void *arcmc_action_browse (mc_panel_host_t *host, const char *open_path);
 static void *arcmc_action_create (mc_panel_host_t *host, const char *open_path);
@@ -223,6 +224,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .save_file = NULL,
     .delete_items = arcmc_delete_items,
     .get_title = arcmc_get_title,
+    .get_location = arcmc_get_location,
     .handle_key = arcmc_handle_key,
 
     .actions = arcmc_actions,
@@ -266,20 +268,36 @@ arcmc_display_path (const arcmc_data_t *data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* "Arcmc:/archive.zip:/dir", NULL inside a nested archive. */
+static char *
+arcmc_get_location (void *plugin_data)
+{
+    arcmc_data_t *data = (arcmc_data_t *) plugin_data;
+    const char *path;
+
+    if (data->nest_stack != NULL || !data->history_enabled)
+        return NULL;
+
+    path = arcmc_display_path (data);
+    if (data->current_dir[0] != '\0')
+        return g_strdup_printf ("%s%s:/%s", arcmc_plugin.prefix, path, data->current_dir);
+    return g_strdup_printf ("%s%s", arcmc_plugin.prefix, path);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 arcmc_add_history (arcmc_data_t *data)
 {
     char *hist_path;
-    const char *path;
 
-    if (!data->history_enabled || data->host->add_history == NULL || data->nest_stack != NULL)
+    if (data->host->add_history == NULL)
         return;
 
-    path = arcmc_display_path (data);
-    if (data->current_dir[0] != '\0')
-        hist_path = g_strdup_printf ("%s%s:/%s", arcmc_plugin.prefix, path, data->current_dir);
-    else
-        hist_path = g_strdup_printf ("%s%s", arcmc_plugin.prefix, path);
+    hist_path = arcmc_get_location (data);
+    if (hist_path == NULL)
+        return;
+
     data->host->add_history (data->host, hist_path);
     g_free (hist_path);
 }
@@ -459,13 +477,12 @@ arcmc_open (mc_panel_host_t *host, const char *open_path)
         return arcmc_action_browse (host, open_path);
 
     after = open_path + strlen (prefix);
-    sep = strchr (after, ':');
+    // "Arcmc:/path/file.zip:/dir": the archive path itself may contain ':'
+    sep = g_strrstr (after, ":/");
     if (sep != NULL)
     {
         archive_file = g_strndup (after, (gsize) (sep - after));
-        subdir = sep + 1;
-        if (*subdir == '/')
-            subdir++;
+        subdir = sep + 2;
     }
     else
     {
