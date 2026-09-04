@@ -19,6 +19,7 @@ EXTRA_DIST = edit_complete_word_cmd_test_data.txt.in
 
 TESTS = \
 	edit_complete_word_cmd \
+	edit_control_chars \
 	edit_fold \
 	edit_insert_column_of_text \
 	edit_line_local_syntax \
@@ -36,6 +37,9 @@ check_PROGRAMS = $(TESTS)
 
 edit_complete_word_cmd_SOURCES = \
 	edit_complete_word_cmd.c
+
+edit_control_chars_SOURCES = \
+	edit_control_chars.c
 
 edit_fold_SOURCES = \
 	edit_fold.c
