@@ -369,6 +369,7 @@ ShowTabTws = alt-underline
 SyntaxOnOff = ctrl-s
 # SyntaxChoose =
 # ShowMargin =
+# ShowControlChars =
 Find = alt-enter
 FilePrev = alt-minus
 FileNext = alt-plus

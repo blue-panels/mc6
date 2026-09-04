@@ -315,6 +315,8 @@ create_command_menu (void)
     entries = g_list_prepend (entries,
                               menu_entry_new (_ ("Toggle s&yntax highlighting"), CK_SyntaxOnOff));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Togg&le right margin"), CK_ShowMargin));
+    entries = g_list_prepend (
+        entries, menu_entry_new (_ ("Toggle &control characters"), CK_ShowControlChars));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Encod&ing..."), CK_SelectCodepage));
     entries = g_list_prepend (entries, menu_separator_new ());

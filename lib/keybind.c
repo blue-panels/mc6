@@ -345,6 +345,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (BlockShiftRight, N_ ("Shift block right")),
     ADD_KEYMAP_NAME_DESC (InsertLiteral, N_ ("Insert literal character (Lua action)")),
     ADD_KEYMAP_NAME_DESC (ShowTabTws, N_ ("Toggle visible tabs/spaces")),
+    ADD_KEYMAP_NAME_DESC (ShowControlChars, N_ ("Toggle control characters")),
     ADD_KEYMAP_NAME_DESC (SyntaxOnOff, N_ ("Toggle syntax highlighting")),
     ADD_KEYMAP_NAME_DESC (SyntaxChoose, N_ ("Choose syntax highlighting")),
     ADD_KEYMAP_NAME_DESC (ShowMargin, N_ ("Toggle right margin")),

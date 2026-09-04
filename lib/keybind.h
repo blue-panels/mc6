@@ -340,6 +340,7 @@ enum
     CK_About,
     CK_ShowMargin,
     CK_ShowTabTws,
+    CK_ShowControlChars,
     CK_SyntaxOnOff,
     CK_SyntaxChoose,
     CK_EditPluginsInfo,

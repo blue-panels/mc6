@@ -835,6 +835,14 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
                     else
                         c = convert_to_display_c (c);
 
+                    if ((c < 32 || c == 127) && !edit_options.show_control_chars)
+                    {
+                        p->ch = ' ';
+                        p++;
+                        col++;
+                        break;
+                    }
+
                     // Caret notation for control characters
                     if (c < 32)
                     {

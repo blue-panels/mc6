@@ -1026,6 +1026,17 @@ edit_insert_column_of_text (WEdit *edit, GString *data, long width, off_t *start
  */
 
 static void
+edit_layout_reset_cb (void *data, void *user_data)
+{
+    (void) user_data;
+
+    if (edit_widget_is_editor (CONST_WIDGET (data)))
+        edit_layout_reset (EDIT (data));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
 edit_syntax_onoff_cb (void *data, void *user_data)
 {
     (void) user_data;
@@ -1153,6 +1164,21 @@ void
 edit_show_margin_cmd (WDialog *h)
 {
     edit_options.show_right_margin = !edit_options.show_right_margin;
+    widget_draw (WIDGET (h));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Toggle caret notation of control characters in all editor windows.
+ *
+ * @param h root widget for all windows
+ */
+
+void
+edit_show_control_chars_cmd (WDialog *h)
+{
+    edit_options.show_control_chars = !edit_options.show_control_chars;
+    g_list_foreach (GROUP (h)->widgets, edit_layout_reset_cb, NULL);
     widget_draw (WIDGET (h));
 }
 
