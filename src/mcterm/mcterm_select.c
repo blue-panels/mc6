@@ -230,11 +230,12 @@ mcterm_sel_cell_at (mcview_vterm_t *vt, gint64 row, int col)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols)
+mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols, gint64 skip_row)
 {
     GString *text;
     gint64 first_row, last_row, row;
     int first_col, last_col;
+    gboolean first = TRUE;
 
     if (sel == NULL || !sel->active || vt == NULL || cols <= 0)
         return NULL;
@@ -245,8 +246,17 @@ mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols)
     for (row = first_row; row <= last_row; row++)
     {
         int from, to, col;
-        gsize row_start = text->len;
-        gsize last_word = text->len;
+        gsize row_start;
+        gsize last_word;
+
+        if (row == skip_row)
+            continue;
+
+        if (!first)
+            g_string_append_c (text, '\n');
+        first = FALSE;
+        row_start = text->len;
+        last_word = text->len;
 
         if (!mcterm_sel_row_span (sel, row, cols, &from, &to))
         {
@@ -266,9 +276,6 @@ mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols)
 
         // A terminal row is padded with blanks up to its width; they are not text.
         g_string_truncate (text, MAX (row_start, last_word));
-
-        if (row < last_row)
-            g_string_append_c (text, '\n');
     }
 
     return g_string_free (text, FALSE);
@@ -277,11 +284,11 @@ mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcterm_sel_copy (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols)
+mcterm_sel_copy (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols, gint64 skip_row)
 {
     char *text;
 
-    text = mcterm_sel_text (sel, vt, cols);
+    text = mcterm_sel_text (sel, vt, cols, skip_row);
     if (text == NULL)
         return FALSE;
 

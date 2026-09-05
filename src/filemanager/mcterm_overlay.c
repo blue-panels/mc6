@@ -72,6 +72,8 @@ static gboolean mcterm_initial_sync_pending = FALSE;
 /* The user's line, taken off the shell for a command of ours and typed back at the next prompt. */
 static char *mcterm_parked_line = NULL;
 static int mcterm_parked_left = 0;
+// A command of ours is on its way to the shell: the parked line waits for the prompt after it.
+static gboolean mcterm_parking = FALSE;
 
 #define MCTERM_INITIAL_PROMPT_TIMEOUT_MS 1000
 #define MCTERM_COMMAND_LABEL_WIDTH       14
@@ -242,8 +244,10 @@ mcterm_overlay_sync_shell_to_panel (void)
         char *quoted = g_shell_quote (panel_cwd);
         char *cmd = g_strdup_printf ("cd %s", quoted);
 
+        mcterm_parking = TRUE;
         mcterm_overlay_park_shell_line ();
         mcterm_send_internal_line (mcterm_panel, cmd);
+        mcterm_parking = FALSE;
         g_free (cmd);
         g_free (quoted);
     }
@@ -399,7 +403,7 @@ mcterm_overlay_cmdline_takes_key (int parm)
 static void
 mcterm_overlay_place_cursor (void)
 {
-    if (mcterm_overlay_terminal_focused () || mcterm_shell_draws_below_line (mcterm_panel))
+    if (mcterm_overlay_terminal_focused () || mcterm_shell_cursor_in_terminal (mcterm_panel))
         send_message (mcterm_overlay_widget (), NULL, MSG_CURSOR, 0, NULL);
     else if (command_prompt)
         send_message (WIDGET (cmdline), NULL, MSG_CURSOR, 0, NULL);
@@ -472,6 +476,20 @@ mcterm_overlay_park_shell_line (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The line parked for a command of ours goes back to the shell's line editor as soon as it has
+   a prompt, cursor position and all. */
+static void
+mcterm_overlay_type_parked_line (void)
+{
+    if (mcterm_parked_line == NULL || mcterm_parking || !mcterm_overlay_shell_owns_cmdline ())
+        return;
+
+    mcterm_overlay_type_line (mcterm_parked_line, mcterm_parked_left);
+    g_clear_pointer (&mcterm_parked_line, g_free);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Text typed into mc's own input while the shell had no prompt, and a line parked for a command
    of ours, go to the shell's line editor as soon as it has a prompt, cursor position and all, so
    the two never hold a line at the same time. */
@@ -483,11 +501,7 @@ mcterm_overlay_move_cmdline_to_shell (void)
     if (cmdline == NULL || !mcterm_overlay_shell_owns_cmdline ())
         return;
 
-    if (mcterm_parked_line != NULL)
-    {
-        mcterm_overlay_type_line (mcterm_parked_line, mcterm_parked_left);
-        g_clear_pointer (&mcterm_parked_line, g_free);
-    }
+    mcterm_overlay_type_parked_line ();
 
     text = input_get_ctext (cmdline);
     if (text == NULL || *text == '\0')
@@ -572,6 +586,8 @@ mcterm_overlay_prompt_ready_cb (void *data)
 
     if (!mcterm_mode)
     {
+        // A line parked for a cd of ours comes back; mc's own input keeps what it holds.
+        mcterm_overlay_type_parked_line ();
         mcterm_overlay_place_prompt ();
         /* The row was just drawn over; the cursor goes back to the command line, or it is left
            wherever the drawing ended. */

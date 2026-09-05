@@ -169,6 +169,10 @@ typedef struct
     gint64 first_abs;  // number of the row drawn at @blank_above
     // The last row it draws: at a prompt the shell's own row is the host's.
     gint64 newest_abs;
+    /* The shell's row when the host draws it and the shell drew below it: the rows below
+       move up over it. -1 when no row is skipped. */
+    gint64 skip_abs;
+    int skip_row;  // the same row in @buf
 } mcterm_geom_t;
 
 /*** forward declarations ************************************************************************/
@@ -183,6 +187,8 @@ static gboolean mcterm_write_all (int master, const unsigned char *data, size_t 
 static void mcterm_busy_tick (WMcTerm *t);
 static void mcterm_busy_tick_set (WMcTerm *t, gboolean on);
 static gboolean mcterm_handle_stalled_internal_sync (WMcTerm *t);
+static void mcterm_settle_line (WMcTerm *t);
+static gint64 mcterm_row_past_skip (gint64 row, gint64 skip);
 static int mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_terminal_buffer_t *buf,
                                            int rows);
 
@@ -880,7 +886,7 @@ mcterm_enable_osc7 (WMcTerm *t, int master, const char *setup_template)
 
 /* One screen: live rows, history above them, @back rows away from the end. */
 static mcview_terminal_buffer_t *
-mcterm_compose_view (WMcTerm *t, int lines, int live_top, int live_rows, int back)
+mcterm_compose_view (WMcTerm *t, int lines, int live_top, int live_rows, int back, int skip_row)
 {
     mcview_terminal_buffer_t *view;
     const mcview_terminal_buffer_t *live;
@@ -912,7 +918,8 @@ mcterm_compose_view (WMcTerm *t, int lines, int live_top, int live_rows, int bac
             continue;
         }
 
-        cells = mcview_terminal_buffer_row_copy (live, live_top + v - hist_len);
+        cells = mcview_terminal_buffer_row_copy (
+            live, (int) mcterm_row_past_skip (live_top + v - hist_len, skip_row));
         if (cells != NULL)
         {
             mcview_terminal_buffer_set_row (view, row, cells);
@@ -1091,6 +1098,49 @@ mcterm_shell_last_row (const mcview_terminal_buffer_t *buf, int cursor_row, int 
 
 /* --------------------------------------------------------------------------------------------- */
 
+// The last row the shell's line wraps into from @cursor_row.
+static int
+mcterm_shell_line_end (const mcview_terminal_buffer_t *buf, int cursor_row)
+{
+    const int max_row = mcview_terminal_buffer_max_row (buf);
+    int row = cursor_row;
+
+    while (row < max_row && mcview_terminal_buffer_is_wrapped (buf, row))
+        row++;
+
+    return row;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The row the host draws on its command line: the last row of the shell's line. */
+static int
+mcterm_host_row (const WMcTerm *t)
+{
+    return mcterm_shell_line_end (mcview_vterm_buf (t->vterm), mcview_vterm_cursor_row (t->vterm));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The rows past the skipped one stand one row up on the screen. */
+static gint64
+mcterm_row_past_skip (gint64 row, gint64 skip)
+{
+    return (skip >= 0 && row >= skip) ? row + 1 : row;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Whether the host draws the shell's row on its command line. */
+static gboolean
+mcterm_host_draws_line (const WMcTerm *t)
+{
+    return (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
+            && !mcview_vterm_in_alt_screen (t->vterm));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Fit the rows through @cursor_row into the widget and return the last content row. */
 static int
 mcterm_fit_content (const WMcTerm *t, const mcview_terminal_buffer_t *buf, int cursor_row,
@@ -1099,9 +1149,9 @@ mcterm_fit_content (const WMcTerm *t, const mcview_terminal_buffer_t *buf, int c
     const int max_row = mcview_terminal_buffer_max_row (buf);
     int effective_max;
 
-    // Typing elsewhere, the host draws the shell's last row on its command line.
-    if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
-        && !mcview_vterm_in_alt_screen (t->vterm))
+    /* Typing elsewhere, the host draws the shell's row on its command line: the widget has one
+       row less to draw, whether it is the last one or one with rows below it. */
+    if (mcterm_host_draws_line (t))
         effective_max = mcterm_shell_last_row (buf, cursor_row, CONST_WIDGET (t)->rect.cols) - 1;
     else
         effective_max = (cursor_row > max_row) ? cursor_row : max_row;
@@ -1146,6 +1196,8 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
         g->blank_above = r->lines - g->content_rows;
         g->first_abs = mcterm_filter_row (&t->filter, t->filter.top);
         g->newest_abs = mcterm_filter_row (&t->filter, len - 1);
+        g->skip_abs = -1;
+        g->skip_row = -1;
 
         return TRUE;
     }
@@ -1178,6 +1230,22 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
         g->first_abs = mcview_vterm_scrolled_rows (t->vterm) + g->top_row;
 
     g->newest_abs = mcview_vterm_scrolled_rows (t->vterm) + effective_max;
+    g->skip_abs = -1;
+    g->skip_row = -1;
+
+    /* The shell drew below its line, a completion list say: the host shows the line's last
+       row, and what is below it moves up over it. */
+    if (mcterm_host_draws_line (t))
+    {
+        const int host_row = mcterm_shell_line_end (g->buf, cursor_row);
+
+        if (effective_max >= host_row)
+        {
+            g->skip_row = host_row;
+            g->skip_abs = mcview_vterm_scrolled_rows (t->vterm) + host_row;
+            g->newest_abs++;
+        }
+    }
 
     return TRUE;
 }
@@ -1194,7 +1262,7 @@ mcterm_geom_row (const WMcTerm *t, const mcterm_geom_t *g, int y)
     if (g->filtered)
         return mcterm_filter_row (&t->filter, t->filter.top + (y - g->blank_above));
 
-    return g->first_abs + (y - g->blank_above);
+    return mcterm_row_past_skip (g->first_abs + (y - g->blank_above), g->skip_abs);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1206,6 +1274,12 @@ mcterm_geom_screen_row (const WMcTerm *t, const mcterm_geom_t *g, gint64 row)
 {
     if (g->filtered)
         return g->blank_above + (mcterm_filter_index (&t->filter, row) - t->filter.top);
+
+    // The skipped row is the host's, right below the widget.
+    if (g->skip_abs >= 0 && row == g->skip_abs)
+        return WIDGET (t)->rect.lines;
+    if (g->skip_abs >= 0 && row > g->skip_abs)
+        row--;
 
     return g->blank_above + (row - g->first_abs);
 }
@@ -1332,7 +1406,7 @@ mcterm_cursor_reset (WMcTerm *t)
 
     t->cursor_valid = TRUE;
 
-    if (!mcterm_geometry (t, &g) || shell_row <= g.newest_abs)
+    if (!mcterm_geometry (t, &g) || (shell_row <= g.newest_abs && shell_row != g.skip_abs))
     {
         t->cursor_row = shell_row;
         t->cursor_col = mcview_vterm_cursor_col (t->vterm);
@@ -1445,7 +1519,13 @@ mcterm_cursor_move (WMcTerm *t, long command, gboolean marking)
         break;
     }
 
+    // The skipped row is not on the screen: a step onto it is a step over it.
+    if (!g.filtered && g.skip_abs >= 0 && row == g.skip_abs)
+        row += (row >= t->cursor_row) ? 1 : -1;
+
     row = CLAMP (row, oldest, newest);
+    if (!g.filtered && row == g.skip_abs)
+        row++;
     col = CLAMP (col, 0, r->cols - 1);
 
     if (g.filtered)
@@ -1502,6 +1582,17 @@ mcterm_clear_screen (WMcTerm *t, gboolean whole_buffer)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The row the screen skips, -1 when none: what is marked over it does not include it. */
+static gint64
+mcterm_skip_abs (const WMcTerm *t)
+{
+    mcterm_geom_t g;
+
+    return mcterm_geometry (t, &g) ? g.skip_abs : -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* What to filter by: the marked text when it is of one row, and the word under
    the cursor when there is no such mark. NULL when neither says anything. */
 static char *
@@ -1512,7 +1603,7 @@ mcterm_filter_pattern (WMcTerm *t)
 
     if (t->sel.active)
     {
-        text = mcterm_sel_text (&t->sel, t->vterm, r->cols);
+        text = mcterm_sel_text (&t->sel, t->vterm, r->cols, mcterm_skip_abs (t));
         /* A mark over several rows says nothing about the row to look for, and
            one over blanks says it of every row: the word under the cursor, then. */
         if (text != NULL && (strchr (text, '\n') != NULL || text[strspn (text, " \t")] == '\0'))
@@ -1528,7 +1619,7 @@ mcterm_filter_pattern (WMcTerm *t)
 
         mcterm_sel_clear (&word);
         mcterm_sel_word (&word, t->vterm, t->cursor_row, t->cursor_col, r->cols);
-        text = mcterm_sel_text (&word, t->vterm, r->cols);
+        text = mcterm_sel_text (&word, t->vterm, r->cols, -1);
     }
 
     // A blank is a word of its own, and one that every row of output carries.
@@ -1654,12 +1745,16 @@ mcterm_cursor_into_view (WMcTerm *t)
         return;
     }
 
-    first = MAX (g.first_abs, oldest);
-    last = g.first_abs + (g.compose ? r->lines : g.content_rows) - 1;
+    first = MAX (mcterm_geom_row (t, &g, g.blank_above), oldest);
+    last = mcterm_geom_row (t, &g, g.blank_above + (g.compose ? r->lines : g.content_rows) - 1);
     last = MIN (last, g.newest_abs);
 
     if (last >= first)
+    {
         t->cursor_row = CLAMP (t->cursor_row, first, last);
+        if (t->cursor_row == g.skip_abs)
+            t->cursor_row++;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1731,7 +1826,7 @@ mcterm_paint_pictures (void *data)
     {
         const mcview_vterm_image_t *image = mcview_vterm_image (t->vterm, i);
         const gint64 abs_row = mcview_vterm_scrolled_rows (t->vterm) + image->row;
-        const gint64 y = r->y + g.blank_above + (abs_row - g.first_abs);
+        const gint64 y = r->y + mcterm_geom_screen_row (t, &g, abs_row);
         const int x = r->x + image->col;
         char move[32];
 
@@ -1814,9 +1909,9 @@ mcterm_do_draw (WMcTerm *t)
         {
             mcview_terminal_buffer_t *view;
 
-            view = g.filtered
-                ? mcterm_compose_filtered (t, &g)
-                : mcterm_compose_view (t, r->lines, g.top_row, g.content_rows, t->scrollback);
+            view = g.filtered ? mcterm_compose_filtered (t, &g)
+                              : mcterm_compose_view (t, r->lines, g.top_row, g.content_rows,
+                                                     t->scrollback, g.skip_row);
             mcview_render_terminal_canvas (view, 0, r->y, r->x, r->lines, r->cols, &colors);
             mcview_terminal_buffer_free (view);
         }
@@ -1835,9 +1930,21 @@ mcterm_do_draw (WMcTerm *t)
                 }
             }
 
-            if (g.content_rows > 0)
-                mcview_render_terminal_canvas (g.buf, g.top_row, r->y + g.blank_above, r->x,
-                                               g.content_rows, r->cols, &colors);
+            if (g.skip_row < 0)
+            {
+                if (g.content_rows > 0)
+                    mcview_render_terminal_canvas (g.buf, g.top_row, r->y + g.blank_above, r->x,
+                                                   g.content_rows, r->cols, &colors);
+            }
+            else
+            {
+                int i;
+
+                for (i = 0; i < g.content_rows; i++)
+                    mcview_render_terminal_canvas (
+                        g.buf, (int) mcterm_row_past_skip (g.top_row + i, g.skip_row),
+                        r->y + g.blank_above + i, r->x, 1, r->cols, &colors);
+            }
         }
 
         mcterm_draw_selection (t, &g);
@@ -1972,7 +2079,7 @@ mcterm_execute_cmd (WMcTerm *t, long command, int key)
             break;
         }
         // Copied and done with: what is on the clipfile needs no marker.
-        mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols);
+        mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols, mcterm_skip_abs (t));
         mcterm_sel_clear (&t->sel);
         widget_draw (WIDGET (t));
         return MSG_HANDLED;
@@ -2147,8 +2254,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
                 }
             }
         }
-        if (t->shell_at_prompt && t->osc7_capable && t->typing_elsewhere
-            && !mcterm_shell_draws_below_line (t))
+        if (mcterm_host_draws_line (t) && !mcterm_shell_cursor_in_terminal (t))
             return MSG_NOT_HANDLED;
         if (t->vterm != NULL && !t->child_dead)
         {
@@ -2698,6 +2804,8 @@ mcterm_send_internal_line (WMcTerm *t, const char *line)
 
     mcview_terminal_buffer_free (t->sync_snapshot_buf);
 
+    // A line just cleared is still on the screen until the shell has redrawn it.
+    mcterm_settle_line (t);
     t->sync_snapshot_buf = mcview_terminal_buffer_copy (mcview_vterm_buf (t->vterm));
     t->sync_snapshot_cursor_row = mcview_vterm_cursor_row (t->vterm);
     t->pending_internal_sync = TRUE;
@@ -2757,24 +2865,6 @@ gboolean
 mcterm_shell_at_prompt (const WMcTerm *t)
 {
     return (t != NULL && !t->child_dead && t->shell_at_prompt);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-gboolean
-mcterm_shell_draws_below_line (const WMcTerm *t)
-{
-    if (t == NULL || t->vterm == NULL || t->child_dead || !t->shell_at_prompt || !t->osc7_capable
-        || !t->typing_elsewhere || mcview_vterm_in_alt_screen (t->vterm))
-        return FALSE;
-
-    {
-        const int cursor_row = mcview_vterm_cursor_row (t->vterm);
-
-        return (mcterm_shell_last_row (mcview_vterm_buf (t->vterm), cursor_row,
-                                       CONST_WIDGET (t)->rect.cols)
-                > cursor_row);
-    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2845,11 +2935,15 @@ mcterm_shell_line_text (WMcTerm *t)
     text = g_string_new (NULL);
 
     /* The rows up to the cursor are the line's; past it, a row is the line's for as long as
-       it has something on it. */
+       the line wraps into it and it has something on it. What the shell drew below the line,
+       such as a completion list, is not the line. */
     for (; row < lines; row++, col = 0)
     {
         gsize row_start = text->len;
         gboolean blank = TRUE;
+
+        if (row > cursor_row && !mcview_terminal_buffer_is_wrapped (buf, (int) row - 1))
+            break;
 
         for (; col < cols; col++)
         {
@@ -2992,7 +3086,22 @@ mcterm_cursor_col (const WMcTerm *t)
 {
     if (t == NULL || t->vterm == NULL)
         return 0;
+    // The cursor on an earlier row of a wrapped line: the whole of the host's row is the shell's.
+    if (mcterm_shell_cursor_in_terminal (t))
+        return CONST_WIDGET (t)->rect.cols;
     return mcview_vterm_cursor_col (t->vterm);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_shell_cursor_in_terminal (const WMcTerm *t)
+{
+    if (t == NULL || t->vterm == NULL || t->child_dead || !mcterm_host_draws_line (t)
+        || !widget_get_state (CONST_WIDGET (t), WST_VISIBLE))
+        return FALSE;
+
+    return (mcview_vterm_cursor_row (t->vterm) != mcterm_host_row (t));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -3053,7 +3162,7 @@ mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section
 
     r = &CONST_WIDGET (t)->rect;
     buf = mcview_vterm_buf (t->vterm);
-    cursor_row = mcterm_shell_last_row (buf, mcview_vterm_cursor_row (t->vterm), r->cols);
+    cursor_row = mcterm_host_row (t);
 
     /* The row belongs to the host, and so do its colors: it stands next to
        whatever the host puts on the rest of that row. */
