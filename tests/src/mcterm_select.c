@@ -85,7 +85,7 @@ START_TEST (test_one_row_without_the_padding)
     // The whole first row, which the terminal padded with blanks.
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 0, TERM_COLS - 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_ptr_nonnull (text);
     ck_assert_str_eq (text, "hello");
@@ -108,7 +108,7 @@ START_TEST (test_part_of_a_row_keeps_its_blanks)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 1, 0, 3);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     // The point is on a cell, and that cell is part of the region.
     ck_assert_str_eq (text, "b c");
@@ -131,11 +131,38 @@ START_TEST (test_rows_are_joined_by_a_newline)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 2, TERM_COLS - 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_str_eq (text, "one\ntwo\nthree");
 
     g_free (text);
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_a_skipped_row_is_left_out)
+{
+    mcview_vterm_t *vt;
+    mcterm_sel_t sel;
+    char *text;
+
+    vt = term_new ();
+    feed (vt, "one\r\ntwo\r\nthree");
+
+    mcterm_sel_clear (&sel);
+    mark (&sel, 0, 0, 2, TERM_COLS - 1);
+
+    // The skipped row is not on the screen, and not in the text either: no empty line for it.
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, 1);
+    ck_assert_str_eq (text, "one\nthree");
+    g_free (text);
+
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, 2);
+    ck_assert_str_eq (text, "one\ntwo");
+    g_free (text);
+
     mcview_vterm_free (vt);
 }
 END_TEST
@@ -154,7 +181,7 @@ START_TEST (test_the_ends_are_partial_rows)
     // From the middle of the first row to the middle of the last one.
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 1, 2, 2);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_str_eq (text, "ne\ntwo\nthr");
 
@@ -177,7 +204,7 @@ START_TEST (test_the_region_is_read_either_way_round)
     // Marked from the end backwards, which is what dragging upwards does.
     mcterm_sel_clear (&sel);
     mark (&sel, 1, 1, 0, 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_str_eq (text, "ne\ntw");
 
@@ -204,7 +231,7 @@ START_TEST (test_a_row_keeps_its_number_after_scrolling)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 1, TERM_COLS - 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     // Rows 0 and 1 are in the history by now, and read the same as before.
     ck_assert_str_eq (text, "r0\nr1");
@@ -213,7 +240,7 @@ START_TEST (test_a_row_keeps_its_number_after_scrolling)
     // A row of the live screen, by the number it had when it was printed.
     mcterm_sel_clear (&sel);
     mark (&sel, 5, 0, 5, TERM_COLS - 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "r5");
     g_free (text);
 
@@ -235,10 +262,10 @@ START_TEST (test_new_output_does_not_move_the_region)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 0, TERM_COLS - 1);
-    before = mcterm_sel_text (&sel, vt, TERM_COLS);
+    before = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     feed (vt, "\r\nr3\r\nr4\r\nr5");
-    after = mcterm_sel_text (&sel, vt, TERM_COLS);
+    after = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_str_eq (before, "keep me");
     ck_assert_str_eq (after, "keep me");
@@ -265,7 +292,7 @@ START_TEST (test_a_row_that_fell_out_of_the_history_reads_as_blank)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 0, TERM_COLS - 1);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_ptr_nonnull (text);
     ck_assert_str_eq (text, "");
@@ -292,11 +319,11 @@ START_TEST (test_a_taller_screen_keeps_the_numbers)
 
     mcterm_sel_clear (&sel);
     mark (&sel, 0, 0, 1, TERM_COLS - 1);
-    before = mcterm_sel_text (&sel, vt, TERM_COLS);
+    before = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     // Two rows taller: the two rows of the history are on the screen again.
     mcview_vterm_set_size (vt, TERM_ROWS + 2, TERM_COLS);
-    after = mcterm_sel_text (&sel, vt, TERM_COLS);
+    after = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
 
     ck_assert_str_eq (before, "r0\nr1");
     ck_assert_str_eq (after, "r0\nr1");
@@ -319,13 +346,13 @@ START_TEST (test_nothing_is_marked)
     feed (vt, "text");
 
     mcterm_sel_clear (&sel);
-    ck_assert_ptr_null (mcterm_sel_text (&sel, vt, TERM_COLS));
+    ck_assert_ptr_null (mcterm_sel_text (&sel, vt, TERM_COLS, -1));
     ck_assert (!mcterm_sel_row_span (&sel, 0, TERM_COLS, &from, &to));
 
     // A click alone marks nothing: the region starts when the drag does.
     mcterm_sel_start (&sel, 0, 0);
     ck_assert (!mcterm_sel_row_span (&sel, 0, TERM_COLS, &from, &to));
-    ck_assert_ptr_null (mcterm_sel_text (&sel, vt, TERM_COLS));
+    ck_assert_ptr_null (mcterm_sel_text (&sel, vt, TERM_COLS, -1));
 
     mcview_vterm_free (vt);
 }
@@ -374,7 +401,7 @@ START_TEST (test_a_double_click_takes_the_word)
 
     // Inside the word: the word, up to the slashes.
     mcterm_sel_word (&sel, vt, 0, 9, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "usr");
     g_free (text);
 
@@ -385,7 +412,7 @@ START_TEST (test_a_double_click_takes_the_word)
 
     // At the edge of the screen the word stops there.
     mcterm_sel_word (&sel, vt, 0, 0, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "ls");
     g_free (text);
 
@@ -405,19 +432,19 @@ START_TEST (test_the_word_stops_at_a_break_character)
     mcterm_sel_clear (&sel);
 
     mcterm_sel_word (&sel, vt, 0, 3, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "x");
     g_free (text);
 
     // A break character is a word of its own.
     mcterm_sel_word (&sel, vt, 0, 1, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "=");
     g_free (text);
 
     // A dash breaks a word, as it does in the editor.
     mcterm_sel_word (&sel, vt, 0, 11, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "no");
     g_free (text);
 
@@ -437,7 +464,7 @@ START_TEST (test_a_triple_click_takes_the_row)
     mcterm_sel_clear (&sel);
 
     mcterm_sel_line (&sel, vt, 0, TERM_COLS);
-    text = mcterm_sel_text (&sel, vt, TERM_COLS);
+    text = mcterm_sel_text (&sel, vt, TERM_COLS, -1);
     ck_assert_str_eq (text, "one two");
     ck_assert_int_eq (sel.point_col, 6);
     g_free (text);
@@ -466,6 +493,7 @@ main (void)
     tcase_add_test (tc_core, test_one_row_without_the_padding);
     tcase_add_test (tc_core, test_part_of_a_row_keeps_its_blanks);
     tcase_add_test (tc_core, test_rows_are_joined_by_a_newline);
+    tcase_add_test (tc_core, test_a_skipped_row_is_left_out);
     tcase_add_test (tc_core, test_the_ends_are_partial_rows);
     tcase_add_test (tc_core, test_the_region_is_read_either_way_round);
     tcase_add_test (tc_core, test_a_row_keeps_its_number_after_scrolling);

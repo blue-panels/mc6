@@ -46,11 +46,12 @@ const mcview_vterm_cell_t *mcterm_sel_cell_at (mcview_vterm_t *vt, gint64 row, i
 
 /* The marked text, trailing blanks of each row dropped, rows joined by a
    newline. NULL when nothing is marked. */
-char *mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols);
+/* @skip_row is left out of the text, -1 to leave out none. */
+char *mcterm_sel_text (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols, gint64 skip_row);
 
 /* Into the clipfile, and from there into the external clipboard, which is
    what the editor and the input line do with their own selections. */
-gboolean mcterm_sel_copy (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols);
+gboolean mcterm_sel_copy (const mcterm_sel_t *sel, mcview_vterm_t *vt, int cols, gint64 skip_row);
 
 /*** inline functions ****************************************************************************/
 
