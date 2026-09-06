@@ -472,7 +472,7 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
     }
 
     cmd_file = fdopen (cmd_file_fd, "w");
-    fputs ("#! /bin/sh\n", cmd_file);
+    fputs ("#! /bin/sh\nrm -f \"$0\"\n", cmd_file);
     commands++;
 
     for (col = 0; *commands != '\0'; commands++)
@@ -605,7 +605,6 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
 
     g_free (cmd);
 
-    mc_unlink (file_name_vpath);
     vfs_path_free (file_name_vpath, TRUE);
 }
 
