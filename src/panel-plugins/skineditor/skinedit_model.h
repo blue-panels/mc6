@@ -75,10 +75,12 @@ typedef struct
 
 typedef struct
 {
-    char *name;        /* skin name, "modarin256" */
-    char *path;        /* file it was read from */
-    char *description; /* [skin] description */
-    gboolean system;   /* not in the user's skins directory */
+    char *name;                         /* skin name, "modarin256" */
+    char *path;                         /* file it was read from */
+    char *description;                  /* [skin] description */
+    gboolean system;                    /* not in the user's skins directory */
+    skinedit_color_class_t colors;      /* the skin is for 16, 256 or true colors */
+    skinedit_color_class_t file_colors; /* the same as of the last open or save */
     mc_config_t *config;
     GPtrArray *sections; /* skinedit_section_t, owned */
 } skinedit_model_t;
@@ -120,6 +122,9 @@ mc_config_t *skinedit_model_config_copy (const skinedit_model_t *m);
 
 /* what the colors in use ask of the terminal */
 void skinedit_model_needs (const skinedit_model_t *m, gboolean *needs_256, gboolean *needs_true);
+/* the first entry with a color above @cls, its part in @part; NULL when there is none */
+skinedit_entry_t *skinedit_model_over_class (const skinedit_model_t *m, skinedit_color_class_t cls,
+                                             skinedit_part_t *part);
 
 /* a skin name is a file name without a directory part or the .ini suffix */
 gboolean skinedit_model_name_ok (const char *name);

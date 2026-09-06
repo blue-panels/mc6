@@ -55,6 +55,7 @@
 #define B_SAVE_AS     (B_USER + 3)
 #define B_SKIN        (B_USER + 4)
 #define B_EDIT_FILE   (B_USER + 5)
+#define B_CLASS       (B_USER + 6)
 
 #define MIN_LIST_COLS 30
 #define MIN_COLS      66
@@ -75,6 +76,7 @@ typedef struct
     WDialog *dlg;
     WLabel *skin_label;
     WButton *skin_button;
+    WButton *class_button; /* 16 colors, 256 colors or true color: opens a list of the three */
     WSkinKeyList *list;
     WSkinSample *sample;
     WHLine *info_line;
@@ -109,6 +111,39 @@ static skineditor_ui_t *
 ui_of (const Widget *w)
 {
     return (skineditor_ui_t *) DIALOG (w->owner)->data.p;
+}
+
+/* the three classes a skin can be declared for, in the order of the list */
+static const skinedit_color_class_t class_order[] = { SKINEDIT_COLOR_BASIC, SKINEDIT_COLOR_256,
+                                                      SKINEDIT_COLOR_TRUECOLOR };
+
+static const char *
+color_class_name (skinedit_color_class_t cls)
+{
+    switch (cls)
+    {
+    case SKINEDIT_COLOR_TRUECOLOR:
+        return _ ("True color");
+    case SKINEDIT_COLOR_256:
+        return _ ("256 colors");
+    default:
+        return _ ("16 colors");
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* the widest of the class names, as a button */
+
+static int
+class_button_cols (void)
+{
+    int w = 0;
+    guint i;
+
+    for (i = 0; i < G_N_ELEMENTS (class_order); i++)
+        w = MAX (w, str_term_width1 (color_class_name (class_order[i])));
+    return w + 4;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -152,7 +187,8 @@ ui_layout (skineditor_ui_t *ui)
     widget_set_size (WIDGET (ui->skin_label), top, left, 1, 5);
     widget_set_size (WIDGET (ui->skin_button), top, left + 6, 1, list_cols - 6);
     widget_set_size (WIDGET (ui->list), top + 1, left, list_lines, list_cols);
-    widget_set_size (WIDGET (ui->sample), top, sample_x, list_lines + 1, sample_cols);
+    widget_set_size (WIDGET (ui->class_button), top, sample_x, 1, class_button_cols ());
+    widget_set_size (WIDGET (ui->sample), top + 1, sample_x, list_lines, sample_cols);
 
     y = top + list_lines + 1;
     widget_set_size (WIDGET (ui->info_line), y + 1, 0, 1, r->cols);
@@ -277,6 +313,12 @@ ui_update_info (skineditor_ui_t *ui)
         button_set_text (ui->skin_button, text);
         widget_set_size_rect (WIDGET (ui->skin_button), &br);
         g_free (text);
+    }
+    {
+        WRect br = WIDGET (ui->class_button)->rect;
+
+        button_set_text (ui->class_button, color_class_name (ui->model->colors));
+        widget_set_size_rect (WIDGET (ui->class_button), &br);
     }
 
     // the idle timer only runs the spinner
@@ -688,6 +730,35 @@ ask_name_and_description (skineditor_ui_t *ui, char **name, char **description)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* a skin keeps its color class unless the user agrees to raise it; FALSE = do not save */
+
+static gboolean
+ui_confirm_class (skineditor_ui_t *ui)
+{
+    skinedit_part_t part;
+    skinedit_entry_t *over;
+    skinedit_color_class_t needed;
+    gboolean needs_256, needs_true;
+    char *text;
+    int rc;
+
+    over = skinedit_model_over_class (ui->model, ui->model->colors, &part);
+    if (over == NULL)
+        return TRUE;
+
+    skinedit_model_needs (ui->model, &needs_256, &needs_true);
+    needed = needs_true ? SKINEDIT_COLOR_TRUECOLOR : SKINEDIT_COLOR_256;
+    text = g_strdup_printf (_ ("This is a %s skin, but [%s] %s uses %s.\nSave it as a %s skin?"),
+                            color_class_name (ui->model->colors), over->group, over->key,
+                            over->effective[part] != NULL ? over->effective[part] : over->raw[part],
+                            color_class_name (needed));
+    rc = query_dialog (_ ("Save skin"), text, D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
+    g_free (text);
+    return rc == 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* to the user's skins directory; a system skin or Save as asks the name; the saved skin runs */
 
 static void
@@ -740,6 +811,13 @@ ui_save (skineditor_ui_t *ui, gboolean ask)
             return;
         }
         g_free (target);
+    }
+
+    if (!ui_confirm_class (ui))
+    {
+        g_free (name);
+        g_free (description);
+        return;
     }
 
     if (!skinedit_model_save (ui->model, name, description, &error))
@@ -883,6 +961,48 @@ ui_pick_skin (skineditor_ui_t *ui)
     if (chosen != NULL)
         ui_open_skin (ui, chosen);
     g_free (chosen);
+    widget_select (WIDGET (ui->list));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* the class button: a list of the three under it; the skin is declared for the one picked */
+
+static void
+ui_pick_class (skineditor_ui_t *ui)
+{
+    WDialog *pop;
+    WListbox *list;
+    const WRect *br = &WIDGET (ui->class_button)->rect;
+    int lines = G_N_ELEMENTS (class_order) + 2;
+    guint i;
+
+    if (br->y + 1 + lines > LINES)
+        return;
+
+    pop = dlg_create (TRUE, br->y + 1, br->x, lines, br->cols, WPOS_KEEP_DEFAULT, TRUE,
+                      dialog_colors, NULL, NULL, NULL, NULL);
+    list = listbox_new (1, 1, lines - 2, br->cols - 2, FALSE, NULL);
+    for (i = 0; i < G_N_ELEMENTS (class_order); i++)
+    {
+        listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, color_class_name (class_order[i]),
+                          GINT_TO_POINTER ((int) class_order[i]), FALSE);
+        if (class_order[i] == ui->model->colors)
+            listbox_set_current (list, (int) i);
+    }
+    group_add_widget_autopos (GROUP (pop), list, WPOS_KEEP_ALL, NULL);
+
+    if (dlg_run (pop) == B_ENTER)
+    {
+        char *label;
+        void *data;
+
+        listbox_get_current (list, &label, &data);
+        ui->model->colors = (skinedit_color_class_t) GPOINTER_TO_INT (data);
+    }
+    widget_destroy (WIDGET (pop));
+
+    ui_update_info (ui);
     widget_select (WIDGET (ui->list));
 }
 
@@ -1076,6 +1196,9 @@ button_cb (WButton *button, int action)
     case B_SKIN:
         ui_pick_skin (ui);
         return 0;
+    case B_CLASS:
+        ui_pick_class (ui);
+        return 0;
     case B_EDIT_FILE:
         ui_open_in_mcedit (ui);
         return 0;
@@ -1262,6 +1385,8 @@ skineditor_run (void)
     group_add_widget (g, ui.skin_label);
     ui.skin_button = button_new (2, 8, B_SKIN, NORMAL_BUTTON, "", button_cb);
     group_add_widget (g, ui.skin_button);
+    ui.class_button = button_new (2, 40, B_CLASS, NORMAL_BUTTON, "", button_cb);
+    group_add_widget (g, ui.class_button);
 
     ui.list = skinkeylist_new (3, 2, 10, MIN_LIST_COLS, ui.model);
     ui.list->on_change = list_on_change;

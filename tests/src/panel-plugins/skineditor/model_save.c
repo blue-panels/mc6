@@ -183,15 +183,64 @@ START_TEST (test_flags)
     ck_assert_ptr_nonnull (strstr (text, "truecolors=true"));
     g_free (text);
 
-    /* through an alias as well */
+    /* through an alias as well; the class is lowered by hand, the colors raise it back */
     skinedit_model_set (model, e, SKINEDIT_PART_FG, "white");
     skinedit_model_set (model, e, SKINEDIT_PART_BG, "Deep");
     mc_config_set_string_raw (model->config, "aliases", "Deep", "color17");
+    model->colors = SKINEDIT_COLOR_BASIC;
     save (NULL);
     text = test_read_file (out_path);
     ck_assert_ptr_nonnull (strstr (text, "256colors=true"));
     ck_assert_ptr_null (strstr (text, "truecolors"));
     g_free (text);
+
+    /* the declared class stays even when no color needs it */
+    skinedit_model_set (model, e, SKINEDIT_PART_BG, "cyan");
+    save (NULL);
+    text = test_read_file (out_path);
+    ck_assert_ptr_nonnull (strstr (text, "256colors=true"));
+    g_free (text);
+    model->colors = SKINEDIT_COLOR_BASIC;
+    save (NULL);
+    text = test_read_file (out_path);
+    ck_assert_ptr_null (strstr (text, "256colors"));
+    g_free (text);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* the class the file declares; a save raises it to what the colors need */
+START_TEST (test_color_class)
+{
+    skinedit_entry_t *e = skinedit_model_find (model, "core", "selected");
+    skinedit_part_t part = SKINEDIT_PART_FG;
+
+    ck_assert_int_eq (model->colors, SKINEDIT_COLOR_BASIC);
+    ck_assert_ptr_null (skinedit_model_over_class (model, SKINEDIT_COLOR_BASIC, &part));
+
+    skinedit_model_set (model, e, SKINEDIT_PART_BG, "gray5");
+    ck_assert_ptr_eq (skinedit_model_over_class (model, SKINEDIT_COLOR_BASIC, &part), e);
+    ck_assert_int_eq (part, SKINEDIT_PART_BG);
+    ck_assert_ptr_null (skinedit_model_over_class (model, SKINEDIT_COLOR_256, &part));
+    ck_assert_int_eq (model->colors, SKINEDIT_COLOR_BASIC);
+
+    save (NULL);
+    ck_assert_int_eq (model->colors, SKINEDIT_COLOR_256);
+    ck_assert_ptr_null (skinedit_model_over_class (model, model->colors, &part));
+
+    /* color0..color15 are the 16 colors under another name */
+    skinedit_model_set (model, e, SKINEDIT_PART_BG, "color12");
+    ck_assert_ptr_null (skinedit_model_over_class (model, SKINEDIT_COLOR_BASIC, &part));
+
+    /* a class change alone is a change; reset takes it back */
+    save (NULL);
+    ck_assert (!skinedit_model_dirty (model));
+    model->colors = SKINEDIT_COLOR_TRUECOLOR;
+    ck_assert (skinedit_model_dirty (model));
+    skinedit_model_reset_all (model);
+    ck_assert_int_eq (model->colors, SKINEDIT_COLOR_256);
+    ck_assert (!skinedit_model_dirty (model));
 }
 END_TEST
 
@@ -280,6 +329,7 @@ main (void)
     tcase_add_test (tc_core, test_save_keeps_file);
     tcase_add_test (tc_core, test_inherit_removes_key);
     tcase_add_test (tc_core, test_flags);
+    tcase_add_test (tc_core, test_color_class);
     tcase_add_test (tc_core, test_bad_name);
     tcase_add_test (tc_core, test_failed_save);
     tcase_add_test (tc_core, test_config_copy);

@@ -448,9 +448,10 @@ add_part (color_dlg_t *c, part_widgets_t *p, skinedit_part_t part, int y, int x,
     brgb = button_new (y + 2, x + grid_cols + 4 + button_get_width (b256) + 1, id_rgb,
                        NORMAL_BUTTON, "RGB..", color_button_cb);
     group_add_widget (g, brgb);
-    if (!tty_use_256colors (NULL))
+    // a 16-color skin stays one: the wider pickers open only for a skin declared for them
+    if (!tty_use_256colors (NULL) || c->model->colors < SKINEDIT_COLOR_256)
         widget_disable (WIDGET (b256), TRUE);
-    if (!tty_use_truecolors (NULL))
+    if (!tty_use_truecolors (NULL) || c->model->colors < SKINEDIT_COLOR_TRUECOLOR)
         widget_disable (WIDGET (brgb), TRUE);
 
     p->terminal = check_new (y + 3, x + 1, FALSE, terminal_label);
