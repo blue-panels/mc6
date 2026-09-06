@@ -29,6 +29,12 @@
 
 typedef struct
 {
+    gboolean at_root;
+    char *current_url;
+    GPtrArray *entries;
+    char *current_label;
+    char *focus_name;
+    char *title_buf;
     char *help_filename;
 } samba_data_t;
 
@@ -52,6 +58,55 @@ smb_url_up (const char *url)
         return NULL; /* at smb://SERVER level -- no parent */
 
     return g_strndup (url, (gsize) (last_slash - url));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+samba_update_title (samba_data_t *data)
+{
+    g_free (data->title_buf);
+
+    if (data->at_root || data->current_url == NULL)
+    {
+        data->title_buf = g_strdup ("/");
+        return;
+    }
+
+    /* Strip "smb:/" to get path for display */
+    if (strlen (data->current_url) <= 5)
+        data->title_buf = g_strdup ("/");
+    else
+        data->title_buf = g_strdup (data->current_url + 5);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+samba_leave_connection (samba_data_t *data)
+{
+    data->at_root = TRUE;
+    g_free (data->current_url);
+    data->current_url = NULL;
+    data->focus_name = data->current_label;
+    data->current_label = NULL;
+
+    if (data->entries != NULL)
+    {
+        g_ptr_array_free (data->entries, TRUE);
+        data->entries = NULL;
+    }
+    samba_update_title (data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+samba_get_focus_name (void *plugin_data)
+{
+    samba_data_t *data = (samba_data_t *) plugin_data;
+
+    return data->focus_name;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -181,6 +236,58 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @Test */
+START_TEST (test_samba_leave_connection_focuses_label)
+{
+    samba_data_t data;
+    const char *focus;
+
+    memset (&data, 0, sizeof (data));
+    data.at_root = FALSE;
+    data.current_url = g_strdup ("smb://SERVER/SHARE");
+    data.current_label = g_strdup ("Second");
+    data.entries = g_ptr_array_new_with_free_func (g_free);
+    g_ptr_array_add (data.entries, g_strdup ("docs"));
+    samba_update_title (&data);
+    mctest_assert_str_eq (data.title_buf, "/SERVER/SHARE");
+
+    samba_leave_connection (&data);
+
+    ck_assert_int_eq (data.at_root, TRUE);
+    mctest_assert_null (data.current_url);
+    mctest_assert_null (data.entries);
+    mctest_assert_null (data.current_label);
+    mctest_assert_str_eq (data.title_buf, "/");
+
+    focus = samba_get_focus_name (&data);
+    mctest_assert_str_eq (focus, "Second");
+
+    g_free (data.focus_name);
+    g_free (data.title_buf);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_samba_leave_connection_without_label)
+{
+    samba_data_t data;
+
+    memset (&data, 0, sizeof (data));
+    data.current_url = g_strdup ("smb://SERVER");
+
+    samba_leave_connection (&data);
+
+    ck_assert_int_eq (data.at_root, TRUE);
+    mctest_assert_null (samba_get_focus_name (&data));
+
+    g_free (data.title_buf);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -192,6 +299,8 @@ main (void)
     tcase_add_test (tc_core, test_samba_get_help_info_existing_file);
     tcase_add_test (tc_core, test_samba_get_help_info_missing_file);
     tcase_add_test (tc_core, test_samba_get_help_info_null_data);
+    tcase_add_test (tc_core, test_samba_leave_connection_focuses_label);
+    tcase_add_test (tc_core, test_samba_leave_connection_without_label);
 
     return mctest_run_all (tc_core);
 }
