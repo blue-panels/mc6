@@ -12,9 +12,20 @@ libmcskinedit_la_LIBADD = $(GLIB_LIBS)
 
 skineditordir = $(panel_plugins_dir)/skineditor
 skineditor_LTLIBRARIES = mc-panel-skineditor.la
+dist_skineditor_DATA = skineditor.hlp
 
 mc_panel_skineditor_la_SOURCES = \
 	skineditor.c \
+	skineditor_color.c \
+	skineditor_color.h \
+	skineditor_grid.c \
+	skineditor_grid.h \
+	skineditor_keylist.c \
+	skineditor_keylist.h \
+	skineditor_sample.c \
+	skineditor_sample.h \
+	skineditor_sample_priv.h \
+	skineditor_samples.c \
 	skineditor_ui.c \
 	skineditor_ui.h
 mc_panel_skineditor_la_CPPFLAGS = \

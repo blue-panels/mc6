@@ -28,6 +28,9 @@ typedef void (*skineditor_change_fn) (void *data);
 gboolean skineditor_color_dialog (skinedit_model_t *m, skinedit_entry_t *e,
                                   skineditor_change_fn on_change, void *data);
 
+/* TRUE when the screen is large enough for the Color dialog */
+gboolean skineditor_color_dialog_fits (void);
+
 /* pick one of the 256 colors; NULL on Cancel, else a "colorN" string to free */
 char *skineditor_pick_256 (const char *current);
 

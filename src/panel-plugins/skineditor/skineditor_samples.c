@@ -588,8 +588,7 @@ draw_mcstruct_def (WSkinSample *s, const WRect *r)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* a box of @cols x @lines drawn piece by piece with the light (d = "") or heavy (d = "d")
-   set, a tee on every side and a cross in the middle */
+/* a box piece by piece with the light or heavy set, a tee on every side, a cross in the middle */
 
 static void
 frame_set (WSkinSample *s, int y, int x, int lines, int cols, gboolean heavy)
@@ -746,20 +745,22 @@ draw_scrollbar (WSkinSample *s, const WRect *r)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* the frames are in the display charset: walked with strutil, not as UTF-8 */
+
 static void
 draw_spinner (WSkinSample *s, const WRect *r)
 {
     const char *seq = sample_char (s, "core", "spinner_sequence");
-    const char *p;
-    int n = 0, x = 2, i;
-    char frame[8];
+    const char *p, *next;
+    int n = str_length (seq), x = 2, i;
+    char frame[16];
 
     F (0, 0, r->lines, r->cols, "core", "_default_");
     T (0, 2, "core", "_default_", "frames:");
-    for (p = seq; *p != '\0'; p = g_utf8_next_char (p), n++)
+    for (p = seq; *p != '\0'; p = next)
     {
-        const char *next = g_utf8_next_char (p);
-
+        next = p;
+        str_cnext_char (&next);
         g_strlcpy (frame, p, MIN ((size_t) (next - p) + 1, sizeof (frame)));
         T (1, x, "core", "spinner_sequence", frame);
         x += 2;
@@ -768,8 +769,10 @@ draw_spinner (WSkinSample *s, const WRect *r)
         return;
 
     for (p = seq, i = 0; i < (int) (s->tick % (unsigned int) n); i++)
-        p = g_utf8_next_char (p);
-    g_strlcpy (frame, p, MIN ((size_t) (g_utf8_next_char (p) - p) + 1, sizeof (frame)));
+        str_cnext_char (&p);
+    next = p;
+    str_cnext_char (&next);
+    g_strlcpy (frame, p, MIN ((size_t) (next - p) + 1, sizeof (frame)));
     T (3, 2, "core", "_default_", "Working... ");
     T (3, 13, "core", "spinner_sequence", frame);
 }

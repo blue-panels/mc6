@@ -256,9 +256,7 @@ draw_row (WSkinKeyList *l, int y, const skinkeylist_row_t *r, gboolean focused)
 
         widget_gotoyx (w, y, 2);
         tty_print_string (str_fit_to_term (r->entry->label, label_cols, J_LEFT_FIT));
-        value = r->entry->raw[0] != NULL ? r->entry->raw[0] : r->entry->builtin;
-        if (value == NULL)
-            value = "";
+        value = r->entry->shown != NULL ? r->entry->shown : "";
         widget_gotoyx (w, y, 2 + label_cols);
         tty_print_string (str_fit_to_term (value, VALUE_COLS, J_RIGHT_FIT));
     }

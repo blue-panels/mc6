@@ -54,8 +54,7 @@ static const mc_pp_cmd_menu_entry_t skineditor_menu[] = {
     { N_ ("S&kin editor..."), 0, NULL, 0, MC_PP_MENU_COMMAND },
 };
 
-/* The plugin has no panel: it is one dialog, reached from the Command menu, the plugin list
-   and Manage Plugins. */
+/* no panel: one dialog, reached from the Command menu, the plugin list and Manage Plugins */
 static const mc_panel_plugin_t skineditor_plugin = {
     .api_version = MC_PANEL_PLUGIN_API_VERSION,
     .name = "skineditor",
@@ -77,11 +76,14 @@ static const mc_panel_plugin_t skineditor_plugin = {
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+/* the plugin chooser and the drive menu come here: run the editor, open no panel */
+
 static void *
 skineditor_open (mc_panel_host_t *host, const char *open_path)
 {
     (void) host;
     (void) open_path;
+    skineditor_run ();
     return NULL;
 }
 

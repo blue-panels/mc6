@@ -11,8 +11,10 @@ Starting it:
   F9 -> Command -> Plugin panel... -> Skin editor
   Manage Plugins -> Skin editor -> Enter
 
-It opens on the skin mc runs with.  Skin: [ name ] at the top of the
-list opens another one.
+It opens on the skin mc runs with; the title names the file the skin
+comes from.  Skin: [ name ] at the top of the list opens another one.
+A skin that uses colors this terminal cannot show is edited without the
+live preview; the editor says so when it opens the skin.
 
 The screen:
 
@@ -33,11 +35,13 @@ Keys in the list:
   Ctrl-PgUp, Ctrl-PgDn              previous, next section
   Enter, F4                         edit the key
   Space                             show: everything in the sample that
-                                    is not this key turns gray, Space
+                                    is not this key turns gray and stays
+                                    so while the cursor moves; Space
                                     again brings the colors back
   Del                               inherit: the key is removed from
                                     the skin and takes the color of its
-                                    section's _default_, or of [core]
+                                    section's _default_, of [core], or
+                                    what mc fills in for that key
   F5                                the value from disk
   Ctrl-U                            undo the last change, however many
                                     times; the cursor goes to its key
@@ -50,16 +54,20 @@ Keys in the list:
   F12                               save as
   Esc, F10                          leave; asks first when there are
                                     changes
+  F1                                this text
 
 Every change goes to the screen at once.  Esc puts the skin mc had back.
 Save writes the file to your skins directory, ~/.local/share/mc6/skins,
 and makes it the skin mc runs with; a skin from the system directory is
 saved as a copy there under a name you give, and the copy shadows the
-original.
+original.  Save as asks for a name and a description.  A name is a file
+name without a directory part and without .ini; a name another skin in
+your directory already has is not written over without asking.
 
-Edit as file, in the button row, opens the skin file in mcedit, for the parts this
-dialog does not show, the aliases for one.  Unsaved changes are saved
-or dropped first, and the file is read again when the editor closes.
+Edit as file, in the button row, opens the skin file in mcedit, for the
+parts this dialog does not show, the aliases for one.  Unsaved changes
+are saved or dropped first, and the file is read again when the editor
+closes.
 
 The Color dialog:
 
@@ -76,6 +84,10 @@ The Color dialog:
   The changes show in the sample box, in the pane behind the dialog and
   on the screen as they are made.  Reset puts the value from disk back,
   Cancel the value the dialog opened with.
+
+  The dialog needs 72x21; on a smaller terminal Enter asks for the
+  three parts as text instead, empty meaning inherited.  The editor
+  itself needs 66x16.
 
 Characters:
 

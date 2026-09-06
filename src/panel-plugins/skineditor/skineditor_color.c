@@ -89,7 +89,6 @@ typedef struct
     gboolean updating; /* setting widget states, ignore their notifications */
 } color_dlg_t;
 
-/* the 256-color picker */
 typedef struct
 {
     WDialog *dlg;
@@ -356,7 +355,6 @@ color_button_cb (WButton *button, int action)
         pick_rgb_for (c, &c->bg);
         return 0;
     case B_RESET:
-        // back to what the entry had on disk
         skinedit_model_reset (c->model, c->entry);
         notify_change (c);
         update_view (c);
@@ -502,6 +500,14 @@ pick_chosen (WColorGrid *g, const char *value, void *data)
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+skineditor_color_dialog_fits (void)
+{
+    return COLS >= DLG_COLS + 2 && LINES >= DLG_LINES + 2;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 char *
 skineditor_pick_256 (const char *current)
 {
@@ -515,6 +521,12 @@ skineditor_pick_256 (const char *current)
     // 77 columns of cells: the frame has no margin so that the picker fits in 80
     cols = grid_cols + 2;
     lines = grid_lines + 6;
+    if (COLS < cols || LINES < lines)
+    {
+        message (D_ERROR, _ ("256 colors"), _ ("The picker needs a terminal of %dx%d"), cols,
+                 lines);
+        return NULL;
+    }
 
     p.dlg = dlg_create (TRUE, 0, 0, lines, cols, WPOS_CENTER, TRUE, dialog_colors, NULL, NULL, NULL,
                         _ ("256 colors"));

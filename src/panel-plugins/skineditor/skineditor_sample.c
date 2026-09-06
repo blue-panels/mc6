@@ -88,9 +88,7 @@ region_at (const WSkinSample *s, int y, int x)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The pair to paint an area of @e with. In isolate mode everything that is not the current key
-   is dimmed: gray on the background of the dialog. @owner is the key an area is recorded for
-   when it differs from the key that gives the color (a frame piece of [lines]). */
+/* the pair of @e; in isolate mode dimmed unless @e or @owner, the key of the area, is current */
 
 static int
 entry_color (WSkinSample *s, const skinedit_entry_t *e, const skinedit_entry_t *owner)
@@ -392,9 +390,7 @@ sample_char (WSkinSample *s, const char *group, const char *key)
 
     if (e == NULL)
         return "?";
-    if (e->raw[0] != NULL)
-        return e->raw[0];
-    return e->builtin != NULL ? e->builtin : "";
+    return e->shown != NULL ? e->shown : "";
 }
 
 /* --------------------------------------------------------------------------------------------- */

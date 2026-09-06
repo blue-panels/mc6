@@ -29,8 +29,7 @@ typedef void (*skinsample_draw_fn) (WSkinSample *s, const WRect *r);
 
 /*** declarations of public functions ************************************************************/
 
-/* All coordinates are relative to the pane and clipped to it. Every primitive paints in the
-   colors of the given key and records the area for the key: the marker and the mouse. */
+/* relative to the pane and clipped; each paints in the key's colors and records the area */
 
 skinedit_entry_t *sample_entry (WSkinSample *s, const char *group, const char *key);
 int sample_color (WSkinSample *s, const char *group, const char *key);
