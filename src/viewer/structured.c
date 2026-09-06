@@ -101,6 +101,7 @@ mcview_structured_draw_row (WView *view, const mctree_visible_row_t *row, int y,
     int base_color;
     int key_color;
     int value_color;
+    int marker_color;
     char *value;
     const char *marker;
     const char *label;
@@ -108,15 +109,17 @@ mcview_structured_draw_row (WView *view, const mctree_visible_row_t *row, int y,
 
     if (current && view->struct_tree->focused)
     {
-        base_color = VIEWER_SELECTED_COLOR;
+        base_color = MCTREE_SELECTED_COLOR;
         key_color = base_color;
         value_color = base_color;
+        marker_color = base_color;
     }
     else
     {
         base_color = VIEWER_NORMAL_COLOR;
         key_color = MCTREE_KEY_COLOR;
         value_color = MCTREE_VALUE_COLOR;
+        marker_color = MCTREE_MARKER_COLOR;
     }
 
     widget_gotoyx (view, r->y + y, r->x);
@@ -128,6 +131,7 @@ mcview_structured_draw_row (WView *view, const mctree_visible_row_t *row, int y,
     prefix = g_strnfill ((gsize) row->depth * 2, ' ');
     tty_setcolor (base_color);
     remaining -= mcview_structured_print_span (prefix, remaining);
+    tty_setcolor (marker_color);
     remaining -= mcview_structured_print_span (marker, remaining);
     g_free (prefix);
 
