@@ -71,9 +71,11 @@ typedef struct
     SMBCCTX *ctx;
 
     /* Navigation state */
-    gboolean at_root;   /* TRUE = showing saved connections list */
-    char *current_url;  /* "smb://SERVER/SHARE/path" when not at root */
-    GPtrArray *entries; /* smb_entry_t* when browsing; NULL at root */
+    gboolean at_root;    /* TRUE = showing saved connections list */
+    char *current_url;   /* "smb://SERVER/SHARE/path" when not at root */
+    GPtrArray *entries;  /* smb_entry_t* when browsing; NULL at root */
+    char *current_label; /* label of the connection being browsed */
+    char *focus_name;    /* item to focus after going up to the root */
 
     /* Saved connections */
     GPtrArray *connections; /* smb_connection_t* - loaded from ini */
@@ -108,11 +110,13 @@ static mc_pp_result_t samba_put_file (void *plugin_data, const char *local_path,
                                       const char *dest_name);
 static mc_pp_result_t samba_delete_items (void *plugin_data, const char **names, int count);
 static const char *samba_get_title (void *plugin_data);
+static const char *samba_get_focus_name (void *plugin_data);
 static mc_pp_result_t samba_create_item (void *plugin_data);
 static mc_pp_result_t samba_handle_key (void *plugin_data, int key);
 static mc_pp_result_t samba_get_help_info (void *plugin_data, const char **filename,
                                            const char **node);
 static void samba_update_title (samba_data_t *data);
+static void samba_leave_connection (samba_data_t *data);
 
 /*** file scope variables ************************************************************************/
 
@@ -136,6 +140,7 @@ static const mc_panel_plugin_t samba_plugin = {
     .save_file = samba_put_file,
     .delete_items = samba_delete_items,
     .get_title = samba_get_title,
+    .get_focus_name = samba_get_focus_name,
     .handle_key = samba_handle_key,
     .create_item = samba_create_item,
     .get_help_info = samba_get_help_info,
@@ -382,6 +387,25 @@ samba_update_title (samba_data_t *data)
         data->title_buf = g_strdup ("/");
     else
         data->title_buf = g_strdup (data->current_url + 5);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+samba_leave_connection (samba_data_t *data)
+{
+    data->at_root = TRUE;
+    g_free (data->current_url);
+    data->current_url = NULL;
+    data->focus_name = data->current_label;
+    data->current_label = NULL;
+
+    if (data->entries != NULL)
+    {
+        g_ptr_array_free (data->entries, TRUE);
+        data->entries = NULL;
+    }
+    samba_update_title (data);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -734,6 +758,9 @@ enter_connection (samba_data_t *data, const smb_connection_t *conn)
         return MC_PPR_FAILED;
     }
 
+    g_free (data->current_label);
+    data->current_label = g_strdup (conn->label);
+
     g_free (data->current_url);
     if (share_norm[0] != '\0')
         data->current_url = g_strdup_printf ("smb://%s/%s", server_norm, share_norm);
@@ -894,6 +921,8 @@ samba_close (void *plugin_data)
         smbc_free_context (data->ctx, 1);
 
     g_free (data->current_url);
+    g_free (data->current_label);
+    g_free (data->focus_name);
     g_free (data->title_buf);
     g_free (data->connections_file);
     g_free (data->auth_username);
@@ -963,6 +992,9 @@ samba_chdir (void *plugin_data, const char *path)
     samba_log ("samba: chdir path='%s' at_root=%d current_url='%s'\n", path != NULL ? path : "",
                data->at_root ? 1 : 0, data->current_url != NULL ? data->current_url : "");
 
+    g_free (data->focus_name);
+    data->focus_name = NULL;
+
     if (strcmp (path, "..") == 0)
     {
         if (data->at_root)
@@ -976,16 +1008,7 @@ samba_chdir (void *plugin_data, const char *path)
             if (parent == NULL)
             {
                 /* At smb:// level - go back to root (connections list) */
-                data->at_root = TRUE;
-                g_free (data->current_url);
-                data->current_url = NULL;
-
-                if (data->entries != NULL)
-                {
-                    g_ptr_array_free (data->entries, TRUE);
-                    data->entries = NULL;
-                }
-                samba_update_title (data);
+                samba_leave_connection (data);
                 return MC_PPR_OK;
             }
 
@@ -1065,6 +1088,9 @@ samba_enter (void *plugin_data, const char *name, const struct stat *st)
     (void) st;
     samba_log ("samba: enter name='%s' at_root=%d current_url='%s'\n", name != NULL ? name : "",
                data->at_root ? 1 : 0, data->current_url != NULL ? data->current_url : "");
+
+    g_free (data->focus_name);
+    data->focus_name = NULL;
 
     /* At root: enter saved connection */
     if (data->at_root)
@@ -1526,6 +1552,16 @@ samba_handle_key (void *plugin_data, int key)
     }
 
     return MC_PPR_NOT_SUPPORTED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+samba_get_focus_name (void *plugin_data)
+{
+    samba_data_t *data = (samba_data_t *) plugin_data;
+
+    return data->focus_name;
 }
 
 /* --------------------------------------------------------------------------------------------- */
