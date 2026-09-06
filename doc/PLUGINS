@@ -57,6 +57,8 @@ In-tree references (read these before writing your own):
   src/panel-plugins/panelize/    list curation; LOCAL_FILES,
                                  open_file_list, menu self-registration
   src/panel-plugins/sqlite/      read-only SQLite table browser
+  src/panel-plugins/skineditor/  dialog only, no panel; actions and
+                                 configure hook
 
 
 3.0 Lifecycle and Location
