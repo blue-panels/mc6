@@ -158,6 +158,8 @@ extern mc_skin_t mc_skin__default;
 /*** declarations of public functions ************************************************************/
 
 gboolean mc_skin_init (const gchar *skin_override, GError **error);
+/* replace the loaded skin by @config, the engine's from here on; @name NULL keeps the current */
+gboolean mc_skin_load_from_config (mc_config_t *config, const char *name, GError **error);
 void mc_skin_deinit (void);
 
 int mc_skin_color_get (const gchar *group, const gchar *name);

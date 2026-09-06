@@ -176,15 +176,7 @@ skin_apply (const gchar *skin_override)
 
     mc_skin_deinit ();
     mc_skin_init (skin_override, &mcerror);
-    mc_fhl_free (&mc_filehighlight);
-    mc_filehighlight = mc_fhl_new (TRUE);
-    dlg_set_default_colors ();
-    input_set_default_colors ();
-    if (mc_global.mc_run_mode == MC_RUN_FULL)
-        command_set_default_colors ();
-    panel_deinit ();
-    panel_init ();
-    repaint_screen ();
+    skin_apply_current ();
 
     mc_error_message (&mcerror, NULL);
 }
@@ -636,6 +628,24 @@ configure_box (void)
 
         g_free (time_out_new);
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* after the skin engine has been reloaded: the color tables the widgets cache, then the screen */
+
+void
+skin_apply_current (void)
+{
+    mc_fhl_free (&mc_filehighlight);
+    mc_filehighlight = mc_fhl_new (TRUE);
+    dlg_set_default_colors ();
+    input_set_default_colors ();
+    if (mc_global.mc_run_mode == MC_RUN_FULL)
+        command_set_default_colors ();
+    panel_deinit ();
+    panel_init ();
+    repaint_screen ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
