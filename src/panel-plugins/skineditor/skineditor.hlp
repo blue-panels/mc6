@@ -1,0 +1,106 @@
+[skineditor]
+
+Skin editor
+
+The skin editor changes the colors and the frame characters of a skin
+from inside mc and shows the result as it goes.
+
+Starting it:
+
+  F9 -> Command -> Skin editor...
+  F9 -> Command -> Plugin panel... -> Skin editor
+  Manage Plugins -> Skin editor -> Enter
+
+It opens on the skin mc runs with; the title names the file the skin
+comes from.  Skin: [ name ] at the top of the list opens another one.
+A skin that uses colors this terminal cannot show is edited without the
+live preview; the editor says so when it opens the skin.
+
+The screen:
+
+  The left half lists every key of the skin, grouped by the part of the
+  screen it paints: Panels, File types, Dialogs, Menu bar, Editor and so
+  on.  The right half is a sample of that part, drawn with the colors of
+  the skin as they are now.  Under them: the value of the key under the
+  cursor with where each inherited part comes from, and a sentence about
+  the key.  A key changed since the last save has a * before it, its
+  section too.
+
+  A click on the sample moves the cursor to the key that paints that
+  spot; a double click edits it.
+
+Keys in the list:
+
+  Up, Down, PgUp, PgDn, Home, End   move
+  Ctrl-PgUp, Ctrl-PgDn              previous, next section
+  Enter, F4                         edit the key
+  Space                             show: everything in the sample that
+                                    is not this key turns gray and stays
+                                    so while the cursor moves; Space
+                                    again brings the colors back
+  Del                               inherit: the key is removed from
+                                    the skin and takes the color of its
+                                    section's _default_, of [core], or
+                                    what mc fills in for that key
+  F5                                the value from disk
+  Ctrl-U                            undo the last change, however many
+                                    times; the cursor goes to its key
+  Ctrl-Ins                          copy the three parts of the key
+  Shift-Ins                         paste: asks whether to paste all of
+                                    it, the foreground, the background
+                                    or the attributes; an inherited part
+                                    is pasted as inherited
+  F2                                save
+  F12                               save as
+  Esc, F10                          leave; asks first when there are
+                                    changes
+  F1                                this text
+
+Every change goes to the screen at once.  Esc puts the skin mc had back.
+Save writes the file to your skins directory, ~/.local/share/mc6/skins,
+and makes it the skin mc runs with; a skin from the system directory is
+saved as a copy there under a name you give, and the copy shadows the
+original.  Save as asks for a name and a description.  A name is a file
+name without a directory part and without .ini; a name another skin in
+your directory already has is not written over without asking.
+
+Edit as file, in the button row, opens the skin file in mcedit, for the
+parts this dialog does not show, the aliases for one.  Unsaved changes
+are saved or dropped first, and the file is read again when the editor
+closes.
+
+The Color dialog:
+
+  Foreground and background each have a palette of the 16 named colors,
+  an Inherit box, a Terminal default box and the buttons 256.. and
+  RGB..  256.. opens the 256-color picker: the 16 system colors, the
+  6x6x6 cube and the 24 grays; the line under it names the color three
+  ways.  RGB.. asks for a #rrggbb value.  The two buttons are off on a
+  terminal that cannot show those colors.
+
+  Style has Inherit and the attributes bold, italic, underline, reverse
+  and blink.
+
+  The changes show in the sample box, in the pane behind the dialog and
+  on the screen as they are made.  Reset puts the value from disk back,
+  Cancel the value the dialog opened with.
+
+  The dialog needs 72x21; on a smaller terminal Enter asks for the
+  three parts as text instead, empty meaning inherited.  The editor
+  itself needs 66x16.
+
+Characters:
+
+  The sections Frames, Panel marks, Find and editor marks and Spinner
+  hold characters, not colors.  Enter asks for the character, or the
+  whole string of the spinner; an empty value puts the built-in one
+  back.
+
+Notes:
+
+  A key that is not in the skin file inherits: the value line says from
+  where.  [core] _default_ is the one key every skin must have; making
+  it inherit sets it to the terminal's own colors instead.
+
+  The file is written with its comments and its order kept.  The flags
+  256colors and truecolors in [skin] are set from the colors in use.

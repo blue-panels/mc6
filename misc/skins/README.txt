@@ -310,6 +310,28 @@ applies individually to each of these three properties.
             Frame (e.g. in panel's "Quick view")
 
 
+    [mctree]
+        Structured view of JSON, YAML and the like in the viewer.
+
+        _default_
+            Default color
+
+        key
+            Name of a node
+
+        value
+            Value of a node
+
+        marker
+            The + and - before a node that has children, collapsed or
+            expanded. A skin that leaves it out gets the viewer's normal
+            color
+
+        selected
+            The node under the cursor. A skin that leaves it out gets the
+            viewer's "viewselected"
+
+
     [mcterm]
         Embedded terminal.
 

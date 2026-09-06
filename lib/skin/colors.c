@@ -45,6 +45,18 @@ int mc_skin_color__cache[MC_SKIN_COLOR_CACHE_COUNT];
 
 /*** file scope variables ************************************************************************/
 
+/* what a skin gets for a key it does not name; see mc_skin_fallback_t */
+static const mc_skin_fallback_t fallbacks[] = {
+    { "core", "permread", "yellow", NULL, NULL },
+    { "core", "permwrite", "brightred", NULL, NULL },
+    { "core", "permexec", "brightgreen", NULL, NULL },
+    { "core", "permspecial", "brightmagenta", NULL, NULL },
+    { "core", "permnone", "gray", NULL, NULL },
+    // skins written before these keys existed keep the viewer colors here
+    { "mctree", "marker", NULL, "viewer", "_default_" },
+    { "mctree", "selected", NULL, "viewer", "viewselected" },
+};
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -265,6 +277,32 @@ mc_skin_color_add_fallback (mc_skin_t *mc_skin, const gchar *group, const gchar 
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/* A key a skin does not name gets the colors of another key, resolved with its defaults. */
+
+static void
+mc_skin_color_add_fallback_from (mc_skin_t *mc_skin, const gchar *group, const gchar *key,
+                                 const gchar *src_group, const gchar *src_key)
+{
+    tty_color_pair_t *mc_skin_color, *src;
+
+    if (mc_skin_color_get_from_hash (mc_skin, group, key) != NULL)
+        return;
+
+    src = mc_skin_color_get_with_defaults (src_group, src_key);
+    if (src == NULL)
+        return;
+    mc_skin_color = g_try_new0 (tty_color_pair_t, 1);
+    if (mc_skin_color == NULL)
+        return;
+
+    mc_skin_color->fg = g_strdup (src->fg);
+    mc_skin_color->bg = g_strdup (src->bg);
+    mc_skin_color->attrs = g_strdup (src->attrs);
+    mc_skin_color->pair_index = tty_try_alloc_color_pair (mc_skin_color, FALSE);
+    mc_skin_color_add_to_hash (mc_skin, group, key, mc_skin_color);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static void
 mc_skin_color_cache_init (void)
@@ -371,6 +409,8 @@ mc_skin_color_cache_init (void)
 
     MCTREE_KEY_COLOR = mc_skin_color_get ("mctree", "key");
     MCTREE_VALUE_COLOR = mc_skin_color_get ("mctree", "value");
+    MCTREE_MARKER_COLOR = mc_skin_color_get ("mctree", "marker");
+    MCTREE_SELECTED_COLOR = mc_skin_color_get ("mctree", "selected");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -411,7 +451,7 @@ gboolean
 mc_skin_color_parse_ini_file (mc_skin_t *mc_skin)
 {
     gboolean ret = FALSE;
-    gsize items_count;
+    gsize items_count, i;
     gchar **groups, **orig_groups;
     tty_color_pair_t *mc_skin_color;
 
@@ -448,11 +488,15 @@ mc_skin_color_parse_ini_file (mc_skin_t *mc_skin)
         g_strfreev (orig_keys);
     }
 
-    mc_skin_color_add_fallback (mc_skin, "core", "permread", "yellow");
-    mc_skin_color_add_fallback (mc_skin, "core", "permwrite", "brightred");
-    mc_skin_color_add_fallback (mc_skin, "core", "permexec", "brightgreen");
-    mc_skin_color_add_fallback (mc_skin, "core", "permspecial", "brightmagenta");
-    mc_skin_color_add_fallback (mc_skin, "core", "permnone", "gray");
+    for (i = 0; i < G_N_ELEMENTS (fallbacks); i++)
+    {
+        if (fallbacks[i].fg != NULL)
+            mc_skin_color_add_fallback (mc_skin, fallbacks[i].group, fallbacks[i].key,
+                                        fallbacks[i].fg);
+        else
+            mc_skin_color_add_fallback_from (mc_skin, fallbacks[i].group, fallbacks[i].key,
+                                             fallbacks[i].src_group, fallbacks[i].src_key);
+    }
 
     mc_skin_color_cache_init ();
 
@@ -461,6 +505,15 @@ mc_skin_color_parse_ini_file (mc_skin_t *mc_skin)
 ret:
     g_strfreev (orig_groups);
     return ret;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+const mc_skin_fallback_t *
+mc_skin_fallbacks (size_t *count)
+{
+    *count = G_N_ELEMENTS (fallbacks);
+    return fallbacks;
 }
 
 /* --------------------------------------------------------------------------------------------- */
