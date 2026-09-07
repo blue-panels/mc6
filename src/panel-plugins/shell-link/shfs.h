@@ -243,7 +243,9 @@ typedef struct
 {
     char *name;
     struct stat st;
-    char *linkname;  // NULL unless a symbolic link
+    char *linkname;        // NULL unless a symbolic link
+    gboolean link_to_dir;  // the link points to a directory
+    gboolean stale_link;   // the link points to nothing
 } shfs_entry_t;
 
 /** Returning FALSE cancels the transfer, which closes the connection. */

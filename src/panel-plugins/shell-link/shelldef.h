@@ -36,18 +36,38 @@
 /* default 'ls' script */
 #define VFS_SHELL_LS_DEF_CONTENT                                                                   \
     ""                                                                                             \
-    "# shfs-helper: ls 1\n"                                                                        \
+    "# shfs-helper: ls 2\n"                                                                        \
     "export LC_TIME=C\n"                                                                           \
-    "ls -Qlan \"/${SHELL_FILENAME}\" 2>/dev/null | grep '^[^cbt]' | (\n"                           \
+    "nl='\n"                                                                                       \
+    "'\n"                                                                                          \
+    "SHELL_DIR=\"/${SHELL_FILENAME}/\"\n"                                                          \
+    "shell_links=`ls -QlanL \"${SHELL_DIR}\" 2>/dev/null | grep -v '^total' | (\n"                 \
+    "while read p l u g s m d y n; do\n"                                                           \
+    "    echo \"a$n\"\n"                                                                           \
+    "    case \"$p\" in\n"                                                                         \
+    "    d*) echo \"d$n\" ;;\n"                                                                    \
+    "    esac\n"                                                                                   \
+    "done\n"                                                                                       \
+    ")`\n"                                                                                         \
+    "shell_links=\"${nl}${shell_links}${nl}\"\n"                                                   \
+    "ls -Qlan \"${SHELL_DIR}\" 2>/dev/null | grep '^[^cbt]' | (\n"                                 \
     "while read p l u g s m d y n; do\n"                                                           \
     "    echo \"P$p $u.$g\"\n"                                                                     \
     "    echo \"S$s\"\n"                                                                           \
     "    echo \"d$m $d $y\"\n"                                                                     \
+    "    case \"$p\" in\n"                                                                         \
+    "    l*) lname=`expr \"x$n\" : 'x\\(.*\\)\" -> '`\\\"\n"                                       \
+    "        case \"$shell_links\" in\n"                                                           \
+    "        *\"${nl}d$lname${nl}\"*) echo \"Td\" ;;\n"                                            \
+    "        *\"${nl}a$lname${nl}\"*) ;;\n"                                                        \
+    "        *) echo \"T!\" ;;\n"                                                                  \
+    "        esac ;;\n"                                                                            \
+    "    esac\n"                                                                                   \
     "    echo \":$n\"\n"                                                                           \
     "    echo\n"                                                                                   \
     "done\n"                                                                                       \
     ")\n"                                                                                          \
-    "ls -Qlan \"/${SHELL_FILENAME}\" 2>/dev/null | grep '^[cb]' | (\n"                             \
+    "ls -Qlan \"${SHELL_DIR}\" 2>/dev/null | grep '^[cb]' | (\n"                                   \
     "while read p l u g a i m d y n; do\n"                                                         \
     "    echo \"P$p $u.$g\"\n"                                                                     \
     "    echo \"E$a$i\"\n"                                                                         \

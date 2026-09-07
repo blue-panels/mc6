@@ -1607,7 +1607,14 @@ shell_get_items (void *plugin_data, void *list_ptr)
     {
         const shfs_entry_t *e = (const shfs_entry_t *) g_ptr_array_index (entries, i);
 
-        mc_pp_add_entry (list_ptr, e->name, e->st.st_mode, e->st.st_size, e->st.st_mtime);
+        mc_pp_entry_flags_t flags = MC_PP_ENTRY_NONE;
+
+        if (e->link_to_dir)
+            flags |= MC_PP_ENTRY_LINK_TO_DIR;
+        if (e->stale_link)
+            flags |= MC_PP_ENTRY_STALE_LINK;
+
+        mc_pp_add_entry_st (list_ptr, e->name, &e->st, flags);
     }
 
     shfs_entries_free (entries);

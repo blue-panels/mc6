@@ -1313,6 +1313,7 @@ tests/src/panel-plugins/docker/Makefile
 tests/src/panel-plugins/mongo/Makefile
 tests/src/panel-plugins/sqlite/Makefile
 tests/src/panel-plugins/pp_common/Makefile
+tests/src/panel-plugins/shell-link/Makefile
 tests/misc/Makefile
 tests/misc/ext.d/Makefile
 tests/misc/ext.d/markdown/Makefile

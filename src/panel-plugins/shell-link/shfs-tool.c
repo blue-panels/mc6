@@ -442,9 +442,16 @@ do_list (shfs_conn_t *conn, const char *path)
     {
         const shfs_entry_t *e = (const shfs_entry_t *) g_ptr_array_index (entries, i);
 
-        printf ("%c %5u %5u %8" G_GINT64_FORMAT "  %s%s%s\n", S_ISDIR (e->st.st_mode) ? 'd' : '-',
-                (unsigned int) e->st.st_uid, (unsigned int) e->st.st_gid, (gint64) e->st.st_size,
-                e->name, e->linkname != NULL ? " -> " : "", e->linkname != NULL ? e->linkname : "");
+        char type = '-';
+
+        if (S_ISDIR (e->st.st_mode))
+            type = 'd';
+        else if (S_ISLNK (e->st.st_mode))
+            type = e->stale_link ? '!' : (e->link_to_dir ? 'D' : 'l');
+
+        printf ("%c %5u %5u %8" G_GINT64_FORMAT "  %s%s%s\n", type, (unsigned int) e->st.st_uid,
+                (unsigned int) e->st.st_gid, (gint64) e->st.st_size, e->name,
+                e->linkname != NULL ? " -> " : "", e->linkname != NULL ? e->linkname : "");
     }
 
     printf ("%u entries\n", entries->len);

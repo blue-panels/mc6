@@ -1,15 +1,61 @@
-# shfs-helper: ls 1
+# shfs-helper: ls 2
 LC_TIME=C
 export LC_TIME
 perl_res="1"
+nl='
+'
+
+# What "ls -L" shows of the directory: "a" and the quoted name of every entry
+# it lists, "d" and the name of every directory. A link it shows as a directory
+# points to one; a link it does not show points to nothing (GNU ls prints such
+# a link without a name, busybox ls prints nothing).
+shell_links=""
+
+# $1 = the quoted name of a link
+shell_link_type_lsq ()
+{
+case "$shell_links" in
+*"${nl}d$1${nl}"*) echo "Td" ;;
+*"${nl}a$1${nl}"*) ;;
+*) echo "T!" ;;
+esac
+}
+
+# $1 = the path of a link
+shell_link_type_path ()
+{
+if [ -d "$1" ]; then
+    echo "Td"
+elif [ -f "$1" ]; then
+    :
+elif ls -Ld "$1" >/dev/null 2>&1; then
+    :
+else
+    echo "T!"
+fi
+}
+
 shell_list_lsq ()
 {
-SHELL_DIR="$1"
+SHELL_DIR="$1/"
+shell_links=`ls -QlanL "${SHELL_DIR}" 2>/dev/null | grep -v '^total' | (
+while read p l u g s m d y n; do
+    echo "a$n"
+    case "$p" in
+    d*) echo "d$n" ;;
+    esac
+done
+)`
+shell_links="${nl}${shell_links}${nl}"
 ls -Qlan "${SHELL_DIR}" 2>/dev/null | grep '^[^cbt]' | (
 while read p l u g s m d y n; do
     echo "P$p $u.$g"
     echo "S$s"
     echo "d$m $d $y"
+    case "$p" in
+    l*) lname=`expr "x$n" : 'x\(.*\)" -> '`
+        shell_link_type_lsq "$lname\"" ;;
+    esac
     echo ":$n"
     echo
 done
@@ -29,7 +75,7 @@ echo '### 200'
 
 shell_list_sed ()
 {
-SHELL_DIR="$1"
+SHELL_DIR="$1/"
 ls -lan "${SHELL_DIR}" 2>/dev/null | grep '^[^cbt]' | (
 while read p l u g s rec; do
     if [ -n "$g" ]; then
@@ -48,6 +94,10 @@ while read p l u g s rec; do
         else
             echo "D$filedate"
         fi
+        case "$p" in
+        l*) lname=`expr "x$filename" : 'x\(.*\) -> '`
+            shell_link_type_path "${SHELL_DIR}$lname" ;;
+        esac
         echo ":$pfile"
         echo
     fi
@@ -81,7 +131,7 @@ echo '### 200'
 
 shell_list_poor_ls ()
 {
-SHELL_DIR="$1"
+SHELL_DIR="$1/"
 ls -lan "${SHELL_DIR}" 2>/dev/null | grep '^[^cbt]' | (
 while read p l u g s m d y n n2 n3; do
     if [ -n "$g" ]; then
@@ -90,9 +140,13 @@ while read p l u g s m d y n n2 n3; do
         else
             n=$n" "$n2" "$n3
         fi
-        echo "P$p $u $g"
+        echo "P$p $u.$g"
         echo "S$s"
         echo "d$m $d $y"
+        case "$p" in
+        l*) lname=`expr "x$n" : 'x\(.*\) -> '`
+            shell_link_type_path "${SHELL_DIR}$lname" ;;
+        esac
         echo ":"$n
         echo
     fi
@@ -106,7 +160,7 @@ while read p l u g a i m d y n n2 n3; do
         else
             n=$n" "$n2" "$n3
         fi
-        echo "P$p $u $g"
+        echo "P$p $u.$g"
         echo "E$a$i"
         echo "d$m $d $y"
         echo ":"$n
@@ -136,7 +190,9 @@ while((my $filename = readdir (DIR))){
     if (S_ISLNK ($mode)) {
         my $linkname = readlink ("$dirname/$filename");
         $linkname =~ $strutils_shell_escape_regex;
-        printf("R%o %o $uid.$gid\nS$size\nd$mloctime\n:\"%s\" -> \"%s\"\n\n", S_IMODE($mode), S_IFMT($mode), $e_filename, $linkname);
+        my @target = stat ("$dirname/$filename");
+        my $ltype = @target ? (S_ISDIR ($target[2]) ? "d" : "-") : "!";
+        printf("R%o %o $uid.$gid\nS$size\nd$mloctime\nT$ltype\n:\"%s\" -> \"%s\"\n\n", S_IMODE($mode), S_IFMT($mode), $e_filename, $linkname);
     } elsif (S_ISCHR ($mode) || S_ISBLK ($mode)) {
         my $minor = $rdev % 256;
         my $major = int( $rdev / 256 );

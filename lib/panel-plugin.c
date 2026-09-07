@@ -91,7 +91,8 @@ mc_pp_dir_list_grow (dir_list *list, int delta)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st)
+mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st,
+                       gboolean link_to_dir, gboolean stale_link)
 {
     file_entry_t *fentry;
 
@@ -101,8 +102,8 @@ mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st)
     fentry = &list->list[list->len];
     fentry->fname = g_string_new (fname);
     fentry->f.marked = 0;
-    fentry->f.link_to_dir = S_ISDIR (st->st_mode) ? 1 : 0;
-    fentry->f.stale_link = 0;
+    fentry->f.link_to_dir = link_to_dir ? 1 : 0;
+    fentry->f.stale_link = stale_link ? 1 : 0;
     fentry->f.dir_size_computed = 0;
     fentry->st = *st;
     fentry->name_sort_key = NULL;
@@ -397,7 +398,17 @@ mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, time_t m
     st.st_gid = getgid ();
     st.st_nlink = 1;
 
-    (void) mc_pp_dir_list_append ((dir_list *) list, name, &st);
+    (void) mc_pp_dir_list_append ((dir_list *) list, name, &st, FALSE, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mc_pp_add_entry_st (void *list, const char *name, const struct stat *st, mc_pp_entry_flags_t flags)
+{
+    (void) mc_pp_dir_list_append ((dir_list *) list, name, st,
+                                  (flags & MC_PP_ENTRY_LINK_TO_DIR) != 0,
+                                  (flags & MC_PP_ENTRY_STALE_LINK) != 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */

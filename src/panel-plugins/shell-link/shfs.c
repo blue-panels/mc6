@@ -89,7 +89,7 @@ static const struct
     int version;
     const char *def_content;
 } shfs_helper_table[] = {
-    { VFS_SHELL_LS_FILE, 1, VFS_SHELL_LS_DEF_CONTENT },
+    { VFS_SHELL_LS_FILE, 2, VFS_SHELL_LS_DEF_CONTENT },
     { VFS_SHELL_EXISTS_FILE, 1, VFS_SHELL_EXISTS_DEF_CONTENT },
     { VFS_SHELL_MKDIR_FILE, 1, VFS_SHELL_MKDIR_DEF_CONTENT },
     { VFS_SHELL_UNLINK_FILE, 1, VFS_SHELL_UNLINK_DEF_CONTENT },
@@ -1424,7 +1424,8 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
 
         filename = buffer;
 
-        if (strcmp (filename, "\".\"") == 0 || strcmp (filename, "\"..\"") == 0)
+        if (strcmp (filename, "\".\"") == 0 || strcmp (filename, "\"..\"") == 0
+            || DIR_IS_DOT (filename) || DIR_IS_DOTDOT (filename))
             break;  // We'll do "." and ".." ourselves
 
         filename_bound = filename + strlen (filename);
@@ -1540,6 +1541,12 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
     }
     break;
 
+    case 'T':
+        // what the link points to: "Td" is a directory, "T!" is nothing
+        ent->link_to_dir = buffer[0] == 'd';
+        ent->stale_link = buffer[0] == '!';
+        break;
+
     case 'E':
     {
         int maj, min;
@@ -1613,6 +1620,7 @@ shfs_list_dir (shfs_conn_t *conn, const char *path, GError **error)
 
     entries = g_ptr_array_new_with_free_func (shfs_entry_free);
     ent = g_new0 (shfs_entry_t, 1);
+    ent->st.st_nlink = 1;
 
     while (TRUE)
     {
@@ -1639,6 +1647,7 @@ shfs_list_dir (shfs_conn_t *conn, const char *path, GError **error)
             // An empty line ends one entry and starts the next.
             g_ptr_array_add (entries, ent);
             ent = g_new0 (shfs_entry_t, 1);
+            ent->st.st_nlink = 1;
         }
     }
 

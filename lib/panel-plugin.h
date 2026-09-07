@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 16
+#define MC_PANEL_PLUGIN_API_VERSION 17
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -62,6 +62,16 @@ typedef enum
                                            returns MC_PPR_NOT_SUPPORTED for opens
                                            the viewer instead of doing nothing */
 } mc_pp_flags_t;
+
+/* What a listed entry is beyond its struct stat. Both bits are about a
+   symbolic link: the panel enters a link to a directory and marks a link that
+   points to nothing. */
+typedef enum
+{
+    MC_PP_ENTRY_NONE = 0,
+    MC_PP_ENTRY_LINK_TO_DIR = 1 << 0,
+    MC_PP_ENTRY_STALE_LINK = 1 << 1
+} mc_pp_entry_flags_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
@@ -361,6 +371,11 @@ typedef const mc_panel_plugin_t *(*mc_panel_plugin_register_fn) (void);
 /* Shared helper: build a struct stat and append one entry to the dir_list.
    Plugins that used a local add_entry()/add_fake_entry() can call this instead. */
 void mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, time_t mtime);
+
+/* Append one entry from a ready struct stat; @flags say what a symbolic link
+   points to. */
+void mc_pp_add_entry_st (void *list, const char *name, const struct stat *st,
+                         mc_pp_entry_flags_t flags);
 
 /* Rename temp file to preserve the original extension from fname.
    Uses the basename of fname to avoid treating directory components

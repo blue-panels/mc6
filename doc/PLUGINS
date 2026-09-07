@@ -93,7 +93,7 @@ A panel plugin module must export:
 The descriptor minimum:
 
 - api_version = MC_PANEL_PLUGIN_API_VERSION (the header constant;
-  current value is 14)
+  current value is 17)
 - unique name (used by mc_panel_plugin_find_by_name)
 - display_name (UI label)
 - proto and prefix when the plugin owns a protocol scheme
@@ -106,6 +106,9 @@ header any time it changes.
 API 14 adds an optional shutdown() callback.  mc calls it once after all
 panel instances have been closed and before plugin modules are unloaded;
 use it to release registries, caches, and other process-lifetime state.
+
+API 17 adds mc_pp_add_entry_st(), which takes a whole struct stat and
+says what a symbolic link points to (see 3.4).
 
 
 3.2 Capability Flags (mc_pp_flags_t)
@@ -185,9 +188,14 @@ the plugin (include src/filemanager/dir.h).
 Rule: do not add the ".." entry.  Core inserts it at index 0 before
 calling the plugin.
 
-Use the shared helper mc_pp_add_entry() for plain entries; plugins
-that need link_to_dir / stale_link bits should call dir_list_append
-+ handle_path from src/filemanager/dir.h directly.
+Use the shared helper mc_pp_add_entry() for plain entries.  An entry
+with a whole struct stat (owner, group, link count and so on) goes
+through mc_pp_add_entry_st(); its mc_pp_entry_flags_t argument says
+what a symbolic link points to: MC_PP_ENTRY_LINK_TO_DIR for a link to
+a directory, which the panel then shows, sorts, enters and copies as
+one, MC_PP_ENTRY_STALE_LINK for a link that points to nothing.  Do not
+call dir_list_append() from src/filemanager/dir.h: it is not part of
+the plugin API.
 
 Minimal working example -- a panel with three fake regular files of
 different sizes:
@@ -203,6 +211,10 @@ different sizes:
 
         return MC_PPR_OK;
     }
+
+A symbolic link to a directory, with the stat the plugin has for it:
+
+        mc_pp_add_entry_st (list, "bin", &st, MC_PP_ENTRY_LINK_TO_DIR);
 
 
 3.5 Optional Plugin Callbacks

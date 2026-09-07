@@ -1210,7 +1210,7 @@ display_mini_info (WPanel *panel)
     if (fe == NULL)
         // NULL is in case of filter that doesn't match anything
         repaint_status (panel);
-    else if (S_ISLNK (fe->st.st_mode))
+    else if (S_ISLNK (fe->st.st_mode) && !panel->is_plugin_panel)
     {
         char link_target[MC_MAXPATHLEN];
         vfs_path_t *lc_link_vpath;
