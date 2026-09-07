@@ -90,6 +90,8 @@ typedef struct
     char *name;
     struct stat st;
     gboolean is_dir;
+    gboolean link_to_dir;  // a symbolic link that points to a directory
+    gboolean stale_link;   // a symbolic link that points to nothing
 } sftp_entry_t;
 
 typedef struct
@@ -1167,6 +1169,22 @@ sftp_load_entries (sftp_data_t *data)
 
             entry->is_dir = S_ISDIR (entry->st.st_mode);
 
+            /* readdir describes the link itself; what it points to takes a stat,
+               which follows it. One round trip per link. */
+            if (S_ISLNK (entry->st.st_mode))
+            {
+                LIBSSH2_SFTP_ATTRIBUTES target;
+                char *full_path;
+
+                full_path = mc_pp_join_path (data->current_path, entry->name);
+                if (libssh2_sftp_stat (data->sftp_session, full_path, &target) == 0)
+                    entry->link_to_dir = (target.flags & LIBSSH2_SFTP_ATTR_PERMISSIONS) != 0
+                        && S_ISDIR (target.permissions);
+                else
+                    entry->stale_link = TRUE;
+                g_free (full_path);
+            }
+
             g_ptr_array_add (arr, entry);
         }
     }
@@ -1620,16 +1638,19 @@ sftp_get_items (void *plugin_data, void *list_ptr)
         for (i = 0; i < data->entries->len; i++)
         {
             const sftp_entry_t *e = (const sftp_entry_t *) g_ptr_array_index (data->entries, i);
-            mode_t mode;
-            off_t size;
+            struct stat st = e->st;
+            mc_pp_entry_flags_t flags = MC_PP_ENTRY_NONE;
 
-            mode = e->st.st_mode;
-            if (!S_ISDIR (mode) && !S_ISREG (mode) && !S_ISLNK (mode))
-                mode = S_IFREG | 0644;
+            if (S_ISDIR (st.st_mode))
+                st.st_size = 0;
+            if (st.st_mtime == 0)
+                st.st_mtime = time (NULL);
+            if (e->link_to_dir)
+                flags |= MC_PP_ENTRY_LINK_TO_DIR;
+            if (e->stale_link)
+                flags |= MC_PP_ENTRY_STALE_LINK;
 
-            size = S_ISDIR (mode) ? 0 : e->st.st_size;
-            mc_pp_add_entry (list_ptr, e->name, mode, size,
-                             e->st.st_mtime != 0 ? e->st.st_mtime : time (NULL));
+            mc_pp_add_entry_st (list_ptr, e->name, &st, flags);
         }
     }
 
@@ -1705,7 +1726,7 @@ sftp_chdir (void *plugin_data, const char *path)
         char *new_path;
 
         entry = find_entry (data, path);
-        if (entry == NULL || !entry->is_dir)
+        if (entry == NULL || (!entry->is_dir && !entry->link_to_dir))
             return MC_PPR_FAILED;
 
         new_path = mc_pp_join_path (data->current_path, path);
@@ -1744,7 +1765,7 @@ sftp_enter (void *plugin_data, const char *name, const struct stat *st)
         if (entry == NULL)
             return MC_PPR_FAILED;
 
-        if (entry->is_dir)
+        if (entry->is_dir || entry->link_to_dir)
         {
             char *new_path;
 
@@ -2862,11 +2883,19 @@ sftp_view_item (void *plugin_data, const char *fname, const struct stat *st, gbo
     (void) st;
     (void) plain_view;
 
-    if (!data->at_root)
-        return sftp_view_stream (data, fname);
-
     if (fname == NULL)
         return MC_PPR_FAILED;
+
+    if (!data->at_root)
+    {
+        const sftp_entry_t *entry = find_entry (data, fname);
+
+        // a directory, or a link to one, is entered by the core, not viewed
+        if (entry != NULL && (entry->is_dir || entry->link_to_dir))
+            return MC_PPR_NOT_SUPPORTED;
+
+        return sftp_view_stream (data, fname);
+    }
 
     conn = find_connection (data, fname);
     result = sftp_connection_to_local_copy (conn, &tmp_path);
