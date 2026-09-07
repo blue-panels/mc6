@@ -601,19 +601,18 @@ find_in_dir (const char *base_dir, const char *name)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* [skin] 256colors / truecolors from the colors in use */
+/* [skin] 256colors / truecolors from the skin's class */
 
 static void
 model_update_flags (const skinedit_model_t *m, GKeyFile *kf)
 {
-    gboolean has_256, has_true;
+    skinedit_color_class_t cls = skinedit_model_class (m);
 
-    skinedit_model_needs (m, &has_256, &has_true);
     g_key_file_remove_key (kf, "skin", "256colors", NULL);
     g_key_file_remove_key (kf, "skin", "truecolors", NULL);
-    if (has_true)
+    if (cls == SKINEDIT_COLOR_TRUECOLOR)
         g_key_file_set_boolean (kf, "skin", "truecolors", TRUE);
-    else if (has_256)
+    else if (cls == SKINEDIT_COLOR_256)
         g_key_file_set_boolean (kf, "skin", "256colors", TRUE);
 }
 
@@ -699,7 +698,7 @@ skinedit_color_classify (const char *value)
             return SKINEDIT_COLOR_BASIC;
 
     if (sscanf (value, "color%d%c", &n, &dummy) == 1 && n >= 0 && n < 256)
-        return SKINEDIT_COLOR_256;
+        return n < 16 ? SKINEDIT_COLOR_BASIC : SKINEDIT_COLOR_256;
     if (sscanf (value, "gray%d%c", &n, &dummy) == 1 && n >= 0 && n < 24)
         return SKINEDIT_COLOR_256;
     if (strncmp (value, "rgb", 3) == 0 && strlen (value) == 6 && value[3] >= '0' && value[3] < '6'
@@ -768,6 +767,13 @@ skinedit_model_open_file (const char *path, const char *name, GError **error)
     m->description = config_value (m, "skin", "description");
     if (m->description == NULL)
         m->description = g_strdup ("");
+    if (mc_config_get_bool (m->config, "skin", "truecolors", FALSE))
+        m->colors = SKINEDIT_COLOR_TRUECOLOR;
+    else if (mc_config_get_bool (m->config, "skin", "256colors", FALSE))
+        m->colors = SKINEDIT_COLOR_256;
+    else
+        m->colors = SKINEDIT_COLOR_BASIC;
+    m->file_colors = m->colors;
 
     model_build (m);
     return m;
@@ -926,6 +932,7 @@ skinedit_model_reset_all (skinedit_model_t *m)
 {
     guint si, ei;
 
+    m->colors = m->file_colors;
     for (si = 0; si < m->sections->len; si++)
     {
         skinedit_section_t *s = g_ptr_array_index (m->sections, si);
@@ -980,6 +987,8 @@ skinedit_model_dirty (const skinedit_model_t *m)
 {
     guint si;
 
+    if (m->colors != m->file_colors)
+        return TRUE;
     for (si = 0; si < m->sections->len; si++)
         if (skinedit_section_changed (g_ptr_array_index (m->sections, si)))
             return TRUE;
@@ -1002,7 +1011,7 @@ skinedit_model_config_copy (const skinedit_model_t *m)
     if (data != NULL)
         g_key_file_load_from_data (copy->handle, data, len, G_KEY_FILE_KEEP_COMMENTS, NULL);
     g_free (data);
-    // the 256colors / truecolors flags as the colors in use need them, not as the file says
+    // the 256colors / truecolors flags from the skin's class, raised to what its colors need
     model_update_flags (m, copy->handle);
     return copy;
 }
@@ -1050,6 +1059,67 @@ skinedit_model_needs (const skinedit_model_t *m, gboolean *needs_256, gboolean *
             }
         }
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+skinedit_color_class_t
+skinedit_model_class (const skinedit_model_t *m)
+{
+    gboolean has_256, has_true;
+
+    skinedit_model_needs (m, &has_256, &has_true);
+    if (has_true)
+        return SKINEDIT_COLOR_TRUECOLOR;
+    if (has_256 && m->colors < SKINEDIT_COLOR_256)
+        return SKINEDIT_COLOR_256;
+    return m->colors;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+skinedit_entry_t *
+skinedit_model_over_class (const skinedit_model_t *m, skinedit_color_class_t cls,
+                           skinedit_part_t *part)
+{
+    skinedit_entry_t *best = NULL;
+    skinedit_color_class_t best_cls = cls;
+    guint si, ei;
+
+    for (si = 0; si < m->sections->len; si++)
+    {
+        const skinedit_section_t *s = g_ptr_array_index (m->sections, si);
+
+        for (ei = 0; ei < s->entries->len; ei++)
+        {
+            skinedit_entry_t *e = g_ptr_array_index (s->entries, ei);
+            int i;
+
+            if (e->kind != SKINEDIT_ENTRY_COLOR)
+                continue;
+            for (i = SKINEDIT_PART_FG; i <= SKINEDIT_PART_BG; i++)
+            {
+                char *v, *alias;
+                skinedit_color_class_t c;
+
+                if (e->raw[i] == NULL)
+                    continue;
+                v = alias_resolve (m, e->raw[i], &alias);
+                c = skinedit_color_classify (v);
+                g_free (v);
+                g_free (alias);
+                if ((c == SKINEDIT_COLOR_256 || c == SKINEDIT_COLOR_TRUECOLOR) && c > best_cls)
+                {
+                    best = e;
+                    best_cls = c;
+                    *part = (skinedit_part_t) i;
+                    if (c == SKINEDIT_COLOR_TRUECOLOR)
+                        return best;
+                }
+            }
+        }
+    }
+    return best;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1127,6 +1197,8 @@ skinedit_model_save_to (skinedit_model_t *m, const char *path, const char *name,
     }
     model_update_flags (m, m->config->handle);
     mc_config_deinit (out);
+    m->colors = skinedit_model_class (m);
+    m->file_colors = m->colors;
 
     g_free (m->path);
     m->path = g_strdup (path);
