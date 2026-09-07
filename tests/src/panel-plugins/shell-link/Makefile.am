@@ -19,19 +19,20 @@ endif
 
 TESTS = \
 	shfs_parse_ls \
-	helpers_ls.sh
+	helpers_ls.sh \
+	helpers_get.sh
 
-check_PROGRAMS = shfs_parse_ls builtin_ls
+check_PROGRAMS = shfs_parse_ls builtin_helper
 
 shfs_parse_ls_SOURCES = \
 	shfs_parse_ls.c
 
-# prints the ls script built into the plugin, for helpers_ls.sh
-builtin_ls_SOURCES = \
-	builtin_ls.c
+# prints a script built into the plugin, for the helpers_*.sh tests
+builtin_helper_SOURCES = \
+	builtin_helper.c
 
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 AM_TESTS_ENVIRONMENT = srcdir='$(srcdir)'; export srcdir;
 
-EXTRA_DIST = helpers_ls.sh
+EXTRA_DIST = helpers_ls.sh helpers_get.sh

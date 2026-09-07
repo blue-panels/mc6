@@ -1,5 +1,5 @@
 /*
-   src/panel-plugins/shell-link - print the built-in ls script for helpers_ls.sh
+   src/panel-plugins/shell-link - print a built-in helper script for the script tests
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -26,12 +26,24 @@
 #include <config.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #include "src/panel-plugins/shell-link/shelldef.h"
 
 int
-main (void)
+main (int argc, char **argv)
 {
-    fputs (VFS_SHELL_LS_DEF_CONTENT, stdout);
+    const char *name = argc > 1 ? argv[1] : "";
+
+    if (strcmp (name, "ls") == 0)
+        fputs (VFS_SHELL_LS_DEF_CONTENT, stdout);
+    else if (strcmp (name, "get") == 0)
+        fputs (VFS_SHELL_GET_DEF_CONTENT, stdout);
+    else
+    {
+        fprintf (stderr, "usage: %s ls|get\n", argv[0]);
+        return 2;
+    }
+
     return 0;
 }

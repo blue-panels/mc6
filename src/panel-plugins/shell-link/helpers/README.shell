@@ -155,7 +155,8 @@ Get file
 
 Server sends line with filesize on it, followed by line with ### 100
 indicating partial success, then it sends binary data (exactly filesize bytes)
-and follows them with (with no preceding newline) ### 200.
+and follows them with (with no preceding newline) ### 200. For a symbolic
+link the size and the bytes are those of the file it points to.
 
 Note that there's no way to abort running RETR command - except closing
 the connection.

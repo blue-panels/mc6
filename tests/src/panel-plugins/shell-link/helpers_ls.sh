@@ -79,8 +79,8 @@ if perl -e 1 2>/dev/null; then
 fi
 if ls -Q / >/dev/null 2>&1; then
     check_mode "$helper" lsq none SHELL_HAVE_LSQ=1
-    if [ -x ./builtin_ls ]; then
-        ./builtin_ls > "$tmp/builtin_ls"
+    if [ -x ./builtin_helper ]; then
+        ./builtin_helper ls > "$tmp/builtin_ls"
         check_mode "$tmp/builtin_ls" builtin none
     fi
 fi

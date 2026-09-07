@@ -192,7 +192,7 @@
     "# shfs-helper: get 1\n"                                                                       \
     "export LC_TIME=C\n"                                                                           \
     "if dd if=\"/${SHELL_FILENAME}\" of=/dev/null bs=1 count=1 2>/dev/null ; then\n"               \
-    "    ls -ln \"/${SHELL_FILENAME}\" 2>/dev/null | (\n"                                          \
+    "    ls -lnL \"/${SHELL_FILENAME}\" 2>/dev/null | (\n"                                         \
     "       read p l u g s r\n"                                                                    \
     "       echo $s\n"                                                                             \
     "    )\n"                                                                                      \
