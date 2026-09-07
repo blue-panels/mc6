@@ -21,17 +21,19 @@ case "$shell_links" in
 esac
 }
 
-# $1 = the path of a link
+# $1 = the path of a link. A target that is neither a directory nor a file
+# is asked of "ls -L": GNU ls says nothing of a link that points to nothing,
+# BSD ls shows the link itself.
 shell_link_type_path ()
 {
 if [ -d "$1" ]; then
     echo "Td"
 elif [ -f "$1" ]; then
     :
-elif ls -Ld "$1" >/dev/null 2>&1; then
-    :
 else
-    echo "T!"
+    case `ls -lLd "$1" 2>/dev/null` in
+    ""|l*) echo "T!" ;;
+    esac
 fi
 }
 
@@ -80,11 +82,11 @@ ls -lan "${SHELL_DIR}" 2>/dev/null | grep '^[^cbt]' | (
 while read p l u g s rec; do
     if [ -n "$g" ]; then
         if [ -n "$SHELL_HAVE_DATE_MDYT" ]; then
-            filename=`echo "$rec"| sed 's/[^[:space:]]\+ \+[^[:space:]]\+ \+[^[:space:]]\+ //'`
-            filedate=`echo "$rec"| sed 's/\([^[:space:]]\+ \+[^[:space:]]\+ \+[^[:space:]]\+\) .*/\1/'`
+            filename=`echo "$rec"| sed 's/[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{1,\}[^ ]\{1,\} //'`
+            filedate=`echo "$rec"| sed 's/\([^ ]\{1,\} \{1,\}[^ ]\{1,\} \{1,\}[^ ]\{1,\}\) .*/\1/'`
         else
-            filename=`echo "$rec"| sed 's/[^[:space:]]\+ \+[^[:space:]]\+ //'`
-            filedate=`echo "$rec"| sed 's/\([^[:space:]]\+ \+[^[:space:]]\+\) .*/\1/'`
+            filename=`echo "$rec"| sed 's/[^ ]\{1,\} \{1,\}[^ ]\{1,\} //'`
+            filedate=`echo "$rec"| sed 's/\([^ ]\{1,\} \{1,\}[^ ]\{1,\}\) .*/\1/'`
         fi
         pfile=\"`echo "$filename" | sed -e 's#^\(.*\) -> \(.*\)#\1" -> "\2#'`\"
         echo "P$p $u.$g"
@@ -107,11 +109,11 @@ ls -lan "${SHELL_DIR}" 2>/dev/null | grep '^[cb]' | (
 while read p l u g a i rec; do
     if [ -n "$g" ]; then
         if [ -n "$SHELL_HAVE_DATE_MDYT" ]; then
-            filename=`echo "$rec"| sed 's/[^[:space:]]\+ \+[^[:space:]]\+ \+[^[:space:]]\+ //'`
-            filedate=`echo "$rec"| sed 's/\([^[:space:]]\+ \+[^[:space:]]\+ \+[^[:space:]]\+\) .*/\1/'`
+            filename=`echo "$rec"| sed 's/[^ ]\{1,\} \{1,\}[^ ]\{1,\} \{1,\}[^ ]\{1,\} //'`
+            filedate=`echo "$rec"| sed 's/\([^ ]\{1,\} \{1,\}[^ ]\{1,\} \{1,\}[^ ]\{1,\}\) .*/\1/'`
         else
-            filename=`echo "$rec"| sed 's/[^[:space:]]\+ \+[^[:space:]]\+ //'`
-            filedate=`echo "$rec"| sed 's/\([^[:space:]]\+ \+[^[:space:]]\+\) .*/\1/'`
+            filename=`echo "$rec"| sed 's/[^ ]\{1,\} \{1,\}[^ ]\{1,\} //'`
+            filedate=`echo "$rec"| sed 's/\([^ ]\{1,\} \{1,\}[^ ]\{1,\}\) .*/\1/'`
         fi
         pfile=\"`echo "$filename" | sed -e 's#^\(.*\) -> \(.*\)#\1" -> "\2#'`\"
         echo "P$p $u.$g"
