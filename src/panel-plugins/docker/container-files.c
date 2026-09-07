@@ -105,6 +105,169 @@ files_cache_lookup (const docker_data_t *data, const char *container_id, const c
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The path with "." and ".." folded; "/" for the root. */
+static char *
+files_path_normalize (const char *path)
+{
+    char **parts;
+    GPtrArray *kept;
+    GString *out;
+    guint i;
+
+    parts = g_strsplit (path, "/", -1);
+    kept = g_ptr_array_new ();
+
+    for (i = 0; parts[i] != NULL; i++)
+    {
+        if (parts[i][0] == '\0' || strcmp (parts[i], ".") == 0)
+            continue;
+        if (strcmp (parts[i], "..") == 0)
+        {
+            if (kept->len > 0)
+                g_ptr_array_remove_index (kept, kept->len - 1);
+            continue;
+        }
+        g_ptr_array_add (kept, parts[i]);
+    }
+
+    out = g_string_new ("");
+    for (i = 0; i < kept->len; i++)
+        g_string_append_printf (out, "/%s", (const char *) g_ptr_array_index (kept, i));
+    if (out->len == 0)
+        g_string_append_c (out, '/');
+
+    g_ptr_array_free (kept, TRUE);
+    g_strfreev (parts);
+
+    return g_string_free (out, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The item in @dir called @name, from the cache itself, not a copy. */
+static const docker_item_t *
+files_cache_item (const docker_data_t *data, const char *container_id, const char *dir,
+                  const char *name)
+{
+    char *key;
+    GPtrArray *items;
+    guint i;
+
+    if (data->files_cache == NULL)
+        return NULL;
+
+    key = files_cache_key (container_id, dir);
+    items = (GPtrArray *) g_hash_table_lookup (data->files_cache, key);
+    g_free (key);
+
+    if (items == NULL)
+        return NULL;
+
+    for (i = 0; i < items->len; i++)
+    {
+        const docker_item_t *item = (const docker_item_t *) g_ptr_array_index (items, i);
+
+        if (strcmp (item->name, name) == 0)
+            return item;
+    }
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What the link @link in @cwd leads to, through further links: the item, with its
+   path in @resolved, or NULL when the chain ends nowhere the listing knows. */
+static const docker_item_t *
+files_cache_follow_link (const docker_data_t *data, const char *container_id, const char *cwd,
+                         const docker_item_t *link, char **resolved)
+{
+    const docker_item_t *item = link;
+    char *dir = g_strdup (cwd);
+    char *path = NULL;
+    int hops;
+
+    *resolved = NULL;
+
+    for (hops = 0; hops < 32 && item != NULL && item->is_link; hops++)
+    {
+        const char *target = item->link_target;
+        char *joined;
+        char *parent;
+        char *base;
+
+        if (target == NULL || target[0] == '\0')
+        {
+            item = NULL;
+            break;
+        }
+
+        joined = target[0] == '/' ? g_strdup (target) : mc_pp_join_path (dir, target);
+        g_free (path);
+        path = files_path_normalize (joined);
+        g_free (joined);
+
+        parent = mc_pp_path_up (path);
+        if (parent == NULL)
+        {
+            // the root itself
+            item = NULL;
+            break;
+        }
+        base = g_path_get_basename (path);
+        item = files_cache_item (data, container_id, parent, base);
+        g_free (base);
+        g_free (dir);
+        dir = parent;
+    }
+
+    g_free (dir);
+
+    if (item == NULL || item->is_link)
+    {
+        g_free (path);
+        return NULL;
+    }
+
+    *resolved = path;
+    return item;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The links among @items, listed for @cwd, learn what they lead to. */
+static void
+files_cache_resolve_links (const docker_data_t *data, const char *container_id, const char *cwd,
+                           GPtrArray *items)
+{
+    guint i;
+
+    for (i = 0; i < items->len; i++)
+    {
+        docker_item_t *item = (docker_item_t *) g_ptr_array_index (items, i);
+        const docker_item_t *target;
+        char *resolved = NULL;
+
+        if (!item->is_link)
+            continue;
+
+        target = files_cache_follow_link (data, container_id, cwd, item, &resolved);
+        if (target == NULL)
+            item->stale_link = TRUE;
+        else if (target->is_dir)
+        {
+            item->link_to_dir = TRUE;
+            g_free (item->link_dir);
+            item->link_dir = resolved;
+            resolved = NULL;
+        }
+
+        g_free (resolved);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static GPtrArray *
 files_cache_get_or_create_dir (docker_data_t *data, const char *container_id, const char *cwd)
 {
@@ -890,6 +1053,8 @@ docker_container_files_reload (docker_data_t *data, char **err_text)
     data->items = files_cache_lookup (data, data->current_container_id, cwd);
     if (data->items == NULL)
         data->items = g_ptr_array_new_with_free_func (docker_item_free);
+    else
+        files_cache_resolve_links (data, data->current_container_id, cwd, data->items);
 
     if (data->pending_focus == NULL && data->files_focus_cache != NULL)
     {
@@ -976,12 +1141,18 @@ docker_container_files_chdir (docker_data_t *data, const char *path)
     {
         const docker_item_t *item = find_item_by_name (data, path);
 
-        if (item == NULL || !item->is_dir)
+        if (item == NULL || (!item->is_dir && !item->link_to_dir))
             return MC_PPR_FAILED;
 
         {
             const char *cwd = (data->files_cwd != NULL) ? data->files_cwd : "/";
-            char *new_path = mc_pp_join_path (cwd, item->name);
+            char *new_path;
+
+            // a link to a directory goes where it leads
+            if (item->link_to_dir)
+                new_path = g_strdup (item->link_dir);
+            else
+                new_path = mc_pp_join_path (cwd, item->name);
 
             g_free (data->files_cwd);
             data->files_cwd = new_path;
@@ -1058,7 +1229,8 @@ docker_container_files_get_local_copy (docker_data_t *data, const char *fname, c
         /* SSH: docker cp writes to remote filesystem; stream via TAR pipe instead */
         docker_cp_stream_t stream;
         char *quoted_src = g_shell_quote (container_path);
-        char *docker_args = g_strdup_printf ("cp %s:%s -", quoted_id, quoted_src);
+        char *docker_args =
+            g_strdup_printf ("cp %s%s:%s -", item->is_link ? "-L " : "", quoted_id, quoted_src);
         char *cmd = docker_conn_build_pipe_cmd (data->active_conn, docker_args);
         char *err_text = NULL;
 
@@ -1131,7 +1303,8 @@ docker_container_files_get_local_copy (docker_data_t *data, const char *fname, c
             char *quoted_src = g_shell_quote (container_path);
             char *quoted_dst = g_shell_quote (tmp_path);
 
-            cp_cmd = g_strdup_printf ("cp %s:%s %s", quoted_id, quoted_src, quoted_dst);
+            cp_cmd = g_strdup_printf ("cp %s%s:%s %s", item->is_link ? "-L " : "", quoted_id,
+                                      quoted_src, quoted_dst);
             g_free (quoted_src);
             g_free (quoted_dst);
         }

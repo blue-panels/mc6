@@ -121,6 +121,7 @@ docker_item_free (gpointer p)
     g_free (item->name);
     g_free (item->id);
     g_free (item->link_target);
+    g_free (item->link_dir);
     g_free (item->status);
     g_free (item->image);
     g_free (item->ports);
@@ -144,6 +145,9 @@ docker_item_clone (const docker_item_t *item)
     copy->is_link = item->is_link;
     copy->size = item->size;
     copy->link_target = g_strdup (item->link_target);
+    copy->link_to_dir = item->link_to_dir;
+    copy->stale_link = item->stale_link;
+    copy->link_dir = g_strdup (item->link_dir);
     copy->status = g_strdup (item->status);
     copy->image = g_strdup (item->image);
     copy->ports = g_strdup (item->ports);
@@ -1682,7 +1686,24 @@ docker_get_items (void *plugin_data, void *list_ptr)
                 entry_name = display_name;
             }
 
-            mc_pp_add_entry (list_ptr, entry_name, mode, item->size, time (NULL));
+            {
+                struct stat st;
+                mc_pp_entry_flags_t flags = MC_PP_ENTRY_NONE;
+
+                memset (&st, 0, sizeof (st));
+                st.st_mode = mode;
+                st.st_size = item->size;
+                st.st_mtime = time (NULL);
+                st.st_uid = getuid ();
+                st.st_gid = getgid ();
+                st.st_nlink = 1;
+                if (item->link_to_dir)
+                    flags |= MC_PP_ENTRY_LINK_TO_DIR;
+                if (item->stale_link)
+                    flags |= MC_PP_ENTRY_STALE_LINK;
+
+                mc_pp_add_entry_st (list_ptr, entry_name, &st, flags);
+            }
             g_free (display_name);
         }
     }
@@ -1989,7 +2010,7 @@ docker_enter (void *plugin_data, const char *name, const struct stat *st)
         char *saved_cwd = NULL;
         mc_pp_result_t result;
 
-        if (item != NULL && item->is_dir)
+        if (item != NULL && (item->is_dir || item->link_to_dir))
         {
             saved_items = docker_items_clone (data->items);
             saved_cwd = g_strdup (data->files_cwd);

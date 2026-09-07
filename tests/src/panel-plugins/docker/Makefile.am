@@ -17,7 +17,8 @@ TESTS = \
 	docker_tar_test \
 	docker_cp_stream_test \
 	docker_domains_test \
-	docker_paths_test
+	docker_paths_test \
+	docker_links_test
 
 check_PROGRAMS = $(TESTS)
 
@@ -31,6 +32,11 @@ docker_cp_stream_test_SOURCES = \
 
 docker_domains_test_SOURCES = \
 	docker_domains_test.c
+
+docker_links_test_SOURCES = \
+	docker_links_test.c \
+	$(top_srcdir)/src/panel-plugins/docker/docker-tar.c \
+	$(top_srcdir)/src/panel-plugins/docker/docker-cp-stream.c
 
 docker_paths_test_SOURCES = \
 	docker_paths_test.c

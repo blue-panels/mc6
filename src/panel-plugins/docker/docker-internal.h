@@ -58,6 +58,9 @@ typedef struct
     gboolean is_link;
     off_t size;
     char *link_target;
+    gboolean link_to_dir; /* a link that leads to a directory of the container */
+    gboolean stale_link;  /* a link that leads nowhere the listing knows */
+    char *link_dir;       /* the directory a link to a directory leads to */
 
     char *status;
     char *image;
