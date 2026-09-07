@@ -16,10 +16,14 @@ typedef struct
 {
     char *full_path; /* full path inside the archive */
     char *name;      /* basename for display */
-    mode_t mode;     /* S_IFDIR | perms  or  S_IFREG | perms */
+    mode_t mode;     /* S_IFDIR, S_IFREG or S_IFLNK | perms */
     off_t size;
     time_t mtime;
     gboolean is_virtual_dir; /* TRUE if synthesized from path components */
+    char *linkname;          /* what a symbolic link says it points to */
+    char *link_path;         /* the entry a link leads to, or NULL */
+    gboolean link_to_dir;    /* the link leads to a directory */
+    gboolean stale_link;     /* the link leads nowhere in the archive */
 } arcmc_entry_t;
 
 /* Format indices for arcmc_pack_opts_t.format */

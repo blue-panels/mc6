@@ -26,6 +26,8 @@ char *build_child_path (const char *current_dir, const char *name);
 const char *is_direct_child (const char *entry_path, const char *dir);
 gboolean is_under_dir (const char *entry_path, const char *dir);
 const arcmc_entry_t *arcmc_find_entry (GPtrArray *entries, const char *full_path);
+void arcmc_resolve_links (GPtrArray *entries);
+char *arcmc_target_path (arcmc_data_t *data, const char *name);
 
 /* Reading */
 char *arcmc_find_extfs_helper (const char *archive_path);

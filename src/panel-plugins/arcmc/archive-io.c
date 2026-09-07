@@ -169,25 +169,6 @@ strip_trailing_slashes (char *path)
 
 /* --------------------------------------------------------------------------------------------- */
 
-const arcmc_entry_t *
-arcmc_find_entry (GPtrArray *entries, const char *full_path)
-{
-    guint i;
-
-    if (entries == NULL)
-        return NULL;
-
-    for (i = 0; i < entries->len; i++)
-    {
-        const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (entries, i);
-
-        if (strcmp (e->full_path, full_path) == 0)
-            return e;
-    }
-
-    return NULL;
-}
-
 /* --------------------------------------------------------------------------------------------- */
 
 /* Ensure all parent directories of `full_path` exist as virtual dir entries. */
@@ -524,14 +505,26 @@ arcmc_path_is_deleted (const char *path, const char **del_paths, int del_count)
 
 /*** public functions ****************************************************************************/
 
-void
-arcmc_entry_free (gpointer p)
-{
-    arcmc_entry_t *e = (arcmc_entry_t *) p;
+/* --------------------------------------------------------------------------------------------- */
 
-    g_free (e->full_path);
-    g_free (e->name);
-    g_free (e);
+/* The path inside the archive that @name in the current directory stands for: for
+   a link to a file, the file it leads to, as the content is that file's. */
+char *
+arcmc_target_path (arcmc_data_t *data, const char *name)
+{
+    char *path;
+    const arcmc_entry_t *e;
+
+    path = build_child_path (data->current_dir, name);
+    e = arcmc_find_entry (data->all_entries, path);
+
+    if (e != NULL && S_ISLNK (e->mode) && e->link_path != NULL && !e->link_to_dir)
+    {
+        g_free (path);
+        return g_strdup (e->link_path);
+    }
+
+    return path;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1077,7 +1070,9 @@ arcmc_read_archive_extfs (arcmc_data_t *data)
                         e->name = g_strdup (basename_ptr != NULL ? basename_ptr + 1 : clean);
 
                         e->mode = st.st_mode;
-                        if (!S_ISDIR (e->mode))
+                        if (S_ISLNK (e->mode))
+                            e->linkname = g_strdup (linkname);
+                        else if (!S_ISDIR (e->mode))
                             e->mode = S_IFREG | (e->mode & 07777);
 
                         e->size = st.st_size;
@@ -1102,6 +1097,8 @@ arcmc_read_archive_extfs (arcmc_data_t *data)
         g_string_free (remain_line, TRUE);
 
     mc_pclose (pip, NULL);
+
+    arcmc_resolve_links (data->all_entries);
 
     return (data->all_entries->len > 0);
 }
@@ -1353,6 +1350,11 @@ arcmc_read_archive_res (arcmc_data_t *data)
         entry_mode = archive_entry_mode (entry);
         if (S_ISDIR (entry_mode))
             e->mode = S_IFDIR | (entry_mode & 07777);
+        else if (archive_entry_filetype (entry) == AE_IFLNK)
+        {
+            e->mode = S_IFLNK | (entry_mode & 07777);
+            e->linkname = g_strdup (archive_entry_symlink (entry));
+        }
         else
             e->mode = S_IFREG | (entry_mode & 07777);
 
@@ -1388,6 +1390,7 @@ arcmc_read_archive_res (arcmc_data_t *data)
         res = ARCMC_READ_ENCRYPTED_7Z;
 
     arcmc_archive_reader_close (a, reader_ctx);
+    arcmc_resolve_links (data->all_entries);
     return res;
 }
 
@@ -2217,7 +2220,7 @@ arcmc_extract_to_temp (arcmc_data_t *data, const char *name, char **local_path)
     char *target_path;
     mc_pp_result_t r;
 
-    target_path = build_child_path (data->current_dir, name);
+    target_path = arcmc_target_path (data, name);
 
     if (data->extfs_helper != NULL)
         r = arcmc_extract_entry_extfs (data, target_path, local_path);
