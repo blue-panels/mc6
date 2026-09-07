@@ -2549,6 +2549,20 @@ close_fh:
 
 out:
     close (ctx->write_fd);
+
+    /* A write into the pipe the viewer has closed leaves a SIGPIPE pending on this
+       thread; restoring the mask would deliver it and end the process. */
+    {
+        sigset_t pending;
+
+        if (sigpending (&pending) == 0 && sigismember (&pending, SIGPIPE) == 1)
+        {
+            int sig;
+
+            (void) sigwait (&block_set, &sig);
+        }
+    }
+
     pthread_sigmask (SIG_SETMASK, &old_set, NULL);
 
     return NULL;
