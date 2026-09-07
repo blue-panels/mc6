@@ -100,6 +100,7 @@ typedef struct
     gboolean at_root;
     char *current_path;
     GPtrArray *entries;
+    gboolean load_failed; /* the last listing did not come */
 
     GPtrArray *connections;
     char *connections_file;
@@ -1376,6 +1377,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     {
         FTP_LOG ("load_entries: request failed, returning empty list");
         g_string_free (ctx.buf, TRUE);
+        data->load_failed = TRUE;
         return arr;
     }
 
@@ -1470,6 +1472,8 @@ ftp_reload_entries (ftp_data_t *data, gboolean show_progress)
 
     FTP_LOG ("reload_entries: path='%s' show_progress=%d", data->current_path, show_progress);
 
+    data->load_failed = FALSE;
+
     cached = mc_pp_dir_cache_lookup (&data->dir_cache, data->current_path);
     if (cached != NULL)
     {
@@ -1503,7 +1507,7 @@ ftp_reload_entries (ftp_data_t *data, gboolean show_progress)
         data->entries = ftp_load_entries (data, NULL);
     }
 
-    if (data->entries != NULL)
+    if (data->entries != NULL && !data->load_failed)
     {
         FTP_LOG ("reload_entries: storing %u entries in cache for '%s'", data->entries->len,
                  data->current_path);
@@ -2591,6 +2595,25 @@ ftp_enter (void *plugin_data, const char *name, const struct stat *st)
 
             ftp_reload_entries (data, TRUE);
             return MC_PPR_OK;
+        }
+
+        /* The listing says nothing of what a link points to. A link to a directory
+           is one the server lets us into. */
+        if (S_ISLNK (entry->st.st_mode))
+        {
+            char *old_path = data->current_path;
+
+            data->current_path = mc_pp_join_path (old_path, name);
+            ftp_reload_entries (data, TRUE);
+            if (!data->load_failed)
+            {
+                g_free (old_path);
+                return MC_PPR_OK;
+            }
+
+            g_free (data->current_path);
+            data->current_path = old_path;
+            ftp_reload_entries (data, FALSE);
         }
     }
 

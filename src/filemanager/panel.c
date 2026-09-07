@@ -2598,7 +2598,8 @@ maybe_cd (WPanel *panel, gboolean move_up_dir)
         {
             if (panel->is_plugin_panel)
             {
-                if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
+                // a plugin may tell a link to a directory only when asked to enter it
+                if (S_ISDIR (fe->st.st_mode) || link_isdir (fe) || S_ISLNK (fe->st.st_mode))
                     do_enter (panel);
             }
             else if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
