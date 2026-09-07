@@ -1309,6 +1309,8 @@ ui_dialog_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void 
     case MSG_RESIZE:
         dlg_default_callback (w, sender, msg, parm, data);
         ui_layout (ui);
+        // the button texts are cut to the widths the layout just gave them
+        ui_update_info (ui);
         return MSG_HANDLED;
 
     case MSG_KEY:
