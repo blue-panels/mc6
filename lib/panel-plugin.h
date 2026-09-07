@@ -360,6 +360,12 @@ typedef struct mc_panel_plugin_t
     void *(*run_action_with_plugin) (const struct mc_panel_plugin_t *plugin, void *plugin_data,
                                      mc_panel_host_t *host, const char *open_path,
                                      int action_index);
+
+    /* API 17: TRUE when what get_items() lists now are the names in a
+       directory. The panel then hides the dot names and the backup names as
+       its options say. An address book or a menu of sections answers FALSE.
+       NULL means never. */
+    gboolean (*is_file_listing) (void *plugin_data);
 } mc_panel_plugin_t;
 
 typedef const mc_panel_plugin_t *(*mc_panel_plugin_register_fn) (void);

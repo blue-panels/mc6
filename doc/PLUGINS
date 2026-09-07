@@ -108,7 +108,8 @@ panel instances have been closed and before plugin modules are unloaded;
 use it to release registries, caches, and other process-lifetime state.
 
 API 17 adds mc_pp_add_entry_st(), which takes a whole struct stat and
-says what a symbolic link points to (see 3.4).
+says what a symbolic link points to (see 3.4), and the optional
+is_file_listing() callback (see 3.5).
 
 
 3.2 Capability Flags (mc_pp_flags_t)
@@ -216,6 +217,11 @@ A symbolic link to a directory, with the stat the plugin has for it:
 
         mc_pp_add_entry_st (list, "bin", &st, MC_PP_ENTRY_LINK_TO_DIR);
 
+The panel applies its "hidden files" and "backup files" options to the
+list only when the plugin's is_file_listing() answers TRUE for the
+current listing, and drops "." then too.  A plugin without the callback
+shows every name it adds.
+
 
 3.5 Optional Plugin Callbacks
 
@@ -223,6 +229,11 @@ Listing and content:
 
   chdir(plugin_data, path)             requires MC_PPF_NAVIGATE
   enter(plugin_data, fname, st)
+  is_file_listing(plugin_data)         TRUE when the listing is the names
+                                       in a directory: the panel hides
+                                       the dot and backup names as its
+                                       options say.  FALSE for an address
+                                       book or a menu of sections.
   view(plugin_data, fname, st, plain)  return MC_PPR_OK to override F3
   get_local_copy(plugin_data, fname, &local_path)
   copy_to_local(plugin_data, fname, local_path)

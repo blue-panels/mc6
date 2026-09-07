@@ -53,6 +53,7 @@ static mc_pp_result_t arcmc_view_input_stream (mc_panel_host_t *host, const char
                                                mc_pp_input_stream_t *stream, char **local_path);
 static void arcmc_close (void *plugin_data);
 static mc_pp_result_t arcmc_get_items (void *plugin_data, void *list_ptr);
+static gboolean arcmc_is_file_listing (void *plugin_data);
 static mc_pp_result_t arcmc_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t arcmc_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t arcmc_get_local_copy (void *plugin_data, const char *fname,
@@ -211,6 +212,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .open = arcmc_open,
     .close = arcmc_close,
     .get_items = arcmc_get_items,
+    .is_file_listing = arcmc_is_file_listing,
     .open_input_stream = arcmc_open_input_stream,
     .file_operations = arcmc_file_operations,
     .file_operation_count = G_N_ELEMENTS (arcmc_file_operations),
@@ -1051,6 +1053,17 @@ arcmc_close (void *plugin_data)
     g_free (data->extfs_helper);
     mc_pp_input_stream_free (data->input_stream);
     g_free (data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+arcmc_is_file_listing (void *plugin_data)
+{
+    (void) plugin_data;
+
+    // every level of an archive is a directory of it
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

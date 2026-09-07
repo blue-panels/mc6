@@ -127,6 +127,7 @@ typedef struct
 static void *shell_open (mc_panel_host_t *host, const char *open_path);
 static void shell_close (void *plugin_data);
 static mc_pp_result_t shell_get_items (void *plugin_data, void *list_ptr);
+static gboolean shell_is_file_listing (void *plugin_data);
 static mc_pp_result_t shell_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t shell_chdir (void *plugin_data, const char *dir);
 static char *shell_remote_path (const shell_data_t *data, const char *name);
@@ -221,6 +222,7 @@ static const mc_panel_plugin_t shell_plugin = {
     .open = shell_open,
     .close = shell_close,
     .get_items = shell_get_items,
+    .is_file_listing = shell_is_file_listing,
 
     .chdir = shell_chdir,
     .enter = shell_enter,
@@ -1565,6 +1567,16 @@ shell_connect (shell_data_t *data, const shell_connection_t *conn)
 
     return TRUE;
 }
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+shell_is_file_listing (void *plugin_data)
+{
+    shell_data_t *data = (shell_data_t *) plugin_data;
+
+    return data->conn != NULL && !data->helpers_mode;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static mc_pp_result_t

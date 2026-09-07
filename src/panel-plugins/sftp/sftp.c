@@ -143,6 +143,7 @@ typedef struct
 static void *sftp_open (mc_panel_host_t *host, const char *open_path);
 static void sftp_close (void *plugin_data);
 static mc_pp_result_t sftp_get_items (void *plugin_data, void *list_ptr);
+static gboolean sftp_is_file_listing (void *plugin_data);
 static mc_pp_result_t sftp_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t sftp_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t sftp_get_local_copy (void *plugin_data, const char *fname, char **local_path);
@@ -195,6 +196,7 @@ static const mc_panel_plugin_t sftp_plugin = {
     .open = sftp_open,
     .close = sftp_close,
     .get_items = sftp_get_items,
+    .is_file_listing = sftp_is_file_listing,
 
     .chdir = sftp_chdir,
     .enter = sftp_enter,
@@ -1581,6 +1583,16 @@ sftp_close (void *plugin_data)
 
     if (sftp_libssh2_refcount == 0)
         libssh2_exit ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+sftp_is_file_listing (void *plugin_data)
+{
+    sftp_data_t *data = (sftp_data_t *) plugin_data;
+
+    return !data->at_root;
 }
 
 /* --------------------------------------------------------------------------------------------- */

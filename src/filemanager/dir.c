@@ -1,12 +1,13 @@
 /*
    Directory routines
 
-   Copyright (C) 1994-2025
+   Copyright (C) 1994-2026
    Free Software Foundation, Inc.
 
    Written by:
    Slava Zanko <slavazanko@gmail.com>, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2013-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2012, 2026
 
    This file is part of the Midnight Commander.
 
@@ -157,9 +158,7 @@ handle_dirent (struct vfs_dirent *dp, const file_filter_t *filter, struct stat *
 
     if (DIR_IS_DOT (dp->d_name) || DIR_IS_DOTDOT (dp->d_name))
         return FALSE;
-    if (!panels_options.show_dot_files && (dp->d_name[0] == '.'))
-        return FALSE;
-    if (!panels_options.show_backups && dp->d_name[dp->d_len - 1] == '~')
+    if (dir_name_is_hidden (dp->d_name, dp->d_len))
         return FALSE;
 
     vpath = vfs_path_from_str (dp->d_name);
@@ -236,6 +235,19 @@ alloc_dir_copy (int size)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/** A dot name or a backup name the panel options say not to show. */
+gboolean
+dir_name_is_hidden (const char *name, size_t len)
+{
+    if (len == 0)
+        return FALSE;
+    if (!panels_options.show_dot_files && name[0] == '.')
+        return TRUE;
+    return !panels_options.show_backups && name[len - 1] == '~';
+}
+
 /* --------------------------------------------------------------------------------------------- */
 /**
  * Increase or decrease directory list size.

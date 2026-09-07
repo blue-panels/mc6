@@ -280,6 +280,43 @@ panel_plugin_set_quiet_messages (gboolean quiet)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* When the plugin says its listing is the names of a directory, "." goes and
+   the dot and backup names go by the panel options, as in a local listing.
+   ".." stays. */
+static void
+panel_plugin_get_items (WPanel *panel)
+{
+    dir_list *list = &panel->dir;
+    int i, kept;
+
+    panel->plugin->get_items (panel->plugin_data, list);
+
+    if (panel->plugin->is_file_listing == NULL
+        || !panel->plugin->is_file_listing (panel->plugin_data))
+        return;
+
+    for (i = 0, kept = 0; i < list->len; i++)
+    {
+        file_entry_t *fe = &list->list[i];
+
+        if (DIR_IS_DOT (fe->fname->str)
+            || (!DIR_IS_DOTDOT (fe->fname->str)
+                && dir_name_is_hidden (fe->fname->str, fe->fname->len)))
+        {
+            g_string_free (fe->fname, TRUE);
+            continue;
+        }
+
+        if (kept != i)
+            list->list[kept] = *fe;
+        kept++;
+    }
+
+    list->len = kept;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 panel_plugin_reload_internal (WPanel *panel, gboolean call_plugin_reload)
 {
@@ -311,7 +348,7 @@ panel_plugin_reload_internal (WPanel *panel, gboolean call_plugin_reload)
     panel_plugin_apply_default_columns_format (panel);
 
     dir_list_init (&panel->dir);
-    panel->plugin->get_items (panel->plugin_data, &panel->dir);
+    panel_plugin_get_items (panel);
 
     panel_re_sort (panel);
 
@@ -443,7 +480,7 @@ panel_plugin_activate_finish (WPanel *panel, const mc_panel_plugin_t *plugin, mc
     }
 
     dir_list_init (&panel->dir);
-    plugin->get_items (panel->plugin_data, &panel->dir);
+    panel_plugin_get_items (panel);
 
     panel_re_sort (panel);
     panel->dirty = TRUE;
@@ -993,7 +1030,7 @@ panel_plugin_restore_stream_source (WPanel *panel)
     panel_plugin_apply_default_columns_format (panel);
 
     dir_list_init (&panel->dir);
-    panel->plugin->get_items (panel->plugin_data, &panel->dir);
+    panel_plugin_get_items (panel);
     panel_re_sort (panel);
     panel->dirty = TRUE;
 
@@ -1254,7 +1291,7 @@ panel_plugin_open_file_list_one (WPanel *panel, const mc_panel_plugin_t *plugin,
     }
 
     dir_list_init (&panel->dir);
-    plugin->get_items (panel->plugin_data, &panel->dir);
+    panel_plugin_get_items (panel);
 
     panel_re_sort (panel);
     panel->dirty = TRUE;
@@ -1417,7 +1454,7 @@ panel_plugin_run_action (WPanel *panel, const mc_panel_plugin_t *plugin, int act
     }
 
     dir_list_init (&panel->dir);
-    plugin->get_items (panel->plugin_data, &panel->dir);
+    panel_plugin_get_items (panel);
 
     panel_re_sort (panel);
     panel->dirty = TRUE;

@@ -42,6 +42,7 @@ static void docker_close (void *plugin_data);
 static mc_pp_result_t docker_get_help_info (void *plugin_data, const char **filename,
                                             const char **node);
 static mc_pp_result_t docker_get_items (void *plugin_data, void *list_ptr);
+static gboolean docker_is_file_listing (void *plugin_data);
 static mc_pp_result_t docker_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t docker_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t docker_view (void *plugin_data, const char *fname, const struct stat *st,
@@ -88,6 +89,7 @@ static const mc_panel_plugin_t docker_plugin = {
     .open = docker_open,
     .close = docker_close,
     .get_items = docker_get_items,
+    .is_file_listing = docker_is_file_listing,
 
     .chdir = docker_chdir,
     .enter = docker_enter,
@@ -1591,6 +1593,16 @@ docker_get_help_info (void *plugin_data, const char **filename, const char **nod
         return MC_PPR_NOT_SUPPORTED;
 
     return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+docker_is_file_listing (void *plugin_data)
+{
+    docker_data_t *data = (docker_data_t *) plugin_data;
+
+    return data->view == DOCKER_VIEW_CONTAINER_FILES;
 }
 
 /* --------------------------------------------------------------------------------------------- */

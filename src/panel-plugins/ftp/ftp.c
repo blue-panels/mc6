@@ -133,6 +133,7 @@ typedef struct
 static void *ftp_open (mc_panel_host_t *host, const char *open_path);
 static void ftp_close (void *plugin_data);
 static mc_pp_result_t ftp_get_items (void *plugin_data, void *list_ptr);
+static gboolean ftp_is_file_listing (void *plugin_data);
 static mc_pp_result_t ftp_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t ftp_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t ftp_get_local_copy (void *plugin_data, const char *fname, char **local_path);
@@ -288,6 +289,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .open = ftp_open,
     .close = ftp_close,
     .get_items = ftp_get_items,
+    .is_file_listing = ftp_is_file_listing,
 
     .chdir = ftp_chdir,
     .enter = ftp_enter,
@@ -2400,6 +2402,16 @@ ftp_close (void *plugin_data)
 
     if (ftp_curl_refcount == 0)
         curl_global_cleanup ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+ftp_is_file_listing (void *plugin_data)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+
+    return !data->at_root;
 }
 
 /* --------------------------------------------------------------------------------------------- */

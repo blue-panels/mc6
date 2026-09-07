@@ -26,7 +26,8 @@ TESTS = \
 	panel_modes \
 	panel_quick_filter \
 	panel_scroll_marker_pos \
-	panel_plugin_close
+	panel_plugin_close \
+	panel_plugin_file_listing
 
 check_PROGRAMS = $(TESTS)
 
@@ -62,3 +63,6 @@ panel_scroll_marker_pos_SOURCES = \
 
 panel_plugin_close_SOURCES = \
 	panel_plugin_close.c
+
+panel_plugin_file_listing_SOURCES = \
+	panel_plugin_file_listing.c

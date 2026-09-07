@@ -102,6 +102,7 @@ typedef struct
 static void *samba_open (mc_panel_host_t *host, const char *open_path);
 static void samba_close (void *plugin_data);
 static mc_pp_result_t samba_get_items (void *plugin_data, void *list_ptr);
+static gboolean samba_is_file_listing (void *plugin_data);
 static mc_pp_result_t samba_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t samba_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t samba_get_local_copy (void *plugin_data, const char *fname,
@@ -132,6 +133,7 @@ static const mc_panel_plugin_t samba_plugin = {
     .open = samba_open,
     .close = samba_close,
     .get_items = samba_get_items,
+    .is_file_listing = samba_is_file_listing,
 
     .chdir = samba_chdir,
     .enter = samba_enter,
@@ -930,6 +932,16 @@ samba_close (void *plugin_data)
     g_free (data->auth_workgroup);
     g_free (data->help_filename);
     g_free (data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+samba_is_file_listing (void *plugin_data)
+{
+    samba_data_t *data = (samba_data_t *) plugin_data;
+
+    return !data->at_root;
 }
 
 /* --------------------------------------------------------------------------------------------- */
