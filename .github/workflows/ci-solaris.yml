@@ -39,7 +39,7 @@ jobs:
                 && \
               \
               make && \
-              make check && \
+              (make check || { find . -name test-suite.log -exec cat {} +; exit 1; }) && \
               make install \
             '
 

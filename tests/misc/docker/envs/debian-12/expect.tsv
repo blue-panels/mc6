@@ -1,3 +1,5 @@
 case	key	expect	transports
 04-non-ascii/архив с пробелами.7z	Enter	known: the ftp plugin cannot fetch a name with spaces	ftp
 01-shell/readme.txt	key C-o,type echo mc-marker-42,key Enter,key C-l,key PageUp	known: PageUp at the command line reaches the shell as a tilde instead of scrolling the terminal back	local
+01-links/todir	F3	known: the ftp listing does not say what a link points to, so F3 on a link to a directory fetches it as a file	ftp
+01-links/plain.txt	key Escape	known: vsftpd hides the dot files unless force_dot_files is set	ftp

@@ -57,6 +57,7 @@ expect ()
 check_mode ()
 {
     script=$1; mode=$2; tofile=$3; shift 3
+    before=$status
 
     env -i PATH="$PATH" SHELL_FILENAME="${tmp#/}" "$@" sh "$script" > "$tmp.lst"
     expect "$tmp.lst" todir Td
@@ -64,6 +65,11 @@ check_mode ()
     expect "$tmp.lst" tofile "$tofile"
     expect "$tmp.lst" plain none
     expect "$tmp.lst" real none
+    if [ "$status" != "$before" ]; then
+        echo "$mode: the listing was:" >&2
+        cat "$tmp.lst" >&2
+        ls -lan "$tmp" >&2
+    fi
 
     # the path of a link to a directory lists the directory
     env -i PATH="$PATH" SHELL_FILENAME="${tmp#/}/todir" "$@" sh "$script" > "$tmp.lst"
