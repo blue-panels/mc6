@@ -122,7 +122,9 @@ mc_config_t *skinedit_model_config_copy (const skinedit_model_t *m);
 
 /* what the colors in use ask of the terminal */
 void skinedit_model_needs (const skinedit_model_t *m, gboolean *needs_256, gboolean *needs_true);
-/* the first entry with a color above @cls, its part in @part; NULL when there is none */
+/* the declared class, raised to what the colors in use need */
+skinedit_color_class_t skinedit_model_class (const skinedit_model_t *m);
+/* the entry with the highest color class above @cls, its part in @part; NULL when there is none */
 skinedit_entry_t *skinedit_model_over_class (const skinedit_model_t *m, skinedit_color_class_t cls,
                                              skinedit_part_t *part);
 

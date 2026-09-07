@@ -13,8 +13,13 @@ Starting it:
 
 It opens on the skin mc runs with; the title names the file the skin
 comes from.  Skin: [ name ] at the top of the list opens another one.
-A skin that uses colors this terminal cannot show is edited without the
-live preview; the editor says so when it opens the skin.
+The button next to it says what the skin is for: 16 colors, 256 colors
+or True color; it opens a list of the three.  The Color dialog offers
+the 256.. and RGB.. pickers by that choice, and the flags 256colors and
+truecolors in [skin] are written from it.
+A skin that uses colors this terminal cannot show, or is declared for
+them, is edited without the live preview; the editor says so when it
+opens the skin or when the class goes up.
 
 The screen:
 
@@ -58,7 +63,9 @@ Keys in the list:
 
 Every change goes to the screen at once.  Esc puts the skin mc had back.
 Save writes the file to your skins directory, ~/.local/share/mc6/skins,
-and makes it the skin mc runs with; a skin from the system directory is
+and makes it the skin mc runs with, unless this terminal cannot show it;
+a skin that holds a color above its class asks first whether to raise
+the class.  A skin from the system directory is
 saved as a copy there under a name you give, and the copy shadows the
 original.  Save as asks for a name and a description.  A name is a file
 name without a directory part and without .ini; a name another skin in
@@ -75,8 +82,9 @@ The Color dialog:
   an Inherit box, a Terminal default box and the buttons 256.. and
   RGB..  256.. opens the 256-color picker: the 16 system colors, the
   6x6x6 cube and the 24 grays; the line under it names the color three
-  ways.  RGB.. asks for a #rrggbb value.  The two buttons are off on a
-  terminal that cannot show those colors.
+  ways.  RGB.. asks for a #rrggbb value.  The two buttons are off for
+  a skin whose class does not allow them, unless the key already holds
+  such a color, and on a terminal that cannot show those colors.
 
   Style has Inherit and the attributes bold, italic, underline, reverse
   and blink.
@@ -103,4 +111,4 @@ Notes:
   it inherit sets it to the terminal's own colors instead.
 
   The file is written with its comments and its order kept.  The flags
-  256colors and truecolors in [skin] are set from the colors in use.
+  256colors and truecolors in [skin] follow the class button.

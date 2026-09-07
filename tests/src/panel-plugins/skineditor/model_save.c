@@ -233,6 +233,20 @@ START_TEST (test_color_class)
     skinedit_model_set (model, e, SKINEDIT_PART_BG, "color12");
     ck_assert_ptr_null (skinedit_model_over_class (model, SKINEDIT_COLOR_BASIC, &part));
 
+    /* the entry of the highest class wins, not the first one over */
+    {
+        skinedit_entry_t *d = skinedit_model_find (model, "dialog", "dfocus");
+
+        skinedit_model_set (model, e, SKINEDIT_PART_BG, "gray5");
+        skinedit_model_set (model, d, SKINEDIT_PART_FG, "#abcdef");
+        ck_assert_ptr_eq (skinedit_model_over_class (model, SKINEDIT_COLOR_BASIC, &part), d);
+        ck_assert_int_eq (part, SKINEDIT_PART_FG);
+        ck_assert_int_eq (skinedit_model_class (model), SKINEDIT_COLOR_TRUECOLOR);
+        skinedit_model_set (model, d, SKINEDIT_PART_FG, "black");
+        ck_assert_int_eq (skinedit_model_class (model), SKINEDIT_COLOR_256);
+        skinedit_model_set (model, e, SKINEDIT_PART_BG, "cyan");
+    }
+
     /* a class change alone is a change; reset takes it back */
     save (NULL);
     ck_assert (!skinedit_model_dirty (model));

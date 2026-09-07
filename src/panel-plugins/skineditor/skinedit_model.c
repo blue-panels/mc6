@@ -601,29 +601,12 @@ find_in_dir (const char *base_dir, const char *name)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* the class the skin is declared for, raised to what its colors need */
-
-static skinedit_color_class_t
-model_class (const skinedit_model_t *m)
-{
-    gboolean has_256, has_true;
-
-    skinedit_model_needs (m, &has_256, &has_true);
-    if (has_true)
-        return SKINEDIT_COLOR_TRUECOLOR;
-    if (has_256 && m->colors < SKINEDIT_COLOR_256)
-        return SKINEDIT_COLOR_256;
-    return m->colors;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 /* [skin] 256colors / truecolors from the skin's class */
 
 static void
 model_update_flags (const skinedit_model_t *m, GKeyFile *kf)
 {
-    skinedit_color_class_t cls = model_class (m);
+    skinedit_color_class_t cls = skinedit_model_class (m);
 
     g_key_file_remove_key (kf, "skin", "256colors", NULL);
     g_key_file_remove_key (kf, "skin", "truecolors", NULL);
@@ -1028,7 +1011,7 @@ skinedit_model_config_copy (const skinedit_model_t *m)
     if (data != NULL)
         g_key_file_load_from_data (copy->handle, data, len, G_KEY_FILE_KEEP_COMMENTS, NULL);
     g_free (data);
-    // the 256colors / truecolors flags as the colors in use need them, not as the file says
+    // the 256colors / truecolors flags from the skin's class, raised to what its colors need
     model_update_flags (m, copy->handle);
     return copy;
 }
@@ -1080,10 +1063,27 @@ skinedit_model_needs (const skinedit_model_t *m, gboolean *needs_256, gboolean *
 
 /* --------------------------------------------------------------------------------------------- */
 
+skinedit_color_class_t
+skinedit_model_class (const skinedit_model_t *m)
+{
+    gboolean has_256, has_true;
+
+    skinedit_model_needs (m, &has_256, &has_true);
+    if (has_true)
+        return SKINEDIT_COLOR_TRUECOLOR;
+    if (has_256 && m->colors < SKINEDIT_COLOR_256)
+        return SKINEDIT_COLOR_256;
+    return m->colors;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 skinedit_entry_t *
 skinedit_model_over_class (const skinedit_model_t *m, skinedit_color_class_t cls,
                            skinedit_part_t *part)
 {
+    skinedit_entry_t *best = NULL;
+    skinedit_color_class_t best_cls = cls;
     guint si, ei;
 
     for (si = 0; si < m->sections->len; si++)
@@ -1108,15 +1108,18 @@ skinedit_model_over_class (const skinedit_model_t *m, skinedit_color_class_t cls
                 c = skinedit_color_classify (v);
                 g_free (v);
                 g_free (alias);
-                if ((c == SKINEDIT_COLOR_256 || c == SKINEDIT_COLOR_TRUECOLOR) && c > cls)
+                if ((c == SKINEDIT_COLOR_256 || c == SKINEDIT_COLOR_TRUECOLOR) && c > best_cls)
                 {
+                    best = e;
+                    best_cls = c;
                     *part = (skinedit_part_t) i;
-                    return e;
+                    if (c == SKINEDIT_COLOR_TRUECOLOR)
+                        return best;
                 }
             }
         }
     }
-    return NULL;
+    return best;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1194,7 +1197,7 @@ skinedit_model_save_to (skinedit_model_t *m, const char *path, const char *name,
     }
     model_update_flags (m, m->config->handle);
     mc_config_deinit (out);
-    m->colors = model_class (m);
+    m->colors = skinedit_model_class (m);
     m->file_colors = m->colors;
 
     g_free (m->path);

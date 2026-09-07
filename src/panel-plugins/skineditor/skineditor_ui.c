@@ -92,14 +92,15 @@ typedef struct
 
 typedef struct
 {
-    skinedit_entry_t *entry;
+    skinedit_entry_t *entry; /* NULL: the step is a change of the skin's class */
     char *before[SKINEDIT_PARTS];
+    skinedit_color_class_t colors; /* the class before, for a class step */
 } undo_step_t;
 
 /*** forward declarations (file scope functions) *************************************************/
 
 static void undo_push (skineditor_ui_t *ui, skinedit_entry_t *e);
-static skinedit_entry_t *undo_pop (skineditor_ui_t *ui, char *before[SKINEDIT_PARTS]);
+static gboolean undo_pop (skineditor_ui_t *ui, undo_step_t *step);
 
 /*** file scope variables ************************************************************************/
 
@@ -187,7 +188,8 @@ ui_layout (skineditor_ui_t *ui)
     widget_set_size (WIDGET (ui->skin_label), top, left, 1, 5);
     widget_set_size (WIDGET (ui->skin_button), top, left + 6, 1, list_cols - 6);
     widget_set_size (WIDGET (ui->list), top + 1, left, list_lines, list_cols);
-    widget_set_size (WIDGET (ui->class_button), top, sample_x, 1, class_button_cols ());
+    widget_set_size (WIDGET (ui->class_button), top, sample_x, 1,
+                     MIN (class_button_cols (), sample_cols));
     widget_set_size (WIDGET (ui->sample), top + 1, sample_x, list_lines, sample_cols);
 
     y = top + list_lines + 1;
@@ -317,7 +319,9 @@ ui_update_info (skineditor_ui_t *ui)
     {
         WRect br = WIDGET (ui->class_button)->rect;
 
-        button_set_text (ui->class_button, color_class_name (ui->model->colors));
+        button_set_text (
+            ui->class_button,
+            str_fit_to_term (color_class_name (ui->model->colors), br.cols - 4, J_LEFT_FIT));
         widget_set_size_rect (WIDGET (ui->class_button), &br);
     }
 
@@ -337,10 +341,10 @@ ui_update_info (skineditor_ui_t *ui)
 static gboolean
 ui_terminal_ok (const skineditor_ui_t *ui)
 {
-    gboolean needs_256, needs_true;
+    skinedit_color_class_t cls = skinedit_model_class (ui->model);
 
-    skinedit_model_needs (ui->model, &needs_256, &needs_true);
-    return !(needs_true && !tty_use_truecolors (NULL)) && !(needs_256 && !tty_use_256colors (NULL));
+    return !(cls == SKINEDIT_COLOR_TRUECOLOR && !tty_use_truecolors (NULL))
+        && !(cls == SKINEDIT_COLOR_256 && !tty_use_256colors (NULL));
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -367,13 +371,13 @@ ui_preview (skineditor_ui_t *ui)
     mc_config_t *cfg;
     GError *error = NULL;
 
-    // a skin the terminal could not show may have been edited down to what it can
-    if (!ui->can_preview)
+    // a skin the terminal cannot show is edited blind; one edited down to what it can shows again
+    if (!ui_terminal_ok (ui))
     {
-        if (!ui_terminal_ok (ui))
-            return;
-        ui->can_preview = TRUE;
+        ui->can_preview = FALSE;
+        return;
     }
+    ui->can_preview = TRUE;
     cfg = skinedit_model_config_copy (ui->model);
     if (cfg == NULL)
         return;
@@ -561,6 +565,21 @@ undo_push (skineditor_ui_t *ui, skinedit_entry_t *e)
     step.entry = e;
     for (i = 0; i < SKINEDIT_PARTS; i++)
         step.before[i] = g_strdup (e->raw[i]);
+    step.colors = ui->model->colors;
+    g_array_append_val (ui->undo, step);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* remember the skin's class; call before it changes */
+
+static void
+undo_push_class (skineditor_ui_t *ui)
+{
+    undo_step_t step;
+
+    memset (&step, 0, sizeof (step));
+    step.colors = ui->model->colors;
     g_array_append_val (ui->undo, step);
 }
 
@@ -569,32 +588,31 @@ undo_push (skineditor_ui_t *ui, skinedit_entry_t *e)
 static void
 undo_clear (skineditor_ui_t *ui)
 {
-    while (undo_pop (ui, NULL) != NULL)
+    while (undo_pop (ui, NULL))
         ;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* the newest step off the stack; its entry, the before values freed */
+/* the newest step off the stack into @step, whose before values the caller frees; with @step
+   NULL the step is dropped. FALSE when the stack is empty */
 
-static skinedit_entry_t *
-undo_pop (skineditor_ui_t *ui, char *before[SKINEDIT_PARTS])
+static gboolean
+undo_pop (skineditor_ui_t *ui, undo_step_t *step)
 {
-    undo_step_t *step;
-    skinedit_entry_t *e;
+    undo_step_t *top;
     int i;
 
     if (ui->undo->len == 0)
-        return NULL;
-    step = &g_array_index (ui->undo, undo_step_t, ui->undo->len - 1);
-    e = step->entry;
-    for (i = 0; i < SKINEDIT_PARTS; i++)
-        if (before != NULL)
-            before[i] = step->before[i];
-        else
-            g_free (step->before[i]);
+        return FALSE;
+    top = &g_array_index (ui->undo, undo_step_t, ui->undo->len - 1);
+    if (step != NULL)
+        *step = *top;
+    else
+        for (i = 0; i < SKINEDIT_PARTS; i++)
+            g_free (top->before[i]);
     g_array_set_size (ui->undo, ui->undo->len - 1);
-    return e;
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -604,21 +622,24 @@ undo_pop (skineditor_ui_t *ui, char *before[SKINEDIT_PARTS])
 static void
 ui_undo (skineditor_ui_t *ui)
 {
-    skinedit_entry_t *e;
-    char *before[SKINEDIT_PARTS];
+    undo_step_t step;
     int i;
 
-    e = undo_pop (ui, before);
-    if (e == NULL)
+    if (!undo_pop (ui, &step))
         return;
-    if (e->kind == SKINEDIT_ENTRY_COLOR)
-        for (i = 0; i < SKINEDIT_PARTS; i++)
-            skinedit_model_set (ui->model, e, i, before[i]);
+    if (step.entry == NULL)
+        ui->model->colors = step.colors;
     else
-        skinedit_model_set_text_raw (ui->model, e, before[0]);
+    {
+        if (step.entry->kind == SKINEDIT_ENTRY_COLOR)
+            for (i = 0; i < SKINEDIT_PARTS; i++)
+                skinedit_model_set (ui->model, step.entry, i, step.before[i]);
+        else
+            skinedit_model_set_text_raw (ui->model, step.entry, step.before[0]);
+        skinkeylist_goto_entry (ui->list, step.entry);
+    }
     for (i = 0; i < SKINEDIT_PARTS; i++)
-        g_free (before[i]);
-    skinkeylist_goto_entry (ui->list, e);
+        g_free (step.before[i]);
     ui_changed (ui);
 }
 
@@ -738,7 +759,6 @@ ui_confirm_class (skineditor_ui_t *ui)
     skinedit_part_t part;
     skinedit_entry_t *over;
     skinedit_color_class_t needed;
-    gboolean needs_256, needs_true;
     char *text;
     int rc;
 
@@ -746,8 +766,7 @@ ui_confirm_class (skineditor_ui_t *ui)
     if (over == NULL)
         return TRUE;
 
-    skinedit_model_needs (ui->model, &needs_256, &needs_true);
-    needed = needs_true ? SKINEDIT_COLOR_TRUECOLOR : SKINEDIT_COLOR_256;
+    needed = skinedit_model_class (ui->model);
     text = g_strdup_printf (_ ("This is a %s skin, but [%s] %s uses %s.\nSave it as a %s skin?"),
                             color_class_name (ui->model->colors), over->group, over->key,
                             over->effective[part] != NULL ? over->effective[part] : over->raw[part],
@@ -766,6 +785,9 @@ ui_save (skineditor_ui_t *ui, gboolean ask)
 {
     char *name = NULL, *description = NULL;
     GError *error = NULL;
+
+    if (!ui_confirm_class (ui))
+        return;
 
     if (ask)
     {
@@ -813,13 +835,6 @@ ui_save (skineditor_ui_t *ui, gboolean ask)
         g_free (target);
     }
 
-    if (!ui_confirm_class (ui))
-    {
-        g_free (name);
-        g_free (description);
-        return;
-    }
-
     if (!skinedit_model_save (ui->model, name, description, &error))
     {
         mc_error_message (&error, NULL);
@@ -828,10 +843,18 @@ ui_save (skineditor_ui_t *ui, gboolean ask)
         return;
     }
 
-    mc_config_set_string (mc_global.main_config, CONFIG_APP_SECTION, "skin", name);
-    g_free (ui->running_name);
-    ui->running_name = g_strdup (name);
-    ui_reload_running (ui);
+    // the saved skin runs from now on, unless this terminal cannot show it
+    if (ui_terminal_ok (ui))
+    {
+        mc_config_set_string (mc_global.main_config, CONFIG_APP_SECTION, "skin", name);
+        g_free (ui->running_name);
+        ui->running_name = g_strdup (name);
+        ui_reload_running (ui);
+    }
+    else
+        message (D_NORMAL, _ ("Save skin"),
+                 _ ("The skin is saved. This terminal cannot show it,\n"
+                    "so the skin mc runs with stays as it was."));
     ui_set_title (ui);
     ui_update_info (ui);
     widget_draw (WIDGET (ui->dlg));
@@ -996,13 +1019,22 @@ ui_pick_class (skineditor_ui_t *ui)
     {
         char *label;
         void *data;
+        skinedit_color_class_t cls;
 
         listbox_get_current (list, &label, &data);
-        ui->model->colors = (skinedit_color_class_t) GPOINTER_TO_INT (data);
+        cls = (skinedit_color_class_t) GPOINTER_TO_INT (data);
+        if (cls != ui->model->colors)
+        {
+            undo_push_class (ui);
+            ui->model->colors = cls;
+            // a class this terminal cannot show: said once, edited blind from here
+            if (ui->can_preview && !ui_terminal_ok (ui))
+                ui->can_preview = ui_check_terminal (ui);
+        }
     }
     widget_destroy (WIDGET (pop));
 
-    ui_update_info (ui);
+    ui_changed (ui);
     widget_select (WIDGET (ui->list));
 }
 
