@@ -94,7 +94,9 @@ START_TEST (test_classify)
     ck_assert_int_eq (skinedit_color_classify ("default"), SKINEDIT_COLOR_BASIC);
     ck_assert_int_eq (skinedit_color_classify ("base"), SKINEDIT_COLOR_BASIC);
 
-    ck_assert_int_eq (skinedit_color_classify ("color0"), SKINEDIT_COLOR_256);
+    ck_assert_int_eq (skinedit_color_classify ("color0"), SKINEDIT_COLOR_BASIC);
+    ck_assert_int_eq (skinedit_color_classify ("color15"), SKINEDIT_COLOR_BASIC);
+    ck_assert_int_eq (skinedit_color_classify ("color16"), SKINEDIT_COLOR_256);
     ck_assert_int_eq (skinedit_color_classify ("color255"), SKINEDIT_COLOR_256);
     ck_assert_int_eq (skinedit_color_classify ("color256"), SKINEDIT_COLOR_UNKNOWN);
     ck_assert_int_eq (skinedit_color_classify ("gray23"), SKINEDIT_COLOR_256);
