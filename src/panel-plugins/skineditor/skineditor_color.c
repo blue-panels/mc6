@@ -30,7 +30,7 @@
 #include "lib/global.h"
 #include "lib/strutil.h"
 #include "lib/tty/color.h"
-#include "lib/tty/color-internal.h"  // convert_256color_to_truecolor
+#include "lib/tty/color-internal.h"  // convert_256color_to_truecolor, tty_color_get_name_by_index
 #include "lib/tty/key.h"
 #include "lib/tty/tty.h"
 #include "lib/util.h"  // MC_PTR_FREE
@@ -185,6 +185,41 @@ inherit_text (const skinedit_entry_t *e, const part_widgets_t *p)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @v as the 16 palette names it: colorN with N under 16 is one of the named colors */
+
+static const char *
+basic_name (const char *v)
+{
+    int idx;
+
+    if (v == NULL || strncmp (v, "color", 5) != 0)
+        return v;
+    idx = tty_color_get_index_by_name (v);
+    return idx >= 0 && idx < 16 ? tty_color_get_name_by_index (idx) : v;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* the highest class among the colors the entry holds now */
+
+static skinedit_color_class_t
+entry_class (const skinedit_entry_t *e)
+{
+    skinedit_color_class_t cls = SKINEDIT_COLOR_BASIC;
+    int i;
+
+    for (i = SKINEDIT_PART_FG; i <= SKINEDIT_PART_BG; i++)
+    {
+        skinedit_color_class_t c = skinedit_color_classify (e->effective[i]);
+
+        if (c != SKINEDIT_COLOR_UNKNOWN && c > cls)
+            cls = c;
+    }
+    return cls;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 update_part (color_dlg_t *c, part_widgets_t *p)
 {
@@ -195,7 +230,7 @@ update_part (color_dlg_t *c, part_widgets_t *p)
 
     p->inherit->state = (raw == NULL);
     p->terminal->state = (raw != NULL && strcmp (raw, "default") == 0);
-    colorgrid_set_selected (p->grid, raw != NULL ? raw : eff);
+    colorgrid_set_selected (p->grid, basic_name (raw != NULL ? raw : eff));
     text = inherit_text (e, p);
     check_set_text (p->inherit, text);
     g_free (text);
@@ -448,11 +483,16 @@ add_part (color_dlg_t *c, part_widgets_t *p, skinedit_part_t part, int y, int x,
     brgb = button_new (y + 2, x + grid_cols + 4 + button_get_width (b256) + 1, id_rgb,
                        NORMAL_BUTTON, "RGB..", color_button_cb);
     group_add_widget (g, brgb);
-    // a 16-color skin stays one: the wider pickers open only for a skin declared for them
-    if (!tty_use_256colors (NULL) || c->model->colors < SKINEDIT_COLOR_256)
-        widget_disable (WIDGET (b256), TRUE);
-    if (!tty_use_truecolors (NULL) || c->model->colors < SKINEDIT_COLOR_TRUECOLOR)
-        widget_disable (WIDGET (brgb), TRUE);
+    // a 16-color skin stays one: the wider pickers open only for a skin declared for them,
+    // or for a value that is already there and needs them
+    {
+        skinedit_color_class_t cls = MAX (c->model->colors, entry_class (c->entry));
+
+        if (!tty_use_256colors (NULL) || cls < SKINEDIT_COLOR_256)
+            widget_disable (WIDGET (b256), TRUE);
+        if (!tty_use_truecolors (NULL) || cls < SKINEDIT_COLOR_TRUECOLOR)
+            widget_disable (WIDGET (brgb), TRUE);
+    }
 
     p->terminal = check_new (y + 3, x + 1, FALSE, terminal_label);
     group_add_widget (g, p->terminal);
@@ -545,14 +585,17 @@ skineditor_pick_256 (const char *current)
     group_add_widget (g, ok);
     group_add_widget (g, cancel);
 
-    if (current != NULL && skinedit_color_classify (current) == SKINEDIT_COLOR_256)
     {
-        // the grid names its cells colorN; map grayN and rgbRGB to that
-        int idx = tty_color_get_index_by_name (current);
-        char *name = g_strdup_printf ("color%d", idx);
+        // the grid names its cells colorN; the 16 names, grayN and rgbRGB map to that
+        int idx = current != NULL ? tty_color_get_index_by_name (current) : -1;
 
-        colorgrid_set_selected (p.grid, name);
-        g_free (name);
+        if (idx >= 0 && idx < 256)
+        {
+            char *name = g_strdup_printf ("color%d", idx);
+
+            colorgrid_set_selected (p.grid, name);
+            g_free (name);
+        }
     }
     pick_update_info (p.grid, colorgrid_current (p.grid), &p);
     widget_select (WIDGET (p.grid));
