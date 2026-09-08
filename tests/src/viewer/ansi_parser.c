@@ -538,6 +538,29 @@ START_TEST (test_ansi_reverse)
 END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_private_csi_is_not_sgr)
+{
+    // given
+    mcview_ansi_state_t state;
+
+    mcview_ansi_state_init (&state);
+
+    // when - fish 4 asks for modifyOtherKeys with CSI > 4 ; 2 m
+    g_string_free (parse_and_collect (&state, "\033[>4;2m\033[?4m\033[=1m"), TRUE);
+
+    // then
+    mctest_assert_false (state.underline);
+    mctest_assert_false (state.bold);
+
+    // when - a real SGR right after still applies
+    g_string_free (parse_and_collect (&state, "\033[4m"), TRUE);
+
+    // then
+    mctest_assert_true (state.underline);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
 START_TEST (test_ansi_individual_off_codes)
 {
     // given
@@ -748,6 +771,7 @@ main (void)
     tcase_add_test (tc_core, test_ansi_italic);
     tcase_add_test (tc_core, test_ansi_blink);
     tcase_add_test (tc_core, test_ansi_reverse);
+    tcase_add_test (tc_core, test_ansi_private_csi_is_not_sgr);
     tcase_add_test (tc_core, test_ansi_individual_off_codes);
     tcase_add_test (tc_core, test_ansi_double_underline);
     tcase_add_test (tc_core, test_ansi_empty_param_is_zero);
