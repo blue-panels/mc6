@@ -294,6 +294,7 @@ mcview_ansi_state_init (mcview_ansi_state_t *state)
     state->reverse = FALSE;
     state->in_escape = FALSE;
     state->in_csi = FALSE;
+    state->csi_private = FALSE;
     state->param_count = 0;
     state->current_param = 0;
     state->has_current_param = FALSE;
@@ -314,6 +315,7 @@ mcview_ansi_parse_char (mcview_ansi_state_t *state, int ch)
         {
             // enter CSI mode
             state->in_csi = TRUE;
+            state->csi_private = FALSE;
             state->param_count = 0;
             state->current_param = 0;
             state->has_current_param = FALSE;
@@ -351,14 +353,16 @@ mcview_ansi_parse_char (mcview_ansi_state_t *state, int ch)
             mcview_ansi_csi_finalize_param (state);
             state->in_csi = FALSE;
 
-            if (ch == 'm')
+            // CSI > 4 ; 2 m (modifyOtherKeys) and the like are not SGR
+            if (ch == 'm' && !state->csi_private)
                 mcview_ansi_apply_sgr (state);
 
             // non-'m' terminators: consume without applying to colors
             return ANSI_RESULT_CONSUMED;
         }
 
-        // intermediate bytes (0x20-0x3F excluding digits and ';'): consume
+        // private markers < = > ? and intermediate bytes: consume
+        state->csi_private = TRUE;
         return ANSI_RESULT_CONSUMED;
     }
 
