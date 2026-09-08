@@ -152,6 +152,7 @@ static void edit_layout_cache_store_position (WEdit *edit, off_t bol, off_t offs
 static long edit_layout_cache_column_at (WEdit *edit, off_t bol, off_t offset);
 static off_t edit_line_offset_cached (WEdit *edit, off_t bol, long lines, gboolean backward);
 static void edit_cursor_jump_to_bol (WEdit *edit, off_t target, long line_delta);
+static gboolean edit_hidden_control_char_at (const WEdit *edit, off_t offset);
 
 /*** file scope variables ************************************************************************/
 
@@ -1104,6 +1105,10 @@ edit_right_char_move_cmd (WEdit *edit)
     int char_length = 1;
     int c;
 
+    // hidden control characters take no cell: step over them first
+    while (edit_hidden_control_char_at (edit, edit->buffer.curs1))
+        edit_cursor_move (edit, 1);
+
     if (edit->utf8)
     {
         c = edit_buffer_get_utf (&edit->buffer, edit->buffer.curs1, &char_length);
@@ -1181,7 +1186,12 @@ edit_right_char_move_cmd (WEdit *edit)
     if (edit_options.cursor_beyond_eol && c == '\n')
         edit->over_col++;
     else
+    {
         edit_cursor_move (edit, char_length);
+        // hidden control characters take no cell: step over them too
+        while (edit_hidden_control_char_at (edit, edit->buffer.curs1))
+            edit_cursor_move (edit, 1);
+    }
 
     /* Skip over hidden (folded) lines - fallback for other entry points */
     if (edit->folds != NULL && edit_fold_is_hidden (edit, edit->buffer.curs_line))
@@ -1262,7 +1272,12 @@ edit_left_char_move_cmd (WEdit *edit)
         edit->over_col--;
     }
     else
+    {
         edit_cursor_move (edit, -char_length);
+        // hidden control characters take no cell: step over them too
+        while (edit->buffer.curs1 > 0 && edit_hidden_control_char_at (edit, edit->buffer.curs1))
+            edit_cursor_move (edit, -1);
+    }
 
     /* Skip over hidden (folded) lines */
     if (edit->folds != NULL && edit_fold_is_hidden (edit, edit->buffer.curs_line))
@@ -3993,6 +4008,24 @@ edit_cursor_jump_to_bol (WEdit *edit, off_t target, long line_delta)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/** A control character that is not shown takes no cell, see edit_control_char_width() */
+
+static gboolean
+edit_hidden_control_char_at (const WEdit *edit, off_t offset)
+{
+    int orig_c, c;
+
+    if (edit_options.show_control_chars)
+        return FALSE;
+
+    orig_c = edit_buffer_get_byte (&edit->buffer, offset);
+    c = convert_to_display_c (orig_c);
+
+    return c != '\n' && c != '\t' && (c < 32 || c == 127)
+        && (orig_c == c || (!mc_global.utf8_display && !edit->utf8));
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /* If cols is zero this returns the count of columns from current to upto. */
 /* If upto is zero returns index of cols across from current. */
 
@@ -4024,7 +4057,8 @@ edit_move_forward3 (const WEdit *edit, off_t current, long cols, off_t upto)
 
         if (cols != -10)
         {
-            if (col == cols)
+            // the cursor lands after hidden control characters, not before them
+            if (col == cols && !edit_hidden_control_char_at (edit, p))
                 return p;
             if (col > cols)
                 return p - 1;
@@ -5023,7 +5057,16 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
                 edit_backspace (edit, TRUE);
         }
         else
+        {
+            // hidden control characters take no cell: delete them with the shown character
+            while (edit->buffer.curs1 > 0
+                   && edit_hidden_control_char_at (edit, edit->buffer.curs1 - 1))
+                edit_backspace (edit, TRUE);
             edit_backspace (edit, FALSE);
+            while (edit->buffer.curs1 > 0
+                   && edit_hidden_control_char_at (edit, edit->buffer.curs1 - 1))
+                edit_backspace (edit, TRUE);
+        }
         break;
     case CK_Delete:
         // if non persistent selection and text selected
@@ -5042,7 +5085,12 @@ edit_execute_cmd (WEdit *edit, long command, int char_for_insertion)
                     edit_delete (edit, TRUE);
             }
             else
+            {
+                // hidden control characters take no cell: delete them with the shown character
+                while (edit_hidden_control_char_at (edit, edit->buffer.curs1))
+                    edit_delete (edit, TRUE);
                 edit_delete (edit, FALSE);
+            }
         }
         break;
     case CK_DeleteToWordBegin:

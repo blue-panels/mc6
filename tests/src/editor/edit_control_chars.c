@@ -128,10 +128,13 @@ START_TEST (test_width_hidden)
     ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 6), 8);
     ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 8), 9);
 
-    // column 1 is reached before the hidden "\r", column 3 before the tab
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 1, 0), 1);
+    // the cursor lands after the hidden "\r" and "\f", not before them
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 1, 0), 2);
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 2, 0), 4);
     ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 3, 0), 5);
     ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 4, 0), 5);
+    // "d" "DEL" then the end of line
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 9, 0), 8);
 }
 END_TEST
 
@@ -158,6 +161,128 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* @Test */
+START_TEST (test_arrows_step_over_hidden)
+{
+    edit_options.show_control_chars = FALSE;
+    edit_options.cursor_beyond_eol = FALSE;
+    edit_layout_reset (test_edit);
+
+    edit_cursor_move (test_edit, -test_edit->buffer.curs1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 0);
+
+    // "a" then the hidden "\r": one press lands after both
+    edit_execute_key_command (test_edit, CK_Right, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 2);
+    ck_assert_int_eq (edit_get_col (test_edit), 1);
+    // "b" then the hidden "\f"
+    edit_execute_key_command (test_edit, CK_Right, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 4);
+    ck_assert_int_eq (edit_get_col (test_edit), 2);
+
+    edit_execute_key_command (test_edit, CK_Left, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 2);
+    ck_assert_int_eq (edit_get_col (test_edit), 1);
+    edit_execute_key_command (test_edit, CK_Left, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 0);
+    ck_assert_int_eq (edit_get_col (test_edit), 0);
+
+    // shown control characters are stepped over one at a time
+    edit_options.show_control_chars = TRUE;
+    edit_layout_reset (test_edit);
+    edit_execute_key_command (test_edit, CK_Right, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 1);
+    edit_execute_key_command (test_edit, CK_Right, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 2);
+    ck_assert_int_eq (edit_get_col (test_edit), 3);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+test_assert_text (const char *expected)
+{
+    const size_t len = strlen (expected);
+
+    ck_assert_int_eq (test_edit->buffer.size, (off_t) len);
+    for (size_t i = 0; i < len; i++)
+        ck_assert_int_eq (edit_buffer_get_byte (&test_edit->buffer, (off_t) i),
+                          (unsigned char) expected[i]);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_right_before_hidden)
+{
+    edit_options.show_control_chars = FALSE;
+    edit_options.cursor_beyond_eol = FALSE;
+    edit_layout_reset (test_edit);
+
+    // before the hidden "\r": one press moves past "b" too
+    edit_cursor_move (test_edit, 1 - test_edit->buffer.curs1);
+    edit_execute_key_command (test_edit, CK_Right, -1);
+    ck_assert_int_eq (test_edit->buffer.curs1, 4);
+    ck_assert_int_eq (edit_get_col (test_edit), 2);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_delete_with_hidden)
+{
+    edit_options.show_control_chars = FALSE;
+    edit_options.cursor_beyond_eol = FALSE;
+    edit_options.persistent_selections = TRUE;
+    edit_options.fake_half_tabs = FALSE;
+    edit_layout_reset (test_edit);
+
+    // before "a": only "a" goes, the cursor is then before the hidden "\r"
+    edit_cursor_move (test_edit, -test_edit->buffer.curs1);
+    edit_execute_key_command (test_edit, CK_Delete, -1);
+    test_assert_text ("\rb\x0c"
+                      "c\td\x7f\n");
+    ck_assert_int_eq (test_edit->buffer.curs1, 0);
+
+    // the hidden "\r" goes together with "b"
+    edit_execute_key_command (test_edit, CK_Delete, -1);
+    test_assert_text ("\x0c"
+                      "c\td\x7f\n");
+    ck_assert_int_eq (test_edit->buffer.curs1, 0);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* @Test */
+START_TEST (test_backspace_with_hidden)
+{
+    edit_options.show_control_chars = FALSE;
+    edit_options.cursor_beyond_eol = FALSE;
+    edit_options.persistent_selections = TRUE;
+    edit_options.fake_half_tabs = FALSE;
+    edit_options.backspace_through_tabs = FALSE;
+    edit_layout_reset (test_edit);
+
+    // after "d" DEL: both go
+    edit_cursor_move (test_edit, 8 - test_edit->buffer.curs1);
+    edit_execute_key_command (test_edit, CK_BackSpace, -1);
+    test_assert_text ("a\rb\x0c"
+                      "c\t\n");
+    ck_assert_int_eq (test_edit->buffer.curs1, 6);
+
+    // after the hidden "\f": it goes together with "b" and the hidden "\r" before it
+    edit_cursor_move (test_edit, 4 - test_edit->buffer.curs1);
+    edit_execute_key_command (test_edit, CK_BackSpace, -1);
+    test_assert_text ("ac\t\n");
+    ck_assert_int_eq (test_edit->buffer.curs1, 1);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -171,6 +296,10 @@ main (void)
     tcase_add_test (tc_core, test_width_shown);
     tcase_add_test (tc_core, test_width_hidden);
     tcase_add_test (tc_core, test_layout_reset_after_toggle);
+    tcase_add_test (tc_core, test_arrows_step_over_hidden);
+    tcase_add_test (tc_core, test_right_before_hidden);
+    tcase_add_test (tc_core, test_delete_with_hidden);
+    tcase_add_test (tc_core, test_backspace_with_hidden);
     // ***********************************
 
     return mctest_run_all (tc_core);
