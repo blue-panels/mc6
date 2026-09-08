@@ -1019,13 +1019,13 @@ edit_insert_column_of_text (WEdit *edit, GString *data, long width, off_t *start
 /* --------------------------------------------------------------------------------------------- */
 /**
  * Callback for the iteration of objects in the 'editors' array.
- * Toggle syntax highlighting in editor object.
+ * Drop the cached column layout after a change in how characters are displayed.
  *
  * @param data      probably WEdit object
  * @param user_data unused
  */
 
-static void
+void
 edit_layout_reset_cb (void *data, void *user_data)
 {
     (void) user_data;
