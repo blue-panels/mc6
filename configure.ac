@@ -7,10 +7,10 @@ AC_PREREQ([2.64])
 
 dnl The name is what PACKAGE_NAME becomes, and that lands in the middle of
 dnl sentences such as "Type 'exit' to return to the %s", so it stays a short
-dnl noun phrase. The full title of the fork belongs where it reads as a title.
+dnl noun phrase.
 dnl The fourth argument is PACKAGE and must remain mc: the gettext domain and
 dnl the data paths are built from it.
-AC_INIT([Midnight Commander], m4_esyscmd_s([./version.sh .]),
+AC_INIT([M-Commander], m4_esyscmd_s([./version.sh .]),
         [https://github.com/blue-panels/mc6/issues], [mc],
         [https://github.com/blue-panels/mc6/wiki])
 

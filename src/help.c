@@ -73,6 +73,7 @@
 #define MAXLINKNAME         80
 #define HISTORY_SIZE        20
 #define HELP_WINDOW_WIDTH   MIN (80, COLS - 16)
+#define HELP_VERSION_WIDTH  32
 
 #define STRING_LINK_START   "\01"
 #define STRING_LINK_POINTER "\02"
@@ -650,7 +651,7 @@ help_show (WDialog *h, const char *paint_start)
             case CHAR_VERSION:
                 widget_gotoyx (h, line + 2, col + 2);
                 tty_print_string (mc_global.mc_version);
-                col += str_term_width1 (mc_global.mc_version);
+                col += MAX (str_term_width1 (mc_global.mc_version), HELP_VERSION_WIDTH);
                 break;
             case CHAR_FONT_BOLD:
                 tty_setcolor (HELP_BOLD_COLOR);

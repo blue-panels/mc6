@@ -3,7 +3,7 @@
 
 EAPI=8
 
-DESCRIPTION="Midnight Commander with Plugins, a fork of GNU Midnight Commander"
+DESCRIPTION="M-Commander, based on GNU Midnight Commander"
 HOMEPAGE="https://github.com/blue-panels/mc6/wiki"
 SRC_URI="https://github.com/blue-panels/mc6/releases/download/v${PV}/mc6-${PV}.tar.gz"
 S="${WORKDIR}/mc6-${PV}"
