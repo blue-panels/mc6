@@ -44,8 +44,8 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 payload=$(jq '[.[] | select((.labels | index("infra")) | not)]' "$input")
 test "$(printf '%s' "$payload" | jq 'length')" != 0 || die "nothing to rewrite"
 
-system='You write release notes for mc6, a fork of GNU Midnight Commander: a
-terminal file manager with a built-in editor, viewer and panel plugins.
+system='You write release notes for mc6, M-Commander, based on GNU Midnight Commander:
+a terminal file manager with a built-in editor, viewer and panel plugins.
 
 You are given merged pull requests as JSON. Each has a number, a title written
 in the language of commits, the labels it carries, and the description its

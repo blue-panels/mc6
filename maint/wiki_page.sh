@@ -116,8 +116,8 @@ test "$(jq 'length' "$work/paragraphs.json")" != 0 ||
 "$here/release_notes.sh" "$version" --milestone \
     --titles-from "$work/paragraphs.json" > "$work/body.md"
 
-intro_system='You are given the body of a release page for mc6, Midnight
-Commander with Plugins: a terminal file manager with a built-in editor, viewer,
+intro_system='You are given the body of a release page for mc6, M-Commander,
+based on GNU Midnight Commander: a terminal file manager with a built-in editor, viewer,
 embedded terminal and panel plugins.
 
 Write the opening: two paragraphs, three at the most, before the list begins.
