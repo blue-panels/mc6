@@ -4105,7 +4105,8 @@ edit_has_single_line_layout (const WEdit *edit)
 int
 edit_control_char_width (void)
 {
-    return edit_options.show_control_chars ? 2 : 1;
+    // hidden control characters take no cell at all, see edit_draw_this_line()
+    return edit_options.show_control_chars ? 2 : 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */

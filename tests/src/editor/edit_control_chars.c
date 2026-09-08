@@ -120,15 +120,18 @@ START_TEST (test_width_hidden)
 {
     edit_options.show_control_chars = FALSE;
 
-    ck_assert_int_eq (edit_control_char_width (), 1);
+    ck_assert_int_eq (edit_control_char_width (), 0);
 
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 2), 2);
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 5), 5);
+    // "a" "b" "c" -> 3 columns, the hidden "\r" and "\f" take no cell
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 2), 1);
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 5), 3);
     ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 6), 8);
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 8), 10);
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 0, 8), 9);
 
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 3, 0), 3);
-    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 4, 0), 4);
+    // column 1 is reached before the hidden "\r", column 3 before the tab
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 1, 0), 1);
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 3, 0), 5);
+    ck_assert_int_eq (edit_move_forward3 (test_edit, 0, 4, 0), 5);
 }
 END_TEST
 
@@ -143,8 +146,8 @@ START_TEST (test_layout_reset_after_toggle)
 
     edit_options.show_control_chars = FALSE;
     edit_layout_reset (test_edit);
-    ck_assert_int_eq (edit_get_col (test_edit), 2);
-    ck_assert_int_eq (test_edit->curs_col, 2);
+    ck_assert_int_eq (edit_get_col (test_edit), 1);
+    ck_assert_int_eq (test_edit->curs_col, 1);
 
     edit_options.show_control_chars = TRUE;
     edit_layout_reset (test_edit);

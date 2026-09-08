@@ -132,6 +132,7 @@ long edit_layout_advance_byte (const WEdit *edit, off_t offset, long column);
 gboolean edit_has_fast_ascii_layout (const WEdit *edit);
 int edit_control_char_width (void);
 void edit_layout_reset (WEdit *edit);
+void edit_layout_reset_cb (void *data, void *user_data);
 gboolean edit_has_single_line_layout (const WEdit *edit);
 off_t edit_get_line_offset (WEdit *edit, off_t bol, long column, long *actual_column);
 off_t edit_get_current_bol (WEdit *edit);

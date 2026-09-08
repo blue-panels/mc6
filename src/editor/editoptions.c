@@ -124,6 +124,7 @@ edit_options_dialog (WDialog *h)
     char *p, *q;
     int wrap_mode = 0;
     gboolean old_syntax_hl;
+    gboolean old_show_control_chars;
 
 #ifdef ENABLE_NLS
     static gboolean i18n_flag = FALSE;
@@ -134,6 +135,8 @@ edit_options_dialog (WDialog *h)
         i18n_flag = TRUE;
     }
 #endif
+
+    old_show_control_chars = edit_options.show_control_chars;
 
     g_snprintf (wrap_length, sizeof (wrap_length), "%d", edit_options.word_wrap_line_length);
     g_snprintf (tab_spacing, sizeof (tab_spacing), "%d", TAB_SIZE);
@@ -248,6 +251,10 @@ edit_options_dialog (WDialog *h)
     // Load or unload syntax rules if the option has changed
     if (edit_options.syntax_highlighting != old_syntax_hl)
         g_list_foreach (GROUP (h)->widgets, edit_reload_syntax, NULL);
+
+    // the cached column layout depends on the width of control characters
+    if (edit_options.show_control_chars != old_show_control_chars)
+        g_list_foreach (GROUP (h)->widgets, edit_layout_reset_cb, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
