@@ -75,6 +75,14 @@ cell_bg (mcview_vterm_t *vt, int row, int col)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static const mcview_vterm_cell_t *
+cell_at (mcview_vterm_t *vt, int row, int col)
+{
+    return mcview_terminal_buffer_get (mcview_vterm_buf (vt), row, col);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static char *
 canvas_to_text (mcview_vterm_t *vt, int rows, int cols)
 {
@@ -1503,6 +1511,38 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_fish_startup_leaves_the_prompt_plain)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_cell_t *cell;
+
+    mcview_vterm_set_size (vt, 5, 40);
+    mcview_vterm_reset (vt);
+
+    /* fish 4 turns on bracketed paste, modifyOtherKeys and the kitty
+       keyboard protocol, then draws user@host in green and resets. */
+    FEED (vt, "\033[?2004h\033[>4;1m\033[>5u\033[=5u");
+    FEED (vt, "\033[32muser@host\033(B\033[m ~> ");
+
+    cell = cell_at (vt, 0, 0);
+    ck_assert_ptr_nonnull (cell);
+    ck_assert_uint_eq (cell->ch, 'u');
+    ck_assert_int_eq (cell->attr.fg, 2);
+    ck_assert (!cell->attr.underline);
+    ck_assert (!cell->attr.bold);
+
+    cell = cell_at (vt, 0, 10);
+    ck_assert_ptr_nonnull (cell);
+    ck_assert_uint_eq (cell->ch, '~');
+    ck_assert_int_eq (cell->attr.fg, MCVIEW_ANSI_COLOR_DEFAULT);
+    ck_assert (!cell->attr.underline);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -1560,6 +1600,7 @@ main (void)
     tcase_add_test (tc_core, test_a_screen_made_taller_brings_the_pictures_down_with_the_rows);
     tcase_add_test (tc_core, test_dec_graphics_letters_draw_lines);
     tcase_add_test (tc_core, test_shift_out_prints_from_g1);
+    tcase_add_test (tc_core, test_fish_startup_leaves_the_prompt_plain);
 
     return mctest_run_all (tc_core);
 }
