@@ -453,6 +453,13 @@ do_view_cmd (WPanel *panel, gboolean plain_view)
                 != 0)
             return;
 
+        // the plugin owns the directories of its panel
+        if (panel->is_plugin_panel)
+        {
+            send_message (panel, NULL, MSG_ACTION, CK_Enter, NULL);
+            return;
+        }
+
         fname_vpath = vfs_path_from_str (fe->fname->str);
         if (!panel_cd (panel, fname_vpath, cd_exact))
             cd_error_message (fe->fname->str);

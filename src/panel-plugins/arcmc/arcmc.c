@@ -53,6 +53,7 @@ static mc_pp_result_t arcmc_view_input_stream (mc_panel_host_t *host, const char
                                                mc_pp_input_stream_t *stream, char **local_path);
 static void arcmc_close (void *plugin_data);
 static mc_pp_result_t arcmc_get_items (void *plugin_data, void *list_ptr);
+static gboolean arcmc_is_file_listing (void *plugin_data);
 static mc_pp_result_t arcmc_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t arcmc_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t arcmc_get_local_copy (void *plugin_data, const char *fname,
@@ -211,6 +212,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .open = arcmc_open,
     .close = arcmc_close,
     .get_items = arcmc_get_items,
+    .is_file_listing = arcmc_is_file_listing,
     .open_input_stream = arcmc_open_input_stream,
     .file_operations = arcmc_file_operations,
     .file_operation_count = G_N_ELEMENTS (arcmc_file_operations),
@@ -1055,6 +1057,17 @@ arcmc_close (void *plugin_data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+arcmc_is_file_listing (void *plugin_data)
+{
+    (void) plugin_data;
+
+    // every level of an archive is a directory of it
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 arcmc_get_items (void *plugin_data, void *list_ptr)
 {
@@ -1071,7 +1084,24 @@ arcmc_get_items (void *plugin_data, void *list_ptr)
 
         child_name = is_direct_child (e->full_path, data->current_dir);
         if (child_name != NULL)
-            mc_pp_add_entry (list_ptr, child_name, e->mode, e->size, e->mtime);
+        {
+            struct stat st;
+            mc_pp_entry_flags_t flags = MC_PP_ENTRY_NONE;
+
+            memset (&st, 0, sizeof (st));
+            st.st_mode = e->mode;
+            st.st_size = e->size;
+            st.st_mtime = e->mtime;
+            st.st_uid = getuid ();
+            st.st_gid = getgid ();
+            st.st_nlink = 1;
+            if (e->link_to_dir)
+                flags |= MC_PP_ENTRY_LINK_TO_DIR;
+            if (e->stale_link)
+                flags |= MC_PP_ENTRY_STALE_LINK;
+
+            mc_pp_add_entry_st (list_ptr, child_name, &st, flags);
+        }
     }
 
     return MC_PPR_OK;
@@ -1160,10 +1190,17 @@ arcmc_chdir (void *plugin_data, const char *path)
         new_dir = build_child_path (data->current_dir, path);
         e = arcmc_find_entry (data->all_entries, new_dir);
 
-        if (e == NULL || !S_ISDIR (e->mode))
+        if (e == NULL || (!S_ISDIR (e->mode) && !e->link_to_dir))
         {
             g_free (new_dir);
             return MC_PPR_FAILED;
+        }
+
+        // a link to a directory goes where it leads
+        if (e->link_to_dir)
+        {
+            g_free (new_dir);
+            new_dir = g_strdup (e->link_path);
         }
 
         g_free (data->current_dir);
@@ -1261,7 +1298,7 @@ arcmc_get_local_copy (void *plugin_data, const char *fname, char **local_path)
     off_t file_size = 0;
     guint i;
 
-    target_path = build_child_path (data->current_dir, fname);
+    target_path = arcmc_target_path (data, fname);
 
     /* check bulk cache first (populated by a previous bulk extract) */
     if (data->bulk_cache != NULL)
@@ -1542,7 +1579,7 @@ arcmc_copy_to_local (void *plugin_data, const char *fname, const char *dest_path
     char *src, *local_path = NULL;
     mc_pp_result_t result;
 
-    src = build_child_path (data->current_dir, fname);
+    src = arcmc_target_path (data, fname);
     e = arcmc_find_entry (data->all_entries, src);
 
     if (e != NULL && S_ISDIR (e->mode))

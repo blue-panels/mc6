@@ -122,7 +122,7 @@ d<3-letters month name> <day> <year or HH:MM>
 D<year> <month> <day> <hour> <minute> <second>[.1234]
 E<major-of-device>,<minor>
 :<filename>
-L<filename symlink points to>
+T<what a symbolic link points to: d directory, - anything else, ! nothing>
 <blank line to separate items>
 
 Unix permissions are of form X---------
@@ -134,6 +134,9 @@ where X is type of file:
     'l' a symbolic link
     'p' a FIFO
     's' a socket.
+
+'T' comes only with a symbolic link. Without it the link is shown as pointing
+to something that is not a directory.
 
 'd' has three fields:
     month (one of strings Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
@@ -152,7 +155,8 @@ Get file
 
 Server sends line with filesize on it, followed by line with ### 100
 indicating partial success, then it sends binary data (exactly filesize bytes)
-and follows them with (with no preceding newline) ### 200.
+and follows them with (with no preceding newline) ### 200. For a symbolic
+link the size and the bytes are those of the file it points to.
 
 Note that there's no way to abort running RETR command - except closing
 the connection.

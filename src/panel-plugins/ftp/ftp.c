@@ -100,6 +100,7 @@ typedef struct
     gboolean at_root;
     char *current_path;
     GPtrArray *entries;
+    gboolean load_failed; /* the last listing did not come */
 
     GPtrArray *connections;
     char *connections_file;
@@ -133,6 +134,7 @@ typedef struct
 static void *ftp_open (mc_panel_host_t *host, const char *open_path);
 static void ftp_close (void *plugin_data);
 static mc_pp_result_t ftp_get_items (void *plugin_data, void *list_ptr);
+static gboolean ftp_is_file_listing (void *plugin_data);
 static mc_pp_result_t ftp_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t ftp_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t ftp_get_local_copy (void *plugin_data, const char *fname, char **local_path);
@@ -288,6 +290,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .open = ftp_open,
     .close = ftp_close,
     .get_items = ftp_get_items,
+    .is_file_listing = ftp_is_file_listing,
 
     .chdir = ftp_chdir,
     .enter = ftp_enter,
@@ -1374,6 +1377,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     {
         FTP_LOG ("load_entries: request failed, returning empty list");
         g_string_free (ctx.buf, TRUE);
+        data->load_failed = TRUE;
         return arr;
     }
 
@@ -1468,6 +1472,8 @@ ftp_reload_entries (ftp_data_t *data, gboolean show_progress)
 
     FTP_LOG ("reload_entries: path='%s' show_progress=%d", data->current_path, show_progress);
 
+    data->load_failed = FALSE;
+
     cached = mc_pp_dir_cache_lookup (&data->dir_cache, data->current_path);
     if (cached != NULL)
     {
@@ -1501,7 +1507,7 @@ ftp_reload_entries (ftp_data_t *data, gboolean show_progress)
         data->entries = ftp_load_entries (data, NULL);
     }
 
-    if (data->entries != NULL)
+    if (data->entries != NULL && !data->load_failed)
     {
         FTP_LOG ("reload_entries: storing %u entries in cache for '%s'", data->entries->len,
                  data->current_path);
@@ -2404,6 +2410,16 @@ ftp_close (void *plugin_data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+ftp_is_file_listing (void *plugin_data)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+
+    return !data->at_root;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 ftp_get_items (void *plugin_data, void *list_ptr)
 {
@@ -2579,6 +2595,25 @@ ftp_enter (void *plugin_data, const char *name, const struct stat *st)
 
             ftp_reload_entries (data, TRUE);
             return MC_PPR_OK;
+        }
+
+        /* The listing says nothing of what a link points to. A link to a directory
+           is one the server lets us into. */
+        if (S_ISLNK (entry->st.st_mode))
+        {
+            char *old_path = data->current_path;
+
+            data->current_path = mc_pp_join_path (old_path, name);
+            ftp_reload_entries (data, TRUE);
+            if (!data->load_failed)
+            {
+                g_free (old_path);
+                return MC_PPR_OK;
+            }
+
+            g_free (data->current_path);
+            data->current_path = old_path;
+            ftp_reload_entries (data, FALSE);
         }
     }
 

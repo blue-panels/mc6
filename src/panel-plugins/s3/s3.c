@@ -146,6 +146,7 @@ typedef struct
 static void *s3_open (mc_panel_host_t *host, const char *open_path);
 static void s3_close (void *plugin_data);
 static mc_pp_result_t s3_get_items (void *plugin_data, void *list_ptr);
+static gboolean s3_is_file_listing (void *plugin_data);
 static mc_pp_result_t s3_chdir (void *plugin_data, const char *path);
 static mc_pp_result_t s3_enter (void *plugin_data, const char *name, const struct stat *st);
 static mc_pp_result_t s3_get_local_copy (void *plugin_data, const char *fname, char **local_path);
@@ -239,6 +240,7 @@ static const mc_panel_plugin_t s3_plugin = {
     .open = s3_open,
     .close = s3_close,
     .get_items = s3_get_items,
+    .is_file_listing = s3_is_file_listing,
 
     .chdir = s3_chdir,
     .enter = s3_enter,
@@ -2420,6 +2422,16 @@ s3_close (void *plugin_data)
 
     if (s3_curl_refcount == 0)
         curl_global_cleanup ();
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+s3_is_file_listing (void *plugin_data)
+{
+    s3_data_t *data = (s3_data_t *) plugin_data;
+
+    return data->level == S3_LEVEL_OBJECTS;
 }
 
 /* --------------------------------------------------------------------------------------------- */

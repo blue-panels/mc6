@@ -780,6 +780,28 @@ plugin_panel_item_free (gpointer data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A plugin cannot hand over a link, so a link to a directory is the directory
+   it points to. */
+static gboolean
+plugin_panel_entry_is_dir (const file_entry_t *fe)
+{
+    return S_ISDIR (fe->st.st_mode) || link_isdir (fe);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mode_t
+plugin_panel_entry_mode (const file_entry_t *fe)
+{
+    // the mode of the directory behind the link is not known here
+    if (link_isdir (fe))
+        return S_IFDIR | 0755;
+
+    return fe->st.st_mode;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 plugin_panel_item_add (GPtrArray *items, const file_entry_t *fe)
 {
@@ -787,7 +809,7 @@ plugin_panel_item_add (GPtrArray *items, const file_entry_t *fe)
 
     item = g_new (plugin_panel_item_t, 1);
     item->name = g_strdup (fe->fname->str);
-    item->mode = fe->st.st_mode;
+    item->mode = plugin_panel_entry_mode (fe);
     g_ptr_array_add (items, item);
 }
 
@@ -938,8 +960,8 @@ plugin_panel_walk_dir (WPanel *panel, const char *name, const char *dest_path,
         }
 
         child_dest = mc_build_filename (dest_path, child, (char *) NULL);
-        result =
-            plugin_panel_copy_item (panel, child, fe->st.st_mode, child_dest, overwrite, depth + 1);
+        result = plugin_panel_copy_item (panel, child, plugin_panel_entry_mode (fe), child_dest,
+                                         overwrite, depth + 1);
         g_free (child_dest);
     }
 
@@ -1528,7 +1550,7 @@ plugin_panel_put_cmd (WPanel *panel)
 
         fe = panel_current_entry (panel);
         if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
             return;
     }
 
@@ -1549,7 +1571,7 @@ plugin_panel_put_cmd (WPanel *panel)
             if (overwrite.mode == PP_OVERWRITE_ABORT)
                 break;
 
-            if (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+            if (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
                 continue;
 
             if (plugin_panel_put_decide (panel, dest, fe->fname->str, TRUE, &overwrite)
@@ -1581,7 +1603,7 @@ plugin_panel_put_cmd (WPanel *panel)
         fe = panel_current_entry (panel);
         /* already validated above, but keep the guard */
         if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
             return;
 
         if (plugin_panel_put_decide (panel, dest, fe->fname->str, TRUE, &overwrite) != PP_ACT_WRITE)
@@ -1639,7 +1661,7 @@ plugin_panel_put_move_cmd (WPanel *panel)
 
         fe = panel_current_entry (panel);
         if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
             return;
     }
 
@@ -1660,7 +1682,7 @@ plugin_panel_put_move_cmd (WPanel *panel)
             if (overwrite.mode == PP_OVERWRITE_ABORT)
                 break;
 
-            if (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+            if (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
                 continue;
 
             /* No resume: the source is deleted once this is believed to have
@@ -1694,7 +1716,7 @@ plugin_panel_put_move_cmd (WPanel *panel)
         fe = panel_current_entry (panel);
         /* already validated above, but keep the guard */
         if (fe == NULL
-            || (S_ISDIR (fe->st.st_mode) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
             return;
 
         if (plugin_panel_put_decide (panel, dest, fe->fname->str, FALSE, &overwrite)

@@ -9,7 +9,7 @@ mc_panel_arcmc_la_SOURCES = \
     arcmc-ext.c \
     arcmc-ext.h \
     arcmc-reader.c \
-    archive-io.c \
+    archive-io.c arcmc-entries.c \
     progress.c \
     dialog-pack.c \
     dialog-settings.c \

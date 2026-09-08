@@ -16,7 +16,8 @@ endif
 
 TESTS = \
 	arcmc_ext_registry \
-	arcmc_utils
+	arcmc_utils \
+	arcmc_links
 
 # The reader speaks to libarchive, which the plugin itself may have been
 # built without.
@@ -28,6 +29,10 @@ check_PROGRAMS = $(TESTS)
 
 arcmc_utils_SOURCES = \
 	arcmc_utils.c
+
+arcmc_links_SOURCES = \
+	arcmc_links.c \
+	$(top_srcdir)/src/panel-plugins/arcmc/arcmc-entries.c
 
 arcmc_ext_registry_SOURCES = \
 	arcmc_ext_registry.c \

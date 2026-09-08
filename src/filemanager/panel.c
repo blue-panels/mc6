@@ -168,6 +168,7 @@ typedef enum
 
 static const char *panel_format (WPanel *panel);
 static gboolean do_enter (WPanel *panel);
+static void goto_parent_dir (WPanel *panel);
 static panel_magic_open_result_t panel_magic_open_local_file (WPanel *panel, const char *fname,
                                                               const vfs_path_t *full_name_vpath,
                                                               const char *action_name,
@@ -1210,7 +1211,7 @@ display_mini_info (WPanel *panel)
     if (fe == NULL)
         // NULL is in case of filter that doesn't match anything
         repaint_status (panel);
-    else if (S_ISLNK (fe->st.st_mode))
+    else if (S_ISLNK (fe->st.st_mode) && !panel->is_plugin_panel)
     {
         char link_target[MC_MAXPATHLEN];
         vfs_path_t *lc_link_vpath;
@@ -2583,7 +2584,11 @@ maybe_cd (WPanel *panel, gboolean move_up_dir)
 
         if (move_up_dir)
         {
-            cd_up_dir (panel);
+            // a plugin panel moves inside the plugin, not in the local tree
+            if (panel->is_plugin_panel)
+                goto_parent_dir (panel);
+            else
+                cd_up_dir (panel);
             return MSG_HANDLED;
         }
 
@@ -2591,7 +2596,13 @@ maybe_cd (WPanel *panel, gboolean move_up_dir)
 
         if (fe != NULL)
         {
-            if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
+            if (panel->is_plugin_panel)
+            {
+                // a plugin may tell a link to a directory only when asked to enter it
+                if (S_ISDIR (fe->st.st_mode) || link_isdir (fe) || S_ISLNK (fe->st.st_mode))
+                    do_enter (panel);
+            }
+            else if (S_ISDIR (fe->st.st_mode) || link_isdir (fe))
             {
                 vfs_path_t *vpath;
 
@@ -2615,7 +2626,10 @@ force_maybe_cd (WPanel *panel)
 {
     if (mcterm_overlay_cmdline_is_empty ())
     {
-        cd_up_dir (panel);
+        if (panel->is_plugin_panel)
+            goto_parent_dir (panel);
+        else
+            cd_up_dir (panel);
         return MSG_HANDLED;
     }
 

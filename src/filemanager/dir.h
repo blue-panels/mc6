@@ -74,6 +74,7 @@ typedef struct
 
 /*** declarations of public functions ************************************************************/
 
+gboolean dir_name_is_hidden (const char *name, size_t len);
 gboolean dir_list_grow (dir_list *list, int delta);
 gboolean dir_list_append (dir_list *list, const char *fname, const struct stat *st,
                           gboolean link_to_dir, gboolean stale_link);

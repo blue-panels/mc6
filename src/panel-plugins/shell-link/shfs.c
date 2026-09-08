@@ -82,6 +82,9 @@ shfs_read_byte (shfs_conn_t *conn, char *c)
     return (n == 1);
 }
 
+// how far a chain of symbolic links is followed before it is given up
+#define SHFS_LINK_HOPS 32
+
 /** Every helper, with the text compiled into the binary. */
 static const struct
 {
@@ -89,7 +92,7 @@ static const struct
     int version;
     const char *def_content;
 } shfs_helper_table[] = {
-    { VFS_SHELL_LS_FILE, 1, VFS_SHELL_LS_DEF_CONTENT },
+    { VFS_SHELL_LS_FILE, 2, VFS_SHELL_LS_DEF_CONTENT },
     { VFS_SHELL_EXISTS_FILE, 1, VFS_SHELL_EXISTS_DEF_CONTENT },
     { VFS_SHELL_MKDIR_FILE, 1, VFS_SHELL_MKDIR_DEF_CONTENT },
     { VFS_SHELL_UNLINK_FILE, 1, VFS_SHELL_UNLINK_DEF_CONTENT },
@@ -100,7 +103,7 @@ static const struct
     { VFS_SHELL_LN_FILE, 1, VFS_SHELL_LN_DEF_CONTENT },
     { VFS_SHELL_MV_FILE, 1, VFS_SHELL_MV_DEF_CONTENT },
     { VFS_SHELL_HARDLINK_FILE, 1, VFS_SHELL_HARDLINK_DEF_CONTENT },
-    { VFS_SHELL_GET_FILE, 1, VFS_SHELL_GET_DEF_CONTENT },
+    { VFS_SHELL_GET_FILE, 4, VFS_SHELL_GET_DEF_CONTENT },
     { VFS_SHELL_SEND_FILE, 1, VFS_SHELL_SEND_DEF_CONTENT },
     { VFS_SHELL_APPEND_FILE, 1, VFS_SHELL_APPEND_DEF_CONTENT },
     { VFS_SHELL_INFO_FILE, 2, VFS_SHELL_INFO_DEF_CONTENT },
@@ -384,41 +387,66 @@ shfs_exists_path (shfs_conn_t *conn, const char *path, GError **error)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The stat of what @path leads to. The protocol has no stat, so it comes out of a
+   listing of the parent directory; a symbolic link is followed to its target, as
+   the get helper follows it, so the size is that of the bytes a fetch brings. */
 gboolean
 shfs_file_stat (shfs_conn_t *conn, const char *path, struct stat *st, GError **error)
 {
-    GPtrArray *entries;
-    char *dir;
-    char *base;
+    char *cur;
     gboolean found = FALSE;
-    guint i;
+    int hops;
 
     mc_return_val_if_error (error, FALSE);
 
-    // The protocol has no stat, so the size comes out of a listing of the parent directory.
-    dir = g_path_get_dirname (path);
-    base = g_path_get_basename (path);
+    cur = g_strdup (path);
 
-    entries = shfs_list_dir (conn, dir, error);
-    if (entries != NULL)
+    for (hops = 0; hops < SHFS_LINK_HOPS && !found; hops++)
     {
-        for (i = 0; i < entries->len; i++)
-        {
-            const shfs_entry_t *e = (const shfs_entry_t *) g_ptr_array_index (entries, i);
+        GPtrArray *entries;
+        char *dir;
+        char *base;
+        char *next = NULL;
+        guint i;
 
-            if (strcmp (e->name, base) == 0)
+        dir = g_path_get_dirname (cur);
+        base = g_path_get_basename (cur);
+
+        entries = shfs_list_dir (conn, dir, error);
+        if (entries != NULL)
+        {
+            for (i = 0; i < entries->len; i++)
             {
-                *st = e->st;
-                found = TRUE;
+                const shfs_entry_t *e = (const shfs_entry_t *) g_ptr_array_index (entries, i);
+
+                if (strcmp (e->name, base) != 0)
+                    continue;
+
+                if (S_ISLNK (e->st.st_mode) && e->linkname != NULL && e->linkname[0] != '\0')
+                    next = g_path_is_absolute (e->linkname)
+                        ? g_strdup (e->linkname)
+                        : mc_build_filename (dir, e->linkname, (char *) NULL);
+                else
+                {
+                    *st = e->st;
+                    found = TRUE;
+                }
                 break;
             }
+
+            shfs_entries_free (entries);
         }
 
-        shfs_entries_free (entries);
+        g_free (dir);
+        g_free (base);
+        g_free (cur);
+        cur = next;
+
+        if (cur == NULL)
+            break;
     }
 
-    g_free (dir);
-    g_free (base);
+    g_free (cur);
 
     return found;
 }
@@ -1424,7 +1452,8 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
 
         filename = buffer;
 
-        if (strcmp (filename, "\".\"") == 0 || strcmp (filename, "\"..\"") == 0)
+        if (strcmp (filename, "\".\"") == 0 || strcmp (filename, "\"..\"") == 0
+            || DIR_IS_DOT (filename) || DIR_IS_DOTDOT (filename))
             break;  // We'll do "." and ".." ourselves
 
         filename_bound = filename + strlen (filename);
@@ -1540,6 +1569,12 @@ shfs_parse_ls (char *buffer, shfs_entry_t *ent)
     }
     break;
 
+    case 'T':
+        // what the link points to: "Td" is a directory, "T!" is nothing
+        ent->link_to_dir = buffer[0] == 'd';
+        ent->stale_link = buffer[0] == '!';
+        break;
+
     case 'E':
     {
         int maj, min;
@@ -1613,6 +1648,7 @@ shfs_list_dir (shfs_conn_t *conn, const char *path, GError **error)
 
     entries = g_ptr_array_new_with_free_func (shfs_entry_free);
     ent = g_new0 (shfs_entry_t, 1);
+    ent->st.st_nlink = 1;
 
     while (TRUE)
     {
@@ -1639,6 +1675,7 @@ shfs_list_dir (shfs_conn_t *conn, const char *path, GError **error)
             // An empty line ends one entry and starts the next.
             g_ptr_array_add (entries, ent);
             ent = g_new0 (shfs_entry_t, 1);
+            ent->st.st_nlink = 1;
         }
     }
 

@@ -1,10 +1,11 @@
-# shfs-helper: get 3
+# shfs-helper: get 4
 LC_TIME=C
 export LC_TIME
 # SHELL_MAX_BYTES, when above zero, caps both the announced size and what is
 # sent, so a preview does not drag a whole file across the wire. The count is
 # taken from the file itself, never from a pipe: the announced size and the
-# bytes that follow it must agree or the channel goes out of step.
+# bytes that follow it must agree or the channel goes out of step. The size
+# is that of the file a symbolic link points to, as the bytes are.
 shell_get_perl ()
 {
 FILENAME=$1
@@ -18,7 +19,7 @@ my $filename = $ARGV[0];
 my $pos = $ARGV[1];
 my $max = $ARGV[2];
 my $content;
-my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = lstat("$filename");
+my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$filename");
 my $n;
 my $left;
 if (-f $filename && open IFILE,$filename) {
@@ -55,7 +56,7 @@ MAXB=$3
 LC_TIME=C
 export LC_TIME
 if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
-    file_size=`ls -ln "${FILENAME}" 2>/dev/null | (
+    file_size=`ls -lnL "${FILENAME}" 2>/dev/null | (
        read p l u g s r
        echo $s
     )`
@@ -95,7 +96,7 @@ MAXB=$3
 LC_TIME=C
 export LC_TIME
 if dd if="${FILENAME}" of=/dev/null bs=1 count=1 2>/dev/null ; then
-    file_size=`ls -ln "${FILENAME}" 2>/dev/null | (
+    file_size=`ls -lnL "${FILENAME}" 2>/dev/null | (
        read p l u g s r
        echo $s
     )`
