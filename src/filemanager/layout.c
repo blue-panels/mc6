@@ -112,7 +112,7 @@ int ok_to_refresh = 1;
 
 /* Width 12 for a wee Quick (Hex) View */
 #define MINWIDTH             12
-#define MINHEIGHT            5
+#define MINHEIGHT            6
 
 #define B_2LEFT              B_USER
 #define B_2RIGHT             (B_USER + 1)

@@ -443,7 +443,7 @@ static int
 panel_lines (const WPanel *p)
 {
     // 3 lines are: top frame, column header, bottom frame
-    return (CONST_WIDGET (p)->rect.lines - 3 - (panels_options.show_mini_info ? 2 : 0));
+    return MAX (1, CONST_WIDGET (p)->rect.lines - 3 - (panels_options.show_mini_info ? 2 : 0));
 }
 
 /* --------------------------------------------------------------------------------------------- */
