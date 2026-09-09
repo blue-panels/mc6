@@ -311,8 +311,16 @@ cb_ret_t mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm,
 cb_ret_t mcview_dialog_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data);
 
 /* ascii.c: */
+#define MAX_COMBINING_CHARS 4  // both slang and ncurses support exactly 4
 void mcview_display_text (WView *view);
 void mcview_state_machine_init (mcview_state_machine_t *, off_t);
+int mcview_next_combining_char_sequence (WView *view, mcview_state_machine_t *state, int *cs,
+                                         int clen, int *color);
+int mcview_wcwidth (const WView *view, int c);
+gboolean mcview_ismark (const WView *view, int c);
+gboolean mcview_is_non_spacing_mark (const WView *view, int c);
+gboolean mcview_isprint (const WView *view, int c);
+int mcview_char_display (const WView *view, int c, char *s);
 void mcview_lcache_flush (WView *view);
 int mcview_ansi_get_color (const mcview_ansi_state_t *ansi);
 int mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_colors_t *colors);

@@ -164,7 +164,6 @@
 /* The Unicode standard recommends that lonely combining characters are printed over a dotted
  * circle. If the terminal is not UTF-8, this will be replaced by a dot anyway. */
 #define BASE_CHARACTER_FOR_LONELY_COMBINING 0x25CC  // dotted circle
-#define MAX_COMBINING_CHARS                 4       // both slang and ncurses support exactly 4
 
 /* I think anything other than space (e.g. arrows) just introduce visual clutter without actually
  * adding value. */
@@ -227,7 +226,7 @@ typedef struct
 
 /* TODO: These methods shouldn't be necessary, see ticket 3257 */
 
-static int
+int
 mcview_wcwidth (const WView *view, int c)
 {
     if (view->utf8)
@@ -243,7 +242,7 @@ mcview_wcwidth (const WView *view, int c)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static inline gboolean
+gboolean
 mcview_ismark (const WView *view, int c)
 {
     return (view->utf8 && g_unichar_ismark (c));
@@ -252,7 +251,7 @@ mcview_ismark (const WView *view, int c)
 /* --------------------------------------------------------------------------------------------- */
 
 /* actually is_non_spacing_mark_or_enclosing_mark */
-static gboolean
+gboolean
 mcview_is_non_spacing_mark (const WView *view, int c)
 {
     if (view->utf8)
@@ -277,7 +276,7 @@ mcview_is_spacing_mark (const WView *view, int c)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
+gboolean
 mcview_isprint (const WView *view, int c)
 {
     if (mc_global.utf8_display)
@@ -296,7 +295,7 @@ mcview_isprint (const WView *view, int c)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static int
+int
 mcview_char_display (const WView *view, int c, char *s)
 {
     if (mc_global.utf8_display)
@@ -928,7 +927,7 @@ mcview_get_next_maybe_nroff_char (WView *view, mcview_state_machine_t *state, in
  * @param color if non-NULL, store the color here, taken from the first codepoint's color
  * @return the number of entries placed in cs, or 0 on EOF
  */
-static int
+int
 mcview_next_combining_char_sequence (WView *view, mcview_state_machine_t *state, int *cs, int clen,
                                      int *color)
 {
