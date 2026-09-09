@@ -1,5 +1,6 @@
 /*
-   M-Commander - text selection in the internal viewer.
+   Internal file viewer for the M-Commander
+   Text selection: hit map of the displayed characters, mouse and Shift keys, copy
 
    Copyright (C) 2026
    Ilia Maslakov il.smind@gmail.com
@@ -483,7 +484,7 @@ mcview_selection_move_cursor (WView *view, struct mcview_selection *sel, long co
 
     for (; steps > 0; steps--)
     {
-        mcview_selection_point_t target;
+        mcview_selection_point_t target = { .valid = FALSE };
         long edge;
         gboolean found;
 
@@ -806,7 +807,7 @@ gboolean
 mcview_selection_command (WView *view, long command)
 {
     struct mcview_selection *sel;
-    mcview_selection_point_t target;
+    mcview_selection_point_t target = { .valid = FALSE };
     gboolean found = FALSE;
 
     if (!mcview_selection_supported (view) || view->selection == NULL)

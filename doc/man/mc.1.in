@@ -3161,10 +3161,10 @@ In ASCII mode, drag with the left mouse button to select text.  A double
 click selects a word and a triple click selects a visual line.  A single
 click only places the terminal cursor on a character; it marks the
 point the keys below extend the selection from.  The
-Shift-arrow, Shift-Home, Shift-End, Shift-PageUp and Shift-PageDown keys
+Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and Shift\-PageDown keys
 extend the selection.  When the text scrolls (PageDown, the mouse
 wheel), the cursor stays on the screen in the same row and column.
-Press Ctrl-Insert or
+Press Ctrl\-Insert or
 Enter to copy the selection to the clipfile and then to the external
 clipboard; C\-u clears it.  Enter acts as Down when there is no
 selection.  Any cursor movement without Shift drops the selection and
@@ -3296,16 +3296,16 @@ it goes on to the next one.  In hex mode they move the hex cursor.
 .B C\-Left, C\-Right
 Move the text cursor by eight displayed characters.
 .TP
-.B Shift-Left, Shift-Right, Shift-Up, Shift-Down
+.B Shift\-Left, Shift\-Right, Shift\-Up, Shift\-Down
 Extend the text selection by one displayed character or row.
 .TP
-.B Shift-Home, Shift-End
+.B Shift\-Home, Shift\-End
 Extend the text selection to the start or end of the visual row.
 .TP
-.B Shift-PageUp, Shift-PageDown
+.B Shift\-PageUp, Shift\-PageDown
 Extend the text selection to the first or last visible row.
 .TP
-.B Ctrl-Insert, Enter
+.B Ctrl\-Insert, Enter
 Copy selected text to the clipfile and external clipboard.  With no
 selection, Enter acts as Down.
 .TP

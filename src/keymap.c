@@ -1,22 +1,26 @@
 /*
    Default values and initialization of keybinding engine
 
-   Copyright (C) 2009-2026
+   Copyright (C) 2009-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Vitja Makarov, 2005
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
    Andrew Borodin <aborodin@vmail.ru>, 2010-2021
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.

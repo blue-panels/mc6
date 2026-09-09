@@ -1,9 +1,11 @@
 /*
-   Internal file viewer for the Midnight Commander
+   Internal file viewer for the M-Commander
    Function for whow info on display
 
-   Copyright (C) 1994-2026
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1998
@@ -15,16 +17,18 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
