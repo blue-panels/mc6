@@ -3158,14 +3158,17 @@ pages, are displayed bold and underlined, thus making a pretty display
 of your files.
 .PP
 In ASCII mode, drag with the left mouse button to select text.  A double
-click selects a word and a triple click selects a visual line.  The
+click selects a word and a triple click selects a visual line.  A single
+click only places the terminal cursor on a character; it marks the
+point the keys below extend the selection from.  The
 Shift-arrow, Shift-Home, Shift-End, Shift-PageUp and Shift-PageDown keys
 extend the selection.  When the text scrolls (PageDown, the mouse
 wheel), the cursor stays on the screen in the same row and column.
 Press Ctrl-Insert or
 Enter to copy the selection to the clipfile and then to the external
 clipboard; C\-u clears it.  Enter acts as Down when there is no
-selection.  The copied value is the displayed text: ANSI and
+selection.  Any cursor movement without Shift drops the selection and
+keeps the cursor.  The copied value is the displayed text: ANSI and
 nroff formatting is removed, tabs are expanded to spaces, and in filter
 mode only the visible lines are copied.
 .PP
@@ -3282,11 +3285,16 @@ Scroll one page forward.
 .B PageUp, Alt\-v, C\-b, Backspace.
 Scroll one page backward.
 .TP
-.B Down
-Scroll one line forward.
+.B Down, Up
+Move the text cursor one row down or up; on the edge of the view the
+text scrolls by one line.  In hex mode they scroll one line.
 .TP
-.B Up
-Scroll one line backward.
+.B Left, Right
+Move the text cursor by one displayed character; at the end of the row
+it goes on to the next one.  In hex mode they move the hex cursor.
+.TP
+.B C\-Left, C\-Right
+Move the text cursor by eight displayed characters.
 .TP
 .B Shift-Left, Shift-Right, Shift-Up, Shift-Down
 Extend the text selection by one displayed character or row.

@@ -70,6 +70,11 @@ struct mcview_selection
     int cols;
 };
 
+/*** file scope macro definitions ****************************************************************/
+
+/* Ctrl-Left and Ctrl-Right step this many characters, the same as MCTERM_JUMP_COLS in mcterm. */
+#define MCVIEW_CURSOR_JUMP 8
+
 /*** file scope variables ************************************************************************/
 
 /* Same word delimiters as the editor and mcterm selection. */
@@ -463,6 +468,58 @@ mcview_selection_scroll (WView *view, struct mcview_selection *sel, long command
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A plain cursor move, the way mcterm moves its cursor: along the row, on to the neighbouring
+   row at its end, by rows for Up and Down, scrolling at the edge of the viewport. It drops the
+   selection and keeps the cursor. */
+static gboolean
+mcview_selection_move_cursor (WView *view, struct mcview_selection *sel, long command)
+{
+    int steps = (command == CK_LeftQuick || command == CK_RightQuick) ? MCVIEW_CURSOR_JUMP : 1;
+
+    if (!mcview_selection_locate_cursor (sel))
+        return FALSE;
+
+    mcview_selection_clear (view);
+
+    for (; steps > 0; steps--)
+    {
+        mcview_selection_point_t target;
+        long edge;
+        gboolean found;
+
+        switch (command)
+        {
+        case CK_Up:
+            edge = CK_MarkUp;
+            found =
+                mcview_selection_point_on_row (sel, sel->cursor.row - 1, sel->cursor.col, &target);
+            break;
+        case CK_Down:
+            edge = CK_MarkDown;
+            found =
+                mcview_selection_point_on_row (sel, sel->cursor.row + 1, sel->cursor.col, &target);
+            break;
+        case CK_Left:
+        case CK_LeftQuick:
+            edge = CK_MarkLeft;
+            found = mcview_selection_next (sel, &sel->cursor, FALSE, &target);
+            break;
+        default:
+            edge = CK_MarkRight;
+            found = mcview_selection_next (sel, &sel->cursor, TRUE, &target);
+            break;
+        }
+
+        if (!found && !mcview_selection_scroll (view, sel, edge, &target))
+            break;
+        sel->cursor = target;
+    }
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* In filter mode only the matching lines are displayed: after a newline, continue from the
    next one, as mcview_display_text() does. */
 static gboolean
@@ -631,6 +688,26 @@ mcview_selection_contains (const WView *view, off_t from, off_t to)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The screen cell of the selection cursor, the place the next Shift movement starts from. */
+gboolean
+mcview_selection_cursor (const WView *view, int *row, int *col)
+{
+    const struct mcview_selection *sel;
+
+    if (!mcview_selection_supported (view) || view->selection == NULL)
+        return FALSE;
+
+    sel = view->selection;
+    if (!sel->cursor.valid || !sel->cursor_on_screen)
+        return FALSE;
+
+    *row = sel->cursor.row;
+    *col = sel->cursor.col;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The left button inside the data area is owned by the selection: a press anchors, a drag
    extends, the release ends the drag, and the click that follows a press is consumed too. */
 gboolean
@@ -781,6 +858,13 @@ mcview_selection_command (WView *view, long command)
     case CK_MarkToHome:
     case CK_MarkToEnd:
         break;
+    case CK_Up:
+    case CK_Down:
+    case CK_Left:
+    case CK_Right:
+    case CK_LeftQuick:
+    case CK_RightQuick:
+        return mcview_selection_move_cursor (view, sel, command);
     default:
         return FALSE;
     }

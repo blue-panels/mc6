@@ -542,6 +542,14 @@ mcview_display (WView *view)
     else
         mcview_display_text (view);
     mcview_display_status (view);
+
+    /* The terminal cursor marks the selection anchor; hex mode owns the cursor itself. */
+    if (!view->mode_flags.hex)
+    {
+        int row, col;
+
+        widget_want_cursor (WIDGET (view), mcview_selection_cursor (view, &row, &col));
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

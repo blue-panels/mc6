@@ -937,9 +937,15 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return MSG_HANDLED;
 
     case MSG_CURSOR:
+    {
+        int row, col;
+
         if (view->mode_flags.hex)
             mcview_place_cursor (view);
+        else if (mcview_selection_cursor (view, &row, &col))
+            widget_gotoyx (view, view->data_area.y + row, view->data_area.x + col);
         return MSG_HANDLED;
+    }
 
     case MSG_KEY:
         i = mcview_handle_key (view, parm);

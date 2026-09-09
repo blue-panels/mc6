@@ -353,6 +353,60 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_cursor_moves_drop_the_selection)
+{
+    char *text;
+
+    load ("abcdefghijk\nxyzw\n");
+    record_line (0, "abcdefghijk\n", 0, 0);
+    record_line (1, "xyzw\n", 12, 0);
+
+    mouse (MSG_MOUSE_DOWN, 0, 0, GPM_SINGLE);
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    ck_assert (mcview_selection_active (&view));
+
+    /* Right drops the selection and steps on from the cursor ('b' -> 'c'). */
+    ck_assert (mcview_selection_command (&view, CK_Right));
+    ck_assert (!mcview_selection_active (&view));
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "cd");
+    g_free (text);
+
+    /* Down keeps the column on the next row, Up goes back; both drop the selection. */
+    ck_assert (mcview_selection_command (&view, CK_Down));
+    ck_assert (!mcview_selection_active (&view));
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "w\n");
+    g_free (text);
+    ck_assert (mcview_selection_command (&view, CK_Up));
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "ef");
+    g_free (text);
+
+    /* Ctrl-Left steps eight characters back, stopping at the start of the screen. */
+    ck_assert (mcview_selection_command (&view, CK_LeftQuick));
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "ab");
+    g_free (text);
+
+    /* Ctrl-Right from 'b' lands on 'j'; Right past the newline goes on to 'x'. */
+    ck_assert (mcview_selection_command (&view, CK_RightQuick));
+    ck_assert (mcview_selection_command (&view, CK_Right));
+    ck_assert (mcview_selection_command (&view, CK_Right));
+    ck_assert (mcview_selection_command (&view, CK_Right));
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "xy");
+    g_free (text);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_cursor_keeps_its_screen_cell_after_a_scroll)
 {
     char *text;
@@ -418,6 +472,7 @@ main (void)
     tcase_add_test (tc_core, test_unused_commands_are_not_consumed);
     tcase_add_test (tc_core, test_line_scrolled_out_to_the_left_keeps_its_row);
     tcase_add_test (tc_core, test_filter_mode_copies_visible_lines_only);
+    tcase_add_test (tc_core, test_cursor_moves_drop_the_selection);
     tcase_add_test (tc_core, test_cursor_keeps_its_screen_cell_after_a_scroll);
     tcase_add_test (tc_core, test_copy_text_is_ansi_and_nroff_processed);
 

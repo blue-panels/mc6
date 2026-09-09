@@ -440,6 +440,7 @@ void mcview_selection_render_end (WView *view);
 void mcview_selection_record (WView *view, int row, int col, int width,
                               const mcview_state_machine_t *before, off_t after, int ch);
 gboolean mcview_selection_contains (const WView *view, off_t from, off_t to);
+gboolean mcview_selection_cursor (const WView *view, int *row, int *col);
 gboolean mcview_selection_mouse (WView *view, mouse_msg_t msg, mouse_event_t *event);
 gboolean mcview_selection_command (WView *view, long command);
 char *mcview_selection_text (WView *view);
