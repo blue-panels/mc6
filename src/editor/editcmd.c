@@ -3,20 +3,23 @@
 
    Copyright (C) 1996-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru>, 2012-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2012
+   Ilia Maslakov <il.smind@gmail.com>, 2012, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -63,7 +66,8 @@
 #include "src/file_history.h"  // show_file_history()
 #include "src/runtime-host.h"
 #include "src/selcodepage.h"
-#include "src/util.h"  // check_for_default(), file_error_message()
+#include "src/util.h"       // check_for_default(), file_error_message()
+#include "src/clipboard.h"  // clipboard_info_write()
 
 #include "edit-impl.h"
 #include "editwidget.h"
@@ -900,7 +904,7 @@ edit_save_block_to_clip_file (WEdit *edit, off_t start, off_t finish)
     gchar *tmp;
 
     tmp = mc_config_get_full_path (EDIT_HOME_CLIP_FILE);
-    ret = edit_save_block (edit, tmp, start, finish);
+    ret = edit_save_clip_block (edit, tmp, start, finish);
     g_free (tmp);
 
     return ret;
@@ -1873,10 +1877,11 @@ edit_ok_to_quit (WEdit *edit)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** save block, returns TRUE on success */
-
-gboolean
-edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
+/* Save the block into the file; a vertical block gets the marker when asked. The digest of the
+   written bytes goes into sum when given. TRUE on success. */
+static gboolean
+edit_save_block_sum (WEdit *edit, const char *filename, off_t start, off_t finish,
+                     const gboolean marker, GChecksum *sum)
 {
     int file;
     vfs_path_t *vpath;
@@ -1891,9 +1896,10 @@ edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
 
     if (edit->column_highlight)
     {
-        int r;
+        int r = 1;
 
-        r = mc_write (file, VERTICAL_MAGIC, sizeof (VERTICAL_MAGIC));
+        if (marker)
+            r = mc_write (file, VERTICAL_MAGIC, sizeof (VERTICAL_MAGIC));
         if (r > 0)
         {
             GString *block;
@@ -1931,6 +1937,9 @@ edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
                 block = padded;
             }
 
+            if (sum != NULL)
+                g_checksum_update (sum, (const guchar *) block->str, block->len);
+
             p = block->str;
             len = block->len;
 
@@ -1960,6 +1969,8 @@ edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
             end = MIN (finish, start + TEMP_BUF_LEN);
             for (; i < end; i++)
                 buf[i - start] = edit_buffer_get_byte (&edit->buffer, i);
+            if (sum != NULL)
+                g_checksum_update (sum, buf, end - start);
             len -= mc_write (file, (char *) buf, end - start);
             start = end;
         }
@@ -1968,6 +1979,36 @@ edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
     mc_close (file);
 
     return (len == 0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** save block to a file of the user, returns TRUE on success */
+
+gboolean
+edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish)
+{
+    return edit_save_block_sum (edit, filename, start, finish, TRUE, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** save block to the clipfile: the info file records the kind of the block and the codeset */
+
+gboolean
+edit_save_clip_block (WEdit *edit, const char *filename, off_t start, off_t finish)
+{
+    GChecksum *sum;
+    gboolean ret;
+
+    sum = g_checksum_new (CLIP_DIGEST_TYPE);
+    ret = edit_save_block_sum (edit, filename, start, finish, FALSE, sum);
+    if (ret)
+        clipboard_info_write (filename, g_checksum_get_string (sum), edit->column_highlight != 0,
+                              edit_get_codeset ());
+    else
+        clipboard_info_drop (filename);
+    g_checksum_free (sum);
+
+    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */

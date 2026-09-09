@@ -18,6 +18,7 @@ endif
 EXTRA_DIST = edit_complete_word_cmd_test_data.txt.in
 
 TESTS = \
+	edit_clip_codeset \
 	edit_complete_word_cmd \
 	edit_control_chars \
 	edit_fold \
@@ -34,6 +35,9 @@ TESTS = \
 	ctags_fuzzy_tests
 
 check_PROGRAMS = $(TESTS)
+
+edit_clip_codeset_SOURCES = \
+	edit_clip_codeset.c
 
 edit_complete_word_cmd_SOURCES = \
 	edit_complete_word_cmd.c

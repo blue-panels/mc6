@@ -3,20 +3,23 @@
 
    Copyright (C) 1996-2026
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Paul Sheer 1996, 1997
    Ilia Maslakov <il.smind@gmail.com> 2009-2012, 2026
    Andrew Borodin <aborodin@vmail.ru> 2012-2022
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -38,6 +41,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include <stdint.h>  // UINTMAX_MAX
 #include <stdlib.h>
@@ -61,7 +65,8 @@
 
 #include "src/keymap.h"
 #include "src/runtime-host.h"
-#include "src/util.h"  // file_error_message()
+#include "src/util.h"       // file_error_message()
+#include "src/clipboard.h"  // clipboard_info_read()
 
 #include "edit-impl.h"
 #include "editwidget.h"
@@ -2073,27 +2078,18 @@ edit_block_line_columns (const WEdit *edit, long start_col, const char *line, gs
 
 /* --------------------------------------------------------------------------------------------- */
 
-static off_t
-edit_insert_column_from_file (WEdit *edit, int file, off_t *start_pos, off_t *end_pos, long *col1,
-                              long *col2)
+static void
+edit_insert_column_from_block (WEdit *edit, const GString *block, off_t *start_pos, off_t *end_pos,
+                               long *col1, long *col2)
 {
     off_t cursor;
     long col;
-    off_t blocklen = -1;
     long width = 0;
-    GString *block;
-    unsigned char *data;
 
     cursor = edit->buffer.curs1;
     col = edit_get_col (edit);
 
     // the clip stores no width; pad short lines to the widest line
-    block = g_string_sized_new (TEMP_BUF_LEN);
-    data = g_malloc (TEMP_BUF_LEN);
-    while ((blocklen = mc_read (file, (char *) data, TEMP_BUF_LEN)) > 0)
-        g_string_append_len (block, (const gchar *) data, blocklen);
-    g_free (data);
-
     {
         gsize start = 0;
 
@@ -2142,15 +2138,68 @@ edit_insert_column_from_file (WEdit *edit, int file, off_t *start_pos, off_t *en
         }
     }
 
-    g_string_free (block, TRUE);
-
     *col1 = col;
     *col2 = col + width;
     *start_pos = cursor;
     *end_pos = edit->buffer.curs1;
     edit_cursor_move (edit, cursor - edit->buffer.curs1);
+}
 
-    return blocklen;
+/* --------------------------------------------------------------------------------------------- */
+
+/* Recode text from the codeset of the clipfile into the one of the editor. A character
+   the target codeset lacks becomes '?'; the bytes stay as they are when the codesets
+   are the same or unknown to iconv. */
+static void
+edit_recode_block (GString *block, const char *from_codeset)
+{
+    const char *to_codeset = edit_get_codeset ();
+    GIConv conv;
+    GString *out;
+    gchar *in;
+    gsize in_left;
+    gboolean from_utf8;
+
+    if (from_codeset[0] == '\0' || to_codeset == NULL
+        || g_ascii_strcasecmp (from_codeset, to_codeset) == 0)
+        return;
+
+    conv = g_iconv_open (to_codeset, from_codeset);
+    if (conv == INVALID_CONV)
+        return;
+
+    from_utf8 = str_isutf8 (from_codeset);
+    out = g_string_sized_new (block->len);
+    in = block->str;
+    in_left = block->len;
+
+    while (in_left > 0)
+    {
+        char obuf[BUF_MEDIUM];
+        gchar *outp = obuf;
+        gsize out_left = sizeof (obuf);
+        size_t r;
+
+        r = g_iconv (conv, &in, &in_left, &outp, &out_left);
+        g_string_append_len (out, obuf, outp - obuf);
+
+        if (r == (size_t) -1 && errno != E2BIG)
+        {
+            gsize skip = 1;
+
+            if (from_utf8)
+                skip = MIN ((gsize) g_utf8_skip[*(const guchar *) in], in_left);
+            in += skip;
+            in_left -= skip;
+            g_string_append_c (out, '?');
+            g_iconv (conv, NULL, NULL, NULL, NULL);
+        }
+    }
+
+    g_iconv_close (conv);
+    g_string_truncate (block, 0);
+    g_string_append_len (block, out->str, out->len);
+    g_string_free (out, TRUE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2403,20 +2452,52 @@ edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath)
         off_t blocklen;
         gboolean vertical_insertion = FALSE;
         char *buf;
+        GString *block = NULL;
+        char digest[CLIP_DIGEST_LEN + 1];
+        char codeset[CLIP_CODESET_MAX + 1];
 
         file = mc_open (filename_vpath, O_RDONLY | O_BINARY);
         if (file == -1)
             return -1;
 
         buf = g_malloc0 (TEMP_BUF_LEN);
-        blocklen = mc_read (file, buf, sizeof (VERTICAL_MAGIC));
-        if (blocklen > 0)
+
+        if (clipboard_info_read (vfs_path_as_str (filename_vpath), digest, &vertical_insertion,
+                                 codeset))
         {
-            // if contain signature VERTICAL_MAGIC then it vertical block
-            if (memcmp (buf, VERTICAL_MAGIC, sizeof (VERTICAL_MAGIC)) == 0)
-                vertical_insertion = TRUE;
+            // the clipfile: the info holds for the content it was written for
+            char *sum;
+
+            block = g_string_sized_new (TEMP_BUF_LEN);
+            while ((blocklen = mc_read (file, buf, TEMP_BUF_LEN)) > 0)
+                g_string_append_len (block, buf, blocklen);
+
+            sum = g_compute_checksum_for_data (CLIP_DIGEST_TYPE, (const guchar *) block->str,
+                                               block->len);
+            if (strcmp (sum, digest) == 0)
+                edit_recode_block (block, codeset);
             else
-                mc_lseek (file, 0, SEEK_SET);
+                vertical_insertion = FALSE;
+            g_free (sum);
+        }
+        else
+        {
+            blocklen = mc_read (file, buf, sizeof (VERTICAL_MAGIC));
+            if (blocklen > 0)
+            {
+                // if contain signature VERTICAL_MAGIC then it vertical block
+                if (memcmp (buf, VERTICAL_MAGIC, sizeof (VERTICAL_MAGIC)) == 0)
+                    vertical_insertion = TRUE;
+                else
+                    mc_lseek (file, 0, SEEK_SET);
+            }
+
+            if (vertical_insertion)
+            {
+                block = g_string_sized_new (TEMP_BUF_LEN);
+                while ((blocklen = mc_read (file, buf, TEMP_BUF_LEN)) > 0)
+                    g_string_append_len (block, buf, blocklen);
+            }
         }
 
         if (vertical_insertion)
@@ -2424,7 +2505,7 @@ edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath)
             off_t mark1, mark2;
             long c1, c2;
 
-            blocklen = edit_insert_column_from_file (edit, file, &mark1, &mark2, &c1, &c2);
+            edit_insert_column_from_block (edit, block, &mark1, &mark2, &c1, &c2);
             edit_set_markers (edit, edit->buffer.curs1, mark2, c1, c2);
 
             // highlight inserted text then not persistent blocks
@@ -2439,11 +2520,15 @@ edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath)
         {
             off_t i;
 
-            while ((blocklen = mc_read (file, (char *) buf, TEMP_BUF_LEN)) > 0)
-            {
-                for (i = 0; i < blocklen; i++)
-                    edit_insert (edit, buf[i]);
-            }
+            if (block != NULL)
+                for (gsize k = 0; k < block->len; k++)
+                    edit_insert (edit, block->str[k]);
+            else
+                while ((blocklen = mc_read (file, (char *) buf, TEMP_BUF_LEN)) > 0)
+                {
+                    for (i = 0; i < blocklen; i++)
+                        edit_insert (edit, buf[i]);
+                }
             // highlight inserted text then not persistent blocks
             if (!edit_options.persistent_selections && edit->modified != 0)
             {
@@ -2461,6 +2546,8 @@ edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath)
             }
         }
 
+        if (block != NULL)
+            g_string_free (block, TRUE);
         edit->force |= REDRAW_PAGE;
         g_free (buf);
         mc_close (file);
@@ -2703,6 +2790,16 @@ edit_reload_line (WEdit *edit, const edit_arg_t *arg)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The codeset the editor reads its text in: the source one, the terminal one without translation */
+const char *
+edit_get_codeset (void)
+{
+    return get_codepage_id (mc_global.source_codepage >= 0 ? mc_global.source_codepage
+                                                           : mc_global.display_codepage);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 edit_set_codeset (WEdit *edit)
 {
@@ -2710,8 +2807,7 @@ edit_set_codeset (WEdit *edit)
 
     edit_layout_cache_invalidate (edit);
 
-    cp_id = get_codepage_id (mc_global.source_codepage >= 0 ? mc_global.source_codepage
-                                                            : mc_global.display_codepage);
+    cp_id = edit_get_codeset ();
 
     if (cp_id != NULL)
     {
