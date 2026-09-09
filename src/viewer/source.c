@@ -492,6 +492,8 @@ fail:
 void
 mcview_reset_for_source_swap (WView *view)
 {
+    mcview_selection_done (view);
+    mcview_selection_init (view);
     mcview_close_datasource (view);
 
     vfs_path_free (view->filename_vpath, TRUE);

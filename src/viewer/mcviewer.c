@@ -144,9 +144,22 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                 (void) change_panel ();
             }
         }
+
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            widget_select (w);
+            view->dirty++;
+            break;
+        }
         MC_FALLTHROUGH;
 
     case MSG_MOUSE_CLICK:
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            view->dirty++;
+            break;
+        }
+
         if (view->mode_flags.structured)
         {
             // click moves the tree cursor; a click on the current row toggles the node
@@ -234,6 +247,25 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                 event->result.repeat = msg == MSG_MOUSE_DOWN;
             }
         }
+        break;
+
+    case MSG_MOUSE_DRAG:
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            /* Keep extending a drag that leaves the viewport, as mcterm does. */
+            if (event->y < r->y)
+                mcview_move_up (view, 1);
+            else if (event->y >= r->y + r->lines)
+                mcview_move_down (view, 1);
+            view->dirty++;
+        }
+        else
+            ok = FALSE;
+        break;
+
+    case MSG_MOUSE_UP:
+        (void) mcview_selection_mouse (view, msg, event);
+        ok = FALSE;
         break;
 
     case MSG_MOUSE_SCROLL_UP:
@@ -566,6 +598,7 @@ mcview_load (WView *view, const char *command, const char *file, int start_line,
 
     // drop tree state of the previously shown file (quick view reuses the widget)
     mcview_structured_reset (view);
+    mcview_selection_clear (view);
 
     view->filename_vpath = vfs_path_from_str (file);
 

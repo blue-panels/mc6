@@ -117,6 +117,7 @@ mcview_toggle_wrap_mode (WView *view)
     if (view->filter_active)
         return;
 
+    mcview_selection_clear (view);
     view->mode_flags.wrap = !view->mode_flags.wrap;
     view->dpy_wrap_dirty = TRUE;
     view->dpy_bbar_dirty = TRUE;
@@ -128,6 +129,7 @@ mcview_toggle_wrap_mode (WView *view)
 void
 mcview_toggle_nroff_mode (WView *view)
 {
+    mcview_selection_clear (view);
     view->mode_flags.nroff = !view->mode_flags.nroff;
     mcview_altered_flags.nroff = TRUE;
     view->dpy_wrap_dirty = TRUE;
@@ -143,6 +145,7 @@ mcview_toggle_ansi_mode (WView *view)
     if (view->mode_flags.terminal)
         return; /* syntax flag is irrelevant while terminal mode is active */
 
+    mcview_selection_clear (view);
     view->mode_flags.syntax = !view->mode_flags.syntax;
     mcview_altered_flags.syntax = TRUE;
     view->dpy_wrap_dirty = TRUE;
@@ -158,6 +161,7 @@ mcview_cycle_display_mode (WView *view)
     if (view->mode_flags.hex)
         return;
 
+    mcview_selection_clear (view);
     if (view->mode_flags.terminal)
     {
         view->mode_flags.terminal = FALSE;
@@ -191,6 +195,8 @@ mcview_cycle_display_mode (WView *view)
 void
 mcview_toggle_hex_mode (WView *view)
 {
+    mcview_selection_clear (view);
+
     /* Filter, terminal and structured mode are text-mode only: deactivate before entering hex. */
     if (!view->mode_flags.hex)
     {
@@ -260,6 +266,7 @@ mcview_init (WView *view)
     view->hex_cursor = 0;
     view->cursor_col = 0;
     view->cursor_row = 0;
+    mcview_selection_init (view);
     view->change_list = NULL;
 
     // {status,ruler,data}_area are left uninitialized
@@ -326,6 +333,7 @@ mcview_done (WView *view)
     mcview_global_flags.structured = FALSE;
 
     mcview_structured_reset (view);
+    mcview_selection_done (view);
 
     // Free memory used by the viewer
     // view->widget needs no destructor
@@ -411,7 +419,10 @@ void
 mcview_select_encoding (WView *view)
 {
     if (do_select_codepage ())
+    {
+        mcview_selection_clear (view);
         mcview_set_codeset (view);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -395,6 +395,12 @@ mcview_execute_cmd (WView *view, long command)
     if (view == NULL)
         return MSG_NOT_HANDLED;
 
+    if (mcview_selection_command (view, command))
+    {
+        view->dirty++;
+        return MSG_HANDLED;
+    }
+
     /* In filter empty-state (active but no matches yet) block all movement so
        the visible "(no matches)" screen stays consistent with dpy_start. */
     if (view->filter_active && (view->filter_offsets == NULL || view->filter_offsets->len == 0))
@@ -429,6 +435,12 @@ mcview_execute_cmd (WView *view, long command)
 
     switch (command)
     {
+    case CK_Store:
+        if (mcview_selection_store (view))
+            view->dirty++;
+        else
+            res = MSG_NOT_HANDLED;
+        break;
     case CK_Help:
         mcview_help (view);
         break;
@@ -721,6 +733,12 @@ mcview_handle_key (WView *view, int key)
         return MSG_HANDLED;
 
     command = mcview_lookup_key (view, key);
+
+    /* Enter copies the selection; with nothing selected it keeps its Down action, as in mcterm
+       it goes back to the shell. The other Store keys leave the view where it is. */
+    if (command == CK_Store && (key == '\n' || key == KEY_ENTER) && !mcview_selection_active (view))
+        command = CK_Down;
+
     if (command != CK_IgnoreKey && mcview_execute_cmd (view, command) == MSG_HANDLED)
         return MSG_HANDLED;
 

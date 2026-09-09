@@ -118,6 +118,7 @@ typedef struct
 } mcview_lcache_t;
 
 struct mcview_nroff_struct;
+struct mcview_selection;
 
 struct WView
 {
@@ -194,7 +195,8 @@ struct WView
                                * text mode */
     int cursor_col;           // Cursor column
     int cursor_row;           // Cursor row
-    int syntax_fill_color;    // Last drawn char color, for filling empty lines in syntax mode
+    struct mcview_selection *selection;  // text selection and its screen hit map
+    int syntax_fill_color;  // Last drawn char color, for filling empty lines in syntax mode
     struct hexedit_change_node *change_list;  // Linked list of changes
     WRect status_area;                        // Where the status line is displayed
     WRect ruler_area;                         // Where the ruler is displayed
@@ -427,6 +429,21 @@ void mcview_coord_to_offset (WView *view, off_t *ret_offset, off_t line, off_t c
 void mcview_offset_to_coord (WView *view, off_t *ret_line, off_t *ret_column, off_t offset);
 void mcview_place_cursor (WView *view);
 void mcview_moveto_match (WView *view);
+
+/* selection.c: */
+void mcview_selection_init (WView *view);
+void mcview_selection_done (WView *view);
+void mcview_selection_clear (WView *view);
+gboolean mcview_selection_active (const WView *view);
+void mcview_selection_render_begin (WView *view);
+void mcview_selection_render_end (WView *view);
+void mcview_selection_record (WView *view, int row, int col, int width,
+                              const mcview_state_machine_t *before, off_t after, int ch);
+gboolean mcview_selection_contains (const WView *view, off_t from, off_t to);
+gboolean mcview_selection_mouse (WView *view, mouse_msg_t msg, mouse_event_t *event);
+gboolean mcview_selection_command (WView *view, long command);
+char *mcview_selection_text (WView *view);
+gboolean mcview_selection_store (WView *view);
 
 /* nroff.c: */
 int mcview__get_nroff_real_len (WView *view, off_t start, off_t length);

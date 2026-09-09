@@ -332,6 +332,7 @@ mcview_structured_try_enter (WView *view, gboolean quiet)
     mctree_view_set_model (view->struct_tree, model);
     mctree_view_set_focused (view->struct_tree, TRUE);
 
+    mcview_selection_clear (view);
     view->mode_flags.structured = TRUE;
     view->dpy_bbar_dirty = TRUE;
     view->dirty++;

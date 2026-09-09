@@ -774,6 +774,9 @@ mcview_filter_activate (WView *view, const char *pattern, const mcview_filter_op
     if (view->filter_active)
         mcview_filter_deactivate (view);
 
+    /* Selection offsets belong to the previous set of visible rows. */
+    mcview_selection_clear (view);
+
     view->filter_engine = engine;
 
     g_free (view->filter_pattern);
@@ -813,6 +816,7 @@ mcview_filter_deactivate (WView *view)
     if (!view->filter_active)
         return;
 
+    mcview_selection_clear (view);
     view->filter_active = FALSE;
     view->filter_follow = FALSE;
 
