@@ -220,9 +220,11 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
             + sizeof (source->initial_display))
     {
         if (source->initial_display != MC_RUNTIME_VIEWER_DISPLAY_TEXT
-            && source->initial_display != MC_RUNTIME_VIEWER_DISPLAY_TERMINAL)
+            && source->initial_display != MC_RUNTIME_VIEWER_DISPLAY_TERMINAL
+            && source->initial_display != MC_RUNTIME_VIEWER_DISPLAY_NROFF)
             return runtime_viewer_error (error, "invalid_source");
         target->initial_terminal = source->initial_display == MC_RUNTIME_VIEWER_DISPLAY_TERMINAL;
+        target->initial_nroff = source->initial_display == MC_RUNTIME_VIEWER_DISPLAY_NROFF;
     }
     if (source->struct_size
         >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, raw_path) + sizeof (source->raw_path))

@@ -50,6 +50,9 @@ static char *user_scripts_dir = NULL;
 static char *legacy_user_scripts_dir = NULL;
 static char *system_mc_scripts_dir = NULL;
 static char *user_mc_scripts_dir = NULL;
+static char *markdown_fixture_path = NULL;
+static char *markdown_expected = NULL;
+static gsize markdown_expected_length = 0;
 static char *system_editor_scripts_dir = NULL;
 static char *user_editor_scripts_dir = NULL;
 static char *output_path = NULL;
@@ -354,6 +357,33 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         }
 
         ck_assert_int_eq (controller->viewport_policy, MC_RUNTIME_VIEWER_VIEWPORT_REBUILD);
+        if (markdown_expected != NULL)
+        {
+            /* lua-markdown: the text rendered for a 91 column viewer */
+            ck_assert_ptr_nonnull (controller->dispatch_v2);
+            mctest_assert_true (controller->dispatch_v2 (
+                context, controller->controller_id, MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
+                &viewport, 0, &draft, &handled, viewer_error));
+            mctest_assert_true (handled);
+            ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_NROFF);
+            ck_assert_str_eq (draft.raw_path, markdown_fixture_path);
+            ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
+            if (draft.source->bytes_length != markdown_expected_length
+                || memcmp (draft.source->bytes, markdown_expected, draft.source->bytes_length) != 0)
+            {
+                char *got = g_strndup (draft.source->bytes, draft.source->bytes_length);
+
+                ck_abort_msg ("%s: rendered\n%s\nexpected\n%s", markdown_fixture_path, got,
+                              markdown_expected);
+            }
+            controller->spec_free (context, &draft);
+            viewer_controller_open_count++;
+            mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                      MC_RUNTIME_VIEWER_CONTROLLER_CLOSE, 0, &draft,
+                                                      &handled, viewer_error));
+            viewer_controller_close_count++;
+            return TRUE;
+        }
         ck_assert_ptr_nonnull (controller->dispatch_v2);
         mctest_assert_true (controller->dispatch_v2 (context, controller->controller_id,
                                                      MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
@@ -700,6 +730,34 @@ create_sixel_handler_script (void)
     g_free (source_ini);
     g_free (root);
 }
+
+static void
+create_markdown_handler_script (void)
+{
+    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua" };
+    char *root = g_build_filename (user_mc_scripts_dir, "lua-markdown", (char *) NULL);
+    char *lib = g_build_filename (root, "lib", (char *) NULL);
+    size_t i;
+
+    ck_assert_int_eq (g_mkdir_with_parents (lib, 0700), 0);
+    for (i = 0; i < G_N_ELEMENTS (files); i++)
+    {
+        char *source = g_build_filename (TEST_LUA_MARKDOWN_DIR, files[i], (char *) NULL);
+        char *target = g_build_filename (root, files[i], (char *) NULL);
+        char *contents = NULL;
+
+        mctest_assert_true (g_file_get_contents (source, &contents, NULL, &error));
+        g_clear_error (&error);
+        write_file (target, contents);
+        g_free (contents);
+        g_free (target);
+        g_free (source);
+    }
+    g_free (lib);
+    g_free (root);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static void
 create_readelf_handler_script (void)
@@ -2479,6 +2537,63 @@ START_TEST (test_lua_readelf_handler_uses_direct_argv)
 }
 END_TEST
 
+START_TEST (test_lua_markdown_handler_renders_nroff_bytes)
+{
+    mc_runtime_file_operation_request_t request = {
+        .struct_size = sizeof (request),
+        .operation_version = 1,
+        .kind = MC_RUNTIME_FILE_OPERATION_VIEW,
+        .magic_group = "markdown",
+    };
+    const char *handler_error = NULL;
+    GDir *dir;
+    const char *name;
+    guint cases = 0;
+
+    create_markdown_handler_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+
+    dir = g_dir_open (TEST_LUA_MARKDOWN_DATA_DIR, 0, &error);
+    ck_assert_msg (dir != NULL, "%s", error != NULL ? error->message : "cannot open the data dir");
+    while ((name = g_dir_read_name (dir)) != NULL)
+    {
+        char *expected_name;
+        char *expected_path;
+
+        if (!g_str_has_suffix (name, ".md"))
+            continue;
+        expected_name = g_strconcat (name, ".out", (char *) NULL);
+        expected_path = g_build_filename (TEST_LUA_MARKDOWN_DATA_DIR, expected_name, (char *) NULL);
+        markdown_fixture_path = g_build_filename (TEST_LUA_MARKDOWN_DATA_DIR, name, (char *) NULL);
+        ck_assert_msg (g_file_get_contents (expected_path, &markdown_expected,
+                                            &markdown_expected_length, &error),
+                       "%s: %s", expected_path, error != NULL ? error->message : "unreadable");
+        request.display_name = name;
+        request.local_path = markdown_fixture_path;
+        cases++;
+        ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "lua-markdown", "view",
+                                                                    &request, &handler_error),
+                          MC_RUNTIME_FILE_OPERATION_RESULT_HANDLED);
+        ck_assert_ptr_null (handler_error);
+        ck_assert_uint_eq (viewer_controller_open_count, cases);
+        ck_assert_uint_eq (viewer_controller_close_count, cases);
+        g_clear_pointer (&markdown_expected, g_free);
+        g_clear_pointer (&markdown_fixture_path, g_free);
+        g_free (expected_path);
+        g_free (expected_name);
+    }
+    g_dir_close (dir);
+    ck_assert_uint_gt (cases, 0);
+
+    request.display_name = "missing.md";
+    request.local_path = "/nonexistent/missing.md";
+    ck_assert_int_eq (mc_runtime_plugins_invoke_file_operation ("lua", "lua-markdown", "view",
+                                                                &request, &handler_error),
+                      MC_RUNTIME_FILE_OPERATION_RESULT_NOT_SUPPORTED);
+}
+END_TEST
+
 START_TEST (test_lua_sixel_handler_sizes_the_picture_in_pixels)
 {
     mc_runtime_file_operation_request_t request = {
@@ -2955,6 +3070,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
     tcase_add_test (tc_core, test_lua_java_class_handler_uses_pty_process);
     tcase_add_test (tc_core, test_lua_readelf_handler_uses_direct_argv);
+    tcase_add_test (tc_core, test_lua_markdown_handler_renders_nroff_bytes);
     tcase_add_test (tc_core, test_lua_sixel_handler_sizes_the_picture_in_pixels);
     tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);
 

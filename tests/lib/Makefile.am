@@ -8,6 +8,8 @@ AM_CPPFLAGS += -DTEST_RUNTIME_PLUGIN_DIR=\"$(abs_builddir)/.libs\"
 AM_CPPFLAGS += -DTEST_LUA_RUNTIME_DIR=\"$(abs_top_builddir)/src/lua/.libs\"
 AM_CPPFLAGS += \
 	-DTEST_LUA_JAVA_CLASS_DIR=\"$(abs_top_srcdir)/src/lua/scripts/mc/lua-java-class\" \
+	-DTEST_LUA_MARKDOWN_DIR=\"$(abs_top_srcdir)/src/lua/scripts/mc/lua-markdown\" \
+	-DTEST_LUA_MARKDOWN_DATA_DIR=\"$(abs_srcdir)/lua_markdown\" \
 	-DTEST_LUA_READELF_DIR=\"$(abs_top_srcdir)/src/lua/scripts/mc/lua-readelf\" \
 	-DTEST_LUA_SIXEL_DIR=\"$(abs_top_srcdir)/src/lua/scripts/mc/lua-sixel\"
 
@@ -19,7 +21,23 @@ LIBS += $(GLIB_LIBS) \
 	@E2P_LIBS@
 endif
 
-EXTRA_DIST = utilunix__my_system-common.c
+EXTRA_DIST = utilunix__my_system-common.c \
+	lua_markdown/code.md \
+	lua_markdown/code.md.out \
+	lua_markdown/headings.md \
+	lua_markdown/headings.md.out \
+	lua_markdown/inline.md \
+	lua_markdown/inline.md.out \
+	lua_markdown/latex.md \
+	lua_markdown/latex.md.out \
+	lua_markdown/links.md \
+	lua_markdown/links.md.out \
+	lua_markdown/lists.md \
+	lua_markdown/lists.md.out \
+	lua_markdown/mixed.md \
+	lua_markdown/mixed.md.out \
+	lua_markdown/table.md \
+	lua_markdown/table.md.out
 
 TESTS = \
 	key \

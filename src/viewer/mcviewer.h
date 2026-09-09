@@ -42,6 +42,7 @@ typedef struct
     char *help_file;
     char *help_node;
     gboolean initial_terminal;
+    gboolean initial_nroff;
     char *raw_file;
 } mcview_source_spec_t;
 

@@ -40,6 +40,14 @@ dist_lua_dbf_DATA = \
 	scripts/mc/lua-dbf/init.lua \
 	scripts/mc/lua-dbf/help.hlp
 
+lua_markdowndir = $(lua_scripts_dir)/mc/lua-markdown
+dist_lua_markdown_DATA = \
+	scripts/mc/lua-markdown/lua.ini \
+	scripts/mc/lua-markdown/init.lua
+lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
+dist_lua_markdown_lib_DATA = \
+	scripts/mc/lua-markdown/lib/render.lua
+
 lua_readelfdir = $(lua_scripts_dir)/mc/lua-readelf
 if ENABLE_LUA_READELF
 dist_lua_readelf_DATA = \

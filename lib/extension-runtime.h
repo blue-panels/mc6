@@ -378,7 +378,8 @@ typedef struct
 typedef enum
 {
     MC_RUNTIME_VIEWER_DISPLAY_TEXT = 0,
-    MC_RUNTIME_VIEWER_DISPLAY_TERMINAL
+    MC_RUNTIME_VIEWER_DISPLAY_TERMINAL,
+    MC_RUNTIME_VIEWER_DISPLAY_NROFF
 } mc_runtime_viewer_display_t;
 
 struct mc_runtime_viewer_source_t

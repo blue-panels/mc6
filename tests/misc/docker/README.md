@@ -125,8 +125,9 @@ server.
 | `01-dbf`  | a dBase III table written byte by byte, which lua-dbf decodes itself and draws on `mc.ui.screen` |
 | `02-elf`  | an ELF and a symbolic link to it, which lua-readelf runs `readelf` on |
 | `03-image`| an 8x8 true colour PNG, drawn in chafa's characters, with `i` for the properties and F1 for the script's help |
+| `04-markdown`| a short markdown file, rendered by lua-markdown into the viewer's nroff mode: headings, bold, a list, a link, a code block, a table, LaTeX symbols, paragraphs flowed to the width; F8 for the file itself |
 
-lua-dbf needs nothing but the Lua runtime, lua-readelf needs `readelf` from
+lua-dbf and lua-markdown need nothing but the Lua runtime, lua-readelf needs `readelf` from
 binutils, the picture needs `chafa`; the image carries `liblua5.4-dev` and
 `chafa` for them.  magic.ini sends every image to the script that draws it in
 sixel where the terminal can and in chafa's characters where it cannot: this

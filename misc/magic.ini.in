@@ -36,3 +36,5 @@ View=%plugin{mcstruct:show}
 @MAGIC_LUA_READELF_RULES@
 
 @MAGIC_LUA_DBF_RULES@
+
+@MAGIC_LUA_MARKDOWN_RULES@
