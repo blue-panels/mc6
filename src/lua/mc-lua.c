@@ -3768,7 +3768,8 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
     spec->auto_scroll_bottom = g_strcmp0 (scroll, "bottom") == 0;
     g_free (scroll);
     display = mc_lua_dup_table_string (lua, table, "initial_display");
-    if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0)
+    if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0
+        && g_strcmp0 (display, "nroff") != 0)
     {
         g_free (display);
         mc_lua_viewer_source_clear (source);
@@ -3779,9 +3780,12 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
         memset (spec, 0, sizeof (*spec));
         return FALSE;
     }
-    spec->initial_display = g_strcmp0 (display, "terminal") == 0
-        ? MC_RUNTIME_VIEWER_DISPLAY_TERMINAL
-        : MC_RUNTIME_VIEWER_DISPLAY_TEXT;
+    if (g_strcmp0 (display, "terminal") == 0)
+        spec->initial_display = MC_RUNTIME_VIEWER_DISPLAY_TERMINAL;
+    else if (g_strcmp0 (display, "nroff") == 0)
+        spec->initial_display = MC_RUNTIME_VIEWER_DISPLAY_NROFF;
+    else
+        spec->initial_display = MC_RUNTIME_VIEWER_DISPLAY_TEXT;
     g_free (display);
     return TRUE;
 }

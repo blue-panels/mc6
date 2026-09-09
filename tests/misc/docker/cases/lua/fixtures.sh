@@ -3,8 +3,9 @@
 #
 # The viewers written in Lua take a file magic.ini binds them to and put up a
 # screen of their own: lua-dbf decodes a table itself and draws it on
-# mc.ui.screen, lua-readelf runs readelf and shows what it printed.  Both need
-# the Lua runtime in the build; lua-dbf needs nothing else, lua-readelf needs
+# mc.ui.screen, lua-readelf runs readelf and shows what it printed,
+# lua-markdown renders the text into nroff-style bytes.  All need
+# the Lua runtime in the build; lua-dbf and lua-markdown need nothing else, lua-readelf needs
 # readelf, which comes with binutils.
 set -e
 
@@ -94,6 +95,50 @@ tiles.png	F3	text: 8 x 8	and the size it read out of it	local
 tiles.png	F3,key i	text: Install exif	i asks for the full properties, which this image has no tool for	local
 tiles.png	F3,key F1	text: Image viewer	F1 opens the help file of the script itself	local
 tiles.png	F3,key F1	text: switch between the picture	which says what the keys of this viewer do	local
+EOF
+
+mkdir -p 04-markdown
+
+# The text is rendered by lua-markdown: headings and bold in overstruck
+# letters the viewer paints in its nroff mode, tables in columns with
+# box-drawing rules, $LaTeX$ as symbols.  F8 shows the file as it is.
+cat > 04-markdown/notes.md <<'EOF'
+# Release notes
+
+The **viewer** renders `markdown` in Lua.
+
+| Feature | Status |
+| --- | --- |
+| Headings | Done |
+| Tables | Done |
+
+Greek: $\alpha + \beta$
+
+- a list item
+- another with a [link](https://example.org)
+
+This paragraph is written on
+two lines of the file.
+
+```sh
+# a comment in a code block, not a heading
+```
+EOF
+
+cat > 04-markdown/cases.tsv <<'EOF'
+file	key	expect	why	transports
+notes.md	F3	text: Release notes	the heading is shown, bold, without its # marks	local
+notes.md	F3	no text: # Release	the markup itself is not on the screen	local
+notes.md	F3	no text: **viewer**	nor the stars around bold text	local
+notes.md	F3	text: Headings	the table rows are there	local
+notes.md	F3	no text: | Feature	in columns with box rules, not the | of the source	local
+notes.md	F3	no text: alpha	\alpha became the Greek letter	local
+notes.md	F3	no text: - a list item	a list item gets a bullet in place of its dash	local
+notes.md	F3	text: link <https://example.org>	a link shows its text and its target	local
+notes.md	F3	no text: ```	the fences of a code block are dropped	local
+notes.md	F3	text: written on two lines	a paragraph is flowed again to the width of the viewer	local
+notes.md	F3	text: # a comment	and its content is kept as it is, # and all	local
+notes.md	F3,key F8	text: # Release notes	F8 shows the file as it is	local
 EOF
 
 echo "lua cases in $dir"

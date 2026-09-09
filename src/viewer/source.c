@@ -151,6 +151,11 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
 
     if (spec->raw_file != NULL)
         view->mode_flags.magic = TRUE;
+    if (spec->initial_nroff)
+    {
+        view->mode_flags.hex = FALSE;
+        view->mode_flags.nroff = TRUE;
+    }
     if (spec->initial_terminal)
     {
         view->mode_flags.hex = FALSE;
@@ -329,6 +334,7 @@ mcview_source_spec_clone (const mcview_source_spec_t *src)
     dst->help_node = g_strdup (src->help_node);
     dst->auto_scroll_bottom = src->auto_scroll_bottom;
     dst->initial_terminal = src->initial_terminal;
+    dst->initial_nroff = src->initial_nroff;
     dst->raw_file = g_strdup (src->raw_file);
     return dst;
 }

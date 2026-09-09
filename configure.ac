@@ -996,6 +996,17 @@ fi
 AC_SUBST([MAGIC_LUA_DBF_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_DBF_RULES])
 
+dnl lua-markdown renders the text itself: the rule needs nothing but Lua.
+MAGIC_LUA_MARKDOWN_RULES=""
+if test x"$have_lua_plugin" = xyes; then
+    MAGIC_LUA_MARKDOWN_RULES='[[markdown]]
+Regex=\\.(mk?d|markdown)$
+RegexIgnoreCase=true
+View=%plugin{lua(lua-markdown):view}'
+fi
+AC_SUBST([MAGIC_LUA_MARKDOWN_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_MARKDOWN_RULES])
+
 MAGIC_LUA_READELF_RULES=""
 if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes \
         && test -n "$READELF" && test x"$READELF" != xno; then

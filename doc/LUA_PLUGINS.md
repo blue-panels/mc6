@@ -356,6 +356,11 @@ A viewer-source definition may provide `source_state(session, event)`.  Process 
 cancels the old generation before starting the new one, so asynchronous UI state can ignore stale
 terminal events.
 
+A prepared viewer spec may set `initial_display`: `"text"` (the default) shows the
+source as plain text, `"nroff"` turns on the viewer's nroff mode, so overstruck
+letters (`a\ba`, `_\ba`) are painted bold and underlined, and `"terminal"` feeds
+the source to the embedded terminal, so ANSI escapes and cursor movement work.
+
 A prepared viewer spec may set `raw_path` to the original local file.  The viewer then keeps the
 controller attached while F8 switches between the generated source and the raw file.
 

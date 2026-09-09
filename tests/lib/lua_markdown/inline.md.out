@@ -1,0 +1,24 @@
+This is bboolldd text.
+
+This is _i_t_a_l_i_c text.
+
+This is _c_o_d_e text.
+
+This is _bb_oo_ll_dd _ii_tt_aa_ll_ii_cc text.
+
+Plain text with no formatting.
+
+Intraword _e_mphasis, ssttrroonngg and _e_m.
+
+snake_case_name and a_b_c stay, file_name.c too.
+
+Escapes: *not em*, _not_, # not heading, 5 * 3.
+
+Entities: & <tag> © A B &unknown; A & B.
+
+HTML: a bold tag, line
+break, a < b and c > d, https://example.com.
+
+Code spans: _a _` _b and _s_p_a_c_e_d and `unclosed.
+
+Comment gone, mail me@example.org kept.
