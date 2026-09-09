@@ -284,7 +284,7 @@ Right = l; right
 LeftQuick = alt-h
 RightQuick = alt-l
 Up = k; insert; up; ctrl-p
-Down = j; delete; down; enter; ctrl-n
+Down = j; delete; down; ctrl-n
 PageDown = f; space; pgdn; shift-}
 PageUp = b; pgup; backspace; shift-{
 HalfPageDown = d
@@ -300,6 +300,16 @@ Shell = ctrl-o
 Ruler = alt-r
 History = alt-m
 StructMode = alt-s; t
+Store = ctrl-insert; enter
+Unmark = ctrl-u
+MarkLeft = shift-left
+MarkRight = shift-right
+MarkUp = shift-up
+MarkDown = shift-down
+MarkPageUp = shift-pgup
+MarkPageDown = shift-pgdn
+MarkToHome = shift-home
+MarkToEnd = shift-end
 
 [viewer:hex]
 Help = f1

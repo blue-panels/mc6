@@ -1,9 +1,11 @@
 /*
-   Internal file viewer for the Midnight Commander
+   Internal file viewer for the M-Commander
    Callback function for some actions (hotkeys, menu)
 
-   Copyright (C) 1994-2026
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1998
@@ -15,16 +17,18 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -395,6 +399,12 @@ mcview_execute_cmd (WView *view, long command)
     if (view == NULL)
         return MSG_NOT_HANDLED;
 
+    if (mcview_selection_command (view, command))
+    {
+        view->dirty++;
+        return MSG_HANDLED;
+    }
+
     /* In filter empty-state (active but no matches yet) block all movement so
        the visible "(no matches)" screen stays consistent with dpy_start. */
     if (view->filter_active && (view->filter_offsets == NULL || view->filter_offsets->len == 0))
@@ -429,6 +439,12 @@ mcview_execute_cmd (WView *view, long command)
 
     switch (command)
     {
+    case CK_Store:
+        if (mcview_selection_store (view))
+            view->dirty++;
+        else
+            res = MSG_NOT_HANDLED;
+        break;
     case CK_Help:
         mcview_help (view);
         break;
@@ -721,6 +737,12 @@ mcview_handle_key (WView *view, int key)
         return MSG_HANDLED;
 
     command = mcview_lookup_key (view, key);
+
+    /* Enter copies the selection; with nothing selected it keeps its Down action, as in mcterm
+       it goes back to the shell. The other Store keys leave the view where it is. */
+    if (command == CK_Store && (key == '\n' || key == KEY_ENTER) && !mcview_selection_active (view))
+        command = CK_Down;
+
     if (command != CK_IgnoreKey && mcview_execute_cmd (view, command) == MSG_HANDLED)
         return MSG_HANDLED;
 
@@ -919,9 +941,15 @@ mcview_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return MSG_HANDLED;
 
     case MSG_CURSOR:
+    {
+        int row, col;
+
         if (view->mode_flags.hex)
             mcview_place_cursor (view);
+        else if (mcview_selection_cursor (view, &row, &col))
+            widget_gotoyx (view, view->data_area.y + row, view->data_area.x + col);
         return MSG_HANDLED;
+    }
 
     case MSG_KEY:
         i = mcview_handle_key (view, parm);

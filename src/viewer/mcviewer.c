@@ -1,9 +1,11 @@
 /*
-   Internal file viewer for the Midnight Commander
+   Internal file viewer for the M-Commander
    Interface functions
 
    Copyright (C) 1994-2025
-   Free Software Foundation, Inc
+   Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1998
@@ -15,16 +17,18 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -144,9 +148,22 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                 (void) change_panel ();
             }
         }
+
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            widget_select (w);
+            view->dirty++;
+            break;
+        }
         MC_FALLTHROUGH;
 
     case MSG_MOUSE_CLICK:
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            view->dirty++;
+            break;
+        }
+
         if (view->mode_flags.structured)
         {
             // click moves the tree cursor; a click on the current row toggles the node
@@ -234,6 +251,25 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
                 event->result.repeat = msg == MSG_MOUSE_DOWN;
             }
         }
+        break;
+
+    case MSG_MOUSE_DRAG:
+        if (mcview_selection_mouse (view, msg, event))
+        {
+            /* Keep extending a drag that leaves the viewport, as mcterm does. */
+            if (event->y < r->y)
+                mcview_move_up (view, 1);
+            else if (event->y >= r->y + r->lines)
+                mcview_move_down (view, 1);
+            view->dirty++;
+        }
+        else
+            ok = FALSE;
+        break;
+
+    case MSG_MOUSE_UP:
+        (void) mcview_selection_mouse (view, msg, event);
+        ok = FALSE;
         break;
 
     case MSG_MOUSE_SCROLL_UP:
@@ -566,6 +602,7 @@ mcview_load (WView *view, const char *command, const char *file, int start_line,
 
     // drop tree state of the previously shown file (quick view reuses the widget)
     mcview_structured_reset (view);
+    mcview_selection_clear (view);
 
     view->filename_vpath = vfs_path_from_str (file);
 

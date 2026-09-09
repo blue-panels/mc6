@@ -1,9 +1,11 @@
 /*
-   Internal file viewer for the Midnight Commander
+   Internal file viewer for the M-Commander
    Common finctions (used from some other mcviewer functions)
 
-   Copyright (C) 1994-2026
+   Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1998
@@ -15,16 +17,18 @@
    Roland Illig <roland.illig@gmx.de>, 2004, 2005
    Slava Zanko <slavazanko@google.com>, 2009, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010, 2026
+   Ilia Maslakov <il.smind@gmail.com>, 2009, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -117,6 +121,7 @@ mcview_toggle_wrap_mode (WView *view)
     if (view->filter_active)
         return;
 
+    mcview_selection_clear (view);
     view->mode_flags.wrap = !view->mode_flags.wrap;
     view->dpy_wrap_dirty = TRUE;
     view->dpy_bbar_dirty = TRUE;
@@ -128,6 +133,7 @@ mcview_toggle_wrap_mode (WView *view)
 void
 mcview_toggle_nroff_mode (WView *view)
 {
+    mcview_selection_clear (view);
     view->mode_flags.nroff = !view->mode_flags.nroff;
     mcview_altered_flags.nroff = TRUE;
     view->dpy_wrap_dirty = TRUE;
@@ -143,6 +149,7 @@ mcview_toggle_ansi_mode (WView *view)
     if (view->mode_flags.terminal)
         return; /* syntax flag is irrelevant while terminal mode is active */
 
+    mcview_selection_clear (view);
     view->mode_flags.syntax = !view->mode_flags.syntax;
     mcview_altered_flags.syntax = TRUE;
     view->dpy_wrap_dirty = TRUE;
@@ -158,6 +165,7 @@ mcview_cycle_display_mode (WView *view)
     if (view->mode_flags.hex)
         return;
 
+    mcview_selection_clear (view);
     if (view->mode_flags.terminal)
     {
         view->mode_flags.terminal = FALSE;
@@ -191,6 +199,8 @@ mcview_cycle_display_mode (WView *view)
 void
 mcview_toggle_hex_mode (WView *view)
 {
+    mcview_selection_clear (view);
+
     /* Filter, terminal and structured mode are text-mode only: deactivate before entering hex. */
     if (!view->mode_flags.hex)
     {
@@ -260,6 +270,7 @@ mcview_init (WView *view)
     view->hex_cursor = 0;
     view->cursor_col = 0;
     view->cursor_row = 0;
+    mcview_selection_init (view);
     view->change_list = NULL;
 
     // {status,ruler,data}_area are left uninitialized
@@ -326,6 +337,7 @@ mcview_done (WView *view)
     mcview_global_flags.structured = FALSE;
 
     mcview_structured_reset (view);
+    mcview_selection_done (view);
 
     // Free memory used by the viewer
     // view->widget needs no destructor
@@ -411,7 +423,10 @@ void
 mcview_select_encoding (WView *view)
 {
     if (do_select_codepage ())
+    {
+        mcview_selection_clear (view);
         mcview_set_codeset (view);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

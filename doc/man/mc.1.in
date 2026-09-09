@@ -3157,6 +3157,29 @@ Some character sequences, which appear most often in preformatted manual
 pages, are displayed bold and underlined, thus making a pretty display
 of your files.
 .PP
+In ASCII mode, drag with the left mouse button to select text.  A double
+click selects a word and a triple click selects a visual line.  A single
+click only places the terminal cursor on a character; it marks the
+point the keys below extend the selection from.  The
+Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and Shift\-PageDown keys
+extend the selection.  When the text scrolls (PageDown, the mouse
+wheel), the cursor stays on the screen in the same row and column.
+Press Ctrl\-Insert or
+Enter to copy the selection to the clipfile and then to the external
+clipboard; C\-u clears it.  Enter acts as Down when there is no
+selection.  Any cursor movement without Shift drops the selection and
+keeps the cursor.  The copied value is the displayed text: ANSI and
+nroff formatting is removed, tabs are expanded to spaces, and in filter
+mode only the visible lines are copied.
+.PP
+Since the left button selects text, scrolling by clicking in the upper
+or lower third of the view (see
+.I mouse_move_pages_viewer
+in the
+.B "Other options"
+section) is done with the right or middle mouse button in ASCII mode.
+The mouse wheel scrolls in every mode.
+.PP
 When in hex mode, the search function accepts text in quotes and
 constant numbers.  Text in quotes is matched exactly after removing
 the quotes.  Each number matches one byte.  You can mix quoted text
@@ -3262,11 +3285,32 @@ Scroll one page forward.
 .B PageUp, Alt\-v, C\-b, Backspace.
 Scroll one page backward.
 .TP
-.B Down
-Scroll one line forward.
+.B Down, Up
+Move the text cursor one row down or up; on the edge of the view the
+text scrolls by one line.  In hex mode they scroll one line.
 .TP
-.B Up
-Scroll one line backward.
+.B Left, Right
+Move the text cursor by one displayed character; at the end of the row
+it goes on to the next one.  In hex mode they move the hex cursor.
+.TP
+.B C\-Left, C\-Right
+Move the text cursor by eight displayed characters.
+.TP
+.B Shift\-Left, Shift\-Right, Shift\-Up, Shift\-Down
+Extend the text selection by one displayed character or row.
+.TP
+.B Shift\-Home, Shift\-End
+Extend the text selection to the start or end of the visual row.
+.TP
+.B Shift\-PageUp, Shift\-PageDown
+Extend the text selection to the first or last visible row.
+.TP
+.B Ctrl\-Insert, Enter
+Copy selected text to the clipfile and external clipboard.  With no
+selection, Enter acts as Down.
+.TP
+.B C\-u
+Clear the text selection.
 .TP
 .B C\-l
 Refresh the screen.
@@ -4108,7 +4152,8 @@ and that is the default value.
 .TP
 .I mouse_move_pages_viewer
 Controls if scrolling with the mouse is done by pages or line by line
-on the internal file viewer.
+on the internal file viewer.  In ASCII mode the left button selects
+text, so this scrolling uses the right or middle button there.
 .TP
 .I mcview_structured_auto
 If enabled, the internal file viewer opens supported files (json, yaml,
