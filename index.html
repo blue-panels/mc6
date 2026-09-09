@@ -3,770 +3,953 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>mcdev | Extended GNU Midnight Commander</title>
-  <meta name="description" content="mcdev is a long-term project extending GNU Midnight Commander with panel plugins, viewer improvements, editor plugins, and better key handling.">
-  <meta name="theme-color" content="#0f3b36">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <title>M-Commander - Based on GNU Midnight Commander</title>
+  <meta name="description" content="M-Commander (mc6) is based on GNU Midnight Commander 4.8.33 with panel plugins (Git, Docker, Kubernetes, S3, archives, mcstruct), Lua scripting, an embedded terminal, and an extended viewer and editor. Packages for Debian, Ubuntu, Fedora, Arch and macOS.">
+  <meta name="theme-color" content="#0b1220">
+  <meta property="og:title" content="M-Commander - Based on GNU Midnight Commander">
+  <meta property="og:description" content="M-Commander (mc6), based on GNU Midnight Commander, with panel plugins, Lua scripting, an embedded terminal, and an extended viewer and editor.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/panels-gruvbox.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/bp16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/bp32.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/bp64.png">
+  <link rel="apple-touch-icon" sizes="164x164" href="assets/bp164.png">
   <style>
     :root {
-      --bg: #f4efe3;
-      --bg-soft: #fff9ef;
-      --ink: #132238;
-      --muted: #566579;
-      --line: rgba(19, 34, 56, 0.12);
-      --surface: rgba(255, 252, 245, 0.84);
-      --surface-strong: #11273f;
-      --accent: #0f6a5b;
-      --accent-2: #e79022;
-      --accent-3: #4d7c0f;
-      --shadow: 0 20px 60px rgba(17, 39, 63, 0.14);
-      --radius-xl: 28px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --max: 1180px;
+      --bg: #0b1220;
+      --bg-2: #0f1a2e;
+      --panel: #111d33;
+      --panel-2: #16243d;
+      --line: #22314d;
+      --line-2: #2f4370;
+      --fg: #e6edf7;
+      --fg-2: #aab8d0;
+      --muted: #7f8fab;
+      --blue: #3b82f6;
+      --blue-2: #60a5fa;
+      --blue-soft: rgba(59, 130, 246, 0.14);
+      --cyan: #22d3ee;
+      --yellow: #facc15;
+      --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "Fira Code", Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+      --max: 1120px;
+      --r: 10px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      color: var(--ink);
-      font-family: "Space Grotesk", "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(231, 144, 34, 0.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(15, 106, 91, 0.16), transparent 34%),
-        linear-gradient(180deg, #fbf6ea 0%, #f4efe3 42%, #eef5ef 100%);
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
+    a { color: var(--blue-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    img { max-width: 100%; height: auto; display: block; }
+
+    code, pre, kbd {
+      font-family: var(--mono);
+      font-size: 0.92em;
     }
 
-    img {
-      max-width: 100%;
-      display: block;
+    code {
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      color: var(--fg);
+      overflow-wrap: anywhere;
     }
 
-    .page {
-      width: min(var(--max), calc(100% - 32px));
+    kbd {
+      padding: 1px 6px;
+      border-radius: 5px;
+      background: #0a1424;
+      border: 1px solid var(--line-2);
+      border-bottom-width: 2px;
+      color: var(--fg);
+      white-space: nowrap;
+    }
+
+    pre {
+      margin: 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      border-radius: var(--r);
+      background: #070d19;
+      border: 1px solid var(--line);
+      color: #d7e3f5;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    pre .c { color: var(--muted); }
+    pre .p { color: var(--cyan); }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 40px));
       margin: 0 auto;
-      padding: 28px 0 56px;
     }
 
-    .topbar {
+    /* Header */
+    .top {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(11, 18, 32, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top .wrap {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 30px;
+      gap: 18px;
+      min-height: 60px;
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      color: var(--fg);
       font-weight: 700;
-      letter-spacing: 0.02em;
+      font-size: 18px;
+      letter-spacing: 0.01em;
     }
 
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--accent), #093c48);
-      color: #f7fbff;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 15px;
-      box-shadow: var(--shadow);
+    .brand:hover { text-decoration: none; }
+
+    .brand img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
     }
 
-    .top-links {
+    .brand .org { color: var(--muted); font-weight: 500; }
+
+    nav.main {
+      margin-left: auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 4px 18px;
+      font-size: 15px;
     }
 
-    .nav-chip {
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.6);
-      color: var(--muted);
-      font-size: 14px;
-      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
+    nav.main a { color: var(--fg-2); }
+    nav.main a:hover { color: var(--fg); text-decoration: none; }
 
-    .nav-chip:hover {
-      transform: translateY(-1px);
-      border-color: rgba(15, 106, 91, 0.35);
-      color: var(--ink);
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
-      gap: 28px;
-      align-items: stretch;
-      margin-bottom: 28px;
-    }
-
-    .hero-copy,
-    .hero-panel,
-    .card,
-    .summary {
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      background: var(--surface);
-      backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      animation: rise 0.65s ease both;
-    }
-
-    .hero-copy {
-      border-radius: var(--radius-xl);
-      padding: 36px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-copy::before {
-      content: "";
-      position: absolute;
-      inset: auto -90px -90px auto;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(231, 144, 34, 0.24), transparent 70%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
+    .gh {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(15, 106, 91, 0.1);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid var(--line-2);
+      border-radius: 8px;
+      color: var(--fg) !important;
     }
 
-    .eyebrow::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 0 6px rgba(15, 106, 91, 0.12);
+    .gh:hover { background: var(--panel-2); }
+
+    /* Hero */
+    .hero {
+      padding: 64px 0 40px;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(59, 130, 246, 0.18), transparent),
+        linear-gradient(180deg, var(--bg-2), var(--bg));
+    }
+
+    .hero .wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: 40px;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line-2);
+      background: var(--blue-soft);
+      color: var(--blue-2);
+      font-family: var(--mono);
+      font-size: 13px;
     }
 
     h1 {
-      margin: 0;
-      font-size: clamp(50px, 8vw, 88px);
-      line-height: 0.95;
-      letter-spacing: -0.05em;
+      margin: 18px 0 10px;
+      font-size: clamp(31px, 4.5vw, 45px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
     }
 
-    .subtitle {
-      margin: 18px 0 14px;
-      max-width: 42rem;
-      font-size: clamp(18px, 2vw, 24px);
-      line-height: 1.45;
-      color: var(--ink);
+    h1 span { color: var(--blue-2); }
+
+    .lead {
+      margin: 0 0 24px;
+      font-size: 18px;
+      color: var(--fg-2);
+      max-width: 34rem;
     }
 
-    .hero-copy p {
-      margin: 0;
-      max-width: 40rem;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.8;
-    }
-
-    .cta-row {
+    .cta {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
-      margin: 28px 0 26px;
+      gap: 12px;
+      margin-bottom: 22px;
     }
 
-    .button {
+    .btn {
       display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      min-height: 48px;
-      padding: 0 18px;
-      border-radius: 14px;
-      font-weight: 700;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 32px rgba(17, 39, 63, 0.16);
-    }
-
-    .button-primary {
-      background: linear-gradient(135deg, var(--accent), #0e4e70);
-      color: #f8fcff;
-    }
-
-    .button-secondary {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--ink);
-    }
-
-    .branch-strip {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .branch-box {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.58);
-    }
-
-    .branch-label {
-      display: inline-flex;
-      align-items: center;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
-
-    .branch-label.stable {
-      background: rgba(77, 124, 15, 0.12);
-      color: var(--accent-3);
-    }
-
-    .branch-label.dev {
-      background: rgba(231, 144, 34, 0.14);
-      color: #a25d00;
-    }
-
-    .branch-box p {
-      margin: 0;
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--ink);
-    }
-
-    .hero-panel {
-      border-radius: var(--radius-xl);
-      padding: 22px;
-      display: grid;
-      gap: 16px;
-      animation-delay: 0.08s;
-    }
-
-    .terminal {
-      overflow: hidden;
-      border-radius: 22px;
-      background: linear-gradient(180deg, #16273a 0%, #0d1726 100%);
-      color: #d9f3e3;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .terminal-bar {
-      display: flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      border: 1px solid var(--line-2);
+      color: var(--fg);
+      background: var(--panel);
     }
 
-    .terminal-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
+    .btn:hover { background: var(--panel-2); text-decoration: none; }
+
+    .btn.primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
     }
 
-    .terminal-dot.red { background: #ef6a5b; }
-    .terminal-dot.yellow { background: #f4c15d; }
-    .terminal-dot.green { background: #5cc88a; }
+    .btn.primary:hover { background: #2f6fe0; }
 
-    .terminal-title {
-      margin-left: auto;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: rgba(217, 243, 227, 0.72);
-    }
-
-    .terminal pre {
-      margin: 0;
-      padding: 18px 18px 20px;
-      overflow: auto;
-      white-space: pre-wrap;
-      font: 14px/1.75 "JetBrains Mono", monospace;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .stat {
-      border-radius: 18px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid var(--line);
-    }
-
-    .stat strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 28px;
-      line-height: 1;
-      letter-spacing: -0.04em;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .summary {
-      border-radius: var(--radius-xl);
-      padding: 26px 28px;
-      margin-bottom: 24px;
-      animation-delay: 0.12s;
-    }
-
-    .section-tag {
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 28px;
-      align-items: center;
-    }
-
-    .summary h2 {
-      margin: 0 0 12px;
-      font-size: clamp(30px, 4vw, 44px);
-      line-height: 1.05;
-      letter-spacing: -0.04em;
-    }
-
-    .summary p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
-      font-size: 16px;
-    }
-
-    .summary-panel {
-      padding: 18px 20px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(15, 106, 91, 0.08), rgba(231, 144, 34, 0.08));
-      border: 1px solid rgba(15, 106, 91, 0.14);
-    }
-
-    .summary-panel code {
-      display: block;
-      margin-top: 10px;
-      font: 13px/1.9 "JetBrains Mono", monospace;
-      color: var(--ink);
-      white-space: pre-wrap;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      animation-delay: 0.18s;
-    }
-
-    .card h3 {
-      margin: 0 0 10px;
-      font-size: 24px;
-      letter-spacing: -0.03em;
-    }
-
-    .card p {
-      margin: 0 0 18px;
-      color: var(--muted);
-      line-height: 1.75;
-      font-size: 15px;
-    }
-
-    .card-wide {
-      grid-column: span 7;
-    }
-
-    .card-narrow {
-      grid-column: span 5;
-    }
-
-    .plugin-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .plugin-item {
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.65);
-    }
-
-    .plugin-item strong {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 15px;
-    }
-
-    .plugin-item span {
-      display: block;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .feature-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    .feature-list li {
-      position: relative;
-      padding-left: 18px;
-      color: var(--ink);
-      line-height: 1.65;
-      font-size: 15px;
-    }
-
-    .feature-list li::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      top: 0.72em;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      transform: translateY(-50%);
-    }
-
-    .footer {
-      margin-top: 26px;
-      padding: 24px 0 10px;
+    .hero-facts {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px 20px;
-      justify-content: space-between;
+      gap: 6px 22px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .hero-facts b { color: var(--fg-2); font-weight: 600; }
+
+    .shot {
+      border-radius: var(--r);
+      overflow: hidden;
+      border: 1px solid var(--line-2);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+      background: #000;
+    }
+
+    figure { margin: 0; }
+
+    figcaption {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Sections */
+    section { padding: 56px 0; border-top: 1px solid var(--line); }
+
+    .kicker {
+      margin: 0 0 6px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--blue-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 3.4vw, 34px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    section > .wrap > p.intro {
+      margin: 0 0 28px;
+      max-width: 44rem;
+      color: var(--fg-2);
+      font-size: 17px;
+    }
+
+    p { margin: 0 0 12px; }
+    p:last-child { margin-bottom: 0; }
+
+    ul.plain {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--fg-2);
+    }
+
+    ul.plain li { margin: 4px 0; }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .grid.two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+
+    .card {
+      padding: 20px;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    .card p { color: var(--fg-2); font-size: 15px; }
+
+    .card .name {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .card .name b { font-size: 17px; }
+
+    .card .name small {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Install */
+    .install {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .install .card pre { margin-top: 10px; }
+
+    .note {
+      margin-top: 22px;
+      padding: 14px 18px;
+      border-radius: var(--r);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--yellow);
+      background: var(--panel);
+      color: var(--fg-2);
+      font-size: 15px;
+    }
+
+    /* Feature blocks with media */
+    .feature {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+      gap: 32px;
+      align-items: start;
+      padding: 32px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .feature:first-of-type { border-top: 0; padding-top: 8px; }
+
+    .feature.flip { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+    .feature.flip .text { order: 2; }
+
+    .feature .text p { color: var(--fg-2); }
+
+    .feature .shot { box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4); }
+
+    /* Directions */
+    .dirs {
+      counter-reset: dir;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .dirs .card { position: relative; padding-top: 44px; }
+
+    .dirs .card::before {
+      counter-increment: dir;
+      content: "0" counter(dir);
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--blue-2);
+    }
+
+    /* Plugins table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-top: 1px solid var(--line);
+    }
+
+    thead th {
+      border-top: 0;
+      background: var(--panel-2);
+      color: var(--fg-2);
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td:first-child { font-weight: 600; white-space: nowrap; }
+    td { color: var(--fg-2); }
+    td:first-child { color: var(--fg); }
+
+    /* Releases */
+    .releases { display: grid; gap: 0; }
+
+    .rel {
+      display: grid;
+      grid-template-columns: 110px 120px 1fr;
+      gap: 18px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+      align-items: baseline;
+    }
+
+    .rel:last-child { border-bottom: 1px solid var(--line); }
+
+    .rel .v { font-family: var(--mono); font-weight: 700; }
+    .rel .d { font-family: var(--mono); color: var(--muted); font-size: 14px; }
+    .rel .s { color: var(--fg-2); }
+
+    /* Footer */
+    footer {
+      padding: 32px 0 48px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
       font-size: 14px;
     }
 
-    .footer a {
-      color: var(--accent);
-      font-weight: 700;
+    footer .wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 28px;
+      justify-content: space-between;
     }
 
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    footer .links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+
+    @media (max-width: 900px) {
+      .hero .wrap,
+      .feature,
+      .feature.flip { grid-template-columns: 1fr; }
+      .feature.flip .text { order: 0; }
+      .hero { padding-top: 40px; }
     }
 
-    @media (max-width: 980px) {
-      .hero,
-      .summary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .card-wide,
-      .card-narrow {
-        grid-column: span 12;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .page {
-        width: min(var(--max), calc(100% - 20px));
-        padding-top: 18px;
-      }
-
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hero-copy,
-      .hero-panel,
-      .summary,
-      .card {
-        padding: 22px;
-      }
-
-      .branch-strip,
-      .plugin-grid,
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-      .cta-row {
-        flex-direction: column;
-      }
-
-      .button {
-        width: 100%;
-      }
+    @media (max-width: 640px) {
+      .wrap { width: min(var(--max), calc(100% - 28px)); }
+      .top .wrap { flex-wrap: wrap; padding: 10px 0; }
+      nav.main { margin-left: 0; width: 100%; }
+      .rel { grid-template-columns: 1fr; gap: 2px; }
+      section { padding: 40px 0; }
+      .grid.two { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      html {
-        scroll-behavior: auto;
-      }
-
-      *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-      }
+      html { scroll-behavior: auto; }
     }
   </style>
 </head>
 <body>
-  <main class="page">
-    <header class="topbar">
-      <a class="brand" href="https://github.com/ilia-maslakov/mcdev">
-        <span class="brand-mark">mc</span>
-        <span>ilia-maslakov / mcdev</span>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="https://blue-panels.github.io/mc6/">
+        <img src="assets/bp64.png" alt="" width="32" height="32">
+        <span>M-Commander</span>
       </a>
-      <nav class="top-links" aria-label="Primary">
-        <a class="nav-chip" href="https://github.com/ilia-maslakov/mcdev">Repository</a>
-        <a class="nav-chip" href="https://github.com/ilia-maslakov/mcdev/branches">Branches</a>
-        <a class="nav-chip" href="https://github.com/ilia-maslakov/mcdev/pulls">Pull Requests</a>
+      <nav class="main" aria-label="Primary">
+        <a href="#install">Install</a>
+        <a href="#plugins">Plugins</a>
+        <a href="#viewer">Viewer</a>
+        <a href="#editor">Editor</a>
+        <a href="#terminal">Terminal</a>
+        <a href="#releases">Releases</a>
+        <a href="https://github.com/blue-panels/mc6/wiki">Wiki</a>
+        <a href="https://github.com/blue-panels/mc6/wiki/Home-ru" lang="ru">По-русски</a>
+        <a class="gh" href="https://github.com/blue-panels/mc6">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
       </nav>
-    </header>
+    </div>
+  </header>
 
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow">GNU Midnight Commander - extended</div>
-        <h1>mcdev</h1>
-        <p class="subtitle">This is a long-term project extending GNU Midnight Commander with new capabilities.</p>
-        <p>
-          The goal is not to replace Midnight Commander, but to push it further: richer data sources,
-          a stronger viewer, plugin-based editor extensions, better terminal input tooling, and practical
-          improvements that make the daily workflow sharper.
-        </p>
-
-        <div class="cta-row">
-          <a class="button button-primary" href="https://github.com/ilia-maslakov/mcdev">View on GitHub</a>
-          <a class="button button-secondary" href="#features">See extended features</a>
-        </div>
-
-        <div class="branch-strip">
-          <div class="branch-box">
-            <span class="branch-label stable">master</span>
-            <p>The <strong>master</strong> branch contains stable features.</p>
-          </div>
-          <div class="branch-box">
-            <span class="branch-label dev">DEV_*</span>
-            <p>Branches named <strong>DEV_*</strong> contain work in progress.</p>
-          </div>
-        </div>
-      </div>
-
-      <aside class="hero-panel">
-        <div class="terminal" aria-label="Example terminal session">
-          <div class="terminal-bar">
-            <span class="terminal-dot red"></span>
-            <span class="terminal-dot yellow"></span>
-            <span class="terminal-dot green"></span>
-            <span class="terminal-title">mcdev branch model</span>
-          </div>
-          <pre>$ git clone https://github.com/ilia-maslakov/mcdev.git
-$ cd mcdev
-
-$ git checkout master
-# stable features
-
-$ git checkout DEV_viewer_feature
-# work in progress</pre>
-        </div>
-
-        <div class="stats" aria-label="Project summary">
-          <div class="stat">
-            <strong>7</strong>
-            <span>panel plugins for non-file data sources</span>
-          </div>
-          <div class="stat">
-            <strong>6</strong>
-            <span>major viewer upgrades</span>
-          </div>
-          <div class="stat">
-            <strong>4+</strong>
-            <span>key handling and workflow improvements</span>
-          </div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="summary">
-      <div class="summary-grid">
+  <main>
+    <div class="hero">
+      <div class="wrap">
         <div>
-          <div class="section-tag">Project Focus</div>
-          <h2>Midnight Commander, rebuilt for modern workflows</h2>
-          <p>
-            mcdev keeps the familiar Midnight Commander core and extends it where terminal work has changed
-            the most: containers, object storage, remote systems, archive-heavy workflows, streaming logs,
-            live filtering, and better tooling around keys, editor helpers, and privilege-sensitive actions.
+          <span class="tag">v6.0.4 · based on GNU mc 4.8.33</span>
+          <h1>M-Commander</h1>
+          <p class="lead" style="font-size:22px;color:#ffd804;margin-bottom:10px">Based on GNU Midnight Commander</p>
+          <p class="lead">
+            The package is called mc6. It grows outside the core: panel
+            contents come from loadable plugins, scripts talk to mc through a
+            versioned host ABI, and the shell runs in an embedded terminal.
           </p>
+          <div class="cta">
+            <a class="btn primary" href="#install">Install</a>
+            <a class="btn" href="https://github.com/blue-panels/mc6/releases/latest">Download packages</a>
+            <a class="btn" href="https://github.com/blue-panels/mc6/wiki">Read the wiki</a>
+          </div>
+          <div class="hero-facts">
+            <span><b>Debian</b> · <b>Ubuntu</b> · <b>Fedora</b> · <b>Arch</b> · <b>macOS</b></span>
+            <span>Commands stay <code>mc</code>, <code>mcedit</code>, <code>mcview</code>, <code>mcdiff</code></span>
+          </div>
         </div>
-        <div class="summary-panel">
-          <div class="section-tag">What it means</div>
-          <code>classic two-panel workflow
-+ plugin panels
-+ terminal-aware viewer
-+ editor plugins
-+ stronger key tooling
-= mcdev</code>
+        <figure>
+          <div class="shot">
+            <img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/panels-gruvbox.png" alt="Two panels in the gruvbox256 skin with the Plugin panel list open" width="1200" height="700">
+          </div>
+          <figcaption>Two panels in the gruvbox256 skin and the Plugin panel list.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <section id="directions">
+      <div class="wrap">
+        <p class="kicker">What the fork is about</p>
+        <h2>Five directions</h2>
+        <p class="intro">
+          The core stays GNU Midnight Commander. Everything below is added around it,
+          most of it as plugins that can be enabled, replaced or written by the user.
+        </p>
+        <div class="dirs">
+          <div class="card">
+            <h3><a href="#plugins">Panel plugins</a></h3>
+            <p>A panel can show anything: Git history, containers, pods, buckets, an archive on a remote host. Plugins pass streams to each other.</p>
+          </div>
+          <div class="card">
+            <h3><a href="#scripting">Lua scripting</a></h3>
+            <p>Lua is itself a plugin over the core ABI. Scripts extend the editor, panels, viewer and UI without touching the core.</p>
+          </div>
+          <div class="card">
+            <h3><a href="#viewer">Viewer</a></h3>
+            <p>Tree mode for JSON, YAML, XML and HTML, images, ELF and Java classes, live logs with a filter, ANSI and terminal replay.</p>
+          </div>
+          <div class="card">
+            <h3><a href="#editor">Editor</a></h3>
+            <p>Editor plugins, box drawing, line filter, code folding, undo history, macro explorer, saving through sudo.</p>
+          </div>
+          <div class="card">
+            <h3><a href="#terminal">Embedded terminal</a></h3>
+            <p>mcterm replaces the old subshell: real prompt, scrollback, selection, line filter, sixel graphics.</p>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="features" class="feature-grid" aria-label="Extended features">
-      <article class="card card-wide">
-        <div class="section-tag">Extended Features</div>
-        <h3>Panel Plugins</h3>
-        <p>
-          A plugin system for panels similar to VFS, but designed for arbitrary data sources.
+    <section id="install">
+      <div class="wrap">
+        <p class="kicker">Installing</p>
+        <h2>Packages for every release</h2>
+        <p class="intro">
+          Packages for Debian, Ubuntu, Fedora, Arch and macOS are attached to every
+          <a href="https://github.com/blue-panels/mc6/releases">GitHub release</a>.
+          The package is called <code>mc6</code> and replaces the distribution's <code>mc</code>.
         </p>
-        <div class="plugin-grid">
-          <div class="plugin-item">
-            <strong>Docker</strong>
-            <span>Container and image browser with project grouping.</span>
+        <div class="install">
+          <div class="card">
+            <h3>Ubuntu (PPA)</h3>
+            <pre>sudo add-apt-repository ppa:il-smind/mc6
+sudo apt update
+sudo apt install mc6 mc6-plugins</pre>
           </div>
-          <div class="plugin-item">
-            <strong>Git</strong>
-            <span>Commit list with diff, favorites, and cross-panel navigation.</span>
+          <div class="card">
+            <h3>macOS (Homebrew)</h3>
+            <pre>brew install blue-panels/tap/mc6</pre>
+            <p style="margin-top:10px">A <code>.dmg</code> and a <code>.pkg</code> for Apple silicon are attached to the release as well.</p>
           </div>
-          <div class="plugin-item">
-            <strong>Samba</strong>
-            <span>SMB/CIFS browser.</span>
+          <div class="card">
+            <h3>Debian, Fedora, Arch</h3>
+            <p>Take the file for your system from the <a href="https://github.com/blue-panels/mc6/releases/latest">latest release</a>:</p>
+            <ul class="plain">
+              <li><code>.deb</code> for Debian 13 and Ubuntu 26.04, amd64 and arm64</li>
+              <li><code>.rpm</code> for Fedora, x86_64 and aarch64</li>
+              <li><code>.pkg.tar.zst</code> for Arch, x86_64</li>
+            </ul>
+            <p style="margin-top:10px">Install <code>mc6</code> together with <code>mc6-plugins</code>.</p>
           </div>
-          <div class="plugin-item">
-            <strong>SFTP</strong>
-            <span>SSH connections with progress, key auth, and compression.</span>
-          </div>
-          <div class="plugin-item">
-            <strong>FTP</strong>
-            <span>FTP browser.</span>
-          </div>
-          <div class="plugin-item">
-            <strong>S3</strong>
-            <span>Object storage browser.</span>
-          </div>
-          <div class="plugin-item">
-            <strong>arcmc</strong>
-            <span>Archive browser for zip, tar, jar, war, and ear.</span>
+          <div class="card">
+            <h3>From source</h3>
+            <pre>git clone https://github.com/blue-panels/mc6.git
+cd mc6
+./autogen.sh
+./configure
+make
+sudo make install</pre>
+            <p style="margin-top:10px">See <a href="https://github.com/blue-panels/mc6/blob/master/INSTALL">INSTALL</a> for dependencies and <a href="https://github.com/blue-panels/mc6/wiki/Local-build-check">Local build check</a> to run the CI build locally.</p>
           </div>
         </div>
-      </article>
-
-      <article class="card card-narrow">
-        <div class="section-tag">Viewer</div>
-        <h3>Terminal-aware file inspection</h3>
-        <ul class="feature-list">
-          <li>Real-time streaming with F3 on commands like <code>docker logs</code>.</li>
-          <li>ANSI color rendering.</li>
-          <li>Terminal emulation mode.</li>
-          <li>Live grep filtering.</li>
-          <li>Markdown rendering.</li>
-          <li>Fixes for archive viewing crashes.</li>
-        </ul>
-      </article>
-
-      <article class="card card-narrow">
-        <div class="section-tag">Editor</div>
-        <h3>Focused, extensible editing</h3>
-        <ul class="feature-list">
-          <li>Code folding.</li>
-          <li>Spell checker as plugin.</li>
-          <li><code>etags</code> as plugin.</li>
-        </ul>
-      </article>
-
-      <article class="card card-narrow">
-        <div class="section-tag">Key Handling</div>
-        <h3>Better control over terminal input</h3>
-        <ul class="feature-list">
-          <li>Incremental history search.</li>
-          <li>Key bindings editor.</li>
-          <li>Learn terminal keys.</li>
-          <li>Key sniffer.</li>
-        </ul>
-      </article>
-
-      <article class="card card-wide">
-        <div class="section-tag">Misc</div>
-        <h3>Practical workflow improvements</h3>
-        <p>
-          Small improvements matter in a terminal file manager. mcdev also includes quality-of-life changes
-          that remove friction from everyday use.
-        </p>
-        <ul class="feature-list">
-          <li>Plugin panels in drive menu.</li>
-          <li>Temp file extension preservation.</li>
-          <li>Save with sudo.</li>
-          <li>Various fixes across the codebase.</li>
-        </ul>
-      </article>
+        <div class="note">
+          The commands keep their names: <code>mc</code>, <code>mcedit</code>, <code>mcview</code>, <code>mcdiff</code>.
+          What mc6 does not share with mc are its directories: <code>~/.config/mc6</code>,
+          <code>~/.local/share/mc6</code> and <code>~/.cache/mc6</code>. On first start the matching
+          <code>mc</code> directory is copied into each new one, and the original is left untouched.
+        </div>
+      </div>
     </section>
 
-    <footer class="footer">
-      <span>mcdev is a long-term Midnight Commander extension project maintained by <a href="https://github.com/ilia-maslakov">Ilia Maslakov</a>.</span>
-      <span>Source: <a href="https://github.com/ilia-maslakov/mcdev/tree/gh-pages">gh-pages</a> branch.</span>
-    </footer>
+    <section id="plugins">
+      <div class="wrap">
+        <p class="kicker">Panel plugins</p>
+        <h2>A panel that shows more than files</h2>
+        <p class="intro">
+          A plugin panel works like a regular file panel: navigation, viewing, and the standard
+          operations through <kbd>F4</kbd>, <kbd>F5</kbd> and <kbd>F6</kbd>. Plugins add their own data
+          sources, menu entries, settings and help, and keep a navigation history of their own.
+          One plugin can hand another an open seekable stream, and <code>magic.ini</code> routes a file
+          to the plugin that understands it. That is what lets an archive on a remote host open without
+          downloading it whole.
+        </p>
+
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr><th>Plugin</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>arcmc</td><td>Archives in a panel, on libarchive. Browse nested archives, add and delete files, create ZIP, 7z, TAR and CPIO, set compression, passwords and encryption, extract in bulk with progress, speed and remaining time. Paths are checked on extraction so an archive cannot escape the target directory. <a href="https://github.com/blue-panels/mc6/wiki/Arcmc">Guide</a></td></tr>
+              <tr><td>mcstruct</td><td>Structured binary viewer and editor. A text def-file (STL5, compatible with the DOS Struct Look) turns a firmware image, a header or a table file into a tree of named fields synced with a hex dump. Ships def-files for ELF, PE, ZIP, DBF, MBR, FAT, uImage, DTB, PNG, BMP and WAV. <a href="https://github.com/blue-panels/mc6/wiki/Mcstruct">Guide</a></td></tr>
+              <tr><td>Git</td><td>Commits, branches and changed files with the built-in diff viewer. Repositories can be saved as favourites. Selecting a changed file moves the other panel to it in the working directory.</td></tr>
+              <tr><td>Docker</td><td>Containers, their files, images, volumes, networks, mounts, command execution and logs. Local and SSH profiles. Log fetch parameters and a formatting pipe are set right in the viewer; a formatter for .NET and Serilog logs is included.</td></tr>
+              <tr><td>Kubernetes</td><td>Pods, nodes, services and workloads through <code>kubectl</code>. Contexts, namespaces, describe, YAML, exec, resource deletion and log viewing.</td></tr>
+              <tr><td>MongoDB</td><td>Connections, databases, collections and documents. Filtering, projection, sorting, limits, paged reading of large collections and document editing.</td></tr>
+              <tr><td>S3</td><td>Upload, download and delete objects, create buckets, view metadata, stream objects into the viewer. Works with MinIO, Ceph and Cloudflare R2.</td></tr>
+              <tr><td>SQLite</td><td>A database as a panel of tables, columns and rows. Read only.</td></tr>
+              <tr><td>FTP / SFTP</td><td>FTP and FTPS with active and passive mode, proxies, keepalive and IP version settings. SFTP with password and key authentication, compression, progress and streaming. These replace the old <code>ftpfs</code> and <code>sftpfs</code>.</td></tr>
+              <tr><td>Samba</td><td>SMB servers and their shares.</td></tr>
+              <tr><td>systemd, shell, External Panelize</td><td>Units, shell connections, and a panel filled by a command's output.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="feature" style="margin-top:32px">
+          <div class="text">
+            <h3>Creating an archive from tagged files</h3>
+            <p>Tag files, open the pack dialog, pick the format and compression, watch the progress. The built-in tar and cpio filesystems are gone; arcmc does that job now.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/arcmc.gif" alt="Creating a 7z archive from tagged files in the arcmc panel" loading="lazy"></div>
+        </div>
+
+        <div class="feature flip">
+          <div class="text">
+            <h3>Git panel with a file diff</h3>
+            <p>Browse the status, open a file's diff in the built-in viewer, jump to a hunk.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/git-panel.gif" alt="The Git panel plugin showing changed files and a diff" loading="lazy"></div>
+        </div>
+
+        <div class="feature">
+          <div class="text">
+            <h3>mcstruct on a DBF file</h3>
+            <p>Header fields with the hex dump and the def-file in sync, and the records as a grid. Start it with <code>mcstruct FILE</code>, <kbd>Shift-F4</kbd> in the viewer, or <kbd>F3</kbd> on a file that <code>magic.ini</code> hands to it.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/mcstruct.gif" alt="mcstruct showing a DBF file as a tree of fields next to a hex dump" loading="lazy"></div>
+        </div>
+
+        <p style="color:var(--muted);font-size:14px;margin-top:20px">
+          User plugins are loaded from <code>~/.local/lib/mc6/panel-plugins</code>.
+          The plugins are tried in a Docker sandbox described on the <a href="https://github.com/blue-panels/mc6/wiki/QA-Testing">QA testing</a> page.
+        </p>
+      </div>
+    </section>
+
+    <section id="scripting">
+      <div class="wrap">
+        <p class="kicker">Scripting</p>
+        <h2>Lua as a plugin, not a core feature</h2>
+        <div class="grid two">
+          <div>
+            <p class="intro" style="margin-bottom:16px">
+              Lua support is a plugin that speaks the core ABI, so the language is not built into mc.
+              A script can read and change editor documents in transactions, provide panels and file
+              operations, supply the viewer with generated content, build native dialogs and full screens
+              of widgets, run processes and answer events.
+            </p>
+            <p style="color:var(--fg-2)">
+              Scripts are managed in the Manage Plugins dialog. Several of the viewers on this page,
+              the image renderer among them, are Lua scripts themselves.
+            </p>
+            <p style="margin-top:14px">
+              <a href="https://github.com/blue-panels/mc6/wiki/LUA_PLUGINS">Lua plugins</a> ·
+              <a href="https://github.com/blue-panels/mc6/wiki/LUA_API_REFERENCE">Lua API reference</a> ·
+              <a href="https://github.com/blue-panels/mc6/wiki/Lua-domain-model">Domain model</a>
+            </p>
+          </div>
+          <figure>
+            <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/draw-table.gif" alt="Drawing a table with box-drawing characters in mcedit" loading="lazy"></div>
+            <figcaption>The <code>draw-table</code> editor script: <kbd>Shift</kbd>+arrows draw lines, corners and crossings are computed on their own.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="viewer">
+      <div class="wrap">
+        <p class="kicker">Viewer</p>
+        <h2>mcview reads structure, images, logs and terminals</h2>
+
+        <div class="feature">
+          <div class="text">
+            <h3>Tree mode</h3>
+            <p>JSON, YAML, XML, HTML, and the metadata of PNG and JPEG open as a tree, in the fullscreen viewer and in Quick View. Expand and collapse nodes, set the depth, search the whole structure, and copy the path of the selected element in a <code>jq</code>-like form.</p>
+            <p>The <code>mcview_structured_auto</code> option makes supported files open in tree mode by default.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-tree.gif" alt="A JSON file shown as a collapsible tree in mcview" loading="lazy"></div>
+        </div>
+
+        <div class="feature flip">
+          <div class="text">
+            <h3>Live logs with a filter</h3>
+            <p>The viewer works with commands that never finish, such as <code>docker logs -f</code> or <code>journalctl -f</code>. Data is read without blocking the interface and shown as it arrives.</p>
+            <p>The filter offers plain search, regular expressions, case sensitivity, whole words and charset selection, and applies to the current source: only matching lines are shown, with no second file or process.</p>
+            <p>For Docker and Kubernetes logs, the number of records, the time range, the previous instance and continuous refresh are set in the viewer, and the stream can be piped through an external formatter.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-filter.gif" alt="Filtering a log file live in mcview" loading="lazy"></div>
+        </div>
+
+        <div class="feature">
+          <div class="text">
+            <h3>Images and generated views</h3>
+            <p>PNG, JPEG and other raster images are rendered by <a href="https://hpjansson.org/chafa/">Chafa</a> into terminal characters and redrawn on resize. Where the terminal draws sixel graphics, the real picture is shown instead.</p>
+            <p>The same mechanism gives other files a readable form: ELF binaries through <code>readelf</code>, Java classes decompiled by Procyon, dBase, FoxPro and Clipper tables as pageable grids. <kbd>F8</kbd> switches between the generated view and the bytes.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/pla2.png" alt="A PNG image rendered as terminal characters in mcview" loading="lazy"></div>
+        </div>
+
+        <div class="grid" style="margin-top:24px">
+          <div class="card">
+            <h3>ANSI colours</h3>
+            <p>Standard and bright colours, the 256-colour palette, True Color, bold, underline, italics and reverse video. <kbd>Shift-F9</kbd> toggles rendering.</p>
+          </div>
+          <div class="card">
+            <h3>Terminal replay</h3>
+            <p>Positioning, screen erasing and scrolling regions are handled, so <code>script(1)</code> recordings and saved output of fullscreen programs can be viewed. <kbd>F9</kbd> switches None, SGR and Term.</p>
+          </div>
+          <div class="card">
+            <h3>Runtime file handlers</h3>
+            <p>A Lua handler can intercept a file in Viewer or Quick View and show a generated representation. The rules live in <code>magic.ini</code> and can be changed by the user.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="editor">
+      <div class="wrap">
+        <p class="kicker">Editor</p>
+        <h2>mcedit with plugins, folding and history</h2>
+
+        <div class="feature">
+          <div class="text">
+            <h3>Code folding</h3>
+            <p>Multi-line blocks fold by their <code>{}</code>, <code>[]</code> and <code>()</code> brackets, through the gutter indicator, the Command menu or <kbd>Alt+Shift+F</kbd>. The command uses the selection or the nearest enclosing block.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/fold.gif" alt="Folding and unfolding a block in mcedit" loading="lazy"></div>
+        </div>
+
+        <div class="grid" style="margin-top:8px">
+          <div class="card">
+            <h3>Editor plugins</h3>
+            <p>A plugin can register actions, add menu entries and handle keys. Three ship with the editor: the spell checker, etags support, and a new ctags navigator with jumps to definitions, references, symbol search, completion and a jump history. User plugins load from <code>~/.local/lib/mc6/editor-plugins</code>.</p>
+          </div>
+          <div class="card">
+            <h3>Line filter</h3>
+            <p>The Search dialog (<kbd>F7</kbd>) has a Filter action that hides non-matching lines while keeping the original numbers. <kbd>Alt+S</kbd> lifts or restores the filter, <kbd>Alt+Shift+S</kbd> filters by the selection or the word under the cursor.</p>
+          </div>
+          <div class="card">
+            <h3>Undo history</h3>
+            <p><kbd>Alt+Shift+U</kbd> lists undo and redo groups with the line, the operation, the size and a fragment of the change. Jump to any point of the history.</p>
+          </div>
+          <div class="card">
+            <h3>Macro explorer</h3>
+            <p><kbd>Alt+Shift+M</kbd> lists recorded macros. Inspect the action sequence, run, delete, or open the definition in <code>mc.macros</code>.</p>
+          </div>
+          <div class="card">
+            <h3>Saving through sudo</h3>
+            <p>When a file cannot be saved for lack of permissions, the editor offers to repeat through <code>sudo -S tee</code>. A failed attempt keeps the buffer and the editor open.</p>
+          </div>
+          <div class="card">
+            <h3>Long lines</h3>
+            <p>Character positions inside long lines are cached, so logs, CSV and minified data scroll and redraw without delays.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="terminal">
+      <div class="wrap">
+        <p class="kicker">Embedded terminal</p>
+        <h2>mcterm in place of the subshell</h2>
+        <div class="feature" style="border-top:0;padding-top:8px">
+          <div class="text">
+            <p>The shell runs inside the file manager. A command typed on the command line goes to the shell already running there, and the command line shows that shell's own prompt, colours and cursor. <kbd>Ctrl+O</kbd> toggles the terminal; it starts in the directory of the active panel and follows it, tracking the prompt, the running command, the exit status and the directory through OSC 133 and OSC 7.</p>
+            <ul class="plain">
+              <li>Bounded scrollback: <kbd>PgUp</kbd>/<kbd>PgDn</kbd>, <kbd>Shift</kbd>+arrows, <kbd>Home</kbd>, <kbd>End</kbd> and the wheel. Typing returns to the live output.</li>
+              <li>Selection with the mouse or <kbd>Shift</kbd>+arrows, copy with <kbd>Ctrl+Insert</kbd>.</li>
+              <li><kbd>Alt+Shift+S</kbd> keeps only the rows with the selected text, <kbd>Alt+S</kbd> lifts the filter.</li>
+              <li>Long lines wrap and the history is laid out again when the width changes.</li>
+              <li>Sixel graphics in the terminal and in the viewer.</li>
+            </ul>
+            <p style="margin-top:12px">Terminal emulation is done by the viewer's own engine, without an external library.</p>
+          </div>
+          <figure>
+            <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/mcterm.gif" alt="The embedded terminal in mc6" loading="lazy"></div>
+            <figcaption>Toggle the terminal with <kbd>Ctrl+O</kbd>, run commands, come back to the panels.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section id="panels">
+      <div class="wrap">
+        <p class="kicker">Panels, keys and skins</p>
+        <h2>Configuration that used to need a text editor</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Key Bindings</h3>
+            <p>Changes the bindings and finds conflicts between them, grouped by area into tabs.</p>
+          </div>
+          <div class="card">
+            <h3>Learn Keys</h3>
+            <p>Recognises modifiers, so Ctrl, Alt and Shift are captured together with the base key. Settings are stored per <code>$TERM</code> in <code>~/.config/mc6/term/</code>.</p>
+          </div>
+          <div class="card">
+            <h3>Key Sniffer</h3>
+            <p>Shows the escape sequence a terminal sends for a key, with the shortcut, the mapped action and the keycode.</p>
+          </div>
+          <div class="card">
+            <h3>Panel view modes</h3>
+            <p>Users define their own display modes and choose the set and width of the columns. <code>permission_colors</code> colours each permission bit by what it is, the way <code>eza</code> does.</p>
+          </div>
+          <div class="card">
+            <h3>Quick filter</h3>
+            <p><kbd>Alt+Shift+S</kbd> filters the panel as you type, <kbd>Ctrl+G</kbd> removes the filter. <kbd>Alt+C</kbd> asks for a directory in the mini status, with completion above the input.</p>
+          </div>
+          <div class="card">
+            <h3>49 skins</h3>
+            <p>Every shipped skin has colours for all screens, including mcterm, the tree view and mcstruct. <code>-thin</code>, <code>-defbg</code> and <code>root</code> variants. <a href="https://github.com/blue-panels/mc6/wiki/Skins">Skins</a></p>
+          </div>
+        </div>
+        <div class="feature" style="margin-top:24px">
+          <div class="text">
+            <h3>Skin editor</h3>
+            <p>Changes the colours and the frame characters of a skin from inside mc and shows the result as it goes. The left half lists every key of the skin by the part of the screen it paints, the right half is a sample drawn with the colours as they are now.</p>
+            <p>The Color dialog has the 16 named colours, the 256-colour picker and RGB input, plus bold, italic, underline, reverse and blink. Every change goes to the screen at once. Saving writes a copy to your skins directory and makes it the running skin. Opened from Command, Plugin panel or Manage Plugins.</p>
+          </div>
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/skineditor.gif" alt="The skin editor: picking colours for the file under the cursor and for marked files, then saving the skin" loading="lazy"></div>
+        </div>
+        <figure style="margin-top:24px">
+          <div class="shot"><img src="https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/bindings.png" alt="The Key Bindings dialog with bindings grouped into tabs" loading="lazy"></div>
+          <figcaption>The Key Bindings dialog.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="releases">
+      <div class="wrap">
+        <p class="kicker">Releases</p>
+        <h2>Own version line, from v6.0.1</h2>
+        <p class="intro">
+          Version numbers are independent of upstream. MINOR is bumped for feature releases, PATCH for fix-only ones.
+          Every release page lists each change with its pull request, and <code>apt changelog mc6</code> says the same.
+        </p>
+        <div class="releases">
+          <div class="rel">
+            <a class="v" href="https://github.com/blue-panels/mc6/wiki/Release-v6.0.4">v6.0.4</a>
+            <span class="d">2026-09-01</span>
+            <span class="s">mc grows outside its core: Lua, mcstruct and plugin streams; mcterm for the subshell</span>
+          </div>
+          <div class="rel">
+            <a class="v" href="https://github.com/blue-panels/mc6/wiki/Release-v6.0.3">v6.0.3</a>
+            <span class="d">2026-08-02</span>
+            <span class="s">Packaging and plugins (spell engine and panel Quick View)</span>
+          </div>
+          <div class="rel">
+            <a class="v" href="https://github.com/blue-panels/mc6/wiki/Release-v6.0.2">v6.0.2</a>
+            <span class="d">2026-07-31</span>
+            <span class="s">Packaging and CI; panel plugins</span>
+          </div>
+          <div class="rel">
+            <a class="v" href="https://github.com/blue-panels/mc6/wiki/Release-v6.0.1">v6.0.1</a>
+            <span class="d">2026-07-19</span>
+            <span class="s">First tagged release: panel plugin framework and 12 plugins, mcview filter/terminal/tree modes, mcedit undo history and column blocks, FAR-style panel view modes</span>
+          </div>
+        </div>
+        <p style="margin-top:18px;color:var(--fg-2)">
+          All notes: <a href="https://github.com/blue-panels/mc6/wiki/Releases">Releases</a> ·
+          <a href="https://github.com/blue-panels/mc6/blob/master/CHANGELOG.md">CHANGELOG.md</a>
+        </p>
+      </div>
+    </section>
+
+    <section id="contributing">
+      <div class="wrap">
+        <p class="kicker">Contributing</p>
+        <h2>Building, testing, coding style</h2>
+        <div class="grid">
+          <div class="card">
+            <h3><a href="https://github.com/blue-panels/mc6/wiki/Coding-style">Coding style</a></h3>
+            <p>How the code is written and formatted, and what a pull request is expected to look like.</p>
+          </div>
+          <div class="card">
+            <h3><a href="https://github.com/blue-panels/mc6/wiki/QA-Testing">QA testing</a></h3>
+            <p>A Docker sandbox that builds mc from the working tree and runs it against sftp, ssh, ftp and samba servers, by hand or from a script.</p>
+          </div>
+          <div class="card">
+            <h3><a href="https://github.com/blue-panels/mc6/wiki/Local-build-check">Local build check</a></h3>
+            <p>Runs the CI build locally before a push.</p>
+          </div>
+          <div class="card">
+            <h3><a href="https://github.com/blue-panels/mc6/wiki/Demos">Demo recordings</a></h3>
+            <p>The GIFs on this page are rendered from VHS tapes against a pinned mc revision.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer>
+    <div class="wrap">
+      <span>M-Commander (mc6) is based on <a href="https://midnight-commander.org">GNU Midnight Commander</a> and not an official GNU package. Report issues <a href="https://github.com/blue-panels/mc6/issues">here</a>, not upstream.</span>
+      <span class="links">
+        <a href="https://github.com/blue-panels/mc6">Source</a>
+        <a href="https://github.com/blue-panels/mc6/wiki">Wiki</a>
+        <a href="https://github.com/blue-panels/mc6/releases">Releases</a>
+        <a href="https://github.com/blue-panels/mc6/wiki/Home-ru" lang="ru">Русская версия</a>
+      </span>
+    </div>
+  </footer>
+
 </body>
 </html>
