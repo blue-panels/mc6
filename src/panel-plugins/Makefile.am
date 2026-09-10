@@ -3,6 +3,7 @@ SUBDIRS += hello
 SUBDIRS += panelize
 SUBDIRS += mcstruct
 SUBDIRS += skineditor
+SUBDIRS += mcpeek
 
 if ENABLE_PANEL_PLUGIN_SFTP
 SUBDIRS += sftp
@@ -39,4 +40,4 @@ if ENABLE_PANEL_PLUGIN_SHELL_LINK
 SUBDIRS += shell-link
 endif
 
-DIST_SUBDIRS = systemd hello panelize mcstruct skineditor sftp samba ftp arcmc s3 mongo sqlite docker git k8s shell-link
+DIST_SUBDIRS = systemd hello panelize mcstruct skineditor mcpeek sftp samba ftp arcmc s3 mongo sqlite docker git k8s shell-link

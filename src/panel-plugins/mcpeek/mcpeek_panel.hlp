@@ -1,0 +1,104 @@
+[mcpeek]
+
+.NET assembly browser panel plugin
+
+mcpeek shows a managed assembly as the tree its metadata already forms:
+references, namespaces, types, members, embedded resources.  Nothing is
+unpacked and no external tool is needed to walk it.
+
+An assembly inside an archive, a container or a remote panel is opened the
+same way: it is copied out first, because an assembly is read by mapping it
+and a stream has no file behind it.  The copy lives as long as the panel.
+
+Opening an assembly:
+
+  Enter on a .dll, .exe or .winmd   through the magic.ini rule that
+                                    matches what libmagic calls a
+                                    Mono/.Net assembly
+  Ctrl-PgDn on the same file        without a rule
+  F9 -> Left/Right -> .NET assembly browser
+                                    opens the current directory as a set
+                                    of assemblies
+
+The panel:
+
+  Enter, F3   on a member shows it as C#, with the cursor on the member
+  Shift-F3    shows the IL the C# was made from
+  F4          opens the same text in the editor
+  F5          on a member copies that text out; on a type writes that
+              type as one .cs; on a namespace or Properties/ writes
+              what is listed there, one file at a time; on an assembly
+              of the set copies the file itself.  A text that cannot be
+              had is a failed copy, not a file with a note in it
+  Alt-F5      writes the whole assembly as a compilable project, with
+              its PDB, into a directory it asks for
+  Alt-F7      on a type, a method or a field lists where it is used
+  Ctrl-R      re-reads the assembly after it has been rebuilt and
+              returns to the type the panel stood in, found by name
+
+Levels:
+
+  a directory      every managed assembly in it
+  an assembly      with a decompiler, the directory the sources would
+                   form: one directory per namespace holding a .cs per
+                   type, the project file, Properties/, and IL/; without
+                   one, the metadata tree itself, and no IL/
+  a namespace      under the root, the .cs of its types; under IL/, the
+                   types themselves
+  IL               namespaces, types and members, with tokens and sizes
+  a type           fields, properties, events, methods and nested types
+  References       what the assembly needs, with the file each name
+                   resolves to; an unresolved one is marked "missing"
+                   and cannot be entered
+
+A .cs is decompiled when it is opened, not when it is listed, so a listing
+costs nothing however large the assembly.  The project file and
+Properties/AssemblyInfo.cs are the only two that a whole-project export
+produces and nothing else does; that export is written once into the cache
+and kept for as long as the assembly keeps its mtime.
+
+Columns:
+
+  Kind    what the entry is: asm, ns, type, method, field, prop, event,
+          ref, res, use
+  Token   the metadata token, as it appears in the IL
+  Size    the size of a method body, in bytes of IL
+
+C# and export
+
+C# comes from an external decompiler; without one the plugin shows IL and
+nothing else is lost.  It is looked for in mcpeek.ini, then on PATH, then
+in ~/.dotnet/tools, which is where a dotnet global tool lands and where
+PATH usually does not reach.  The command can be set in the settings
+dialog: F9 -> Command -> Manage plugins, then Enter on mcpeek.
+
+A run of the decompiler costs about a second, so a whole type is
+decompiled at once and kept until the assembly changes on disk.
+
+An export (Alt-F5) writes the portable PDB beside the sources, so the
+result can be opened in a debugger and not only read.  The line numbers
+of the written files are made to agree with that PDB, which means a
+breakpoint set on the line you see stops on the statement you meant.
+
+Where a type or member is used
+
+Alt-F7 lists every place the selected entry is used, across the assemblies
+this panel has opened: the ones in the directory it started from and the
+ones reached through a reference.  Enter on a result opens the type that
+declares the using method.  The key can be changed under [keys] in
+mcpeek.ini.
+
+The search reads metadata and IL only, so it costs a fraction of a second
+and needs no decompiler.  A caller names what it uses through a reference
+assembly, which usually does not declare the type but exports it and says
+which assembly really has it, so those forwardings are followed; a
+reference to an assembly not installed here is taken at face value rather
+than dropped.
+
+Assembly resolution
+
+A reference is looked for beside the assembly first, then under
+runtimes/ next to it, then in the shared frameworks and reference packs
+of every dotnet installation found, then in the NuGet cache.  What is not
+installed on this machine stays unresolved, which is an ordinary outcome
+and not an error.
