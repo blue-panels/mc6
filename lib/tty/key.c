@@ -48,6 +48,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #endif
+#include <termios.h>
 
 #include "lib/global.h"
 
@@ -67,8 +68,6 @@
 #ifdef __linux__
 #if defined(__GLIBC__) && (__GLIBC__ < 2)
 #include <linux/termios.h>  // TIOCLINUX
-#else
-#include <termios.h>
 #endif
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
@@ -76,7 +75,6 @@
 #endif
 
 #ifdef __CYGWIN__
-#include <termios.h>
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
@@ -1096,6 +1094,16 @@ push_char (int c)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+tty_icrnl_enabled (void)
+{
+    struct termios mode;
+
+    return tcgetattr (input_fd, &mode) == 0 && (mode.c_iflag & ICRNL) != 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /* Apply corrections for the keycode generated in get_key_code() */
 
 static int
@@ -1115,30 +1123,12 @@ correct_key_code (int code)
     if (c < 32 || c >= 256)
         mod |= get_modifier ();
 
-    /* CR / LF handling.  Terminals split two ways:
-        a) Enter delivered as '\r' (the common case: xterm, vte, screen,
-           tmux, conhost in cooked mode).  Once we've seen a '\r' in this
-           session we know the terminal is in this mode, so any subsequent
-           bare '\n' is Ctrl-Enter / Ctrl-J -- they are distinct on the
-           wire and the keymap can tell them apart.
-        b) Enter delivered as '\n' (icrnl off, some serial consoles,
-           some legacy emulators).  Then '\n' is plain Enter and we
-           must NOT pretend Ctrl is held.
-
-       Detect mode (a) at runtime by remembering whether '\r' has ever
-       arrived.  Until then, '\n' stays as a plain Enter.  After then,
-       '\n' carries KEY_M_CTRL. */
-    {
-        static gboolean cr_seen = FALSE;
-
-        if (c == '\r')
-        {
-            cr_seen = TRUE;
-            c = '\n';
-        }
-        else if (c == '\n' && cr_seen)
-            mod |= KEY_M_CTRL;
-    }
+    /* Enter arrives as '\r'. A bare '\n' is Ctrl-Enter (or Ctrl-J) unless the
+       tty has ICRNL on: then the kernel has turned Enter into '\n' itself. */
+    if (c == '\r')
+        c = '\n';
+    else if (c == '\n' && !tty_icrnl_enabled ())
+        mod |= KEY_M_CTRL;
 
     // This is reported to be useful on AIX
     if (c == KEY_SCANCEL)
