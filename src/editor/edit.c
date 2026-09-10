@@ -2148,8 +2148,8 @@ edit_insert_column_from_block (WEdit *edit, const GString *block, off_t *start_p
 /* --------------------------------------------------------------------------------------------- */
 
 /* Recode text from the codeset of the clipfile into the one of the editor. A character
-   the target codeset lacks becomes '?'; the bytes stay as they are when the codesets
-   are the same or unknown to iconv. */
+   the target codeset lacks becomes '?' (musl iconv substitutes '*' on its own); the bytes
+   stay as they are when the codesets are the same or unknown to iconv. */
 static void
 edit_recode_block (GString *block, const char *from_codeset)
 {

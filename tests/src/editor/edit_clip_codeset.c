@@ -266,7 +266,7 @@ END_TEST
 /* --------------------------------------------------------------------------------------------- */
 
 /* @Test */
-/* a character the target codeset lacks becomes '?', the rest of the line survives */
+/* a character the target codeset lacks is replaced, the rest of the line survives */
 START_TEST (test_paste_unrepresentable_char)
 {
     char *clip = make_clip_path ();
@@ -281,8 +281,10 @@ START_TEST (test_paste_unrepresentable_char)
     ck_assert (edit_insert_file (test_edit, vp) >= 0);
     vfs_path_free (vp, TRUE);
 
+    // glibc iconv reports the character and mc puts '?'; musl iconv substitutes '*' itself
     actual = buffer_text ();
-    mctest_assert_str_eq (actual->str, "a?b\n");
+    ck_assert_msg (strcmp (actual->str, "a?b\n") == 0 || strcmp (actual->str, "a*b\n") == 0,
+                   "unexpected text: %s", actual->str);
 
     g_string_free (actual, TRUE);
     clipboard_info_drop (clip);
