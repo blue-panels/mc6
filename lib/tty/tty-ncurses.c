@@ -305,6 +305,7 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     tty_enter_ca_mode ();
     tty_raw_mode ();
     noecho ();
+    nonl ();  // keep Enter as '\r', so a bare '\n' is Ctrl-Enter
     keypad (stdscr, TRUE);
     nodelay (stdscr, FALSE);
 
