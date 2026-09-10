@@ -200,10 +200,12 @@ gboolean edit_plugin_configure (WDialog *h, long command, WEdit *edit);
 gboolean edit_plugin_handle_key (WDialog *h, int key, WEdit *edit);
 
 gboolean edit_save_block (WEdit *edit, const char *filename, off_t start, off_t finish);
+gboolean edit_save_clip_block (WEdit *edit, const char *filename, off_t start, off_t finish);
 gboolean edit_save_block_cmd (WEdit *edit);
 gboolean edit_insert_file_cmd (WEdit *edit);
 
 off_t edit_insert_file (WEdit *edit, const vfs_path_t *filename_vpath);
+const char *edit_get_codeset (void);
 gboolean edit_load_back_cmd (WEdit *edit);
 gboolean edit_load_forward_cmd (WEdit *edit);
 void edit_block_process_cmd (WEdit *edit, int macro_number);

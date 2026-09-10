@@ -28,6 +28,7 @@ EXTRA_DIST = \
 	execute__common.c
 
 TESTS = \
+	clipboard_info \
 	execute__execute_with_vfs_arg \
 	execute__execute_external_editor_or_viewer \
 	execute__execute_get_external_cmd_opts_from_config \
@@ -51,6 +52,9 @@ TESTS += \
 endif
 
 check_PROGRAMS = $(TESTS)
+
+clipboard_info_SOURCES = \
+	clipboard_info.c
 
 execute__execute_with_vfs_arg_SOURCES = \
 	execute__execute_with_vfs_arg.c
