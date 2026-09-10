@@ -1193,6 +1193,7 @@ src/panel-plugins/hello/Makefile
 src/panel-plugins/panelize/Makefile
 src/panel-plugins/mcstruct/Makefile
 src/panel-plugins/skineditor/Makefile
+src/panel-plugins/mcpeek/Makefile
 src/panel-plugins/samba/Makefile
 src/panel-plugins/ftp/Makefile
 src/panel-plugins/systemd/Makefile

@@ -12,6 +12,11 @@
 # Regex=\\.(tar|tar\\.gz|tgz|zip|7z)$
 # Open=%plugin{arcmc:open}
 
+# mcpeek: what libmagic calls a Mono/.Net assembly is a tree of metadata
+[dotnet-assembly]
+Type=Mono/\\.Net assembly
+Open=%plugin{mcpeek:browse}
+
 @MAGIC_ARCMC_RULES@
 
 @MAGIC_SQLITE_RULES@
