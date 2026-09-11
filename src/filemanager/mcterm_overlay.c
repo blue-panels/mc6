@@ -1,26 +1,24 @@
 /*
-   File manager mcterm overlay controller.
+   File manager for the M-Commander
+   The mcterm overlay controller
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026.
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 /** \file mcterm_overlay.c
@@ -1533,18 +1531,61 @@ mcterm_overlay_complete_with_mc (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The clipboard keys of the command line while the shell owns it. Store chooses the source as
+   on mc's own input, with the shell's line as the line. Paste types the clipfile onto the
+   shell's line as one line. Cut stays with the shell: mc cannot see what the shell's line
+   editor has marked. */
+static cb_ret_t
+mcterm_overlay_clip_command (long command)
+{
+    switch (command)
+    {
+    case CK_Store:
+    {
+        char *text = mcterm_overlay_cmdline_text ();
+
+        input_store_line_or_files (text);
+        g_free (text);
+        return MSG_HANDLED;
+    }
+
+    case CK_Paste:
+    {
+        char *text = input_clip_text ();
+
+        if (text != NULL)
+        {
+            mcterm_overlay_focus_cmdline ();
+            mcterm_overlay_move_cmdline_to_shell ();
+            if (!mcterm_send_text (mcterm_panel, text))
+                message (D_ERROR, MSG_ERROR, "%s", _ ("The shell did not take the whole text"));
+            g_free (text);
+        }
+        return MSG_HANDLED;
+    }
+
+    default:
+        return MSG_NOT_HANDLED;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* With the panels up, a key that would have gone to the command line goes to the shell's line
    editor instead. Called after mc's own keys have been dealt with, so what is left really is the
    command line's. */
 cb_ret_t
 mcterm_overlay_cmdline_key (int parm)
 {
+    long command;
+
     if (mcterm_mode || !mcterm_overlay_shell_owns_cmdline ())
         return MSG_NOT_HANDLED;
 
-    if (widget_lookup_key (WIDGET (cmdline), parm) == CK_Complete)
+    command = widget_lookup_key (WIDGET (cmdline), parm);
+    if (command == CK_Complete)
         mcterm_overlay_complete_with_mc ();
-    else
+    else if (mcterm_overlay_clip_command (command) == MSG_NOT_HANDLED)
     {
         mcterm_overlay_move_cmdline_to_shell ();
         mcterm_overlay_send_cmdline_key (parm);
@@ -1685,6 +1726,17 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         // What the terminal itself acts on: the view, the cursor, and the mark. Only while it has
         // the focus - at the command line those same keys move and edit the shell's own line.
         term_cmd = mcterm_key_command (mcterm_panel, parm);
+
+        /* The clipboard keys of the command line: paste, and copy when the terminal has no mark
+           of its own for the same key to take. */
+        if (mcterm_overlay_shell_owns_cmdline ())
+        {
+            const long clip_cmd = widget_lookup_key (WIDGET (cmdline), parm);
+
+            if (clip_cmd == CK_Paste
+                || (clip_cmd == CK_Store && !mcterm_mark_active (mcterm_panel)))
+                return mcterm_overlay_clip_command (clip_cmd);
+        }
 
         /* Clearing the output, marking it and cutting it down are the terminal's whoever is
            typing: the line stays put, and the view is not dragged back to the end first. */

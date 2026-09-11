@@ -363,7 +363,7 @@ static void
 textarea_paste_from_clip (WTextArea *area)
 {
     char *text = NULL;
-    ev_clipboard_text_from_file_t event_data = { NULL, FALSE };
+    ev_clipboard_text_from_file_t event_data = { NULL, FALSE, 0 };
 
     mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_file_from_ext_clip", NULL);
 

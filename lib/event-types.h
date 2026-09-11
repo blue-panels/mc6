@@ -41,7 +41,15 @@ typedef struct
 {
     char **text;
     gboolean ret;
+    size_t len;  // of the text, which may hold NUL bytes
 } ev_clipboard_text_from_file_t;
+
+/* MCEVENT_GROUP_FILEMANAGER:panel_save_current_file_to_clip_file */
+typedef struct
+{
+    gboolean marked_only;  // the marked files or nothing: not the file under the cursor
+    gboolean ret;          // a source was chosen and its text sent to the clipfile
+} ev_panel_save_clip_t;
 
 /* MCEVENT_GROUP_CORE:help */
 typedef struct

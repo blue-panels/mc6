@@ -72,6 +72,19 @@ long mcterm_key_command (const WMcTerm *t, int key);
 /* Whether the host types on a command line of its own. Without one the plain
    arrows are left to the shell, there being nowhere else for typing to go. */
 void mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere);
+/* Whether some of the output is marked, for Store to take. */
+gboolean mcterm_mark_active (const WMcTerm *t);
+/* Type @text into the shell. FALSE when the shell is gone or took none of it for a second;
+   what it took by then stays on its line. */
+gboolean mcterm_send_text (WMcTerm *t, const char *text);
+
+/* Called while the master has output to read; FALSE when the fd is gone. */
+typedef gboolean (*mcterm_pty_drain_fn) (int fd, void *data);
+/* Write @len bytes to the pty master @fd without blocking on it, calling @drain whenever it
+   has output to read. FALSE when the fd is gone or took no byte for @stall_usec; a prefix of
+   the text may have gone through by then. */
+gboolean mcterm_pty_send (int fd, const char *text, size_t len, gint64 stall_usec,
+                          mcterm_pty_drain_fn drain, void *data);
 
 #else /* !ENABLE_MCTERM */
 
@@ -265,6 +278,19 @@ mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
 {
     (void) t;
     (void) elsewhere;
+}
+static inline gboolean
+mcterm_mark_active (const WMcTerm *t)
+{
+    (void) t;
+    return FALSE;
+}
+static inline gboolean
+mcterm_send_text (WMcTerm *t, const char *text)
+{
+    (void) t;
+    (void) text;
+    return FALSE;
 }
 
 #endif /* ENABLE_MCTERM */

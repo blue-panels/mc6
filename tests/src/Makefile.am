@@ -29,6 +29,7 @@ EXTRA_DIST = \
 
 TESTS = \
 	clipboard_info \
+	input_clip_text \
 	execute__execute_with_vfs_arg \
 	execute__execute_external_editor_or_viewer \
 	execute__execute_get_external_cmd_opts_from_config \
@@ -48,6 +49,7 @@ TESTS += \
 	mcterm_key_encode \
 	mcterm_osc7_parse \
 	mcterm_protocol_parse \
+	mcterm_pty_send \
 	mcterm_select
 endif
 
@@ -55,6 +57,9 @@ check_PROGRAMS = $(TESTS)
 
 clipboard_info_SOURCES = \
 	clipboard_info.c
+
+input_clip_text_SOURCES = \
+	input_clip_text.c
 
 execute__execute_with_vfs_arg_SOURCES = \
 	execute__execute_with_vfs_arg.c
@@ -84,6 +89,9 @@ mcterm_osc7_parse_SOURCES = \
 
 mcterm_protocol_parse_SOURCES = \
 	mcterm_protocol_parse.c
+
+mcterm_pty_send_SOURCES = \
+	mcterm_pty_send.c
 
 mcterm_select_SOURCES = \
 	mcterm_select.c

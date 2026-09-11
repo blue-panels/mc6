@@ -1,34 +1,30 @@
 /*
-   Midnight Commander - mcterm PTY terminal widget.
-
-   Embeds a shell inside the filemanager as a PTY-backed terminal widget
-   with vterm emulation and OSC 7 panel synchronization.
+   Terminal widget mcterm for the M-Commander
+   The PTY-backed terminal widget: vterm emulation and OSC 7 panel synchronization
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -76,6 +72,8 @@
 
 #define MCTERM_INITIAL_OSC7_MARKER        "7;file://__mc_sync__/"
 #define MCTERM_LINE_SETTLE_USEC           (150L * 1000L)
+#define MCTERM_PASTE_CHUNK                256
+#define MCTERM_PASTE_STALL_USEC           G_USEC_PER_SEC
 #define MCTERM_WHEEL_ROWS                 3
 /* How often the host is woken while a command runs, in nanoseconds. */
 #define MCTERM_BUSY_TICK_NSEC (200L * 1000L * 1000L)
@@ -2633,6 +2631,131 @@ mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
 {
     if (t != NULL)
         t->typing_elsewhere = elsewhere;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_mark_active (const WMcTerm *t)
+{
+    return (t != NULL && t->sel.active);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+// Writes in non-blocking pieces and reads the echo in between, or the pty fills up on both ends.
+gboolean
+mcterm_pty_send (int fd, const char *text, size_t len, gint64 stall_usec, mcterm_pty_drain_fn drain,
+                 void *data)
+{
+    const unsigned char *p = (const unsigned char *) text;
+    int flags;
+    gint64 deadline;
+    gboolean ok = TRUE;
+    gboolean gone = FALSE;
+
+    if (fd < 0 || text == NULL)
+        return FALSE;
+    if (len == 0)
+        return TRUE;
+
+    flags = fcntl (fd, F_GETFL);
+    (void) fcntl (fd, F_SETFL, flags | O_NONBLOCK);
+    deadline = g_get_monotonic_time () + stall_usec;
+
+    while (len > 0)
+    {
+        const gint64 left = deadline - g_get_monotonic_time ();
+        fd_set read_set, write_set;
+        struct timeval timeout;
+        int rc;
+        ssize_t nw;
+
+        // Counted from the last write that went through: output alone is no progress.
+        if (left <= 0)
+        {
+            ok = FALSE;
+            break;
+        }
+
+        FD_ZERO (&read_set);
+        FD_ZERO (&write_set);
+        FD_SET (fd, &read_set);
+        FD_SET (fd, &write_set);
+        timeout.tv_sec = (time_t) (left / G_USEC_PER_SEC);
+        timeout.tv_usec = (suseconds_t) (left % G_USEC_PER_SEC);
+        rc = select (fd + 1, &read_set, &write_set, NULL, &timeout);
+        if (rc < 0 && errno == EINTR)
+            continue;
+        if (rc < 0)
+        {
+            ok = FALSE;
+            break;
+        }
+        if (rc == 0)
+            continue;
+
+        if (FD_ISSET (fd, &read_set) && !drain (fd, data))
+        {
+            ok = FALSE;
+            gone = TRUE;
+            break;
+        }
+        if (!FD_ISSET (fd, &write_set))
+            continue;
+
+        nw = write (fd, p, MIN (len, (size_t) MCTERM_PASTE_CHUNK));
+        if (nw < 0)
+        {
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+            ok = FALSE;
+            break;
+        }
+        p += nw;
+        len -= (size_t) nw;
+        deadline = g_get_monotonic_time () + stall_usec;
+    }
+
+    if (!gone)
+        (void) fcntl (fd, F_SETFL, flags);
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mcterm_send_text_drain (int fd, void *data)
+{
+    WMcTerm *t = (WMcTerm *) data;
+
+    mcterm_pty_ready_cb (fd, t);
+    // The shell may be gone after that, and its master closed.
+    return (!t->child_dead && t->pty_master == fd);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_send_text (WMcTerm *t, const char *text)
+{
+    size_t len;
+
+    if (t == NULL || t->child_dead || t->pty_master < 0 || text == NULL)
+        return FALSE;
+
+    gboolean ok;
+
+    len = strlen (text);
+    if (len == 0)
+        return TRUE;
+
+    ok = mcterm_pty_send (t->pty_master, text, len, MCTERM_PASTE_STALL_USEC, mcterm_send_text_drain,
+                          t);
+    // Set after the transfer: the echo read on the way resets it, and bytes went out since.
+    t->line_typed = TRUE;
+    t->line_cleared = FALSE;
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */

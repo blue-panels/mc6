@@ -3,6 +3,8 @@
 
    Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1995
@@ -11,14 +13,15 @@
    Andrew Borodin <aborodin@vmail.ru>, 2013-2023
    Ilia Maslakov <il.smind@gmail.com>, 2009-2012, 2014, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -5802,19 +5805,31 @@ static gboolean
 panel_save_current_file_to_clip_file (const gchar *event_group_name, const gchar *event_name,
                                       gpointer init_data, gpointer data)
 {
+    ev_panel_save_clip_t *ev = (ev_panel_save_clip_t *) data;
+
     (void) event_group_name;
     (void) event_name;
     (void) init_data;
-    (void) data;
+
+    ev->ret = FALSE;
+
+    // Ignore the panel when it is hidden or another dialog is active.
+    if (current_panel == NULL || !widget_get_state (WIDGET (current_panel), WST_VISIBLE)
+        || top_dlg == NULL || top_dlg->data != WIDGET (current_panel)->owner)
+        return TRUE;
 
     if (current_panel->marked == 0)
     {
         const file_entry_t *fe;
 
+        if (ev->marked_only)
+            return TRUE;
+
         fe = panel_current_entry (current_panel);
-        if (fe != NULL)
-            mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_to_file",
-                            (gpointer) fe->fname->str);
+        if (fe == NULL)
+            return TRUE;
+
+        mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_to_file", (gpointer) fe->fname->str);
     }
     else
     {
@@ -5848,6 +5863,8 @@ panel_save_current_file_to_clip_file (const gchar *event_group_name, const gchar
         mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_to_file", (gpointer) flist);
         g_free (flist);
     }
+
+    ev->ret = TRUE;
     return TRUE;
 }
 
