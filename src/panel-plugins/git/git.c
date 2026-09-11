@@ -7,14 +7,15 @@
    Written by:
    Ilia Maslakov <il.smind@gmail.com>, 2026.
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -33,6 +34,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/vfs/utilvfs.h"
 #include "lib/glibcompat.h"
 #include "lib/logging.h"
 #include "lib/mcconfig.h"
@@ -1502,21 +1504,35 @@ git_apply_selected (git_data_t *data, git_action_t action)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Write a blob to a temporary file named after the file it came from.
+ *
+ * The name matters: the viewer and the diff viewer pick a syntax by it, and a
+ * generated name tells them nothing.  vfs_mkstemps() keeps the original basename
+ * as the tail of the temporary one, extension and all.
+ *
+ * @param contents what to write
+ * @param len its length
+ * @param orig_name name the temporary one is built from
+ * @param tmp_path where the path of the temporary file is stored
+ * @return TRUE on success
+ */
+
 static gboolean
-git_write_temp_contents (const char *contents, gssize len, char **tmp_path)
+git_write_temp_contents (const char *contents, gssize len, const char *orig_name, char **tmp_path)
 {
     GError *error = NULL;
+    vfs_path_t *vpath = NULL;
     int fd;
     gboolean ok;
 
-    fd = g_file_open_tmp ("mc-git-diff-XXXXXX", tmp_path, &error);
+    fd = vfs_mkstemps (&vpath, "mc-git-diff-", orig_name != NULL ? orig_name : "file");
     if (fd == -1)
-    {
-        if (error != NULL)
-            g_error_free (error);
         return FALSE;
-    }
     close (fd);
+
+    *tmp_path = g_strdup (vfs_path_as_str (vpath));
+    vfs_path_free (vpath, TRUE);
 
     ok = g_file_set_contents (*tmp_path, contents, len, &error);
     if (!ok)
@@ -1535,7 +1551,8 @@ git_write_temp_contents (const char *contents, gssize len, char **tmp_path)
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
-git_write_temp_from_git_show (git_data_t *data, const char *object_spec, char **tmp_path)
+git_write_temp_from_git_show (git_data_t *data, const char *object_spec, const char *orig_name,
+                              char **tmp_path)
 {
     char *out = NULL;
     char *err = NULL;
@@ -1551,7 +1568,7 @@ git_write_temp_from_git_show (git_data_t *data, const char *object_spec, char **
         return FALSE;
     }
 
-    ok = git_write_temp_contents (out, (gssize) strlen (out), tmp_path);
+    ok = git_write_temp_contents (out, (gssize) strlen (out), orig_name, tmp_path);
     g_free (out);
     g_free (err);
     return ok;
@@ -1603,15 +1620,15 @@ git_show_diff_selected (git_data_t *data)
 
         if (is_added)
         {
-            if (!git_write_temp_contents ("", 0, &left_path))
+            if (!git_write_temp_contents ("", 0, info->repo_path, &left_path))
                 goto fail;
             left_is_temp = TRUE;
         }
         else
         {
             object_old = g_strdup_printf ("%s^:%s", info->commit_sha, old_path);
-            ok = git_write_temp_from_git_show (data, object_old, &left_path);
-            if (!ok && !git_write_temp_contents ("", 0, &left_path))
+            ok = git_write_temp_from_git_show (data, object_old, old_path, &left_path);
+            if (!ok && !git_write_temp_contents ("", 0, old_path, &left_path))
             {
                 g_free (object_old);
                 goto fail;
@@ -1622,14 +1639,14 @@ git_show_diff_selected (git_data_t *data)
 
         if (info->is_deleted)
         {
-            if (!git_write_temp_contents ("", 0, &right_path))
+            if (!git_write_temp_contents ("", 0, info->repo_path, &right_path))
                 goto fail;
             right_is_temp = TRUE;
         }
         else
         {
             object_new = g_strdup_printf ("%s:%s", info->commit_sha, info->repo_path);
-            ok = git_write_temp_from_git_show (data, object_new, &right_path);
+            ok = git_write_temp_from_git_show (data, object_new, info->repo_path, &right_path);
             g_free (object_new);
             if (!ok)
                 goto fail;
@@ -1641,13 +1658,13 @@ git_show_diff_selected (git_data_t *data)
         char *head_spec;
 
         head_spec = g_strdup_printf ("HEAD:%s", info->repo_path);
-        ok = git_write_temp_from_git_show (data, head_spec, &left_path);
+        ok = git_write_temp_from_git_show (data, head_spec, info->repo_path, &left_path);
         g_free (head_spec);
         if (!ok)
             goto fail;
         left_is_temp = TRUE;
 
-        if (!git_write_temp_contents ("", 0, &right_path))
+        if (!git_write_temp_contents ("", 0, info->repo_path, &right_path))
             goto fail;
         right_is_temp = TRUE;
     }
@@ -1660,11 +1677,11 @@ git_show_diff_selected (git_data_t *data)
         right_path = g_strdup (info->full_path);
 
         head_spec = g_strdup_printf ("HEAD:%s", info->repo_path);
-        ok = git_write_temp_from_git_show (data, head_spec, &left_path);
+        ok = git_write_temp_from_git_show (data, head_spec, info->repo_path, &left_path);
         g_free (head_spec);
         if (!ok)
         {
-            if (!git_write_temp_contents ("", 0, &left_path))
+            if (!git_write_temp_contents ("", 0, info->repo_path, &left_path))
                 goto fail;
         }
         left_is_temp = TRUE;
@@ -1743,6 +1760,7 @@ git_show_commit_description_by_sha (git_data_t *data, const char *sha, const cha
     }
 
     if (!git_write_temp_contents (out != NULL ? out : "", out != NULL ? (gssize) strlen (out) : 0,
+                                  /* a commit message, not a file: no name to keep */ NULL,
                                   &tmp_path))
     {
         git_debug_log ("git: F3 failed to write temp file for sha=%s", sha);
@@ -2290,7 +2308,7 @@ git_get_local_copy (void *plugin_data, const char *fname, char **local_path)
             return MC_PPR_FAILED;
 
         object_spec = g_strdup_printf ("%s:%s", info->commit_sha, info->repo_path);
-        ok = git_write_temp_from_git_show (data, object_spec, local_path);
+        ok = git_write_temp_from_git_show (data, object_spec, info->repo_path, local_path);
         g_free (object_spec);
         if (!ok)
             return MC_PPR_FAILED;
