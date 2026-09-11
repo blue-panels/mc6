@@ -6,7 +6,7 @@ on:
 jobs:
   build-ubuntu-resolute:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     container: ubuntu:26.04
 
     permissions:
@@ -15,6 +15,10 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
+          # The container points at archive.ubuntu.com, which has taken over ten
+          # minutes for these packages; the runner's own mirror is next door.
+          sed -i 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|' /etc/apt/sources.list.d/ubuntu.sources
+          echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-retries
           apt-get update
           apt-get install -y git autoconf automake autopoint build-essential gettext libtool pkg-config
           apt-get install -y e2fslibs-dev libglib2.0-dev libgpm-dev libncurses-dev libslang2-dev libssh2-1-dev libx11-dev libarchive-dev libcurl4-openssl-dev libsmbclient-dev libmongoc-dev libbson-dev unzip
