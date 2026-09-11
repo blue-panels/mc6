@@ -1,6 +1,6 @@
 PACKAGE_STRING = "/src"
 
-SUBDIRS = . filemanager vfs panel-plugins viewer
+SUBDIRS = . syntax filemanager vfs panel-plugins viewer
 
 if USE_INTERNAL_EDIT
 SUBDIRS += editor

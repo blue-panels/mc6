@@ -10,6 +10,8 @@
 #include "lib/search.h"  // mc_search_t
 #include "lib/widget.h"  // Widget
 
+#include "src/syntax/syntax.h"
+
 #include "edit-impl.h"
 #include "editbuffer.h"
 
@@ -37,25 +39,6 @@ struct edit_fold_t
     long line_count;  // number of hidden lines below line_start
     edit_fold_t *next;
     edit_fold_t *prev;
-};
-
-typedef struct edit_syntax_rule_t edit_syntax_rule_t;
-struct edit_syntax_rule_t
-{
-    unsigned short keyword;
-    off_t end;
-    unsigned short context;
-    unsigned short _context;
-    unsigned char border;
-};
-
-typedef struct edit_line_local_syntax_state_t edit_line_local_syntax_state_t;
-struct edit_line_local_syntax_state_t
-{
-    off_t number_end;
-    unsigned char quote;
-    unsigned char quote_escaped;
-    unsigned char number_overflow;
 };
 
 /*
@@ -185,20 +168,8 @@ struct WEdit
     unsigned int skip_detach_prompt : 1;  // Do not prompt whether to detach a file anymore
 
     // syntax highlighting
-    GSList *syntax_marker;
-    GPtrArray *rules;
-    off_t last_get_rule;
-    edit_syntax_rule_t rule;
-    char *syntax_type;             // description of syntax highlighting type being used
-    GTree *defines;                // List of defines
-    gboolean is_case_insensitive;  // selects language case sensitivity
-    unsigned int syntax_line_local : 1;
-    unsigned int syntax_line_local_number_max;
-    int syntax_line_local_number_color;
-    int syntax_line_local_single_quote_color;
-    int syntax_line_local_double_quote_color;
-    char *syntax_line_local_symbols;
-    int syntax_line_local_symbols_color;
+    syntax_scanner_t *syntax;   // NULL when this file has none
+    syntax_palette_t *palette;  // its colors as this skin draws them
 
     // line break
     LineBreaks lb;

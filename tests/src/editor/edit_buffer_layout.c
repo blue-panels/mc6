@@ -1,5 +1,5 @@
 /*
-   src/editor - tests for line-local syntax highlighting
+   src/editor - tests for the buffer and its line layout caches
 
    Copyright (C) 2026
    Free Software Foundation, Inc.
@@ -21,7 +21,6 @@
 #include <time.h>
 
 #include "lib/global.h"
-#include "lib/skin.h"
 #include "src/editor/edit-impl.h"
 #include "src/editor/editwidget.h"
 
@@ -33,13 +32,6 @@ static void
 setup (void)
 {
     test_edit = g_new0 (WEdit, 1);
-    test_edit->syntax_line_local = TRUE;
-    test_edit->syntax_line_local_number_max = 16;
-    test_edit->syntax_line_local_number_color = 1;
-    test_edit->syntax_line_local_single_quote_color = 2;
-    test_edit->syntax_line_local_double_quote_color = 2;
-    test_edit->syntax_line_local_symbols = g_strdup ("{}[]()/;,.");
-    test_edit->syntax_line_local_symbols_color = 3;
     test_edit->buffer.b1 = g_ptr_array_new_with_free_func (g_free);
     test_edit->buffer.b2 = g_ptr_array_new_with_free_func (g_free);
     test_edit->buffer.one_byte_per_column = TRUE;
@@ -55,7 +47,6 @@ teardown (void)
     if (test_edit->line_layout_caches != NULL)
         g_ptr_array_free (test_edit->line_layout_caches, TRUE);
     g_free (test_edit->undo_stack);
-    g_free (test_edit->syntax_line_local_symbols);
     g_free (test_edit);
 }
 
@@ -70,55 +61,10 @@ load_text (const char *text)
 
 /* --------------------------------------------------------------------------------------------- */
 
-START_TEST (test_line_local_syntax)
-{
-    static const char text[] = "12 12345678901234567 \"34\" '56' {}[]()/;,.\n\"broken\n78";
-    edit_line_local_syntax_state_t state;
-    int colors[sizeof (text) - 1];
-    const char *p;
-    off_t i;
-
-    load_text (text);
-    edit_line_local_syntax_reset (&state, 0);
-
-    for (i = 0; i < test_edit->buffer.size; i++)
-        colors[i] = edit_get_line_local_syntax_color (test_edit, &state, i);
-
-    ck_assert_int_eq (colors[0], 1);
-    ck_assert_int_eq (colors[1], 1);
-
-    p = strstr (text, "12345678901234567");
-    for (i = p - text; i < p - text + 17; i++)
-        ck_assert_int_eq (colors[i], EDITOR_NORMAL_COLOR);
-
-    p = strstr (text, "\"34\"");
-    for (i = p - text; i < p - text + 4; i++)
-        ck_assert_int_eq (colors[i], 2);
-
-    edit_line_local_syntax_reset (&state, p - text + 1);
-    ck_assert_int_eq (edit_get_line_local_syntax_color (test_edit, &state, p - text + 1), 1);
-
-    p = strstr (text, "'56'");
-    for (i = p - text; i < p - text + 4; i++)
-        ck_assert_int_eq (colors[i], 2);
-
-    p = strstr (text, "{}[]()/;,.");
-    for (i = p - text; i < p - text + 10; i++)
-        ck_assert_int_eq (colors[i], 3);
-
-    p = strrchr (text, '\n');
-    ck_assert_int_eq (colors[p - text + 1], 1);
-    ck_assert_int_eq (colors[p - text + 2], 1);
-}
-END_TEST
-
-/* --------------------------------------------------------------------------------------------- */
-
 START_TEST (test_fast_ascii_layout)
 {
     load_text ("1234567890");
     test_edit->buffer.curs1 = 7;
-    test_edit->syntax_line_local = FALSE;
 
     ck_assert (edit_has_fast_ascii_layout (test_edit));
     ck_assert_int_eq (edit_buffer_get_bol (&test_edit->buffer, test_edit->buffer.curs1), 0);
@@ -324,7 +270,6 @@ START_TEST (test_perf_long_utf8_line)
     clock_t t0, t1;
     double ms;
 
-    test_edit->syntax_line_local = FALSE;
     test_edit->utf8 = TRUE;
     mc_global.utf8_display = TRUE;
 
@@ -374,7 +319,6 @@ START_TEST (test_incremental_utf8_insert)
     gboolean old_utf8_display = mc_global.utf8_display;
     size_t i;
 
-    test_edit->syntax_line_local = FALSE;
     test_edit->utf8 = TRUE;
     mc_global.utf8_display = TRUE;
 
@@ -434,7 +378,6 @@ main (void)
     tcase_set_timeout (tc_core,
                        30);  // the long-line tests build large buffers; avoid wall-clock flakiness
     tcase_add_checked_fixture (tc_core, setup, teardown);
-    tcase_add_test (tc_core, test_line_local_syntax);
     tcase_add_test (tc_core, test_fast_ascii_layout);
     tcase_add_test (tc_core, test_single_line_utf8_layout);
     tcase_add_test (tc_core, test_single_line_utf8_layout_checkpoints);

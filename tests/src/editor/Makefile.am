@@ -18,12 +18,12 @@ endif
 EXTRA_DIST = edit_complete_word_cmd_test_data.txt.in
 
 TESTS = \
+	edit_buffer_layout \
 	edit_clip_codeset \
 	edit_complete_word_cmd \
 	edit_control_chars \
 	edit_fold \
 	edit_insert_column_of_text \
-	edit_line_local_syntax \
 	edit_plugin_etags \
 	edit_undo_history \
 	edit_undo_modified \
@@ -51,9 +51,6 @@ edit_fold_SOURCES = \
 edit_insert_column_of_text_SOURCES = \
 	edit_insert_column_of_text.c
 
-edit_line_local_syntax_SOURCES = \
-	edit_line_local_syntax.c
-
 edit_plugin_etags_SOURCES = \
 	edit_plugin_etags.c
 
@@ -80,3 +77,6 @@ ctags_index_tests_SOURCES = \
 
 ctags_fuzzy_tests_SOURCES = \
 	ctags_fuzzy_tests.c
+
+edit_buffer_layout_SOURCES = \
+	edit_buffer_layout.c

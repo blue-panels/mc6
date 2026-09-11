@@ -3,19 +3,23 @@
 
    Copyright (C) 1996-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Paul Sheer, 1996, 1997
    Andrew Borodin <aborodin@vmail.ru>, 2012-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -109,7 +113,10 @@ edit_reload_syntax (void *data, void *user_data)
     {
         WEdit *edit = EDIT (data);
 
-        edit_load_syntax (edit, NULL, edit->syntax_type);
+        if (edit_options.syntax_highlighting)
+            edit_load_syntax (edit, NULL, edit_get_syntax_type (edit));
+        else
+            edit_free_syntax_rules (edit);
     }
 }
 
