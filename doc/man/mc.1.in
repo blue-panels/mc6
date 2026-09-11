@@ -3286,6 +3286,15 @@ Continue search in the chosen direction.
 Temporary change the search direction: backwards if forward search is chosen,
 and vice versa.
 .TP
+.B Shift\-F8
+Toggle syntax highlighting: the text is colored by the syntax rules, the same
+ones and the same way the internal editor uses. Above a few megabytes a file
+gets the line\-local rules instead, which color numbers, quoted strings and
+punctuation without having to read everything above the line being shown.
+.TP
+.B Shift\-F9
+Toggle interpretation of ANSI color escape sequences found in the text.
+.TP
 .B F8
 Toggle Raw/Parsed mode: This will show the file as found on disk or if
 a processing filter has been specified in the mc.ext.ini file, then the

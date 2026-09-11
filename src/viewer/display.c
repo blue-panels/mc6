@@ -141,7 +141,7 @@ mcview_set_buttonbar (WView *view)
         buttonbar_set_label (b, 3, Q_ ("ButtonBar|Quit"), keymap, w);
         if (view->mode_flags.terminal)
             buttonbar_set_label (b, 9, Q_ ("ButtonBar|Unform"), keymap, w);
-        else if (view->mode_flags.syntax)
+        else if (view->mode_flags.ansi)
             buttonbar_set_label (b, 9, Q_ ("ButtonBar|Term mode"), keymap, w);
         else
             buttonbar_set_label (b, 9, Q_ ("ButtonBar|Format"), keymap, w);

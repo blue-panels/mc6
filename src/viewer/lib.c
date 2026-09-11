@@ -144,14 +144,39 @@ mcview_toggle_nroff_mode (WView *view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
+mcview_toggle_syntax_mode (WView *view)
+{
+    if (view->mode_flags.hex || view->mode_flags.terminal)
+        return;
+
+    mcview_selection_clear (view);
+    view->mode_flags.highlight = !view->mode_flags.highlight;
+    mcview_altered_flags.highlight = TRUE;
+    if (view->mode_flags.highlight && view->mode_flags.ansi)
+    {
+        // the two color the same bytes; the one just asked for wins
+        view->mode_flags.ansi = FALSE;
+        mcview_altered_flags.ansi = TRUE;
+    }
+    mcview_syntax_load (view);
+    view->dpy_wrap_dirty = TRUE;
+    view->dpy_bbar_dirty = TRUE;
+    view->dirty++;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 mcview_toggle_ansi_mode (WView *view)
 {
     if (view->mode_flags.terminal)
-        return; /* syntax flag is irrelevant while terminal mode is active */
+        return; /* the ansi flag is irrelevant while terminal mode is active */
 
     mcview_selection_clear (view);
-    view->mode_flags.syntax = !view->mode_flags.syntax;
-    mcview_altered_flags.syntax = TRUE;
+    view->mode_flags.ansi = !view->mode_flags.ansi;
+    mcview_altered_flags.ansi = TRUE;
+    // and the syntax steps aside for it, or comes back when it is switched off
+    mcview_syntax_load (view);
     view->dpy_wrap_dirty = TRUE;
     view->dpy_bbar_dirty = TRUE;
     view->dirty++;
@@ -171,11 +196,11 @@ mcview_cycle_display_mode (WView *view)
         view->mode_flags.terminal = FALSE;
         mcview_vterm_free (view->vterm);
         view->vterm = NULL;
-        view->mode_flags.syntax = FALSE;
-        mcview_altered_flags.syntax = TRUE;
+        view->mode_flags.ansi = FALSE;
+        mcview_altered_flags.ansi = TRUE;
         view->dpy_wrap_dirty = TRUE;
     }
-    else if (view->mode_flags.syntax)
+    else if (view->mode_flags.ansi)
     {
         if (view->filter_active)
             mcview_filter_deactivate (view);
@@ -185,8 +210,8 @@ mcview_cycle_display_mode (WView *view)
     }
     else
     {
-        view->mode_flags.syntax = TRUE;
-        mcview_altered_flags.syntax = TRUE;
+        view->mode_flags.ansi = TRUE;
+        mcview_altered_flags.ansi = TRUE;
         view->dpy_wrap_dirty = TRUE;
     }
 
@@ -323,6 +348,8 @@ mcview_set_tmp_preview (WView *view, const char *path)
 void
 mcview_done (WView *view)
 {
+    mcview_syntax_unload (view);
+
     // Save current file position
     if (mcview_remember_file_position && view->filename_vpath != NULL)
     {
@@ -333,7 +360,15 @@ mcview_done (WView *view)
     }
 
     // Write back the global viewer mode; structured mode is per-file, never sticky
-    mcview_global_flags = view->mode_flags;
+    {
+        /* A view built before the settings were read has this off; letting it
+           write that back would lose the user's choice. */
+        const gboolean hl = mcview_global_flags.highlight;
+
+        mcview_global_flags = view->mode_flags;
+        if (!mcview_altered_flags.highlight)
+            mcview_global_flags.highlight = hl;
+    }
     mcview_global_flags.structured = FALSE;
 
     mcview_structured_reset (view);

@@ -399,6 +399,8 @@ SelectCodepage = alt-e
 
 [viewer]
 Help = f1
+SyntaxOnOff = shift-f8
+AnsiMode = shift-f9
 WrapMode = f2
 Quit = f3; f10; q; esc
 HexMode = f4

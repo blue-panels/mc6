@@ -377,7 +377,7 @@ mcview_lcache_validate (WView *view)
 
     if (c->by_bol != NULL
         && (c->utf8 != view->utf8 || c->nroff != view->mode_flags.nroff
-            || c->syntax != view->mode_flags.syntax || c->tab_spacing != option_tab_spacing
+            || c->syntax != view->mode_flags.ansi || c->tab_spacing != option_tab_spacing
             || c->converter != view->converter))
         mcview_lcache_flush (view);
 
@@ -389,7 +389,7 @@ mcview_lcache_validate (WView *view)
         c->tick = 0;
         c->utf8 = view->utf8;
         c->nroff = view->mode_flags.nroff;
-        c->syntax = view->mode_flags.syntax;
+        c->syntax = view->mode_flags.ansi;
         c->tab_spacing = option_tab_spacing;
         c->converter = view->converter;
     }
@@ -769,7 +769,20 @@ mcview_ansi_get_color (const mcview_ansi_state_t *ansi)
 static gboolean
 mcview_get_next_maybe_ansi_char (WView *view, mcview_state_machine_t *state, int *c, int *color)
 {
-    if (!view->mode_flags.syntax)
+    if (view->syntax != NULL)
+    {
+        /* Syntax mode: the color of a character is decided by what the text means,
+           and is asked for at the offset the character starts at. */
+        const off_t at = state->offset;
+
+        if (!mcview_get_next_char (view, state, c))
+            return FALSE;
+        if (color != NULL)
+            *color = mcview_syntax_color (view, at);
+        return TRUE;
+    }
+
+    if (!view->mode_flags.ansi)
     {
         /* Raw (none) mode: return bytes as-is, no ANSI parsing, no color. */
         if (color != NULL)
@@ -1017,7 +1030,7 @@ mcview_fill_line_remaining (WView *view, int row, int col, int fill_color, off_t
     int scr_col;
     int x;
 
-    if (!view->mode_flags.syntax || row < 0 || row >= r->lines)
+    if (!view->mode_flags.ansi || row < 0 || row >= r->lines)
         return;
 
     scr_col = ((off_t) col > dpy_text_column) ? (int) ((off_t) col - dpy_text_column) : 0;
