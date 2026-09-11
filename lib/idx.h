@@ -36,7 +36,7 @@
      * Security: Signed types can be checked for overflow via
        '-fsanitize=undefined', but unsigned types cannot.
 
-     * Comparisons without surprises: ISO C99 § 6.3.1.8 specifies a few
+     * Comparisons without surprises: ISO C99 section 6.3.1.8 specifies a few
        surprising results for comparisons, such as
 
            (int) -3 < (unsigned long) 7  =>  false
@@ -45,7 +45,7 @@
            (long) -3 < (unsigned int) 7  =>  false
 
        This is surprising because the natural comparison order is by
-       value in the realm of infinite-precision signed integers (ℤ).
+       value in the realm of infinite-precision signed integers (Z).
 
        The best way to get rid of such surprises is to use signed types
        for numerical integer values, and use unsigned types only for

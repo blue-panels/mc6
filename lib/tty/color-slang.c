@@ -133,7 +133,7 @@ tty_color_try_alloc_lib_pair (tty_color_lib_pair_t *mc_color_pair)
 {
     /*
      * According to the S-Lang Library C Programmer's Guide (v2.3.0)
-     * (https://www.jedsoft.org/slang/doc/pdf/cslang.pdf), §7.4.4:
+     * (https://www.jedsoft.org/slang/doc/pdf/cslang.pdf), section 7.4.4:
      *
      * "[for SLtt_set_color] When the SLtt_Use_Ansi_Colors variable is zero, all objects with
      * numbers greater than one will be displayed in inverse video." Footnote: "This behavior can be

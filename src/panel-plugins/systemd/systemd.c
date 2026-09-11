@@ -246,10 +246,10 @@ systemd_load_units (const char *type_arg)
         if (line[0] == '\0')
             continue;
 
-        /* skip leading bullet character (● or *) */
+        /* skip leading bullet character (U+25CF or *) */
         if ((guchar) line[0] > 127 || line[0] == '*')
         {
-            /* ● is a multi-byte UTF-8 sequence; skip it */
+            /* the bullet is a multi-byte UTF-8 sequence; skip it */
             if ((guchar) line[0] >= 0xC0)
             {
                 /* skip full UTF-8 character */

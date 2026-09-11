@@ -42,6 +42,10 @@ jobs:
         working-directory: maint
         run: ./doctest.py
 
+      - name: Lint sources
+        working-directory: maint
+        run: ./asciitest.py
+
       - name: Bootstrap build system
         run: ./autogen.sh
 
