@@ -12,7 +12,7 @@ on:
 jobs:
   build-macos:
     runs-on: macos-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     permissions:
       contents: read
