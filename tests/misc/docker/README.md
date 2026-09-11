@@ -34,6 +34,7 @@ leaves nothing in the working tree and reuses its object files between runs.
     cases/
       archives/fixtures.sh  the files and the cases.tsv of one subject
       editor/, terminal/    the same for mcedit and the embedded terminal
+      cmdline/              the same for copy and paste on the command line
       struct/               the same for the mcstruct plugin
       panel/                the same for the panel: the quick filter, quick cd
       lua/                  the same for the viewers written in Lua
@@ -110,6 +111,12 @@ server.
 | directory    | what it is for                                                  |
 |--------------|------------------------------------------------------------------|
 | `01-formats` | the smallest u-boot image and MBR libmagic still names, so that magic.ini sends them to mcstruct |
+
+### cmdline
+
+| directory | what it is for                                                        |
+|-----------|-----------------------------------------------------------------------|
+| `01-clip` | Ctrl-Insert and Shift-Insert on the command line: marked files, the line, the file under the cursor; a paste as one line, with the panels hidden, and the question over 2 KB |
 
 ### panel
 

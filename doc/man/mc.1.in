@@ -702,6 +702,20 @@ yanks back the contents of the kill buffer.
 .B C\-k
 kills the text from the cursor to the end of the line.
 .TP
+.B Ctrl\-Insert
+copies the selected text to the clipfile and to the external clipboard.
+With nothing selected: the marked files of the panel on screen, one per
+line; else the whole line; else the file under the panel cursor.
+.TP
+.B Shift\-Delete
+cuts the selected text to the clipfile and to the external clipboard.
+.TP
+.B Shift\-Insert
+pastes the clipfile into the line as one line: line breaks and other
+control characters become spaces. On the command line it works with the
+panels shown or hidden. More than 2 KB of text is pasted only after a
+confirmation.
+.TP
 .B Alt\-p, Alt\-n
 Use these keys to browse through the command history. Alt\-p takes you
 to the last entry, Alt\-n takes you to the next one.

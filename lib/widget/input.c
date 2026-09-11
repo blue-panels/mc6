@@ -1,8 +1,10 @@
 /*
-   Widgets for the Midnight Commander
+   Widgets for the M-Commander
 
    Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Authors:
    Radek Doulik, 1994, 1995
@@ -11,15 +13,17 @@
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
    Andrew Borodin <aborodin@vmail.ru>, 2009-2022
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -62,6 +66,9 @@ input_colors_t input_colors;
 /*** file scope macro definitions ****************************************************************/
 
 #define LARGE_HISTORY_BUTTON 1
+
+// A paste this long into a one-line input is asked about first.
+#define INPUT_CLIP_ASK_SIZE (2 * 1024)
 
 #ifdef LARGE_HISTORY_BUTTON
 #define HISTORY_BUTTON_WIDTH 3
@@ -395,13 +402,7 @@ copy_region (WInput *in, int start, int end)
     int last = MAX (start, end);
 
     if (last == first)
-    {
-        // Copy selected files to clipboard
-        mc_event_raise (MCEVENT_GROUP_FILEMANAGER, "panel_save_current_file_to_clip_file", NULL);
-        // try use external clipboard utility
-        mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_file_to_ext_clip", NULL);
         return;
-    }
 
     g_free (kill_buffer);
 
@@ -432,10 +433,31 @@ delete_region (WInput *in, int start, int end)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Take one byte of a character into charbuf: TRUE when it holds a whole one. A byte that
+   makes no character in the current codeset is dropped. */
+static gboolean
+input_collect_byte (WInput *in, char c)
+{
+    int res;
+
+    if (in->charpoint >= MB_LEN_MAX)
+        in->charpoint = 0;
+
+    in->charbuf[in->charpoint++] = c;
+
+    res = str_is_valid_char (in->charbuf, in->charpoint);
+    if (res >= 0)
+        return TRUE;
+    if (res != -2)
+        in->charpoint = 0;  // broken multibyte char, skip
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static cb_ret_t
 insert_char (WInput *in, int c_code)
 {
-    int res;
     long m1, m2;
     size_t ins_point;
 
@@ -445,19 +467,8 @@ insert_char (WInput *in, int c_code)
     if (c_code == -1)
         return MSG_NOT_HANDLED;
 
-    if (in->charpoint >= MB_LEN_MAX)
+    if (!input_collect_byte (in, (char) c_code))
         return MSG_HANDLED;
-
-    in->charbuf[in->charpoint] = c_code;
-    in->charpoint++;
-
-    res = str_is_valid_char (in->charbuf, in->charpoint);
-    if (res < 0)
-    {
-        if (res != -2)
-            in->charpoint = 0;  // broken multibyte char, skip
-        return MSG_HANDLED;
-    }
 
     in->need_push = TRUE;
     ins_point = str_offset_to_pos (in->buffer->str, in->point);
@@ -560,24 +571,49 @@ clear_line (WInput *in)
 
 /* --------------------------------------------------------------------------------------------- */
 
+// Insert a text at the point in one go.
+static void
+insert_text (WInput *in, const char *text)
+{
+    GString *clean;
+    long m1, m2;
+
+    if (input_eval_marks (in, &m1, &m2))
+        delete_region (in, m1, m2);
+
+    clean = g_string_sized_new (strlen (text));
+    in->charpoint = 0;
+    for (; *text != '\0'; text++)
+        if (input_collect_byte (in, *text))
+        {
+            g_string_append_len (clean, in->charbuf, in->charpoint);
+            in->charpoint = 0;
+        }
+    in->charpoint = 0;
+
+    if (clean->len != 0)
+    {
+        size_t ins_point;
+
+        in->need_push = TRUE;
+        ins_point = str_offset_to_pos (in->buffer->str, in->point);
+        g_string_insert_len (in->buffer, ins_point, clean->str, clean->len);
+        in->point += str_length (clean->str);
+    }
+    g_string_free (clean, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 ins_from_clip (WInput *in)
 {
-    char *p = NULL;
-    ev_clipboard_text_from_file_t event_data = { NULL, FALSE };
+    char *p;
 
-    // try use external clipboard utility
-    mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_file_from_ext_clip", NULL);
-
-    event_data.text = &p;
-    mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_from_file", &event_data);
-    if (event_data.ret)
+    p = input_clip_text ();
+    if (p != NULL)
     {
-        char *pp;
-
-        for (pp = p; *pp != '\0'; pp++)
-            insert_char (in, *pp);
-
+        insert_text (in, p);
         g_free (p);
     }
 }
@@ -752,12 +788,10 @@ input_execute_cmd (WInput *in, long command)
     {
         long m1, m2;
 
-        if (input_eval_marks (in, &m1, &m2))
+        if (input_eval_marks (in, &m1, &m2) && m1 != m2)
             copy_region (in, m1, m2);
         else
-            /* no selection: copy_region() on an empty region falls back to
-             * the current panel file name */
-            copy_region (in, in->point, in->point);
+            input_store_line_or_files (in->is_password ? NULL : in->buffer->str);
     }
     break;
     case CK_Cut:
@@ -950,6 +984,85 @@ input_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/* Store with nothing marked on the line: the marked files of the panel on screen, else the
+   line, else the file under the panel cursor. A NULL or empty line is no line. */
+void
+input_store_line_or_files (const char *line)
+{
+    ev_panel_save_clip_t ev = { .marked_only = TRUE, .ret = FALSE };
+
+    mc_event_raise (MCEVENT_GROUP_FILEMANAGER, "panel_save_current_file_to_clip_file", &ev);
+
+    if (!ev.ret && line != NULL && *line != '\0')
+    {
+        g_free (kill_buffer);
+        kill_buffer = g_strdup (line);
+        mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_to_file", kill_buffer);
+        ev.ret = TRUE;
+    }
+
+    if (!ev.ret)
+    {
+        ev.marked_only = FALSE;
+        mc_event_raise (MCEVENT_GROUP_FILEMANAGER, "panel_save_current_file_to_clip_file", &ev);
+    }
+
+    if (ev.ret)
+        mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_file_to_ext_clip", NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The clipboard as one line for an input line: line breaks and other control characters become
+   spaces. Over INPUT_CLIP_ASK_SIZE the user is asked first. NULL when there is nothing or the
+   user declined. Caller frees. */
+char *
+input_clip_text (void)
+{
+    char *p = NULL;
+    const char *r;
+    const char *end;
+    char *w;
+    ev_clipboard_text_from_file_t event_data = { &p, FALSE, 0 };
+
+    // try use external clipboard utility
+    mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_file_from_ext_clip", NULL);
+    mc_event_raise (MCEVENT_GROUP_CORE, "clipboard_text_from_file", &event_data);
+    if (!event_data.ret || p == NULL)
+        return NULL;
+
+    // Strip the trailing line breaks before the rest become spaces.
+    for (end = p + event_data.len; end > p && (end[-1] == '\n' || end[-1] == '\r'); end--)
+        ;
+    for (r = p, w = p; r < end; r++)
+        if (*r == '\r' && r + 1 < end && r[1] == '\n')
+            ;  // a DOS line break is one break
+        else if ((unsigned char) *r < ' ' || *r == '\x7f')
+            *w++ = ' ';
+        else
+            *w++ = *r;
+    *w = '\0';
+
+    if (w == p)
+    {
+        g_free (p);
+        return NULL;
+    }
+
+    if (w - p > INPUT_CLIP_ASK_SIZE
+        && query_dialog (_ ("Paste"), _ ("The clipboard holds more than 2 KB of text.\nPaste it?"),
+                         D_NORMAL, 2, _ ("&Yes"), _ ("&No"))
+            != 0)
+    {
+        g_free (p);
+        return NULL;
+    }
+
+    return p;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 /** Create new instance of WInput object.

@@ -91,6 +91,8 @@ void input_set_default_colors (void);
 cb_ret_t input_handle_char (WInput *in, int key);
 void input_assign_text (WInput *in, const char *text);
 void input_insert (WInput *in, const char *text, gboolean insert_extra_space);
+char *input_clip_text (void);
+void input_store_line_or_files (const char *line);
 void input_set_point (WInput *in, int pos);
 void input_update (WInput *in, gboolean clear_first);
 /* Draw the history button alone, for a row that is drawn by someone else. */

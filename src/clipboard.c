@@ -257,10 +257,9 @@ gboolean
 clipboard_text_from_file (const gchar *event_group_name, const gchar *event_name,
                           gpointer init_data, gpointer data)
 {
-    char buf[BUF_LARGE];
-    FILE *f;
-    char *fname = NULL;
-    gboolean first = TRUE;
+    char *fname;
+    char *text = NULL;
+    gsize len = 0;
     ev_clipboard_text_from_file_t *event_data = (ev_clipboard_text_from_file_t *) data;
 
     (void) event_group_name;
@@ -268,46 +267,16 @@ clipboard_text_from_file (const gchar *event_group_name, const gchar *event_name
     (void) init_data;
 
     fname = mc_config_get_full_path (EDIT_HOME_CLIP_FILE);
-    f = fopen (fname, "r");
+    if (!g_file_get_contents (fname, &text, &len, NULL) || len == 0)
+    {
+        g_free (text);
+        text = NULL;
+    }
     g_free (fname);
 
-    if (f == NULL)
-    {
-        event_data->ret = FALSE;
-        return TRUE;
-    }
-
-    *(event_data->text) = NULL;
-
-    while (fgets (buf, sizeof (buf), f))
-    {
-        size_t len;
-
-        len = strlen (buf);
-        if (len > 0)
-        {
-            if (buf[len - 1] == '\n')
-                buf[len - 1] = '\0';
-
-            if (first)
-            {
-                first = FALSE;
-                *(event_data->text) = g_strdup (buf);
-            }
-            else
-            {
-                // remove \n on EOL
-                char *tmp;
-
-                tmp = g_strconcat (*(event_data->text), " ", buf, (char *) NULL);
-                g_free (*(event_data->text));
-                *(event_data->text) = tmp;
-            }
-        }
-    }
-
-    fclose (f);
-    event_data->ret = (*(event_data->text) != NULL);
+    *(event_data->text) = text;
+    event_data->ret = (text != NULL);
+    event_data->len = (text != NULL) ? (size_t) len : 0;
     return TRUE;
 }
 
