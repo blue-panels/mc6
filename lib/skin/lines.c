@@ -50,27 +50,27 @@ unicode_to_mc_acs (gunichar c)
 {
     switch (c)
     {
-    case 0x2500:  // ─
+    case 0x2500:  // light horizontal
         return MC_ACS_HLINE;
-    case 0x2502:  // │
+    case 0x2502:  // light vertical
         return MC_ACS_VLINE;
-    case 0x250C:  // ┌
+    case 0x250C:  // light down and right
         return MC_ACS_ULCORNER;
-    case 0x2510:  // ┐
+    case 0x2510:  // light down and left
         return MC_ACS_URCORNER;
-    case 0x2514:  // └
+    case 0x2514:  // light up and right
         return MC_ACS_LLCORNER;
-    case 0x2518:  // ┘
+    case 0x2518:  // light up and left
         return MC_ACS_LRCORNER;
-    case 0x251C:  // ├
+    case 0x251C:  // light vertical and right
         return MC_ACS_LTEE;
-    case 0x2524:  // ┤
+    case 0x2524:  // light vertical and left
         return MC_ACS_RTEE;
-    case 0x252C:  // ┬
+    case 0x252C:  // light down and horizontal
         return MC_ACS_TTEE;
-    case 0x2534:  // ┴
+    case 0x2534:  // light up and horizontal
         return MC_ACS_BTEE;
-    case 0x253C:  // ┼
+    case 0x253C:  // light vertical and horizontal
         return MC_ACS_PLUS;
 
     default:

@@ -39,17 +39,17 @@ enum
 {
     // Even though these are only used in 8-bit mode, let's start the numbers above the highest
     // Unicode value to avoid any chance of confusion.
-    MC_ACS_HLINE = 0x110000,  // ─
-    MC_ACS_VLINE,             // │
-    MC_ACS_ULCORNER,          // ┌
-    MC_ACS_URCORNER,          // ┐
-    MC_ACS_LLCORNER,          // └
-    MC_ACS_LRCORNER,          // ┘
-    MC_ACS_TTEE,              // ┬
-    MC_ACS_BTEE,              // ┴
-    MC_ACS_LTEE,              // ├
-    MC_ACS_RTEE,              // ┤
-    MC_ACS_PLUS,              // ┼
+    MC_ACS_HLINE = 0x110000,  // U+2500 light horizontal
+    MC_ACS_VLINE,             // U+2502 light vertical
+    MC_ACS_ULCORNER,          // U+250C light down and right
+    MC_ACS_URCORNER,          // U+2510 light down and left
+    MC_ACS_LLCORNER,          // U+2514 light up and right
+    MC_ACS_LRCORNER,          // U+2518 light up and left
+    MC_ACS_TTEE,              // U+252C light down and horizontal
+    MC_ACS_BTEE,              // U+2534 light up and horizontal
+    MC_ACS_LTEE,              // U+251C light vertical and right
+    MC_ACS_RTEE,              // U+2524 light vertical and left
+    MC_ACS_PLUS,              // U+253C light vertical and horizontal
 };
 
 // These refer to the roles, the given positions of more prominent and less prominent boxes.
