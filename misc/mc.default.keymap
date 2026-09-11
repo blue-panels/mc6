@@ -502,6 +502,7 @@ Shell = ctrl-o
 
 [diffviewer]
 ShowSymbols = alt-s; s
+SyntaxOnOff = ctrl-s
 ShowNumbers = alt-n; l
 SplitFull = f
 SplitEqual = equal

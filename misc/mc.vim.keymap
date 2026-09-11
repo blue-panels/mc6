@@ -366,6 +366,7 @@ Shell = ctrl-o
 
 [diffviewer]
 ShowSymbols = alt-s
+SyntaxOnOff = ctrl-s
 ShowNumbers = alt-n
 SplitFull = f
 SplitEqual = equal
