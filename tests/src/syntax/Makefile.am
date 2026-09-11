@@ -13,9 +13,14 @@ if ENABLE_MCLIB
 LIBS += $(GLIB_LIBS)
 endif
 
-TESTS = line_local
+TESTS = \
+	line_local \
+	context_rules
 
 check_PROGRAMS = $(TESTS)
 
 line_local_SOURCES = \
 	line_local.c
+
+context_rules_SOURCES = \
+	context_rules.c

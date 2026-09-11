@@ -229,6 +229,41 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_number_overflow_ends)
+{
+    /* a run of digits too long to be a number is over at the first byte that is
+       not a digit, and what comes after it is read as usual */
+    static const char s[] = "12345678901234567 42\n";
+    guint *c;
+
+    c = colorize (s);
+    ck_assert_int_eq (c[16], 0u);
+    ck_assert_int_eq (c[17], 0u);
+    ck_assert_msg (c[18] != 0, "the number after the overflowing one is a number");
+
+    g_free (c);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_escaped_quote_in_string)
+{
+    /* a backslash takes the quote that follows it into the string */
+    static const char s[] = "\"a\\\"b\" 1\n";
+    guint *c;
+
+    c = colorize (s);
+    ck_assert_msg (c[0] != 0, "the string starts");
+    ck_assert_msg (c[4] != 0, "the escaped quote did not end it");
+    ck_assert_int_eq (c[6], 0u);
+
+    g_free (c);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -241,6 +276,8 @@ main (void)
     tcase_add_test (tc_core, test_numbers_quotes_symbols);
     tcase_add_test (tc_core, test_state_does_not_cross_lines);
     tcase_add_test (tc_core, test_number_length_limit);
+    tcase_add_test (tc_core, test_number_overflow_ends);
+    tcase_add_test (tc_core, test_escaped_quote_in_string);
 
     return mctest_run_all (tc_core);
 }

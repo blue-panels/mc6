@@ -474,8 +474,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
         switch (*p)
         {
         case SYNTAX_TOKEN_STAR:
-            if (++p > q)
-                return -1;
+            p++;
             while (TRUE)
             {
                 c = sc->get_byte (sc->data, i);
@@ -490,8 +489,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             }
             break;
         case SYNTAX_TOKEN_PLUS:
-            if (++p > q)
-                return -1;
+            p++;
             j = 0;
             while (TRUE)
             {
@@ -524,8 +522,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             }
             break;
         case SYNTAX_TOKEN_BRACKET:
-            if (++p > q)
-                return -1;
+            p++;
             c = -1;
             while (TRUE)
             {
@@ -548,8 +545,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
                 i--;
             break;
         case SYNTAX_TOKEN_BRACE:
-            if (++p > q)
-                return -1;
+            p++;
             c = sc->get_byte (sc->data, i);
             c = xx_tolower (sc->rules->case_insensitive, c);
             for (; *p != SYNTAX_TOKEN_BRACE && *p != '\0'; p++)
