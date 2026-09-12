@@ -28,13 +28,14 @@
 # Valek Filippov <frob@df.ru>, 2000
 # Yury V. Zaytsev <yury@shurup.com>, 2025
 # adem4ik <adem4ik@noreply.codeberg.org>, 2026.
+# smind <smind@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 19:48+0000\n"
-"Last-Translator: adem4ik <adem4ik@noreply.codeberg.org>\n"
+"PO-Revision-Date: 2026-09-12 21:44+0000\n"
+"Last-Translator: smind <smind@noreply.codeberg.org>\n"
 "Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/>"
 "\n"
 "Language: ru\n"
@@ -361,7 +362,7 @@ msgid "External panelize"
 msgstr "Внешняя панелизация"
 
 msgid "Filter view"
-msgstr "Фильтр просмотра"
+msgstr "Фильтр панели"
 
 msgid "Quick filter"
 msgstr "Быстрый фильтр"
@@ -808,7 +809,7 @@ msgid "Toggle hex mode"
 msgstr "Переключить шестнадцатеричный режим"
 
 msgid "Toggle magic mode"
-msgstr "Переключить режим пометки"
+msgstr "Переключить режим разбора"
 
 msgid "Toggle nroff mode"
 msgstr "Переключить режим nroff"
@@ -4783,10 +4784,10 @@ msgid "ButtonBar|Filter"
 msgstr "Фильтр"
 
 msgid "ButtonBar|UnFilt"
-msgstr "Снять фильтр"
+msgstr "СнФильт"
 
 msgid "ButtonBar|ClrAll"
-msgstr "Очистить всё"
+msgstr "ОчистВсё"
 
 msgid "ButtonBar|Clear"
 msgstr "Очистить"
@@ -5897,7 +5898,7 @@ msgid "tar stream from docker cp was truncated"
 msgstr "поток tar от docker cp был усечён"
 
 msgid "Follow"
-msgstr "Разыменовывать ссылки"
+msgstr "Следить"
 
 msgid "Show (head [n], tail [n], 30s, 5m, 1h, 24h; empty = unset):"
 msgstr "Показ (head [n], tail [n], 30s, 5m, 1h, 24h; пусто = не задано):"
@@ -7818,7 +7819,7 @@ msgid "Outside the windows"
 msgstr "Вне окон"
 
 msgid "Area not covered by any editor window in multi-window mode"
-msgstr "Область, не занятая ни одним окном редактора в многоконном режиме"
+msgstr "Область, не занятая ни одним окном редактора в многооконном режиме"
 
 msgid "Frame, inactive window"
 msgstr "Рамка, неактивное окно"
@@ -8811,7 +8812,7 @@ msgid "ButtonBar|Unform"
 msgstr "Не форм"
 
 msgid "ButtonBar|Term mode"
-msgstr "Режим терм"
+msgstr "Реж.терм"
 
 msgid "ButtonBar|Format"
 msgstr "Формат"
