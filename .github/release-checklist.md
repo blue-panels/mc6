@@ -1,3 +1,12 @@
+- [ ] Actions -> **l10n-pot** -> **Run workflow**, a week before the tag so that
+      translators have time. It rebuilds `po/mc.pot` and opens a pull request
+      if the strings changed. Merge it: Weblate reads the template from master
+      and puts the new strings into the po files by itself.
+
+- [ ] Actions -> **l10n-pull** -> **Run workflow**: it brings the translations
+      from Weblate into a pull request. Merge that pull request, do not squash
+      it, the commits carry the names of the translators.
+
 - [ ] Rename the open milestone to `vX.Y.Z`.
 
 - [ ] Actions -> **Create release notes** -> **Run workflow**: milestone `vX.Y.Z`, all three
