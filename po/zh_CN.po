@@ -18,8 +18,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
-"Report-Msgid-Bugs-To: https://github.com/MidnightCommander/mc/issues\n"
-"POT-Creation-Date: 2026-02-01 14:37+0100\n"
+"Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
+"POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Yury V. Zaytsev <yury@shurup.com>, 2025\n"
 "Language-Team: Chinese (China) (http://app.transifex.com/mc/mc/language/"
@@ -68,6 +68,1122 @@ msgstr "无法创建事件“%s”!"
 msgid "Copyright (C) 1996-%zu the Free Software Foundation"
 msgstr ""
 
+#, fuzzy
+#| msgid "Switch &panels on/off"
+msgid "Switch active panel"
+msgstr "切换面板开/关(&P)"
+
+#, fuzzy
+#| msgid "Page Up"
+msgid "Page left"
+msgstr "Page Up 键"
+
+msgid "Page right"
+msgstr ""
+
+msgid "Half page up"
+msgstr ""
+
+#, fuzzy
+#| msgid "Page Down"
+msgid "Half page down"
+msgstr "Page Down 键"
+
+msgid "Go to top"
+msgstr ""
+
+msgid "Go to bottom"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Top of screen"
+msgstr "切换全屏显示(&T)"
+
+msgid "Middle of screen"
+msgstr ""
+
+msgid "Bottom of screen"
+msgstr ""
+
+msgid "Word left"
+msgstr ""
+
+msgid "Word right"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Copy file(s)"
+msgstr "比较文件(&O)"
+
+msgid "Move/rename file(s)"
+msgstr ""
+
+msgid "Delete"
+msgstr "删除键"
+
+#, fuzzy
+#| msgid "Cache directory:"
+msgid "Create directory"
+msgstr "缓存目录: "
+
+msgid "Change file mode (chmod)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Changes to file lost"
+msgid "Change file owner"
+msgstr "对文件的修改被丢失"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "Advanced chown"
+msgstr "高级 chown (&A)"
+
+#, fuzzy
+#| msgid "Preserve &attributes"
+msgid "Change file attributes"
+msgstr "保留属性(&A)"
+
+msgid "Clear screen and scrollback"
+msgstr ""
+
+msgid "Main menu"
+msgstr ""
+
+msgid "Last selected menu item"
+msgstr ""
+
+#, fuzzy
+#| msgid "&User defined:"
+msgid "User-defined menu"
+msgstr "用户自定义(&U): "
+
+#, fuzzy
+#| msgid "User menu"
+msgid "Edit user menu"
+msgstr "用户菜单"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search next"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Replace"
+msgid "Replace next"
+msgstr "替换"
+
+msgid "Show help"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Terminal"
+msgstr "终端选项"
+
+msgid "Edit file"
+msgstr "编辑文件"
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit new file"
+msgstr "编辑文件"
+
+#, fuzzy
+#| msgid "&All charsets"
+msgid "Select charset"
+msgstr "所有字符集(&A)"
+
+msgid "Editor/viewer history"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Command history"
+msgstr "命令历史(&H)"
+
+msgid "Next in history"
+msgstr ""
+
+msgid "Previous in history"
+msgstr ""
+
+msgid "Auto-complete"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save &as..."
+msgid "Save as..."
+msgstr "另存为(&A)..."
+
+#, fuzzy
+#| msgid "Goto line"
+msgid "Go to line"
+msgstr "转到行"
+
+#, fuzzy
+#| msgid "directory"
+msgid "Re-read directory"
+msgstr "目录"
+
+#, fuzzy
+#| msgid "&Refresh screen"
+msgid "Refresh screen"
+msgstr "刷新屏幕(&R)"
+
+#, fuzzy
+#| msgid "Setup saved to %s"
+msgid "Suspend to shell"
+msgstr "设置保存到 %s"
+
+#, fuzzy
+#| msgid "S&wap panels"
+msgid "Swap panels"
+msgstr "交换面板(&W)"
+
+#, fuzzy
+#| msgid "Hotlist Load"
+msgid "Hotlist"
+msgstr "加载活动表"
+
+#, fuzzy
+#| msgid "&Invert selection"
+msgid "Invert selection"
+msgstr "反选(&I)"
+
+msgid "List open screens"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Refresh screen"
+msgid "Next screen"
+msgstr "刷新屏幕(&R)"
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous screen"
+msgstr "前一个(&P)"
+
+#, fuzzy
+#| msgid "Insert file"
+msgid "Next file"
+msgstr "插入文件"
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous file"
+msgstr "前一个(&P)"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Delete to line start"
+msgstr "翻转行状态(&T)"
+
+#, fuzzy
+#| msgid "Delete on keypad"
+msgid "Delete to line end"
+msgstr "小键盘 Del 键"
+
+msgid "Delete to word start"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete on keypad"
+msgid "Delete to word end"
+msgstr "小键盘 Del 键"
+
+#, fuzzy
+#| msgid "&Cut to clipfile"
+msgid "Cut to clipboard"
+msgstr "删除到剪切板文件(&C)"
+
+#, fuzzy
+#| msgid "Co&py to clipfile"
+msgid "Copy to clipboard"
+msgstr "复制到剪切板文件(&P)"
+
+#, fuzzy
+#| msgid "Pa&ste from clipfile"
+msgid "Paste from clipboard"
+msgstr "从剪切板文件粘贴(&S)"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Toggle selection"
+msgstr "在选择区域(&L)"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select left"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select right"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select up"
+msgstr "选择群组(&G)"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select down"
+msgstr "选择"
+
+msgid "Select to word start"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to word end"
+msgstr "选择比较方法: "
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Select to line start"
+msgstr "翻转行状态(&T)"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select to line end"
+msgstr "选择语言"
+
+msgid "Toggle navigate/browse mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "Sort order"
+msgid "Sort order..."
+msgstr "排序"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "General options"
+msgstr "面板选项"
+
+#, fuzzy
+#| msgid "Learn keys"
+msgid "Learn terminal keys"
+msgstr "学习按键"
+
+msgid "Key bindings"
+msgstr ""
+
+msgid "Key sniffer"
+msgstr ""
+
+msgid "Manage plugins"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Set bookmark"
+msgstr "下一个书签(&N)"
+
+msgid "Quit program"
+msgstr ""
+
+msgid "Quit without confirmation"
+msgstr ""
+
+msgid "Extended key prefix"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use internal edi&t"
+msgid "Edit with internal editor"
+msgstr "使用内部编辑器(&T)"
+
+msgid "View file"
+msgstr "查看文件"
+
+#, fuzzy
+#| msgid "View file"
+msgid "View raw file"
+msgstr "查看文件"
+
+#, fuzzy
+#| msgid "View file"
+msgid "View named file"
+msgstr "查看文件"
+
+msgid "View command output"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find file"
+msgid "Find file"
+msgstr "查找文件(&F)"
+
+#, fuzzy
+#| msgid "Show directory s&izes"
+msgid "Show directory size"
+msgstr "显示目录大小(&I)"
+
+msgid "Compare directories"
+msgstr "比较目录"
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Compare files (diff)"
+msgstr "比较文件(&O)"
+
+msgid "VFS settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Confirmation settings"
+msgstr "确认"
+
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit extensions file"
+msgstr "扩展文件编辑(&E)"
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "Edit syntax highlighting"
+msgstr "语法突出显示(&X)"
+
+#, fuzzy
+#| msgid "Edit symlink"
+msgid "Edit symbolic link"
+msgstr "编辑符号链接"
+
+msgid "External panelize"
+msgstr "外部面板"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Filter view"
+msgstr "过滤视图"
+
+#, fuzzy
+msgid "Quick filter"
+msgstr "快速查看(&Q)"
+
+msgid "Info panel"
+msgstr ""
+
+msgid "Background jobs"
+msgstr "后台任务"
+
+msgid "Layout settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Appearance"
+msgid "Appearance settings"
+msgstr "外观"
+
+#, fuzzy
+#| msgid "Great than"
+msgid "Create hard link"
+msgstr "大于"
+
+#, fuzzy
+#| msgid "Listing format"
+msgid "Setup listing format"
+msgstr "列表格式"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Panel modes"
+msgstr "面板选项"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Manage panel modes"
+msgstr "使用面板排序模式(&D)"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Panel listing mode"
+msgstr "使用面板排序模式(&D)"
+
+msgid "Panel options"
+msgstr "面板选项"
+
+msgid "Quick cd"
+msgstr "快速切换目录"
+
+#, fuzzy
+msgid "Quick view panel"
+msgstr "快速查看(&Q)"
+
+#, fuzzy
+#| msgid "Relative symlin&k"
+msgid "Create relative symlink"
+msgstr "相关符号链接(&K)"
+
+#, fuzzy
+#| msgid "&Save setup"
+msgid "Save setup"
+msgstr "保存设置(&S)"
+
+#, fuzzy
+#| msgid "Symbolic link"
+msgid "Create symbolic link"
+msgstr "符号链接"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Panel tree view"
+msgstr "过滤视图"
+
+msgid "Directory tree"
+msgstr "目录树"
+
+msgid "Put current link to cmdline"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Put other link to cmdline"
+msgstr "Shell 链接到主机"
+
+msgid "Add to hotlist"
+msgstr "添加到活动表"
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Toggle hidden files"
+msgstr "显示隐藏文件(&H)"
+
+msgid "Toggle horizontal/vertical split"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Equal split"
+msgid "Equal panel split"
+msgstr "平分(&E)"
+
+msgid "Enlarge current panel"
+msgstr ""
+
+msgid "Shrink current panel"
+msgstr ""
+
+msgid "Put current path to cmdline"
+msgstr ""
+
+msgid "Put other path to cmdline"
+msgstr ""
+
+msgid "Put selected name to cmdline"
+msgstr ""
+
+msgid "Put selected full path to cmdline"
+msgstr ""
+
+msgid "Put tagged names to cmdline"
+msgstr ""
+
+msgid "Put other tagged to cmdline"
+msgstr ""
+
+msgid "Toggle left panel in terminal mode"
+msgstr ""
+
+msgid "Toggle right panel in terminal mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "S&hell patterns"
+msgid "Select files by pattern"
+msgstr "S&hell 通配符"
+
+#, fuzzy
+#| msgid "&Using shell patterns"
+msgid "Unselect files by pattern"
+msgstr "使用 shell 模式(&U)"
+
+msgid "Select by extension"
+msgstr ""
+
+msgid "Scroll panel left"
+msgstr ""
+
+msgid "Scroll panel right"
+msgstr ""
+
+msgid "Scroll to left edge"
+msgstr ""
+
+msgid "Scroll to right edge"
+msgstr ""
+
+msgid "Other panel cd here"
+msgstr ""
+
+msgid "Other panel cd link target"
+msgstr ""
+
+#, fuzzy
+#| msgid "Close file"
+msgid "Copy single file"
+msgstr "关闭文件"
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Move single file"
+msgstr "正在获取文件"
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Delete single file"
+msgstr "正在获取文件"
+
+#, fuzzy
+#| msgid "Compare directories"
+msgid "Go to parent directory"
+msgstr "比较目录"
+
+#, fuzzy
+#| msgid "Enter directory name:"
+msgid "Enter directory"
+msgstr "输入目录名称: "
+
+#, fuzzy
+#| msgid "Panel split"
+msgid "Panel plugin menu"
+msgstr "分隔面板"
+
+msgid "Drive menu (left panel)"
+msgstr ""
+
+msgid "Drive menu (right panel)"
+msgstr ""
+
+msgid "Sync other panel"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Next sort mode"
+msgstr "使用面板排序模式(&D)"
+
+msgid "Previous sort mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "Sort order"
+msgid "Reverse sort order"
+msgstr "排序"
+
+msgid "Sort by name"
+msgstr ""
+
+msgid "Sort by version"
+msgstr ""
+
+#, fuzzy
+#| msgid "Ignore tab &expansion"
+msgid "Sort by extension"
+msgstr "忽略 Tab 展开(&E)"
+
+msgid "Sort by size"
+msgstr ""
+
+msgid "Sort by modification time"
+msgstr ""
+
+#, fuzzy
+#| msgid "Print data directory"
+msgid "Smart parent directory"
+msgstr "打印数据目录"
+
+#, fuzzy
+#| msgid "Listing format"
+msgid "Cycle listing format"
+msgstr "列表格式"
+
+msgid "Yank (paste kill buffer)"
+msgstr ""
+
+msgid "Help index"
+msgstr ""
+
+msgid "Go back"
+msgstr ""
+
+msgid "Next link"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous link"
+msgstr "前一个(&P)"
+
+#, fuzzy
+#| msgid "Free nodes:"
+msgid "Next node"
+msgstr "空闲结点: "
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous node"
+msgstr "前一个(&P)"
+
+#, fuzzy
+#| msgid "Home directory:"
+msgid "Forget directory"
+msgstr "Home路径"
+
+msgid "Toggle attribute and move down"
+msgstr ""
+
+msgid "Scroll up"
+msgstr ""
+
+msgid "Scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Unselect"
+msgid "Deselect all"
+msgstr "取消选择"
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select page up"
+msgstr "选择群组(&G)"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select page down"
+msgstr "选择语言"
+
+#, fuzzy
+#| msgid "Close file"
+msgid "Close editor"
+msgstr "关闭文件"
+
+msgid "Paragraph up"
+msgstr ""
+
+msgid "Paragraph down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Extension file edit"
+msgid "Open file in editor"
+msgstr "扩展文件编辑"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select word"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select line"
+msgstr "选择语言"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select all"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Column selection mode"
+msgstr "在选择区域(&L)"
+
+#, fuzzy
+#| msgid "Save block"
+msgid "Save selected block"
+msgstr "保存块"
+
+msgid "Insert file"
+msgstr "插入文件"
+
+#, fuzzy
+#| msgid "&Toggle ins/overw"
+msgid "Toggle insert/overwrite"
+msgstr "翻转插入/覆盖(&T)"
+
+#, fuzzy
+#| msgid "Insert &date/time"
+msgid "Insert date/time (Lua action)"
+msgstr "插入日期/时间(&D)"
+
+#, fuzzy
+#| msgid "Deleting"
+msgid "Delete line"
+msgstr "正在删除"
+
+#, fuzzy
+#| msgid "file1 file2"
+msgid "Mail file"
+msgstr "文件1 文件2"
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Undo history"
+msgstr "命令历史(&H)"
+
+#, fuzzy
+#| msgid "&Format paragraph"
+msgid "Format paragraph (Lua action)"
+msgstr "格式化段落(&F)"
+
+#, fuzzy
+#| msgid "Left bracket"
+msgid "Match bracket"
+msgstr "左方括号"
+
+msgid "Sort selection (Lua action)"
+msgstr ""
+
+msgid "Insert command output (Lua action)"
+msgstr ""
+
+msgid "Start macro recording"
+msgstr ""
+
+msgid "Stop macro recording"
+msgstr ""
+
+msgid "Toggle macro recording"
+msgstr ""
+
+msgid "Macro explorer"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat last commands"
+msgid "Repeat last macro"
+msgstr "重复上一个命令"
+
+#, fuzzy
+#| msgid "S&pell check"
+msgid "Spell check"
+msgstr "拼写检查(&P)"
+
+#, fuzzy
+#| msgid "S&pell check"
+msgid "Spell check current word"
+msgstr "拼写检查(&P)"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select spell language"
+msgstr "选择语言"
+
+#, fuzzy
+#| msgid "&Flush bookmarks"
+msgid "Clear all bookmarks"
+msgstr "清理书签(&F)"
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Next bookmark"
+msgstr "下一个书签(&N)"
+
+#, fuzzy
+#| msgid "&Prev bookmark"
+msgid "Previous bookmark"
+msgstr "上一个书签(&P)"
+
+msgid "Toggle code fold"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find all"
+msgid "Unfold all"
+msgstr "查找全部(&F)"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle line filter"
+msgstr "翻转行状态(&T)"
+
+msgid "Filter by selection or word"
+msgstr ""
+
+#, fuzzy
+#| msgid "Changes to file lost"
+msgid "Select to file start"
+msgstr "对文件的修改被丢失"
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to file end"
+msgstr "选择比较方法: "
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to page start"
+msgstr "选择比较方法: "
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to page end"
+msgstr "选择比较方法: "
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select scroll up"
+msgstr "选择群组(&G)"
+
+msgid "Select scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select paragraph up"
+msgstr "选择群组(&G)"
+
+msgid "Select paragraph down"
+msgstr ""
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select page up"
+msgstr "取消选择组(&U)"
+
+msgid "Column select page down"
+msgstr ""
+
+msgid "Column select left"
+msgstr ""
+
+msgid "Column select right"
+msgstr ""
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select up"
+msgstr "取消选择组(&U)"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Column select down"
+msgstr "在选择区域(&L)"
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select scroll up"
+msgstr "取消选择组(&U)"
+
+msgid "Column select scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Format paragraph"
+msgid "Column select paragraph up"
+msgstr "格式化段落(&F)"
+
+msgid "Column select paragraph down"
+msgstr ""
+
+msgid "Shift block left"
+msgstr ""
+
+msgid "Shift block right"
+msgstr ""
+
+msgid "Insert literal character (Lua action)"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Visible trailing spaces"
+msgid "Toggle visible tabs/spaces"
+msgstr "行尾空格可见(&V)"
+
+msgid "Toggle control characters"
+msgstr ""
+
+#, fuzzy
+#| msgid "Toggle s&yntax highlighting"
+msgid "Toggle syntax highlighting"
+msgstr "切换语法突出显示(&Y)"
+
+msgid "Choose syntax highlighting"
+msgstr "选择语法突出显示"
+
+#, fuzzy
+#| msgid "To&ggle mark"
+msgid "Toggle right margin"
+msgstr "翻转标记(&G)"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Save mode options"
+msgstr "面板选项"
+
+msgid "About editor"
+msgstr ""
+
+#, fuzzy
+#| msgid "Executable &first"
+msgid "Execute script"
+msgstr "可执行文件优先(&f)"
+
+msgid "Move window"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Resize"
+msgid "Resize window"
+msgstr "调整大小(&R)"
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle fullscreen"
+msgstr "切换全屏显示(&T)"
+
+#, fuzzy
+#| msgid "&Window"
+msgid "Window list"
+msgstr "窗口(&W)"
+
+msgid "Next window"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous window"
+msgstr "前一个(&P)"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle line wrap"
+msgstr "翻转行状态(&T)"
+
+msgid "Hex edit mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle hex mode"
+msgstr "翻转行状态(&T)"
+
+#, fuzzy
+#| msgid "To&ggle mark"
+msgid "Toggle magic mode"
+msgstr "翻转标记(&G)"
+
+msgid "Toggle nroff mode"
+msgstr ""
+
+msgid "Toggle ANSI color mode"
+msgstr ""
+
+msgid "Cycle ESC render mode: None/SGR/Term"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Go to bookmark"
+msgstr "下一个书签(&N)"
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle ruler"
+msgstr "切换全屏显示(&T)"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search forward"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Search &again"
+msgid "Search backward"
+msgstr "重新搜索(&S)"
+
+#, fuzzy
+#| msgid "Sea&rch for content"
+msgid "Search forward next"
+msgstr "搜索内容(&R)"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search backward next"
+msgstr "搜索完成"
+
+msgid "Search opposite direction"
+msgstr ""
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Set line filter"
+msgstr "正在获取文件"
+
+msgid "Toggle filter follow mode"
+msgstr ""
+
+msgid "Jump to next filter match"
+msgstr ""
+
+msgid "Jump to prev filter match"
+msgstr ""
+
+msgid "Toggle structured (tree) mode"
+msgstr ""
+
+msgid "Open in the structure viewer (mcstruct)"
+msgstr ""
+
+msgid "Expand/collapse tree node"
+msgstr ""
+
+msgid "Expand subtree"
+msgstr ""
+
+msgid "Expand all tree nodes"
+msgstr ""
+
+msgid "Collapse all tree nodes"
+msgstr ""
+
+msgid "Copy node path to clipboard"
+msgstr ""
+
+msgid "Toggle show symbols"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle full split"
+msgstr "切换全屏显示(&T)"
+
+msgid "Tab size 2"
+msgstr ""
+
+msgid "Tab size 3"
+msgstr ""
+
+msgid "Tab size 4"
+msgstr ""
+
+msgid "Tab size 8"
+msgstr ""
+
+msgid "Next difference"
+msgstr ""
+
+msgid "Previous difference"
+msgstr ""
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit other file"
+msgstr "编辑文件"
+
+msgid "Merge current hunk"
+msgstr ""
+
+msgid "Merge from other file"
+msgstr ""
+
 #, c-format
 msgid ""
 "File \"%s\" is already being edited.\n"
@@ -90,6 +1206,14 @@ msgstr "忽略锁(&I)"
 #, c-format
 msgid "Cannot create %s directory"
 msgstr "无法建立目录%s"
+
+#, c-format
+msgid "Imported %s to %s\n"
+msgstr ""
+
+#, c-format
+msgid "Warning: import of %s to %s is incomplete\n"
+msgstr ""
 
 msgid "FATAL: not a directory:"
 msgstr "严重错误: 不是一个目录: "
@@ -143,14 +1267,6 @@ msgstr "通配符查找(&D)"
 
 #, c-format
 msgid ""
-"Unable to load '%s' skin.\n"
-"Default skin has been loaded"
-msgstr ""
-"无法加载皮肤“%s”。\n"
-"已加载默认皮肤"
-
-#, c-format
-msgid ""
 "Unable to parse '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
@@ -173,6 +1289,14 @@ msgid ""
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
+
+#, c-format
+msgid ""
+"Unable to load '%s' skin.\n"
+"Default skin has been loaded"
+msgstr ""
+"无法加载皮肤“%s”。\n"
+"已加载默认皮肤"
 
 msgid ""
 "\n"
@@ -292,9 +1416,6 @@ msgstr "右箭头键"
 
 msgid "Insert"
 msgstr "插入键"
-
-msgid "Delete"
-msgstr "删除键"
 
 msgid "Home"
 msgstr "Home 键"
@@ -486,14 +1607,11 @@ msgstr "Ctrl 键"
 msgid "Alt"
 msgstr "Alt 键"
 
+msgid "RAlt"
+msgstr ""
+
 msgid "Shift"
 msgstr "Shift 键"
-
-msgid "The TERM environment variable is unset!\n"
-msgstr "没有设置 TERM 环境变量!\n"
-
-msgid "Cannot check SIGWINCH pipe"
-msgstr ""
 
 #, c-format
 msgid ""
@@ -520,6 +1638,12 @@ msgid ""
 msgstr ""
 "不支持屏幕大小 %dx%d。\n"
 "检查 TERM 环境变量。\n"
+
+msgid "The TERM environment variable is unset!\n"
+msgstr "没有设置 TERM 环境变量!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr ""
 
 msgid "B"
 msgstr "B"
@@ -603,6 +1727,16 @@ msgstr "无法解析: "
 msgid "More parsing errors will be ignored."
 msgstr "以后的解析错误将被忽略。"
 
+msgid ""
+"The utar:// virtual filesystem has been removed.\n"
+"Use the arcmc panel plugin, if installed, or an external tar command."
+msgstr ""
+
+msgid ""
+"The ucpio:// virtual filesystem has been removed.\n"
+"Use the arcmc panel plugin, if installed, or an external cpio command."
+msgstr ""
+
 msgid "Internal error:"
 msgstr "内部错误: "
 
@@ -615,18 +1749,26 @@ msgstr "屏幕"
 msgid "History"
 msgstr "历史"
 
-#. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
-msgid "DialogTitle|History cleanup"
-msgstr "DialogTitle|清除历史"
+msgid "Paste"
+msgstr ""
 
-msgid "Do you want clean this history?"
-msgstr "您确认要清除历史?"
+msgid ""
+"The clipboard holds more than 2 KB of text.\n"
+"Paste it?"
+msgstr ""
 
 msgid "&Yes"
 msgstr "是(&Y)"
 
 msgid "&No"
 msgstr "否(&N)"
+
+#. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
+msgid "DialogTitle|History cleanup"
+msgstr "DialogTitle|清除历史"
+
+msgid "Do you want clean this history?"
+msgstr "您确认要清除历史?"
 
 msgid "&OK"
 msgstr "确认(&O)"
@@ -665,14 +1807,10 @@ msgstr "将工作目录打印到指定文件"
 msgid "<file>"
 msgstr "<file>"
 
-msgid "Enables subshell support (default)"
-msgstr "启用子 shell 支持(默认)"
-
-msgid "Disables subshell support"
-msgstr "禁用子 shell 支持"
-
-msgid "Log ftp dialog to specified file"
-msgstr "记录 ftp 对话到指定的文件"
+#, fuzzy
+#| msgid "Disable X11 support"
+msgid "Disables Lua support"
+msgstr "禁用 X11 支持"
 
 msgid "Launches the file viewer on a file"
 msgstr "在文件上启动文件查看器"
@@ -704,9 +1842,6 @@ msgstr "若要在缓慢的终端上运行"
 msgid "Use stickchars to draw"
 msgstr "用线条字符绘制"
 
-msgid "Resets soft keys on HP terminals"
-msgstr "在 HP 终端上复位软键"
-
 msgid "Load definitions of key bindings from specified file"
 msgstr "从指定的文件加载键绑定定义"
 
@@ -719,63 +1854,11 @@ msgstr "请求运行在黑白模式"
 msgid "Request to run in color mode"
 msgstr "请求运行在彩色模式"
 
-msgid "Specifies a color configuration"
-msgstr "指定颜色配置"
-
-msgid "<string>"
-msgstr "<string>"
-
 msgid "Show mc with specified skin"
 msgstr "用指定的皮肤显示 MC"
 
-#. TRANSLATORS: don't translate keywords
-msgid ""
-"--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
-"\n"
-"{FORE}, {BACK} and {ATTR} can be omitted, and the default will be used\n"
-"\n"
-" Keywords:\n"
-"   Global:       errors, disabled, reverse, gauge, header\n"
-"                 input, inputmark, inputunchanged, commandlinemark\n"
-"                 bbarhotkey, bbarbutton, statusbar\n"
-"   File display: normal, selected, marked, markselect\n"
-"   Dialog boxes: dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
-"                 errdhotfocus\n"
-"   Menus:        menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
-"   Popup menus:  pmenunormal, pmenusel, pmenutitle\n"
-"   Editor:       editnormal, editbold, editmarked, editwhitespace, "
-"editnonprintable,\n"
-"                 editlinestate, editbg, editframe, editframeactive\n"
-"                 editframedrag\n"
-"   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
-"   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
-msgstr ""
-
-#. TRANSLATORS: don't translate color names and attributes
-msgid ""
-"Standard Colors:\n"
-"   black, gray, red, brightred, green, brightgreen, brown,\n"
-"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
-"   brightcyan, lightgray and white\n"
-"\n"
-"Extended colors, when 256 colors are available:\n"
-"   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
-"\n"
-"Attributes:\n"
-"   bold, italic, underline, reverse, blink; append more with '+'\n"
-msgstr ""
-"标准颜色: \n"
-"    black, gray, red, brightred, green, brightgreen, brown, yellow, blue, "
-"brightblue, magenta, brightmagenta, cyan, brightcyan, lightgray and white\n"
-"\n"
-"扩展颜色，当256色可用时: \n"
-"   color16 到 color255，或者 rgb000 到 rgb555 或者 gray0 到 gray23\n"
-"\n"
-"属性: \n"
-"   bold, underline, reverse, blink; 添加更多参数用 “+”连接。\n"
-
-msgid "Color options"
-msgstr "颜色选项"
+msgid "<string>"
+msgstr "<string>"
 
 msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
 msgstr "[+lineno] file1[:lineno] [file2[:lineno]...]"
@@ -802,8 +1885,21 @@ msgstr "主要选项"
 msgid "Terminal options"
 msgstr "终端选项"
 
+msgid "Color options"
+msgstr "颜色选项"
+
 msgid "Arguments parse error!"
 msgstr "参数解析错误!"
+
+#, fuzzy
+#| msgid "No arguments given to the viewer."
+msgid "No arguments given to mcstruct."
+msgstr "查看器没有指定参数。"
+
+#, fuzzy
+#| msgid "No arguments given to the viewer."
+msgid "No arguments given to mctree."
+msgstr "查看器没有指定参数。"
 
 msgid "MC is built without builtin editor."
 msgstr ""
@@ -974,6 +2070,435 @@ msgstr "Diff 查看器: 模式无效"
 msgid "Two files are needed to compare"
 msgstr "比较时需要两个文件"
 
+msgid "Spell"
+msgstr ""
+
+msgid "Spell backend is unavailable."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Configuration..."
+msgid "Ctags Configuration"
+msgstr "配置(&C)..."
+
+msgid "Ctags executable:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configure options"
+msgid "Command line options:"
+msgstr "配置选项"
+
+#, fuzzy
+#| msgid "&Case sensitive"
+msgid "Case sensitive filter"
+msgstr "大小写敏感(&C)"
+
+msgid "Auto-discover tags file in parent directories"
+msgstr ""
+
+#, c-format
+msgid "Cannot jump to %s:%ld."
+msgstr ""
+
+msgid "Ctags"
+msgstr ""
+
+#, c-format
+msgid "Symbol '%s' not found in any loaded repository."
+msgstr ""
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to Declaration"
+msgstr "向前查找申明(&W)"
+
+#, fuzzy
+#| msgid "&Find declaration"
+msgid "Find Declaration"
+msgstr "查找申明(&F)"
+
+msgid "No word at cursor."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "'%s' is not a symbolic link"
+msgid "'%s' is not a known symbol."
+msgstr "“%s”不是一个符号链接"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to create temporary file."
+msgstr "无法保存到文件"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to open temporary file."
+msgstr "无法保存到文件"
+
+msgid "No indexed files found."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Failed to run:\n"
+#| "%s\n"
+msgid "Failed to run grep."
+msgstr ""
+"运行失败: \n"
+"%s\n"
+
+#, fuzzy, c-format
+#| msgid "No suitable entries found in %s"
+msgid "No references found for '%s'."
+msgstr "在 %s 没有找到相应的项"
+
+msgid "Find References"
+msgstr ""
+
+msgid "No repository loaded."
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search Symbol"
+msgstr "搜索完成"
+
+msgid "No file is open."
+msgstr ""
+
+msgid "No tags found for the current file."
+msgstr ""
+
+msgid "Symbols in Current File"
+msgstr ""
+
+#, c-format
+msgid "No files matching '%s'."
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search File"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "Complete Symbol"
+msgstr "完全: 显示全部(&M)"
+
+#, c-format
+msgid "No members found for '%s'."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Unable to save to file"
+msgid "Failed to load tags file: %s"
+msgstr "无法保存到文件"
+
+#, c-format
+msgid "Loaded %u symbols from %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid "Cannot create temp file: %s"
+msgstr ""
+"无法保存文件:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Cannot rename %s to %s: %s"
+msgstr "无法从 %s 翻译到 %s"
+
+msgid "Ctags: Create Index"
+msgstr ""
+
+#, fuzzy
+#| msgid "Profile root directory:"
+msgid "Project root directory to index:"
+msgstr "Profile根路径"
+
+#, fuzzy, c-format
+#| msgid "Unable to create event '%s'!"
+msgid "Failed to create index in %s"
+msgstr "无法创建事件“%s”!"
+
+#, c-format
+msgid "Indexed: %u symbols"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Reading failed"
+msgid "Reindex failed for %s"
+msgstr "读失败"
+
+#, c-format
+msgid "Reindexed: %u symbols"
+msgstr ""
+
+msgid "Navigation history is empty."
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation History"
+msgstr "导航"
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to declaration"
+msgstr "向前查找申明(&W)"
+
+#, fuzzy
+#| msgid "&Find declaration"
+msgid "Find declaration"
+msgstr "查找申明(&F)"
+
+msgid "Find references"
+msgstr ""
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "Complete symbol"
+msgstr "完全: 显示全部(&M)"
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation history"
+msgstr "导航"
+
+msgid "Go forward"
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search symbol"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search file"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Symbols in current file"
+msgstr "符号链接文件名: "
+
+msgid "Class/struct members"
+msgstr ""
+
+#, fuzzy
+#| msgid "Load syntax file"
+msgid "Load tags file"
+msgstr "加载语法文件"
+
+msgid "Manage repositories"
+msgstr ""
+
+msgid "Reindex repository"
+msgstr ""
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Configuration"
+msgstr "确认"
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to &declaration"
+msgstr "向前查找申明(&W)"
+
+msgid "&Find declaration"
+msgstr "查找申明(&F)"
+
+msgid "Find &references"
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation &history"
+msgstr "导航"
+
+msgid "Go &back"
+msgstr ""
+
+msgid "Go for&ward"
+msgstr ""
+
+msgid "Class/struct &members"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Search"
+msgid "&Search symbol"
+msgstr "搜索(&S)"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "S&ymbols in file"
+msgstr "符号链接文件名: "
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "&Complete symbol"
+msgstr "完全: 显示全部(&M)"
+
+msgid "No matching symbols found."
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select symbol"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Symbol name:"
+msgstr "符号链接文件名: "
+
+#, fuzzy
+#| msgid "File name:"
+msgid "File name or path:"
+msgstr "文件名: "
+
+msgid "Class/Struct Members"
+msgstr ""
+
+msgid "Scope name (class, struct, namespace):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Load file"
+msgid "Load Tags File"
+msgstr "加载文件"
+
+msgid "Tags file path:"
+msgstr ""
+
+msgid "Manage Tag Repositories"
+msgstr ""
+
+msgid "(unknown)"
+msgstr ""
+
+msgid "&Close"
+msgstr "关闭(&C)"
+
+msgid "No references found."
+msgstr ""
+
+msgid "Members"
+msgstr ""
+
+msgid "Warning"
+msgstr "警告"
+
+msgid ""
+"Current text was modified without a file save.\n"
+"Continue discards these changes."
+msgstr ""
+"当前文字被修改但没有保存。\n"
+"选择继续将丢失这些修改。"
+
+msgid "C&ontinue"
+msgstr "继续(&O)"
+
+msgid "&Add word"
+msgstr "添加单词(&A)"
+
+msgid "&Replace"
+msgstr "替换(&R)"
+
+msgid "&Skip"
+msgstr "跳过(&S)"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Misspelled"
+msgstr "拼写错误"
+
+msgid "Check word"
+msgstr "检查单词"
+
+msgid "Suggest"
+msgstr "建议"
+
+msgid "(no suggestions)"
+msgstr ""
+
+msgid ""
+"The hunspell library is not installed.\n"
+"Install it, and a dictionary for the language you write in."
+msgstr ""
+
+msgid ""
+"The aspell library is not installed.\n"
+"Install it, and a dictionary for the language you write in."
+msgstr ""
+
+msgid "none"
+msgstr ""
+
+#, c-format
+msgid ""
+"Aspell has no dictionary for \"%s\".\n"
+"Installed: %s\n"
+"Install a dictionary, then set Language to the name it goes by."
+msgstr ""
+
+#, c-format
+msgid ""
+"Hunspell has no dictionary for \"%s\".\n"
+"Installed: %s\n"
+"Install a dictionary, then set Language to the name it goes by."
+msgstr ""
+
+msgid ""
+"Spell checking is off.\n"
+"Set a language in the Spell plugin settings to turn it on."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Add word"
+msgid "Add word"
+msgstr "添加单词(&A)"
+
+msgid "Word to add to the dictionary:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Misspelled"
+msgid "Aspell"
+msgstr "拼写错误"
+
+msgid "Hunspell"
+msgstr ""
+
+msgid "Engine"
+msgstr ""
+
+#, fuzzy
+#| msgid "Language"
+msgid "Language:"
+msgstr "语言"
+
+#, fuzzy
+#| msgid "Select"
+msgid "&Select..."
+msgstr "选择"
+
+msgid "Spell plugin settings"
+msgstr ""
+
+msgid "Select language"
+msgstr "选择语言"
+
 #, c-format
 msgid "Loading: %3d%%"
 msgstr "正在载入: %3d%%"
@@ -1008,9 +2533,6 @@ msgstr ""
 "文件“%s”体积过大。\n"
 "仍然打开?"
 
-msgid "Warning"
-msgstr "警告"
-
 #, c-format
 msgid "Error reading from pipe: %s"
 msgstr "读取管道时发生错误: %s"
@@ -1020,6 +2542,32 @@ msgid ""
 "Cannot open pipe for reading\n"
 "%s"
 msgstr ""
+
+#, fuzzy
+#| msgid "&Undo"
+msgid "Undo"
+msgstr "撤消(&U)"
+
+msgid ""
+"Undo history is not available.\n"
+"The change log was overwritten after a large edit."
+msgstr ""
+
+msgid ""
+"No write permissions for this file.\n"
+"Enter sudo password to save as root:"
+msgstr ""
+
+msgid "Save with sudo"
+msgstr ""
+
+msgid ""
+"Cannot save with sudo.\n"
+"Wrong password or sudo is not configured."
+msgstr ""
+
+msgid "&Retry"
+msgstr "重试(&R)"
 
 msgid "File has hard-links. Detach before saving?"
 msgstr "文件有硬链接。保存文件前分离该链接吗?"
@@ -1040,9 +2588,6 @@ msgstr ""
 
 msgid "The file you are saving does not end with a newline."
 msgstr "您要保存的文件没有以换行符结束"
-
-msgid "C&ontinue"
-msgstr "继续(&O)"
 
 msgid "&Do not change"
 msgstr "不修改(&D)"
@@ -1171,36 +2716,8 @@ msgstr "保存块"
 msgid "Cannot save block"
 msgstr ""
 
-msgid "Insert file"
-msgstr "插入文件"
-
 msgid "Cannot insert file"
 msgstr "无法插入文件"
-
-msgid "You must first highlight a block of text"
-msgstr "您必需先突出显示一个文字块"
-
-msgid "Run sort"
-msgstr "运行 sort"
-
-msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
-msgstr ""
-
-msgid "Cannot execute sort command"
-msgstr "试图执行 sort 命令时发生错误"
-
-#, c-format
-msgid "Sort returned non-zero: %s"
-msgstr "Sort 返回非零值: %s"
-
-msgid "Paste output of external command"
-msgstr "粘贴外部命令的输出"
-
-msgid "Enter shell command(s):"
-msgstr "输入Shell 命令: "
-
-msgid "Cannot execute external command"
-msgstr ""
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <subject> -c <cc> <to>"
@@ -1217,21 +2734,31 @@ msgstr "复制到"
 msgid "Mail"
 msgstr "邮件"
 
-msgid "Insert literal"
-msgstr "插入文字"
-
-msgid "Press any key:"
-msgstr "按下任意键: "
-
-msgid ""
-"Current text was modified without a file save.\n"
-"Continue discards these changes."
-msgstr ""
-"当前文字被修改但没有保存。\n"
-"选择继续将丢失这些修改。"
-
 msgid "Cancel"
 msgstr "取消"
+
+#, fuzzy, c-format
+#| msgid "Insert"
+msgid "insert %d"
+msgstr "插入键"
+
+#, fuzzy, c-format
+#| msgid "Delete %s?"
+msgid "delete %d"
+msgstr "删除 %s?"
+
+#, fuzzy
+#| msgid "Replace"
+msgid "replace"
+msgstr "替换"
+
+msgid "Nothing to undo."
+msgstr ""
+
+#, fuzzy
+#| msgid "History"
+msgid "Undo History"
+msgstr "历史"
 
 msgid "Collect completions"
 msgstr "收集补全"
@@ -1245,29 +2772,41 @@ msgstr "保存宏"
 msgid "Press the macro's new hotkey:"
 msgstr "为该宏按下新热键: "
 
-msgid "Delete macro"
-msgstr "删除宏"
-
-msgid "Press macro hotkey:"
-msgstr "按下宏热键: "
-
-msgid "Macro not deleted"
-msgstr "宏没有删除"
-
 msgid "Repeat last commands"
 msgstr "重复上一个命令"
 
 msgid "Repeat times:"
 msgstr "重复次数: "
 
+#, fuzzy, c-format
+#| msgid "Delete macro"
+msgid "Delete macro %s?"
+msgstr "删除宏"
+
+msgid "Delete macro"
+msgstr "删除宏"
+
+msgid "Macro Explorer"
+msgstr ""
+
+msgid "No macros recorded"
+msgstr ""
+
+#, fuzzy
+#| msgid "Russian"
+msgid "Run"
+msgstr "俄语"
+
+#, fuzzy
+#| msgid "&Close"
+msgid "Close"
+msgstr "关闭(&C)"
+
 msgid "&Open file..."
 msgstr "打开文件(&O)..."
 
 msgid "&New"
 msgstr "新建(&N)"
-
-msgid "&Close"
-msgstr "关闭(&C)"
 
 msgid "&History..."
 msgstr "＆历史记录..."
@@ -1295,6 +2834,11 @@ msgstr "撤消(&U)"
 
 msgid "&Redo"
 msgstr "重做(&R)"
+
+#, fuzzy
+#| msgid "&History..."
+msgid "Undo &History..."
+msgstr "＆历史记录..."
 
 msgid "&Toggle ins/overw"
 msgstr "翻转插入/覆盖(&T)"
@@ -1344,6 +2888,16 @@ msgstr "重新搜索(&S)"
 msgid "&Replace..."
 msgstr "替换(&R)..."
 
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle &line filter"
+msgstr "翻转行状态(&T)"
+
+#, fuzzy
+#| msgid "&write by owner"
+msgid "Filter by &word"
+msgstr "所有者写入(&W)"
+
 msgid "&Toggle bookmark"
 msgstr "翻转书签(&T)"
 
@@ -1371,17 +2925,19 @@ msgstr "切换语法突出显示(&Y)"
 msgid "Togg&le right margin"
 msgstr ""
 
-msgid "&Find declaration"
-msgstr "查找申明(&F)"
-
-msgid "Back from &declaration"
-msgstr "向后查找申明(&D)"
-
-msgid "For&ward to declaration"
-msgstr "向前查找申明(&W)"
+msgid "Toggle &control characters"
+msgstr ""
 
 msgid "Encod&ing..."
 msgstr "编码(&I)..."
+
+msgid "&Fold / Unfold block"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find all"
+msgid "&Unfold all"
+msgstr "查找全部(&F)"
 
 msgid "&Refresh screen"
 msgstr "刷新屏幕(&R)"
@@ -1389,41 +2945,11 @@ msgstr "刷新屏幕(&R)"
 msgid "&Start/Stop record macro"
 msgstr "开始/停止录制宏(&S)"
 
-msgid "Delete macr&o..."
-msgstr "删除宏(&O)..."
+msgid "Macro e&xplorer..."
+msgstr ""
 
 msgid "Record/Repeat &actions"
 msgstr "录制/重复动作(&A)"
-
-msgid "S&pell check"
-msgstr "拼写检查(&P)"
-
-msgid "C&heck word"
-msgstr "检查单词(&H)"
-
-msgid "Change spelling &language..."
-msgstr "更改拼写语言(&L)..."
-
-msgid "&Mail..."
-msgstr "发送邮件(&M)..."
-
-msgid "Insert &literal..."
-msgstr "插入文字(&L)..."
-
-msgid "Insert &date/time"
-msgstr "插入日期/时间(&D)"
-
-msgid "&Format paragraph"
-msgstr "格式化段落(&F)"
-
-msgid "&Sort..."
-msgstr "排序(&S)..."
-
-msgid "&Paste output of..."
-msgstr "粘贴输出(&P)..."
-
-msgid "&External formatter"
-msgstr "外部格式化工具(&E)"
 
 msgid "&Move"
 msgstr "移动(&M)"
@@ -1455,6 +2981,12 @@ msgstr "学习按键(&K)..."
 msgid "Syntax &highlighting..."
 msgstr "语法突出显示(&h)..."
 
+msgid "Pl&ugin info..."
+msgstr ""
+
+msgid "&Lua scripts..."
+msgstr ""
+
 msgid "S&yntax file"
 msgstr "语法文件(&Y)"
 
@@ -1463,6 +2995,9 @@ msgstr "菜单文件(&M)"
 
 msgid "&Save setup"
 msgstr "保存设置(&S)"
+
+msgid "(no plugins loaded)"
+msgstr ""
 
 msgid "&File"
 msgstr "文件(&F)"
@@ -1476,14 +3011,29 @@ msgstr "搜索(&S)"
 msgid "&Command"
 msgstr "命令(&C)"
 
-msgid "For&mat"
-msgstr "格式化(&r)"
+#, fuzzy
+#| msgid "Navigation"
+msgid "&Navigate"
+msgstr "导航"
 
 msgid "&Window"
 msgstr "窗口(&W)"
 
+msgid "Pl&ugins"
+msgstr ""
+
 msgid "&Options"
 msgstr "选项(&O)"
+
+#, fuzzy
+#| msgid "Tabulation"
+msgid "Lua action"
+msgstr "制表"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Action failed"
+msgstr "读失败"
 
 msgid "&None"
 msgstr "无(&N)"
@@ -1530,6 +3080,9 @@ msgstr "行尾空格可见(&V)"
 msgid "Visible &tabs"
 msgstr "制表位可见(&T)"
 
+msgid "S&how control characters"
+msgstr ""
+
 msgid "Synta&x highlighting"
 msgstr "语法突出显示(&X)"
 
@@ -1557,6 +3110,9 @@ msgstr "在选择区域(&L)"
 msgid "&Find all"
 msgstr "查找全部(&F)"
 
+msgid "Fil&ter"
+msgstr ""
+
 #, c-format
 msgid "Searching %s: %3d%%"
 msgstr "正在搜索 %s: %3d%%"
@@ -1574,14 +3130,8 @@ msgstr "替换"
 msgid "Replace with:"
 msgstr "替换为: "
 
-msgid "&Replace"
-msgstr "替换(&R)"
-
 msgid "A&ll"
 msgstr "全部(&L)"
-
-msgid "&Skip"
-msgstr "跳过(&S)"
 
 msgid "Confirm replace"
 msgstr "确认替换"
@@ -1589,6 +3139,9 @@ msgstr "确认替换"
 #, c-format
 msgid "%ld replacements made"
 msgstr "替换了 %ld 处"
+
+msgid "Plugin"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -1598,6 +3151,18 @@ msgstr ""
 
 msgid "About"
 msgstr "关于"
+
+msgid "Plugin info"
+msgstr ""
+
+msgid "No plugins are loaded."
+msgstr ""
+
+msgid "Selected runtime has no configuration callback."
+msgstr ""
+
+msgid "Selected plugin has no configuration callback."
+msgstr ""
 
 msgid "Open files"
 msgstr "打开文件"
@@ -1623,98 +3188,16 @@ msgstr "ButtonBar|删除"
 msgid "ButtonBar|PullDn"
 msgstr "ButtonBar|菜单"
 
-msgid "Breton"
-msgstr "布列塔尼语"
+#, fuzzy, c-format
+#| msgid "Searching %s: %3d%%"
+msgid "Filtering %s: %3d%%"
+msgstr "正在搜索 %s: %3d%%"
 
-msgid "Czech"
-msgstr "捷克语"
+msgid "Filter"
+msgstr "过滤"
 
-msgid "Welsh"
-msgstr "威尔士语"
-
-msgid "Danish"
-msgstr "丹麦语"
-
-msgid "German"
-msgstr "德语"
-
-msgid "Greek"
-msgstr "希腊语"
-
-msgid "English"
-msgstr "英语"
-
-msgid "British English"
-msgstr "英国英语"
-
-msgid "Canadian English"
-msgstr "加拿大英语"
-
-msgid "American English"
-msgstr "美国英语"
-
-msgid "Esperanto"
-msgstr "世界语"
-
-msgid "Spanish"
-msgstr "西班牙语"
-
-msgid "Faroese"
-msgstr "法罗语"
-
-msgid "French"
-msgstr "法语"
-
-msgid "Italian"
-msgstr "意大利语"
-
-msgid "Dutch"
-msgstr "荷兰语"
-
-msgid "Norwegian"
-msgstr "挪威语"
-
-msgid "Polish"
-msgstr "波兰语"
-
-msgid "Portuguese"
-msgstr "葡萄牙语"
-
-msgid "Romanian"
-msgstr "罗马尼亚语"
-
-msgid "Russian"
-msgstr "俄语"
-
-msgid "Slovak"
-msgstr "斯洛伐克语"
-
-msgid "Swedish"
-msgstr "瑞典语"
-
-msgid "Ukrainian"
-msgstr "乌克兰语"
-
-msgid "&Add word"
-msgstr "添加单词(&A)"
-
-msgid "Language"
-msgstr "语言"
-
-msgid "Misspelled"
-msgstr "拼写错误"
-
-msgid "Check word"
-msgstr "检查单词"
-
-msgid "Suggest"
-msgstr "建议"
-
-msgid "Select language"
-msgstr "选择语言"
-
-msgid "Choose syntax highlighting"
-msgstr "选择语法突出显示"
+msgid "No lines match"
+msgstr ""
 
 msgid "< Auto >"
 msgstr "<自动>"
@@ -1735,26 +3218,17 @@ msgstr "加载语法文件"
 msgid "Error in file %s on line %d"
 msgstr "在文件 %s 的第 %d 行有错误"
 
-msgid ""
-"The Commander can't change to the directory that\n"
-"the subshell claims you are in. Perhaps you have\n"
-"deleted your working directory, or given yourself\n"
-"extra access permissions with the \"su\" command?"
-msgstr ""
-"MC 无法进入 subshell 所声称的您的所在的目录。\n"
-"也许您已删除了工作目录，或者通过 \"su\" 命令\n"
-"给予此进程额外的访问权限?"
-
 #, c-format
 msgid "Cannot fetch a local copy of %s"
 msgstr "无法获取 %s 的本地副本"
 
-msgid "The shell is already running a command"
-msgstr "Shell 正在运行一个命令"
-
+#, fuzzy
+#| msgid ""
+#| "Not an xterm or Linux console;\n"
+#| "the subshell cannot be toggled."
 msgid ""
 "Not an xterm or Linux console;\n"
-"the subshell cannot be toggled."
+"the terminal cannot be shown."
 msgstr ""
 "不是一个 xterm 或 Linux 控制台；\n"
 "无法切换subshell窗口。"
@@ -1985,11 +3459,13 @@ msgstr "文件类型(&T)"
 msgid "&Permissions"
 msgstr "权限(&P)"
 
+#, fuzzy
+#| msgid "&Permissions"
+msgid "Permission c&olors"
+msgstr "权限(&P)"
+
 msgid "Quick search"
 msgstr "快速查找"
-
-msgid "Panel options"
-msgstr "面板选项"
 
 msgid "Information"
 msgstr "信息"
@@ -2056,38 +3532,11 @@ msgstr "Confirmation|清除历史(&H)"
 msgid "Confirmation"
 msgstr "确认"
 
-msgid "Directory tree"
-msgstr "目录树"
-
 msgid "Timeout for freeing VFSs (sec):"
 msgstr "释放 VFS 超时(秒): "
 
-msgid "FTP anonymous password:"
-msgstr "FTP 匿名密码: "
-
-msgid "FTP directory cache timeout (sec):"
-msgstr "FTP 目录缓存超时(秒): "
-
-msgid "&Always use ftp proxy:"
-msgstr "总是使用 FTP 代理(&A): "
-
-msgid "&Use ~/.netrc"
-msgstr "使用 ~/.netrc(&U)"
-
-msgid "Use &passive mode"
-msgstr "使用被动模式(&P)"
-
-msgid "Use passive mode over pro&xy"
-msgstr "通过代理时使用被动模式(&X)"
-
 msgid "Virtual File System Setting"
 msgstr "虚拟文件系统设置"
-
-msgid "cd"
-msgstr "切换目录"
-
-msgid "Quick cd"
-msgstr "快速切换目录"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "已存在文件名(文件名符号链接指向): "
@@ -2106,9 +3555,6 @@ msgstr "恢复(&R)"
 
 msgid "&Kill"
 msgstr "杀死(&K)"
-
-msgid "Background jobs"
-msgstr "后台任务"
 
 #, c-format
 msgid ""
@@ -2308,11 +3754,32 @@ msgstr "<未知用户>"
 msgid "<Unknown group>"
 msgstr "<未知群组>"
 
-msgid "Enter machine name (F1 for details):"
-msgstr "输入机器名 (F1 查看细节): "
+#, c-format
+msgid "The magic.ini operation %s:%s cannot view %s"
+msgstr ""
+
+#, c-format
+msgid "Invalid magic.ini association for %s"
+msgstr ""
+
+msgid "The runtime file handler failed"
+msgstr ""
 
 msgid "Files tagged, want to cd?"
 msgstr "文件已经标记，要更改目录吗?"
+
+msgid "This plugin does not support file viewing"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot fetch a local copy of %s"
+msgid "Cannot get local copy of %s"
+msgstr "无法获取 %s 的本地副本"
+
+#, fuzzy
+#| msgid "Cannot read directory contents"
+msgid "Cannot read the contents"
+msgstr "无法读取目录内容"
 
 #, c-format
 msgid "Link %s to:"
@@ -2333,9 +3800,6 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "View file"
-msgstr "查看文件"
-
 msgid "Filename:"
 msgstr "文件名: "
 
@@ -2345,8 +3809,12 @@ msgstr "过滤视图"
 msgid "Filter command and arguments:"
 msgstr "过滤命令和参数: "
 
-msgid "Edit file"
-msgstr "编辑文件"
+msgid "This plugin does not support file editing"
+msgstr ""
+
+#, c-format
+msgid "Cannot save %s back to plugin"
+msgstr ""
 
 msgid "Create a new Directory"
 msgstr "创建新目录"
@@ -2368,9 +3836,6 @@ msgstr "突出显示组文件编辑"
 
 msgid "Which highlighting file you want to edit?"
 msgstr "您要编辑哪个突出显示的文件?"
-
-msgid "Compare directories"
-msgstr "比较目录"
 
 msgid "Select compare method:"
 msgstr "选择比较方法: "
@@ -2413,15 +3878,6 @@ msgid ""
 "Cannot edit symlink\n"
 "%s"
 msgstr ""
-
-msgid "FTP to machine"
-msgstr "FTP 到主机"
-
-msgid "SFTP to machine"
-msgstr "SFTP 到主机"
-
-msgid "Shell link to machine"
-msgstr "Shell 链接到主机"
 
 msgid "Directory scanning"
 msgstr "扫描目录"
@@ -2579,9 +4035,6 @@ msgstr "忽略(&I)"
 
 msgid "Ignore a&ll"
 msgstr ""
-
-msgid "&Retry"
-msgstr "重试(&R)"
 
 #, c-format
 msgid ""
@@ -2971,8 +4424,10 @@ msgstr "信息(&I)"
 msgid "&Tree"
 msgstr "树(&T)"
 
-msgid "Paneli&ze"
-msgstr "面板化(&Z)"
+#, fuzzy
+#| msgid "Save &mode..."
+msgid "Panel &modes..."
+msgstr "保存模式(&M)..."
 
 msgid "&Listing format..."
 msgstr "列表格式(&L)…"
@@ -2986,17 +4441,13 @@ msgstr "过滤(&F)..."
 msgid "&Encoding..."
 msgstr "编码(&E)..."
 
-msgid "FT&P link..."
-msgstr "FTP 链接(&P)..."
-
-msgid "S&hell link..."
-msgstr "S&hell 链接..."
-
-msgid "SFTP li&nk..."
-msgstr ""
-
 msgid "&Rescan"
 msgstr "重新扫描(&R)"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Change &drive"
+msgstr "修改时间(&H)"
 
 msgid "&View"
 msgstr "查看(&V)"
@@ -3067,17 +4518,16 @@ msgstr "查找文件(&F)"
 msgid "S&wap panels"
 msgstr "交换面板(&W)"
 
-msgid "Switch &panels on/off"
-msgstr "切换面板开/关(&P)"
+#, fuzzy
+#| msgid "To&ggle mark"
+msgid "Toggle &terminal"
+msgstr "翻转标记(&G)"
 
 msgid "&Compare directories"
 msgstr "比较目录(&C)"
 
 msgid "C&ompare files"
 msgstr "比较文件(&O)"
-
-msgid "E&xternal panelize"
-msgstr "外部面板(&X)"
 
 msgid "Show directory s&izes"
 msgstr "显示目录大小(&I)"
@@ -3088,20 +4538,21 @@ msgstr "命令历史(&H)"
 msgid "Viewed/edited files hi&story"
 msgstr ""
 
-msgid "Di&rectory hotlist"
-msgstr "目录活动列表(&R)"
+#, fuzzy
+#| msgid "Hotlist Load"
+msgid "Hot&list"
+msgstr "加载活动表"
 
-msgid "&Active VFS list"
-msgstr "活动的 VFS 列表(&A)"
+#, fuzzy
+#| msgid "Add to hotlist"
+msgid "Add current &path to hotlist"
+msgstr "添加到活动表"
 
 msgid "&Background jobs"
 msgstr "后台任务(&B)"
 
 msgid "Screen lis&t"
 msgstr "屏幕列表(&T)"
-
-msgid "&Listing format edit"
-msgstr "列表格式编辑(&L)"
 
 msgid "Edit &extension file"
 msgstr "扩展文件编辑(&E)"
@@ -3112,6 +4563,9 @@ msgstr "菜单文件编辑(&M)"
 msgid "Edit hi&ghlighting group file"
 msgstr "编辑突出显示组文件(&G)"
 
+msgid "Pl&ugin panel..."
+msgstr ""
+
 msgid "&Configuration..."
 msgstr "配置(&C)..."
 
@@ -3121,11 +4575,29 @@ msgstr "布局(&L)..."
 msgid "&Panel options..."
 msgstr "面板选项(&P)..."
 
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "File panel m&odes..."
+msgstr "使用面板排序模式(&D)"
+
 msgid "C&onfirmation..."
 msgstr "确认(&O)..."
 
 msgid "&Appearance..."
 msgstr "外观(&A)..."
+
+#, fuzzy
+#| msgid "&Encoding..."
+msgid "Key &bindings..."
+msgstr "编码(&E)..."
+
+msgid "Key &sniffer..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "&Manage plugins..."
+msgstr "面板选项(&P)..."
 
 msgid "&Virtual FS..."
 msgstr "虚拟文件系统(&V)..."
@@ -3139,6 +4611,20 @@ msgid_plural "You have %zu opened screens. Quit anyway?"
 msgstr[0] "您打开了 %zu 个屏幕。确定要退出吗?"
 
 msgid "Do you really want to quit?"
+msgstr ""
+
+msgid "This operation is not supported for plugin panels"
+msgstr ""
+
+msgid "No file given"
+msgstr ""
+
+#, c-format
+msgid "Plugin %s is not available"
+msgstr ""
+
+#, c-format
+msgid "Plugin %s has no show operation"
 msgstr ""
 
 msgid "&Above"
@@ -3183,6 +4669,27 @@ msgstr "编辑(&E) - F4"
 #, c-format
 msgid "Found: %lu"
 msgstr "找到: %lu"
+
+#, fuzzy, c-format
+#| msgid "%s in %d file"
+#| msgid_plural "%s in %d files"
+msgid "Found: %lu in %lu files"
+msgstr "%s 共 %d 个文件"
+
+#, c-format
+msgid "Press \"Left\" or click %s to show the matches"
+msgstr ""
+
+msgid "SUB-DIR"
+msgstr "子目录"
+
+msgid "SYMLINK"
+msgstr "符号链接"
+
+#, c-format
+msgid "%u match"
+msgid_plural "%u matches"
+msgstr[0] ""
 
 msgid "Malformed regular expression"
 msgstr "不正确的正规表达式"
@@ -3236,6 +4743,10 @@ msgid_plural "Finished (ignored %zu directories)"
 msgstr[0] "完成 (忽略 %zu 个目录)"
 
 #, c-format
+msgid "Matches in %s (%u)"
+msgstr ""
+
+#, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
 msgstr ""
 
@@ -3246,72 +4757,88 @@ msgstr ""
 msgid "Searching"
 msgstr "正在搜索"
 
-msgid "Change &to"
-msgstr "切换到(&T)"
+#, fuzzy
+#| msgid "Set &groups"
+msgid "Parent group"
+msgstr "设置群组(&G)"
 
-msgid "&Free VFSs now"
-msgstr "立刻释放 VFS (&F)"
-
-msgid "&Refresh"
-msgstr "刷新(&R)"
-
-msgid "&Add current"
-msgstr "添加当前(&A)"
-
-msgid "&Up"
-msgstr "上(&U)"
-
-msgid "New &group"
-msgstr "新建组(&G)"
-
-msgid "New &entry"
-msgstr "新建项(&E)"
-
-msgid "&Insert"
-msgstr "插入(&I)"
-
-msgid "&Remove"
-msgstr "删除(&R)"
-
-msgid "Subgroup - press ENTER to see list"
-msgstr "子组－按 ENTER 查看列表"
-
-msgid "Active VFS directories"
-msgstr "活动的 VFS 目录"
-
-msgid "Directory hotlist"
-msgstr "目录活动表"
-
-msgid "Top level group"
-msgstr "顶级组"
-
-msgid "Directory path"
-msgstr "目录路径"
+msgid "Group"
+msgstr "群组"
 
 #, c-format
-msgid "Moving %s"
-msgstr "正在移动 %s"
+msgid "Plugin: %s"
+msgstr ""
 
-msgid "Directory label"
-msgstr "目录标签"
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "VFS: %s"
+msgstr "文件: %s"
+
+#, fuzzy
+#| msgid "directory"
+msgid "Local directory"
+msgstr "目录"
+
+#, fuzzy, c-format
+#| msgid "Move \"%s\" directory to:"
+msgid "Move \"%s\" to %s"
+msgstr "移动目录“%s”到: "
+
+msgid "plugin"
+msgstr ""
+
+#, c-format
+msgid "%s: this view has no address to save"
+msgstr ""
+
+#, c-format
+msgid "\"%s\" is already in the hotlist as \"%s\""
+msgstr ""
+
+#, c-format
+msgid "There is no group to move \"%s\" to"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Info"
+msgid "Info"
+msgstr "信息(&I)"
 
 msgid "&Append"
 msgstr "追加(&A)"
 
+msgid "&Insert"
+msgstr "插入(&I)"
+
 msgid "New hotlist entry"
 msgstr "新建活动表条目"
 
-msgid "Directory label:"
-msgstr "目录标签: "
+msgid "Label:"
+msgstr ""
 
-msgid "Directory path:"
-msgstr "目录路径: "
+#, fuzzy
+#| msgid "Location:   %Xh:%Xh"
+msgid "Location:"
+msgstr "位置: %Xh:%Xh"
 
 msgid "New hotlist group"
 msgstr "新建活动表组"
 
 msgid "Name of new group:"
 msgstr "新建组名: "
+
+#, fuzzy
+#| msgid "New hotlist group"
+msgid "Edit hotlist group"
+msgstr "新建活动表组"
+
+#, fuzzy
+#| msgid "New hotlist entry"
+msgid "Edit hotlist entry"
+msgstr "新建活动表条目"
+
+msgid "Sort this group by label?"
+msgstr ""
 
 #, c-format
 msgid "Are you sure you want to remove entry \"%s\"?"
@@ -3324,6 +4851,9 @@ msgid ""
 msgstr ""
 "组“%s”不为空。\n"
 "要删除它吗?"
+
+msgid "Top level group"
+msgstr "顶级组"
 
 msgid "Hotlist Load"
 msgstr "加载活动表"
@@ -3339,9 +4869,6 @@ msgstr ""
 #, c-format
 msgid "Label for \"%s\":"
 msgstr "“%s”的标签: "
-
-msgid "Add to hotlist"
-msgstr "添加到活动表"
 
 #, c-format
 msgid "File: %s"
@@ -3463,6 +4990,34 @@ msgstr "输出行: "
 msgid "Layout"
 msgstr "布局"
 
+#, fuzzy
+#| msgid "ButtonBar|Delete"
+msgid "ButtonBar|Filter"
+msgstr "ButtonBar|删除"
+
+#, fuzzy
+#| msgid "ButtonBar|Edit"
+msgid "ButtonBar|UnFilt"
+msgstr "ButtonBar|编辑"
+
+#, fuzzy
+#| msgid "ButtonBar|PullDn"
+msgid "ButtonBar|ClrAll"
+msgstr "ButtonBar|菜单"
+
+#, fuzzy
+#| msgid "ButtonBar|Search"
+msgid "ButtonBar|Clear"
+msgstr "ButtonBar|搜索"
+
+#, fuzzy
+#| msgid "The shell is already running a command"
+msgid "The terminal is already running a command"
+msgstr "Shell 正在运行一个命令"
+
+msgid "The shell did not take the whole text"
+msgstr ""
+
 msgid "Memory exhausted!"
 msgstr "内存已耗尽!"
 
@@ -3556,23 +5111,23 @@ msgstr "GID"
 msgid "Owner"
 msgstr "属主"
 
-msgid "Group"
-msgstr "群组"
-
 msgid "[dev]"
 msgstr "[dev]"
 
 msgid "UP--DIR"
 msgstr "上级目录"
 
-msgid "SYMLINK"
-msgstr "符号链接"
-
-msgid "SUB-DIR"
-msgstr "子目录"
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter: "
+msgstr "过滤"
 
 msgid "<readlink failed>"
 msgstr "<readlink 失败>"
+
+#, c-format
+msgid "%d marked (+%d more)"
+msgstr ""
 
 #, c-format
 msgid "%s in %d file"
@@ -3581,6 +5136,9 @@ msgstr[0] "%s 共 %d 个文件"
 
 msgid "Panelize"
 msgstr "面板化"
+
+msgid "Plugin column metadata not found"
+msgstr ""
 
 msgid "Unknown tag on display format:"
 msgstr "显示格式中未知的标记: "
@@ -3597,8 +5155,9 @@ msgstr "选择"
 msgid "Unselect"
 msgstr "取消选择"
 
-msgid "Filter"
-msgstr "过滤"
+#, c-format
+msgid "The magic.ini operation %s:%s cannot open %s"
+msgstr ""
 
 msgid "Do you really want to execute?"
 msgstr "您真的要执行吗?"
@@ -3609,49 +5168,209 @@ msgstr "无法读取目录内容"
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "用户提供的格式无效，回复到默认设置。"
 
-msgid "&Add new"
-msgstr "添加新(&A)"
+msgid "Column types must not be empty."
+msgstr ""
 
-msgid "External panelize"
-msgstr "外部面板"
+#, c-format
+msgid "Unknown column type: %s"
+msgstr ""
 
-msgid "Other command"
-msgstr "其它命令"
+msgid "Too many columns (at most 9)."
+msgstr ""
 
-msgid "Command"
-msgstr "命令"
+#, c-format
+msgid "Invalid column width: %s"
+msgstr ""
 
-msgid "Add to external panelize"
-msgstr "添加到外部面板"
+#, fuzzy
+#| msgid "columns"
+msgid "Column types:"
+msgstr "列"
 
-msgid "Enter command label:"
-msgstr "输入命令标签: "
+msgid "Column widths:"
+msgstr ""
+
+msgid "Status column types:"
+msgstr ""
+
+msgid "Status column widths:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panelize"
+msgid "Panel mode"
+msgstr "面板化"
+
+msgid "(unnamed)"
+msgstr ""
+
+msgid "Cannot delete the last panel mode."
+msgstr ""
+
+#, c-format
+msgid "Delete the panel mode \"%s\"?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Delete panel mode"
+msgstr "使用面板排序模式(&D)"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "File panel modes"
+msgstr "使用面板排序模式(&D)"
+
+#, fuzzy
+#| msgid "< Default >"
+msgid "&Defaults"
+msgstr "< 默认 >"
+
+#, fuzzy
+#| msgid "&OK"
+msgid "&Ok"
+msgstr "确认(&O)"
+
+msgid "unknown"
+msgstr ""
+
+#, fuzzy
+#| msgid "&New"
+msgid "New"
+msgstr "新建(&N)"
+
+#, fuzzy
+#| msgid "Existing:"
+msgid "Existing"
+msgstr "现有："
+
+msgid "Resume: check what is here and send the rest."
+msgstr ""
+
+msgid "Resume: nothing to finish here, this one is kept."
+msgstr ""
+
+msgid "&Remember this answer for the rest"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cancel"
+msgid "Ca&ncel"
+msgstr "取消"
 
 #, c-format
 msgid ""
-"External panelize:\n"
-"%s"
+"%s\n"
+"is not the beginning of the source, so there is nothing to\n"
+"continue. It was left alone."
 msgstr ""
 
-msgid ""
-"External panelize:\n"
-"failed to read data from child stdout:"
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot copy %s"
+msgstr "无法打开文件 %s"
+
+#, c-format
+msgid "Cannot copy %s to plugin"
 msgstr ""
 
-msgid "Cannot run external panelize in a non-local directory"
-msgstr "在非本地目录无法执行外部面板"
+msgid "This plugin does not support copying files"
+msgstr ""
 
-msgid "Modified git files"
-msgstr "修改过的 git 文件"
+#, fuzzy
+#| msgid "&Copy"
+msgid "Copy"
+msgstr "复制(&C)"
 
-msgid "Find rejects after patching"
-msgstr "应用补丁后查找被拒绝的补丁"
+#, fuzzy
+#| msgid "&Copy"
+msgid "Copy to:"
+msgstr "复制(&C)"
 
-msgid "Find *.orig after patching"
-msgstr "应用补丁后查找 .orig"
+msgid "This plugin does not support deleting files"
+msgstr ""
 
-msgid "Find SUID and SGID programs"
-msgstr "查找 SUID 和 SGID 程序"
+msgid "Delete file from plugin panel?"
+msgstr ""
+
+msgid "Delete tagged files from plugin panel?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "Delete failed"
+msgstr "管道失败"
+
+msgid "This plugin does not support creating items"
+msgstr ""
+
+msgid "This plugin does not support creating files"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Move"
+msgid "Move"
+msgstr "移动(&M)"
+
+msgid "Move file to plugin panel?"
+msgstr ""
+
+msgid "Copy file to plugin panel?"
+msgstr ""
+
+msgid "Move tagged files to plugin panel?"
+msgstr ""
+
+msgid "Copy tagged files to plugin panel?"
+msgstr ""
+
+msgid "This plugin does not support moving files"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Move"
+msgid "Move to:"
+msgstr "移动(&M)"
+
+msgid "Move succeeded but delete from plugin failed"
+msgstr ""
+
+#, c-format
+msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin does not support receiving files"
+msgstr ""
+
+#, c-format
+msgid "Cannot move %s to plugin"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot delete local file %s"
+msgstr "无法打开文件 %s"
+
+#, c-format
+msgid "%s produced nothing to view for %s"
+msgstr ""
+
+msgid "Send to panel"
+msgstr ""
+
+msgid "Plugin panel"
+msgstr ""
+
+msgid "No panel plugins are loaded."
+msgstr ""
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Change drive"
+msgstr "修改时间(&H)"
+
+msgid "No plugins with drive menu support are loaded."
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3721,6 +5440,9 @@ msgstr "内部缺陷: 链接区域双向开始"
 msgid "Cannot find node %s in help file"
 msgstr "无法在帮助文件中找到节点 %s"
 
+msgid "See also"
+msgstr ""
+
 msgid "Help"
 msgstr "帮助"
 
@@ -3730,67 +5452,211 @@ msgstr "ButtonBar|索引"
 msgid "ButtonBar|Prev"
 msgstr "ButtonBar|前一个"
 
-msgid "Learn keys"
+#, fuzzy
+#| msgid "Function key 1"
+msgid "Function keys"
+msgstr "F1"
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Arrows / Navigation"
+msgstr "导航"
+
+msgid "Special"
+msgstr ""
+
+#, fuzzy
+#| msgid "Learn keys"
+msgid "Learn key"
 msgstr "学习按键"
 
-msgid "Teach me a key"
-msgstr "教我一个键"
+#, c-format
+msgid "Press %s and wait..."
+msgstr ""
 
 #, c-format
 msgid ""
-"Please press the %s\n"
-"and then wait until this message disappears.\n"
-"\n"
-"Then, press it again to see if OK appears\n"
-"next to its button.\n"
-"\n"
-"If you want to escape, press a single Escape key\n"
-"and wait as well."
+"Sequence %s is already assigned to %s.\n"
+"Reassign to %s?"
 msgstr ""
-"按下 %s\n"
-"并等待这个消息消失。\n"
-"\n"
-"然后再次按下它并看确认是否出现\n"
-"在它的旁边。\n"
-"\n"
-"如果您想离开，请按下Esc键\n"
-"并稍等。"
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Conflict"
+msgstr "确认"
 
 #, c-format
 msgid ""
 "Cannot accept this key.\n"
-"You have entered \"%s\""
+"You pressed: %s"
 msgstr ""
 
-#. TRANSLATORS: This label appears near learned keys.  Keep it short.
-msgid "OK"
-msgstr "确认"
+#, c-format
+msgid "Learn terminal [%s]"
+msgstr ""
+
+#, fuzzy
+#| msgid "Ctrl"
+msgid "&Ctrl"
+msgstr "Ctrl 键"
+
+msgid "&Alt"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shift"
+msgid "&Shift"
+msgstr "Shift 键"
+
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Edit &term file"
+msgstr "菜单文件编辑(&M)"
+
+msgid "(not recognized)"
+msgstr ""
+
+msgid "(none)"
+msgstr ""
 
 msgid ""
-"It seems that all your keys already\n"
-"work fine. That's great."
+"Press any key...\n"
+"\n"
+"Wait until this message disappears."
 msgstr ""
-"看起来您的所有按键都工作得很好。\n"
-"实在是太好了。"
 
-msgid "&Discard"
-msgstr "放弃(&D)"
+msgid "Shortcut:"
+msgstr ""
 
+msgid "Action:"
+msgstr ""
+
+msgid "Raw:"
+msgstr ""
+
+msgid "Keycode:"
+msgstr ""
+
+msgid "&Capture key"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Mail..."
+msgid "&Main"
+msgstr "发送邮件(&M)..."
+
+msgid "&Ctrl-X + ..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "&Panel"
+msgstr "面板: "
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "&Normal"
+msgstr "普通(&R)"
+
+msgid "&Hex"
+msgstr ""
+
+msgid "&Structured"
+msgstr ""
+
+#, fuzzy
+#| msgid "Diff:"
+msgid "&Diff"
+msgstr "差异: "
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "&Terminal"
+msgstr "终端选项"
+
+msgid "&Dialog"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Menu file"
+msgid "&Menu"
+msgstr "菜单文件(&M)"
+
+msgid "&Input"
+msgstr ""
+
+#, fuzzy
+#| msgid "&List..."
+msgid "&Listbox"
+msgstr "窗口列表(&L)..."
+
+msgid "&Radio"
+msgstr ""
+
+#, fuzzy
+#| msgid "Help"
+msgid "&Help"
+msgstr "帮助"
+
+msgid "c&Hattr"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filename:"
+msgid "&Filemanager"
+msgstr "文件名: "
+
+#, fuzzy
+#| msgid "&Edit"
+msgid "&Editor"
+msgstr "编辑(&E)"
+
+#, fuzzy
+#| msgid "&View"
+msgid "&Viewer"
+msgstr "查看(&V)"
+
+msgid "&Widgets"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+#, c-format
+msgid "Unknown sequence: %s"
+msgstr ""
+
+#, fuzzy
+#| msgid "A1 key"
+msgid "Assign key"
+msgstr "A1键"
+
+msgid "Key:"
+msgstr ""
+
+msgid "Set shortcut"
+msgstr ""
+
+#, fuzzy
+#| msgid "Press any key to continue..."
+msgid "Press new shortcut..."
+msgstr "按任意键继续..."
+
+#, c-format
 msgid ""
-"Great! You have a complete terminal database!\n"
-"All your keys work well."
+"%s is already bound to %s.\n"
+"Reassign anyway?"
 msgstr ""
-"非常好! 您有一个完整的终端数据库!\n"
-"您的所有按键都工作。"
 
-msgid ""
-"Press all the keys mentioned here. After you have done it, check\n"
-"which keys are not marked with OK. Press space on the missing\n"
-"key, or click with the mouse to define it. Move around with Tab."
-msgstr ""
-"请将这里提到的所有键都按一遍。按完之后。请检查: \n"
-"哪些键没有标记为OK。在缺失的键位上按空格\n"
-"或单击鼠标定义它。移动请使用空格键。"
+#, fuzzy
+#| msgid "&Backwards"
+msgid "&Back"
+msgstr "向上(&B)"
+
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Edit &keymap file"
+msgstr "菜单文件编辑(&M)"
 
 #, c-format
 msgid ""
@@ -3805,13 +5671,6 @@ msgstr "主目录路径不是绝对路径"
 
 #, c-format
 msgid ""
-"%s\n"
-"is already running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-
-#, c-format
-msgid ""
 "\n"
 "Failed while close:\n"
 "%s\n"
@@ -3819,6 +5678,3484 @@ msgstr ""
 "\n"
 "关闭时失败: \n"
 "%s\n"
+
+msgid "unspecified"
+msgstr ""
+
+msgid "Lua editor scripts"
+msgstr ""
+
+msgid "No global or user Lua editor scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+msgid "&Run"
+msgstr ""
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "读失败"
+
+#, fuzzy
+#| msgid "Unknown error in child"
+msgid "Unknown error"
+msgstr "子进程未知错误"
+
+msgid "Lua"
+msgstr ""
+
+msgid "The selected script has no runnable actions."
+msgstr ""
+
+msgid "Run Lua action"
+msgstr ""
+
+msgid "(disabled, not loaded)"
+msgstr ""
+
+msgid "Manage Plugins"
+msgstr ""
+
+msgid "This plugin has no settings."
+msgstr ""
+
+msgid "No plugins loaded."
+msgstr ""
+
+msgid "JSON parse error at byte %"
+msgstr ""
+
+msgid "invalid unicode escape"
+msgstr ""
+
+msgid "unfinished unicode surrogate pair"
+msgstr ""
+
+msgid "invalid unicode surrogate pair"
+msgstr ""
+
+msgid "invalid unicode codepoint"
+msgstr ""
+
+msgid "unfinished escape sequence"
+msgstr ""
+
+msgid "invalid escape sequence"
+msgstr ""
+
+msgid "expected string"
+msgstr ""
+
+msgid "string is not valid UTF-8"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter replacement string:"
+msgid "control character in string"
+msgstr "输入替换字符串: "
+
+#, fuzzy
+#| msgid "Enter replacement string:"
+msgid "unterminated string"
+msgstr "输入替换字符串: "
+
+#, fuzzy
+#| msgid "Invalid token number %d"
+msgid "invalid number"
+msgstr "无效的标记个数 %d"
+
+msgid "expected ':'"
+msgstr ""
+
+msgid "unterminated object"
+msgstr ""
+
+msgid "expected ',' or '}'"
+msgstr ""
+
+msgid "unterminated array"
+msgstr ""
+
+msgid "expected ',' or ']'"
+msgstr ""
+
+msgid "nesting is too deep"
+msgstr ""
+
+msgid "too many nodes"
+msgstr ""
+
+msgid "expected value"
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid value"
+msgid "invalid value"
+msgstr "无效的值"
+
+msgid "trailing data"
+msgstr ""
+
+#, c-format
+msgid "%s is not a regular file"
+msgstr ""
+
+msgid "XML parse error at byte %"
+msgstr ""
+
+msgid "expected a name"
+msgstr ""
+
+#, fuzzy
+#| msgid "Unexpected EOF on archive file"
+msgid "expected a quoted attribute value"
+msgstr "档案文件出现不可预料的文件末端"
+
+msgid "'<' is not allowed in an attribute value"
+msgstr ""
+
+msgid "unterminated attribute value"
+msgstr ""
+
+msgid "unterminated comment"
+msgstr ""
+
+msgid "unterminated processing instruction"
+msgstr ""
+
+msgid "unterminated DOCTYPE subset"
+msgstr ""
+
+msgid "unterminated DOCTYPE"
+msgstr ""
+
+msgid "unterminated CDATA section"
+msgstr ""
+
+msgid "expected '=' after attribute name"
+msgstr ""
+
+msgid "unterminated element"
+msgstr ""
+
+msgid "mismatched end tag"
+msgstr ""
+
+msgid "expected '>' to close an end tag"
+msgstr ""
+
+msgid "expected '<'"
+msgstr ""
+
+msgid "expected '>' or '/>'"
+msgstr ""
+
+msgid "XML input is not valid UTF-8"
+msgstr ""
+
+msgid "no element found"
+msgstr ""
+
+msgid "YAML parse error at line %"
+msgstr ""
+
+msgid "tab character in indentation"
+msgstr ""
+
+msgid "expected key: value"
+msgstr ""
+
+msgid "unexpected indentation"
+msgstr ""
+
+msgid ""
+"Encrypted 7z needs the external tool, it is off in the archiver settings"
+msgstr ""
+
+msgid "Encrypted 7z archives need the 7z program to be installed"
+msgstr ""
+
+msgid "Archive password"
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Enter password:"
+msgstr "密码: "
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Wrong password"
+msgstr "密码: "
+
+msgid "Creating archive..."
+msgstr ""
+
+msgid ""
+"7z encryption needs the external tool, it is off in the archiver settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Encod&ing..."
+msgid "Extracting..."
+msgstr "编码(&I)..."
+
+msgid "Please wait..."
+msgstr ""
+
+msgid "Running external archiver, please wait..."
+msgstr ""
+
+#, fuzzy
+#| msgid "FileOperation|Delete"
+msgid "Operation cancelled"
+msgstr "FileOperation|删除"
+
+#, c-format
+msgid "Packing: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Existing:"
+msgid "Extracting: %s"
+msgstr "现有："
+
+#, fuzzy, c-format
+#| msgid "Time: %s"
+msgid "Testing: %s"
+msgstr "时间: %s"
+
+#, fuzzy
+#| msgid "Open files"
+msgid "Open archive"
+msgstr "打开文件"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open tar archive\n"
+#| "%s"
+msgid "Create archive"
+msgstr ""
+"无法打开 tar 档案文件\n"
+"%s"
+
+msgid "Extract archive(s)"
+msgstr ""
+
+msgid "Test archive(s)"
+msgstr ""
+
+msgid "Archiver settings"
+msgstr ""
+
+msgid "Cre&ate archive"
+msgstr ""
+
+#, c-format
+msgid ""
+"Archive: %s\n"
+"\n"
+msgstr ""
+
+msgid "Archive browser"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Archive file:"
+msgstr "保存文件"
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "File not found: %s"
+msgstr "文件: %s"
+
+#, fuzzy
+#| msgid "Unable to create event '%s'!"
+msgid "Failed to create archive"
+msgstr "无法创建事件“%s”!"
+
+msgid "Extract"
+msgstr ""
+
+#, fuzzy
+#| msgid "Data directory:"
+msgid "Destination directory:"
+msgstr "数据目录: "
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Failed to run:\n"
+#| "%s\n"
+msgid "Failed to extract: %s"
+msgstr ""
+"运行失败: \n"
+"%s\n"
+
+msgid "Test"
+msgstr ""
+
+#, c-format
+msgid "%s: test not supported for this format"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open tar archive\n"
+#| "%s"
+msgid "Cannot open nested archive"
+msgstr ""
+"无法打开 tar 档案文件\n"
+"%s"
+
+msgid "extfs helper does not support adding files"
+msgstr ""
+
+msgid "Adding to archive..."
+msgstr ""
+
+msgid "extfs helper does not support deleting files"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete macr&o..."
+msgid "Deleting from archive..."
+msgstr "删除宏(&O)..."
+
+#, fuzzy
+#| msgid "Other options"
+msgid "Other formats"
+msgstr "其它选项"
+
+msgid "No other formats are enabled"
+msgstr ""
+
+msgid "Format"
+msgstr ""
+
+msgid "&zip"
+msgstr ""
+
+msgid "&7z"
+msgstr ""
+
+#, fuzzy
+#| msgid "other"
+msgid "O&ther:"
+msgstr "其它"
+
+msgid "St&ore"
+msgstr ""
+
+msgid "&Fastest"
+msgstr ""
+
+msgid "&Maximum"
+msgstr ""
+
+msgid "Archive path:"
+msgstr ""
+
+msgid "Compression"
+msgstr ""
+
+msgid "Encryption"
+msgstr ""
+
+#, fuzzy
+#| msgid "Edit files"
+msgid "Encrypt &files"
+msgstr "编辑文件"
+
+msgid "Encrypt hea&ders"
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Show pass&word"
+msgstr "密码: "
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Verify password:"
+msgstr "密码: "
+
+#, fuzzy
+#| msgid "&Options"
+msgid "Options"
+msgstr "选项(&O)"
+
+msgid "Store relative &paths"
+msgstr ""
+
+#, fuzzy
+#| msgid "Find rejects after patching"
+msgid "&Delete files after archiving"
+msgstr "应用补丁后查找被拒绝的补丁"
+
+msgid "Passwords do not match"
+msgstr ""
+
+msgid "Encryption needs a password"
+msgstr ""
+
+msgid "This format does not support encryption"
+msgstr ""
+
+msgid "Only 7z can encrypt archive headers"
+msgstr ""
+
+msgid "This format is turned off in the archiver settings"
+msgstr ""
+
+msgid "&builtin"
+msgstr ""
+
+msgid "bo&th"
+msgstr ""
+
+msgid "&external"
+msgstr ""
+
+msgid "&off"
+msgstr ""
+
+#, c-format
+msgid "Found in PATH: %s"
+msgstr ""
+
+msgid "no"
+msgstr ""
+
+msgid "Pack"
+msgstr ""
+
+msgid "Unpack"
+msgstr ""
+
+msgid "Both:"
+msgstr ""
+
+msgid "use libarchive when possible; fall back to the"
+msgstr ""
+
+msgid "external tool for unsupported archives."
+msgstr ""
+
+msgid "For 7z, this applies only to encrypted archives."
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid "External:"
+msgstr "外部面板"
+
+msgid "always use the external tool for this format."
+msgstr ""
+
+#, fuzzy
+#| msgid "Chmod command"
+msgid "Pack command:"
+msgstr "Chmod 命令"
+
+msgid "Unpack helper:"
+msgstr ""
+
+msgid "This backend is not available for the format"
+msgstr ""
+
+msgid "Pack binary:"
+msgstr ""
+
+msgid "Pack arguments:"
+msgstr ""
+
+msgid "Unpack binary:"
+msgstr ""
+
+msgid "Unpack arguments:"
+msgstr ""
+
+msgid "Test binary:"
+msgstr ""
+
+msgid "Test arguments:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter command and arguments:"
+msgid "File list argument:"
+msgstr "过滤命令和参数: "
+
+msgid "Extfs helper:"
+msgstr ""
+
+msgid "Format  Ext       Pack     Unpack   Tool       On"
+msgstr ""
+
+msgid " Builtin (libarchive) "
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid " External archivers "
+msgstr "外部面板"
+
+msgid " Hint "
+msgstr ""
+
+msgid "Space - change   F4 - tool params   ! - missing"
+msgstr ""
+
+msgid "Arcmc"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Verbose operation"
+msgid "Abort current operation?"
+msgstr "冗余操作(&V)"
+
+#, fuzzy
+#| msgid "ftpfs: Reading FTP directory %s... %s%s"
+msgid "Reading directory listing..."
+msgstr "ftpfs: 正在读取 FTP 目录 %s... %s%s"
+
+#, fuzzy
+#| msgid ""
+#| "Unexpected end of file\n"
+#| "%s"
+msgid "Unexpected end of TAR stream"
+msgstr ""
+"异常的文件结束\n"
+"%s"
+
+msgid "File not found in TAR stream"
+msgstr ""
+
+msgid "Corrupt TAR header: invalid size field"
+msgstr ""
+
+msgid "Read error from TAR stream"
+msgstr ""
+
+msgid "Write error to temp file"
+msgstr ""
+
+msgid "Skip error in TAR stream"
+msgstr ""
+
+msgid "Docker"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Abort"
+msgid "Aborted"
+msgstr "中止(&A)"
+
+msgid "tar stream from docker cp was truncated"
+msgstr ""
+
+#, fuzzy
+#| msgid "Follow &links"
+msgid "Follow"
+msgstr "跟随链接(&L)"
+
+msgid "Show (head [n], tail [n], 30s, 5m, 1h, 24h; empty = unset):"
+msgstr ""
+
+msgid "Pipe through (shell command, empty = raw):"
+msgstr ""
+
+msgid "Container logs source"
+msgstr ""
+
+#, c-format
+msgid "Show: expected 'head' or 'head <N>'; got %s."
+msgstr ""
+
+#, c-format
+msgid "Show: expected 'tail' or 'tail <N>'; got %s."
+msgstr ""
+
+msgid "No container selected."
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "Cannot prepare logs source."
+msgstr "无法建立目录%s"
+
+msgid "Image:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Owner name:"
+msgid "Container name:"
+msgstr "所有者名字: "
+
+#, fuzzy
+#| msgid "Command"
+msgid "Command:"
+msgstr "命令"
+
+msgid "Run in &detached mode (-d)"
+msgstr ""
+
+msgid "Create Docker Container"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Local"
+msgid "Local"
+msgstr "本地(&L)"
+
+msgid "SSH"
+msgstr ""
+
+msgid "Connection type:"
+msgstr ""
+
+msgid "Docker executable:"
+msgstr ""
+
+msgid "SSH settings (used for SSH):"
+msgstr ""
+
+msgid "Host:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&User"
+msgid "User:"
+msgstr "用户(&U)"
+
+msgid "Port:"
+msgstr ""
+
+msgid "Private key file:"
+msgstr ""
+
+msgid "New Docker Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Edit Docker Connection"
+msgstr "编辑器选项"
+
+msgid "Host is required for SSH connection"
+msgstr ""
+
+msgid "Port must be a number between 1 and 65535."
+msgstr ""
+
+msgid "Failed to start docker command"
+msgstr ""
+
+msgid "Local Docker"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot open docker path: %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy
+#| msgid "Cannot fetch a local copy of %s"
+msgid "Cannot delete the last local Docker profile."
+msgstr "无法获取 %s 的本地副本"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to save connection profiles."
+msgstr "无法保存到文件"
+
+msgid "A profile with this label already exists."
+msgstr ""
+
+msgid "New Connection"
+msgstr ""
+
+msgid "FTP"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "Reading remote directory..."
+msgstr "无法建立目录%s"
+
+msgid "&Basic"
+msgstr ""
+
+msgid "&Security"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced"
+msgstr "高级 chown (&A)"
+
+msgid "Connection name:"
+msgstr ""
+
+msgid "Remote path:"
+msgstr ""
+
+msgid "FTP Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "&None"
+msgid "&None (FTP)"
+msgstr "无(&N)"
+
+msgid "&Try SSL"
+msgstr ""
+
+msgid "SSL &commands only"
+msgstr ""
+
+msgid "SSL &all (FTPS)"
+msgstr ""
+
+msgid "A&uto"
+msgstr ""
+
+msgid "IPv&4"
+msgstr ""
+
+msgid "IPv&6"
+msgstr ""
+
+msgid "SSL/TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use &passive mode"
+msgid "&Passive mode"
+msgstr "使用被动模式(&P)"
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connection"
+msgstr "确认"
+
+msgid "Connect timeout:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat times:"
+msgid "Response timeout:"
+msgstr "重复次数: "
+
+msgid "TCP &Keepalive"
+msgstr ""
+
+#, fuzzy
+#| msgid "Internal error:"
+msgid "Interval:"
+msgstr "内部错误: "
+
+msgid "&HTTP"
+msgstr ""
+
+msgid "SOCKS&4"
+msgstr ""
+
+msgid "SOCKS&5"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "Advanced"
+msgstr "高级 chown (&A)"
+
+#, fuzzy
+#| msgid "&Encoding..."
+msgid "Encoding:"
+msgstr "编码(&E)..."
+
+msgid "Commands after login:"
+msgstr ""
+
+msgid "Proxy"
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Pass:"
+msgstr "密码: "
+
+msgid "FTP connection"
+msgstr ""
+
+#, c-format
+msgid "Connecting to %s:%d..."
+msgstr ""
+
+msgid "Initializing network session..."
+msgstr ""
+
+msgid "Authenticating and probing directory..."
+msgstr ""
+
+#, c-format
+msgid "Initial attempt failed: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter password for %s "
+msgid "Enter password for %s@%s"
+msgstr "sftp: 请输入 %s 的密码 "
+
+#, fuzzy
+#| msgid "Password:"
+msgid "FTP password"
+msgstr "密码: "
+
+msgid "Retrying with password..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Reading failed"
+msgid "Retry failed: %s"
+msgstr "读失败"
+
+msgid "Connection successful, loading entries..."
+msgstr ""
+
+#, c-format
+msgid "Copy of %s"
+msgstr ""
+
+msgid "Git panel"
+msgstr ""
+
+msgid ""
+"This operation is irreversible.\n"
+"Selected files will be reset to HEAD.\n"
+"Untracked files will be deleted.\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Resize"
+msgid "&Reset"
+msgstr "调整大小(&R)"
+
+#, fuzzy
+#| msgid "Add to hotlist"
+msgid "Add to favorites"
+msgstr "添加到活动表"
+
+#, fuzzy
+#| msgid "Directory path:"
+msgid "Repository path:"
+msgstr "目录路径: "
+
+msgid "Failed to start kubectl"
+msgstr ""
+
+msgid "--follow and --previous are mutually exclusive."
+msgstr ""
+
+msgid "Container (empty = first):"
+msgstr ""
+
+msgid "Container (available: "
+msgstr ""
+
+msgid "Previous container instance"
+msgstr ""
+
+msgid "Pod logs source"
+msgstr ""
+
+msgid "No kubectl context set for logs."
+msgstr ""
+
+msgid "No namespace set for logs."
+msgstr ""
+
+msgid "No pod selected."
+msgstr ""
+
+#, fuzzy
+#| msgid "Name:"
+msgid "Namespace:"
+msgstr "名字: "
+
+msgid "Switch Namespace"
+msgstr ""
+
+#, fuzzy
+#| msgid "Owner name:"
+msgid "Context name:"
+msgstr "所有者名字: "
+
+msgid "Add Context to Favorites"
+msgstr ""
+
+msgid "the decompiler failed"
+msgstr ""
+
+msgid "no decompiler configured"
+msgstr ""
+
+msgid "truncated table stream"
+msgstr ""
+
+msgid "truncated row count array"
+msgstr ""
+
+#, c-format
+msgid "unsupported metadata table 0x%02x"
+msgstr ""
+
+msgid "truncated table rows"
+msgstr ""
+
+msgid "truncated section table"
+msgstr ""
+
+msgid "bad metadata version"
+msgstr ""
+
+msgid "no stream headers"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "no metadata table stream"
+msgstr "无法创建管道数据流"
+
+#, fuzzy
+#| msgid "Cannot save file"
+msgid "not a PE file"
+msgstr "无法保存文件"
+
+msgid "truncated COFF header"
+msgstr ""
+
+msgid "truncated optional header"
+msgstr ""
+
+msgid "unknown optional header"
+msgstr ""
+
+#, fuzzy
+#| msgid "Print data directory"
+msgid "no CLI data directory"
+msgstr "打印数据目录"
+
+msgid "not a managed assembly"
+msgstr ""
+
+msgid "bad CLI header"
+msgstr ""
+
+msgid "no metadata root"
+msgstr ""
+
+msgid "Kind"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "Assembly"
+msgstr ""
+
+msgid ".NET assembly browser"
+msgstr ""
+
+msgid "mcpeek"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "mcpeek failed"
+msgstr "管道失败"
+
+msgid "cannot read assembly"
+msgstr ""
+
+msgid "uses of "
+msgstr ""
+
+#, fuzzy
+#| msgid "Source"
+msgid "no source"
+msgstr "来源"
+
+msgid "the project could not be written"
+msgstr ""
+
+msgid "no text"
+msgstr ""
+
+msgid "Export project"
+msgstr ""
+
+msgid "Export the assembly as a project to:"
+msgstr ""
+
+msgid "Decompiler command (empty: look for ilspycmd)"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "Decompiler: %s"
+msgstr "文件: %s"
+
+#, fuzzy
+#| msgid "Searching"
+msgid "Searching..."
+msgstr "正在搜索"
+
+msgid "No uses found"
+msgstr ""
+
+msgid "Struct look"
+msgstr ""
+
+msgid "&Global"
+msgstr ""
+
+msgid "N&one"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Row n&umber"
+msgstr "行号 (&L)"
+
+msgid "Row o&ffset"
+msgstr ""
+
+msgid "&Auto (right when wide)"
+msgstr ""
+
+msgid "&Right of the tree"
+msgstr ""
+
+msgid "&Below the hex zone"
+msgstr ""
+
+msgid "Zones"
+msgstr ""
+
+msgid "Tree lines (0 = the rest):"
+msgstr ""
+
+msgid "Hex zone lines (0 hides):"
+msgstr ""
+
+msgid "Def-file lines (0 = the rest):"
+msgstr ""
+
+msgid "Def-file width on the right, %:"
+msgstr ""
+
+msgid "Def-file zone"
+msgstr ""
+
+#, fuzzy
+#| msgid "Directory tree"
+msgid "Structure tree"
+msgstr "目录树"
+
+msgid "Name column width:"
+msgstr ""
+
+msgid "Build rows lazily above:"
+msgstr ""
+
+msgid "Float format (printf):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Show &hidden structures"
+msgstr "显示隐藏文件(&H)"
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Saved bytes"
+msgstr "另存为"
+
+msgid "Keep fragments, days (0 = always):"
+msgstr ""
+
+#, fuzzy
+#| msgid "columns"
+msgid "Offset column"
+msgstr "列"
+
+msgid "First grid column"
+msgstr ""
+
+msgid "Struct look settings"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot write to the %s file:\n"
+#| "%s\n"
+msgid "Cannot write the settings file"
+msgstr ""
+"无法写入 %s 文件: \n"
+"%s\n"
+
+msgid "Struct loo&k"
+msgstr ""
+
+#, fuzzy
+#| msgid "read &by others"
+msgid "Read bytes"
+msgstr "其他人读取(&B)"
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "Cannot read the bytes"
+msgstr "无法创建管道数据流"
+
+#, fuzzy
+#| msgid "wr&ite by others"
+msgid "Write bytes"
+msgstr "其他人写入(&I)"
+
+msgid "The file exists. Overwrite?"
+msgstr ""
+
+msgid "A buffer is read-only"
+msgstr ""
+
+msgid "The fragment is longer than the target. Use the first bytes only?"
+msgstr ""
+
+#, c-format
+msgid "%u bytes read, the rest is unchanged"
+msgstr ""
+
+#, c-format
+msgid "%s: %lld bytes at %08llX"
+msgstr ""
+
+#, c-format
+msgid "Save bytes #%d"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cop&y to file..."
+msgid "To a &file..."
+msgstr "复制到文件(&Y)..."
+
+#, c-format
+msgid "%s: %lld bytes at %08llX from file:"
+msgstr ""
+
+#, c-format
+msgid "Read bytes into %s (%s): %lld bytes at %08llX"
+msgstr ""
+
+msgid "      ... a file"
+msgstr ""
+
+msgid "This field cannot be edited"
+msgstr ""
+
+msgid "The bytes of this field are not text, edit them in the hex zone"
+msgstr ""
+
+msgid "New value:"
+msgstr ""
+
+msgid "Offset (expression, labels of the current structure):"
+msgstr ""
+
+#, c-format
+msgid "Offset 0x%llX is outside the file"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select structure"
+msgstr "选择群组(&G)"
+
+#, c-format
+msgid "%s: %ld bytes, file %lld bytes"
+msgstr ""
+
+#, c-format
+msgid "%s: variable size, file %lld bytes"
+msgstr ""
+
+#, c-format
+msgid "%s needs %ld bytes, only %lld left after 0x%llX"
+msgstr ""
+
+msgid "Rows:"
+msgstr ""
+
+msgid "No def-files found on the search path"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select def-file"
+msgstr "选择语言"
+
+#, fuzzy, c-format
+#| msgid "Error reading %s"
+msgid "No errors in %s"
+msgstr "读取错误 %s"
+
+msgid "Def-file errors"
+msgstr ""
+
+msgid "&Hex bytes"
+msgstr ""
+
+msgid "&Text"
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search for:"
+msgstr "搜索完成"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search bytes"
+msgstr "搜索完成"
+
+#, c-format
+msgid "Not a hex byte string: %s"
+msgstr ""
+
+msgid "Not found"
+msgstr ""
+
+msgid "No room for another one after this"
+msgstr ""
+
+#, fuzzy
+#| msgid "A file already exists with this name"
+msgid "Already at the first one"
+msgstr "同名文件已存在"
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name or value:"
+msgstr "文件名: "
+
+#, fuzzy
+#| msgid "Tabulation"
+msgid "Calculator"
+msgstr "制表"
+
+#, fuzzy
+#| msgid "E&xtension"
+msgid "Expression:"
+msgstr "扩展名(&X)"
+
+#, fuzzy
+#| msgid "Save block"
+msgid "block"
+msgstr "保存块"
+
+msgid "The current row has no bytes; in the hex zone mark a block"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Save"
+msgid "Save"
+msgstr "保存(&S)"
+
+#, fuzzy
+#| msgid "File was modified. Save with exit?"
+msgid "File was modified. Save changes?"
+msgstr "文件已被修改。保存并退出?"
+
+msgid "Table"
+msgstr ""
+
+msgid "The table has no rows"
+msgstr ""
+
+msgid "The table has no columns"
+msgstr ""
+
+#, c-format
+msgid "Jump target 0x%llX is outside the file"
+msgstr ""
+
+msgid "Goto"
+msgstr "跳到"
+
+#, fuzzy
+#| msgid "ButtonBar|Static"
+msgid "ButtonBar|Struct"
+msgstr "ButtonBar|静态"
+
+msgid "ButtonBar|Goto"
+msgstr "ButtonBar|跳转"
+
+#, fuzzy
+#| msgid "ButtonBar|Delete"
+msgid "ButtonBar|DefFil"
+msgstr "ButtonBar|删除"
+
+msgid "ButtonBar|Hex"
+msgstr "ButtonBar|16进制"
+
+#, fuzzy
+#| msgid "ButtonBar|Parse"
+msgid "ButtonBar|Errors"
+msgstr "ButtonBar|解析"
+
+msgid "MongoDB"
+msgstr ""
+
+msgid "Cluster is read-only."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Insert file"
+msgid "Insert failed: %s"
+msgstr "插入文件"
+
+#, c-format
+msgid "Cannot build bucket view: %s"
+msgstr ""
+
+#, c-format
+msgid "A connection named '%s' already exists."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid "Cannot save connection: %s"
+msgstr ""
+"无法保存文件:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Cannot fetch a local copy of %s"
+msgid "Cannot fetch document: %s"
+msgstr "无法获取 %s 的本地副本"
+
+msgid "Failed to render document as JSON."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot open temp file: %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to write temp file."
+msgstr "无法保存到文件"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid "Cannot read edited file: %s"
+msgstr ""
+"无法保存文件:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "ftpfs: abort error: %s"
+msgid "JSON parse error: %s"
+msgstr "ftpfs: 中止错误: %s"
+
+#, fuzzy, c-format
+#| msgid "Pipe failed"
+msgid "Update failed: %s"
+msgstr "管道失败"
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot read source file: %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy, c-format
+#| msgid "Delete %s?"
+msgid "Delete failed: %s"
+msgstr "删除 %s?"
+
+msgid "MongoDB filter"
+msgstr ""
+
+msgid "MongoDB sample"
+msgstr ""
+
+msgid "No documents in current scope."
+msgstr ""
+
+msgid "Note: a filter shows a flat list (no folders), up to %"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter (JSON):"
+msgstr "过滤"
+
+msgid "Projection:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Sort..."
+msgid "Sort:"
+msgstr "排序(&S)..."
+
+msgid "Limit (0 = no override):"
+msgstr ""
+
+msgid "&Wizard"
+msgstr ""
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit as &File"
+msgstr "编辑文件"
+
+msgid "MongoDB find"
+msgstr ""
+
+#, c-format
+msgid "Cluster '%s' not found in mongo.ini."
+msgstr ""
+
+#, c-format
+msgid "Connecting to '%s'..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid "Cannot connect to '%s': %s"
+msgstr ""
+"无法保存文件 %s:\n"
+"%s"
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Listing databases..."
+msgstr "列表格式(&L)…"
+
+#, c-format
+msgid "Cannot list databases: %s"
+msgstr ""
+
+msgid "Not connected to a cluster."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "Listing collections in '%s'..."
+msgstr "sftp: 正在连接 %s"
+
+#, c-format
+msgid "Cannot list collections in '%s': %s"
+msgstr ""
+
+msgid "Not inside a database."
+msgstr ""
+
+#, fuzzy
+#| msgid "Loading: %3d%%"
+msgid "Loading %s (%"
+msgstr "正在载入: %3d%%"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid "Cannot list documents in '%s': %s"
+msgstr ""
+"无法保存文件 %s:\n"
+"%s"
+
+#, c-format
+msgid "Counting documents in '%s'..."
+msgstr ""
+
+#, c-format
+msgid "Cannot count documents in '%s': %s"
+msgstr ""
+
+msgid "Building bucket view..."
+msgstr ""
+
+#, c-format
+msgid "Bucket '%s' not found."
+msgstr ""
+
+msgid "URI (mongodb:// or mongodb+srv://):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permissions (octal):"
+msgid "Description (optional):"
+msgstr "权限(8进制): "
+
+msgid "&Read-only (block insert / edit / delete)"
+msgstr ""
+
+msgid "New MongoDB connection"
+msgstr ""
+
+msgid "Edit MongoDB connection"
+msgstr ""
+
+msgid "MongoDB connection"
+msgstr ""
+
+msgid "Connection name must be non-empty and contain no '[', ']' characters."
+msgstr ""
+
+msgid "URI must not be empty."
+msgstr ""
+
+msgid "&auto"
+msgstr ""
+
+msgid "&none"
+msgstr ""
+
+msgid "Default cluster:"
+msgstr ""
+
+msgid "Bucket strategy:"
+msgstr ""
+
+msgid "Leaf size (flat docs):"
+msgstr ""
+
+msgid "Fanout:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Invert selection"
+msgid "Server selection (ms):"
+msgstr "反选(&I)"
+
+msgid "Connect (ms):"
+msgstr ""
+
+msgid "Socket (ms):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat times:"
+msgid "Op max time (ms):"
+msgstr "重复次数: "
+
+msgid "MongoDB settings"
+msgstr ""
+
+msgid "Numeric fields must be valid; leaf size > 0, fanout >= 2."
+msgstr ""
+
+#, fuzzy
+#| msgid "Unable to save setup to %s"
+msgid "Failed to save settings."
+msgstr "无法保存设置到 %s"
+
+msgid "== Equals ($eq)"
+msgstr ""
+
+msgid "!= Not equal ($ne)"
+msgstr ""
+
+msgid "> Greater ($gt)"
+msgstr ""
+
+msgid ">= Greater or equal ($gte)"
+msgstr ""
+
+msgid "< Less ($lt)"
+msgstr ""
+
+msgid "<= Less or equal ($lte)"
+msgstr ""
+
+msgid "IN array ($in)"
+msgstr ""
+
+msgid "NOT IN array ($nin)"
+msgstr ""
+
+msgid "Regex - raw pattern ($regex)"
+msgstr ""
+
+msgid "LIKE - wildcard * ? ($regex)"
+msgstr ""
+
+msgid "Exists ($exists)"
+msgstr ""
+
+msgid "Find by ObjectId"
+msgstr ""
+
+msgid "Find by date range"
+msgstr ""
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name"
+msgstr "文件名: "
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name:"
+msgstr "文件名: "
+
+msgid "(type a path, e.g. a.b)"
+msgstr ""
+
+msgid "Field name (dot-path for nested):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid value"
+msgid "Field values"
+msgstr "无效的值"
+
+msgid "Choose a field first."
+msgstr ""
+
+msgid "No values found."
+msgstr ""
+
+msgid "No values in current scope."
+msgstr ""
+
+msgid "Field values (truncated)"
+msgstr ""
+
+msgid "Insert query template"
+msgstr ""
+
+msgid "Template"
+msgstr ""
+
+msgid ""
+"This template cannot be represented as builder rules.\n"
+"Use Edit as File in the find dialog to insert it as raw JSON."
+msgstr ""
+
+#, fuzzy
+#| msgid "Esperanto"
+msgid "Operator"
+msgstr "世界语"
+
+msgid "Field"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Join"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Filter Builder"
+msgstr "过滤视图"
+
+msgid " Preview "
+msgstr ""
+
+msgid " Ins: add   Del: remove F3: values "
+msgstr ""
+
+#, fuzzy
+#| msgid "Co&py to clipfile"
+msgid "&Apply to Filter"
+msgstr "复制到剪切板文件(&P)"
+
+msgid "&Template"
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid "&External panelize"
+msgstr "外部面板"
+
+#, fuzzy
+#| msgid "Paneli&ze"
+msgid "Paneli&ze (empty)"
+msgstr "面板化(&Z)"
+
+msgid "E&xternal panelize"
+msgstr "外部面板(&X)"
+
+msgid "Paneli&ze"
+msgstr "面板化(&Z)"
+
+msgid "Add to external panelize"
+msgstr "添加到外部面板"
+
+msgid "Enter command label:"
+msgstr "输入命令标签: "
+
+#, fuzzy
+#| msgid "Edit files"
+msgid "Edit preset"
+msgstr "编辑文件"
+
+msgid "No paths to panelize."
+msgstr ""
+
+msgid "(empty)"
+msgstr ""
+
+msgid "Command produced no output; nothing to panelize."
+msgstr ""
+
+msgid "Modified git files"
+msgstr "修改过的 git 文件"
+
+msgid "Find rejects after patching"
+msgstr "应用补丁后查找被拒绝的补丁"
+
+msgid "Find *.orig after patching"
+msgstr "应用补丁后查找 .orig"
+
+msgid "Find SUID and SGID programs"
+msgstr "查找 SUID 和 SGID 程序"
+
+msgid "&Add new"
+msgstr "添加新(&A)"
+
+msgid "&Remove"
+msgstr "删除(&R)"
+
+msgid "Command"
+msgstr "命令"
+
+msgid "S3"
+msgstr ""
+
+msgid "Preparing signed request..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Failed to initialize event system"
+msgid "Failed to initialize network session."
+msgstr "事件系统初始化失败"
+
+msgid "Signing request and contacting endpoint..."
+msgstr ""
+
+#, c-format
+msgid "HTTP error %ld"
+msgstr ""
+
+msgid "Reading bucket list..."
+msgstr ""
+
+msgid "S3 connection"
+msgstr ""
+
+#, c-format
+msgid "Connecting to %s..."
+msgstr ""
+
+msgid "Using pre-configured bucket list."
+msgstr ""
+
+msgid "No valid bucket names in configuration."
+msgstr ""
+
+#, c-format
+msgid "ListBuckets failed: %s"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "ListBuckets failed."
+msgstr "管道失败"
+
+msgid "Hint: set Buckets field in connection settings to avoid auto-detection."
+msgstr ""
+
+msgid "S3: enter bucket name"
+msgstr ""
+
+msgid ""
+"ListBuckets is not available.\n"
+"Enter bucket name manually:"
+msgstr ""
+
+msgid "Bucket list loaded."
+msgstr ""
+
+msgid "Create S3 Bucket"
+msgstr ""
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Bucket name:"
+msgstr "文件名: "
+
+msgid "Copying is not supported at this navigation level"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Access time"
+msgid "Access Key:"
+msgstr "访问时间(&A)"
+
+msgid "Secret Key:"
+msgstr ""
+
+msgid "Region:"
+msgstr ""
+
+msgid "Endpoint URL (for MinIO/Ceph):"
+msgstr ""
+
+msgid "Buckets (comma-separated, if auto-detect fails):"
+msgstr ""
+
+msgid "Use &path-style URLs"
+msgstr ""
+
+msgid "S3 Connection"
+msgstr ""
+
+msgid "Server/UNC path:"
+msgstr ""
+
+msgid "Username (DOMAIN\\user):"
+msgstr ""
+
+msgid "SMB Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "SFTP to machine"
+msgid "SFTP connection"
+msgstr "SFTP 到主机"
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "无法打开文件 %s"
+
+#, c-format
+msgid "Cannot create an SSH session for %s:%d"
+msgstr ""
+
+msgid "SSH handshake..."
+msgstr ""
+
+#, c-format
+msgid "SSH handshake with %s:%d failed"
+msgstr ""
+
+msgid "Authenticating via ssh-agent..."
+msgstr ""
+
+msgid "Authenticating with public key..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter passphrase for %s "
+msgid "Enter passphrase for key %s"
+msgstr "sftp: 请输入 %s 的密码"
+
+msgid "SFTP key passphrase"
+msgstr ""
+
+msgid "Authenticating with password..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "SFTP password"
+msgstr "密码: "
+
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
+msgid "Initializing SFTP session..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot stat the destination\n"
+#| "%s"
+msgid "Cannot start the SFTP session with %s:%d"
+msgstr ""
+"无法查看目标信息 \n"
+"%s"
+
+msgid "Connected."
+msgstr ""
+
+msgid "SFTP"
+msgstr ""
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "&Connection"
+msgstr "确认"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Public key file:"
+msgstr "符号链接文件名: "
+
+#, fuzzy
+#| msgid "Use SI si&ze units"
+msgid "Use SSH &agent"
+msgstr "使用SI大小单位(&Z)"
+
+#, fuzzy
+#| msgid "SFTP to machine"
+msgid "SFTP Connection"
+msgstr "SFTP 到主机"
+
+#, fuzzy
+#| msgid "Timeout:"
+msgid "Timeouts"
+msgstr "超时: "
+
+msgid "Session timeout:"
+msgstr ""
+
+msgid "Keepalive"
+msgstr ""
+
+msgid "SSH &Keepalive"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "IP version"
+msgstr "权限"
+
+#, fuzzy
+#| msgid "Aborting transfer..."
+msgid "Abort current transfer?"
+msgstr "正在中止传输..."
+
+msgid "Downloading"
+msgstr ""
+
+#, fuzzy
+#| msgid "A file already exists with this name"
+msgid "Remote file already exists. Overwrite?"
+msgstr "同名文件已存在"
+
+#, fuzzy
+#| msgid "Loading..."
+msgid "Uploading"
+msgstr "正在载入..."
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid ""
+"Cannot open remote file\n"
+"%s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy, c-format
+#| msgid "Error reading from pipe: %s"
+msgid ""
+"Error reading remote file\n"
+"%s"
+msgstr "读取管道时发生错误: %s"
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "sftp: cannot connect to %s"
+msgstr "sftp: 正在连接 %s"
+
+#, fuzzy, c-format
+#| msgid "sftp: connection to server failed: %s"
+msgid "sftp: cannot read %s"
+msgstr "sftp: 连接服务器失败: %s"
+
+#, fuzzy, c-format
+#| msgid "sftp: connection to server failed: %s"
+msgid "sftp: cannot get the size of %s"
+msgstr "sftp: 连接服务器失败: %s"
+
+msgid "sftp: unsupported seek"
+msgstr ""
+
+msgid "sftp: seek before the start of the file"
+msgstr ""
+
+msgid "&Off"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Errors only"
+msgstr "仅文件(&F)"
+
+msgid "&Commands and replies"
+msgstr ""
+
+msgid "&Full traffic"
+msgstr ""
+
+msgid "Write down the conversation with the remote shell."
+msgstr ""
+
+#, fuzzy
+#| msgid "Load file"
+msgid "Log file:"
+msgstr "加载文件"
+
+msgid "File contents are never written to the log."
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Shell link settings"
+msgstr "Shell 链接到主机"
+
+#, fuzzy
+#| msgid "Cannot open file %s"
+msgid "shell: cannot open the log file"
+msgstr "无法打开文件 %s"
+
+msgid "SSH &compression"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Shell Link Connection"
+msgstr "Shell 链接到主机"
+
+msgid "Connection with this name already exists"
+msgstr ""
+
+msgid "your copy"
+msgstr ""
+
+#, fuzzy
+#| msgid "(stalled)"
+msgid "installed"
+msgstr "(暂停)"
+
+msgid "built in"
+msgstr ""
+
+msgid ""
+"An override belongs to one host. Open a connection, or put the\n"
+"cursor on an address book entry, and try again."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot create %s directory"
+msgid "Cannot create %s"
+msgstr "无法建立目录%s"
+
+#, c-format
+msgid "%s has no override to remove"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot remove %s"
+msgstr "无法打开文件 %s"
+
+#, c-format
+msgid ""
+"%s\n"
+"is found in the list of known hosts but\n"
+"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
+"Are you sure you want to add it to the list of known hosts and continue "
+"connecting?"
+msgstr ""
+
+#, c-format
+msgid ""
+"The authenticity of host\n"
+"%s\n"
+"can't be established!\n"
+"Key fingerprint is\n"
+"%s.\n"
+"Do you want to add it to the list of known hosts and continue connecting?"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter password for %s "
+msgid "shell: Enter password for %s "
+msgstr "sftp: 请输入 %s 的密码 "
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter passphrase for %s "
+msgid "shell: Enter passphrase for %s "
+msgstr "sftp: 请输入 %s 的密码"
+
+msgid ""
+"These helper scripts were written for an older revision\n"
+"and may quietly do less than they should:\n"
+"\n"
+msgstr ""
+
+#, c-format
+msgid "    declares revision %d, expected %d\n"
+msgstr ""
+
+msgid ""
+"\n"
+"Delete a script to go back to the one shipped with mc."
+msgstr ""
+
+msgid "Outdated helper scripts"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: connection to server failed: %s"
+msgid "shell: connection failed"
+msgstr "sftp: 连接服务器失败: %s"
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "shell: cannot read the directory"
+msgstr "无法建立目录%s"
+
+msgid "shell: invalid archive input stream"
+msgstr ""
+
+msgid "shell: archive input stream is closed"
+msgstr ""
+
+msgid "shell: unsupported seek on an archive input stream"
+msgstr ""
+
+msgid "shell: seek before the start of the file"
+msgstr ""
+
+msgid "shell: fetching"
+msgstr ""
+
+msgid "shell: local write failed"
+msgstr ""
+
+msgid "shell: cannot fetch the file"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot insert file"
+msgid "shell: cannot store the file"
+msgstr "无法插入文件"
+
+msgid "shell: storing file"
+msgstr ""
+
+msgid "shell: continuing"
+msgstr ""
+
+msgid "shell: cannot continue the transfer"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot delete %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy, c-format
+#| msgid "Label for \"%s\":"
+msgid "helpers for %s"
+msgstr "“%s”的标签: "
+
+msgid "helpers (no host selected)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Create a new Directory"
+msgid "Create a directory"
+msgstr "创建新目录"
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "shell: cannot create the directory"
+msgstr "无法建立目录%s"
+
+#, fuzzy
+#| msgid "Color options"
+msgid "Clone Connection"
+msgstr "颜色选项"
+
+msgid "New connection name:"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: Invalid host name."
+msgid "shell: Invalid host name."
+msgstr "sftp: 无效的主机名。"
+
+#, c-format
+msgid "shell: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "shell: making connection to %s"
+msgstr "sftp: 正在连接 %s"
+
+#, fuzzy
+#| msgid "sftp: connection interrupted by user"
+msgid "shell: connection interrupted by user"
+msgstr "sftp: 连接被用户中断"
+
+#, fuzzy, c-format
+#| msgid "sftp: connection to server failed: %s"
+msgid "shell: connection to server failed: %s"
+msgstr "sftp: 连接服务器失败: %s"
+
+#, c-format
+msgid ""
+"shell: cannot open %s:\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid "shell: cannot read %s"
+msgstr ""
+
+msgid "shell: found host key of unsupported type: RSA1"
+msgstr ""
+
+msgid "shell: unknown host key type:"
+msgstr ""
+
+#, c-format
+msgid "Permanently added %s to the list of known hosts."
+msgstr ""
+
+msgid "shell: cannot get the remote host key"
+msgstr ""
+
+msgid "shell: unsupported key type, can't check remote host key"
+msgstr ""
+
+msgid "shell: can't compute host key fingerprint hash"
+msgstr ""
+
+msgid "shell: host key verification failed"
+msgstr ""
+
+msgid "shell: failed to init SSH session"
+msgstr ""
+
+msgid "shell: failure establishing SSH session"
+msgstr ""
+
+msgid "shell: authentication failed"
+msgstr ""
+
+msgid "shell: failed to open SSH channel"
+msgstr ""
+
+msgid "shell: failed to exec remote shell"
+msgstr ""
+
+msgid "shfs log: no file name given"
+msgstr ""
+
+#, c-format
+msgid "shfs log: cannot open %s: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "ftpfs: could not create socket: %s"
+msgid "shfs: cannot read %s: %s"
+msgstr "ftpfs: 无法创建套接字: %s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid "shfs: cannot seek in %s: %s"
+msgstr ""
+"无法保存文件 %s:\n"
+"%s"
+
+#, c-format
+msgid "shfs: %s is shorter than the range asked for"
+msgstr ""
+
+msgid "shell: connection is closed"
+msgstr ""
+
+msgid "shell: the remote command failed"
+msgstr ""
+
+#, c-format
+msgid "shell: %s already exists"
+msgstr ""
+
+#, fuzzy
+#| msgid "Home directory path is not absolute"
+msgid "shell: the directory was not created"
+msgstr "主目录路径不是绝对路径"
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "shell: cannot create a pipe"
+msgstr "无法创建管道数据流"
+
+msgid "shell: cannot fork"
+msgstr ""
+
+msgid "shell: no greeting from the remote shell"
+msgstr ""
+
+msgid "shell: the host wants a password; build with libssh2 to supply one"
+msgstr ""
+
+msgid "shell: cannot probe the host"
+msgstr ""
+
+msgid "shell: the remote shell did not answer"
+msgstr ""
+
+msgid "shell: cannot read the remote file"
+msgstr ""
+
+msgid "shell: no transfer in progress"
+msgstr ""
+
+msgid "shell: the transfer was cancelled"
+msgstr ""
+
+msgid "shell: the connection broke"
+msgstr ""
+
+msgid "shell: the transfer was left unfinished"
+msgstr ""
+
+msgid "shell: the transfer failed"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot write to the %s file:\n"
+#| "%s\n"
+msgid "shell: cannot write the remote file"
+msgstr ""
+"无法写入 %s 文件: \n"
+"%s\n"
+
+msgid "shell: fewer bytes were sent than announced"
+msgstr ""
+
+msgid "shell: cannot checksum the remote file"
+msgstr ""
+
+msgid "shell: reading the directory failed"
+msgstr ""
+
+#, c-format
+msgid "Skin file %s does not exist"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid ""
+"Cannot read skin file %s:\n"
+"%s"
+msgstr ""
+"无法保存文件 %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot read skin file %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy, c-format
+#| msgid "Search string not found"
+msgid "Skin %s not found"
+msgstr "没有找到要搜索的字符串"
+
+#, fuzzy, c-format
+#| msgid "Cannot create %s directory"
+msgid "Cannot create directory %s"
+msgstr "无法建立目录%s"
+
+#, c-format
+msgid "\"%s\" is not a skin name: no directory part, not .ini"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "Cannot find the user's skins directory"
+msgstr "无法建立目录%s"
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "Normal text"
+msgstr "普通(&R)"
+
+msgid "Panel text and everything that has no color of its own"
+msgstr ""
+
+msgid "File under cursor"
+msgstr ""
+
+msgid "The file under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Marked all"
+msgid "Marked file"
+msgstr "全部标记(&M)"
+
+msgid "Files marked with Insert or Ctrl-T"
+msgstr ""
+
+msgid "Marked file under cursor"
+msgstr ""
+
+msgid "A file that is both marked and under the cursor"
+msgstr ""
+
+msgid "Panel title, active"
+msgstr ""
+
+msgid ""
+"Text on top of the frame of the active panel: the directory name, Quick view"
+msgstr ""
+
+msgid "Column header"
+msgstr ""
+
+msgid "Header entries of panels: Name, Size, Modify time"
+msgstr ""
+
+msgid "Frame"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panelize"
+msgid "Panel frame"
+msgstr "面板化"
+
+msgid "Command line, selected text"
+msgstr ""
+
+msgid "Selected text in the command line"
+msgstr ""
+
+msgid "Disabled element"
+msgstr ""
+
+msgid "Disabled UI elements, e.g. in Find File and some Options dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Classic pro&gressbar"
+msgid "Progress bar"
+msgstr "经典进度条(&G)"
+
+msgid "Filled part of the progress bar"
+msgstr ""
+
+msgid "Dialog shadow"
+msgstr ""
+
+msgid "Shadow cast by dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: read"
+msgstr "权限"
+
+msgid "The r of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: write"
+msgstr "权限"
+
+msgid "The w of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: execute"
+msgstr "权限"
+
+msgid "The x of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permissions (octal):"
+msgid "Permission: special"
+msgstr "权限(8进制): "
+
+msgid "The s and t of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: none"
+msgstr "权限"
+
+msgid "The - of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Open files"
+msgid "Other files"
+msgstr "打开文件"
+
+#, fuzzy
+#| msgid "Edit hi&ghlighting group file"
+msgid "Files no filehighlight.ini group matches"
+msgstr "编辑突出显示组文件(&G)"
+
+#, fuzzy
+#| msgid "directory"
+msgid "Directory"
+msgstr "目录"
+
+#, fuzzy
+#| msgid "Executable &first"
+msgid "Executable"
+msgstr "可执行文件优先(&f)"
+
+msgid "Hard link"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Stable symlinks"
+msgid "Stale link"
+msgstr "简化符号链接(&S)"
+
+msgid "A symbolic link whose target is gone"
+msgstr ""
+
+#, fuzzy
+#| msgid "Device:     %s"
+msgid "Device"
+msgstr "设备: %s"
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Special file"
+msgstr "保存文件"
+
+msgid "Socket, FIFO, door"
+msgstr ""
+
+msgid "Core dump"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Temporary file"
+msgstr "比较文件(&O)"
+
+msgid "Archive"
+msgstr ""
+
+msgid "Document"
+msgstr ""
+
+#, fuzzy
+#| msgid "Source"
+msgid "Source code"
+msgstr "来源"
+
+msgid "Audio and video"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Database"
+msgstr ""
+
+#, fuzzy
+#| msgid "Output lines:"
+msgid "Input line"
+msgstr "输出行: "
+
+msgid "Input lines in dialogs and the command line"
+msgstr ""
+
+msgid "Input line, unchanged text"
+msgstr ""
+
+msgid "Input text before the first modification or cursor movement"
+msgstr ""
+
+msgid "Input line, selected text"
+msgstr ""
+
+msgid "Text selected in an input line, e.g. with Shift-arrows"
+msgstr ""
+
+msgid "Input history button"
+msgstr ""
+
+msgid "The button that opens the history of an input line"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Command history button"
+msgstr "命令历史(&H)"
+
+msgid "The button that opens the command history"
+msgstr ""
+
+msgid "Dialog background and text"
+msgstr ""
+
+msgid "Focused element"
+msgstr ""
+
+msgid "The element that has the focus"
+msgstr ""
+
+msgid "Hotkey"
+msgstr ""
+
+msgid "Hotkey letters of buttons and checkboxes"
+msgstr ""
+
+msgid "Hotkey of the focused element"
+msgstr ""
+
+msgid "Selected item, list not focused"
+msgstr ""
+
+msgid ""
+"Selected item of a list that does not have the focus, e.g. Find File results "
+"after Tab"
+msgstr ""
+
+msgid "Selected item, list focused"
+msgstr ""
+
+msgid ""
+"Selected item of the focused list, e.g. Find File results or the skin list"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Error dialog background and text"
+msgstr ""
+
+msgid "Item"
+msgstr ""
+
+msgid "Items of the dropdown menu"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Selected item"
+msgstr "选择"
+
+msgid "Hotkey of the selected item"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Menubar visible"
+msgid "Menu bar, inactive"
+msgstr "显示菜单栏(&M)"
+
+msgid "The menu bar when no menu is open"
+msgstr ""
+
+msgid "User menu (F2), editor menu (F11), codepage list (Alt-E)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Function key 1"
+msgid "Function key number"
+msgstr "F1"
+
+msgid "The numbers in the bottom row"
+msgstr ""
+
+#, fuzzy
+#| msgid "Directory label"
+msgid "Key label"
+msgstr "目录标签"
+
+msgid "The labels in the bottom row"
+msgstr ""
+
+msgid "Status bar"
+msgstr ""
+
+msgid "The top line of the editor, the viewer and the diff viewer"
+msgstr ""
+
+msgid "Bold text"
+msgstr ""
+
+msgid "Italic text"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Selected link"
+msgstr "选择语言"
+
+msgid "The link under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "Found: %lu"
+msgid "Found text"
+msgstr "找到: %lu"
+
+msgid "Text with the bold attribute, e.g. a search match"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Selected text"
+msgstr "选择"
+
+#, fuzzy
+#| msgid "&Visible trailing spaces"
+msgid "Tabs and trailing spaces"
+msgstr "行尾空格可见(&V)"
+
+#, fuzzy
+#| msgid "Invalid character"
+msgid "Non-printable characters"
+msgstr "无效的字符"
+
+#, fuzzy
+#| msgid "Right arrow"
+msgid "Right margin"
+msgstr "右箭头键"
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Line numbers"
+msgstr "行号 (&L)"
+
+msgid "The line state column at the left"
+msgstr ""
+
+msgid "Bookmarked line"
+msgstr ""
+
+msgid "Lines bookmarked by hand"
+msgstr ""
+
+msgid "Line found by Find all"
+msgstr ""
+
+msgid "Outside the windows"
+msgstr ""
+
+msgid "Area not covered by any editor window in multi-window mode"
+msgstr ""
+
+msgid "Frame, inactive window"
+msgstr ""
+
+msgid "Frame, active window"
+msgstr ""
+
+msgid "Frame, window being moved"
+msgstr ""
+
+msgid "Frame of a window being moved or resized"
+msgstr ""
+
+msgid "Bold text of manual pages"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "Underlined text"
+msgstr "下划线"
+
+msgid "Underlined text of manual pages"
+msgstr ""
+
+msgid "Bold underlined text"
+msgstr ""
+
+msgid "Heading"
+msgstr ""
+
+msgid "Headings of manual pages"
+msgstr ""
+
+msgid "A search match"
+msgstr ""
+
+#, fuzzy
+msgid "The frame in Quick view"
+msgstr "快速查看(&Q)"
+
+msgid "Default color and the background the terminal is painted on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "Added line"
+msgstr "下划线"
+
+#, fuzzy
+#| msgid "&Remove"
+msgid "Removed line"
+msgstr "删除(&R)"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed line"
+msgstr "修改时间(&H)"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed text"
+msgstr "修改时间(&H)"
+
+msgid "The changed part of a changed line"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot insert file"
+msgid "Changed line, filler"
+msgstr "无法插入文件"
+
+msgid "The rest of a changed line and its counterpart"
+msgstr ""
+
+msgid "Structured view of JSON, YAML and the like"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&lear marked"
+msgid "Collapse marker"
+msgstr "清除已标记的(&L)"
+
+msgid ""
+"The + and - before a node with children; the viewer's normal color when "
+"absent"
+msgstr ""
+
+msgid "Node under cursor"
+msgstr ""
+
+msgid "The viewer's selected color when absent"
+msgstr ""
+
+msgid "Frame, active"
+msgstr ""
+
+msgid "Header"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Selected row"
+msgstr "选择群组(&G)"
+
+msgid "Offset"
+msgstr ""
+
+#, fuzzy
+#| msgid "File &types"
+msgid "Field type"
+msgstr "文件类型(&T)"
+
+msgid "Structure name"
+msgstr ""
+
+msgid "Jump"
+msgstr ""
+
+msgid "Remark"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Marked all"
+msgid "Marked range"
+msgstr "全部标记(&M)"
+
+msgid "The bytes of the field under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed byte"
+msgstr "修改时间(&H)"
+
+msgid "Cursor"
+msgstr ""
+
+msgid "Group separator"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save block"
+msgid "Selected block"
+msgstr "保存块"
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Line number"
+msgstr "行号 (&L)"
+
+#, fuzzy
+#| msgid "directories"
+msgid "Directive"
+msgstr "目录"
+
+#, fuzzy
+#| msgid "Command"
+msgid "Comment"
+msgstr "命令"
+
+msgid "Label"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Horizontal"
+msgid "Light: horizontal"
+msgstr "水平(&H)"
+
+msgid "Light: vertical"
+msgstr ""
+
+msgid "Light: top left corner"
+msgstr ""
+
+msgid "Light: top right corner"
+msgstr ""
+
+msgid "Light: bottom left corner"
+msgstr ""
+
+msgid "Light: bottom right corner"
+msgstr ""
+
+msgid "Light: top tee"
+msgstr ""
+
+msgid "Light: bottom tee"
+msgstr ""
+
+msgid "Light: left tee"
+msgstr ""
+
+msgid "Light: right tee"
+msgstr ""
+
+#, fuzzy
+#| msgid "Right arrow"
+msgid "Light: cross"
+msgstr "右箭头键"
+
+#, fuzzy
+#| msgid "&Horizontal"
+msgid "Heavy: horizontal"
+msgstr "水平(&H)"
+
+msgid "Heavy frames are used for major boxes"
+msgstr ""
+
+msgid "Heavy: vertical"
+msgstr ""
+
+msgid "Heavy: top left corner"
+msgstr ""
+
+msgid "Heavy: top right corner"
+msgstr ""
+
+msgid "Heavy: bottom left corner"
+msgstr ""
+
+msgid "Heavy: bottom right corner"
+msgstr ""
+
+msgid "Heavy: top tee"
+msgstr ""
+
+msgid "The short stem is light"
+msgstr ""
+
+msgid "Heavy: bottom tee"
+msgstr ""
+
+msgid "Heavy: left tee"
+msgstr ""
+
+msgid "Heavy: right tee"
+msgstr ""
+
+msgid "Sort ascending"
+msgstr ""
+
+msgid "In the header row"
+msgstr ""
+
+msgid "Sort descending"
+msgstr ""
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Hidden files shown"
+msgstr "显示隐藏文件(&H)"
+
+msgid "In the top border"
+msgstr ""
+
+msgid "Hidden files hidden"
+msgstr ""
+
+msgid "History: previous"
+msgstr ""
+
+#, fuzzy
+#| msgid "History"
+msgid "History: next"
+msgstr "历史"
+
+#, fuzzy
+#| msgid "History"
+msgid "History: list"
+msgstr "历史"
+
+msgid "File name scrolled, left"
+msgstr ""
+
+msgid "A long file name that continues to the left"
+msgstr ""
+
+msgid "File name scrolled, right"
+msgstr ""
+
+msgid "A long file name that continues to the right"
+msgstr ""
+
+msgid "Find: show matches"
+msgstr ""
+
+#, fuzzy
+#| msgid "&XTerm window title"
+msgid "Editor: window state"
+msgstr "Xterm 窗口标题(&X)"
+
+msgid "In the title of an editor window"
+msgstr ""
+
+msgid "Editor: window close"
+msgstr ""
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor: fold open"
+msgstr "编辑器选项"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor: fold closed"
+msgstr "编辑器选项"
+
+#, fuzzy
+#| msgid "&Up"
+msgid "Up"
+msgstr "上(&U)"
+
+msgid "Not read by mc today"
+msgstr ""
+
+#, fuzzy
+#| msgid "Page Down"
+msgid "Down"
+msgstr "Page Down 键"
+
+#, fuzzy
+#| msgid "&Left"
+msgid "Left"
+msgstr "左(&L)"
+
+#, fuzzy
+#| msgid "&Right"
+msgid "Right"
+msgstr "右(&R)"
+
+msgid "Thumb"
+msgstr ""
+
+msgid "Track"
+msgstr ""
+
+msgid "Spinner frames"
+msgstr ""
+
+msgid "One frame per character, played while mc is busy"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "Panels"
+msgstr "面板: "
+
+#, fuzzy
+#| msgid "File &types"
+msgid "File types"
+msgstr "文件类型(&T)"
+
+#, fuzzy
+#| msgid "Output lines:"
+msgid "Input lines"
+msgstr "输出行: "
+
+msgid "Dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Error reading %s"
+msgid "Error dialogs"
+msgstr "读取错误 %s"
+
+msgid "Menu bar"
+msgstr ""
+
+msgid "Popup menu"
+msgstr ""
+
+#, fuzzy
+#| msgid "ButtonBar|Hex"
+msgid "Button bar"
+msgstr "ButtonBar|16进制"
+
+#, fuzzy
+#| msgid "Edit"
+msgid "Editor"
+msgstr "编辑"
+
+#, fuzzy
+#| msgid "&View"
+msgid "Viewer"
+msgstr "查看(&V)"
+
+#, fuzzy
+#| msgid "Diff viewer: invalid mode"
+msgid "Diff viewer"
+msgstr "Diff 查看器: 模式无效"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Structured view"
+msgstr "过滤视图"
+
+msgid "Struct look: tree"
+msgstr ""
+
+msgid "Struct look: hex"
+msgstr ""
+
+msgid "Struct look: def file"
+msgstr ""
+
+msgid "Frames"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "Panel marks"
+msgstr "面板: "
+
+msgid "Find and editor marks"
+msgstr ""
+
+msgid "Scrollbar (unused)"
+msgstr ""
+
+msgid "Spinner"
+msgstr ""
+
+msgid "Skin &editor"
+msgstr ""
+
+msgid "S&kin editor..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Skin editor"
+msgstr "菜单编辑"
+
+msgid "&Bold"
+msgstr ""
+
+msgid "Ita&lic"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "&Underline"
+msgstr "下划线"
+
+#, fuzzy
+#| msgid "&Reverse"
+msgid "Re&verse"
+msgstr "反向(&R)"
+
+msgid "Blin&k"
+msgstr ""
+
+#, fuzzy
+#| msgid "On dum&b terminals"
+msgid "terminal"
+msgstr "在简易终端上(&b)"
+
+msgid "terminal default"
+msgstr ""
+
+msgid "True color"
+msgstr ""
+
+msgid "Color as #rrggbb or #rgb:"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Source \"%s\" is not a directory\n"
+#| "%s"
+msgid "\"%s\" is not a #rrggbb color"
+msgstr ""
+"源“%s”不是一个目录\n"
+"%s"
+
+msgid "256 colors"
+msgstr ""
+
+#, c-format
+msgid "The picker needs a terminal of %dx%d"
+msgstr ""
+
+msgid "Foreground"
+msgstr ""
+
+msgid "&Inherit"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "&Terminal default"
+msgstr "终端选项"
+
+#, fuzzy
+#| msgid "&Background"
+msgid "Background"
+msgstr "后台(&B)"
+
+msgid "Inh&erit"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Terminal &default"
+msgstr "终端选项"
+
+msgid "Style"
+msgstr ""
+
+msgid "In&herit"
+msgstr ""
+
+msgid "Sample"
+msgstr ""
+
+msgid "16 colors"
+msgstr ""
+
+#, c-format
+msgid "%s: what mc fills in"
+msgstr ""
+
+msgid "built-in"
+msgstr ""
+
+#, c-format
+msgid ""
+"This terminal cannot show the colors of \"%s\".\n"
+"The skin can be edited and saved, but the screen will not follow."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Time: %s %s"
+msgid "Skin: %s  %s"
+msgstr "时间: %s %s"
+
+msgid "Foreground:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Background"
+msgid "Background:"
+msgstr "后台(&B)"
+
+msgid "Attributes:"
+msgstr ""
+
+msgid "Empty = inherited"
+msgstr ""
+
+msgid "One character (empty = built-in):"
+msgstr ""
+
+msgid "Value (empty = built-in):"
+msgstr ""
+
+msgid "One character is expected here"
+msgstr ""
+
+msgid "Description:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Save skin as"
+msgstr "另存为"
+
+#, c-format
+msgid ""
+"This is a %s skin, but [%s] %s uses %s.\n"
+"Save it as a %s skin?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Save skin"
+msgstr "另存为"
+
+msgid "This is a system skin. Save a copy in your skins directory as:"
+msgstr ""
+
+msgid "A skin of this name exists. Overwrite it?"
+msgstr ""
+
+msgid ""
+"The skin is saved. This terminal cannot show it,\n"
+"so the skin mc runs with stays as it was."
+msgstr ""
+
+msgid "Discard the changes?"
+msgstr ""
+
+msgid " on "
+msgstr ""
+
+msgid "inherited"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Modified:   %s"
+msgid "Copied: %s"
+msgstr "最后修改时间: %s"
+
+#, fuzzy
+#| msgid "Searching"
+msgid "&Everything"
+msgstr "正在搜索"
+
+msgid "&Foreground only"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Background"
+msgid "&Background only"
+msgstr "后台(&B)"
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Attributes only"
+msgstr "仅文件(&F)"
+
+msgid "The skin has unsaved changes."
+msgstr ""
+
+msgid "&Discard"
+msgstr "放弃(&D)"
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit as &file"
+msgstr "编辑文件"
+
+#, c-format
+msgid "The skin editor needs a terminal of %dx%d"
+msgstr ""
+
+#, fuzzy
+#| msgid "System data"
+msgid "SQLite database"
+msgstr "系统数据"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open tar archive\n"
+#| "%s"
+msgid "Cannot open database."
+msgstr ""
+"无法打开 tar 档案文件\n"
+"%s"
+
+msgid "The selected path is not a regular local file."
+msgstr ""
+
+msgid "The selected file is not an SQLite database."
+msgstr ""
+
+msgid "The requested table or row page no longer exists."
+msgstr ""
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Database file:"
+msgstr "保存文件"
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "Cannot read the database."
+msgstr "无法创建管道数据流"
+
+#, fuzzy
+#| msgid "undelfs: error"
+msgid "Runtime errors"
+msgstr "undelfs: 错误"
 
 msgid "Choose codepage"
 msgstr "选择代码页"
@@ -3840,27 +9177,10 @@ msgstr ""
 "无法保存文件 %s:\n"
 "%s"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "警告: 无法切换至 %s。\n"
-
-#, c-format
-msgid "Cannot open named pipe %s\n"
-msgstr "无法打开有名管道 %s\n"
-
-msgid "The shell is still active. Quit anyway?"
-msgstr "Shell 仍在运行中。依然退出?"
-
 msgid "With builtin editor and aspell support"
 msgstr ""
 
 msgid "With builtin editor"
-msgstr ""
-
-msgid "With optional subshell support"
-msgstr ""
-
-msgid "With subshell support as default"
 msgstr ""
 
 msgid "With support for background operations"
@@ -3879,6 +9199,10 @@ msgid "With internationalization support"
 msgstr ""
 
 msgid "With ext2fs attributes support"
+msgstr ""
+
+#, c-format
+msgid "   based on GNU Midnight Commander.\n"
 msgstr ""
 
 #, c-format
@@ -3901,15 +9225,16 @@ msgstr ""
 msgid " (using %s)\n"
 msgstr ""
 
-#, c-format
-msgid "Built with libssh2 %d.%d.%d\n"
-msgstr ""
-
 msgid "Virtual File Systems:"
 msgstr "虚拟文件系统: "
 
 msgid "Data types:"
 msgstr "数据类型: "
+
+#, fuzzy
+#| msgid "Search string not found"
+msgid "directory not found"
+msgstr "没有找到要搜索的字符串"
 
 msgid "Home directory:"
 msgstr "Home路径"
@@ -3932,8 +9257,35 @@ msgstr "文件扩展名处理程序: "
 msgid "VFS plugins and scripts:"
 msgstr "VFS 插件和脚本: "
 
+#, fuzzy
+#| msgid "Panel options"
+msgid "Panel plugins:"
+msgstr "面板选项"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor plugins:"
+msgstr "编辑器选项"
+
+msgid "Runtime plugins:"
+msgstr ""
+
+#, fuzzy
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts:"
+msgstr "VFS 插件和脚本: "
+
+msgid "Lua modules:"
+msgstr ""
+
 msgid "User data"
 msgstr "用户数据"
+
+msgid "Legacy Lua scripts:"
+msgstr ""
+
+msgid "Legacy Lua modules:"
+msgstr ""
 
 msgid "Cache directory:"
 msgstr "缓存目录: "
@@ -3984,51 +9336,122 @@ msgstr "用户菜单"
 
 #, c-format
 msgid ""
-"Cannot open cpio archive\n"
-"%s"
-msgstr ""
-"无法打开 cpio 档案\n"
-"%s"
-
-#, c-format
-msgid ""
-"Premature end of cpio archive\n"
-"%s"
-msgstr ""
-"过早结束的 cpio 档案\n"
-"%s"
-
-#, c-format
-msgid ""
-"Inconsistent hardlinks of\n"
+"This entry comes from\n"
 "%s\n"
-"in cpio archive\n"
+"\n"
+"which you cannot write. Copy it into a menu of your own\n"
+"with Ins, or ask whoever owns that file."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid ""
+"Cannot write file\n"
 "%s"
 msgstr ""
-"cpio 档案\n"
-"%2$s\n"
-"中发现不一致的硬链接\n"
-"%1$s"
+"无法保存文件:\n"
+"%s"
 
-#, c-format
-msgid "%s contains duplicate entries! Skipping!"
-msgstr "%s 含有重复的项! 正在跳过!"
+msgid "Add a submenu"
+msgstr ""
+
+msgid "Edit the submenu"
+msgstr ""
+
+msgid "Add a user menu entry"
+msgstr ""
+
+msgid "Edit the user menu entry"
+msgstr ""
+
+msgid "Hotkey:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command"
+msgid "Commands:"
+msgstr "命令"
+
+msgid "Show the output in the &viewer"
+msgstr ""
+
+msgid "Run without the &shell of the panel"
+msgstr ""
+
+msgid "The entry needs a label"
+msgstr ""
+
+msgid "Import: space marks, Enter takes"
+msgstr ""
 
 #, c-format
 msgid ""
-"Corrupted cpio header encountered in\n"
+"Nothing was taken from\n"
 "%s"
 msgstr ""
-"在 %s 中\n"
-"遇到损坏的 cpio 头"
 
 #, c-format
 msgid ""
-"Unexpected end of file\n"
-"%s"
+"Taken into\n"
+"%s\n"
+"\n"
+"Entries: %u. The file they came from is left where it is,\n"
+"and conditions and masks were dropped."
 msgstr ""
-"异常的文件结束\n"
-"%s"
+
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Import a menu file"
+msgstr "菜单文件编辑(&M)"
+
+msgid "The file to take the entries from"
+msgstr ""
+
+#, c-format
+msgid ""
+"The menu is a file written by hand:\n"
+"%s\n"
+"\n"
+"Import entries of it into the menu that edits itself?"
+msgstr ""
+
+msgid "&Import"
+msgstr ""
+
+msgid "&Keep the file"
+msgstr ""
+
+msgid ""
+"The menu is empty.\n"
+"\n"
+"Add an entry, or take entries from a menu file written by hand?"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Add new"
+msgid "&Add an entry"
+msgstr "添加新(&A)"
+
+msgid "Add a command, or a submenu to hold other entries?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Chmod command"
+msgid "Add a &command"
+msgstr "Chmod 命令"
+
+msgid "Add a &submenu"
+msgstr ""
+
+msgid "Delete this submenu and everything in it?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete %s?"
+msgid "Delete this entry?"
+msgstr "删除 %s?"
 
 msgid "Inconsistent archive"
 msgstr ""
@@ -4072,134 +9495,6 @@ msgid "Warning: cannot open %s directory\n"
 msgstr "警告: 无法打开目录 %s\n"
 
 #, c-format
-msgid "ftpfs: Disconnecting from %s"
-msgstr "ftpfs: 正在断开到 %s 的连接"
-
-#, c-format
-msgid "FTP: Password required for %s"
-msgstr "FTP: %s 需要密码"
-
-msgid "ftpfs: sending login name"
-msgstr "ftpfs: 正在发送用户登录名"
-
-msgid "ftpfs: sending user password"
-msgstr "ftpfs: 正在发送用户密码"
-
-#, c-format
-msgid "FTP: Account required for user %s"
-msgstr "FTP: 用户 %s 需要账户"
-
-msgid "Account:"
-msgstr "账户"
-
-msgid "ftpfs: sending user account"
-msgstr "ftpfs: 正在发送用户账户"
-
-msgid "ftpfs: logged in"
-msgstr "ftpfs: 已登录"
-
-#, c-format
-msgid "ftpfs: Login incorrect for user %s "
-msgstr "ftpfs: 用户 %s 登录不正确"
-
-msgid "ftpfs: Invalid host name."
-msgstr "ftpfs: 无效的主机名。"
-
-#, c-format
-msgid "ftpfs: %s"
-msgstr "ftpfs: %s"
-
-#, c-format
-msgid "ftpfs: making connection to %s"
-msgstr "ftpfs: 正在连接 %s"
-
-msgid "ftpfs: connection interrupted by user"
-msgstr "ftpfs: 连接被用户中断"
-
-#, c-format
-msgid "ftpfs: connection to server failed: %s"
-msgstr "ftpfs: 连接服务器失败: %s"
-
-#, c-format
-msgid "Waiting to retry... %d (Control-G to cancel)"
-msgstr "等待重试... %d (Ctrl-G 取消)"
-
-#, c-format
-msgid "ftpfs: could not make address-to-name translation: %s"
-msgstr ""
-
-#, c-format
-msgid "ftpfs: try reconnect to server, attempt %u"
-msgstr ""
-
-#, c-format
-msgid "ftpfs: could not get socket name: %s"
-msgstr ""
-
-msgid "ftpfs: could not reconnect to server"
-msgstr ""
-
-msgid "ftpfs: invalid address family"
-msgstr "ftpfs: 无效的地址族"
-
-#, c-format
-msgid "ftpfs: could not create socket: %s"
-msgstr "ftpfs: 无法创建套接字: %s"
-
-msgid "ftpfs: could not setup passive mode"
-msgstr "ftpfs: 无法设置为被动模式"
-
-msgid "ftpfs: aborting transfer."
-msgstr "ftpfs: 正在中止传输。"
-
-#, c-format
-msgid "ftpfs: abort error: %s"
-msgstr "ftpfs: 中止错误: %s"
-
-msgid "ftpfs: abort failed"
-msgstr "ftpfs: 终止失败"
-
-msgid "ftpfs: CWD failed."
-msgstr "ftpfs: CWD 失败。"
-
-msgid "ftpfs: couldn't resolve symlink"
-msgstr "ftpfs: 无法解析符号链接"
-
-msgid "Resolving symlink..."
-msgstr "正在解析符号链接..."
-
-#, c-format
-msgid "ftpfs: Reading FTP directory %s... %s%s"
-msgstr "ftpfs: 正在读取 FTP 目录 %s... %s%s"
-
-msgid "(strict rfc959)"
-msgstr "(严格遵循 rfc959)"
-
-msgid "(chdir first)"
-msgstr "(先改变目录)"
-
-msgid "ftpfs: failed; nowhere to fallback to"
-msgstr "ftpfs: 失败；没有后备"
-
-#, c-format
-msgid "%s: failure"
-msgstr "%s: 失败"
-
-#, c-format
-msgid "%s: done."
-msgstr "%s: 完成。"
-
-msgid "ftpfs: storing file"
-msgstr "ftpfs: 保存文件中"
-
-msgid ""
-"~/.netrc file has incorrect mode\n"
-"Remove password or correct mode"
-msgstr ""
-"~/.netrc 文件权限不正确\n"
-"删除密码或者改正权限"
-
-#, c-format
 msgid ""
 "SFS virtual file system:\n"
 "%s"
@@ -4225,184 +9520,6 @@ msgstr ""
 "警告: %2$s 中有无效的标志 %1$c\n"
 "%3$s\n"
 
-#, c-format
-msgid "sftp: an error occurred while reading %s: %s"
-msgstr "sftp: 读取 %s 时出错: %s"
-
-msgid "sftp: Unable to get current user name."
-msgstr "sftp: 无法获取当前用户的用户名。"
-
-msgid "sftp: Invalid host name."
-msgstr "sftp: 无效的主机名。"
-
-#, c-format
-msgid "sftp: %s"
-msgstr "sftp: %s"
-
-msgid "sftp: failed to convert remote host IP address into text form"
-msgstr ""
-
-#, c-format
-msgid "sftp: making connection to %s"
-msgstr "sftp: 正在连接 %s"
-
-msgid "sftp: connection interrupted by user"
-msgstr "sftp: 连接被用户中断"
-
-#, c-format
-msgid "sftp: connection to server failed: %s"
-msgstr "sftp: 连接服务器失败: %s"
-
-#, c-format
-msgid ""
-"sftp: cannot open %s:\n"
-"%s"
-msgstr ""
-
-msgid "sftp: found host key of unsupported type: RSA1"
-msgstr ""
-
-msgid "sftp: unknown host key type:"
-msgstr ""
-
-#, c-format
-msgid ""
-"Permanently added\n"
-"%s (%s)\n"
-"to the list of known hosts."
-msgstr ""
-
-msgid "sftp: cannot get the remote host key"
-msgstr ""
-
-msgid "sftp: unsupported key type, can't check remote host key"
-msgstr ""
-
-msgid "sftp: can't compute host key fingerprint hash"
-msgstr ""
-
-#, c-format
-msgid ""
-"The authenticity of host\n"
-"%s (%s)\n"
-"can't be established!\n"
-"%s key fingerprint hash is\n"
-"SHA1:%s.\n"
-"Do you want to add it to the list of known hosts and continue connecting?"
-msgstr ""
-
-#, c-format
-msgid ""
-"%s (%s)\n"
-"is found in the list of known hosts but\n"
-"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
-"Are you sure you want to add it to the list of known hosts and continue "
-"connecting?"
-msgstr ""
-
-msgid "sftp: host key verification failed"
-msgstr ""
-
-#, c-format
-msgid "sftp: Enter passphrase for %s "
-msgstr "sftp: 请输入 %s 的密码"
-
-msgid "sftp: Passphrase is empty."
-msgstr "sftp: 密码为空。"
-
-#, c-format
-msgid "sftp: Enter password for %s "
-msgstr "sftp: 请输入 %s 的密码 "
-
-msgid "sftp: Password is empty."
-msgstr "sftp: 密码为空。"
-
-msgid "sftp: failure establishing SSH session"
-msgstr ""
-
-msgid "sftp: No file handler data present for reading file"
-msgstr "sftp: 读取的文件没有指定处理程序"
-
-#, c-format
-msgid "sftp: socket error: %s"
-msgstr "sftp：套接字错误：%s"
-
-#, c-format
-msgid "sftp: (Ctrl-G break) Listing... %s"
-msgstr "sftp: (Ctrl-G 终止) 正在列出... %s"
-
-msgid "sftp: Listing done."
-msgstr "sftp: 列出完毕。"
-
-#, c-format
-msgid "shell: Disconnecting from %s"
-msgstr ""
-
-msgid "shell: Waiting for initial line..."
-msgstr ""
-
-msgid "Sorry, we cannot do password authenticated connections for now."
-msgstr "抱歉，目前无法建立密码验证的连接。"
-
-#, c-format
-msgid "shell: Password is required for %s"
-msgstr ""
-
-msgid "shell: Sending password..."
-msgstr ""
-
-msgid "shell: Sending initial line..."
-msgstr ""
-
-msgid "shell: Getting host info..."
-msgstr ""
-
-#, c-format
-msgid "shell: Reading directory %s..."
-msgstr ""
-
-#, c-format
-msgid "shell: store %s: sending command..."
-msgstr ""
-
-msgid "shell: Local read failed, sending zeros"
-msgstr ""
-
-msgid "shell: storing file"
-msgstr ""
-
-msgid "Aborting transfer..."
-msgstr "正在中止传输..."
-
-msgid "Error reported after abort."
-msgstr "中止后发生错误。"
-
-msgid "Aborted transfer would be successful."
-msgstr "被中止的传输可能成功完成了。"
-
-msgid "Inconsistent tar archive"
-msgstr "不完整的 tar 档案文件"
-
-msgid "Unexpected EOF on archive file"
-msgstr "档案文件出现不可预料的文件末端"
-
-#, c-format
-msgid ""
-"Cannot open tar archive\n"
-"%s"
-msgstr ""
-"无法打开 tar 档案文件\n"
-"%s"
-
-#, c-format
-msgid ""
-"%s\n"
-"doesn't look like a tar archive"
-msgstr ""
-
-msgid "tar: mc_lseek not stopped at a record boundary"
-msgstr ""
-
 msgid "Invalid value"
 msgstr "无效的值"
 
@@ -4413,6 +9530,15 @@ msgstr "文件已被修改。保存并退出?"
 msgid ""
 "%s is being shut down.\n"
 "Save modified file?"
+msgstr ""
+
+msgid "The structure viewer works on local files only"
+msgstr ""
+
+msgid "(no matches -- waiting for data)"
+msgstr ""
+
+msgid "(no matches)"
 msgstr ""
 
 msgid "&Line number"
@@ -4427,8 +9553,10 @@ msgstr "十进制偏移(&D)"
 msgid "He&xadecimal offset"
 msgstr "16进制偏移(&X)"
 
-msgid "Goto"
-msgstr "跳到"
+#, fuzzy
+#| msgid "ButtonBar|Hex"
+msgid "ButtonBar|Text"
+msgstr "ButtonBar|16进制"
 
 msgid "ButtonBar|Ascii"
 msgstr "ButtonBar|Ascii"
@@ -4442,12 +9570,6 @@ msgstr "ButtonBar|不换行"
 msgid "ButtonBar|Wrap"
 msgstr "ButtonBar|换行"
 
-msgid "ButtonBar|Hex"
-msgstr "ButtonBar|16进制"
-
-msgid "ButtonBar|Goto"
-msgstr "ButtonBar|跳转"
-
 msgid "ButtonBar|Raw"
 msgstr "ButtonBar|原格式"
 
@@ -4457,12 +9579,92 @@ msgstr "ButtonBar|解析"
 msgid "ButtonBar|Unform"
 msgstr "ButtonBar|未格式化"
 
+#, fuzzy
+#| msgid "ButtonBar|Merge"
+msgid "ButtonBar|Term mode"
+msgstr "ButtonBar|合并"
+
 msgid "ButtonBar|Format"
 msgstr "ButtonBar|格式化"
+
+#, c-format
+msgid "Filter: %s  %u matches  scanning..."
+msgstr ""
+
+#, c-format
+msgid "Filter: %s  %u matches  FOLLOW"
+msgstr ""
+
+#, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
 
 #, fuzzy
 msgid "Quick view"
 msgstr "快速查看(&Q)"
+
+msgid "Error: out of memory"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Error: %s"
+msgstr "错误"
+
+msgid "First matches:"
+msgstr ""
+
+msgid "No matches found."
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter Check"
+msgstr "过滤"
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "Normal"
+msgstr "普通(&R)"
+
+#, fuzzy
+#| msgid "Re&gular expression"
+msgid "Regular expression"
+msgstr "正规表达式(&R)"
+
+#, fuzzy
+#| msgid "Wil&dcard search"
+msgid "Wildcard search"
+msgstr "通配符查找(&D)"
+
+#, fuzzy
+#| msgid "E&xtension"
+msgid "Expression"
+msgstr "扩展名(&X)"
+
+msgid "OK"
+msgstr "确认"
+
+msgid "Preview is not available in hexadecimal mode."
+msgstr ""
+
+msgid "Filter pattern (empty = clear):"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&heck word"
+msgid "C&heck"
+msgstr "检查单词(&H)"
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "Filter error: %s"
+msgstr "文件: %s"
+
+#, fuzzy
+#| msgid "Unknown error in child"
+msgid "unknown error"
+msgstr "子进程未知错误"
 
 msgid "Failed to read data from child stdout"
 msgstr ""
@@ -4488,19 +9690,20 @@ msgstr ""
 msgid "View: "
 msgstr "查看: "
 
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source."
+msgstr ""
+"无法打开 cpio 档案\n"
+"%s"
+
 #, c-format
 msgid ""
 "Cannot view\n"
 "%s\n"
 "Not a regular file"
-msgstr ""
-
-#, c-format
-msgid ""
-"Cannot open\n"
-"%s\n"
-"in parse mode\n"
-"%s"
 msgstr ""
 
 msgid "Search done"
@@ -4509,8 +9712,555 @@ msgstr "搜索完成"
 msgid "Continue from beginning?"
 msgstr "从头继续搜索?"
 
+msgid "Source spec must set either command or file."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open tar archive\n"
+#| "%s"
+msgid "Cannot open source process."
+msgstr ""
+"无法打开 tar 档案文件\n"
+"%s"
+
+#, fuzzy
+#| msgid "Cannot execute sort command"
+msgid "Cannot open source command."
+msgstr "试图执行 sort 命令时发生错误"
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot open %s"
+msgstr "无法打开文件 %s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid "Cannot stat %s"
+msgstr ""
+"无法保存文件:\n"
+"%s"
+
+msgid "Viewport source prepare failed."
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot open file %s"
+msgid "Cannot open resized source."
+msgstr "无法打开文件 %s"
+
+msgid "Cannot switch viewer source."
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid source pattern '%s'"
+msgid "Invalid source controller."
+msgstr "源模式“%s”无效"
+
+msgid "Source prepare failed."
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot open file %s"
+msgid "Cannot open new source."
+msgstr "无法打开文件 %s"
+
+msgid ""
+"%s\n"
+"\n"
+"(value truncated, %"
+msgstr ""
+
+msgid "Structured view works on local files only"
+msgstr ""
+
+msgid "File is too large for structured view"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot insert file"
+msgid "Cannot build structured view"
+msgstr "无法插入文件"
+
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
+
+#~ msgid "Enables subshell support (default)"
+#~ msgstr "启用子 shell 支持(默认)"
+
+#~ msgid "Disables subshell support"
+#~ msgstr "禁用子 shell 支持"
+
+#~ msgid "Log ftp dialog to specified file"
+#~ msgstr "记录 ftp 对话到指定的文件"
+
+#~ msgid "Resets soft keys on HP terminals"
+#~ msgstr "在 HP 终端上复位软键"
+
+#~ msgid "Specifies a color configuration"
+#~ msgstr "指定颜色配置"
+
+#~ msgid ""
+#~ "Standard Colors:\n"
+#~ "   black, gray, red, brightred, green, brightgreen, brown,\n"
+#~ "   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+#~ "   brightcyan, lightgray and white\n"
+#~ "\n"
+#~ "Extended colors, when 256 colors are available:\n"
+#~ "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
+#~ "\n"
+#~ "Attributes:\n"
+#~ "   bold, italic, underline, reverse, blink; append more with '+'\n"
+#~ msgstr ""
+#~ "标准颜色: \n"
+#~ "    black, gray, red, brightred, green, brightgreen, brown, yellow, blue, "
+#~ "brightblue, magenta, brightmagenta, cyan, brightcyan, lightgray and "
+#~ "white\n"
+#~ "\n"
+#~ "扩展颜色，当256色可用时: \n"
+#~ "   color16 到 color255，或者 rgb000 到 rgb555 或者 gray0 到 gray23\n"
+#~ "\n"
+#~ "属性: \n"
+#~ "   bold, underline, reverse, blink; 添加更多参数用 “+”连接。\n"
+
+#~ msgid "You must first highlight a block of text"
+#~ msgstr "您必需先突出显示一个文字块"
+
+#~ msgid "Run sort"
+#~ msgstr "运行 sort"
+
+#, c-format
+#~ msgid "Sort returned non-zero: %s"
+#~ msgstr "Sort 返回非零值: %s"
+
+#~ msgid "Paste output of external command"
+#~ msgstr "粘贴外部命令的输出"
+
+#~ msgid "Enter shell command(s):"
+#~ msgstr "输入Shell 命令: "
+
+#~ msgid "Insert literal"
+#~ msgstr "插入文字"
+
+#~ msgid "Press any key:"
+#~ msgstr "按下任意键: "
+
+#~ msgid "Press macro hotkey:"
+#~ msgstr "按下宏热键: "
+
+#~ msgid "Macro not deleted"
+#~ msgstr "宏没有删除"
+
+#~ msgid "Back from &declaration"
+#~ msgstr "向后查找申明(&D)"
+
+#~ msgid "Change spelling &language..."
+#~ msgstr "更改拼写语言(&L)..."
+
+#~ msgid "Insert &literal..."
+#~ msgstr "插入文字(&L)..."
+
+#~ msgid "&Paste output of..."
+#~ msgstr "粘贴输出(&P)..."
+
+#~ msgid "&External formatter"
+#~ msgstr "外部格式化工具(&E)"
+
+#~ msgid "For&mat"
+#~ msgstr "格式化(&r)"
+
+#~ msgid "Breton"
+#~ msgstr "布列塔尼语"
+
+#~ msgid "Czech"
+#~ msgstr "捷克语"
+
+#~ msgid "Welsh"
+#~ msgstr "威尔士语"
+
+#~ msgid "Danish"
+#~ msgstr "丹麦语"
+
+#~ msgid "German"
+#~ msgstr "德语"
+
+#~ msgid "Greek"
+#~ msgstr "希腊语"
+
+#~ msgid "English"
+#~ msgstr "英语"
+
+#~ msgid "British English"
+#~ msgstr "英国英语"
+
+#~ msgid "Canadian English"
+#~ msgstr "加拿大英语"
+
+#~ msgid "American English"
+#~ msgstr "美国英语"
+
+#~ msgid "Spanish"
+#~ msgstr "西班牙语"
+
+#~ msgid "Faroese"
+#~ msgstr "法罗语"
+
+#~ msgid "French"
+#~ msgstr "法语"
+
+#~ msgid "Italian"
+#~ msgstr "意大利语"
+
+#~ msgid "Dutch"
+#~ msgstr "荷兰语"
+
+#~ msgid "Norwegian"
+#~ msgstr "挪威语"
+
+#~ msgid "Polish"
+#~ msgstr "波兰语"
+
+#~ msgid "Portuguese"
+#~ msgstr "葡萄牙语"
+
+#~ msgid "Romanian"
+#~ msgstr "罗马尼亚语"
+
+#~ msgid "Slovak"
+#~ msgstr "斯洛伐克语"
+
+#~ msgid "Swedish"
+#~ msgstr "瑞典语"
+
+#~ msgid "Ukrainian"
+#~ msgstr "乌克兰语"
+
+#~ msgid ""
+#~ "The Commander can't change to the directory that\n"
+#~ "the subshell claims you are in. Perhaps you have\n"
+#~ "deleted your working directory, or given yourself\n"
+#~ "extra access permissions with the \"su\" command?"
+#~ msgstr ""
+#~ "MC 无法进入 subshell 所声称的您的所在的目录。\n"
+#~ "也许您已删除了工作目录，或者通过 \"su\" 命令\n"
+#~ "给予此进程额外的访问权限?"
+
+#~ msgid "FTP anonymous password:"
+#~ msgstr "FTP 匿名密码: "
+
+#~ msgid "FTP directory cache timeout (sec):"
+#~ msgstr "FTP 目录缓存超时(秒): "
+
+#~ msgid "&Always use ftp proxy:"
+#~ msgstr "总是使用 FTP 代理(&A): "
+
+#~ msgid "&Use ~/.netrc"
+#~ msgstr "使用 ~/.netrc(&U)"
+
+#~ msgid "Use passive mode over pro&xy"
+#~ msgstr "通过代理时使用被动模式(&X)"
+
+#~ msgid "cd"
+#~ msgstr "切换目录"
+
+#~ msgid "Enter machine name (F1 for details):"
+#~ msgstr "输入机器名 (F1 查看细节): "
+
+#~ msgid "FTP to machine"
+#~ msgstr "FTP 到主机"
+
+#~ msgid "FT&P link..."
+#~ msgstr "FTP 链接(&P)..."
+
+#~ msgid "S&hell link..."
+#~ msgstr "S&hell 链接..."
+
+#~ msgid "Di&rectory hotlist"
+#~ msgstr "目录活动列表(&R)"
+
+#~ msgid "&Active VFS list"
+#~ msgstr "活动的 VFS 列表(&A)"
+
+#~ msgid "&Listing format edit"
+#~ msgstr "列表格式编辑(&L)"
+
+#~ msgid "Change &to"
+#~ msgstr "切换到(&T)"
+
+#~ msgid "&Free VFSs now"
+#~ msgstr "立刻释放 VFS (&F)"
+
+#~ msgid "&Refresh"
+#~ msgstr "刷新(&R)"
+
+#~ msgid "&Add current"
+#~ msgstr "添加当前(&A)"
+
+#~ msgid "New &group"
+#~ msgstr "新建组(&G)"
+
+#~ msgid "New &entry"
+#~ msgstr "新建项(&E)"
+
+#~ msgid "Subgroup - press ENTER to see list"
+#~ msgstr "子组－按 ENTER 查看列表"
+
+#~ msgid "Active VFS directories"
+#~ msgstr "活动的 VFS 目录"
+
+#~ msgid "Directory hotlist"
+#~ msgstr "目录活动表"
+
+#~ msgid "Directory path"
+#~ msgstr "目录路径"
+
+#, c-format
+#~ msgid "Moving %s"
+#~ msgstr "正在移动 %s"
+
+#~ msgid "Directory label:"
+#~ msgstr "目录标签: "
+
+#~ msgid "Other command"
+#~ msgstr "其它命令"
+
+#~ msgid "Cannot run external panelize in a non-local directory"
+#~ msgstr "在非本地目录无法执行外部面板"
+
+#~ msgid "Teach me a key"
+#~ msgstr "教我一个键"
+
+#, c-format
+#~ msgid ""
+#~ "Please press the %s\n"
+#~ "and then wait until this message disappears.\n"
+#~ "\n"
+#~ "Then, press it again to see if OK appears\n"
+#~ "next to its button.\n"
+#~ "\n"
+#~ "If you want to escape, press a single Escape key\n"
+#~ "and wait as well."
+#~ msgstr ""
+#~ "按下 %s\n"
+#~ "并等待这个消息消失。\n"
+#~ "\n"
+#~ "然后再次按下它并看确认是否出现\n"
+#~ "在它的旁边。\n"
+#~ "\n"
+#~ "如果您想离开，请按下Esc键\n"
+#~ "并稍等。"
+
+#~ msgid ""
+#~ "It seems that all your keys already\n"
+#~ "work fine. That's great."
+#~ msgstr ""
+#~ "看起来您的所有按键都工作得很好。\n"
+#~ "实在是太好了。"
+
+#~ msgid ""
+#~ "Great! You have a complete terminal database!\n"
+#~ "All your keys work well."
+#~ msgstr ""
+#~ "非常好! 您有一个完整的终端数据库!\n"
+#~ "您的所有按键都工作。"
+
+#~ msgid ""
+#~ "Press all the keys mentioned here. After you have done it, check\n"
+#~ "which keys are not marked with OK. Press space on the missing\n"
+#~ "key, or click with the mouse to define it. Move around with Tab."
+#~ msgstr ""
+#~ "请将这里提到的所有键都按一遍。按完之后。请检查: \n"
+#~ "哪些键没有标记为OK。在缺失的键位上按空格\n"
+#~ "或单击鼠标定义它。移动请使用空格键。"
+
+#, c-format
+#~ msgid "Warning: Cannot change to %s.\n"
+#~ msgstr "警告: 无法切换至 %s。\n"
+
+#, c-format
+#~ msgid "Cannot open named pipe %s\n"
+#~ msgstr "无法打开有名管道 %s\n"
+
+#~ msgid "The shell is still active. Quit anyway?"
+#~ msgstr "Shell 仍在运行中。依然退出?"
+
+#, c-format
+#~ msgid ""
+#~ "Premature end of cpio archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "过早结束的 cpio 档案\n"
+#~ "%s"
+
+#, c-format
+#~ msgid ""
+#~ "Inconsistent hardlinks of\n"
+#~ "%s\n"
+#~ "in cpio archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "cpio 档案\n"
+#~ "%2$s\n"
+#~ "中发现不一致的硬链接\n"
+#~ "%1$s"
+
+#, c-format
+#~ msgid "%s contains duplicate entries! Skipping!"
+#~ msgstr "%s 含有重复的项! 正在跳过!"
+
+#, c-format
+#~ msgid ""
+#~ "Corrupted cpio header encountered in\n"
+#~ "%s"
+#~ msgstr ""
+#~ "在 %s 中\n"
+#~ "遇到损坏的 cpio 头"
+
+#, c-format
+#~ msgid "ftpfs: Disconnecting from %s"
+#~ msgstr "ftpfs: 正在断开到 %s 的连接"
+
+#, c-format
+#~ msgid "FTP: Password required for %s"
+#~ msgstr "FTP: %s 需要密码"
+
+#~ msgid "ftpfs: sending login name"
+#~ msgstr "ftpfs: 正在发送用户登录名"
+
+#~ msgid "ftpfs: sending user password"
+#~ msgstr "ftpfs: 正在发送用户密码"
+
+#, c-format
+#~ msgid "FTP: Account required for user %s"
+#~ msgstr "FTP: 用户 %s 需要账户"
+
+#~ msgid "Account:"
+#~ msgstr "账户"
+
+#~ msgid "ftpfs: sending user account"
+#~ msgstr "ftpfs: 正在发送用户账户"
+
+#~ msgid "ftpfs: logged in"
+#~ msgstr "ftpfs: 已登录"
+
+#, c-format
+#~ msgid "ftpfs: Login incorrect for user %s "
+#~ msgstr "ftpfs: 用户 %s 登录不正确"
+
+#~ msgid "ftpfs: Invalid host name."
+#~ msgstr "ftpfs: 无效的主机名。"
+
+#, c-format
+#~ msgid "ftpfs: %s"
+#~ msgstr "ftpfs: %s"
+
+#, c-format
+#~ msgid "ftpfs: making connection to %s"
+#~ msgstr "ftpfs: 正在连接 %s"
+
+#~ msgid "ftpfs: connection interrupted by user"
+#~ msgstr "ftpfs: 连接被用户中断"
+
+#, c-format
+#~ msgid "ftpfs: connection to server failed: %s"
+#~ msgstr "ftpfs: 连接服务器失败: %s"
+
+#, c-format
+#~ msgid "Waiting to retry... %d (Control-G to cancel)"
+#~ msgstr "等待重试... %d (Ctrl-G 取消)"
+
+#~ msgid "ftpfs: invalid address family"
+#~ msgstr "ftpfs: 无效的地址族"
+
+#~ msgid "ftpfs: could not setup passive mode"
+#~ msgstr "ftpfs: 无法设置为被动模式"
+
+#~ msgid "ftpfs: aborting transfer."
+#~ msgstr "ftpfs: 正在中止传输。"
+
+#~ msgid "ftpfs: abort failed"
+#~ msgstr "ftpfs: 终止失败"
+
+#~ msgid "ftpfs: CWD failed."
+#~ msgstr "ftpfs: CWD 失败。"
+
+#~ msgid "ftpfs: couldn't resolve symlink"
+#~ msgstr "ftpfs: 无法解析符号链接"
+
+#~ msgid "Resolving symlink..."
+#~ msgstr "正在解析符号链接..."
+
+#~ msgid "(strict rfc959)"
+#~ msgstr "(严格遵循 rfc959)"
+
+#~ msgid "(chdir first)"
+#~ msgstr "(先改变目录)"
+
+#~ msgid "ftpfs: failed; nowhere to fallback to"
+#~ msgstr "ftpfs: 失败；没有后备"
+
+#, c-format
+#~ msgid "%s: failure"
+#~ msgstr "%s: 失败"
+
+#, c-format
+#~ msgid "%s: done."
+#~ msgstr "%s: 完成。"
+
+#~ msgid "ftpfs: storing file"
+#~ msgstr "ftpfs: 保存文件中"
+
+#~ msgid ""
+#~ "~/.netrc file has incorrect mode\n"
+#~ "Remove password or correct mode"
+#~ msgstr ""
+#~ "~/.netrc 文件权限不正确\n"
+#~ "删除密码或者改正权限"
+
+#, c-format
+#~ msgid "sftp: an error occurred while reading %s: %s"
+#~ msgstr "sftp: 读取 %s 时出错: %s"
+
+#~ msgid "sftp: Unable to get current user name."
+#~ msgstr "sftp: 无法获取当前用户的用户名。"
+
+#, c-format
+#~ msgid "sftp: %s"
+#~ msgstr "sftp: %s"
+
+#~ msgid "sftp: Passphrase is empty."
+#~ msgstr "sftp: 密码为空。"
+
+#~ msgid "sftp: Password is empty."
+#~ msgstr "sftp: 密码为空。"
+
+#~ msgid "sftp: No file handler data present for reading file"
+#~ msgstr "sftp: 读取的文件没有指定处理程序"
+
+#, c-format
+#~ msgid "sftp: socket error: %s"
+#~ msgstr "sftp：套接字错误：%s"
+
+#, c-format
+#~ msgid "sftp: (Ctrl-G break) Listing... %s"
+#~ msgstr "sftp: (Ctrl-G 终止) 正在列出... %s"
+
+#~ msgid "sftp: Listing done."
+#~ msgstr "sftp: 列出完毕。"
+
+#~ msgid "Sorry, we cannot do password authenticated connections for now."
+#~ msgstr "抱歉，目前无法建立密码验证的连接。"
+
+#~ msgid "Error reported after abort."
+#~ msgstr "中止后发生错误。"
+
+#~ msgid "Aborted transfer would be successful."
+#~ msgstr "被中止的传输可能成功完成了。"
+
+#~ msgid "Inconsistent tar archive"
+#~ msgstr "不完整的 tar 档案文件"
 
 #~ msgid "Undelete files on an ext2 file system"
 #~ msgstr "反删除 ext2 文件系统上的文件"
@@ -4524,9 +10274,6 @@ msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
 
 #~ msgid "&Undelete files (ext2fs only)"
 #~ msgstr "反删除文件(仅限 ext2fs)(&U)"
-
-#~ msgid "undelfs: error"
-#~ msgstr "undelfs: 错误"
 
 #~ msgid "not enough memory"
 #~ msgstr "内存不足"
@@ -4556,10 +10303,6 @@ msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
 #, c-format
 #~ msgid "while doing inode scan %d"
 #~ msgstr "当进行 inode 扫描 %d 时"
-
-#, c-format
-#~ msgid "Cannot open file %s"
-#~ msgstr "无法打开文件 %s"
 
 #~ msgid "undelfs: reading inode bitmap..."
 #~ msgstr "undelfs: 正在读取 inode bitmap..."
