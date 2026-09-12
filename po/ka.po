@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 13:53+0000\n"
+"PO-Revision-Date: 2026-09-12 13:58+0000\n"
 "Last-Translator: EkaterinePapava <ekaterinepapava@noreply.codeberg.org>\n"
 "Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/>"
 "\n"
@@ -5466,52 +5466,38 @@ msgstr ""
 msgid "&Diff"
 msgstr "განსხვავება:"
 
-#, fuzzy
-#| msgid "Terminal options"
 msgid "&Terminal"
-msgstr "ტერმინალის პარამეტრები"
+msgstr "&ტერმინალი"
 
 msgid "&Dialog"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Menu file"
 msgid "&Menu"
-msgstr "&მენიუს ფაილი"
+msgstr "&მენიუ"
 
 msgid "&Input"
 msgstr ""
 
-#, fuzzy
-#| msgid "&List..."
 msgid "&Listbox"
-msgstr "ს&ია..."
+msgstr "სიის ბ&ლოკი"
 
 msgid "&Radio"
 msgstr ""
 
-#, fuzzy
-#| msgid "Help"
 msgid "&Help"
-msgstr "დახმარება"
+msgstr "და&ხმარება"
 
 msgid "c&Hattr"
 msgstr ""
 
-#, fuzzy
-#| msgid "Filename:"
 msgid "&Filemanager"
-msgstr "ფაილის სახელი:"
+msgstr "&ფაილების მმართველი"
 
-#, fuzzy
-#| msgid "&Edit"
 msgid "&Editor"
-msgstr "რ&ედაქტირება"
+msgstr "რ&ედაქტორი"
 
-#, fuzzy
-#| msgid "&View"
 msgid "&Viewer"
-msgstr "&ჩვენება"
+msgstr "დათ&ვალიერება"
 
 msgid "&Widgets"
 msgstr ""
@@ -5545,8 +5531,6 @@ msgid ""
 "Reassign anyway?"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Backwards"
 msgid "&Back"
 msgstr "&უკან"
 
@@ -5788,10 +5772,8 @@ msgid ""
 "7z encryption needs the external tool, it is off in the archiver settings"
 msgstr ""
 
-#, fuzzy
-#| msgid "Encod&ing..."
 msgid "Extracting..."
-msgstr "კოდირება..."
+msgstr "ამოღება..."
 
 msgid "Please wait..."
 msgstr ""
@@ -5915,10 +5897,8 @@ msgstr ""
 msgid "&7z"
 msgstr ""
 
-#, fuzzy
-#| msgid "other"
 msgid "O&ther:"
-msgstr "სხვა"
+msgstr "&სხვა:"
 
 msgid "St&ore"
 msgstr ""
@@ -5932,8 +5912,6 @@ msgstr ""
 msgid "Archive path:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Compress"
 msgid "Compression"
 msgstr "შეკუმშვა"
 
@@ -5958,10 +5936,8 @@ msgstr "პაროლი:"
 msgid "Verify password:"
 msgstr "პაროლი:"
 
-#, fuzzy
-#| msgid "&Options"
 msgid "Options"
-msgstr "&პარამეტრები"
+msgstr "მორგება"
 
 msgid "Store relative &paths"
 msgstr ""
@@ -6021,10 +5997,8 @@ msgstr ""
 msgid "For 7z, this applies only to encrypted archives."
 msgstr ""
 
-#, fuzzy
-#| msgid "External panelize"
 msgid "External:"
-msgstr "გარე პანელზე"
+msgstr "გარე:"
 
 msgid "always use the external tool for this format."
 msgstr ""
@@ -8040,10 +8014,8 @@ msgstr "გამოკვეთის ჯგუფის ფაილის ჩ
 msgid "Directory"
 msgstr "საქაღალდე"
 
-#, fuzzy
-#| msgid "Immutable"
 msgid "Executable"
-msgstr "დაურღვეველი"
+msgstr "გამშვები ფაილი"
 
 msgid "Hard link"
 msgstr ""
@@ -8056,10 +8028,8 @@ msgstr "სიმბმული"
 msgid "A symbolic link whose target is gone"
 msgstr ""
 
-#, fuzzy
-#| msgid "Device:     %s"
 msgid "Device"
-msgstr "მოწყობილობა:     %s"
+msgstr "მოწყობილობა"
 
 #, fuzzy
 #| msgid "Save file"
@@ -8425,15 +8395,11 @@ msgstr "ბლოკის შენახვა"
 msgid "Line number"
 msgstr "&ხაზის ნომერი"
 
-#, fuzzy
-#| msgid "directories"
 msgid "Directive"
-msgstr "საქაღალდეები"
+msgstr "დირექტივა"
 
-#, fuzzy
-#| msgid "Command"
 msgid "Comment"
-msgstr "ბრძანება"
+msgstr "კომენტარი"
 
 msgid "Label"
 msgstr ""
@@ -8582,23 +8548,17 @@ msgstr "რედაქტორის მორგება"
 msgid "Editor: fold closed"
 msgstr "რედაქტორის მორგება"
 
-#, fuzzy
-#| msgid "&Up"
 msgid "Up"
-msgstr "&მაღლა"
+msgstr "მაღლა"
 
 msgid "Not read by mc today"
 msgstr ""
 
-#, fuzzy
-#| msgid "Page Down"
 msgid "Down"
-msgstr "ღილაკი Page Down"
+msgstr "დაბლა"
 
-#, fuzzy
-#| msgid "&Left"
 msgid "Left"
-msgstr "მარ&ცხნივ"
+msgstr "მარცხენა"
 
 #, fuzzy
 #| msgid "&Right"
@@ -8761,10 +8721,8 @@ msgstr ""
 msgid "&Terminal default"
 msgstr "ტერმინალის პარამეტრები"
 
-#, fuzzy
-#| msgid "&Background"
 msgid "Background"
-msgstr "&ფონი"
+msgstr "ფონი"
 
 msgid "Inh&erit"
 msgstr ""
@@ -8812,10 +8770,8 @@ msgstr ""
 msgid "Background:"
 msgstr "&ფონი"
 
-#, fuzzy
-#| msgid "Attributes: %s"
 msgid "Attributes:"
-msgstr "ატრიბუტები: %s"
+msgstr "ატრიბუტები:"
 
 msgid "Empty = inherited"
 msgstr ""
