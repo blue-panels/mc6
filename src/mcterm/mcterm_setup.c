@@ -1,41 +1,41 @@
 /*
-   Midnight Commander - the shell integration mcterm writes into each shell.
-
-   The strings here make bash, fish and the POSIX shells report their working
-   directory (OSC 7) and mark their prompts and commands (OSC 133).  Every mark
-   carries the session token, so the host can tell its own shell from any other
-   one.  They are typed into the shell at its first prompt.
-
-   zsh is started with startup files of its own instead: what is typed at the
-   prompt can be read by the startup script of the user, and it is also saved
-   in the shell history.  Those files live in mc's data directory and are the
-   same for every session; the token of the session reaches them in the
-   environment, as $MC_TERM_TOKEN.
+   Terminal widget mcterm for the M-Commander
+   The shell integration mcterm puts into every shell it starts
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 /** \file mcterm_setup.c
  *  \brief Source: shell integration setup strings written into the pty
+ *
+ *  The strings here make bash and the POSIX shells report their working
+ *  directory (OSC 7) and mark their prompts and commands (OSC 133). Every mark
+ *  carries the session token, so the host can tell its own shell from any
+ *  other one. They are typed into the shell at its first prompt.
+ *
+ *  zsh and fish are not typed into: what is typed at the prompt can be read by
+ *  the startup script of the user, and it is also saved in the shell history.
+ *  zsh is started with startup files of its own; they live in mc's data
+ *  directory and are the same for every session, so the token of the session
+ *  reaches them in the environment, as $MC_TERM_TOKEN. fish takes the whole
+ *  integration, token and all, in its -C option, which it runs after the
+ *  configuration file of the user and before the first prompt.
  */
 
 #include <config.h>
@@ -104,6 +104,31 @@ mcterm_zsh_integration (void)
         "__mc_preexec(){ printf '\\033]133;C;" MCTERM_MARK_TOKEN_KEY "%s\\007' \"$__mc_tok\" }\n"
         "preexec_functions+=(__mc_preexec)\n"
         "printf '\\033]7;file://__mc_sync__/" MCTERM_OSC7_TOKEN_PREFIX "%s\\007' \"$__mc_tok\"\n";
+
+    return setup;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The integration fish runs from its -C option, with MCTERM_TOKEN_PLACEHOLDER where the token
+   goes. fish has an event for everything, so nothing here replaces what the user set: the
+   prompt function is copied and called, the rest hangs off events. */
+static const char *
+mcterm_fish_integration (void)
+{
+    static const char setup[] =
+        "functions -q __mc_orig_prompt; or functions -c fish_prompt __mc_orig_prompt; "
+        "function fish_prompt; printf "
+        "'\\033]133;A;" MC_MARK_TOK "\\a'; __mc_orig_prompt; "
+        "printf '\\033]133;B;" MC_MARK_TOK "\\a'; end; "
+        "function __mc_preexec --on-event fish_preexec; "
+        "printf '\\033]133;C;" MC_MARK_TOK "\\a'; end; "
+        "function __mc_postexec --on-event fish_postexec; "
+        "printf '\\033]133;D;%s;" MC_MARK_TOK "\\a' $status; end; "
+        "function __mc_cwd --on-event fish_prompt; "
+        "printf '\\033]7;file://%s" MC_OSC7_TOK "\\a' (string escape --style=url -- $PWD); end; "
+        "printf "
+        "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\a'";
 
     return setup;
 }
@@ -211,13 +236,34 @@ mcterm_rc_zsh (mcterm_shell_rc_t *rc, const char *dir)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* fish reads the integration from its own command line: -C runs it after the user's config.fish
+   and before the first prompt. Nothing is typed at the prompt, so nothing of ours is saved in
+   the history of the user. The token goes in the argument itself, no environment needed. */
+static mcterm_shell_rc_t *
+mcterm_rc_fish (const char *token)
+{
+    mcterm_shell_rc_t *rc;
+
+    rc = g_new0 (mcterm_shell_rc_t, 1);
+    rc->env = g_ptr_array_new_with_free_func (g_free);
+    rc->args = g_ptr_array_new_with_free_func (g_free);
+
+    g_ptr_array_add (rc->args, g_strdup ("-C"));
+    g_ptr_array_add (rc->args, mcterm_setup_with_token (mcterm_fish_integration (), token));
+
+    return rc;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /*** public functions ****************************************************************************/
 
 /* --------------------------------------------------------------------------------------------- */
 
 /**
- * The shell integration to write into a shell of type @shell_type, with MCTERM_TOKEN_PLACEHOLDER
- * standing where the per-session token goes; NULL for a shell the terminal cannot drive.
+ * The shell integration to type into a shell of type @shell_type, with MCTERM_TOKEN_PLACEHOLDER
+ * standing where the per-session token goes; NULL for a shell that is started with the
+ * integration already in it, see mcterm_shell_rc_new(), and for one the terminal cannot drive.
  */
 
 char *
@@ -303,26 +349,8 @@ mcterm_shell_setup (shell_type_t shell_type)
         return NULL;
 
     case SHELL_FISH:
-    {
-        /* fish has an event for everything, so nothing here replaces what the user set:
-         * the prompt function is copied and called, the rest hangs off events. */
-        static const char setup[] =
-            "functions -q __mc_orig_prompt; or functions -c fish_prompt __mc_orig_prompt; "
-            "function fish_prompt; printf "
-            "'\\033]133;A;" MC_MARK_TOK "\\a'; __mc_orig_prompt; "
-            "printf '\\033]133;B;" MC_MARK_TOK "\\a'; end; "
-            "function __mc_preexec --on-event fish_preexec; "
-            "printf '\\033]133;C;" MC_MARK_TOK "\\a'; end; "
-            "function __mc_postexec --on-event fish_postexec; "
-            "printf '\\033]133;D;%s;" MC_MARK_TOK "\\a' $status; end; "
-            "function __mc_cwd --on-event fish_prompt; "
-            "printf '\\033]7;file://%s" MC_OSC7_TOK
-            "\\a' (string escape --style=url -- $PWD); end; "
-            "printf "
-            "'\\033]7;file://__mc_sync__/" MC_OSC7_TOK "\\a'\r";
-
-        return setup;
-    }
+        // fish takes the integration on the command line, see mcterm_shell_rc_new().
+        return NULL;
 
     case SHELL_SH:
     case SHELL_DASH:
@@ -364,7 +392,13 @@ mcterm_shell_rc_new (shell_type_t shell_type, const char *token)
     char *dir;
     gboolean ok;
 
-    if (shell_type != SHELL_ZSH || token == NULL)
+    if (token == NULL)
+        return NULL;
+
+    if (shell_type == SHELL_FISH)
+        return mcterm_rc_fish (token);
+
+    if (shell_type != SHELL_ZSH)
         return NULL;
 
     dir = g_build_filename (mc_config_get_data_path (), MC_ZDOTDIR_SUBDIR, (char *) NULL);
