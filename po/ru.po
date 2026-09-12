@@ -30,8 +30,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
-"Report-Msgid-Bugs-To: https://github.com/MidnightCommander/mc/issues\n"
-"POT-Creation-Date: 2026-02-01 14:37+0100\n"
+"Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
+"POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2010-12-29 10:19+0000\n"
 "Last-Translator: Andrei Stepanov, 2023-2025\n"
 "Language-Team: Russian (http://app.transifex.com/mc/mc/language/ru/)\n"
@@ -81,6 +81,1138 @@ msgstr "Не удаётся создать событие \"%s\"!"
 msgid "Copyright (C) 1996-%zu the Free Software Foundation"
 msgstr "Авторское право (C) 1996-%zu Фонд свободного программного обеспечения"
 
+#, fuzzy
+#| msgid "Switch &panels on/off"
+msgid "Switch active panel"
+msgstr "&Отключить панели"
+
+#, fuzzy
+#| msgid "Page Up"
+msgid "Page left"
+msgstr "Клавиша Page Up  "
+
+msgid "Page right"
+msgstr ""
+
+msgid "Half page up"
+msgstr ""
+
+#, fuzzy
+#| msgid "Page Down"
+msgid "Half page down"
+msgstr "Клавиша Page Down"
+
+msgid "Go to top"
+msgstr ""
+
+msgid "Go to bottom"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Top of screen"
+msgstr "Окно во весь &экран"
+
+msgid "Middle of screen"
+msgstr ""
+
+msgid "Bottom of screen"
+msgstr ""
+
+msgid "Word left"
+msgstr ""
+
+msgid "Word right"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Copy file(s)"
+msgstr "Сравнить фа&йлы"
+
+msgid "Move/rename file(s)"
+msgstr ""
+
+msgid "Delete"
+msgstr "Клавиша Delete   "
+
+#, fuzzy
+#| msgid "Cache directory:"
+msgid "Create directory"
+msgstr "Каталог с кэшируемыми данными:"
+
+msgid "Change file mode (chmod)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Changes to file lost"
+msgid "Change file owner"
+msgstr "Изменения файла потеряны"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "Advanced chown"
+msgstr "Права (рас&ширенные)"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot get ext2 attributes of\n"
+#| "%s"
+msgid "Change file attributes"
+msgstr ""
+"Не удаётся получить атрибуты ext2 для\n"
+"%s"
+
+msgid "Clear screen and scrollback"
+msgstr ""
+
+msgid "Main menu"
+msgstr ""
+
+msgid "Last selected menu item"
+msgstr ""
+
+#, fuzzy
+#| msgid "&User defined:"
+msgid "User-defined menu"
+msgstr "&Заданный пользователем:"
+
+#, fuzzy
+#| msgid "User menu"
+msgid "Edit user menu"
+msgstr "Меню пользователя"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search next"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Replace"
+msgid "Replace next"
+msgstr "Заменить"
+
+msgid "Show help"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Terminal"
+msgstr "Настройки терминала"
+
+msgid "Edit file"
+msgstr "Редактировать файл"
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit new file"
+msgstr "Редактировать файл"
+
+#, fuzzy
+#| msgid "&All charsets"
+msgid "Select charset"
+msgstr "&Все кодировки"
+
+msgid "Editor/viewer history"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Command history"
+msgstr "&История командной строки"
+
+msgid "Next in history"
+msgstr ""
+
+msgid "Previous in history"
+msgstr ""
+
+msgid "Auto-complete"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save &as..."
+msgid "Save as..."
+msgstr "Сохранить &как..."
+
+#, fuzzy
+#| msgid "Goto line"
+msgid "Go to line"
+msgstr "Перейти к строке"
+
+#, fuzzy
+#| msgid "Indexed directory"
+msgid "Re-read directory"
+msgstr "Проиндексированный каталог"
+
+#, fuzzy
+#| msgid "&Refresh screen"
+msgid "Refresh screen"
+msgstr "Пере&рисовать экран"
+
+#, fuzzy
+#| msgid "Setup saved to %s"
+msgid "Suspend to shell"
+msgstr "Настройки сохранены в %s"
+
+#, fuzzy
+#| msgid "S&wap panels"
+msgid "Swap panels"
+msgstr "&Переставить панели"
+
+#, fuzzy
+#| msgid "Hotlist Load"
+msgid "Hotlist"
+msgstr "Загрузка списка быстрого доступа"
+
+#, fuzzy
+#| msgid "&Invert selection"
+msgid "Invert selection"
+msgstr "О&братить выделение"
+
+msgid "List open screens"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Refresh screen"
+msgid "Next screen"
+msgstr "Пере&рисовать экран"
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous screen"
+msgstr "&Предыдущее"
+
+#, fuzzy
+#| msgid "Insert file"
+msgid "Next file"
+msgstr "Вставить файл"
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous file"
+msgstr "&Предыдущее"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Delete to line start"
+msgstr "Отобразить/скрыть номера с&трок"
+
+#, fuzzy
+#| msgid "Delete on keypad"
+msgid "Delete to line end"
+msgstr "Delete доп.клавиатуры"
+
+msgid "Delete to word start"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete on keypad"
+msgid "Delete to word end"
+msgstr "Delete доп.клавиатуры"
+
+#, fuzzy
+#| msgid "&Cut to clipfile"
+msgid "Cut to clipboard"
+msgstr "Выре&зать в файл буфера обмена"
+
+#, fuzzy
+#| msgid "Co&py to clipfile"
+msgid "Copy to clipboard"
+msgstr "Коп&ировать в файл буфера обмена"
+
+#, fuzzy
+#| msgid "Pa&ste from clipfile"
+msgid "Paste from clipboard"
+msgstr "&Вставить из файла буфера обмена"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Toggle selection"
+msgstr "В в&ыделенном"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select left"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select right"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select up"
+msgstr "Отметить &группу"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select down"
+msgstr "Отметить группу"
+
+msgid "Select to word start"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to word end"
+msgstr "Выберите метод сравнения:"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Select to line start"
+msgstr "Отобразить/скрыть номера с&трок"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select to line end"
+msgstr "Выбор языка"
+
+msgid "Toggle navigate/browse mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Sort order..."
+msgid "Sort order..."
+msgstr "Порядок сор&тировки..."
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "General options"
+msgstr "Настройки панели"
+
+#, fuzzy
+#| msgid "Learn keys"
+msgid "Learn terminal keys"
+msgstr "Определение клавиш"
+
+msgid "Key bindings"
+msgstr ""
+
+msgid "Key sniffer"
+msgstr ""
+
+msgid "Manage plugins"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Set bookmark"
+msgstr "&К следующей закладке"
+
+msgid "Quit program"
+msgstr ""
+
+msgid "Quit without confirmation"
+msgstr ""
+
+msgid "Extended key prefix"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use internal edi&t"
+msgid "Edit with internal editor"
+msgstr "Встроенный &редактор"
+
+msgid "View file"
+msgstr "Просмотр файла"
+
+#, fuzzy
+#| msgid "View file"
+msgid "View raw file"
+msgstr "Просмотр файла"
+
+#, fuzzy
+#| msgid "View file"
+msgid "View named file"
+msgstr "Просмотр файла"
+
+msgid "View command output"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find file"
+msgid "Find file"
+msgstr "Поиск &файла"
+
+#, fuzzy
+#| msgid "Show directory s&izes"
+msgid "Show directory size"
+msgstr "&Размеры каталогов"
+
+msgid "Compare directories"
+msgstr "Сравнить каталоги"
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Compare files (diff)"
+msgstr "Сравнить фа&йлы"
+
+msgid "VFS settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Confirmation settings"
+msgstr "Подтверждение"
+
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit extensions file"
+msgstr "Править файл рас&ширений"
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "Edit syntax highlighting"
+msgstr "Подс&ветка синтаксиса"
+
+#, fuzzy
+#| msgid "Edit symlink"
+msgid "Edit symbolic link"
+msgstr "Правка симв. ссылки"
+
+msgid "External panelize"
+msgstr "Внешняя панелизация"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Filter view"
+msgstr "Просмотр вывода команды"
+
+#, fuzzy
+msgid "Quick filter"
+msgstr "&Быстрый просмотр"
+
+msgid "Info panel"
+msgstr ""
+
+msgid "Background jobs"
+msgstr "Фоновые задания"
+
+msgid "Layout settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Appearance"
+msgid "Appearance settings"
+msgstr "Оформление"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot create target hardlink\n"
+#| "%s"
+msgid "Create hard link"
+msgstr ""
+"Не удаётся создать целевую жёст. ссылку\n"
+"%s"
+
+#, fuzzy
+#| msgid "Listing format"
+msgid "Setup listing format"
+msgstr "Формат списка файлов"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Panel modes"
+msgstr "Настройки панели"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Manage panel modes"
+msgstr "И&спользовать сортировку панели"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Panel listing mode"
+msgstr "И&спользовать сортировку панели"
+
+msgid "Panel options"
+msgstr "Настройки панели"
+
+msgid "Quick cd"
+msgstr "Смена рабочего каталога"
+
+#, fuzzy
+msgid "Quick view panel"
+msgstr "&Быстрый просмотр"
+
+#, fuzzy
+#| msgid "Relative symlin&k"
+msgid "Create relative symlink"
+msgstr "Относител&ьная символьная ссылка"
+
+#, fuzzy
+#| msgid "&Save setup"
+msgid "Save setup"
+msgstr "&Сохранить настройки"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot create symbolic link\n"
+#| "%s"
+msgid "Create symbolic link"
+msgstr ""
+"Не удаётся создать символическую ссылку\n"
+"%s"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Panel tree view"
+msgstr "Просмотр вывода команды"
+
+msgid "Directory tree"
+msgstr "Дерево каталогов"
+
+msgid "Put current link to cmdline"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Put other link to cmdline"
+msgstr "Shell-соединение с удалённой машиной"
+
+msgid "Add to hotlist"
+msgstr "Добавить быстрый доступ к каталогу"
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Toggle hidden files"
+msgstr "Показывать скр&ытые файлы"
+
+msgid "Toggle horizontal/vertical split"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Equal split"
+msgid "Equal panel split"
+msgstr "&Равные размеры"
+
+msgid "Enlarge current panel"
+msgstr ""
+
+msgid "Shrink current panel"
+msgstr ""
+
+msgid "Put current path to cmdline"
+msgstr ""
+
+msgid "Put other path to cmdline"
+msgstr ""
+
+msgid "Put selected name to cmdline"
+msgstr ""
+
+msgid "Put selected full path to cmdline"
+msgstr ""
+
+msgid "Put tagged names to cmdline"
+msgstr ""
+
+msgid "Put other tagged to cmdline"
+msgstr ""
+
+msgid "Toggle left panel in terminal mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "Togg&le right margin"
+msgid "Toggle right panel in terminal mode"
+msgstr "Перек&лючить правое поле"
+
+#, fuzzy
+#| msgid "S&hell patterns"
+msgid "Select files by pattern"
+msgstr "Об&разцы в стиле Shell"
+
+#, fuzzy
+#| msgid "&Using shell patterns"
+msgid "Unselect files by pattern"
+msgstr "&Метасимволы Shell"
+
+msgid "Select by extension"
+msgstr ""
+
+msgid "Scroll panel left"
+msgstr ""
+
+msgid "Scroll panel right"
+msgstr ""
+
+msgid "Scroll to left edge"
+msgstr ""
+
+msgid "Scroll to right edge"
+msgstr ""
+
+msgid "Other panel cd here"
+msgstr ""
+
+msgid "Other panel cd link target"
+msgstr ""
+
+#, fuzzy
+#| msgid "Close file"
+msgid "Copy single file"
+msgstr "Закрытие файла"
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Move single file"
+msgstr "Получение файла"
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Delete single file"
+msgstr "Получение файла"
+
+#, fuzzy
+#| msgid "Compare directories"
+msgid "Go to parent directory"
+msgstr "Сравнить каталоги"
+
+#, fuzzy
+#| msgid "Enter directory name:"
+msgid "Enter directory"
+msgstr "Введите имя каталога:"
+
+#, fuzzy
+#| msgid "Panel split"
+msgid "Panel plugin menu"
+msgstr "Разбиение панелей"
+
+msgid "Drive menu (left panel)"
+msgstr ""
+
+msgid "Drive menu (right panel)"
+msgstr ""
+
+msgid "Sync other panel"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Next sort mode"
+msgstr "И&спользовать сортировку панели"
+
+msgid "Previous sort mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "Sort order"
+msgid "Reverse sort order"
+msgstr "Порядок сортировки"
+
+msgid "Sort by name"
+msgstr ""
+
+msgid "Sort by version"
+msgstr ""
+
+#, fuzzy
+#| msgid "Ignore tab &expansion"
+msgid "Sort by extension"
+msgstr "Игнорировать &табуляции"
+
+msgid "Sort by size"
+msgstr ""
+
+msgid "Sort by modification time"
+msgstr ""
+
+#, fuzzy
+#| msgid "Print data directory"
+msgid "Smart parent directory"
+msgstr "Распечатать имя каталога для данных"
+
+#, fuzzy
+#| msgid "Listing format"
+msgid "Cycle listing format"
+msgstr "Формат списка файлов"
+
+msgid "Yank (paste kill buffer)"
+msgstr ""
+
+msgid "Help index"
+msgstr ""
+
+msgid "Go back"
+msgstr ""
+
+msgid "Next link"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous link"
+msgstr "&Предыдущее"
+
+#, fuzzy
+#| msgid "Free nodes:"
+msgid "Next node"
+msgstr "Своб. узлов:"
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous node"
+msgstr "&Предыдущее"
+
+#, fuzzy
+#| msgid "Home directory:"
+msgid "Forget directory"
+msgstr "Домашний каталог:"
+
+msgid "Toggle attribute and move down"
+msgstr ""
+
+msgid "Scroll up"
+msgstr ""
+
+msgid "Scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Unselect"
+msgid "Deselect all"
+msgstr "Снять отметку"
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select page up"
+msgstr "Отметить &группу"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select page down"
+msgstr "Выбор языка"
+
+#, fuzzy
+#| msgid "Close file"
+msgid "Close editor"
+msgstr "Закрытие файла"
+
+msgid "Paragraph up"
+msgstr ""
+
+msgid "Paragraph down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Extension file edit"
+msgid "Open file in editor"
+msgstr "Редактирование файла расширений"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select word"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select line"
+msgstr "Выбор языка"
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select all"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Column selection mode"
+msgstr "В в&ыделенном"
+
+#, fuzzy
+#| msgid "Save block"
+msgid "Save selected block"
+msgstr "Сохранить блок"
+
+msgid "Insert file"
+msgstr "Вставить файл"
+
+#, fuzzy
+#| msgid "&Toggle ins/overw"
+msgid "Toggle insert/overwrite"
+msgstr "&Режим вставки/замены"
+
+#, fuzzy
+#| msgid "Insert &date/time"
+msgid "Insert date/time (Lua action)"
+msgstr "Вставить &дату/время"
+
+#, fuzzy
+#| msgid "Deleting"
+msgid "Delete line"
+msgstr "Удаление"
+
+#, fuzzy
+#| msgid "file1 file2"
+msgid "Mail file"
+msgstr "файл1 файл2"
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Undo history"
+msgstr "&История командной строки"
+
+#, fuzzy
+#| msgid "&Format paragraph"
+msgid "Format paragraph (Lua action)"
+msgstr "Форматировать &абзац"
+
+#, fuzzy
+#| msgid "Left bracket"
+msgid "Match bracket"
+msgstr "Левая квадратная скобка"
+
+msgid "Sort selection (Lua action)"
+msgstr ""
+
+msgid "Insert command output (Lua action)"
+msgstr ""
+
+msgid "Start macro recording"
+msgstr ""
+
+msgid "Stop macro recording"
+msgstr ""
+
+msgid "Toggle macro recording"
+msgstr ""
+
+msgid "Macro explorer"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat last commands"
+msgid "Repeat last macro"
+msgstr "Повторить последние команды"
+
+#, fuzzy
+#| msgid "S&pell check"
+msgid "Spell check"
+msgstr "Проверка ор&фографии"
+
+#, fuzzy
+#| msgid "S&pell check"
+msgid "Spell check current word"
+msgstr "Проверка ор&фографии"
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select spell language"
+msgstr "Выбор языка"
+
+#, fuzzy
+#| msgid "&Flush bookmarks"
+msgid "Clear all bookmarks"
+msgstr "У&брать все закладки"
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Next bookmark"
+msgstr "&К следующей закладке"
+
+#, fuzzy
+#| msgid "&Prev bookmark"
+msgid "Previous bookmark"
+msgstr "К пре&дыдущей закладке"
+
+msgid "Toggle code fold"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find all"
+msgid "Unfold all"
+msgstr "На&йти всё"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle line filter"
+msgstr "Отобразить/скрыть номера с&трок"
+
+msgid "Filter by selection or word"
+msgstr ""
+
+#, fuzzy
+#| msgid "Changes to file lost"
+msgid "Select to file start"
+msgstr "Изменения файла потеряны"
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to file end"
+msgstr "Выберите метод сравнения:"
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to page start"
+msgstr "Выберите метод сравнения:"
+
+#, fuzzy
+#| msgid "Select compare method:"
+msgid "Select to page end"
+msgstr "Выберите метод сравнения:"
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select scroll up"
+msgstr "Отметить &группу"
+
+msgid "Select scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select paragraph up"
+msgstr "Отметить &группу"
+
+msgid "Select paragraph down"
+msgstr ""
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select page up"
+msgstr "Снять &отметку"
+
+msgid "Column select page down"
+msgstr ""
+
+msgid "Column select left"
+msgstr ""
+
+msgid "Column select right"
+msgstr ""
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select up"
+msgstr "Снять &отметку"
+
+#, fuzzy
+#| msgid "In se&lection"
+msgid "Column select down"
+msgstr "В в&ыделенном"
+
+#, fuzzy
+#| msgid "U&nselect group"
+msgid "Column select scroll up"
+msgstr "Снять &отметку"
+
+msgid "Column select scroll down"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Format paragraph"
+msgid "Column select paragraph up"
+msgstr "Форматировать &абзац"
+
+msgid "Column select paragraph down"
+msgstr ""
+
+msgid "Shift block left"
+msgstr ""
+
+msgid "Shift block right"
+msgstr ""
+
+msgid "Insert literal character (Lua action)"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Visible trailing spaces"
+msgid "Toggle visible tabs/spaces"
+msgstr "Отображать проб&елы"
+
+msgid "Toggle control characters"
+msgstr ""
+
+#, fuzzy
+#| msgid "Toggle s&yntax highlighting"
+msgid "Toggle syntax highlighting"
+msgstr "Включить/отключить подсветку с&интаксиса"
+
+msgid "Choose syntax highlighting"
+msgstr "Выбор подсветки синтаксиса"
+
+#, fuzzy
+#| msgid "Togg&le right margin"
+msgid "Toggle right margin"
+msgstr "Перек&лючить правое поле"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Save mode options"
+msgstr "Настройки панели"
+
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "About editor"
+msgstr "Со встроенным редактором"
+
+#, fuzzy
+#| msgid "Executable &first"
+msgid "Execute script"
+msgstr "Сперва испо&лняемые"
+
+msgid "Move window"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Resize"
+msgid "Resize window"
+msgstr "Изменить &размер"
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle fullscreen"
+msgstr "Окно во весь &экран"
+
+#, fuzzy
+#| msgid "&Window"
+msgid "Window list"
+msgstr "&Окна"
+
+msgid "Next window"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Previous"
+msgid "Previous window"
+msgstr "&Предыдущее"
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle line wrap"
+msgstr "Отобразить/скрыть номера с&трок"
+
+msgid "Hex edit mode"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle hex mode"
+msgstr "Отобразить/скрыть номера с&трок"
+
+#, fuzzy
+#| msgid "To&ggle mark"
+msgid "Toggle magic mode"
+msgstr "&Переключить в режим пометки"
+
+msgid "Toggle nroff mode"
+msgstr ""
+
+msgid "Toggle ANSI color mode"
+msgstr ""
+
+msgid "Cycle ESC render mode: None/SGR/Term"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Next bookmark"
+msgid "Go to bookmark"
+msgstr "&К следующей закладке"
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle ruler"
+msgstr "Окно во весь &экран"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search forward"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Search &again"
+msgid "Search backward"
+msgstr "П&родолжить поиск"
+
+#, fuzzy
+#| msgid "Sea&rch for content"
+msgid "Search forward next"
+msgstr "Поиск по содер&жимому"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search backward next"
+msgstr "Поиск закончен"
+
+msgid "Search opposite direction"
+msgstr ""
+
+#, fuzzy
+#| msgid "Getting file"
+msgid "Set line filter"
+msgstr "Получение файла"
+
+msgid "Toggle filter follow mode"
+msgstr ""
+
+msgid "Jump to next filter match"
+msgstr ""
+
+msgid "Jump to prev filter match"
+msgstr ""
+
+msgid "Toggle structured (tree) mode"
+msgstr ""
+
+msgid "Open in the structure viewer (mcstruct)"
+msgstr ""
+
+msgid "Expand/collapse tree node"
+msgstr ""
+
+msgid "Expand subtree"
+msgstr ""
+
+msgid "Expand all tree nodes"
+msgstr ""
+
+msgid "Collapse all tree nodes"
+msgstr ""
+
+msgid "Copy node path to clipboard"
+msgstr ""
+
+msgid "Toggle show symbols"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Toggle fullscreen"
+msgid "Toggle full split"
+msgstr "Окно во весь &экран"
+
+msgid "Tab size 2"
+msgstr ""
+
+msgid "Tab size 3"
+msgstr ""
+
+msgid "Tab size 4"
+msgstr ""
+
+msgid "Tab size 8"
+msgstr ""
+
+msgid "Next difference"
+msgstr ""
+
+msgid "Previous difference"
+msgstr ""
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit other file"
+msgstr "Редактировать файл"
+
+msgid "Merge current hunk"
+msgstr ""
+
+msgid "Merge from other file"
+msgstr ""
+
 #, c-format
 msgid ""
 "File \"%s\" is already being edited.\n"
@@ -103,6 +1235,14 @@ msgstr "Игн&орировать замок"
 #, c-format
 msgid "Cannot create %s directory"
 msgstr "Не удалось создать каталог \"%s\""
+
+#, c-format
+msgid "Imported %s to %s\n"
+msgstr ""
+
+#, c-format
+msgid "Warning: import of %s to %s is incomplete\n"
+msgstr ""
 
 msgid "FATAL: not a directory:"
 msgstr "ОШИБКА: не является каталогом:"
@@ -159,14 +1299,6 @@ msgstr "По &шаблону"
 
 #, c-format
 msgid ""
-"Unable to load '%s' skin.\n"
-"Default skin has been loaded"
-msgstr ""
-"Не удалось загрузить скин \"%s\".\n"
-"Используется скин по умолчанию"
-
-#, c-format
-msgid ""
 "Unable to parse '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
@@ -191,6 +1323,14 @@ msgid ""
 msgstr ""
 "Не удалось использовать скин \"%s\", требующий поддержку 256 цветов:\n"
 "%s\n"
+"Используется скин по умолчанию"
+
+#, c-format
+msgid ""
+"Unable to load '%s' skin.\n"
+"Default skin has been loaded"
+msgstr ""
+"Не удалось загрузить скин \"%s\".\n"
 "Используется скин по умолчанию"
 
 msgid ""
@@ -332,9 +1472,6 @@ msgstr "Стрелка вправо   "
 
 msgid "Insert"
 msgstr "Клавиша Insert   "
-
-msgid "Delete"
-msgstr "Клавиша Delete   "
 
 msgid "Home"
 msgstr "Клавиша Home     "
@@ -526,14 +1663,11 @@ msgstr "Ctrl"
 msgid "Alt"
 msgstr "Alt"
 
+msgid "RAlt"
+msgstr ""
+
 msgid "Shift"
 msgstr "Shift"
-
-msgid "The TERM environment variable is unset!\n"
-msgstr "Переменная среды TERM не определена!\n"
-
-msgid "Cannot check SIGWINCH pipe"
-msgstr "Не удаётся проверить канал SIGWINCH"
 
 #, c-format
 msgid ""
@@ -566,6 +1700,12 @@ msgid ""
 msgstr ""
 "Размер экрана %dx%d не поддерживается.\n"
 "Проверьте переменную окружения TERM.\n"
+
+msgid "The TERM environment variable is unset!\n"
+msgstr "Переменная среды TERM не определена!\n"
+
+msgid "Cannot check SIGWINCH pipe"
+msgstr "Не удаётся проверить канал SIGWINCH"
 
 msgid "B"
 msgstr "Б"
@@ -651,6 +1791,16 @@ msgstr "Не удаётся разобрать:"
 msgid "More parsing errors will be ignored."
 msgstr "Остальные ошибки анализа будут проигнорированы."
 
+msgid ""
+"The utar:// virtual filesystem has been removed.\n"
+"Use the arcmc panel plugin, if installed, or an external tar command."
+msgstr ""
+
+msgid ""
+"The ucpio:// virtual filesystem has been removed.\n"
+"Use the arcmc panel plugin, if installed, or an external cpio command."
+msgstr ""
+
 msgid "Internal error:"
 msgstr "Внутренняя ошибка:"
 
@@ -663,18 +1813,26 @@ msgstr "Экраны"
 msgid "History"
 msgstr "История"
 
-#. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
-msgid "DialogTitle|History cleanup"
-msgstr "Очистка истории"
+msgid "Paste"
+msgstr ""
 
-msgid "Do you want clean this history?"
-msgstr "Желаете очистить историю?"
+msgid ""
+"The clipboard holds more than 2 KB of text.\n"
+"Paste it?"
+msgstr ""
 
 msgid "&Yes"
 msgstr "&Да"
 
 msgid "&No"
 msgstr "&Нет"
+
+#. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
+msgid "DialogTitle|History cleanup"
+msgstr "Очистка истории"
+
+msgid "Do you want clean this history?"
+msgstr "Желаете очистить историю?"
 
 msgid "&OK"
 msgstr "&Хорошо"
@@ -713,14 +1871,10 @@ msgstr "Записать последний рабочий каталог в у�
 msgid "<file>"
 msgstr "<файл>"
 
-msgid "Enables subshell support (default)"
-msgstr "Включить поддержку встроенной командной оболочки (по умолчанию)"
-
-msgid "Disables subshell support"
-msgstr "Отключить поддержку встроенной командной оболочки"
-
-msgid "Log ftp dialog to specified file"
-msgstr "Записывать диалог с FTP в заданный файл"
+#, fuzzy
+#| msgid "Disable X11 support"
+msgid "Disables Lua support"
+msgstr "Отключить поддержку X11"
 
 msgid "Launches the file viewer on a file"
 msgstr "Просматривать файл"
@@ -752,9 +1906,6 @@ msgstr "Подразумевать медленный терминал"
 msgid "Use stickchars to draw"
 msgstr "Использовать псевдографику для рисования"
 
-msgid "Resets soft keys on HP terminals"
-msgstr "Сбросить программные клавиши на терминалах HP"
-
 msgid "Load definitions of key bindings from specified file"
 msgstr "Чтение определений привязок клавиш из указанного файла"
 
@@ -768,88 +1919,11 @@ msgstr "Принудительно установить черно-белый р
 msgid "Request to run in color mode"
 msgstr "Принудительно установить цветной режим"
 
-msgid "Specifies a color configuration"
-msgstr "Определить настройки цветов"
-
-msgid "<string>"
-msgstr "<строка>"
-
 msgid "Show mc with specified skin"
 msgstr "Показать mc с указанным скином"
 
-#. TRANSLATORS: don't translate keywords
-msgid ""
-"--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
-"\n"
-"{FORE}, {BACK} and {ATTR} can be omitted, and the default will be used\n"
-"\n"
-" Keywords:\n"
-"   Global:       errors, disabled, reverse, gauge, header\n"
-"                 input, inputmark, inputunchanged, commandlinemark\n"
-"                 bbarhotkey, bbarbutton, statusbar\n"
-"   File display: normal, selected, marked, markselect\n"
-"   Dialog boxes: dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
-"                 errdhotfocus\n"
-"   Menus:        menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
-"   Popup menus:  pmenunormal, pmenusel, pmenutitle\n"
-"   Editor:       editnormal, editbold, editmarked, editwhitespace, "
-"editnonprintable,\n"
-"                 editlinestate, editbg, editframe, editframeactive\n"
-"                 editframedrag\n"
-"   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
-"   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
-msgstr ""
-"--colors КЛЮЧЕВОЕ_СЛОВО={ТЕКСТ},{ФОН},{АТРИБУТ}:КЛЮЧЕВОЕ_СЛОВО2=...\n"
-"\n"
-"{ТЕКСТ}, {ФОН} и {АТРИБУТ} можно опустить, чтобы использовать значения по "
-"умолчанию\n"
-"\n"
-"Ключевые слова:\n"
-"   Общие:              errors, disabled, reverse, gauge, header\n"
-"                       input, inputmark, inputunchanged, commandlinemark\n"
-"                       bbarhotkey, bbarbutton, statusbar\n"
-"   Отображение файлов: normal, selected, marked, markselect\n"
-"   Диалоги:            dnormal, dfocus, dhotnormal, dhotfocus, "
-"errdhotnormal,\n"
-"                       errdhotfocus\n"
-"   Меню:               menunormal, menuhot, menusel, menuhotsel, "
-"menuinactive\n"
-"   Всплывающие меню:   pmenunormal, pmenusel, pmenutitle\n"
-"   Редактор:           editnormal, editbold, editmarked, editwhitespace, "
-"editnonprintable,\n"
-"                       editlinestate, editbg, editframe, editframeactive\n"
-"                       editframedrag\n"
-"   Просмотрщик:        viewnormal, viewbold, viewunderline, viewselected\n"
-"   Справка:            helpnormal, helpitalic, helpbold, helplink, "
-"helpslink\n"
-
-#. TRANSLATORS: don't translate color names and attributes
-msgid ""
-"Standard Colors:\n"
-"   black, gray, red, brightred, green, brightgreen, brown,\n"
-"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
-"   brightcyan, lightgray and white\n"
-"\n"
-"Extended colors, when 256 colors are available:\n"
-"   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
-"\n"
-"Attributes:\n"
-"   bold, italic, underline, reverse, blink; append more with '+'\n"
-msgstr ""
-"Стандартные цвета:\n"
-"   black, gray, red, brightred, green, brightgreen, brown,\n"
-"   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
-"   brightcyan, lightgray, white\n"
-"\n"
-"Расширенные цвета, если доступны 256 цветов:\n"
-"   от color16 до color255 или от rgb000 до rgb555 и от gray0 до gray23\n"
-"\n"
-"Атрибуты:\n"
-"   bold, italic, underline, reverse, blink; несколько атрибутов объединяются "
-"знаком \"+\"\n"
-
-msgid "Color options"
-msgstr "Цветовые настройки"
+msgid "<string>"
+msgstr "<строка>"
 
 msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
 msgstr "[+номер_строки] файл1[:номер_строки] [файл1[:номер_строки]...]"
@@ -879,8 +1953,21 @@ msgstr "Основные настройки"
 msgid "Terminal options"
 msgstr "Настройки терминала"
 
+msgid "Color options"
+msgstr "Цветовые настройки"
+
 msgid "Arguments parse error!"
 msgstr "Ошибка разбора аргументов!"
+
+#, fuzzy
+#| msgid "No arguments given to the viewer."
+msgid "No arguments given to mcstruct."
+msgstr "Не заданы аргументы для программы просмотра."
+
+#, fuzzy
+#| msgid "No arguments given to the viewer."
+msgid "No arguments given to mctree."
+msgstr "Не заданы аргументы для программы просмотра."
 
 msgid "MC is built without builtin editor."
 msgstr "MC собран без встроенного редактора."
@@ -1059,6 +2146,442 @@ msgstr "Неверный режим запуска программы сравн
 msgid "Two files are needed to compare"
 msgstr "Для сравнения необходимы два файла"
 
+msgid "Spell"
+msgstr ""
+
+msgid "Spell backend is unavailable."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Configuration..."
+msgid "Ctags Configuration"
+msgstr "&Конфигурация..."
+
+msgid "Ctags executable:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configure options"
+msgid "Command line options:"
+msgstr "Параметры конфигурации"
+
+#, fuzzy
+#| msgid "&Case sensitive"
+msgid "Case sensitive filter"
+msgstr "С учётом ре&гистра"
+
+msgid "Auto-discover tags file in parent directories"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot chmod\n"
+#| "%sn%s"
+msgid "Cannot jump to %s:%ld."
+msgstr ""
+"Не удаётся сменить режим доступа к\n"
+"%sn%s"
+
+msgid "Ctags"
+msgstr ""
+
+#, c-format
+msgid "Symbol '%s' not found in any loaded repository."
+msgstr ""
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to Declaration"
+msgstr "Впер&ёд к определению"
+
+#, fuzzy
+#| msgid "&Find declaration"
+msgid "Find Declaration"
+msgstr "Перейти к опре&делению"
+
+msgid "No word at cursor."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "'%s' is not a symbolic link"
+msgid "'%s' is not a known symbol."
+msgstr "\"%s\" не является символической ссылкой"
+
+#, fuzzy
+#| msgid "Cannot create temporary diff file"
+msgid "Failed to create temporary file."
+msgstr "Не удаётся создать временный файл различий"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to open temporary file."
+msgstr "Не удалось сохранить в файл"
+
+msgid "No indexed files found."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Failed to run:\n"
+#| "%s\n"
+msgid "Failed to run grep."
+msgstr ""
+"Сбой запуска:\n"
+"%s\n"
+
+#, fuzzy, c-format
+#| msgid "No suitable entries found in %s"
+msgid "No references found for '%s'."
+msgstr "Не найдено подходящих элементов в %s"
+
+msgid "Find References"
+msgstr ""
+
+msgid "No repository loaded."
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search Symbol"
+msgstr "Поиск закончен"
+
+msgid "No file is open."
+msgstr ""
+
+msgid "No tags found for the current file."
+msgstr ""
+
+msgid "Symbols in Current File"
+msgstr ""
+
+#, c-format
+msgid "No files matching '%s'."
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search File"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "Complete Symbol"
+msgstr "Допо&лнение: показывать всё"
+
+#, c-format
+msgid "No members found for '%s'."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Failed to read data from child stdout"
+msgid "Failed to load tags file: %s"
+msgstr "Не удалось прочесть данные из дочернего stdout."
+
+#, c-format
+msgid "Loaded %u symbols from %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create target file\n"
+#| "%s"
+msgid "Cannot create temp file: %s"
+msgstr ""
+"Не удаётся создать целевой файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Cannot rename %s to %s: %s"
+msgstr "Не удалось перекодировать из %s в %s"
+
+msgid "Ctags: Create Index"
+msgstr ""
+
+#, fuzzy
+#| msgid "Profile root directory:"
+msgid "Project root directory to index:"
+msgstr "Корневой каталог профиля:"
+
+#, fuzzy, c-format
+#| msgid "Unable to create event '%s'!"
+msgid "Failed to create index in %s"
+msgstr "Не удаётся создать событие \"%s\"!"
+
+#, c-format
+msgid "Indexed: %u symbols"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Reading failed"
+msgid "Reindex failed for %s"
+msgstr "Сбой чтения"
+
+#, c-format
+msgid "Reindexed: %u symbols"
+msgstr ""
+
+msgid "Navigation history is empty."
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation History"
+msgstr "Навигация"
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to declaration"
+msgstr "Впер&ёд к определению"
+
+#, fuzzy
+#| msgid "&Find declaration"
+msgid "Find declaration"
+msgstr "Перейти к опре&делению"
+
+msgid "Find references"
+msgstr ""
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "Complete symbol"
+msgstr "Допо&лнение: показывать всё"
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation history"
+msgstr "Навигация"
+
+msgid "Go forward"
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search symbol"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search file"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Symbols in current file"
+msgstr "Имя символической ссылки:"
+
+msgid "Class/struct members"
+msgstr ""
+
+#, fuzzy
+#| msgid "Load syntax file"
+msgid "Load tags file"
+msgstr "Загрузить файл синтаксиса"
+
+msgid "Manage repositories"
+msgstr ""
+
+#, fuzzy
+#| msgid "Indexed directory"
+msgid "Reindex repository"
+msgstr "Проиндексированный каталог"
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Configuration"
+msgstr "Подтверждение"
+
+#, fuzzy
+#| msgid "For&ward to declaration"
+msgid "Go to &declaration"
+msgstr "Впер&ёд к определению"
+
+msgid "&Find declaration"
+msgstr "Перейти к опре&делению"
+
+msgid "Find &references"
+msgstr ""
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Navigation &history"
+msgstr "Навигация"
+
+msgid "Go &back"
+msgstr ""
+
+msgid "Go for&ward"
+msgstr ""
+
+msgid "Class/struct &members"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Search"
+msgid "&Search symbol"
+msgstr "&Поиск"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "S&ymbols in file"
+msgstr "Имя символической ссылки:"
+
+#, fuzzy
+#| msgid "Co&mplete: show all"
+msgid "&Complete symbol"
+msgstr "Допо&лнение: показывать всё"
+
+msgid "No matching symbols found."
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Select symbol"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Symbol name:"
+msgstr "Имя символической ссылки:"
+
+#, fuzzy
+#| msgid "File name:"
+msgid "File name or path:"
+msgstr "Шаблон имени:"
+
+msgid "Class/Struct Members"
+msgstr ""
+
+msgid "Scope name (class, struct, namespace):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Load file"
+msgid "Load Tags File"
+msgstr "Загрузка файла"
+
+msgid "Tags file path:"
+msgstr ""
+
+msgid "Manage Tag Repositories"
+msgstr ""
+
+msgid "(unknown)"
+msgstr ""
+
+msgid "&Close"
+msgstr "&Закрыть"
+
+msgid "No references found."
+msgstr ""
+
+msgid "Members"
+msgstr ""
+
+msgid "Warning"
+msgstr "Предупреждение"
+
+msgid ""
+"Current text was modified without a file save.\n"
+"Continue discards these changes."
+msgstr ""
+"Текущий текст был изменён и не сохранён.\n"
+"Продолжение операции приведёт к потере изменений."
+
+msgid "C&ontinue"
+msgstr "П&родолжить"
+
+msgid "&Add word"
+msgstr "&Добавить"
+
+msgid "&Replace"
+msgstr "&Заменить"
+
+msgid "&Skip"
+msgstr "П&ропустить"
+
+msgid "Language"
+msgstr "Язык"
+
+msgid "Misspelled"
+msgstr "Слово с ошибкой"
+
+msgid "Check word"
+msgstr "Проверка слова"
+
+msgid "Suggest"
+msgstr "Советы"
+
+msgid "(no suggestions)"
+msgstr ""
+
+msgid ""
+"The hunspell library is not installed.\n"
+"Install it, and a dictionary for the language you write in."
+msgstr ""
+
+msgid ""
+"The aspell library is not installed.\n"
+"Install it, and a dictionary for the language you write in."
+msgstr ""
+
+msgid "none"
+msgstr ""
+
+#, c-format
+msgid ""
+"Aspell has no dictionary for \"%s\".\n"
+"Installed: %s\n"
+"Install a dictionary, then set Language to the name it goes by."
+msgstr ""
+
+#, c-format
+msgid ""
+"Hunspell has no dictionary for \"%s\".\n"
+"Installed: %s\n"
+"Install a dictionary, then set Language to the name it goes by."
+msgstr ""
+
+msgid ""
+"Spell checking is off.\n"
+"Set a language in the Spell plugin settings to turn it on."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Add word"
+msgid "Add word"
+msgstr "&Добавить"
+
+msgid "Word to add to the dictionary:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Misspelled"
+msgid "Aspell"
+msgstr "Слово с ошибкой"
+
+msgid "Hunspell"
+msgstr ""
+
+msgid "Engine"
+msgstr ""
+
+#, fuzzy
+#| msgid "Language"
+msgid "Language:"
+msgstr "Язык"
+
+#, fuzzy
+#| msgid "Select"
+msgid "&Select..."
+msgstr "Отметить группу"
+
+msgid "Spell plugin settings"
+msgstr ""
+
+msgid "Select language"
+msgstr "Выбор языка"
+
 #, c-format
 msgid "Loading: %3d%%"
 msgstr "Загрузка: %3d%%"
@@ -1097,9 +2620,6 @@ msgstr ""
 "Файл \"%s\" слишком большой.\n"
 "Всё равно открыть?"
 
-msgid "Warning"
-msgstr "Предупреждение"
-
 #, c-format
 msgid "Error reading from pipe: %s"
 msgstr "Ошибка чтения из канала: %s"
@@ -1111,6 +2631,32 @@ msgid ""
 msgstr ""
 "Не удаётся открыть канал для чтения\n"
 "%s"
+
+#, fuzzy
+#| msgid "&Undo"
+msgid "Undo"
+msgstr "&Отмена"
+
+msgid ""
+"Undo history is not available.\n"
+"The change log was overwritten after a large edit."
+msgstr ""
+
+msgid ""
+"No write permissions for this file.\n"
+"Enter sudo password to save as root:"
+msgstr ""
+
+msgid "Save with sudo"
+msgstr ""
+
+msgid ""
+"Cannot save with sudo.\n"
+"Wrong password or sudo is not configured."
+msgstr ""
+
+msgid "&Retry"
+msgstr "По&вторить"
 
 msgid "File has hard-links. Detach before saving?"
 msgstr "Файл имеет жёсткие ссылки. Отсоединить перед сохранением?"
@@ -1134,9 +2680,6 @@ msgstr ""
 
 msgid "The file you are saving does not end with a newline."
 msgstr "Сохраняемый файл не имеет символа перевода строки в конце файла"
-
-msgid "C&ontinue"
-msgstr "П&родолжить"
 
 msgid "&Do not change"
 msgstr "&Не изменять"
@@ -1272,36 +2815,8 @@ msgstr "Сохранить блок"
 msgid "Cannot save block"
 msgstr "Не удаётся сохранить блок"
 
-msgid "Insert file"
-msgstr "Вставить файл"
-
 msgid "Cannot insert file"
 msgstr "Не удалось вставить файл"
-
-msgid "You must first highlight a block of text"
-msgstr "Вы должны сначала выделить блок текста"
-
-msgid "Run sort"
-msgstr "Выполнить сортировку"
-
-msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
-msgstr "Введите параметры сортировки (см. man sort(1)), разделённые пробелами:"
-
-msgid "Cannot execute sort command"
-msgstr "Не удалось выполнить команду sort"
-
-#, c-format
-msgid "Sort returned non-zero: %s"
-msgstr "Сортировка вернула ненулевой код: %s"
-
-msgid "Paste output of external command"
-msgstr "Вставить вывод внешней команды"
-
-msgid "Enter shell command(s):"
-msgstr "Введите команду оболочки:"
-
-msgid "Cannot execute external command"
-msgstr "Не удалось выполнить внешнюю команду"
 
 msgid "mail -s <subject> -c <cc> <to>"
 msgstr "mail -s <Тема> -c <Копии> <Кому>"
@@ -1318,21 +2833,31 @@ msgstr "Отправить копии адресатам"
 msgid "Mail"
 msgstr "Почта"
 
-msgid "Insert literal"
-msgstr "Вставить литерал"
-
-msgid "Press any key:"
-msgstr "Нажмите любую клавишу:"
-
-msgid ""
-"Current text was modified without a file save.\n"
-"Continue discards these changes."
-msgstr ""
-"Текущий текст был изменён и не сохранён.\n"
-"Продолжение операции приведёт к потере изменений."
-
 msgid "Cancel"
 msgstr "Отмена"
+
+#, fuzzy, c-format
+#| msgid "Insert"
+msgid "insert %d"
+msgstr "Клавиша Insert   "
+
+#, fuzzy, c-format
+#| msgid "Delete %s?"
+msgid "delete %d"
+msgstr "Удалить %s?"
+
+#, fuzzy
+#| msgid "Replace"
+msgid "replace"
+msgstr "Заменить"
+
+msgid "Nothing to undo."
+msgstr ""
+
+#, fuzzy
+#| msgid "History"
+msgid "Undo History"
+msgstr "История"
 
 msgid "Collect completions"
 msgstr "Поиск дополнений"
@@ -1346,29 +2871,41 @@ msgstr "Сохранить макрос"
 msgid "Press the macro's new hotkey:"
 msgstr "Нажмите новую клавишу макроса:"
 
-msgid "Delete macro"
-msgstr "Удалить макрос"
-
-msgid "Press macro hotkey:"
-msgstr "Нажмите горячую клавишу для макроса:"
-
-msgid "Macro not deleted"
-msgstr "Макрос не удалён"
-
 msgid "Repeat last commands"
 msgstr "Повторить последние команды"
 
 msgid "Repeat times:"
 msgstr "Количество повторов:"
 
+#, fuzzy, c-format
+#| msgid "Delete macro"
+msgid "Delete macro %s?"
+msgstr "Удалить макрос"
+
+msgid "Delete macro"
+msgstr "Удалить макрос"
+
+msgid "Macro Explorer"
+msgstr ""
+
+msgid "No macros recorded"
+msgstr ""
+
+#, fuzzy
+#| msgid "Russian"
+msgid "Run"
+msgstr "Русский"
+
+#, fuzzy
+#| msgid "&Close"
+msgid "Close"
+msgstr "&Закрыть"
+
 msgid "&Open file..."
 msgstr "&Открыть файл..."
 
 msgid "&New"
 msgstr "&Новый"
-
-msgid "&Close"
-msgstr "&Закрыть"
 
 msgid "&History..."
 msgstr "&История..."
@@ -1396,6 +2933,11 @@ msgstr "&Отмена"
 
 msgid "&Redo"
 msgstr "В&ернуть"
+
+#, fuzzy
+#| msgid "&History..."
+msgid "Undo &History..."
+msgstr "&История..."
 
 msgid "&Toggle ins/overw"
 msgstr "&Режим вставки/замены"
@@ -1445,6 +2987,16 @@ msgstr "П&родолжить поиск"
 msgid "&Replace..."
 msgstr "&Заменить..."
 
+#, fuzzy
+#| msgid "&Toggle line state"
+msgid "Toggle &line filter"
+msgstr "Отобразить/скрыть номера с&трок"
+
+#, fuzzy
+#| msgid "&write by owner"
+msgid "Filter by &word"
+msgstr "&запись для владельца"
+
 msgid "&Toggle bookmark"
 msgstr "&Установить/снять закладку"
 
@@ -1472,17 +3024,19 @@ msgstr "Включить/отключить подсветку с&интакси
 msgid "Togg&le right margin"
 msgstr "Перек&лючить правое поле"
 
-msgid "&Find declaration"
-msgstr "Перейти к опре&делению"
-
-msgid "Back from &declaration"
-msgstr "Назад к то&чке вызова"
-
-msgid "For&ward to declaration"
-msgstr "Впер&ёд к определению"
+msgid "Toggle &control characters"
+msgstr ""
 
 msgid "Encod&ing..."
 msgstr "Выбор &кодировки..."
+
+msgid "&Fold / Unfold block"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Find all"
+msgid "&Unfold all"
+msgstr "На&йти всё"
 
 msgid "&Refresh screen"
 msgstr "Пере&рисовать экран"
@@ -1490,41 +3044,11 @@ msgstr "Пере&рисовать экран"
 msgid "&Start/Stop record macro"
 msgstr "&Начать/закончить запись макроса"
 
-msgid "Delete macr&o..."
-msgstr "&Удалить макрос..."
+msgid "Macro e&xplorer..."
+msgstr ""
 
 msgid "Record/Repeat &actions"
 msgstr "Записать/повторить &действия"
-
-msgid "S&pell check"
-msgstr "Проверка ор&фографии"
-
-msgid "C&heck word"
-msgstr "Про&верить слово"
-
-msgid "Change spelling &language..."
-msgstr "Сменить &язык проверки орфографии..."
-
-msgid "&Mail..."
-msgstr "&Электронная почта..."
-
-msgid "Insert &literal..."
-msgstr "Вставить &литерал..."
-
-msgid "Insert &date/time"
-msgstr "Вставить &дату/время"
-
-msgid "&Format paragraph"
-msgstr "Форматировать &абзац"
-
-msgid "&Sort..."
-msgstr "&Сортировать..."
-
-msgid "&Paste output of..."
-msgstr "Вставить в&ывод команды..."
-
-msgid "&External formatter"
-msgstr "&Форматировать"
 
 msgid "&Move"
 msgstr "Пере&местить"
@@ -1556,6 +3080,12 @@ msgstr "Опре&деление клавиш..."
 msgid "Syntax &highlighting..."
 msgstr "&Подсветка синтаксиса..."
 
+msgid "Pl&ugin info..."
+msgstr ""
+
+msgid "&Lua scripts..."
+msgstr ""
+
 msgid "S&yntax file"
 msgstr "Правка файла си&нтаксиса"
 
@@ -1564,6 +3094,9 @@ msgstr "Файл &меню"
 
 msgid "&Save setup"
 msgstr "&Сохранить настройки"
+
+msgid "(no plugins loaded)"
+msgstr ""
 
 msgid "&File"
 msgstr "&Файл"
@@ -1577,14 +3110,29 @@ msgstr "&Поиск"
 msgid "&Command"
 msgstr "&Команда"
 
-msgid "For&mat"
-msgstr "Фор&матирование"
+#, fuzzy
+#| msgid "Navigation"
+msgid "&Navigate"
+msgstr "Навигация"
 
 msgid "&Window"
 msgstr "&Окна"
 
+msgid "Pl&ugins"
+msgstr ""
+
 msgid "&Options"
 msgstr "&Настройки"
+
+#, fuzzy
+#| msgid "Tabulation"
+msgid "Lua action"
+msgstr "Табуляция"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Action failed"
+msgstr "Сбой чтения"
 
 msgid "&None"
 msgstr "Не&т"
@@ -1631,6 +3179,9 @@ msgstr "Отображать проб&елы"
 msgid "Visible &tabs"
 msgstr "Отображать таб&уляции"
 
+msgid "S&how control characters"
+msgstr ""
+
 msgid "Synta&x highlighting"
 msgstr "Подс&ветка синтаксиса"
 
@@ -1658,6 +3209,9 @@ msgstr "В в&ыделенном"
 msgid "&Find all"
 msgstr "На&йти всё"
 
+msgid "Fil&ter"
+msgstr ""
+
 #, c-format
 msgid "Searching %s: %3d%%"
 msgstr "Ищется %s: %3d%%"
@@ -1675,14 +3229,8 @@ msgstr "Заменить"
 msgid "Replace with:"
 msgstr "Заменить на:"
 
-msgid "&Replace"
-msgstr "&Заменить"
-
 msgid "A&ll"
 msgstr "&Все"
-
-msgid "&Skip"
-msgstr "П&ропустить"
 
 msgid "Confirm replace"
 msgstr "Подтвердить замену"
@@ -1690,6 +3238,9 @@ msgstr "Подтвердить замену"
 #, c-format
 msgid "%ld replacements made"
 msgstr "Сделано подстановок: %ld"
+
+msgid "Plugin"
+msgstr ""
 
 #, c-format
 msgid ""
@@ -1701,6 +3252,18 @@ msgstr ""
 
 msgid "About"
 msgstr "О программе"
+
+msgid "Plugin info"
+msgstr ""
+
+msgid "No plugins are loaded."
+msgstr ""
+
+msgid "Selected runtime has no configuration callback."
+msgstr ""
+
+msgid "Selected plugin has no configuration callback."
+msgstr ""
 
 msgid "Open files"
 msgstr "Открытые файлы"
@@ -1726,98 +3289,16 @@ msgstr "Удалить"
 msgid "ButtonBar|PullDn"
 msgstr "МенюMC"
 
-msgid "Breton"
-msgstr "Бретонский"
+#, fuzzy, c-format
+#| msgid "Searching %s: %3d%%"
+msgid "Filtering %s: %3d%%"
+msgstr "Ищется %s: %3d%%"
 
-msgid "Czech"
-msgstr "Чешский"
+msgid "Filter"
+msgstr "Фильтр"
 
-msgid "Welsh"
-msgstr "Валлийский"
-
-msgid "Danish"
-msgstr "Датский"
-
-msgid "German"
-msgstr "Немецкий"
-
-msgid "Greek"
-msgstr "Греческий"
-
-msgid "English"
-msgstr "Английский"
-
-msgid "British English"
-msgstr "Британский английский"
-
-msgid "Canadian English"
-msgstr "Канадский английский"
-
-msgid "American English"
-msgstr "Американский английский"
-
-msgid "Esperanto"
-msgstr "Эсперанто"
-
-msgid "Spanish"
-msgstr "Испанский"
-
-msgid "Faroese"
-msgstr "Фарерский"
-
-msgid "French"
-msgstr "Французский"
-
-msgid "Italian"
-msgstr "Итальянский"
-
-msgid "Dutch"
-msgstr "Голландский"
-
-msgid "Norwegian"
-msgstr "Норвежский"
-
-msgid "Polish"
-msgstr "Польский"
-
-msgid "Portuguese"
-msgstr "Португальский"
-
-msgid "Romanian"
-msgstr "Румынский"
-
-msgid "Russian"
-msgstr "Русский"
-
-msgid "Slovak"
-msgstr "Словацкий"
-
-msgid "Swedish"
-msgstr "Шведский"
-
-msgid "Ukrainian"
-msgstr "Украинский"
-
-msgid "&Add word"
-msgstr "&Добавить"
-
-msgid "Language"
-msgstr "Язык"
-
-msgid "Misspelled"
-msgstr "Слово с ошибкой"
-
-msgid "Check word"
-msgstr "Проверка слова"
-
-msgid "Suggest"
-msgstr "Советы"
-
-msgid "Select language"
-msgstr "Выбор языка"
-
-msgid "Choose syntax highlighting"
-msgstr "Выбор подсветки синтаксиса"
+msgid "No lines match"
+msgstr ""
 
 msgid "< Auto >"
 msgstr "< Автоматически >"
@@ -1840,27 +3321,17 @@ msgstr "Загрузить файл синтаксиса"
 msgid "Error in file %s on line %d"
 msgstr "Ошибка в файле %s в строке %d"
 
-msgid ""
-"The Commander can't change to the directory that\n"
-"the subshell claims you are in. Perhaps you have\n"
-"deleted your working directory, or given yourself\n"
-"extra access permissions with the \"su\" command?"
-msgstr ""
-"MC не может перейти в каталог, который ему сообщил\n"
-"дочерний процесс интерпретатора. Может, вы удалили\n"
-"рабочий каталог или дали себе дополнительные\n"
-"привилегии доступа при помощи команды \"su\"?"
-
 #, c-format
 msgid "Cannot fetch a local copy of %s"
 msgstr "Не удалось получить локальную копию %s"
 
-msgid "The shell is already running a command"
-msgstr "Интерпретатор занят выполнением команды"
-
+#, fuzzy
+#| msgid ""
+#| "Not an xterm or Linux console;\n"
+#| "the subshell cannot be toggled."
 msgid ""
 "Not an xterm or Linux console;\n"
-"the subshell cannot be toggled."
+"the terminal cannot be shown."
 msgstr ""
 "Это не консоль xterm или Linux;\n"
 "подоболочку нельзя переключить."
@@ -2101,11 +3572,13 @@ msgstr "Типы &файлов"
 msgid "&Permissions"
 msgstr "П&рава доступа"
 
+#, fuzzy
+#| msgid "&Permissions"
+msgid "Permission c&olors"
+msgstr "П&рава доступа"
+
 msgid "Quick search"
 msgstr "Быстрый поиск"
-
-msgid "Panel options"
-msgstr "Настройки панели"
 
 msgid "Information"
 msgstr "Информация"
@@ -2173,38 +3646,11 @@ msgstr "О&чистка истории"
 msgid "Confirmation"
 msgstr "Подтверждение"
 
-msgid "Directory tree"
-msgstr "Дерево каталогов"
-
 msgid "Timeout for freeing VFSs (sec):"
 msgstr "Тайм-аут высвобождения ВФС (сек):"
 
-msgid "FTP anonymous password:"
-msgstr "Пароль анонимного FTP:"
-
-msgid "FTP directory cache timeout (sec):"
-msgstr "Тайм-аут кэша каталога FTP (сек):"
-
-msgid "&Always use ftp proxy:"
-msgstr "&Всегда использовать FTP-прокси:"
-
-msgid "&Use ~/.netrc"
-msgstr "&Использовать ~/.netrc"
-
-msgid "Use &passive mode"
-msgstr "Использовать пассивный ре&жим"
-
-msgid "Use passive mode over pro&xy"
-msgstr "И&спользовать пассивный режим через прокси"
-
 msgid "Virtual File System Setting"
 msgstr "Настройки виртуальной файловой системы"
-
-msgid "cd"
-msgstr "Перейти в"
-
-msgid "Quick cd"
-msgstr "Смена рабочего каталога"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Имя существующего файла (для ссылки):"
@@ -2223,9 +3669,6 @@ msgstr "&Возобновить"
 
 msgid "&Kill"
 msgstr "&Снять"
-
-msgid "Background jobs"
-msgstr "Фоновые задания"
 
 #, c-format
 msgid ""
@@ -2433,11 +3876,32 @@ msgstr "<Неизвестный>"
 msgid "<Unknown group>"
 msgstr "<Неизвестная>"
 
-msgid "Enter machine name (F1 for details):"
-msgstr "Введите имя машины (подробности по F1):"
+#, c-format
+msgid "The magic.ini operation %s:%s cannot view %s"
+msgstr ""
+
+#, c-format
+msgid "Invalid magic.ini association for %s"
+msgstr ""
+
+msgid "The runtime file handler failed"
+msgstr ""
 
 msgid "Files tagged, want to cd?"
 msgstr "Файлы помечены, сменить каталог?"
+
+msgid "This plugin does not support file viewing"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot fetch a local copy of %s"
+msgid "Cannot get local copy of %s"
+msgstr "Не удалось получить локальную копию %s"
+
+#, fuzzy
+#| msgid "Cannot read directory contents"
+msgid "Cannot read the contents"
+msgstr "Не удалось прочесть содержимое каталога"
 
 #, c-format
 msgid "Link %s to:"
@@ -2462,9 +3926,6 @@ msgstr ""
 "Не удаётся создать символическую ссылку\n"
 "%s"
 
-msgid "View file"
-msgstr "Просмотр файла"
-
 msgid "Filename:"
 msgstr "Имя файла:"
 
@@ -2474,8 +3935,13 @@ msgstr "Просмотр вывода команды"
 msgid "Filter command and arguments:"
 msgstr "Введите команду и её аргументы:"
 
-msgid "Edit file"
-msgstr "Редактировать файл"
+msgid "This plugin does not support file editing"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot save block"
+msgid "Cannot save %s back to plugin"
+msgstr "Не удаётся сохранить блок"
 
 msgid "Create a new Directory"
 msgstr "Создать новый каталог"
@@ -2497,9 +3963,6 @@ msgstr "Правка файла расцветки имён"
 
 msgid "Which highlighting file you want to edit?"
 msgstr "Какой файл расцветки имён вы хотите изменить?"
-
-msgid "Compare directories"
-msgstr "Сравнить каталоги"
 
 msgid "Select compare method:"
 msgstr "Выберите метод сравнения:"
@@ -2546,15 +4009,6 @@ msgid ""
 msgstr ""
 "Не удаётся изменить симв. ссылку\n"
 "%s"
-
-msgid "FTP to machine"
-msgstr "FTP-соединение с удалённой машиной"
-
-msgid "SFTP to machine"
-msgstr "SFTP-соединение с удалённой машиной"
-
-msgid "Shell link to machine"
-msgstr "Shell-соединение с удалённой машиной"
 
 msgid "Directory scanning"
 msgstr "Путь к каталогу"
@@ -2735,9 +4189,6 @@ msgstr "&Игнорировать"
 
 msgid "Ignore a&ll"
 msgstr "Игнорироват&ь все"
-
-msgid "&Retry"
-msgstr "По&вторить"
 
 #, c-format
 msgid ""
@@ -3200,8 +4651,10 @@ msgstr "Инфо&рмация"
 msgid "&Tree"
 msgstr "&Дерево"
 
-msgid "Paneli&ze"
-msgstr "Па&нелизация"
+#, fuzzy
+#| msgid "Save &mode..."
+msgid "Panel &modes..."
+msgstr "Ре&жим сохранения..."
 
 msgid "&Listing format..."
 msgstr "Фор&мат списка..."
@@ -3215,17 +4668,13 @@ msgstr "&Фильтр..."
 msgid "&Encoding..."
 msgstr "Выбор &кодировки..."
 
-msgid "FT&P link..."
-msgstr "&FTP-соединение..."
-
-msgid "S&hell link..."
-msgstr "S&hell-соединение..."
-
-msgid "SFTP li&nk..."
-msgstr "SFTP-соед&инение..."
-
 msgid "&Rescan"
 msgstr "&Обновить"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Change &drive"
+msgstr "Дата &смены"
 
 msgid "&View"
 msgstr "П&росмотр"
@@ -3296,17 +4745,16 @@ msgstr "Поиск &файла"
 msgid "S&wap panels"
 msgstr "&Переставить панели"
 
-msgid "Switch &panels on/off"
-msgstr "&Отключить панели"
+#, fuzzy
+#| msgid "To&ggle mark"
+msgid "Toggle &terminal"
+msgstr "&Переключить в режим пометки"
 
 msgid "&Compare directories"
 msgstr "&Сравнить каталоги"
 
 msgid "C&ompare files"
 msgstr "Сравнить фа&йлы"
-
-msgid "E&xternal panelize"
-msgstr "В&нешняя панелизация"
 
 msgid "Show directory s&izes"
 msgstr "&Размеры каталогов"
@@ -3317,20 +4765,21 @@ msgstr "&История командной строки"
 msgid "Viewed/edited files hi&story"
 msgstr "История просмотра/пра&вки файлов"
 
-msgid "Di&rectory hotlist"
-msgstr "Каталоги &быстрого доступа"
+#, fuzzy
+#| msgid "Hotlist Load"
+msgid "Hot&list"
+msgstr "Загрузка списка быстрого доступа"
 
-msgid "&Active VFS list"
-msgstr "Список &активных ВФС"
+#, fuzzy
+#| msgid "Add to hotlist"
+msgid "Add current &path to hotlist"
+msgstr "Добавить быстрый доступ к каталогу"
 
 msgid "&Background jobs"
 msgstr "Фоновые &задания"
 
 msgid "Screen lis&t"
 msgstr "Список &экранов"
-
-msgid "&Listing format edit"
-msgstr "&Редактирование формата"
 
 msgid "Edit &extension file"
 msgstr "Править файл рас&ширений"
@@ -3341,6 +4790,9 @@ msgstr "Править файл мен&ю"
 msgid "Edit hi&ghlighting group file"
 msgstr "Править файл рас&цветки имён"
 
+msgid "Pl&ugin panel..."
+msgstr ""
+
 msgid "&Configuration..."
 msgstr "&Конфигурация..."
 
@@ -3350,11 +4802,29 @@ msgstr "&Внешний вид..."
 msgid "&Panel options..."
 msgstr "&Настройки панелей..."
 
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "File panel m&odes..."
+msgstr "И&спользовать сортировку панели"
+
 msgid "C&onfirmation..."
 msgstr "&Подтверждение..."
 
 msgid "&Appearance..."
 msgstr "&Оформление..."
+
+#, fuzzy
+#| msgid "&Encoding..."
+msgid "Key &bindings..."
+msgstr "Выбор &кодировки..."
+
+msgid "Key &sniffer..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "&Manage plugins..."
+msgstr "&Настройки панелей..."
 
 msgid "&Virtual FS..."
 msgstr "Виртуальные &ФС..."
@@ -3372,6 +4842,20 @@ msgstr[3] "У вас %zu открытых экранов. Всё равно вы
 
 msgid "Do you really want to quit?"
 msgstr "Вы действительно хотите выйти?"
+
+msgid "This operation is not supported for plugin panels"
+msgstr ""
+
+msgid "No file given"
+msgstr ""
+
+#, c-format
+msgid "Plugin %s is not available"
+msgstr ""
+
+#, c-format
+msgid "Plugin %s has no show operation"
+msgstr ""
 
 msgid "&Above"
 msgstr "&Верхняя панель"
@@ -3415,6 +4899,30 @@ msgstr "&Правка - F4"
 #, c-format
 msgid "Found: %lu"
 msgstr "Найдено: %lu"
+
+#, fuzzy, c-format
+#| msgid "%s in %d file"
+#| msgid_plural "%s in %d files"
+msgid "Found: %lu in %lu files"
+msgstr "%s в %d файле"
+
+#, c-format
+msgid "Press \"Left\" or click %s to show the matches"
+msgstr ""
+
+msgid "SUB-DIR"
+msgstr "ПОД-КАТ"
+
+msgid "SYMLINK"
+msgstr "ССЫЛКА"
+
+#, c-format
+msgid "%u match"
+msgid_plural "%u matches"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 msgid "Malformed regular expression"
 msgstr "Регулярное выражение сформировано неверно"
@@ -3471,6 +4979,10 @@ msgstr[2] "Завершено (пропущено %zu каталогов)"
 msgstr[3] "Завершено (пропущено %zu каталогов)"
 
 #, c-format
+msgid "Matches in %s (%u)"
+msgstr ""
+
+#, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
 msgstr "Поиск файла: \"%s\". Содержимое: \"%s\""
 
@@ -3481,72 +4993,88 @@ msgstr "Поиск файла: \"%s\""
 msgid "Searching"
 msgstr "Ищем"
 
-msgid "Change &to"
-msgstr "Пере&йти"
+#, fuzzy
+#| msgid "Set &groups"
+msgid "Parent group"
+msgstr "&Группы"
 
-msgid "&Free VFSs now"
-msgstr "Осво&бодить ВФС сейчас"
-
-msgid "&Refresh"
-msgstr "Обно&вить"
-
-msgid "&Add current"
-msgstr "Добавить &текущий"
-
-msgid "&Up"
-msgstr "&Вверх"
-
-msgid "New &group"
-msgstr "Новая &группа"
-
-msgid "New &entry"
-msgstr "Новый &элемент"
-
-msgid "&Insert"
-msgstr "В &начало"
-
-msgid "&Remove"
-msgstr "&Удалить"
-
-msgid "Subgroup - press ENTER to see list"
-msgstr "Подгруппа - для просмотра нажмите ENTER"
-
-msgid "Active VFS directories"
-msgstr "Активные каталоги ВФС"
-
-msgid "Directory hotlist"
-msgstr "Каталоги быстрого доступа"
-
-msgid "Top level group"
-msgstr "Группа верхнего уровня"
-
-msgid "Directory path"
-msgstr "Путь к каталогу"
+msgid "Group"
+msgstr "Группа"
 
 #, c-format
-msgid "Moving %s"
-msgstr "Перемещаем %s"
+msgid "Plugin: %s"
+msgstr ""
 
-msgid "Directory label"
-msgstr "Метка каталога"
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "VFS: %s"
+msgstr "Файл: %s"
+
+#, fuzzy
+#| msgid "directory"
+msgid "Local directory"
+msgstr "каталог"
+
+#, fuzzy, c-format
+#| msgid "Move \"%s\" directory to:"
+msgid "Move \"%s\" to %s"
+msgstr "Переместить каталог \"%s\" в:"
+
+msgid "plugin"
+msgstr ""
+
+#, c-format
+msgid "%s: this view has no address to save"
+msgstr ""
+
+#, c-format
+msgid "\"%s\" is already in the hotlist as \"%s\""
+msgstr ""
+
+#, c-format
+msgid "There is no group to move \"%s\" to"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Info"
+msgid "Info"
+msgstr "Инфо&рмация"
 
 msgid "&Append"
 msgstr "В &конец"
 
+msgid "&Insert"
+msgstr "В &начало"
+
 msgid "New hotlist entry"
 msgstr "Новый элемент быстрого доступа"
 
-msgid "Directory label:"
-msgstr "Метка каталога:"
+msgid "Label:"
+msgstr ""
 
-msgid "Directory path:"
-msgstr "Путь к каталогу:"
+#, fuzzy
+#| msgid "Location:   %Xh:%Xh"
+msgid "Location:"
+msgstr "Положение: %Xh:%Xh"
 
 msgid "New hotlist group"
 msgstr "Новая группа быстрого доступа"
 
 msgid "Name of new group:"
 msgstr "Имя новой группы:"
+
+#, fuzzy
+#| msgid "New hotlist group"
+msgid "Edit hotlist group"
+msgstr "Новая группа быстрого доступа"
+
+#, fuzzy
+#| msgid "New hotlist entry"
+msgid "Edit hotlist entry"
+msgstr "Новый элемент быстрого доступа"
+
+msgid "Sort this group by label?"
+msgstr ""
 
 #, c-format
 msgid "Are you sure you want to remove entry \"%s\"?"
@@ -3559,6 +5087,9 @@ msgid ""
 msgstr ""
 "Группа \"%s\" не пуста.\n"
 "Удалить её?"
+
+msgid "Top level group"
+msgstr "Группа верхнего уровня"
 
 msgid "Hotlist Load"
 msgstr "Загрузка списка быстрого доступа"
@@ -3574,9 +5105,6 @@ msgstr ""
 #, c-format
 msgid "Label for \"%s\":"
 msgstr "Метка для \"%s\":"
-
-msgid "Add to hotlist"
-msgstr "Добавить быстрый доступ к каталогу"
 
 #, c-format
 msgid "File: %s"
@@ -3701,6 +5229,34 @@ msgstr "Строки вывода:"
 msgid "Layout"
 msgstr "Внешний вид"
 
+#, fuzzy
+#| msgid "ButtonBar|Delete"
+msgid "ButtonBar|Filter"
+msgstr "Удалить"
+
+#, fuzzy
+#| msgid "ButtonBar|Edit"
+msgid "ButtonBar|UnFilt"
+msgstr "Правка"
+
+#, fuzzy
+#| msgid "ButtonBar|PullDn"
+msgid "ButtonBar|ClrAll"
+msgstr "МенюMC"
+
+#, fuzzy
+#| msgid "ButtonBar|Search"
+msgid "ButtonBar|Clear"
+msgstr "Поиск"
+
+#, fuzzy
+#| msgid "The shell is already running a command"
+msgid "The terminal is already running a command"
+msgstr "Интерпретатор занят выполнением команды"
+
+msgid "The shell did not take the whole text"
+msgstr ""
+
 msgid "Memory exhausted!"
 msgstr "Память исчерпана!"
 
@@ -3794,23 +5350,23 @@ msgstr "GID"
 msgid "Owner"
 msgstr "Владелец"
 
-msgid "Group"
-msgstr "Группа"
-
 msgid "[dev]"
 msgstr "[dev]"
 
 msgid "UP--DIR"
 msgstr "-ВВЕРХ-"
 
-msgid "SYMLINK"
-msgstr "ССЫЛКА"
-
-msgid "SUB-DIR"
-msgstr "ПОД-КАТ"
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter: "
+msgstr "Фильтр"
 
 msgid "<readlink failed>"
 msgstr "<сбой чтения ссылки>"
+
+#, c-format
+msgid "%d marked (+%d more)"
+msgstr ""
 
 #, c-format
 msgid "%s in %d file"
@@ -3822,6 +5378,9 @@ msgstr[3] "%s в %d файлах"
 
 msgid "Panelize"
 msgstr "Панелизация"
+
+msgid "Plugin column metadata not found"
+msgstr ""
 
 msgid "Unknown tag on display format:"
 msgstr "Неизвестный тег в формате отображения:"
@@ -3838,8 +5397,9 @@ msgstr "Отметить группу"
 msgid "Unselect"
 msgstr "Снять отметку"
 
-msgid "Filter"
-msgstr "Фильтр"
+#, c-format
+msgid "The magic.ini operation %s:%s cannot open %s"
+msgstr ""
 
 msgid "Do you really want to execute?"
 msgstr "Вы действительно хотите выполнить это?"
@@ -3850,54 +5410,226 @@ msgstr "Не удалось прочесть содержимое каталог
 msgid "User supplied format looks invalid, reverting to default."
 msgstr "Пользовательский формат выглядит неверным, возвращён стандартный."
 
-msgid "&Add new"
-msgstr "&Добавить"
+msgid "Column types must not be empty."
+msgstr ""
 
-msgid "External panelize"
-msgstr "Внешняя панелизация"
+#, c-format
+msgid "Unknown column type: %s"
+msgstr ""
 
-msgid "Other command"
-msgstr "Новая команда"
+msgid "Too many columns (at most 9)."
+msgstr ""
 
-msgid "Command"
-msgstr "Команда"
+#, c-format
+msgid "Invalid column width: %s"
+msgstr ""
 
-msgid "Add to external panelize"
-msgstr "Добавить во внешнюю панелизацию"
+#, fuzzy
+#| msgid "columns"
+msgid "Column types:"
+msgstr "столбцы"
 
-msgid "Enter command label:"
-msgstr "Введите название команды:"
+msgid "Column widths:"
+msgstr ""
+
+msgid "Status column types:"
+msgstr ""
+
+msgid "Status column widths:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panelize"
+msgid "Panel mode"
+msgstr "Панелизация"
+
+msgid "(unnamed)"
+msgstr ""
+
+msgid "Cannot delete the last panel mode."
+msgstr ""
+
+#, c-format
+msgid "Delete the panel mode \"%s\"?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "Delete panel mode"
+msgstr "И&спользовать сортировку панели"
+
+#, fuzzy
+#| msgid "Use panel sort mo&de"
+msgid "File panel modes"
+msgstr "И&спользовать сортировку панели"
+
+#, fuzzy
+#| msgid "< Default >"
+msgid "&Defaults"
+msgstr "< По умолчанию >"
+
+#, fuzzy
+#| msgid "&OK"
+msgid "&Ok"
+msgstr "&Хорошо"
+
+msgid "unknown"
+msgstr ""
+
+#, fuzzy
+#| msgid "&New"
+msgid "New"
+msgstr "&Новый"
+
+#, fuzzy
+#| msgid "Existing:"
+msgid "Existing"
+msgstr "Существующий:"
+
+msgid "Resume: check what is here and send the rest."
+msgstr ""
+
+msgid "Resume: nothing to finish here, this one is kept."
+msgstr ""
+
+msgid "&Remember this answer for the rest"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cancel"
+msgid "Ca&ncel"
+msgstr "Отмена"
 
 #, c-format
 msgid ""
-"External panelize:\n"
+"%s\n"
+"is not the beginning of the source, so there is nothing to\n"
+"continue. It was left alone."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot open\n"
+#| "%s"
+msgid "Cannot copy %s"
+msgstr ""
+"Не удаётся открыть\n"
 "%s"
+
+#, c-format
+msgid "Cannot copy %s to plugin"
 msgstr ""
-"Внешняя панелизация:\n"
+
+msgid "This plugin does not support copying files"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Copy"
+msgid "Copy"
+msgstr "&Копирование"
+
+#, fuzzy
+#| msgid "&Copy"
+msgid "Copy to:"
+msgstr "&Копирование"
+
+msgid "This plugin does not support deleting files"
+msgstr ""
+
+msgid "Delete file from plugin panel?"
+msgstr ""
+
+msgid "Delete tagged files from plugin panel?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "Delete failed"
+msgstr "Сбой канала"
+
+msgid "This plugin does not support creating items"
+msgstr ""
+
+msgid "This plugin does not support creating files"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Move"
+msgid "Move"
+msgstr "Пере&местить"
+
+msgid "Move file to plugin panel?"
+msgstr ""
+
+msgid "Copy file to plugin panel?"
+msgstr ""
+
+msgid "Move tagged files to plugin panel?"
+msgstr ""
+
+msgid "Copy tagged files to plugin panel?"
+msgstr ""
+
+msgid "This plugin does not support moving files"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Move"
+msgid "Move to:"
+msgstr "Пере&местить"
+
+msgid "Move succeeded but delete from plugin failed"
+msgstr ""
+
+#, c-format
+msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin does not support receiving files"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot move file\n"
+#| "%s\n"
+#| "to\n"
+#| "%s"
+msgid "Cannot move %s to plugin"
+msgstr ""
+"Не удаётся переместить файл\n"
+"%s\n"
+"в\n"
 "%s"
 
-msgid ""
-"External panelize:\n"
-"failed to read data from child stdout:"
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create special file\n"
+#| "%s"
+msgid "Cannot delete local file %s"
 msgstr ""
-"Внешняя панелизация:\n"
-"не удалось прочитать данные из дочернего stdout:"
+"Не удаётся создать специальный файл\n"
+"%s"
 
-msgid "Cannot run external panelize in a non-local directory"
+#, c-format
+msgid "%s produced nothing to view for %s"
 msgstr ""
-"Невозможно выполнить внешнюю панелизацию, находясь не в локальном каталоге"
 
-msgid "Modified git files"
-msgstr "Изменённые файлы под контролем git"
+msgid "Send to panel"
+msgstr ""
 
-msgid "Find rejects after patching"
-msgstr "Найти корректуры, отвергнутые командой patch"
+msgid "Plugin panel"
+msgstr ""
 
-msgid "Find *.orig after patching"
-msgstr "Найти оригиналы (*.orig) после команды patch"
+msgid "No panel plugins are loaded."
+msgstr ""
 
-msgid "Find SUID and SGID programs"
-msgstr "Найти программы с установленными битами SUID/SGID"
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Change drive"
+msgstr "Дата &смены"
+
+msgid "No plugins with drive menu support are loaded."
+msgstr ""
 
 #, c-format
 msgid ""
@@ -3970,6 +5702,9 @@ msgstr "Внутренняя ошибка: двойное начало обла�
 msgid "Cannot find node %s in help file"
 msgstr "Не удалось найти узел %s в файле помощи"
 
+msgid "See also"
+msgstr ""
+
 msgid "Help"
 msgstr "Помощь"
 
@@ -3979,69 +5714,216 @@ msgstr "Разделы"
 msgid "ButtonBar|Prev"
 msgstr "Пред"
 
-msgid "Learn keys"
+#, fuzzy
+#| msgid "Function key 1"
+msgid "Function keys"
+msgstr "Функциональная 1"
+
+#, fuzzy
+#| msgid "Navigation"
+msgid "Arrows / Navigation"
+msgstr "Навигация"
+
+msgid "Special"
+msgstr ""
+
+#, fuzzy
+#| msgid "Learn keys"
+msgid "Learn key"
 msgstr "Определение клавиш"
 
-msgid "Teach me a key"
-msgstr "Привязка клавиши"
+#, c-format
+msgid "Press %s and wait..."
+msgstr ""
 
 #, c-format
 msgid ""
-"Please press the %s\n"
-"and then wait until this message disappears.\n"
-"\n"
-"Then, press it again to see if OK appears\n"
-"next to its button.\n"
-"\n"
-"If you want to escape, press a single Escape key\n"
-"and wait as well."
+"Sequence %s is already assigned to %s.\n"
+"Reassign to %s?"
 msgstr ""
-"Пожалуйста, нажмите клавишу %s\n"
-"и подождите, пока это сообщение пропадёт.\n"
-"\n"
-"Затем нажмите её ещё раз, чтобы убедиться,\n"
-"что справа от её названия появилось \"OK\".\n"
-"\n"
-"Если вы хотите прервать обучение, нажмите\n"
-"клавишу Esc и тоже немного подождите."
 
-#, c-format
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Conflict"
+msgstr "Подтверждение"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot accept this key.\n"
+#| "You have entered \"%s\""
 msgid ""
 "Cannot accept this key.\n"
-"You have entered \"%s\""
+"You pressed: %s"
 msgstr ""
 "Не удалось принять эту клавишу.\n"
 "Вы нажали \"%s\""
 
-#. TRANSLATORS: This label appears near learned keys.  Keep it short.
-msgid "OK"
-msgstr "ОК"
+#, c-format
+msgid "Learn terminal [%s]"
+msgstr ""
+
+#, fuzzy
+#| msgid "Ctrl"
+msgid "&Ctrl"
+msgstr "Ctrl"
+
+msgid "&Alt"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shift"
+msgid "&Shift"
+msgstr "Shift"
+
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Edit &term file"
+msgstr "Править файл мен&ю"
+
+msgid "(not recognized)"
+msgstr ""
+
+msgid "(none)"
+msgstr ""
 
 msgid ""
-"It seems that all your keys already\n"
-"work fine. That's great."
+"Press any key...\n"
+"\n"
+"Wait until this message disappears."
 msgstr ""
-"Похоже, что все ваши клавиши теперь\n"
-"работают нормально. Просто здорово!"
 
-msgid "&Discard"
-msgstr "&Отменить"
+msgid "Shortcut:"
+msgstr ""
 
+msgid "Action:"
+msgstr ""
+
+msgid "Raw:"
+msgstr ""
+
+msgid "Keycode:"
+msgstr ""
+
+msgid "&Capture key"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Mail..."
+msgid "&Main"
+msgstr "&Электронная почта..."
+
+msgid "&Ctrl-X + ..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "&Panel"
+msgstr "Панели:"
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "&Normal"
+msgstr "О&бычный"
+
+msgid "&Hex"
+msgstr ""
+
+msgid "&Structured"
+msgstr ""
+
+#, fuzzy
+#| msgid "Diff:"
+msgid "&Diff"
+msgstr "Различия:"
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "&Terminal"
+msgstr "Настройки терминала"
+
+msgid "&Dialog"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Menu file"
+msgid "&Menu"
+msgstr "Файл &меню"
+
+msgid "&Input"
+msgstr ""
+
+#, fuzzy
+#| msgid "&List..."
+msgid "&Listbox"
+msgstr "Сп&исок окон..."
+
+msgid "&Radio"
+msgstr ""
+
+#, fuzzy
+#| msgid "Help"
+msgid "&Help"
+msgstr "Помощь"
+
+msgid "c&Hattr"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filename:"
+msgid "&Filemanager"
+msgstr "Имя файла:"
+
+#, fuzzy
+#| msgid "&Edit"
+msgid "&Editor"
+msgstr "&Правка"
+
+#, fuzzy
+#| msgid "&View"
+msgid "&Viewer"
+msgstr "П&росмотр"
+
+msgid "&Widgets"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+#, c-format
+msgid "Unknown sequence: %s"
+msgstr ""
+
+#, fuzzy
+#| msgid "A1 key"
+msgid "Assign key"
+msgstr "Клавиша A1"
+
+msgid "Key:"
+msgstr ""
+
+msgid "Set shortcut"
+msgstr ""
+
+#, fuzzy
+#| msgid "Press any key to continue..."
+msgid "Press new shortcut..."
+msgstr "Для продолжения нажмите любую клавишу..."
+
+#, c-format
 msgid ""
-"Great! You have a complete terminal database!\n"
-"All your keys work well."
+"%s is already bound to %s.\n"
+"Reassign anyway?"
 msgstr ""
-"Отлично! У вас есть полная база описаний терминалов!\n"
-"Все ваши клавиши работают хорошо."
 
-msgid ""
-"Press all the keys mentioned here. After you have done it, check\n"
-"which keys are not marked with OK. Press space on the missing\n"
-"key, or click with the mouse to define it. Move around with Tab."
-msgstr ""
-"Нажмите все перечисленные выше клавиши. После найдите\n"
-"клавиши без пометки \"ОК\". Для привязки клавиши выберите\n"
-"её через Tab и нажмите пробел, или щёлкните мышкой."
+#, fuzzy
+#| msgid "&Backwards"
+msgid "&Back"
+msgstr "&Назад"
+
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Edit &keymap file"
+msgstr "Править файл мен&ю"
 
 #, c-format
 msgid ""
@@ -4056,22 +5938,3689 @@ msgstr "Путь домашнего каталога не является аб�
 
 #, c-format
 msgid ""
-"%s\n"
-"is already running on this terminal.\n"
-"Subshell support will be disabled."
-msgstr ""
-"%s\n"
-"уже запущен в этом терминале.\n"
-"Встроенная командная оболочка будет отключена."
-
-#, c-format
-msgid ""
 "\n"
 "Failed while close:\n"
 "%s\n"
 msgstr ""
 "\n"
 "Сбой при закрытии:%s\n"
+
+msgid "unspecified"
+msgstr ""
+
+msgid "Lua editor scripts"
+msgstr ""
+
+msgid "No global or user Lua editor scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+msgid "&Run"
+msgstr ""
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Сбой чтения"
+
+#, fuzzy
+#| msgid "Unknown error in child"
+msgid "Unknown error"
+msgstr "Неизвестная ошибка в дочернем процессе"
+
+msgid "Lua"
+msgstr ""
+
+msgid "The selected script has no runnable actions."
+msgstr ""
+
+msgid "Run Lua action"
+msgstr ""
+
+msgid "(disabled, not loaded)"
+msgstr ""
+
+msgid "Manage Plugins"
+msgstr ""
+
+msgid "This plugin has no settings."
+msgstr ""
+
+msgid "No plugins loaded."
+msgstr ""
+
+msgid "JSON parse error at byte %"
+msgstr ""
+
+msgid "invalid unicode escape"
+msgstr ""
+
+msgid "unfinished unicode surrogate pair"
+msgstr ""
+
+msgid "invalid unicode surrogate pair"
+msgstr ""
+
+msgid "invalid unicode codepoint"
+msgstr ""
+
+msgid "unfinished escape sequence"
+msgstr ""
+
+msgid "invalid escape sequence"
+msgstr ""
+
+msgid "expected string"
+msgstr ""
+
+msgid "string is not valid UTF-8"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter replacement string:"
+msgid "control character in string"
+msgstr "Введите текст для замены:"
+
+#, fuzzy
+#| msgid "Enter replacement string:"
+msgid "unterminated string"
+msgstr "Введите текст для замены:"
+
+#, fuzzy
+#| msgid "Invalid token number %d"
+msgid "invalid number"
+msgstr "Неправильный шаблон цели %d"
+
+msgid "expected ':'"
+msgstr ""
+
+msgid "unterminated object"
+msgstr ""
+
+msgid "expected ',' or '}'"
+msgstr ""
+
+msgid "unterminated array"
+msgstr ""
+
+msgid "expected ',' or ']'"
+msgstr ""
+
+msgid "nesting is too deep"
+msgstr ""
+
+msgid "too many nodes"
+msgstr ""
+
+msgid "expected value"
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid value"
+msgid "invalid value"
+msgstr "Неверный адрес"
+
+msgid "trailing data"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "%s\n"
+#| "is not a regular file"
+msgid "%s is not a regular file"
+msgstr ""
+"%s\n"
+"не является обычным файлом"
+
+msgid "XML parse error at byte %"
+msgstr ""
+
+msgid "expected a name"
+msgstr ""
+
+#, fuzzy
+#| msgid "Unexpected EOF on archive file"
+msgid "expected a quoted attribute value"
+msgstr "Неожиданный конец файла архива"
+
+msgid "'<' is not allowed in an attribute value"
+msgstr ""
+
+msgid "unterminated attribute value"
+msgstr ""
+
+msgid "unterminated comment"
+msgstr ""
+
+msgid "unterminated processing instruction"
+msgstr ""
+
+msgid "unterminated DOCTYPE subset"
+msgstr ""
+
+msgid "unterminated DOCTYPE"
+msgstr ""
+
+msgid "unterminated CDATA section"
+msgstr ""
+
+msgid "expected '=' after attribute name"
+msgstr ""
+
+msgid "unterminated element"
+msgstr ""
+
+msgid "mismatched end tag"
+msgstr ""
+
+msgid "expected '>' to close an end tag"
+msgstr ""
+
+msgid "expected '<'"
+msgstr ""
+
+msgid "expected '>' or '/>'"
+msgstr ""
+
+msgid "XML input is not valid UTF-8"
+msgstr ""
+
+msgid "no element found"
+msgstr ""
+
+msgid "YAML parse error at line %"
+msgstr ""
+
+msgid "tab character in indentation"
+msgstr ""
+
+msgid "expected key: value"
+msgstr ""
+
+msgid "unexpected indentation"
+msgstr ""
+
+msgid ""
+"Encrypted 7z needs the external tool, it is off in the archiver settings"
+msgstr ""
+
+msgid "Encrypted 7z archives need the 7z program to be installed"
+msgstr ""
+
+msgid "Archive password"
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Enter password:"
+msgstr "Пароль:"
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Wrong password"
+msgstr "Пароль:"
+
+msgid "Creating archive..."
+msgstr ""
+
+msgid ""
+"7z encryption needs the external tool, it is off in the archiver settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Encod&ing..."
+msgid "Extracting..."
+msgstr "Выбор &кодировки..."
+
+msgid "Please wait..."
+msgstr ""
+
+msgid "Running external archiver, please wait..."
+msgstr ""
+
+#, fuzzy
+#| msgid "FileOperation|Delete"
+msgid "Operation cancelled"
+msgstr "Удалить"
+
+#, c-format
+msgid "Packing: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Existing:"
+msgid "Extracting: %s"
+msgstr "Существующий:"
+
+#, fuzzy, c-format
+#| msgid "Time: %s"
+msgid "Testing: %s"
+msgstr "Время: %s"
+
+#, fuzzy
+#| msgid "Open files"
+msgid "Open archive"
+msgstr "Открытые файлы"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open %s archive\n"
+#| "%s"
+msgid "Create archive"
+msgstr ""
+"Не удаётся открыть архив %s\n"
+"%s"
+
+msgid "Extract archive(s)"
+msgstr ""
+
+msgid "Test archive(s)"
+msgstr ""
+
+msgid "Archiver settings"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open %s archive\n"
+#| "%s"
+msgid "Cre&ate archive"
+msgstr ""
+"Не удаётся открыть архив %s\n"
+"%s"
+
+#, c-format
+msgid ""
+"Archive: %s\n"
+"\n"
+msgstr ""
+
+msgid "Archive browser"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Archive file:"
+msgstr "Сохранить файл"
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "File not found: %s"
+msgstr "Файл: %s"
+
+#, fuzzy
+#| msgid "Failed to read data from child stdout"
+msgid "Failed to create archive"
+msgstr "Не удалось прочесть данные из дочернего stdout."
+
+msgid "Extract"
+msgstr ""
+
+#, fuzzy
+#| msgid "Data directory:"
+msgid "Destination directory:"
+msgstr "Каталог с файлами данных:"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Failed to run:\n"
+#| "%s\n"
+msgid "Failed to extract: %s"
+msgstr ""
+"Сбой запуска:\n"
+"%s\n"
+
+msgid "Test"
+msgstr ""
+
+#, c-format
+msgid "%s: test not supported for this format"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open %s archive\n"
+#| "%s"
+msgid "Cannot open nested archive"
+msgstr ""
+"Не удаётся открыть архив %s\n"
+"%s"
+
+msgid "extfs helper does not support adding files"
+msgstr ""
+
+msgid "Adding to archive..."
+msgstr ""
+
+msgid "extfs helper does not support deleting files"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete macr&o..."
+msgid "Deleting from archive..."
+msgstr "&Удалить макрос..."
+
+#, fuzzy
+#| msgid "Other options"
+msgid "Other formats"
+msgstr "Прочие настройки"
+
+msgid "No other formats are enabled"
+msgstr ""
+
+msgid "Format"
+msgstr ""
+
+msgid "&zip"
+msgstr ""
+
+msgid "&7z"
+msgstr ""
+
+#, fuzzy
+#| msgid "other"
+msgid "O&ther:"
+msgstr "другие"
+
+msgid "St&ore"
+msgstr ""
+
+msgid "&Fastest"
+msgstr ""
+
+msgid "&Maximum"
+msgstr ""
+
+msgid "Archive path:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Compress"
+msgid "Compression"
+msgstr "Сжатие"
+
+#, fuzzy
+#| msgid "Encrypted inode"
+msgid "Encryption"
+msgstr "Зашифрованный узел ФС"
+
+#, fuzzy
+#| msgid "Encrypted inode"
+msgid "Encrypt &files"
+msgstr "Зашифрованный узел ФС"
+
+#, fuzzy
+#| msgid "Encrypted inode"
+msgid "Encrypt hea&ders"
+msgstr "Зашифрованный узел ФС"
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Show pass&word"
+msgstr "Пароль:"
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Verify password:"
+msgstr "Пароль:"
+
+#, fuzzy
+#| msgid "&Options"
+msgid "Options"
+msgstr "&Настройки"
+
+msgid "Store relative &paths"
+msgstr ""
+
+#, fuzzy
+#| msgid "Find rejects after patching"
+msgid "&Delete files after archiving"
+msgstr "Найти корректуры, отвергнутые командой patch"
+
+msgid "Passwords do not match"
+msgstr ""
+
+msgid "Encryption needs a password"
+msgstr ""
+
+msgid "This format does not support encryption"
+msgstr ""
+
+msgid "Only 7z can encrypt archive headers"
+msgstr ""
+
+msgid "This format is turned off in the archiver settings"
+msgstr ""
+
+msgid "&builtin"
+msgstr ""
+
+msgid "bo&th"
+msgstr ""
+
+msgid "&external"
+msgstr ""
+
+msgid "&off"
+msgstr ""
+
+#, c-format
+msgid "Found in PATH: %s"
+msgstr ""
+
+msgid "no"
+msgstr ""
+
+msgid "Pack"
+msgstr ""
+
+msgid "Unpack"
+msgstr ""
+
+msgid "Both:"
+msgstr ""
+
+msgid "use libarchive when possible; fall back to the"
+msgstr ""
+
+msgid "external tool for unsupported archives."
+msgstr ""
+
+msgid "For 7z, this applies only to encrypted archives."
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid "External:"
+msgstr "Внешняя панелизация"
+
+msgid "always use the external tool for this format."
+msgstr ""
+
+#, fuzzy
+#| msgid "Chattr command"
+msgid "Pack command:"
+msgstr "Команда chattr"
+
+msgid "Unpack helper:"
+msgstr ""
+
+msgid "This backend is not available for the format"
+msgstr ""
+
+msgid "Pack binary:"
+msgstr ""
+
+msgid "Pack arguments:"
+msgstr ""
+
+msgid "Unpack binary:"
+msgstr ""
+
+msgid "Unpack arguments:"
+msgstr ""
+
+msgid "Test binary:"
+msgstr ""
+
+msgid "Test arguments:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter command and arguments:"
+msgid "File list argument:"
+msgstr "Введите команду и её аргументы:"
+
+msgid "Extfs helper:"
+msgstr ""
+
+msgid "Format  Ext       Pack     Unpack   Tool       On"
+msgstr ""
+
+msgid " Builtin (libarchive) "
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid " External archivers "
+msgstr "Внешняя панелизация"
+
+msgid " Hint "
+msgstr ""
+
+msgid "Space - change   F4 - tool params   ! - missing"
+msgstr ""
+
+msgid "Arcmc"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Verbose operation"
+msgid "Abort current operation?"
+msgstr "&Подробности операций"
+
+#, fuzzy
+#| msgid "shell: Reading directory %s..."
+msgid "Reading directory listing..."
+msgstr "shell: чтение каталога %s..."
+
+#, fuzzy
+#| msgid ""
+#| "Unexpected end of file\n"
+#| "%s"
+msgid "Unexpected end of TAR stream"
+msgstr ""
+"Неожиданный конец файла\n"
+"%s"
+
+msgid "File not found in TAR stream"
+msgstr ""
+
+msgid "Corrupt TAR header: invalid size field"
+msgstr ""
+
+msgid "Read error from TAR stream"
+msgstr ""
+
+msgid "Write error to temp file"
+msgstr ""
+
+msgid "Skip error in TAR stream"
+msgstr ""
+
+msgid "Docker"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Abort"
+msgid "Aborted"
+msgstr "&Прервать"
+
+msgid "tar stream from docker cp was truncated"
+msgstr ""
+
+#, fuzzy
+#| msgid "Follow &links"
+msgid "Follow"
+msgstr "&Разыменовывать ссылки"
+
+msgid "Show (head [n], tail [n], 30s, 5m, 1h, 24h; empty = unset):"
+msgstr ""
+
+msgid "Pipe through (shell command, empty = raw):"
+msgstr ""
+
+msgid "Container logs source"
+msgstr ""
+
+#, c-format
+msgid "Show: expected 'head' or 'head <N>'; got %s."
+msgstr ""
+
+#, c-format
+msgid "Show: expected 'tail' or 'tail <N>'; got %s."
+msgstr ""
+
+msgid "No container selected."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot read source link\n"
+#| "%s"
+msgid "Cannot prepare logs source."
+msgstr ""
+"Не удаётся прочесть исходную ссылку\n"
+"%s"
+
+msgid "Image:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Owner name:"
+msgid "Container name:"
+msgstr "Владелец:"
+
+#, fuzzy
+#| msgid "Command"
+msgid "Command:"
+msgstr "Команда"
+
+msgid "Run in &detached mode (-d)"
+msgstr ""
+
+msgid "Create Docker Container"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Local"
+msgid "Local"
+msgstr "&Местный"
+
+msgid "SSH"
+msgstr ""
+
+msgid "Connection type:"
+msgstr ""
+
+msgid "Docker executable:"
+msgstr ""
+
+msgid "SSH settings (used for SSH):"
+msgstr ""
+
+msgid "Host:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&User"
+msgid "User:"
+msgstr "&Пользовательский"
+
+msgid "Port:"
+msgstr ""
+
+msgid "Private key file:"
+msgstr ""
+
+msgid "New Docker Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Edit Docker Connection"
+msgstr "Настройки редактора"
+
+msgid "Host is required for SSH connection"
+msgstr ""
+
+msgid "Port must be a number between 1 and 65535."
+msgstr ""
+
+msgid "Failed to start docker command"
+msgstr ""
+
+msgid "Local Docker"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot open docker path: %s"
+msgstr "Не удалось открыть файл %s"
+
+#, fuzzy
+#| msgid "Cannot fetch a local copy of %s"
+msgid "Cannot delete the last local Docker profile."
+msgstr "Не удалось получить локальную копию %s"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to save connection profiles."
+msgstr "Не удалось сохранить в файл"
+
+msgid "A profile with this label already exists."
+msgstr ""
+
+msgid "New Connection"
+msgstr ""
+
+msgid "FTP"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: Reading directory %s..."
+msgid "Reading remote directory..."
+msgstr "shell: чтение каталога %s..."
+
+msgid "&Basic"
+msgstr ""
+
+msgid "&Security"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced"
+msgstr "Права (рас&ширенные)"
+
+msgid "Connection name:"
+msgstr ""
+
+msgid "Remote path:"
+msgstr ""
+
+msgid "FTP Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "&None"
+msgid "&None (FTP)"
+msgstr "Не&т"
+
+msgid "&Try SSL"
+msgstr ""
+
+msgid "SSL &commands only"
+msgstr ""
+
+msgid "SSL &all (FTPS)"
+msgstr ""
+
+msgid "A&uto"
+msgstr ""
+
+msgid "IPv&4"
+msgstr ""
+
+msgid "IPv&6"
+msgstr ""
+
+msgid "SSL/TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid "Use &passive mode"
+msgid "&Passive mode"
+msgstr "Использовать пассивный ре&жим"
+
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connection"
+msgstr "Подтверждение"
+
+msgid "Connect timeout:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat times:"
+msgid "Response timeout:"
+msgstr "Количество повторов:"
+
+msgid "TCP &Keepalive"
+msgstr ""
+
+#, fuzzy
+#| msgid "Internal error:"
+msgid "Interval:"
+msgstr "Внутренняя ошибка:"
+
+msgid "&HTTP"
+msgstr ""
+
+msgid "SOCKS&4"
+msgstr ""
+
+msgid "SOCKS&5"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "Advanced"
+msgstr "Права (рас&ширенные)"
+
+#, fuzzy
+#| msgid "&Encoding..."
+msgid "Encoding:"
+msgstr "Выбор &кодировки..."
+
+msgid "Commands after login:"
+msgstr ""
+
+msgid "Proxy"
+msgstr ""
+
+#, fuzzy
+#| msgid "Password:"
+msgid "Pass:"
+msgstr "Пароль:"
+
+msgid "FTP connection"
+msgstr ""
+
+#, c-format
+msgid "Connecting to %s:%d..."
+msgstr ""
+
+msgid "Initializing network session..."
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: Reading directory %s..."
+msgid "Authenticating and probing directory..."
+msgstr "shell: чтение каталога %s..."
+
+#, c-format
+msgid "Initial attempt failed: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter password for %s "
+msgid "Enter password for %s@%s"
+msgstr "sftp: введите пароль для %s "
+
+#, fuzzy
+#| msgid "Password:"
+msgid "FTP password"
+msgstr "Пароль:"
+
+#, fuzzy
+#| msgid "shell: Sending password..."
+msgid "Retrying with password..."
+msgstr "shell: отправляется пароль..."
+
+#, fuzzy, c-format
+#| msgid "Reading failed"
+msgid "Retry failed: %s"
+msgstr "Сбой чтения"
+
+msgid "Connection successful, loading entries..."
+msgstr ""
+
+#, c-format
+msgid "Copy of %s"
+msgstr ""
+
+msgid "Git panel"
+msgstr ""
+
+msgid ""
+"This operation is irreversible.\n"
+"Selected files will be reset to HEAD.\n"
+"Untracked files will be deleted.\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Resize"
+msgid "&Reset"
+msgstr "Изменить &размер"
+
+#, fuzzy
+#| msgid "Add to hotlist"
+msgid "Add to favorites"
+msgstr "Добавить быстрый доступ к каталогу"
+
+#, fuzzy
+#| msgid "Directory path:"
+msgid "Repository path:"
+msgstr "Путь к каталогу:"
+
+msgid "Failed to start kubectl"
+msgstr ""
+
+msgid "--follow and --previous are mutually exclusive."
+msgstr ""
+
+msgid "Container (empty = first):"
+msgstr ""
+
+msgid "Container (available: "
+msgstr ""
+
+msgid "Previous container instance"
+msgstr ""
+
+msgid "Pod logs source"
+msgstr ""
+
+msgid "No kubectl context set for logs."
+msgstr ""
+
+msgid "No namespace set for logs."
+msgstr ""
+
+msgid "No pod selected."
+msgstr ""
+
+#, fuzzy
+#| msgid "Name:"
+msgid "Namespace:"
+msgstr "Имя:"
+
+msgid "Switch Namespace"
+msgstr ""
+
+#, fuzzy
+#| msgid "Owner name:"
+msgid "Context name:"
+msgstr "Владелец:"
+
+msgid "Add Context to Favorites"
+msgstr ""
+
+msgid "the decompiler failed"
+msgstr ""
+
+msgid "no decompiler configured"
+msgstr ""
+
+msgid "truncated table stream"
+msgstr ""
+
+msgid "truncated row count array"
+msgstr ""
+
+#, c-format
+msgid "unsupported metadata table 0x%02x"
+msgstr ""
+
+msgid "truncated table rows"
+msgstr ""
+
+msgid "truncated section table"
+msgstr ""
+
+msgid "bad metadata version"
+msgstr ""
+
+msgid "no stream headers"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "no metadata table stream"
+msgstr "Не удалось создать потоки канала"
+
+#, fuzzy
+#| msgid "Cannot save file"
+msgid "not a PE file"
+msgstr "Не удаётся сохранить файл"
+
+msgid "truncated COFF header"
+msgstr ""
+
+msgid "truncated optional header"
+msgstr ""
+
+msgid "unknown optional header"
+msgstr ""
+
+#, fuzzy
+#| msgid "Print data directory"
+msgid "no CLI data directory"
+msgstr "Распечатать имя каталога для данных"
+
+msgid "not a managed assembly"
+msgstr ""
+
+msgid "bad CLI header"
+msgstr ""
+
+msgid "no metadata root"
+msgstr ""
+
+msgid "Kind"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "Assembly"
+msgstr ""
+
+msgid ".NET assembly browser"
+msgstr ""
+
+msgid "mcpeek"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "mcpeek failed"
+msgstr "Сбой канала"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot read source link\n"
+#| "%s"
+msgid "cannot read assembly"
+msgstr ""
+"Не удаётся прочесть исходную ссылку\n"
+"%s"
+
+msgid "uses of "
+msgstr ""
+
+#, fuzzy
+#| msgid "Source"
+msgid "no source"
+msgstr "Источник"
+
+msgid "the project could not be written"
+msgstr ""
+
+msgid "no text"
+msgstr ""
+
+msgid "Export project"
+msgstr ""
+
+msgid "Export the assembly as a project to:"
+msgstr ""
+
+msgid "Decompiler command (empty: look for ilspycmd)"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "Decompiler: %s"
+msgstr "Файл: %s"
+
+#, fuzzy
+#| msgid "Searching"
+msgid "Searching..."
+msgstr "Ищем"
+
+msgid "No uses found"
+msgstr ""
+
+msgid "Struct look"
+msgstr ""
+
+msgid "&Global"
+msgstr ""
+
+msgid "N&one"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Row n&umber"
+msgstr "&Номер строки"
+
+msgid "Row o&ffset"
+msgstr ""
+
+msgid "&Auto (right when wide)"
+msgstr ""
+
+msgid "&Right of the tree"
+msgstr ""
+
+msgid "&Below the hex zone"
+msgstr ""
+
+msgid "Zones"
+msgstr ""
+
+msgid "Tree lines (0 = the rest):"
+msgstr ""
+
+msgid "Hex zone lines (0 hides):"
+msgstr ""
+
+msgid "Def-file lines (0 = the rest):"
+msgstr ""
+
+msgid "Def-file width on the right, %:"
+msgstr ""
+
+msgid "Def-file zone"
+msgstr ""
+
+#, fuzzy
+#| msgid "Directory tree"
+msgid "Structure tree"
+msgstr "Дерево каталогов"
+
+msgid "Name column width:"
+msgstr ""
+
+msgid "Build rows lazily above:"
+msgstr ""
+
+msgid "Float format (printf):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Show &hidden structures"
+msgstr "Показывать скр&ытые файлы"
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Saved bytes"
+msgstr "Сохранить как"
+
+msgid "Keep fragments, days (0 = always):"
+msgstr ""
+
+#, fuzzy
+#| msgid "columns"
+msgid "Offset column"
+msgstr "столбцы"
+
+msgid "First grid column"
+msgstr ""
+
+msgid "Struct look settings"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot write to the %s file:\n"
+#| "%s\n"
+msgid "Cannot write the settings file"
+msgstr ""
+"Не удалось записать в файл %s:\n"
+"%s\n"
+
+msgid "Struct loo&k"
+msgstr ""
+
+#, fuzzy
+#| msgid "read &by others"
+msgid "Read bytes"
+msgstr "чтение &для других"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot read source file\n"
+#| "%s"
+msgid "Cannot read the bytes"
+msgstr ""
+"Не удаётся прочесть исходный файл\n"
+"%s"
+
+#, fuzzy
+#| msgid "wr&ite by others"
+msgid "Write bytes"
+msgstr "запис&ь для других"
+
+msgid "The file exists. Overwrite?"
+msgstr ""
+
+msgid "A buffer is read-only"
+msgstr ""
+
+msgid "The fragment is longer than the target. Use the first bytes only?"
+msgstr ""
+
+#, c-format
+msgid "%u bytes read, the rest is unchanged"
+msgstr ""
+
+#, c-format
+msgid "%s: %lld bytes at %08llX"
+msgstr ""
+
+#, c-format
+msgid "Save bytes #%d"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cop&y to file..."
+msgid "To a &file..."
+msgstr "Копи&ровать в файл..."
+
+#, c-format
+msgid "%s: %lld bytes at %08llX from file:"
+msgstr ""
+
+#, c-format
+msgid "Read bytes into %s (%s): %lld bytes at %08llX"
+msgstr ""
+
+msgid "      ... a file"
+msgstr ""
+
+msgid "This field cannot be edited"
+msgstr ""
+
+msgid "The bytes of this field are not text, edit them in the hex zone"
+msgstr ""
+
+msgid "New value:"
+msgstr ""
+
+msgid "Offset (expression, labels of the current structure):"
+msgstr ""
+
+#, c-format
+msgid "Offset 0x%llX is outside the file"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Select structure"
+msgstr "Отметить &группу"
+
+#, c-format
+msgid "%s: %ld bytes, file %lld bytes"
+msgstr ""
+
+#, c-format
+msgid "%s: variable size, file %lld bytes"
+msgstr ""
+
+#, c-format
+msgid "%s needs %ld bytes, only %lld left after 0x%llX"
+msgstr ""
+
+msgid "Rows:"
+msgstr ""
+
+msgid "No def-files found on the search path"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Select def-file"
+msgstr "Выбор языка"
+
+#, fuzzy, c-format
+#| msgid "Error reading %s"
+msgid "No errors in %s"
+msgstr "Ошибка чтения %s:"
+
+msgid "Def-file errors"
+msgstr ""
+
+msgid "&Hex bytes"
+msgstr ""
+
+msgid "&Text"
+msgstr ""
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search for:"
+msgstr "Поиск закончен"
+
+#, fuzzy
+#| msgid "Search done"
+msgid "Search bytes"
+msgstr "Поиск закончен"
+
+#, c-format
+msgid "Not a hex byte string: %s"
+msgstr ""
+
+msgid "Not found"
+msgstr ""
+
+msgid "No room for another one after this"
+msgstr ""
+
+#, fuzzy
+#| msgid "A file already exists with this name"
+msgid "Already at the first one"
+msgstr "Файл с таким именем уже существует"
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name or value:"
+msgstr "Шаблон имени:"
+
+#, fuzzy
+#| msgid "Tabulation"
+msgid "Calculator"
+msgstr "Табуляция"
+
+#, fuzzy
+#| msgid "E&xtension"
+msgid "Expression:"
+msgstr "Рас&ширение"
+
+#, fuzzy
+#| msgid "Save block"
+msgid "block"
+msgstr "Сохранить блок"
+
+msgid "The current row has no bytes; in the hex zone mark a block"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Save"
+msgid "Save"
+msgstr "&Сохранить"
+
+#, fuzzy
+#| msgid "File was modified. Save with exit?"
+msgid "File was modified. Save changes?"
+msgstr "Файл был изменён. Сохранить при выходе?"
+
+msgid "Table"
+msgstr ""
+
+msgid "The table has no rows"
+msgstr ""
+
+msgid "The table has no columns"
+msgstr ""
+
+#, c-format
+msgid "Jump target 0x%llX is outside the file"
+msgstr ""
+
+msgid "Goto"
+msgstr "Переход"
+
+#, fuzzy
+#| msgid "ButtonBar|Static"
+msgid "ButtonBar|Struct"
+msgstr "Статич"
+
+msgid "ButtonBar|Goto"
+msgstr "Перейти"
+
+#, fuzzy
+#| msgid "ButtonBar|Delete"
+msgid "ButtonBar|DefFil"
+msgstr "Удалить"
+
+msgid "ButtonBar|Hex"
+msgstr "Hex"
+
+#, fuzzy
+#| msgid "ButtonBar|Parse"
+msgid "ButtonBar|Errors"
+msgstr "Разбор"
+
+msgid "MongoDB"
+msgstr ""
+
+msgid "Cluster is read-only."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Insert file"
+msgid "Insert failed: %s"
+msgstr "Вставить файл"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot read source file\n"
+#| "%s"
+msgid "Cannot build bucket view: %s"
+msgstr ""
+"Не удаётся прочесть исходный файл\n"
+"%s"
+
+#, c-format
+msgid "A connection named '%s' already exists."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file:\n"
+#| "%s"
+msgid "Cannot save connection: %s"
+msgstr ""
+"Не удаётся сохранить файл:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot chown\n"
+#| "%s"
+msgid "Cannot fetch document: %s"
+msgstr ""
+"Не удаётся сменить владельца\n"
+"%s"
+
+msgid "Failed to render document as JSON."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot open temp file: %s"
+msgstr "Не удалось открыть файл %s"
+
+#, fuzzy
+#| msgid "Unable to save to file"
+msgid "Failed to write temp file."
+msgstr "Не удалось сохранить в файл"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot read source file\n"
+#| "%s"
+msgid "Cannot read edited file: %s"
+msgstr ""
+"Не удаётся прочесть исходный файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "ftpfs: abort error: %s"
+msgid "JSON parse error: %s"
+msgstr "ftpfs: ошибка прерывания: %s"
+
+#, fuzzy, c-format
+#| msgid "Pipe failed"
+msgid "Update failed: %s"
+msgstr "Сбой канала"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot read source file\n"
+#| "%s"
+msgid "Cannot read source file: %s"
+msgstr ""
+"Не удаётся прочесть исходный файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Delete %s?"
+msgid "Delete failed: %s"
+msgstr "Удалить %s?"
+
+msgid "MongoDB filter"
+msgstr ""
+
+msgid "MongoDB sample"
+msgstr ""
+
+msgid "No documents in current scope."
+msgstr ""
+
+msgid "Note: a filter shows a flat list (no folders), up to %"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter (JSON):"
+msgstr "Фильтр"
+
+msgid "Projection:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Sort..."
+msgid "Sort:"
+msgstr "&Сортировать..."
+
+msgid "Limit (0 = no override):"
+msgstr ""
+
+msgid "&Wizard"
+msgstr ""
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit as &File"
+msgstr "Редактировать файл"
+
+msgid "MongoDB find"
+msgstr ""
+
+#, c-format
+msgid "Cluster '%s' not found in mongo.ini."
+msgstr ""
+
+#, c-format
+msgid "Connecting to '%s'..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot chown\n"
+#| "%sn%s"
+msgid "Cannot connect to '%s': %s"
+msgstr ""
+"Не удаётся сменить владельца\n"
+"%sn%s"
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Listing databases..."
+msgstr "Фор&мат списка..."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot stat\n"
+#| "%s"
+msgid "Cannot list databases: %s"
+msgstr ""
+"Не удаётся запустить\n"
+"%s"
+
+msgid "Not connected to a cluster."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "Listing collections in '%s'..."
+msgstr "sftp: осуществляется соединение с %s"
+
+#, c-format
+msgid "Cannot list collections in '%s': %s"
+msgstr ""
+
+msgid "Not inside a database."
+msgstr ""
+
+#, fuzzy
+#| msgid "Loading: %3d%%"
+msgid "Loading %s (%"
+msgstr "Загрузка: %3d%%"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid "Cannot list documents in '%s': %s"
+msgstr ""
+"Не удаётся сохранить файл %s:\n"
+"%s"
+
+#, c-format
+msgid "Counting documents in '%s'..."
+msgstr ""
+
+#, c-format
+msgid "Cannot count documents in '%s': %s"
+msgstr ""
+
+msgid "Building bucket view..."
+msgstr ""
+
+#, c-format
+msgid "Bucket '%s' not found."
+msgstr ""
+
+msgid "URI (mongodb:// or mongodb+srv://):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permissions (octal):"
+msgid "Description (optional):"
+msgstr "Доступ (восьмеричный):"
+
+msgid "&Read-only (block insert / edit / delete)"
+msgstr ""
+
+msgid "New MongoDB connection"
+msgstr ""
+
+msgid "Edit MongoDB connection"
+msgstr ""
+
+msgid "MongoDB connection"
+msgstr ""
+
+msgid "Connection name must be non-empty and contain no '[', ']' characters."
+msgstr ""
+
+msgid "URI must not be empty."
+msgstr ""
+
+msgid "&auto"
+msgstr ""
+
+msgid "&none"
+msgstr ""
+
+msgid "Default cluster:"
+msgstr ""
+
+msgid "Bucket strategy:"
+msgstr ""
+
+msgid "Leaf size (flat docs):"
+msgstr ""
+
+msgid "Fanout:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Invert selection"
+msgid "Server selection (ms):"
+msgstr "О&братить выделение"
+
+msgid "Connect (ms):"
+msgstr ""
+
+msgid "Socket (ms):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Repeat times:"
+msgid "Op max time (ms):"
+msgstr "Количество повторов:"
+
+msgid "MongoDB settings"
+msgstr ""
+
+msgid "Numeric fields must be valid; leaf size > 0, fanout >= 2."
+msgstr ""
+
+#, fuzzy
+#| msgid "Unable to save setup to %s"
+msgid "Failed to save settings."
+msgstr "Не удалось сохранить настройки в %s"
+
+msgid "== Equals ($eq)"
+msgstr ""
+
+msgid "!= Not equal ($ne)"
+msgstr ""
+
+msgid "> Greater ($gt)"
+msgstr ""
+
+msgid ">= Greater or equal ($gte)"
+msgstr ""
+
+msgid "< Less ($lt)"
+msgstr ""
+
+msgid "<= Less or equal ($lte)"
+msgstr ""
+
+msgid "IN array ($in)"
+msgstr ""
+
+msgid "NOT IN array ($nin)"
+msgstr ""
+
+msgid "Regex - raw pattern ($regex)"
+msgstr ""
+
+msgid "LIKE - wildcard * ? ($regex)"
+msgstr ""
+
+msgid "Exists ($exists)"
+msgstr ""
+
+msgid "Find by ObjectId"
+msgstr ""
+
+msgid "Find by date range"
+msgstr ""
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name"
+msgstr "Шаблон имени:"
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Field name:"
+msgstr "Шаблон имени:"
+
+msgid "(type a path, e.g. a.b)"
+msgstr ""
+
+msgid "Field name (dot-path for nested):"
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid value"
+msgid "Field values"
+msgstr "Неверный адрес"
+
+msgid "Choose a field first."
+msgstr ""
+
+msgid "No values found."
+msgstr ""
+
+msgid "No values in current scope."
+msgstr ""
+
+msgid "Field values (truncated)"
+msgstr ""
+
+msgid "Insert query template"
+msgstr ""
+
+msgid "Template"
+msgstr ""
+
+msgid ""
+"This template cannot be represented as builder rules.\n"
+"Use Edit as File in the find dialog to insert it as raw JSON."
+msgstr ""
+
+#, fuzzy
+#| msgid "Esperanto"
+msgid "Operator"
+msgstr "Эсперанто"
+
+msgid "Field"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Join"
+msgstr ""
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Filter Builder"
+msgstr "Просмотр вывода команды"
+
+msgid " Preview "
+msgstr ""
+
+msgid " Ins: add   Del: remove F3: values "
+msgstr ""
+
+#, fuzzy
+#| msgid "Co&py to clipfile"
+msgid "&Apply to Filter"
+msgstr "Коп&ировать в файл буфера обмена"
+
+msgid "&Template"
+msgstr ""
+
+#, fuzzy
+#| msgid "External panelize"
+msgid "&External panelize"
+msgstr "Внешняя панелизация"
+
+#, fuzzy
+#| msgid "Paneli&ze"
+msgid "Paneli&ze (empty)"
+msgstr "Па&нелизация"
+
+msgid "E&xternal panelize"
+msgstr "В&нешняя панелизация"
+
+msgid "Paneli&ze"
+msgstr "Па&нелизация"
+
+msgid "Add to external panelize"
+msgstr "Добавить во внешнюю панелизацию"
+
+msgid "Enter command label:"
+msgstr "Введите название команды:"
+
+#, fuzzy
+#| msgid "Edit files"
+msgid "Edit preset"
+msgstr "Редактировать файлы"
+
+msgid "No paths to panelize."
+msgstr ""
+
+msgid "(empty)"
+msgstr ""
+
+msgid "Command produced no output; nothing to panelize."
+msgstr ""
+
+msgid "Modified git files"
+msgstr "Изменённые файлы под контролем git"
+
+msgid "Find rejects after patching"
+msgstr "Найти корректуры, отвергнутые командой patch"
+
+msgid "Find *.orig after patching"
+msgstr "Найти оригиналы (*.orig) после команды patch"
+
+msgid "Find SUID and SGID programs"
+msgstr "Найти программы с установленными битами SUID/SGID"
+
+msgid "&Add new"
+msgstr "&Добавить"
+
+msgid "&Remove"
+msgstr "&Удалить"
+
+msgid "Command"
+msgstr "Команда"
+
+msgid "S3"
+msgstr ""
+
+msgid "Preparing signed request..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Failed to initialize event system"
+msgid "Failed to initialize network session."
+msgstr "Сбой инициализации системы событий"
+
+msgid "Signing request and contacting endpoint..."
+msgstr ""
+
+#, c-format
+msgid "HTTP error %ld"
+msgstr ""
+
+msgid "Reading bucket list..."
+msgstr ""
+
+msgid "S3 connection"
+msgstr ""
+
+#, c-format
+msgid "Connecting to %s..."
+msgstr ""
+
+msgid "Using pre-configured bucket list."
+msgstr ""
+
+msgid "No valid bucket names in configuration."
+msgstr ""
+
+#, c-format
+msgid "ListBuckets failed: %s"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pipe failed"
+msgid "ListBuckets failed."
+msgstr "Сбой канала"
+
+msgid "Hint: set Buckets field in connection settings to avoid auto-detection."
+msgstr ""
+
+msgid "S3: enter bucket name"
+msgstr ""
+
+msgid ""
+"ListBuckets is not available.\n"
+"Enter bucket name manually:"
+msgstr ""
+
+msgid "Bucket list loaded."
+msgstr ""
+
+msgid "Create S3 Bucket"
+msgstr ""
+
+#, fuzzy
+#| msgid "File name:"
+msgid "Bucket name:"
+msgstr "Шаблон имени:"
+
+msgid "Copying is not supported at this navigation level"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Access time"
+msgid "Access Key:"
+msgstr "Дата &доступа"
+
+msgid "Secret Key:"
+msgstr ""
+
+msgid "Region:"
+msgstr ""
+
+msgid "Endpoint URL (for MinIO/Ceph):"
+msgstr ""
+
+msgid "Buckets (comma-separated, if auto-detect fails):"
+msgstr ""
+
+msgid "Use &path-style URLs"
+msgstr ""
+
+msgid "S3 Connection"
+msgstr ""
+
+msgid "Server/UNC path:"
+msgstr ""
+
+msgid "Username (DOMAIN\\user):"
+msgstr ""
+
+msgid "SMB Connection"
+msgstr ""
+
+#, fuzzy
+#| msgid "SFTP to machine"
+msgid "SFTP connection"
+msgstr "SFTP-соединение с удалённой машиной"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot change directory to\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr ""
+"Не удаётся сменить каталог на\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create special file\n"
+#| "%s"
+msgid "Cannot create an SSH session for %s:%d"
+msgstr ""
+"Не удаётся создать специальный файл\n"
+"%s"
+
+msgid "SSH handshake..."
+msgstr ""
+
+#, c-format
+msgid "SSH handshake with %s:%d failed"
+msgstr ""
+
+msgid "Authenticating via ssh-agent..."
+msgstr ""
+
+msgid "Authenticating with public key..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter passphrase for %s "
+msgid "Enter passphrase for key %s"
+msgstr "sftp: введите парольную фразу для %s "
+
+msgid "SFTP key passphrase"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: Sending password..."
+msgid "Authenticating with password..."
+msgstr "shell: отправляется пароль..."
+
+#, fuzzy
+#| msgid "Password:"
+msgid "SFTP password"
+msgstr "Пароль:"
+
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
+msgid "Initializing SFTP session..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot stat the destination\n"
+#| "%s"
+msgid "Cannot start the SFTP session with %s:%d"
+msgstr ""
+"Не удалось получить свойства места назначения\n"
+"%s"
+
+msgid "Connected."
+msgstr ""
+
+msgid "SFTP"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Continue copy"
+msgid "&Connection"
+msgstr "&Продолжить копирование"
+
+#, fuzzy
+#| msgid "Symbolic link filename:"
+msgid "Public key file:"
+msgstr "Имя символической ссылки:"
+
+#, fuzzy
+#| msgid "Use SI si&ze units"
+msgid "Use SSH &agent"
+msgstr "Вывод в единицах &СИ"
+
+#, fuzzy
+#| msgid "SFTP to machine"
+msgid "SFTP Connection"
+msgstr "SFTP-соединение с удалённой машиной"
+
+#, fuzzy
+#| msgid "Timeout:"
+msgid "Timeouts"
+msgstr "Период:"
+
+msgid "Session timeout:"
+msgstr ""
+
+msgid "Keepalive"
+msgstr ""
+
+msgid "SSH &Keepalive"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "IP version"
+msgstr "Права доступа"
+
+#, fuzzy
+#| msgid "Aborting transfer..."
+msgid "Abort current transfer?"
+msgstr "Прерывание передачи..."
+
+msgid "Downloading"
+msgstr ""
+
+#, fuzzy
+#| msgid "A file already exists with this name"
+msgid "Remote file already exists. Overwrite?"
+msgstr "Файл с таким именем уже существует"
+
+#, fuzzy
+#| msgid "Loading..."
+msgid "Uploading"
+msgstr "Загрузка..."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid ""
+"Cannot open remote file\n"
+"%s"
+msgstr ""
+"Не удаётся удалить файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Error reading from pipe: %s"
+msgid ""
+"Error reading remote file\n"
+"%s"
+msgstr "Ошибка чтения из канала: %s"
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "sftp: cannot connect to %s"
+msgstr "sftp: осуществляется соединение с %s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "sftp: cannot open %s:\n"
+#| "%s"
+msgid "sftp: cannot read %s"
+msgstr ""
+"sftp: не удаётся открыть %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "sftp: cannot get the remote host key"
+msgid "sftp: cannot get the size of %s"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+msgid "sftp: unsupported seek"
+msgstr ""
+
+msgid "sftp: seek before the start of the file"
+msgstr ""
+
+msgid "&Off"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Errors only"
+msgstr "Только &файлы"
+
+msgid "&Commands and replies"
+msgstr ""
+
+msgid "&Full traffic"
+msgstr ""
+
+msgid "Write down the conversation with the remote shell."
+msgstr ""
+
+#, fuzzy
+#| msgid "Load file"
+msgid "Log file:"
+msgstr "Загрузка файла"
+
+msgid "File contents are never written to the log."
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Shell link settings"
+msgstr "Shell-соединение с удалённой машиной"
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: cannot open the log file"
+msgstr "shell: сохранение файла"
+
+msgid "SSH &compression"
+msgstr ""
+
+#, fuzzy
+#| msgid "Shell link to machine"
+msgid "Shell Link Connection"
+msgstr "Shell-соединение с удалённой машиной"
+
+msgid "Connection with this name already exists"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Continue copy"
+msgid "your copy"
+msgstr "&Продолжить копирование"
+
+#, fuzzy
+#| msgid "(stalled)"
+msgid "installed"
+msgstr "(застрял)"
+
+msgid "built in"
+msgstr ""
+
+msgid ""
+"An override belongs to one host. Open a connection, or put the\n"
+"cursor on an address book entry, and try again."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create link\n"
+#| "%s"
+msgid "Cannot create %s"
+msgstr ""
+"Не удаётся создать ссылку\n"
+"%s"
+
+#, c-format
+msgid "%s has no override to remove"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid "Cannot remove %s"
+msgstr ""
+"Не удаётся удалить файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "%s (%s)\n"
+#| "is found in the list of known hosts but\n"
+#| "KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
+#| "Are you sure you want to add it to the list of known hosts and continue "
+#| "connecting?"
+msgid ""
+"%s\n"
+"is found in the list of known hosts but\n"
+"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
+"Are you sure you want to add it to the list of known hosts and continue "
+"connecting?"
+msgstr ""
+"%s (%s)\n"
+"найден в списке известных хостов, но\n"
+"КЛЮЧИ НЕ СОВПАДАЮТ! ЭТО МОЖЕТ БЫТЬ MITM-АТАКОЙ!\n"
+"Вы уверены, что хотите добавить его в список известных хостов и продолжить "
+"подключение?"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "The authenticity of host\n"
+#| "%s (%s)\n"
+#| "can't be established!\n"
+#| "%s key fingerprint hash is\n"
+#| "SHA1:%s.\n"
+#| "Do you want to add it to the list of known hosts and continue connecting?"
+msgid ""
+"The authenticity of host\n"
+"%s\n"
+"can't be established!\n"
+"Key fingerprint is\n"
+"%s.\n"
+"Do you want to add it to the list of known hosts and continue connecting?"
+msgstr ""
+"Подлинность хоста\n"
+"%s (%s)\n"
+"невозможно установить!\n"
+"%s хэш отпечатка ключа\n"
+"SHA1:%s.\n"
+"Вы хотите добавить его в список известных хостов и продолжить подключение?"
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter password for %s "
+msgid "shell: Enter password for %s "
+msgstr "sftp: введите пароль для %s "
+
+#, fuzzy, c-format
+#| msgid "sftp: Enter passphrase for %s "
+msgid "shell: Enter passphrase for %s "
+msgstr "sftp: введите парольную фразу для %s "
+
+msgid ""
+"These helper scripts were written for an older revision\n"
+"and may quietly do less than they should:\n"
+"\n"
+msgstr ""
+
+#, c-format
+msgid "    declares revision %d, expected %d\n"
+msgstr ""
+
+msgid ""
+"\n"
+"Delete a script to go back to the one shipped with mc."
+msgstr ""
+
+msgid "Outdated helper scripts"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: connection failed"
+msgstr "shell: сохранение файла"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot create directory\n"
+#| "%s"
+msgid "shell: cannot read the directory"
+msgstr ""
+"Не удаётся создать каталог\n"
+"%s"
+
+msgid "shell: invalid archive input stream"
+msgstr ""
+
+msgid "shell: archive input stream is closed"
+msgstr ""
+
+msgid "shell: unsupported seek on an archive input stream"
+msgstr ""
+
+msgid "shell: seek before the start of the file"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: fetching"
+msgstr "shell: сохранение файла"
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: local write failed"
+msgstr "shell: сохранение файла"
+
+msgid "shell: cannot fetch the file"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: cannot store the file"
+msgstr "shell: сохранение файла"
+
+msgid "shell: storing file"
+msgstr "shell: сохранение файла"
+
+#, fuzzy
+#| msgid "shell: Disconnecting from %s"
+msgid "shell: continuing"
+msgstr "shell: отключение от %s"
+
+msgid "shell: cannot continue the transfer"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot delete %s"
+msgstr "Не удалось открыть файл %s"
+
+#, fuzzy, c-format
+#| msgid "Label for \"%s\":"
+msgid "helpers for %s"
+msgstr "Метка для \"%s\":"
+
+msgid "helpers (no host selected)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Create a new Directory"
+msgid "Create a directory"
+msgstr "Создать новый каталог"
+
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "shell: cannot create the directory"
+msgstr "Не удалось создать каталог \"%s\""
+
+#, fuzzy
+#| msgid "Color options"
+msgid "Clone Connection"
+msgstr "Цветовые настройки"
+
+msgid "New connection name:"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: Invalid host name."
+msgid "shell: Invalid host name."
+msgstr "sftp: неверное имя системы."
+
+#, c-format
+msgid "shell: %s"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sftp: making connection to %s"
+msgid "shell: making connection to %s"
+msgstr "sftp: осуществляется соединение с %s"
+
+#, fuzzy
+#| msgid "sftp: connection interrupted by user"
+msgid "shell: connection interrupted by user"
+msgstr "sftp: соединение прервано пользователем"
+
+#, fuzzy, c-format
+#| msgid "sftp: connection to server failed: %s"
+msgid "shell: connection to server failed: %s"
+msgstr "sftp: сбой соединения с сервером: %s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "sftp: cannot open %s:\n"
+#| "%s"
+msgid ""
+"shell: cannot open %s:\n"
+"%s"
+msgstr ""
+"sftp: не удаётся открыть %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "shell: Disconnecting from %s"
+msgid "shell: cannot read %s"
+msgstr "shell: отключение от %s"
+
+#, fuzzy
+#| msgid "sftp: found host key of unsupported type: RSA1"
+msgid "shell: found host key of unsupported type: RSA1"
+msgstr "sftp: найден ключ хоста неподдерживаемого типа: RSA1"
+
+#, fuzzy
+#| msgid "sftp: unknown host key type:"
+msgid "shell: unknown host key type:"
+msgstr "sftp: неизвестный тип ключа хоста:"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Permanently added\n"
+#| "%s (%s)\n"
+#| "to the list of known hosts."
+msgid "Permanently added %s to the list of known hosts."
+msgstr ""
+"Добавлено на постоянной основе\n"
+"%s (%s)\n"
+"к списку известных хостов."
+
+#, fuzzy
+#| msgid "sftp: cannot get the remote host key"
+msgid "shell: cannot get the remote host key"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+#, fuzzy
+#| msgid "sftp: unsupported key type, can't check remote host key"
+msgid "shell: unsupported key type, can't check remote host key"
+msgstr ""
+"sftp: неподдерживаемый тип ключа, невозможно проверить ключ удалённого хоста"
+
+#, fuzzy
+#| msgid "sftp: can't compute host key fingerprint hash"
+msgid "shell: can't compute host key fingerprint hash"
+msgstr "sftp: невозможно вычислить хэш отпечатка ключа хоста"
+
+#, fuzzy
+#| msgid "sftp: host key verification failed"
+msgid "shell: host key verification failed"
+msgstr "sftp: проверка ключа хоста не удалась"
+
+#, fuzzy
+#| msgid "sftp: failure establishing SSH session"
+msgid "shell: failed to init SSH session"
+msgstr "sftp: сбой при установлении SSH сессии"
+
+#, fuzzy
+#| msgid "sftp: failure establishing SSH session"
+msgid "shell: failure establishing SSH session"
+msgstr "sftp: сбой при установлении SSH сессии"
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: authentication failed"
+msgstr "shell: сохранение файла"
+
+msgid "shell: failed to open SSH channel"
+msgstr ""
+
+msgid "shell: failed to exec remote shell"
+msgstr ""
+
+msgid "shfs log: no file name given"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "sftp: cannot open %s:\n"
+#| "%s"
+msgid "shfs log: cannot open %s: %s"
+msgstr ""
+"sftp: не удаётся открыть %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "sftp: cannot open %s:\n"
+#| "%s"
+msgid "shfs: cannot read %s: %s"
+msgstr ""
+"sftp: не удаётся открыть %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "sftp: cannot open %s:\n"
+#| "%s"
+msgid "shfs: cannot seek in %s: %s"
+msgstr ""
+"sftp: не удаётся открыть %s:\n"
+"%s"
+
+#, c-format
+msgid "shfs: %s is shorter than the range asked for"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: Disconnecting from %s"
+msgid "shell: connection is closed"
+msgstr "shell: отключение от %s"
+
+msgid "shell: the remote command failed"
+msgstr ""
+
+#, c-format
+msgid "shell: %s already exists"
+msgstr ""
+
+#, fuzzy
+#| msgid "Home directory path is not absolute"
+msgid "shell: the directory was not created"
+msgstr "Путь домашнего каталога не является абсолютным"
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "shell: cannot create a pipe"
+msgstr "Не удалось создать потоки канала"
+
+#, fuzzy
+#| msgid "shell: Disconnecting from %s"
+msgid "shell: cannot fork"
+msgstr "shell: отключение от %s"
+
+#, fuzzy
+#| msgid "sftp: cannot get the remote host key"
+msgid "shell: no greeting from the remote shell"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+msgid "shell: the host wants a password; build with libssh2 to supply one"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: cannot get the remote host key"
+msgid "shell: cannot probe the host"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+msgid "shell: the remote shell did not answer"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: cannot get the remote host key"
+msgid "shell: cannot read the remote file"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+msgid "shell: no transfer in progress"
+msgstr ""
+
+msgid "shell: the transfer was cancelled"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: Disconnecting from %s"
+msgid "shell: the connection broke"
+msgstr "shell: отключение от %s"
+
+msgid "shell: the transfer was left unfinished"
+msgstr ""
+
+#, fuzzy
+#| msgid "shell: storing file"
+msgid "shell: the transfer failed"
+msgstr "shell: сохранение файла"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot write target file\n"
+#| "%s"
+msgid "shell: cannot write the remote file"
+msgstr ""
+"Не удаётся записать целевой файл\n"
+"%s"
+
+msgid "shell: fewer bytes were sent than announced"
+msgstr ""
+
+#, fuzzy
+#| msgid "sftp: cannot get the remote host key"
+msgid "shell: cannot checksum the remote file"
+msgstr "sftp: невозможно получить ключ удалённого хоста"
+
+#, fuzzy
+#| msgid "shell: Reading directory %s..."
+msgid "shell: reading the directory failed"
+msgstr "shell: чтение каталога %s..."
+
+#, c-format
+msgid "Skin file %s does not exist"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid ""
+"Cannot read skin file %s:\n"
+"%s"
+msgstr ""
+"Не удаётся сохранить файл %s:\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot read source file\n"
+#| "%s"
+msgid "Cannot read skin file %s"
+msgstr ""
+"Не удаётся прочесть исходный файл\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid "Search string not found"
+msgid "Skin %s not found"
+msgstr "Искомая строка не найдена"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create directory\n"
+#| "%s"
+msgid "Cannot create directory %s"
+msgstr ""
+"Не удаётся создать каталог\n"
+"%s"
+
+#, c-format
+msgid "\"%s\" is not a skin name: no directory part, not .ini"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot enter into directory\n"
+#| "%s"
+msgid "Cannot find the user's skins directory"
+msgstr ""
+"Не удаётся войти в каталог\n"
+"%s"
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "Normal text"
+msgstr "О&бычный"
+
+msgid "Panel text and everything that has no color of its own"
+msgstr ""
+
+msgid "File under cursor"
+msgstr ""
+
+msgid "The file under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Marked all"
+msgid "Marked file"
+msgstr "Отметить вс&ё"
+
+msgid "Files marked with Insert or Ctrl-T"
+msgstr ""
+
+msgid "Marked file under cursor"
+msgstr ""
+
+msgid "A file that is both marked and under the cursor"
+msgstr ""
+
+msgid "Panel title, active"
+msgstr ""
+
+msgid ""
+"Text on top of the frame of the active panel: the directory name, Quick view"
+msgstr ""
+
+msgid "Column header"
+msgstr ""
+
+msgid "Header entries of panels: Name, Size, Modify time"
+msgstr ""
+
+msgid "Frame"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panelize"
+msgid "Panel frame"
+msgstr "Панелизация"
+
+msgid "Command line, selected text"
+msgstr ""
+
+msgid "Selected text in the command line"
+msgstr ""
+
+msgid "Disabled element"
+msgstr ""
+
+msgid "Disabled UI elements, e.g. in Find File and some Options dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Classic pro&gressbar"
+msgid "Progress bar"
+msgstr "Обычный индикатор про&гресса"
+
+msgid "Filled part of the progress bar"
+msgstr ""
+
+msgid "Dialog shadow"
+msgstr ""
+
+msgid "Shadow cast by dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: read"
+msgstr "Права доступа"
+
+msgid "The r of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: write"
+msgstr "Права доступа"
+
+msgid "The w of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: execute"
+msgstr "Права доступа"
+
+msgid "The x of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permissions (octal):"
+msgid "Permission: special"
+msgstr "Доступ (восьмеричный):"
+
+msgid "The s and t of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Permission"
+msgid "Permission: none"
+msgstr "Права доступа"
+
+msgid "The - of the permission field when Permission colors is on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Open files"
+msgid "Other files"
+msgstr "Открытые файлы"
+
+#, fuzzy
+#| msgid "Edit hi&ghlighting group file"
+msgid "Files no filehighlight.ini group matches"
+msgstr "Править файл рас&цветки имён"
+
+#, fuzzy
+#| msgid "directory"
+msgid "Directory"
+msgstr "каталог"
+
+#, fuzzy
+#| msgid "Executable &first"
+msgid "Executable"
+msgstr "Сперва испо&лняемые"
+
+msgid "Hard link"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Stable symlinks"
+msgid "Stale link"
+msgstr "Изменять относительные &ссылки"
+
+msgid "A symbolic link whose target is gone"
+msgstr ""
+
+#, fuzzy
+#| msgid "Device:     %s"
+msgid "Device"
+msgstr "Устройство: %s"
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Special file"
+msgstr "Сохранить файл"
+
+msgid "Socket, FIFO, door"
+msgstr ""
+
+#, fuzzy
+#| msgid "No dump"
+msgid "Core dump"
+msgstr "Дампа нет"
+
+#, fuzzy
+#| msgid "C&ompare files"
+msgid "Temporary file"
+msgstr "Сравнить фа&йлы"
+
+msgid "Archive"
+msgstr ""
+
+msgid "Document"
+msgstr ""
+
+#, fuzzy
+#| msgid "Source"
+msgid "Source code"
+msgstr "Источник"
+
+msgid "Audio and video"
+msgstr ""
+
+msgid "Image"
+msgstr ""
+
+msgid "Database"
+msgstr ""
+
+#, fuzzy
+#| msgid "Output lines:"
+msgid "Input line"
+msgstr "Строки вывода:"
+
+msgid "Input lines in dialogs and the command line"
+msgstr ""
+
+msgid "Input line, unchanged text"
+msgstr ""
+
+msgid "Input text before the first modification or cursor movement"
+msgstr ""
+
+msgid "Input line, selected text"
+msgstr ""
+
+msgid "Text selected in an input line, e.g. with Shift-arrows"
+msgstr ""
+
+msgid "Input history button"
+msgstr ""
+
+msgid "The button that opens the history of an input line"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command &history"
+msgid "Command history button"
+msgstr "&История командной строки"
+
+msgid "The button that opens the command history"
+msgstr ""
+
+msgid "Dialog background and text"
+msgstr ""
+
+msgid "Focused element"
+msgstr ""
+
+msgid "The element that has the focus"
+msgstr ""
+
+msgid "Hotkey"
+msgstr ""
+
+msgid "Hotkey letters of buttons and checkboxes"
+msgstr ""
+
+msgid "Hotkey of the focused element"
+msgstr ""
+
+msgid "Selected item, list not focused"
+msgstr ""
+
+msgid ""
+"Selected item of a list that does not have the focus, e.g. Find File results "
+"after Tab"
+msgstr ""
+
+msgid "Selected item, list focused"
+msgstr ""
+
+msgid ""
+"Selected item of the focused list, e.g. Find File results or the skin list"
+msgstr ""
+
+msgid "Title"
+msgstr ""
+
+msgid "Error dialog background and text"
+msgstr ""
+
+msgid "Item"
+msgstr ""
+
+msgid "Items of the dropdown menu"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Selected item"
+msgstr "Отметить группу"
+
+msgid "Hotkey of the selected item"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Menubar visible"
+msgid "Menu bar, inactive"
+msgstr "&Строка меню"
+
+msgid "The menu bar when no menu is open"
+msgstr ""
+
+msgid "User menu (F2), editor menu (F11), codepage list (Alt-E)"
+msgstr ""
+
+#, fuzzy
+#| msgid "Function key 1"
+msgid "Function key number"
+msgstr "Функциональная 1"
+
+msgid "The numbers in the bottom row"
+msgstr ""
+
+#, fuzzy
+#| msgid "Directory label"
+msgid "Key label"
+msgstr "Метка каталога"
+
+msgid "The labels in the bottom row"
+msgstr ""
+
+msgid "Status bar"
+msgstr ""
+
+msgid "The top line of the editor, the viewer and the diff viewer"
+msgstr ""
+
+msgid "Bold text"
+msgstr ""
+
+msgid "Italic text"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select language"
+msgid "Selected link"
+msgstr "Выбор языка"
+
+msgid "The link under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "Found: %lu"
+msgid "Found text"
+msgstr "Найдено: %lu"
+
+msgid "Text with the bold attribute, e.g. a search match"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select"
+msgid "Selected text"
+msgstr "Отметить группу"
+
+#, fuzzy
+#| msgid "&Visible trailing spaces"
+msgid "Tabs and trailing spaces"
+msgstr "Отображать проб&елы"
+
+#, fuzzy
+#| msgid "Invalid character"
+msgid "Non-printable characters"
+msgstr "Ошибочный символ"
+
+#, fuzzy
+#| msgid "Right arrow"
+msgid "Right margin"
+msgstr "Стрелка вправо   "
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Line numbers"
+msgstr "&Номер строки"
+
+msgid "The line state column at the left"
+msgstr ""
+
+msgid "Bookmarked line"
+msgstr ""
+
+msgid "Lines bookmarked by hand"
+msgstr ""
+
+msgid "Line found by Find all"
+msgstr ""
+
+msgid "Outside the windows"
+msgstr ""
+
+msgid "Area not covered by any editor window in multi-window mode"
+msgstr ""
+
+msgid "Frame, inactive window"
+msgstr ""
+
+msgid "Frame, active window"
+msgstr ""
+
+msgid "Frame, window being moved"
+msgstr ""
+
+msgid "Frame of a window being moved or resized"
+msgstr ""
+
+msgid "Bold text of manual pages"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "Underlined text"
+msgstr "Подчёркивание"
+
+msgid "Underlined text of manual pages"
+msgstr ""
+
+msgid "Bold underlined text"
+msgstr ""
+
+msgid "Heading"
+msgstr ""
+
+msgid "Headings of manual pages"
+msgstr ""
+
+msgid "A search match"
+msgstr ""
+
+#, fuzzy
+msgid "The frame in Quick view"
+msgstr "&Быстрый просмотр"
+
+msgid "Default color and the background the terminal is painted on"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "Added line"
+msgstr "Подчёркивание"
+
+#, fuzzy
+#| msgid "&Remove"
+msgid "Removed line"
+msgstr "&Удалить"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed line"
+msgstr "Дата &смены"
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed text"
+msgstr "Дата &смены"
+
+msgid "The changed part of a changed line"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot insert file"
+msgid "Changed line, filler"
+msgstr "Не удалось вставить файл"
+
+msgid "The rest of a changed line and its counterpart"
+msgstr ""
+
+msgid "Structured view of JSON, YAML and the like"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&lear marked"
+msgid "Collapse marker"
+msgstr "&Очистить помеченное"
+
+msgid ""
+"The + and - before a node with children; the viewer's normal color when "
+"absent"
+msgstr ""
+
+msgid "Node under cursor"
+msgstr ""
+
+msgid "The viewer's selected color when absent"
+msgstr ""
+
+msgid "Frame, active"
+msgstr ""
+
+msgid "Header"
+msgstr ""
+
+#, fuzzy
+#| msgid "Select &group"
+msgid "Selected row"
+msgstr "Отметить &группу"
+
+msgid "Offset"
+msgstr ""
+
+#, fuzzy
+#| msgid "File &types"
+msgid "Field type"
+msgstr "Типы &файлов"
+
+msgid "Structure name"
+msgstr ""
+
+msgid "Jump"
+msgstr ""
+
+msgid "Remark"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Marked all"
+msgid "Marked range"
+msgstr "Отметить вс&ё"
+
+msgid "The bytes of the field under the cursor"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&hange time"
+msgid "Changed byte"
+msgstr "Дата &смены"
+
+msgid "Cursor"
+msgstr ""
+
+msgid "Group separator"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save block"
+msgid "Selected block"
+msgstr "Сохранить блок"
+
+#, fuzzy
+#| msgid "&Line number"
+msgid "Line number"
+msgstr "&Номер строки"
+
+#, fuzzy
+#| msgid "directories"
+msgid "Directive"
+msgstr "каталоги"
+
+#, fuzzy
+#| msgid "Command"
+msgid "Comment"
+msgstr "Команда"
+
+msgid "Label"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Horizontal"
+msgid "Light: horizontal"
+msgstr "&Горизонтальное"
+
+msgid "Light: vertical"
+msgstr ""
+
+msgid "Light: top left corner"
+msgstr ""
+
+msgid "Light: top right corner"
+msgstr ""
+
+msgid "Light: bottom left corner"
+msgstr ""
+
+msgid "Light: bottom right corner"
+msgstr ""
+
+msgid "Light: top tee"
+msgstr ""
+
+msgid "Light: bottom tee"
+msgstr ""
+
+msgid "Light: left tee"
+msgstr ""
+
+msgid "Light: right tee"
+msgstr ""
+
+#, fuzzy
+#| msgid "Right arrow"
+msgid "Light: cross"
+msgstr "Стрелка вправо   "
+
+#, fuzzy
+#| msgid "&Horizontal"
+msgid "Heavy: horizontal"
+msgstr "&Горизонтальное"
+
+msgid "Heavy frames are used for major boxes"
+msgstr ""
+
+msgid "Heavy: vertical"
+msgstr ""
+
+msgid "Heavy: top left corner"
+msgstr ""
+
+msgid "Heavy: top right corner"
+msgstr ""
+
+msgid "Heavy: bottom left corner"
+msgstr ""
+
+msgid "Heavy: bottom right corner"
+msgstr ""
+
+msgid "Heavy: top tee"
+msgstr ""
+
+msgid "The short stem is light"
+msgstr ""
+
+msgid "Heavy: bottom tee"
+msgstr ""
+
+msgid "Heavy: left tee"
+msgstr ""
+
+msgid "Heavy: right tee"
+msgstr ""
+
+msgid "Sort ascending"
+msgstr ""
+
+msgid "In the header row"
+msgstr ""
+
+msgid "Sort descending"
+msgstr ""
+
+#, fuzzy
+#| msgid "Show &hidden files"
+msgid "Hidden files shown"
+msgstr "Показывать скр&ытые файлы"
+
+msgid "In the top border"
+msgstr ""
+
+msgid "Hidden files hidden"
+msgstr ""
+
+msgid "History: previous"
+msgstr ""
+
+#, fuzzy
+#| msgid "History"
+msgid "History: next"
+msgstr "История"
+
+#, fuzzy
+#| msgid "History"
+msgid "History: list"
+msgstr "История"
+
+#, fuzzy
+#| msgid "File name is empty!"
+msgid "File name scrolled, left"
+msgstr "Пустое имя файла!"
+
+msgid "A long file name that continues to the left"
+msgstr ""
+
+msgid "File name scrolled, right"
+msgstr ""
+
+msgid "A long file name that continues to the right"
+msgstr ""
+
+msgid "Find: show matches"
+msgstr ""
+
+#, fuzzy
+#| msgid "&XTerm window title"
+msgid "Editor: window state"
+msgstr "&Заголовок xterm"
+
+msgid "In the title of an editor window"
+msgstr ""
+
+msgid "Editor: window close"
+msgstr ""
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor: fold open"
+msgstr "Настройки редактора"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor: fold closed"
+msgstr "Настройки редактора"
+
+#, fuzzy
+#| msgid "&Up"
+msgid "Up"
+msgstr "&Вверх"
+
+msgid "Not read by mc today"
+msgstr ""
+
+#, fuzzy
+#| msgid "Page Down"
+msgid "Down"
+msgstr "Клавиша Page Down"
+
+#, fuzzy
+#| msgid "&Left"
+msgid "Left"
+msgstr "&Левая панель"
+
+#, fuzzy
+#| msgid "&Right"
+msgid "Right"
+msgstr "&Правая панель"
+
+msgid "Thumb"
+msgstr ""
+
+msgid "Track"
+msgstr ""
+
+msgid "Spinner frames"
+msgstr ""
+
+msgid "One frame per character, played while mc is busy"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "Panels"
+msgstr "Панели:"
+
+#, fuzzy
+#| msgid "File &types"
+msgid "File types"
+msgstr "Типы &файлов"
+
+#, fuzzy
+#| msgid "Output lines:"
+msgid "Input lines"
+msgstr "Строки вывода:"
+
+msgid "Dialogs"
+msgstr ""
+
+#, fuzzy
+#| msgid "Error reading %s"
+msgid "Error dialogs"
+msgstr "Ошибка чтения %s:"
+
+msgid "Menu bar"
+msgstr ""
+
+msgid "Popup menu"
+msgstr ""
+
+#, fuzzy
+#| msgid "ButtonBar|Hex"
+msgid "Button bar"
+msgstr "Hex"
+
+#, fuzzy
+#| msgid "Edit"
+msgid "Editor"
+msgstr "&Правка"
+
+#, fuzzy
+#| msgid "&View"
+msgid "Viewer"
+msgstr "П&росмотр"
+
+#, fuzzy
+#| msgid "Diff viewer: invalid mode"
+msgid "Diff viewer"
+msgstr "Неверный режим запуска программы сравнения файлов"
+
+#, fuzzy
+#| msgid "Filtered view"
+msgid "Structured view"
+msgstr "Просмотр вывода команды"
+
+msgid "Struct look: tree"
+msgstr ""
+
+msgid "Struct look: hex"
+msgstr ""
+
+msgid "Struct look: def file"
+msgstr ""
+
+msgid "Frames"
+msgstr ""
+
+#, fuzzy
+#| msgid "Panels:"
+msgid "Panel marks"
+msgstr "Панели:"
+
+msgid "Find and editor marks"
+msgstr ""
+
+msgid "Scrollbar (unused)"
+msgstr ""
+
+msgid "Spinner"
+msgstr ""
+
+msgid "Skin &editor"
+msgstr ""
+
+msgid "S&kin editor..."
+msgstr ""
+
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Skin editor"
+msgstr "Со встроенным редактором"
+
+msgid "&Bold"
+msgstr ""
+
+msgid "Ita&lic"
+msgstr ""
+
+#, fuzzy
+#| msgid "Underline"
+msgid "&Underline"
+msgstr "Подчёркивание"
+
+#, fuzzy
+#| msgid "&Reverse"
+msgid "Re&verse"
+msgstr "Обра&тный"
+
+msgid "Blin&k"
+msgstr ""
+
+#, fuzzy
+#| msgid "On dum&b terminals"
+msgid "terminal"
+msgstr "На глупых терм&иналах"
+
+msgid "terminal default"
+msgstr ""
+
+msgid "True color"
+msgstr ""
+
+msgid "Color as #rrggbb or #rgb:"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Source \"%s\" is not a directory\n"
+#| "%s"
+msgid "\"%s\" is not a #rrggbb color"
+msgstr ""
+"Исходный каталог \"%s\" не является каталогом\n"
+"%s"
+
+msgid "256 colors"
+msgstr ""
+
+#, c-format
+msgid "The picker needs a terminal of %dx%d"
+msgstr ""
+
+msgid "Foreground"
+msgstr ""
+
+msgid "&Inherit"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "&Terminal default"
+msgstr "Настройки терминала"
+
+#, fuzzy
+#| msgid "&Background"
+msgid "Background"
+msgstr "В &фоне"
+
+msgid "Inh&erit"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Terminal &default"
+msgstr "Настройки терминала"
+
+msgid "Style"
+msgstr ""
+
+msgid "In&herit"
+msgstr ""
+
+msgid "Sample"
+msgstr ""
+
+msgid "16 colors"
+msgstr ""
+
+#, c-format
+msgid "%s: what mc fills in"
+msgstr ""
+
+msgid "built-in"
+msgstr ""
+
+#, c-format
+msgid ""
+"This terminal cannot show the colors of \"%s\".\n"
+"The skin can be edited and saved, but the screen will not follow."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Time: %s %s"
+msgid "Skin: %s  %s"
+msgstr "Время: %s %s"
+
+msgid "Foreground:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Background"
+msgid "Background:"
+msgstr "В &фоне"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "Attributes:"
+msgstr "Атрибуты: %s"
+
+msgid "Empty = inherited"
+msgstr ""
+
+msgid "One character (empty = built-in):"
+msgstr ""
+
+msgid "Value (empty = built-in):"
+msgstr ""
+
+msgid "One character is expected here"
+msgstr ""
+
+msgid "Description:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Save skin as"
+msgstr "Сохранить как"
+
+#, c-format
+msgid ""
+"This is a %s skin, but [%s] %s uses %s.\n"
+"Save it as a %s skin?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save As"
+msgid "Save skin"
+msgstr "Сохранить как"
+
+msgid "This is a system skin. Save a copy in your skins directory as:"
+msgstr ""
+
+msgid "A skin of this name exists. Overwrite it?"
+msgstr ""
+
+msgid ""
+"The skin is saved. This terminal cannot show it,\n"
+"so the skin mc runs with stays as it was."
+msgstr ""
+
+msgid "Discard the changes?"
+msgstr ""
+
+msgid " on "
+msgstr ""
+
+msgid "inherited"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Modified:   %s"
+msgid "Copied: %s"
+msgstr "Модифицирован: %s"
+
+#, fuzzy
+#| msgid "Searching"
+msgid "&Everything"
+msgstr "Ищем"
+
+msgid "&Foreground only"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Background"
+msgid "&Background only"
+msgstr "В &фоне"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes only"
+msgstr "Атрибуты: %s"
+
+msgid "The skin has unsaved changes."
+msgstr ""
+
+msgid "&Discard"
+msgstr "&Отменить"
+
+#, fuzzy
+#| msgid "Edit file"
+msgid "Edit as &file"
+msgstr "Редактировать файл"
+
+#, c-format
+msgid "The skin editor needs a terminal of %dx%d"
+msgstr ""
+
+#, fuzzy
+#| msgid "System data"
+msgid "SQLite database"
+msgstr "Системные данные"
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open\n"
+#| "%s"
+msgid "Cannot open database."
+msgstr ""
+"Не удаётся открыть\n"
+"%s"
+
+#, fuzzy
+#| msgid ""
+#| "%s\n"
+#| "is not a regular file"
+msgid "The selected path is not a regular local file."
+msgstr ""
+"%s\n"
+"не является обычным файлом"
+
+msgid "The selected file is not an SQLite database."
+msgstr ""
+
+msgid "The requested table or row page no longer exists."
+msgstr ""
+
+#, fuzzy
+#| msgid "Save file"
+msgid "Database file:"
+msgstr "Сохранить файл"
+
+#, fuzzy
+#| msgid "Cannot create pipe streams"
+msgid "Cannot read the database."
+msgstr "Не удалось создать потоки канала"
+
+#, fuzzy
+#| msgid "undelfs: error"
+msgid "Runtime errors"
+msgstr "undelfs: ошибка"
 
 msgid "Choose codepage"
 msgstr "Выбор кодировки"
@@ -4093,28 +9642,11 @@ msgstr ""
 "Не удаётся сохранить файл %s:\n"
 "%s"
 
-#, c-format
-msgid "Warning: Cannot change to %s.\n"
-msgstr "Внимание: не удалось перейти в %s.\n"
-
-#, c-format
-msgid "Cannot open named pipe %s\n"
-msgstr "Не удалось открыть именованный канал %s\n"
-
-msgid "The shell is still active. Quit anyway?"
-msgstr "Оболочка всё ещё активна. Всё равно выйти?"
-
 msgid "With builtin editor and aspell support"
 msgstr "Со встроенным редактором и поддержкой Aspell"
 
 msgid "With builtin editor"
 msgstr "Со встроенным редактором"
-
-msgid "With optional subshell support"
-msgstr "С опциональной поддержкой внутренней командной оболочки"
-
-msgid "With subshell support as default"
-msgstr "C поддержкой внутренней командной оболочки"
 
 msgid "With support for background operations"
 msgstr "С поддержкой фоновых операций"
@@ -4133,6 +9665,10 @@ msgstr "С поддержкой интернационализации"
 
 msgid "With ext2fs attributes support"
 msgstr "С поддержкой атрибутов ext2fs"
+
+#, c-format
+msgid "   based on GNU Midnight Commander.\n"
+msgstr ""
 
 #, c-format
 msgid "Built with GLib %d.%d.%d (using GLib %u.%u.%u)\n"
@@ -4154,15 +9690,16 @@ msgstr "Собрано с %s"
 msgid " (using %s)\n"
 msgstr " (используется %s)\n"
 
-#, c-format
-msgid "Built with libssh2 %d.%d.%d\n"
-msgstr "Собрано с libssh2 версии %d.%d.%d\n"
-
 msgid "Virtual File Systems:"
 msgstr "Виртуальные файловые системы:"
 
 msgid "Data types:"
 msgstr "Типы данных:"
+
+#, fuzzy
+#| msgid "Search string not found"
+msgid "directory not found"
+msgstr "Искомая строка не найдена"
 
 msgid "Home directory:"
 msgstr "Домашний каталог:"
@@ -4185,8 +9722,35 @@ msgstr "Скрипты обработки файлов по расширению
 msgid "VFS plugins and scripts:"
 msgstr "Модули и скрипты ВФС:"
 
+#, fuzzy
+#| msgid "Panel options"
+msgid "Panel plugins:"
+msgstr "Настройки панели"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "Editor plugins:"
+msgstr "Настройки редактора"
+
+msgid "Runtime plugins:"
+msgstr ""
+
+#, fuzzy
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts:"
+msgstr "Модули и скрипты ВФС:"
+
+msgid "Lua modules:"
+msgstr ""
+
 msgid "User data"
 msgstr "Пользовательские данные"
+
+msgid "Legacy Lua scripts:"
+msgstr ""
+
+msgid "Legacy Lua modules:"
+msgstr ""
 
 msgid "Cache directory:"
 msgstr "Каталог с кэшируемыми данными:"
@@ -4237,51 +9801,122 @@ msgstr "Меню пользователя"
 
 #, c-format
 msgid ""
-"Cannot open cpio archive\n"
-"%s"
-msgstr ""
-"Не удалось открыть архив cpio\n"
-"%s"
-
-#, c-format
-msgid ""
-"Premature end of cpio archive\n"
-"%s"
-msgstr ""
-"Преждевременный конец архива cpio\n"
-"%s"
-
-#, c-format
-msgid ""
-"Inconsistent hardlinks of\n"
+"This entry comes from\n"
 "%s\n"
-"in cpio archive\n"
+"\n"
+"which you cannot write. Copy it into a menu of your own\n"
+"with Ins, or ask whoever owns that file."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot overwrite file\n"
+#| "%s"
+msgid ""
+"Cannot write file\n"
 "%s"
 msgstr ""
-"Несогласованная жёсткая ссылка\n"
+"Не удаётся переписать файл\n"
+"%s"
+
+msgid "Add a submenu"
+msgstr ""
+
+msgid "Edit the submenu"
+msgstr ""
+
+msgid "Add a user menu entry"
+msgstr ""
+
+msgid "Edit the user menu entry"
+msgstr ""
+
+msgid "Hotkey:"
+msgstr ""
+
+#, fuzzy
+#| msgid "Command"
+msgid "Commands:"
+msgstr "Команда"
+
+msgid "Show the output in the &viewer"
+msgstr ""
+
+msgid "Run without the &shell of the panel"
+msgstr ""
+
+msgid "The entry needs a label"
+msgstr ""
+
+msgid "Import: space marks, Enter takes"
+msgstr ""
+
+#, c-format
+msgid ""
+"Nothing was taken from\n"
+"%s"
+msgstr ""
+
+#, c-format
+msgid ""
+"Taken into\n"
 "%s\n"
-"в архиве cpio\n"
-"%s"
+"\n"
+"Entries: %u. The file they came from is left where it is,\n"
+"and conditions and masks were dropped."
+msgstr ""
 
-#, c-format
-msgid "%s contains duplicate entries! Skipping!"
-msgstr "%s содержит сдвоенные элементы! Пропущено!"
+#, fuzzy
+#| msgid "Edit &menu file"
+msgid "Import a menu file"
+msgstr "Править файл мен&ю"
+
+msgid "The file to take the entries from"
+msgstr ""
 
 #, c-format
 msgid ""
-"Corrupted cpio header encountered in\n"
-"%s"
+"The menu is a file written by hand:\n"
+"%s\n"
+"\n"
+"Import entries of it into the menu that edits itself?"
 msgstr ""
-"Повреждённый заголовок cpio обнаружен в\n"
-"%s"
 
-#, c-format
-msgid ""
-"Unexpected end of file\n"
-"%s"
+msgid "&Import"
 msgstr ""
-"Неожиданный конец файла\n"
-"%s"
+
+msgid "&Keep the file"
+msgstr ""
+
+msgid ""
+"The menu is empty.\n"
+"\n"
+"Add an entry, or take entries from a menu file written by hand?"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Add new"
+msgid "&Add an entry"
+msgstr "&Добавить"
+
+msgid "Add a command, or a submenu to hold other entries?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Chmod command"
+msgid "Add a &command"
+msgstr "Команда chmod"
+
+msgid "Add a &submenu"
+msgstr ""
+
+msgid "Delete this submenu and everything in it?"
+msgstr ""
+
+#, fuzzy
+#| msgid "Delete %s?"
+msgid "Delete this entry?"
+msgstr "Удалить %s?"
 
 msgid "Inconsistent archive"
 msgstr "Несогласованный архив"
@@ -4338,134 +9973,6 @@ msgid "Warning: cannot open %s directory\n"
 msgstr "Внимание: не удалось открыть каталог %s\n"
 
 #, c-format
-msgid "ftpfs: Disconnecting from %s"
-msgstr "ftpfs: отключение от %s"
-
-#, c-format
-msgid "FTP: Password required for %s"
-msgstr "FTP: требуется пароль для %s"
-
-msgid "ftpfs: sending login name"
-msgstr "ftpfs: посылается имя пользователя"
-
-msgid "ftpfs: sending user password"
-msgstr "ftpfs: посылается пароль пользователя"
-
-#, c-format
-msgid "FTP: Account required for user %s"
-msgstr "FTP: необходима учётная запись для пользователя %s"
-
-msgid "Account:"
-msgstr "Учётная запись:"
-
-msgid "ftpfs: sending user account"
-msgstr "ftpfs: посылается учётная запись пользователя"
-
-msgid "ftpfs: logged in"
-msgstr "ftpfs: зарегистрирован"
-
-#, c-format
-msgid "ftpfs: Login incorrect for user %s "
-msgstr "ftpfs: ошибка регистрации пользователя %s"
-
-msgid "ftpfs: Invalid host name."
-msgstr "ftpfs: неверное имя системы."
-
-#, c-format
-msgid "ftpfs: %s"
-msgstr "ftpfs: %s"
-
-#, c-format
-msgid "ftpfs: making connection to %s"
-msgstr "ftpfs: осуществляется соединение с %s"
-
-msgid "ftpfs: connection interrupted by user"
-msgstr "ftpfs: соединение прервано пользователем"
-
-#, c-format
-msgid "ftpfs: connection to server failed: %s"
-msgstr "ftpfs: сбой соединения с сервером: %s"
-
-#, c-format
-msgid "Waiting to retry... %d (Control-G to cancel)"
-msgstr "Ожидание повтора попытки... %d (Control-G для отмены)"
-
-#, c-format
-msgid "ftpfs: could not make address-to-name translation: %s"
-msgstr "ftpfs: не удалось выполнить перевод адреса в имя: %s"
-
-#, c-format
-msgid "ftpfs: try reconnect to server, attempt %u"
-msgstr "ftpfs: попробовать переподключиться к серверу, попытка %u"
-
-#, c-format
-msgid "ftpfs: could not get socket name: %s"
-msgstr "ftpfs: не удалось получить имя сокета: %s"
-
-msgid "ftpfs: could not reconnect to server"
-msgstr "ftpfs: не удалось переподключиться к серверу"
-
-msgid "ftpfs: invalid address family"
-msgstr "ftpfs: неверный адрес системы."
-
-#, c-format
-msgid "ftpfs: could not create socket: %s"
-msgstr "ftpfs: не удалось создать сокет: %s"
-
-msgid "ftpfs: could not setup passive mode"
-msgstr "ftpfs: не удалось установить пассивный режим"
-
-msgid "ftpfs: aborting transfer."
-msgstr "ftpfs: прерывание передачи."
-
-#, c-format
-msgid "ftpfs: abort error: %s"
-msgstr "ftpfs: ошибка прерывания: %s"
-
-msgid "ftpfs: abort failed"
-msgstr "ftpfs: сбой прерывания"
-
-msgid "ftpfs: CWD failed."
-msgstr "ftpfs: не удалось сменить текущий рабочий каталог."
-
-msgid "ftpfs: couldn't resolve symlink"
-msgstr "ftpfs: не удалось распознать символическую ссылку"
-
-msgid "Resolving symlink..."
-msgstr "Распознаётся символическая ссылка..."
-
-#, c-format
-msgid "ftpfs: Reading FTP directory %s... %s%s"
-msgstr "ftpfs: чтение каталога FTP %s... %s%s"
-
-msgid "(strict rfc959)"
-msgstr "(ограничение rfc959)"
-
-msgid "(chdir first)"
-msgstr "(сначала chdir)"
-
-msgid "ftpfs: failed; nowhere to fallback to"
-msgstr "ftpfs: ошибка; некуда перейти на аварийный режим"
-
-#, c-format
-msgid "%s: failure"
-msgstr "%s: ошибка"
-
-#, c-format
-msgid "%s: done."
-msgstr "%s: готово."
-
-msgid "ftpfs: storing file"
-msgstr "ftpfs: запись файла"
-
-msgid ""
-"~/.netrc file has incorrect mode\n"
-"Remove password or correct mode"
-msgstr ""
-"Файл ~/.netrc имеет неверный режим доступа/владения.\n"
-"Удалите пароль или исправьте режим доступа/владения"
-
-#, c-format
 msgid ""
 "SFS virtual file system:\n"
 "%s"
@@ -4493,204 +10000,6 @@ msgstr ""
 "Предупреждение: неправильный флаг %c в %s:\n"
 "%s\n"
 
-#, c-format
-msgid "sftp: an error occurred while reading %s: %s"
-msgstr "sftp: произошла ошибка при чтении %s: %s"
-
-msgid "sftp: Unable to get current user name."
-msgstr "sftp: не удалось получить имя пользователя."
-
-msgid "sftp: Invalid host name."
-msgstr "sftp: неверное имя системы."
-
-#, c-format
-msgid "sftp: %s"
-msgstr "sftp: %s"
-
-msgid "sftp: failed to convert remote host IP address into text form"
-msgstr ""
-"sftp: не удалось преобразовать IP-адрес удалённого хоста в текстовую форму"
-
-#, c-format
-msgid "sftp: making connection to %s"
-msgstr "sftp: осуществляется соединение с %s"
-
-msgid "sftp: connection interrupted by user"
-msgstr "sftp: соединение прервано пользователем"
-
-#, c-format
-msgid "sftp: connection to server failed: %s"
-msgstr "sftp: сбой соединения с сервером: %s"
-
-#, c-format
-msgid ""
-"sftp: cannot open %s:\n"
-"%s"
-msgstr ""
-"sftp: не удаётся открыть %s:\n"
-"%s"
-
-msgid "sftp: found host key of unsupported type: RSA1"
-msgstr "sftp: найден ключ хоста неподдерживаемого типа: RSA1"
-
-msgid "sftp: unknown host key type:"
-msgstr "sftp: неизвестный тип ключа хоста:"
-
-#, c-format
-msgid ""
-"Permanently added\n"
-"%s (%s)\n"
-"to the list of known hosts."
-msgstr ""
-"Добавлено на постоянной основе\n"
-"%s (%s)\n"
-"к списку известных хостов."
-
-msgid "sftp: cannot get the remote host key"
-msgstr "sftp: невозможно получить ключ удалённого хоста"
-
-msgid "sftp: unsupported key type, can't check remote host key"
-msgstr ""
-"sftp: неподдерживаемый тип ключа, невозможно проверить ключ удалённого хоста"
-
-msgid "sftp: can't compute host key fingerprint hash"
-msgstr "sftp: невозможно вычислить хэш отпечатка ключа хоста"
-
-#, c-format
-msgid ""
-"The authenticity of host\n"
-"%s (%s)\n"
-"can't be established!\n"
-"%s key fingerprint hash is\n"
-"SHA1:%s.\n"
-"Do you want to add it to the list of known hosts and continue connecting?"
-msgstr ""
-"Подлинность хоста\n"
-"%s (%s)\n"
-"невозможно установить!\n"
-"%s хэш отпечатка ключа\n"
-"SHA1:%s.\n"
-"Вы хотите добавить его в список известных хостов и продолжить подключение?"
-
-#, c-format
-msgid ""
-"%s (%s)\n"
-"is found in the list of known hosts but\n"
-"KEYS DO NOT MATCH! THIS COULD BE A MITM ATTACK!\n"
-"Are you sure you want to add it to the list of known hosts and continue "
-"connecting?"
-msgstr ""
-"%s (%s)\n"
-"найден в списке известных хостов, но\n"
-"КЛЮЧИ НЕ СОВПАДАЮТ! ЭТО МОЖЕТ БЫТЬ MITM-АТАКОЙ!\n"
-"Вы уверены, что хотите добавить его в список известных хостов и продолжить "
-"подключение?"
-
-msgid "sftp: host key verification failed"
-msgstr "sftp: проверка ключа хоста не удалась"
-
-#, c-format
-msgid "sftp: Enter passphrase for %s "
-msgstr "sftp: введите парольную фразу для %s "
-
-msgid "sftp: Passphrase is empty."
-msgstr "sftp: парольная фраза пуста."
-
-#, c-format
-msgid "sftp: Enter password for %s "
-msgstr "sftp: введите пароль для %s "
-
-msgid "sftp: Password is empty."
-msgstr "sftp: пароль пуст."
-
-msgid "sftp: failure establishing SSH session"
-msgstr "sftp: сбой при установлении SSH сессии"
-
-msgid "sftp: No file handler data present for reading file"
-msgstr "sftp: нет обработчика считываемого файла"
-
-#, c-format
-msgid "sftp: socket error: %s"
-msgstr "sftp: ошибка сокета: %s"
-
-#, c-format
-msgid "sftp: (Ctrl-G break) Listing... %s"
-msgstr "sftp: чтение списка файлов (прерывание по Ctrl-G)... %s"
-
-msgid "sftp: Listing done."
-msgstr "sftp: чтение списка файлов завершено."
-
-#, c-format
-msgid "shell: Disconnecting from %s"
-msgstr "shell: отключение от %s"
-
-msgid "shell: Waiting for initial line..."
-msgstr "shell: ожидание начальное строки..."
-
-msgid "Sorry, we cannot do password authenticated connections for now."
-msgstr "Извините, не удалось создать авторизованные паролем соединения."
-
-#, c-format
-msgid "shell: Password is required for %s"
-msgstr "shell: требуется пароль для %s"
-
-msgid "shell: Sending password..."
-msgstr "shell: отправляется пароль..."
-
-msgid "shell: Sending initial line..."
-msgstr "shell: отправляется начальная строка..."
-
-msgid "shell: Getting host info..."
-msgstr "shell: получение данных хоста..."
-
-#, c-format
-msgid "shell: Reading directory %s..."
-msgstr "shell: чтение каталога %s..."
-
-#, c-format
-msgid "shell: store %s: sending command..."
-msgstr "shell: хранилище %s: отправляется команда..."
-
-msgid "shell: Local read failed, sending zeros"
-msgstr "shell: локальное чтение не удалось, отправляются нули"
-
-msgid "shell: storing file"
-msgstr "shell: сохранение файла"
-
-msgid "Aborting transfer..."
-msgstr "Прерывание передачи..."
-
-msgid "Error reported after abort."
-msgstr "Отмечена ошибка после прерывания."
-
-msgid "Aborted transfer would be successful."
-msgstr "Передача успешно прервана."
-
-msgid "Inconsistent tar archive"
-msgstr "Несогласованный архив tar"
-
-msgid "Unexpected EOF on archive file"
-msgstr "Неожиданный конец файла архива"
-
-#, c-format
-msgid ""
-"Cannot open tar archive\n"
-"%s"
-msgstr ""
-"Не удалось открыть архив tar\n"
-"%s"
-
-#, c-format
-msgid ""
-"%s\n"
-"doesn't look like a tar archive"
-msgstr ""
-"%s\n"
-"не похож на архив tar"
-
-msgid "tar: mc_lseek not stopped at a record boundary"
-msgstr "tar: mc_lseek не остановился на границе записи"
-
 msgid "Invalid value"
 msgstr "Неверный адрес"
 
@@ -4705,6 +10014,15 @@ msgstr ""
 "%s в процессе завершения.\n"
 "Сохранить изменённый файл?"
 
+msgid "The structure viewer works on local files only"
+msgstr ""
+
+msgid "(no matches -- waiting for data)"
+msgstr ""
+
+msgid "(no matches)"
+msgstr ""
+
 msgid "&Line number"
 msgstr "&Номер строки"
 
@@ -4717,8 +10035,10 @@ msgstr "&Смещение (десятичное)"
 msgid "He&xadecimal offset"
 msgstr "С&мещение (шестнадцатеричное)"
 
-msgid "Goto"
-msgstr "Переход"
+#, fuzzy
+#| msgid "ButtonBar|Hex"
+msgid "ButtonBar|Text"
+msgstr "Hex"
 
 msgid "ButtonBar|Ascii"
 msgstr "Ascii"
@@ -4732,12 +10052,6 @@ msgstr "Разверн"
 msgid "ButtonBar|Wrap"
 msgstr "Сверн"
 
-msgid "ButtonBar|Hex"
-msgstr "Hex"
-
-msgid "ButtonBar|Goto"
-msgstr "Перейти"
-
 msgid "ButtonBar|Raw"
 msgstr "Исходный"
 
@@ -4747,12 +10061,92 @@ msgstr "Разбор"
 msgid "ButtonBar|Unform"
 msgstr "Не форм"
 
+#, fuzzy
+#| msgid "ButtonBar|Merge"
+msgid "ButtonBar|Term mode"
+msgstr "Слияние"
+
 msgid "ButtonBar|Format"
 msgstr "Формат"
+
+#, c-format
+msgid "Filter: %s  %u matches  scanning..."
+msgstr ""
+
+#, c-format
+msgid "Filter: %s  %u matches  FOLLOW"
+msgstr ""
+
+#, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
 
 #, fuzzy
 msgid "Quick view"
 msgstr "&Быстрый просмотр"
+
+msgid "Error: out of memory"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Error: %s"
+msgstr "Ошибка"
+
+msgid "First matches:"
+msgstr ""
+
+msgid "No matches found."
+msgstr ""
+
+#, fuzzy
+#| msgid "Filter"
+msgid "Filter Check"
+msgstr "Фильтр"
+
+#, fuzzy
+#| msgid "No&rmal"
+msgid "Normal"
+msgstr "О&бычный"
+
+#, fuzzy
+#| msgid "Re&gular expression"
+msgid "Regular expression"
+msgstr "&Регулярное выражение"
+
+#, fuzzy
+#| msgid "Wil&dcard search"
+msgid "Wildcard search"
+msgstr "По &шаблону"
+
+#, fuzzy
+#| msgid "E&xtension"
+msgid "Expression"
+msgstr "Рас&ширение"
+
+msgid "OK"
+msgstr "ОК"
+
+msgid "Preview is not available in hexadecimal mode."
+msgstr ""
+
+msgid "Filter pattern (empty = clear):"
+msgstr ""
+
+#, fuzzy
+#| msgid "C&heck word"
+msgid "C&heck"
+msgstr "Про&верить слово"
+
+#, fuzzy, c-format
+#| msgid "File: %s"
+msgid "Filter error: %s"
+msgstr "Файл: %s"
+
+#, fuzzy
+#| msgid "Unknown error in child"
+msgid "unknown error"
+msgstr "Неизвестная ошибка в дочернем процессе"
 
 msgid "Failed to read data from child stdout"
 msgstr "Не удалось прочесть данные из дочернего stdout."
@@ -4778,6 +10172,15 @@ msgstr ""
 msgid "View: "
 msgstr "Просмотр: "
 
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source."
+msgstr ""
+"Не удаётся открыть исходный файл\n"
+"%s"
+
 #, c-format
 msgid ""
 "Cannot view\n"
@@ -4788,26 +10191,748 @@ msgstr ""
 "%s\n"
 "Не является обычным файлом"
 
-#, c-format
-msgid ""
-"Cannot open\n"
-"%s\n"
-"in parse mode\n"
-"%s"
-msgstr ""
-"Не удаётся открыть\n"
-"%s\n"
-"в режиме разбора\n"
-"%s"
-
 msgid "Search done"
 msgstr "Поиск закончен"
 
 msgid "Continue from beginning?"
 msgstr "Продолжить с начала?"
 
+msgid "Source spec must set either command or file."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source process."
+msgstr ""
+"Не удаётся открыть исходный файл\n"
+"%s"
+
+#, fuzzy
+#| msgid "Cannot execute sort command"
+msgid "Cannot open source command."
+msgstr "Не удалось выполнить команду sort"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot open\n"
+#| "%s"
+msgid "Cannot open %s"
+msgstr ""
+"Не удаётся открыть\n"
+"%s"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot stat\n"
+#| "%s"
+msgid "Cannot stat %s"
+msgstr ""
+"Не удаётся запустить\n"
+"%s"
+
+msgid "Viewport source prepare failed."
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot open file %s"
+msgid "Cannot open resized source."
+msgstr "Не удалось открыть файл %s"
+
+msgid "Cannot switch viewer source."
+msgstr ""
+
+#, fuzzy
+#| msgid "Invalid source pattern '%s'"
+msgid "Invalid source controller."
+msgstr "Неправильный образец \"%s\""
+
+msgid "Source prepare failed."
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open new source."
+msgstr ""
+"Не удаётся открыть исходный файл\n"
+"%s"
+
+msgid ""
+"%s\n"
+"\n"
+"(value truncated, %"
+msgstr ""
+
+msgid "Structured view works on local files only"
+msgstr ""
+
+msgid "File is too large for structured view"
+msgstr ""
+
+#, fuzzy
+#| msgid "Cannot insert file"
+msgid "Cannot build structured view"
+msgstr "Не удалось вставить файл"
+
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Не удалось получить локальную копию /ftp://some.host/editme.txt"
+
+#~ msgid "Enables subshell support (default)"
+#~ msgstr "Включить поддержку встроенной командной оболочки (по умолчанию)"
+
+#~ msgid "Disables subshell support"
+#~ msgstr "Отключить поддержку встроенной командной оболочки"
+
+#~ msgid "Log ftp dialog to specified file"
+#~ msgstr "Записывать диалог с FTP в заданный файл"
+
+#~ msgid "Resets soft keys on HP terminals"
+#~ msgstr "Сбросить программные клавиши на терминалах HP"
+
+#~ msgid "Specifies a color configuration"
+#~ msgstr "Определить настройки цветов"
+
+#~ msgid ""
+#~ "--colors KEYWORD={FORE},{BACK},{ATTR}:KEYWORD2=...\n"
+#~ "\n"
+#~ "{FORE}, {BACK} and {ATTR} can be omitted, and the default will be used\n"
+#~ "\n"
+#~ " Keywords:\n"
+#~ "   Global:       errors, disabled, reverse, gauge, header\n"
+#~ "                 input, inputmark, inputunchanged, commandlinemark\n"
+#~ "                 bbarhotkey, bbarbutton, statusbar\n"
+#~ "   File display: normal, selected, marked, markselect\n"
+#~ "   Dialog boxes: dnormal, dfocus, dhotnormal, dhotfocus, errdhotnormal,\n"
+#~ "                 errdhotfocus\n"
+#~ "   Menus:        menunormal, menuhot, menusel, menuhotsel, menuinactive\n"
+#~ "   Popup menus:  pmenunormal, pmenusel, pmenutitle\n"
+#~ "   Editor:       editnormal, editbold, editmarked, editwhitespace, "
+#~ "editnonprintable,\n"
+#~ "                 editlinestate, editbg, editframe, editframeactive\n"
+#~ "                 editframedrag\n"
+#~ "   Viewer:       viewnormal,viewbold, viewunderline, viewselected\n"
+#~ "   Help:         helpnormal, helpitalic, helpbold, helplink, helpslink\n"
+#~ msgstr ""
+#~ "--colors КЛЮЧЕВОЕ_СЛОВО={ТЕКСТ},{ФОН},{АТРИБУТ}:КЛЮЧЕВОЕ_СЛОВО2=...\n"
+#~ "\n"
+#~ "{ТЕКСТ}, {ФОН} и {АТРИБУТ} можно опустить, чтобы использовать значения по "
+#~ "умолчанию\n"
+#~ "\n"
+#~ "Ключевые слова:\n"
+#~ "   Общие:              errors, disabled, reverse, gauge, header\n"
+#~ "                       input, inputmark, inputunchanged, commandlinemark\n"
+#~ "                       bbarhotkey, bbarbutton, statusbar\n"
+#~ "   Отображение файлов: normal, selected, marked, markselect\n"
+#~ "   Диалоги:            dnormal, dfocus, dhotnormal, dhotfocus, "
+#~ "errdhotnormal,\n"
+#~ "                       errdhotfocus\n"
+#~ "   Меню:               menunormal, menuhot, menusel, menuhotsel, "
+#~ "menuinactive\n"
+#~ "   Всплывающие меню:   pmenunormal, pmenusel, pmenutitle\n"
+#~ "   Редактор:           editnormal, editbold, editmarked, editwhitespace, "
+#~ "editnonprintable,\n"
+#~ "                       editlinestate, editbg, editframe, editframeactive\n"
+#~ "                       editframedrag\n"
+#~ "   Просмотрщик:        viewnormal, viewbold, viewunderline, viewselected\n"
+#~ "   Справка:            helpnormal, helpitalic, helpbold, helplink, "
+#~ "helpslink\n"
+
+#~ msgid ""
+#~ "Standard Colors:\n"
+#~ "   black, gray, red, brightred, green, brightgreen, brown,\n"
+#~ "   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+#~ "   brightcyan, lightgray and white\n"
+#~ "\n"
+#~ "Extended colors, when 256 colors are available:\n"
+#~ "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
+#~ "\n"
+#~ "Attributes:\n"
+#~ "   bold, italic, underline, reverse, blink; append more with '+'\n"
+#~ msgstr ""
+#~ "Стандартные цвета:\n"
+#~ "   black, gray, red, brightred, green, brightgreen, brown,\n"
+#~ "   yellow, blue, brightblue, magenta, brightmagenta, cyan,\n"
+#~ "   brightcyan, lightgray, white\n"
+#~ "\n"
+#~ "Расширенные цвета, если доступны 256 цветов:\n"
+#~ "   от color16 до color255 или от rgb000 до rgb555 и от gray0 до gray23\n"
+#~ "\n"
+#~ "Атрибуты:\n"
+#~ "   bold, italic, underline, reverse, blink; несколько атрибутов "
+#~ "объединяются знаком \"+\"\n"
+
+#~ msgid "You must first highlight a block of text"
+#~ msgstr "Вы должны сначала выделить блок текста"
+
+#~ msgid "Run sort"
+#~ msgstr "Выполнить сортировку"
+
+#~ msgid "Enter sort options (see sort(1) manpage) separated by whitespace:"
+#~ msgstr ""
+#~ "Введите параметры сортировки (см. man sort(1)), разделённые пробелами:"
+
+#, c-format
+#~ msgid "Sort returned non-zero: %s"
+#~ msgstr "Сортировка вернула ненулевой код: %s"
+
+#~ msgid "Paste output of external command"
+#~ msgstr "Вставить вывод внешней команды"
+
+#~ msgid "Enter shell command(s):"
+#~ msgstr "Введите команду оболочки:"
+
+#~ msgid "Cannot execute external command"
+#~ msgstr "Не удалось выполнить внешнюю команду"
+
+#~ msgid "Insert literal"
+#~ msgstr "Вставить литерал"
+
+#~ msgid "Press any key:"
+#~ msgstr "Нажмите любую клавишу:"
+
+#~ msgid "Press macro hotkey:"
+#~ msgstr "Нажмите горячую клавишу для макроса:"
+
+#~ msgid "Macro not deleted"
+#~ msgstr "Макрос не удалён"
+
+#~ msgid "Back from &declaration"
+#~ msgstr "Назад к то&чке вызова"
+
+#~ msgid "Change spelling &language..."
+#~ msgstr "Сменить &язык проверки орфографии..."
+
+#~ msgid "Insert &literal..."
+#~ msgstr "Вставить &литерал..."
+
+#~ msgid "&Paste output of..."
+#~ msgstr "Вставить в&ывод команды..."
+
+#~ msgid "&External formatter"
+#~ msgstr "&Форматировать"
+
+#~ msgid "For&mat"
+#~ msgstr "Фор&матирование"
+
+#~ msgid "Breton"
+#~ msgstr "Бретонский"
+
+#~ msgid "Czech"
+#~ msgstr "Чешский"
+
+#~ msgid "Welsh"
+#~ msgstr "Валлийский"
+
+#~ msgid "Danish"
+#~ msgstr "Датский"
+
+#~ msgid "German"
+#~ msgstr "Немецкий"
+
+#~ msgid "Greek"
+#~ msgstr "Греческий"
+
+#~ msgid "English"
+#~ msgstr "Английский"
+
+#~ msgid "British English"
+#~ msgstr "Британский английский"
+
+#~ msgid "Canadian English"
+#~ msgstr "Канадский английский"
+
+#~ msgid "American English"
+#~ msgstr "Американский английский"
+
+#~ msgid "Spanish"
+#~ msgstr "Испанский"
+
+#~ msgid "Faroese"
+#~ msgstr "Фарерский"
+
+#~ msgid "French"
+#~ msgstr "Французский"
+
+#~ msgid "Italian"
+#~ msgstr "Итальянский"
+
+#~ msgid "Dutch"
+#~ msgstr "Голландский"
+
+#~ msgid "Norwegian"
+#~ msgstr "Норвежский"
+
+#~ msgid "Polish"
+#~ msgstr "Польский"
+
+#~ msgid "Portuguese"
+#~ msgstr "Португальский"
+
+#~ msgid "Romanian"
+#~ msgstr "Румынский"
+
+#~ msgid "Slovak"
+#~ msgstr "Словацкий"
+
+#~ msgid "Swedish"
+#~ msgstr "Шведский"
+
+#~ msgid "Ukrainian"
+#~ msgstr "Украинский"
+
+#~ msgid ""
+#~ "The Commander can't change to the directory that\n"
+#~ "the subshell claims you are in. Perhaps you have\n"
+#~ "deleted your working directory, or given yourself\n"
+#~ "extra access permissions with the \"su\" command?"
+#~ msgstr ""
+#~ "MC не может перейти в каталог, который ему сообщил\n"
+#~ "дочерний процесс интерпретатора. Может, вы удалили\n"
+#~ "рабочий каталог или дали себе дополнительные\n"
+#~ "привилегии доступа при помощи команды \"su\"?"
+
+#~ msgid "FTP anonymous password:"
+#~ msgstr "Пароль анонимного FTP:"
+
+#~ msgid "FTP directory cache timeout (sec):"
+#~ msgstr "Тайм-аут кэша каталога FTP (сек):"
+
+#~ msgid "&Always use ftp proxy:"
+#~ msgstr "&Всегда использовать FTP-прокси:"
+
+#~ msgid "&Use ~/.netrc"
+#~ msgstr "&Использовать ~/.netrc"
+
+#~ msgid "Use passive mode over pro&xy"
+#~ msgstr "И&спользовать пассивный режим через прокси"
+
+#~ msgid "cd"
+#~ msgstr "Перейти в"
+
+#~ msgid "Enter machine name (F1 for details):"
+#~ msgstr "Введите имя машины (подробности по F1):"
+
+#~ msgid "FTP to machine"
+#~ msgstr "FTP-соединение с удалённой машиной"
+
+#~ msgid "FT&P link..."
+#~ msgstr "&FTP-соединение..."
+
+#~ msgid "S&hell link..."
+#~ msgstr "S&hell-соединение..."
+
+#~ msgid "SFTP li&nk..."
+#~ msgstr "SFTP-соед&инение..."
+
+#~ msgid "Di&rectory hotlist"
+#~ msgstr "Каталоги &быстрого доступа"
+
+#~ msgid "&Active VFS list"
+#~ msgstr "Список &активных ВФС"
+
+#~ msgid "&Listing format edit"
+#~ msgstr "&Редактирование формата"
+
+#~ msgid "Change &to"
+#~ msgstr "Пере&йти"
+
+#~ msgid "&Free VFSs now"
+#~ msgstr "Осво&бодить ВФС сейчас"
+
+#~ msgid "&Refresh"
+#~ msgstr "Обно&вить"
+
+#~ msgid "&Add current"
+#~ msgstr "Добавить &текущий"
+
+#~ msgid "New &group"
+#~ msgstr "Новая &группа"
+
+#~ msgid "New &entry"
+#~ msgstr "Новый &элемент"
+
+#~ msgid "Subgroup - press ENTER to see list"
+#~ msgstr "Подгруппа - для просмотра нажмите ENTER"
+
+#~ msgid "Active VFS directories"
+#~ msgstr "Активные каталоги ВФС"
+
+#~ msgid "Directory hotlist"
+#~ msgstr "Каталоги быстрого доступа"
+
+#~ msgid "Directory path"
+#~ msgstr "Путь к каталогу"
+
+#, c-format
+#~ msgid "Moving %s"
+#~ msgstr "Перемещаем %s"
+
+#~ msgid "Directory label:"
+#~ msgstr "Метка каталога:"
+
+#~ msgid "Other command"
+#~ msgstr "Новая команда"
+
+#, c-format
+#~ msgid ""
+#~ "External panelize:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Внешняя панелизация:\n"
+#~ "%s"
+
+#~ msgid ""
+#~ "External panelize:\n"
+#~ "failed to read data from child stdout:"
+#~ msgstr ""
+#~ "Внешняя панелизация:\n"
+#~ "не удалось прочитать данные из дочернего stdout:"
+
+#~ msgid "Cannot run external panelize in a non-local directory"
+#~ msgstr ""
+#~ "Невозможно выполнить внешнюю панелизацию, находясь не в локальном каталоге"
+
+#~ msgid "Teach me a key"
+#~ msgstr "Привязка клавиши"
+
+#, c-format
+#~ msgid ""
+#~ "Please press the %s\n"
+#~ "and then wait until this message disappears.\n"
+#~ "\n"
+#~ "Then, press it again to see if OK appears\n"
+#~ "next to its button.\n"
+#~ "\n"
+#~ "If you want to escape, press a single Escape key\n"
+#~ "and wait as well."
+#~ msgstr ""
+#~ "Пожалуйста, нажмите клавишу %s\n"
+#~ "и подождите, пока это сообщение пропадёт.\n"
+#~ "\n"
+#~ "Затем нажмите её ещё раз, чтобы убедиться,\n"
+#~ "что справа от её названия появилось \"OK\".\n"
+#~ "\n"
+#~ "Если вы хотите прервать обучение, нажмите\n"
+#~ "клавишу Esc и тоже немного подождите."
+
+#~ msgid ""
+#~ "It seems that all your keys already\n"
+#~ "work fine. That's great."
+#~ msgstr ""
+#~ "Похоже, что все ваши клавиши теперь\n"
+#~ "работают нормально. Просто здорово!"
+
+#~ msgid ""
+#~ "Great! You have a complete terminal database!\n"
+#~ "All your keys work well."
+#~ msgstr ""
+#~ "Отлично! У вас есть полная база описаний терминалов!\n"
+#~ "Все ваши клавиши работают хорошо."
+
+#~ msgid ""
+#~ "Press all the keys mentioned here. After you have done it, check\n"
+#~ "which keys are not marked with OK. Press space on the missing\n"
+#~ "key, or click with the mouse to define it. Move around with Tab."
+#~ msgstr ""
+#~ "Нажмите все перечисленные выше клавиши. После найдите\n"
+#~ "клавиши без пометки \"ОК\". Для привязки клавиши выберите\n"
+#~ "её через Tab и нажмите пробел, или щёлкните мышкой."
+
+#, c-format
+#~ msgid ""
+#~ "%s\n"
+#~ "is already running on this terminal.\n"
+#~ "Subshell support will be disabled."
+#~ msgstr ""
+#~ "%s\n"
+#~ "уже запущен в этом терминале.\n"
+#~ "Встроенная командная оболочка будет отключена."
+
+#, c-format
+#~ msgid "Warning: Cannot change to %s.\n"
+#~ msgstr "Внимание: не удалось перейти в %s.\n"
+
+#, c-format
+#~ msgid "Cannot open named pipe %s\n"
+#~ msgstr "Не удалось открыть именованный канал %s\n"
+
+#~ msgid "The shell is still active. Quit anyway?"
+#~ msgstr "Оболочка всё ещё активна. Всё равно выйти?"
+
+#~ msgid "With optional subshell support"
+#~ msgstr "С опциональной поддержкой внутренней командной оболочки"
+
+#~ msgid "With subshell support as default"
+#~ msgstr "C поддержкой внутренней командной оболочки"
+
+#, c-format
+#~ msgid "Built with libssh2 %d.%d.%d\n"
+#~ msgstr "Собрано с libssh2 версии %d.%d.%d\n"
+
+#, c-format
+#~ msgid ""
+#~ "Cannot open cpio archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Не удалось открыть архив cpio\n"
+#~ "%s"
+
+#, c-format
+#~ msgid ""
+#~ "Premature end of cpio archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Преждевременный конец архива cpio\n"
+#~ "%s"
+
+#, c-format
+#~ msgid ""
+#~ "Inconsistent hardlinks of\n"
+#~ "%s\n"
+#~ "in cpio archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Несогласованная жёсткая ссылка\n"
+#~ "%s\n"
+#~ "в архиве cpio\n"
+#~ "%s"
+
+#, c-format
+#~ msgid "%s contains duplicate entries! Skipping!"
+#~ msgstr "%s содержит сдвоенные элементы! Пропущено!"
+
+#, c-format
+#~ msgid ""
+#~ "Corrupted cpio header encountered in\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Повреждённый заголовок cpio обнаружен в\n"
+#~ "%s"
+
+#, c-format
+#~ msgid "ftpfs: Disconnecting from %s"
+#~ msgstr "ftpfs: отключение от %s"
+
+#, c-format
+#~ msgid "FTP: Password required for %s"
+#~ msgstr "FTP: требуется пароль для %s"
+
+#~ msgid "ftpfs: sending login name"
+#~ msgstr "ftpfs: посылается имя пользователя"
+
+#~ msgid "ftpfs: sending user password"
+#~ msgstr "ftpfs: посылается пароль пользователя"
+
+#, c-format
+#~ msgid "FTP: Account required for user %s"
+#~ msgstr "FTP: необходима учётная запись для пользователя %s"
+
+#~ msgid "Account:"
+#~ msgstr "Учётная запись:"
+
+#~ msgid "ftpfs: sending user account"
+#~ msgstr "ftpfs: посылается учётная запись пользователя"
+
+#~ msgid "ftpfs: logged in"
+#~ msgstr "ftpfs: зарегистрирован"
+
+#, c-format
+#~ msgid "ftpfs: Login incorrect for user %s "
+#~ msgstr "ftpfs: ошибка регистрации пользователя %s"
+
+#~ msgid "ftpfs: Invalid host name."
+#~ msgstr "ftpfs: неверное имя системы."
+
+#, c-format
+#~ msgid "ftpfs: %s"
+#~ msgstr "ftpfs: %s"
+
+#, c-format
+#~ msgid "ftpfs: making connection to %s"
+#~ msgstr "ftpfs: осуществляется соединение с %s"
+
+#~ msgid "ftpfs: connection interrupted by user"
+#~ msgstr "ftpfs: соединение прервано пользователем"
+
+#, c-format
+#~ msgid "ftpfs: connection to server failed: %s"
+#~ msgstr "ftpfs: сбой соединения с сервером: %s"
+
+#, c-format
+#~ msgid "Waiting to retry... %d (Control-G to cancel)"
+#~ msgstr "Ожидание повтора попытки... %d (Control-G для отмены)"
+
+#, c-format
+#~ msgid "ftpfs: could not make address-to-name translation: %s"
+#~ msgstr "ftpfs: не удалось выполнить перевод адреса в имя: %s"
+
+#, c-format
+#~ msgid "ftpfs: try reconnect to server, attempt %u"
+#~ msgstr "ftpfs: попробовать переподключиться к серверу, попытка %u"
+
+#, c-format
+#~ msgid "ftpfs: could not get socket name: %s"
+#~ msgstr "ftpfs: не удалось получить имя сокета: %s"
+
+#~ msgid "ftpfs: could not reconnect to server"
+#~ msgstr "ftpfs: не удалось переподключиться к серверу"
+
+#~ msgid "ftpfs: invalid address family"
+#~ msgstr "ftpfs: неверный адрес системы."
+
+#, c-format
+#~ msgid "ftpfs: could not create socket: %s"
+#~ msgstr "ftpfs: не удалось создать сокет: %s"
+
+#~ msgid "ftpfs: could not setup passive mode"
+#~ msgstr "ftpfs: не удалось установить пассивный режим"
+
+#~ msgid "ftpfs: aborting transfer."
+#~ msgstr "ftpfs: прерывание передачи."
+
+#~ msgid "ftpfs: abort failed"
+#~ msgstr "ftpfs: сбой прерывания"
+
+#~ msgid "ftpfs: CWD failed."
+#~ msgstr "ftpfs: не удалось сменить текущий рабочий каталог."
+
+#~ msgid "ftpfs: couldn't resolve symlink"
+#~ msgstr "ftpfs: не удалось распознать символическую ссылку"
+
+#~ msgid "Resolving symlink..."
+#~ msgstr "Распознаётся символическая ссылка..."
+
+#, c-format
+#~ msgid "ftpfs: Reading FTP directory %s... %s%s"
+#~ msgstr "ftpfs: чтение каталога FTP %s... %s%s"
+
+#~ msgid "(strict rfc959)"
+#~ msgstr "(ограничение rfc959)"
+
+#~ msgid "(chdir first)"
+#~ msgstr "(сначала chdir)"
+
+#~ msgid "ftpfs: failed; nowhere to fallback to"
+#~ msgstr "ftpfs: ошибка; некуда перейти на аварийный режим"
+
+#, c-format
+#~ msgid "%s: failure"
+#~ msgstr "%s: ошибка"
+
+#, c-format
+#~ msgid "%s: done."
+#~ msgstr "%s: готово."
+
+#~ msgid "ftpfs: storing file"
+#~ msgstr "ftpfs: запись файла"
+
+#~ msgid ""
+#~ "~/.netrc file has incorrect mode\n"
+#~ "Remove password or correct mode"
+#~ msgstr ""
+#~ "Файл ~/.netrc имеет неверный режим доступа/владения.\n"
+#~ "Удалите пароль или исправьте режим доступа/владения"
+
+#, c-format
+#~ msgid "sftp: an error occurred while reading %s: %s"
+#~ msgstr "sftp: произошла ошибка при чтении %s: %s"
+
+#~ msgid "sftp: Unable to get current user name."
+#~ msgstr "sftp: не удалось получить имя пользователя."
+
+#, c-format
+#~ msgid "sftp: %s"
+#~ msgstr "sftp: %s"
+
+#~ msgid "sftp: failed to convert remote host IP address into text form"
+#~ msgstr ""
+#~ "sftp: не удалось преобразовать IP-адрес удалённого хоста в текстовую форму"
+
+#~ msgid "sftp: Passphrase is empty."
+#~ msgstr "sftp: парольная фраза пуста."
+
+#~ msgid "sftp: Password is empty."
+#~ msgstr "sftp: пароль пуст."
+
+#~ msgid "sftp: No file handler data present for reading file"
+#~ msgstr "sftp: нет обработчика считываемого файла"
+
+#, c-format
+#~ msgid "sftp: socket error: %s"
+#~ msgstr "sftp: ошибка сокета: %s"
+
+#, c-format
+#~ msgid "sftp: (Ctrl-G break) Listing... %s"
+#~ msgstr "sftp: чтение списка файлов (прерывание по Ctrl-G)... %s"
+
+#~ msgid "sftp: Listing done."
+#~ msgstr "sftp: чтение списка файлов завершено."
+
+#~ msgid "shell: Waiting for initial line..."
+#~ msgstr "shell: ожидание начальное строки..."
+
+#~ msgid "Sorry, we cannot do password authenticated connections for now."
+#~ msgstr "Извините, не удалось создать авторизованные паролем соединения."
+
+#, c-format
+#~ msgid "shell: Password is required for %s"
+#~ msgstr "shell: требуется пароль для %s"
+
+#~ msgid "shell: Sending initial line..."
+#~ msgstr "shell: отправляется начальная строка..."
+
+#~ msgid "shell: Getting host info..."
+#~ msgstr "shell: получение данных хоста..."
+
+#, c-format
+#~ msgid "shell: store %s: sending command..."
+#~ msgstr "shell: хранилище %s: отправляется команда..."
+
+#~ msgid "shell: Local read failed, sending zeros"
+#~ msgstr "shell: локальное чтение не удалось, отправляются нули"
+
+#~ msgid "Error reported after abort."
+#~ msgstr "Отмечена ошибка после прерывания."
+
+#~ msgid "Aborted transfer would be successful."
+#~ msgstr "Передача успешно прервана."
+
+#~ msgid "Inconsistent tar archive"
+#~ msgstr "Несогласованный архив tar"
+
+#, c-format
+#~ msgid ""
+#~ "Cannot open tar archive\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Не удалось открыть архив tar\n"
+#~ "%s"
+
+#, c-format
+#~ msgid ""
+#~ "%s\n"
+#~ "doesn't look like a tar archive"
+#~ msgstr ""
+#~ "%s\n"
+#~ "не похож на архив tar"
+
+#~ msgid "tar: mc_lseek not stopped at a record boundary"
+#~ msgstr "tar: mc_lseek не остановился на границе записи"
+
+#, c-format
+#~ msgid ""
+#~ "Cannot open\n"
+#~ "%s\n"
+#~ "in parse mode\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Не удаётся открыть\n"
+#~ "%s\n"
+#~ "в режиме разбора\n"
+#~ "%s"
 
 #~ msgid "Undelete files on an ext2 file system"
 #~ msgstr "Восстановление файлов на файловой системе ext2"
@@ -4821,9 +10946,6 @@ msgstr "Не удалось получить локальную копию /ftp:
 
 #~ msgid "&Undelete files (ext2fs only)"
 #~ msgstr "&Восстановление файлов"
-
-#~ msgid "undelfs: error"
-#~ msgstr "undelfs: ошибка"
 
 #~ msgid "not enough memory"
 #~ msgstr "недостаточно памяти"
@@ -4853,10 +10975,6 @@ msgstr "Не удалось получить локальную копию /ftp:
 #, c-format
 #~ msgid "while doing inode scan %d"
 #~ msgstr "при сканировании узла ФС %d"
-
-#, c-format
-#~ msgid "Cannot open file %s"
-#~ msgstr "Не удалось открыть файл %s"
 
 #~ msgid "undelfs: reading inode bitmap..."
 #~ msgstr "undelfs: чтение битовой карты узлов ФС..."
