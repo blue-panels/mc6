@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 14:22+0000\n"
+"PO-Revision-Date: 2026-09-12 14:47+0000\n"
 "Last-Translator: EkaterinePapava <ekaterinepapava@noreply.codeberg.org>\n"
 "Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/>"
 "\n"
@@ -221,15 +221,11 @@ msgstr "შემდეგი ეკრანი"
 msgid "Previous screen"
 msgstr "წინა ეკრანი"
 
-#, fuzzy
-#| msgid "Insert file"
 msgid "Next file"
-msgstr "ფაილის ჩასმა"
+msgstr "შემდეგი ფაილი"
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous file"
-msgstr "&წინა"
+msgstr "წინა ფაილი"
 
 #, fuzzy
 #| msgid "Delete on keypad"
@@ -264,30 +260,20 @@ msgstr "&ამოსაჭრელ ფაილში კოპირება
 msgid "Paste from clipboard"
 msgstr "&ამოსაჭრელი ფაილიდან ჩასმა"
 
-#, fuzzy
-#| msgid "In se&lection"
 msgid "Toggle selection"
-msgstr "მონიშნულში"
+msgstr "მონიშნულის გადართვა"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select left"
-msgstr "მონიშვნა"
+msgstr "მონიშვნა მარცხნივ"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select right"
-msgstr "მონიშვნა"
+msgstr "მონიშვნა მარჯვნივ"
 
-#, fuzzy
-#| msgid "Select &group"
 msgid "Select up"
-msgstr "ჯგუფის მონიშვნა"
+msgstr "მონიშვნა მაღლა"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select down"
-msgstr "მონიშვნა"
+msgstr "მონიშვნა დაბლა"
 
 msgid "Select to word start"
 msgstr ""
@@ -306,15 +292,11 @@ msgstr "ენის არჩევა"
 msgid "Toggle navigate/browse mode"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Sort order..."
 msgid "Sort order..."
-msgstr "&დალაგების წესი."
+msgstr "დალაგების მიმდევრობა..."
 
-#, fuzzy
-#| msgid "Panel options"
 msgid "General options"
-msgstr "პანელის მორგება"
+msgstr "ზოგადი პარამეტრები"
 
 #, fuzzy
 #| msgid "Learn &keys..."
@@ -330,10 +312,8 @@ msgstr ""
 msgid "Manage plugins"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Next bookmark"
 msgid "Set bookmark"
-msgstr "&შემდეგი სანიშნი"
+msgstr "სანიშნეს დაყენება"
 
 msgid "Quit program"
 msgstr ""
@@ -365,8 +345,6 @@ msgstr "ფაილის ჩვენება"
 msgid "View command output"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Find file"
 msgid "Find file"
 msgstr "ფაილის მოძებნა"
 
@@ -386,10 +364,8 @@ msgstr "ფა&ილების შედარება"
 msgid "VFS settings"
 msgstr ""
 
-#, fuzzy
-#| msgid "Confirmation"
 msgid "Confirmation settings"
-msgstr "დასტური"
+msgstr "დადასტურების პარამეტრები"
 
 #, fuzzy
 #| msgid "Edit &extension file"
@@ -409,14 +385,11 @@ msgstr "სიმბმულის ჩასწორება"
 msgid "External panelize"
 msgstr "გარე პანელზე"
 
-#, fuzzy
-#| msgid "Filtered view"
 msgid "Filter view"
-msgstr "გაფილტრული ხედი"
+msgstr "ხედის გაფილტვრა"
 
-#, fuzzy
 msgid "Quick filter"
-msgstr "&სწრაფი ხედი"
+msgstr "სწრაფი ფილტრი"
 
 msgid "Info panel"
 msgstr ""
@@ -427,10 +400,8 @@ msgstr "ფონური ამოცანები"
 msgid "Layout settings"
 msgstr ""
 
-#, fuzzy
-#| msgid "Appearance"
 msgid "Appearance settings"
-msgstr "გარემოს იერსახე"
+msgstr "გარეგნობის მორგება"
 
 #, fuzzy
 #| msgid "Great than"
@@ -442,10 +413,8 @@ msgstr "მეტობა"
 msgid "Setup listing format"
 msgstr "სიის ფორმატი"
 
-#, fuzzy
-#| msgid "Panel options"
 msgid "Panel modes"
-msgstr "პანელის მორგება"
+msgstr "პანელის რეჟიმები"
 
 #, fuzzy
 #| msgid "Use panel sort mo&de"
@@ -472,10 +441,8 @@ msgstr "&სწრაფი ხედი"
 msgid "Create relative symlink"
 msgstr "დამოკიდებული სიმბმული"
 
-#, fuzzy
-#| msgid "&Save setup"
 msgid "Save setup"
-msgstr "&პარამეტრების შენახვა"
+msgstr "პარამეტრების შენახვა"
 
 #, fuzzy
 #| msgid "Symbolic link"
@@ -595,10 +562,8 @@ msgstr "ფაილის მიღება"
 msgid "Go to parent directory"
 msgstr "საქაღალდეების შედარება"
 
-#, fuzzy
-#| msgid "Enter directory name:"
 msgid "Enter directory"
-msgstr "შეიყვანეთ საქაღალდის სახელი:"
+msgstr "შეიყვანეთ საქაღალდე"
 
 #, fuzzy
 #| msgid "Panel split"
@@ -666,25 +631,17 @@ msgstr ""
 msgid "Next link"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous link"
-msgstr "&წინა"
+msgstr "წინა ბმული"
 
-#, fuzzy
-#| msgid "Free nodes:"
 msgid "Next node"
-msgstr "თავისუფალი კვანძები:"
+msgstr "შემდეგი კვანძი"
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous node"
-msgstr "&წინა"
+msgstr "წინა კვანძი"
 
-#, fuzzy
-#| msgid "Config directory:"
 msgid "Forget directory"
-msgstr "კონფიგურაციის საქაღალდე:"
+msgstr "საქაღალდის დავიწყება"
 
 msgid "Toggle attribute and move down"
 msgstr ""
@@ -695,10 +652,8 @@ msgstr ""
 msgid "Scroll down"
 msgstr ""
 
-#, fuzzy
-#| msgid "Unselect"
 msgid "Deselect all"
-msgstr "მონიშვნის მოხსნა"
+msgstr "მონიშვნის მოხსნა ყველაფერზე"
 
 #, fuzzy
 #| msgid "Select &group"
@@ -710,10 +665,8 @@ msgstr "ჯგუფის მონიშვნა"
 msgid "Select page down"
 msgstr "ენის არჩევა"
 
-#, fuzzy
-#| msgid "Close file"
 msgid "Close editor"
-msgstr "ფაილის დაკეტვა"
+msgstr "რედაქტორის დახურვა"
 
 msgid "Paragraph up"
 msgstr ""
@@ -726,20 +679,14 @@ msgstr ""
 msgid "Open file in editor"
 msgstr "სინტაქსური ფაილის რედაქტირება"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select word"
-msgstr "მონიშვნა"
+msgstr "სიტყვის მონიშვნა"
 
-#, fuzzy
-#| msgid "Select language"
 msgid "Select line"
-msgstr "ენის არჩევა"
+msgstr "ხაზის არჩევა"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select all"
-msgstr "მონიშვნა"
+msgstr "ყველას მონიშვნა"
 
 #, fuzzy
 #| msgid "In se&lection"
@@ -754,40 +701,30 @@ msgstr "ბლოკის შენახვა"
 msgid "Insert file"
 msgstr "ფაილის ჩასმა"
 
-#, fuzzy
-#| msgid "&Toggle ins/overw"
 msgid "Toggle insert/overwrite"
-msgstr "&ჩასმა/გადაწერის გადართვა"
+msgstr "ჩასმა/გადაწერის გადართვა"
 
 #, fuzzy
 #| msgid "Insert &date/time"
 msgid "Insert date/time (Lua action)"
 msgstr "&თარიღის/დროს ჩასმა"
 
-#, fuzzy
-#| msgid "Deleting"
 msgid "Delete line"
-msgstr "წაშლა"
+msgstr "ხაზის წაშლა"
 
-#, fuzzy
-#| msgid "file1 file2"
 msgid "Mail file"
-msgstr "ფაილი1 ფაილი2"
+msgstr "ფაილის გაგზავნა ელფოსტით"
 
-#, fuzzy
-#| msgid "Command &history"
 msgid "Undo history"
-msgstr "ბრძანებების ისტორია"
+msgstr "გაუქმებების ისტორია"
 
 #, fuzzy
 #| msgid "&Format paragraph"
 msgid "Format paragraph (Lua action)"
 msgstr "&პარაგრაფის ფორმატირება"
 
-#, fuzzy
-#| msgid "Left bracket"
 msgid "Match bracket"
-msgstr "მარცხენა ნაკვთური ფრჩხილი"
+msgstr "შესაბამისი ფრჩხილი"
 
 msgid "Sort selection (Lua action)"
 msgstr ""
@@ -812,8 +749,6 @@ msgstr ""
 msgid "Repeat last macro"
 msgstr "მაკროსის წაშლა"
 
-#, fuzzy
-#| msgid "S&pell check"
 msgid "Spell check"
 msgstr "მართლწერის შემოწმება"
 
@@ -832,10 +767,8 @@ msgstr "ენის არჩევა"
 msgid "Clear all bookmarks"
 msgstr "&სანიშნის ჩართ/გამორთ"
 
-#, fuzzy
-#| msgid "&Next bookmark"
 msgid "Next bookmark"
-msgstr "&შემდეგი სანიშნი"
+msgstr "შემდეგი სანიშნე"
 
 #, fuzzy
 #| msgid "&Prev bookmark"
