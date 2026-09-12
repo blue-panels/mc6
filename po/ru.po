@@ -34,7 +34,7 @@ msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 21:44+0000\n"
+"PO-Revision-Date: 2026-09-12 22:08+0000\n"
 "Last-Translator: smind <smind@noreply.codeberg.org>\n"
 "Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/>"
 "\n"
@@ -6449,7 +6449,7 @@ msgstr "%s: переменный размер, файл %lld байт"
 
 #, c-format
 msgid "%s needs %ld bytes, only %lld left after 0x%llX"
-msgstr "%s требует %ld байт, после 0x%llX осталось только %lld"
+msgstr "%s требует %ld байт, осталось только %lld после 0x%llX"
 
 msgid "Rows:"
 msgstr "Строки:"
