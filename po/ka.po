@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 16:21+0000\n"
+"PO-Revision-Date: 2026-09-12 19:48+0000\n"
 "Last-Translator: EkaterinePapava <ekaterinepapava@noreply.codeberg.org>\n"
 "Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/>"
 "\n"
@@ -5759,10 +5759,8 @@ msgstr ""
 msgid " Builtin (libarchive) "
 msgstr ""
 
-#, fuzzy
-#| msgid "External panelize"
 msgid " External archivers "
-msgstr "გარე პანელზე"
+msgstr " გარე არქივატორები "
 
 msgid " Hint "
 msgstr ""
@@ -5839,10 +5837,8 @@ msgstr "საქაღალდე %s-ის შექმნა შეუძლ
 msgid "Image:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Owner name:"
 msgid "Container name:"
-msgstr "მფლობელის სახელი:"
+msgstr "კონტეინერის სახელი:"
 
 msgid "Command:"
 msgstr "ბრძანება:"
@@ -5945,10 +5941,8 @@ msgstr ""
 msgid "FTP Connection"
 msgstr ""
 
-#, fuzzy
-#| msgid "&None"
 msgid "&None (FTP)"
-msgstr "არაფერი"
+msgstr "არ&ცერთი (FTP)"
 
 msgid "&Try SSL"
 msgstr ""
@@ -5971,10 +5965,8 @@ msgstr ""
 msgid "SSL/TLS"
 msgstr ""
 
-#, fuzzy
-#| msgid "Use &passive mode"
 msgid "&Passive mode"
-msgstr "პასიური რეჟიმის&გამოყენება"
+msgstr "&პასიური რეჟიმი"
 
 msgid "Connection"
 msgstr "კავშირი"
@@ -5982,10 +5974,8 @@ msgstr "კავშირი"
 msgid "Connect timeout:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Repeat times:"
 msgid "Response timeout:"
-msgstr "გამეორების დრო:"
+msgstr "პასუხის ვადა:"
 
 msgid "TCP &Keepalive"
 msgstr ""
@@ -6038,10 +6028,8 @@ msgstr ""
 msgid "Enter password for %s@%s"
 msgstr ""
 
-#, fuzzy
-#| msgid "Password:"
 msgid "FTP password"
-msgstr "პაროლი:"
+msgstr "FTP-ის პაროლი"
 
 msgid "Retrying with password..."
 msgstr ""
@@ -6111,10 +6099,8 @@ msgstr "სახელების სივრცე:"
 msgid "Switch Namespace"
 msgstr ""
 
-#, fuzzy
-#| msgid "Owner name:"
 msgid "Context name:"
-msgstr "მფლობელის სახელი:"
+msgstr "კონტექსტის სახელი:"
 
 msgid "Add Context to Favorites"
 msgstr ""
@@ -6195,10 +6181,8 @@ msgstr ""
 msgid "mcpeek"
 msgstr ""
 
-#, fuzzy
-#| msgid "<readlink failed>"
 msgid "mcpeek failed"
-msgstr "<readlink failed>"
+msgstr "mcpeek ჩავარდა"
 
 msgid "cannot read assembly"
 msgstr ""
@@ -6206,10 +6190,8 @@ msgstr ""
 msgid "uses of "
 msgstr ""
 
-#, fuzzy
-#| msgid "Source"
 msgid "no source"
-msgstr "წყარო"
+msgstr "წყაროს გარეშე"
 
 msgid "the project could not be written"
 msgstr ""
@@ -6226,10 +6208,9 @@ msgstr ""
 msgid "Decompiler command (empty: look for ilspycmd)"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "File: %s"
+#, c-format
 msgid "Decompiler: %s"
-msgstr "ფაილი: %s"
+msgstr "დეკომპილატორი: %s"
 
 msgid "Searching..."
 msgstr "ძებნა..."
@@ -6246,10 +6227,8 @@ msgstr ""
 msgid "N&one"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Line number"
 msgid "Row n&umber"
-msgstr "&ხაზის ნომერი"
+msgstr "მ&წკრივის ნომერი"
 
 msgid "Row o&ffset"
 msgstr ""
@@ -6281,10 +6260,8 @@ msgstr ""
 msgid "Def-file zone"
 msgstr ""
 
-#, fuzzy
-#| msgid "Directory tree"
 msgid "Structure tree"
-msgstr "საქაღალდეების ხე"
+msgstr "სტრუქტურის ხე"
 
 msgid "Name column width:"
 msgstr ""
@@ -6300,18 +6277,14 @@ msgstr ""
 msgid "Show &hidden structures"
 msgstr "დამალული &ფაილების ჩვენება"
 
-#, fuzzy
-#| msgid "Save As"
 msgid "Saved bytes"
-msgstr "შეინახე როგორც"
+msgstr "შენახული ბაიტი"
 
 msgid "Keep fragments, days (0 = always):"
 msgstr ""
 
-#, fuzzy
-#| msgid "columns"
 msgid "Offset column"
-msgstr "სვეტები"
+msgstr "წანაცვლების სვეტი"
 
 msgid "First grid column"
 msgstr ""
@@ -6327,20 +6300,16 @@ msgstr "ფაილის ჩასმა ვერ მოხერხდა"
 msgid "Struct loo&k"
 msgstr ""
 
-#, fuzzy
-#| msgid "read &by others"
 msgid "Read bytes"
-msgstr "სხვების მიერ წაკითხვა"
+msgstr "წაკითხული ბაიტი"
 
 #, fuzzy
 #| msgid "Cannot create pipe streams"
 msgid "Cannot read the bytes"
 msgstr "ფაილის ნაკადის შექმნა შეუძლებელია"
 
-#, fuzzy
-#| msgid "wr&ite by others"
 msgid "Write bytes"
-msgstr "სხვების მიერ ჩაწერა"
+msgstr "ბაიტების ჩაწერა"
 
 msgid "The file exists. Overwrite?"
 msgstr ""
@@ -6395,10 +6364,8 @@ msgstr ""
 msgid "Offset 0x%llX is outside the file"
 msgstr ""
 
-#, fuzzy
-#| msgid "Select &group"
 msgid "Select structure"
-msgstr "ჯგუფის მონიშვნა"
+msgstr "აირჩიეთ სტრუქტურა"
 
 #, c-format
 msgid "%s: %ld bytes, file %lld bytes"
@@ -6418,10 +6385,8 @@ msgstr ""
 msgid "No def-files found on the search path"
 msgstr ""
 
-#, fuzzy
-#| msgid "Select language"
 msgid "Select def-file"
-msgstr "ენის არჩევა"
+msgstr "აირჩიეთ def-ფაილი"
 
 #, fuzzy, c-format
 #| msgid "Error reading %s"
@@ -6437,15 +6402,11 @@ msgstr ""
 msgid "&Text"
 msgstr ""
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search for:"
-msgstr "ძებნა დასრულდა"
+msgstr "ძებნა:"
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search bytes"
-msgstr "ძებნა დასრულდა"
+msgstr "ბაიტების ძებნა"
 
 #, c-format
 msgid "Not a hex byte string: %s"
@@ -6592,10 +6553,8 @@ msgstr ""
 msgid "Note: a filter shows a flat list (no folders), up to %"
 msgstr ""
 
-#, fuzzy
-#| msgid "Filter"
 msgid "Filter (JSON):"
-msgstr "ფილტრი"
+msgstr "ფილტრი (JSON)"
 
 msgid "Projection:"
 msgstr ""
@@ -8945,9 +8904,8 @@ msgstr ""
 msgid "Filter: %s  %u matches"
 msgstr ""
 
-#, fuzzy
 msgid "Quick view"
-msgstr "&სწრაფი ხედი"
+msgstr "სწრაფი ხედი"
 
 msgid "Error: out of memory"
 msgstr ""
