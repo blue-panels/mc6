@@ -7,12 +7,13 @@
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022
 # Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022
+# EkaterinePapava <ekaterinepapava@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 14:47+0000\n"
+"PO-Revision-Date: 2026-09-12 19:48+0000\n"
 "Last-Translator: EkaterinePapava <ekaterinepapava@noreply.codeberg.org>\n"
 "Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/>"
 "\n"
@@ -770,10 +771,8 @@ msgstr "&სანიშნის ჩართ/გამორთ"
 msgid "Next bookmark"
 msgstr "შემდეგი სანიშნე"
 
-#, fuzzy
-#| msgid "&Prev bookmark"
 msgid "Previous bookmark"
-msgstr "&წინა სანიშიშნი"
+msgstr "წინა სანიშნე"
 
 msgid "Toggle code fold"
 msgstr ""
@@ -907,28 +906,20 @@ msgstr ""
 msgid "Move window"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Resize"
 msgid "Resize window"
-msgstr "&ზომის შეცვლა"
+msgstr "ფანჯრის ზომის შეცვლა"
 
-#, fuzzy
-#| msgid "&Toggle fullscreen"
 msgid "Toggle fullscreen"
-msgstr "&სრულ ეკრანზე"
+msgstr "სრულ ეკრანის გადართვა"
 
-#, fuzzy
-#| msgid "&Window"
 msgid "Window list"
-msgstr "&ფანჯარა"
+msgstr "ფანჯრების სია"
 
 msgid "Next window"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous window"
-msgstr "&წინა"
+msgstr "წინა ფანჯარა"
 
 #, fuzzy
 #| msgid "&Toggle ins/overw"
@@ -960,20 +951,14 @@ msgstr ""
 msgid "Go to bookmark"
 msgstr "&შემდეგი სანიშნი"
 
-#, fuzzy
-#| msgid "&Toggle fullscreen"
 msgid "Toggle ruler"
-msgstr "&სრულ ეკრანზე"
+msgstr "სახაზავის გადართვა"
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search forward"
-msgstr "ძებნა დასრულდა"
+msgstr "წინ ძებნა"
 
-#, fuzzy
-#| msgid "Search &again"
 msgid "Search backward"
-msgstr "&თავიდან ძებნა"
+msgstr "უკან ძებნა"
 
 #, fuzzy
 #| msgid "Search done"
@@ -1936,10 +1921,8 @@ msgstr ""
 msgid "Spell backend is unavailable."
 msgstr ""
 
-#, fuzzy
-#| msgid "&Configuration..."
 msgid "Ctags Configuration"
-msgstr "&კონფიგურაცია..."
+msgstr "Ctags-ის მორგება"
 
 msgid "Ctags executable:"
 msgstr ""
@@ -1971,10 +1954,8 @@ msgstr ""
 msgid "Go to Declaration"
 msgstr ""
 
-#, fuzzy
-#| msgid "File operations"
 msgid "Find Declaration"
-msgstr "ფაილის ოპერაციები"
+msgstr "აღწერის პოვნა"
 
 msgid "No word at cursor."
 msgstr ""
@@ -2009,10 +1990,8 @@ msgstr ""
 msgid "No repository loaded."
 msgstr ""
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search Symbol"
-msgstr "ძებნა დასრულდა"
+msgstr "სიმბოლოს ძებნა"
 
 msgid "No file is open."
 msgstr ""
@@ -2027,15 +2006,11 @@ msgstr ""
 msgid "No files matching '%s'."
 msgstr ""
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search File"
-msgstr "ძებნა დასრულდა"
+msgstr "ფაილის ძიება"
 
-#, fuzzy
-#| msgid "Co&mplete: show all"
 msgid "Complete Symbol"
-msgstr "სრულად: ყველას ჩვენება"
+msgstr "სიმბოლოს დასრულება"
 
 #, c-format
 msgid "No members found for '%s'."
@@ -2088,44 +2063,32 @@ msgstr ""
 msgid "Navigation history is empty."
 msgstr ""
 
-#, fuzzy
-#| msgid "Navigation"
 msgid "Navigation History"
-msgstr "ნავიგაცია"
+msgstr "ნავიგაციის ისტორია"
 
 msgid "Go to declaration"
 msgstr ""
 
-#, fuzzy
-#| msgid "File operations"
 msgid "Find declaration"
-msgstr "ფაილის ოპერაციები"
+msgstr "აღწერის პოვნა"
 
 msgid "Find references"
 msgstr ""
 
-#, fuzzy
-#| msgid "Co&mplete: show all"
 msgid "Complete symbol"
-msgstr "სრულად: ყველას ჩვენება"
+msgstr "სიმბოლოს დასრულება"
 
-#, fuzzy
-#| msgid "Navigation"
 msgid "Navigation history"
-msgstr "ნავიგაცია"
+msgstr "ნავიგაციის ისტორია"
 
 msgid "Go forward"
 msgstr ""
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search symbol"
-msgstr "ძებნა დასრულდა"
+msgstr "სიმბოლოს ძებნა"
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search file"
-msgstr "ძებნა დასრულდა"
+msgstr "ფაილის ძიება"
 
 #, fuzzy
 #| msgid "Symbolic link filename:"
@@ -2158,10 +2121,8 @@ msgstr ""
 msgid "Find &references"
 msgstr ""
 
-#, fuzzy
-#| msgid "Navigation"
 msgid "Navigation &history"
-msgstr "ნავიგაცია"
+msgstr "ნავიგაციის &ისტორია"
 
 msgid "Go &back"
 msgstr ""
@@ -2172,33 +2133,25 @@ msgstr ""
 msgid "Class/struct &members"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Search"
 msgid "&Search symbol"
-msgstr "&ძებნა"
+msgstr "&სიმბოლოს ძებნა"
 
 #, fuzzy
 #| msgid "Symbolic link filename:"
 msgid "S&ymbols in file"
 msgstr "სიმბოლური ბმულის ფაილის სახელი:"
 
-#, fuzzy
-#| msgid "Co&mplete: show all"
 msgid "&Complete symbol"
-msgstr "სრულად: ყველას ჩვენება"
+msgstr "სიმბოლოს დასრულე&ბა"
 
 msgid "No matching symbols found."
 msgstr ""
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select symbol"
-msgstr "მონიშვნა"
+msgstr "აირჩიეთ სიმბოლო"
 
-#, fuzzy
-#| msgid "Symbolic link filename:"
 msgid "Symbol name:"
-msgstr "სიმბოლური ბმულის ფაილის სახელი:"
+msgstr "სიმბოლოს სახელი:"
 
 #, fuzzy
 #| msgid "File name:"
@@ -2301,10 +2254,8 @@ msgid ""
 "Set a language in the Spell plugin settings to turn it on."
 msgstr ""
 
-#, fuzzy
-#| msgid "&Add word"
 msgid "Add word"
-msgstr "&სიტყვის დამატება"
+msgstr "სიტყვის დამატება"
 
 msgid "Word to add to the dictionary:"
 msgstr ""
@@ -2562,15 +2513,13 @@ msgstr "წერილი"
 msgid "Cancel"
 msgstr "შეწყვეტა"
 
-#, fuzzy, c-format
-#| msgid "Insert"
+#, c-format
 msgid "insert %d"
-msgstr "ჩასმა"
+msgstr "%d-ის ჩასმა"
 
-#, fuzzy, c-format
-#| msgid "Delete %s?"
+#, c-format
 msgid "delete %d"
-msgstr "წავშალო \"%s\"?"
+msgstr "%d-ის წაშლა"
 
 msgid "replace"
 msgstr "ჩანაცვლება"
@@ -2578,10 +2527,8 @@ msgstr "ჩანაცვლება"
 msgid "Nothing to undo."
 msgstr ""
 
-#, fuzzy
-#| msgid "History"
 msgid "Undo History"
-msgstr "ისტორია"
+msgstr "გაუქმების ისტორია"
 
 msgid "Collect completions"
 msgstr ""
@@ -2654,10 +2601,8 @@ msgstr "&დაბრუნება"
 msgid "&Redo"
 msgstr "&გამეორება"
 
-#, fuzzy
-#| msgid "&History..."
 msgid "Undo &History..."
-msgstr "&ისტორია..."
+msgstr "გაუქმების &ისტორია..."
 
 msgid "&Toggle ins/overw"
 msgstr "&ჩასმა/გადაწერის გადართვა"
@@ -2842,15 +2787,11 @@ msgstr ""
 msgid "&Options"
 msgstr "&პარამეტრები"
 
-#, fuzzy
-#| msgid "Tabulation"
 msgid "Lua action"
-msgstr "ტაბულაცია"
+msgstr "Lua-ის ქმედება"
 
-#, fuzzy
-#| msgid "Reading failed"
 msgid "Action failed"
-msgstr "წაკითხვა ვერ მოხერხდა"
+msgstr "ქმედება ჩავარდა"
 
 msgid "&None"
 msgstr "არაფერი"
@@ -3270,10 +3211,8 @@ msgstr "ფაილის ტიპები"
 msgid "&Permissions"
 msgstr "უ&ფლებები"
 
-#, fuzzy
-#| msgid "&Permissions"
 msgid "Permission c&olors"
-msgstr "უ&ფლებები"
+msgstr "წვდ&ომის ფერები"
 
 msgid "Quick search"
 msgstr "სწრაფი ძებნა"
@@ -4216,10 +4155,8 @@ msgstr "&ინფო"
 msgid "&Tree"
 msgstr "&ხე"
 
-#, fuzzy
-#| msgid "Save &mode..."
 msgid "Panel &modes..."
-msgstr "შენახვის &რეჟიმი..."
+msgstr "პანელის რეჟი&მები..."
 
 msgid "&Listing format..."
 msgstr "&სიის ფორმატი..."
@@ -4236,10 +4173,8 @@ msgstr "&კოდრება..."
 msgid "&Rescan"
 msgstr "&თავიდან სკანირება"
 
-#, fuzzy
-#| msgid "C&hange time"
 msgid "Change &drive"
-msgstr "დ&როის შეცვლა"
+msgstr "&დისკის შეცვლა"
 
 msgid "&View"
 msgstr "&ჩვენება"
@@ -4310,10 +4245,8 @@ msgstr "ფაილის მოძებნა"
 msgid "S&wap panels"
 msgstr "პანელების შეცვლა"
 
-#, fuzzy
-#| msgid "To&ggle mark"
 msgid "Toggle &terminal"
-msgstr "&ნიშნის ჩართ/გამორთ"
+msgstr "&ტერმინალის გადართვა"
 
 msgid "&Compare directories"
 msgstr "საქაღალდეების შედარება"
@@ -4374,18 +4307,14 @@ msgstr "დადასტურებები..."
 msgid "&Appearance..."
 msgstr "გარეგნობა..."
 
-#, fuzzy
-#| msgid "&Encoding..."
 msgid "Key &bindings..."
-msgstr "&კოდრება..."
+msgstr "კლავიატურის &მალსახმობები..."
 
 msgid "Key &sniffer..."
 msgstr ""
 
-#, fuzzy
-#| msgid "&Panel options..."
 msgid "&Manage plugins..."
-msgstr "პანელის მორგება..."
+msgstr "დამატებების &მართვა..."
 
 msgid "&Virtual FS..."
 msgstr "&ვირტუალური FS..."
@@ -4548,10 +4477,8 @@ msgstr ""
 msgid "Searching"
 msgstr "ძებნა"
 
-#, fuzzy
-#| msgid "Set &groups"
 msgid "Parent group"
-msgstr "ჯგუფების დაყენება"
+msgstr "მშობელი ჯგუფი"
 
 msgid "Group"
 msgstr "ჯგუფი"
@@ -4560,15 +4487,12 @@ msgstr "ჯგუფი"
 msgid "Plugin: %s"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "File: %s"
+#, c-format
 msgid "VFS: %s"
-msgstr "ფაილი: %s"
+msgstr "VFS: %s"
 
-#, fuzzy
-#| msgid "directory"
 msgid "Local directory"
-msgstr "საქაღალდე"
+msgstr "ლოკალური საქაღალდე"
 
 #, c-format
 msgid "Move \"%s\" to %s"
@@ -4952,10 +4876,8 @@ msgstr ""
 msgid "Invalid column width: %s"
 msgstr ""
 
-#, fuzzy
-#| msgid "columns"
 msgid "Column types:"
-msgstr "სვეტები"
+msgstr "სვეტის ტიპები:"
 
 msgid "Column widths:"
 msgstr ""
@@ -4966,10 +4888,8 @@ msgstr ""
 msgid "Status column widths:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Panelize"
 msgid "Panel mode"
-msgstr "პანელში"
+msgstr "პანელის რეჟიმი"
 
 msgid "(unnamed)"
 msgstr ""
@@ -5040,10 +4960,8 @@ msgstr ""
 msgid "Copy"
 msgstr "კოპირება"
 
-#, fuzzy
-#| msgid "&Copy"
 msgid "Copy to:"
-msgstr "&კოპირება"
+msgstr "კოპირება სად:"
 
 msgid "This plugin does not support deleting files"
 msgstr ""
@@ -5054,10 +4972,8 @@ msgstr ""
 msgid "Delete tagged files from plugin panel?"
 msgstr ""
 
-#, fuzzy
-#| msgid "Delete macro"
 msgid "Delete failed"
-msgstr "მაკროსის წაშლა"
+msgstr "წაშლა ჩავარდა"
 
 msgid "This plugin does not support creating items"
 msgstr ""
@@ -5083,10 +4999,8 @@ msgstr ""
 msgid "This plugin does not support moving files"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Move"
 msgid "Move to:"
-msgstr "&გადატანა"
+msgstr "გადატანა სად:"
 
 msgid "Move succeeded but delete from plugin failed"
 msgstr ""
@@ -5120,10 +5034,8 @@ msgstr ""
 msgid "No panel plugins are loaded."
 msgstr ""
 
-#, fuzzy
-#| msgid "C&hange time"
 msgid "Change drive"
-msgstr "დ&როის შეცვლა"
+msgstr "დისკის შეცვლა"
 
 msgid "No plugins with drive menu support are loaded."
 msgstr ""
@@ -5202,10 +5114,8 @@ msgstr ""
 msgid "ButtonBar|Prev"
 msgstr "წინა"
 
-#, fuzzy
-#| msgid "Function key 1"
 msgid "Function keys"
-msgstr "ღილაკი F1"
+msgstr "ფუნქციური ღილაკები"
 
 #, fuzzy
 #| msgid "Navigation"
@@ -5215,10 +5125,8 @@ msgstr "ნავიგაცია"
 msgid "Special"
 msgstr ""
 
-#, fuzzy
-#| msgid "Learn &keys..."
 msgid "Learn key"
-msgstr "&ღილაკების სწავლა..."
+msgstr "სწავლის ღილაკი"
 
 #, c-format
 msgid "Press %s and wait..."
@@ -5348,10 +5256,8 @@ msgstr ""
 msgid "Unknown sequence: %s"
 msgstr ""
 
-#, fuzzy
-#| msgid "A1 key"
 msgid "Assign key"
-msgstr "A1 ღილაკი"
+msgstr "მინიჭების ღილაკი"
 
 msgid "Key:"
 msgstr ""
@@ -5414,10 +5320,8 @@ msgstr ""
 msgid "Lua action failed"
 msgstr "წაკითხვა ვერ მოხერხდა"
 
-#, fuzzy
-#| msgid "Unknown error in child"
 msgid "Unknown error"
-msgstr "უცნობი შეცდომა შვილში"
+msgstr "უცნობი შეცდომა"
 
 msgid "Lua"
 msgstr ""
@@ -5472,15 +5376,11 @@ msgstr ""
 msgid "control character in string"
 msgstr "შეიყვანეთ ჩანაცვლების სტრიქონი:"
 
-#, fuzzy
-#| msgid "Enter replacement string:"
 msgid "unterminated string"
-msgstr "შეიყვანეთ ჩანაცვლების სტრიქონი:"
+msgstr "დაუსრულებელი სტრიქონი"
 
-#, fuzzy
-#| msgid "Invalid token number %d"
 msgid "invalid number"
-msgstr "კოდის არასწორი ნომერი %d"
+msgstr "არასწორი ნომერი"
 
 msgid "expected ':'"
 msgstr ""
@@ -5506,8 +5406,6 @@ msgstr ""
 msgid "expected value"
 msgstr ""
 
-#, fuzzy
-#| msgid "Invalid value"
 msgid "invalid value"
 msgstr "არასწორი მნიშვნელობა"
 
@@ -5594,15 +5492,11 @@ msgstr ""
 msgid "Archive password"
 msgstr ""
 
-#, fuzzy
-#| msgid "Password:"
 msgid "Enter password:"
-msgstr "პაროლი:"
+msgstr "შეიყვანეთ პაროლი:"
 
-#, fuzzy
-#| msgid "Password:"
 msgid "Wrong password"
-msgstr "პაროლი:"
+msgstr "არასწორი პაროლი"
 
 msgid "Creating archive..."
 msgstr ""
@@ -5620,29 +5514,23 @@ msgstr ""
 msgid "Running external archiver, please wait..."
 msgstr ""
 
-#, fuzzy
-#| msgid "FileOperation|Delete"
 msgid "Operation cancelled"
-msgstr "წაშლა"
+msgstr "ოპერაცია გაუქმდა"
 
 #, c-format
 msgid "Packing: %s"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "Existing:"
+#, c-format
 msgid "Extracting: %s"
-msgstr "არსებული:"
+msgstr "ამოღება: %s"
 
-#, fuzzy, c-format
-#| msgid "Time: %s"
+#, c-format
 msgid "Testing: %s"
-msgstr "დრო: %s"
+msgstr "შემოწმება: %s"
 
-#, fuzzy
-#| msgid "Open files"
 msgid "Open archive"
-msgstr "ფაილების გახსნა"
+msgstr "არქივის გახსნა"
 
 msgid "Create archive"
 msgstr ""
@@ -5668,10 +5556,8 @@ msgstr ""
 msgid "Archive browser"
 msgstr ""
 
-#, fuzzy
-#| msgid "Save file"
 msgid "Archive file:"
-msgstr "ფაილის შენახვა"
+msgstr "არქივის ფაილი:"
 
 #, fuzzy, c-format
 #| msgid "File: %s"
@@ -5684,10 +5570,8 @@ msgstr ""
 msgid "Extract"
 msgstr ""
 
-#, fuzzy
-#| msgid "Data directory:"
 msgid "Destination directory:"
-msgstr "მონაცემების საქაღალდე:"
+msgstr "სამიზნე საქაღალდე:"
 
 #, c-format
 msgid "Failed to extract: %s"
@@ -5719,10 +5603,8 @@ msgstr ""
 msgid "Deleting from archive..."
 msgstr "მაკროს წაშლა..."
 
-#, fuzzy
-#| msgid "Other options"
 msgid "Other formats"
-msgstr "სხვა პარამეტრები"
+msgstr "სხვა ფორმატები"
 
 msgid "No other formats are enabled"
 msgstr ""
@@ -5757,23 +5639,17 @@ msgstr "შეკუმშვა"
 msgid "Encryption"
 msgstr ""
 
-#, fuzzy
-#| msgid "Edit files"
 msgid "Encrypt &files"
-msgstr "ფაილების რედაქტირება"
+msgstr "&ფაილების დაშიფვრა"
 
 msgid "Encrypt hea&ders"
 msgstr ""
 
-#, fuzzy
-#| msgid "Password:"
 msgid "Show pass&word"
-msgstr "პაროლი:"
+msgstr "პაროლის &ჩვენება:"
 
-#, fuzzy
-#| msgid "Password:"
 msgid "Verify password:"
-msgstr "პაროლი:"
+msgstr "პაროლის გადამოწმება:"
 
 msgid "Options"
 msgstr "მორგება"
@@ -5842,10 +5718,8 @@ msgstr "გარე:"
 msgid "always use the external tool for this format."
 msgstr ""
 
-#, fuzzy
-#| msgid "Chmod command"
 msgid "Pack command:"
-msgstr "Chmod-ის ბრძანება"
+msgstr "შეკუმშვის ბრძანება:"
 
 msgid "Unpack helper:"
 msgstr ""
@@ -5885,10 +5759,8 @@ msgstr ""
 msgid " Builtin (libarchive) "
 msgstr ""
 
-#, fuzzy
-#| msgid "External panelize"
 msgid " External archivers "
-msgstr "გარე პანელზე"
+msgstr " გარე არქივატორები "
 
 msgid " Hint "
 msgstr ""
@@ -5965,10 +5837,8 @@ msgstr "საქაღალდე %s-ის შექმნა შეუძლ
 msgid "Image:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Owner name:"
 msgid "Container name:"
-msgstr "მფლობელის სახელი:"
+msgstr "კონტეინერის სახელი:"
 
 msgid "Command:"
 msgstr "ბრძანება:"
@@ -6071,10 +5941,8 @@ msgstr ""
 msgid "FTP Connection"
 msgstr ""
 
-#, fuzzy
-#| msgid "&None"
 msgid "&None (FTP)"
-msgstr "არაფერი"
+msgstr "არ&ცერთი (FTP)"
 
 msgid "&Try SSL"
 msgstr ""
@@ -6097,10 +5965,8 @@ msgstr ""
 msgid "SSL/TLS"
 msgstr ""
 
-#, fuzzy
-#| msgid "Use &passive mode"
 msgid "&Passive mode"
-msgstr "პასიური რეჟიმის&გამოყენება"
+msgstr "&პასიური რეჟიმი"
 
 msgid "Connection"
 msgstr "კავშირი"
@@ -6108,10 +5974,8 @@ msgstr "კავშირი"
 msgid "Connect timeout:"
 msgstr ""
 
-#, fuzzy
-#| msgid "Repeat times:"
 msgid "Response timeout:"
-msgstr "გამეორების დრო:"
+msgstr "პასუხის ვადა:"
 
 msgid "TCP &Keepalive"
 msgstr ""
@@ -6164,10 +6028,8 @@ msgstr ""
 msgid "Enter password for %s@%s"
 msgstr ""
 
-#, fuzzy
-#| msgid "Password:"
 msgid "FTP password"
-msgstr "პაროლი:"
+msgstr "FTP-ის პაროლი"
 
 msgid "Retrying with password..."
 msgstr ""
@@ -6237,10 +6099,8 @@ msgstr "სახელების სივრცე:"
 msgid "Switch Namespace"
 msgstr ""
 
-#, fuzzy
-#| msgid "Owner name:"
 msgid "Context name:"
-msgstr "მფლობელის სახელი:"
+msgstr "კონტექსტის სახელი:"
 
 msgid "Add Context to Favorites"
 msgstr ""
@@ -6321,10 +6181,8 @@ msgstr ""
 msgid "mcpeek"
 msgstr ""
 
-#, fuzzy
-#| msgid "<readlink failed>"
 msgid "mcpeek failed"
-msgstr "<readlink failed>"
+msgstr "mcpeek ჩავარდა"
 
 msgid "cannot read assembly"
 msgstr ""
@@ -6332,10 +6190,8 @@ msgstr ""
 msgid "uses of "
 msgstr ""
 
-#, fuzzy
-#| msgid "Source"
 msgid "no source"
-msgstr "წყარო"
+msgstr "წყაროს გარეშე"
 
 msgid "the project could not be written"
 msgstr ""
@@ -6352,10 +6208,9 @@ msgstr ""
 msgid "Decompiler command (empty: look for ilspycmd)"
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "File: %s"
+#, c-format
 msgid "Decompiler: %s"
-msgstr "ფაილი: %s"
+msgstr "დეკომპილატორი: %s"
 
 msgid "Searching..."
 msgstr "ძებნა..."
@@ -6372,10 +6227,8 @@ msgstr ""
 msgid "N&one"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Line number"
 msgid "Row n&umber"
-msgstr "&ხაზის ნომერი"
+msgstr "მ&წკრივის ნომერი"
 
 msgid "Row o&ffset"
 msgstr ""
@@ -6407,10 +6260,8 @@ msgstr ""
 msgid "Def-file zone"
 msgstr ""
 
-#, fuzzy
-#| msgid "Directory tree"
 msgid "Structure tree"
-msgstr "საქაღალდეების ხე"
+msgstr "სტრუქტურის ხე"
 
 msgid "Name column width:"
 msgstr ""
@@ -6426,18 +6277,14 @@ msgstr ""
 msgid "Show &hidden structures"
 msgstr "დამალული &ფაილების ჩვენება"
 
-#, fuzzy
-#| msgid "Save As"
 msgid "Saved bytes"
-msgstr "შეინახე როგორც"
+msgstr "შენახული ბაიტი"
 
 msgid "Keep fragments, days (0 = always):"
 msgstr ""
 
-#, fuzzy
-#| msgid "columns"
 msgid "Offset column"
-msgstr "სვეტები"
+msgstr "წანაცვლების სვეტი"
 
 msgid "First grid column"
 msgstr ""
@@ -6453,20 +6300,16 @@ msgstr "ფაილის ჩასმა ვერ მოხერხდა"
 msgid "Struct loo&k"
 msgstr ""
 
-#, fuzzy
-#| msgid "read &by others"
 msgid "Read bytes"
-msgstr "სხვების მიერ წაკითხვა"
+msgstr "წაკითხული ბაიტი"
 
 #, fuzzy
 #| msgid "Cannot create pipe streams"
 msgid "Cannot read the bytes"
 msgstr "ფაილის ნაკადის შექმნა შეუძლებელია"
 
-#, fuzzy
-#| msgid "wr&ite by others"
 msgid "Write bytes"
-msgstr "სხვების მიერ ჩაწერა"
+msgstr "ბაიტების ჩაწერა"
 
 msgid "The file exists. Overwrite?"
 msgstr ""
@@ -6521,10 +6364,8 @@ msgstr ""
 msgid "Offset 0x%llX is outside the file"
 msgstr ""
 
-#, fuzzy
-#| msgid "Select &group"
 msgid "Select structure"
-msgstr "ჯგუფის მონიშვნა"
+msgstr "აირჩიეთ სტრუქტურა"
 
 #, c-format
 msgid "%s: %ld bytes, file %lld bytes"
@@ -6544,10 +6385,8 @@ msgstr ""
 msgid "No def-files found on the search path"
 msgstr ""
 
-#, fuzzy
-#| msgid "Select language"
 msgid "Select def-file"
-msgstr "ენის არჩევა"
+msgstr "აირჩიეთ def-ფაილი"
 
 #, fuzzy, c-format
 #| msgid "Error reading %s"
@@ -6563,15 +6402,11 @@ msgstr ""
 msgid "&Text"
 msgstr ""
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search for:"
-msgstr "ძებნა დასრულდა"
+msgstr "ძებნა:"
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search bytes"
-msgstr "ძებნა დასრულდა"
+msgstr "ბაიტების ძებნა"
 
 #, c-format
 msgid "Not a hex byte string: %s"
@@ -6718,10 +6553,8 @@ msgstr ""
 msgid "Note: a filter shows a flat list (no folders), up to %"
 msgstr ""
 
-#, fuzzy
-#| msgid "Filter"
 msgid "Filter (JSON):"
-msgstr "ფილტრი"
+msgstr "ფილტრი (JSON)"
 
 msgid "Projection:"
 msgstr ""
@@ -8168,15 +8001,11 @@ msgstr ""
 msgid "Group separator"
 msgstr ""
 
-#, fuzzy
-#| msgid "Save block"
 msgid "Selected block"
-msgstr "ბლოკის შენახვა"
+msgstr "მონიშნული ბლოკი"
 
-#, fuzzy
-#| msgid "&Line number"
 msgid "Line number"
-msgstr "&ხაზის ნომერი"
+msgstr "ხაზის ნომერი"
 
 msgid "Directive"
 msgstr "დირექტივა"
@@ -8602,15 +8431,11 @@ msgstr "ყვ&ელაფერი"
 msgid "&Foreground only"
 msgstr ""
 
-#, fuzzy
-#| msgid "&Background"
 msgid "&Background only"
-msgstr "&ფონი"
+msgstr "მ&ხოლოდ ფონი"
 
-#, fuzzy
-#| msgid "Attributes: %s"
 msgid "&Attributes only"
-msgstr "ატრიბუტები: %s"
+msgstr "მხოლოდ &ატრიბუტები"
 
 msgid "The skin has unsaved changes."
 msgstr ""
@@ -8627,10 +8452,8 @@ msgstr "ფაილის ჩასწორება"
 msgid "The skin editor needs a terminal of %dx%d"
 msgstr ""
 
-#, fuzzy
-#| msgid "System data"
 msgid "SQLite database"
-msgstr "სისტემური მონაცემები"
+msgstr "SQLite-ის მონაცემთა ბაზა"
 
 #, fuzzy
 #| msgid "Cannot open file %s"
@@ -8646,10 +8469,8 @@ msgstr ""
 msgid "The requested table or row page no longer exists."
 msgstr ""
 
-#, fuzzy
-#| msgid "Save file"
 msgid "Database file:"
-msgstr "ფაილის შენახვა"
+msgstr "მონაცემთა ბაზის ფაილი:"
 
 #, fuzzy
 #| msgid "Cannot create pipe streams"
@@ -8772,10 +8593,8 @@ msgstr "რედაქტორის მორგება"
 msgid "Runtime plugins:"
 msgstr ""
 
-#, fuzzy
-#| msgid "VFS plugins and scripts:"
 msgid "Lua scripts:"
-msgstr "VFS დამატებები და სცენარები:"
+msgstr "Lua-ის სკრიპტები:"
 
 msgid "Lua modules:"
 msgstr ""
@@ -9067,10 +8886,8 @@ msgstr "ფილტრი"
 msgid "ButtonBar|Unform"
 msgstr "დაუფორმ"
 
-#, fuzzy
-#| msgid "ButtonBar|Merge"
 msgid "ButtonBar|Term mode"
-msgstr "შერწყმა"
+msgstr "ღილაკებისპანელი|ტერმ რეჟიმი"
 
 msgid "ButtonBar|Format"
 msgstr "ფორმატი"
@@ -9087,9 +8904,8 @@ msgstr ""
 msgid "Filter: %s  %u matches"
 msgstr ""
 
-#, fuzzy
 msgid "Quick view"
-msgstr "&სწრაფი ხედი"
+msgstr "სწრაფი ხედი"
 
 msgid "Error: out of memory"
 msgstr ""
@@ -9113,15 +8929,11 @@ msgstr "ფილტრი"
 msgid "Normal"
 msgstr "ნორმალური"
 
-#, fuzzy
-#| msgid "Re&gular expression"
 msgid "Regular expression"
-msgstr "&რეგულარულ გამოსახულება"
+msgstr "რეგულარული გამოსახულება"
 
-#, fuzzy
-#| msgid "Wil&dcard search"
 msgid "Wildcard search"
-msgstr "&ვაილდკარდით ძებნა"
+msgstr "ვაილდკარდით ძებნა"
 
 msgid "Expression"
 msgstr "გამოსახულება"

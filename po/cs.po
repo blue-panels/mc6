@@ -12,439 +12,328 @@
 # Robin Kriebel <kriebel.robin@gmail.com>, 2016
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Yury V. Zaytsev <yury@shurup.com>, 2025
+# Betacart <betacart@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>, 2017-2023,2025\n"
-"Language-Team: Czech (http://app.transifex.com/mc/mc/language/cs/)\n"
+"PO-Revision-Date: 2026-09-12 19:48+0000\n"
+"Last-Translator: Betacart <betacart@noreply.codeberg.org>\n"
+"Language-Team: Czech <https://translate.codeberg.org/projects/mc6/mc6/cs/>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
 "<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+"X-Generator: Weblate 2026.8.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
-msgstr "Bez převodu"
+msgstr "Bez překladu"
 
 msgid "Warning: cannot load codepages list"
-msgstr "Varování: nebylo možné načíst seznam znakových sad"
+msgstr "Varování: nelze načíst seznam znakových sad"
 
 msgid "7-bit ASCII"
-msgstr "7-bit ASCII"
+msgstr "7bitové ASCII"
 
 #, c-format
 msgid "Cannot translate from %s to %s"
-msgstr "Nebylo možné převést z %s na %s"
+msgstr "Nelze přeložit z %s na %s"
 
 msgid "Event system already initialized"
-msgstr "Systém událostí už je inicializován"
+msgstr "Systém událostí je již inicializován"
 
 msgid "Failed to initialize event system"
-msgstr "Systém událostí se nepodařilo inicializovat"
+msgstr "Nepodařilo se inicializovat systém událostí"
 
 msgid "Event system not initialized"
 msgstr "Systém událostí není inicializován"
 
 msgid "Check input data! Some of parameters are NULL!"
-msgstr "Zkontrolujte vstupní údaje! Některé parametry nejsou vyplněné!"
+msgstr "Zkontrolujte vstupní data! Některé parametry nejsou vyplněné!"
 
 #, c-format
 msgid "Unable to create group '%s' for events!"
-msgstr "Nedaří se vytvořit skupinu „%s“ pro události!"
+msgstr "Nelze vytvořit skupinu \"%s\" pro události!"
 
 #, c-format
 msgid "Unable to create event '%s'!"
-msgstr "Nedaří vytvořit událost „%s“!"
+msgstr "Nelze vytvořit událost \"%s\"!"
 
 #, c-format
 msgid "Copyright (C) 1996-%zu the Free Software Foundation"
-msgstr "Autorská práva © 1996-%zu nadace Free Software Foundation"
+msgstr "Copyright © 1996-%zu, Free Software Foundation"
 
-#, fuzzy
-#| msgid "Switch &panels on/off"
 msgid "Switch active panel"
-msgstr "&Panely ano/ne"
+msgstr "Přepnout aktivní panel"
 
-#, fuzzy
-#| msgid "Page Up"
 msgid "Page left"
-msgstr "Page Up"
+msgstr "Stránka vlevo"
 
 msgid "Page right"
-msgstr ""
+msgstr "Stránka vpravo"
 
 msgid "Half page up"
-msgstr ""
+msgstr "Půlka stránky nahoře"
 
-#, fuzzy
-#| msgid "Page Down"
 msgid "Half page down"
-msgstr "Page Down"
+msgstr "Půlka stránky dole"
 
 msgid "Go to top"
-msgstr ""
+msgstr "Přejít nahoru"
 
 msgid "Go to bottom"
-msgstr ""
+msgstr "Přejít dolů"
 
-#, fuzzy
-#| msgid "&Toggle fullscreen"
 msgid "Top of screen"
-msgstr "&Přepnout celou obrazovku"
+msgstr "Vrch obrazovky"
 
 msgid "Middle of screen"
-msgstr ""
+msgstr "Prostředek obrazovky"
 
 msgid "Bottom of screen"
-msgstr ""
+msgstr "Spodek obrazovky"
 
 msgid "Word left"
-msgstr ""
+msgstr "Slovo vlevo"
 
 msgid "Word right"
-msgstr ""
+msgstr "Slovo vpravo"
 
-#, fuzzy
-#| msgid "C&ompare files"
 msgid "Copy file(s)"
-msgstr "P&orovnat soubory"
+msgstr "Kopírovat soubor"
 
 msgid "Move/rename file(s)"
-msgstr ""
+msgstr "Přesunout/Přejmenovat soubor"
 
 msgid "Delete"
-msgstr "Delete"
+msgstr "Smazat"
 
-#, fuzzy
-#| msgid "Cache directory:"
 msgid "Create directory"
-msgstr "Složka mezipaměti:"
+msgstr "Vytvořit adresář"
 
 msgid "Change file mode (chmod)"
-msgstr ""
+msgstr "Změnit režim souboru (chmod)"
 
-#, fuzzy
-#| msgid "Changes to file lost"
 msgid "Change file owner"
-msgstr "Změny souboru byly ztraceny"
+msgstr "Změnit vlastníka souboru"
 
-#, fuzzy
-#| msgid "&Advanced chown"
 msgid "Advanced chown"
-msgstr "Rozšířená změn&a práv/vlastníka"
+msgstr "Pokročilá změna vlastníka/práv"
 
-#, fuzzy
-#| msgid ""
-#| "Cannot get ext2 attributes of\n"
-#| "%s"
 msgid "Change file attributes"
-msgstr ""
-"Nebylo možné získat ext2 atributy\n"
-"%s"
+msgstr "Změnit atributy souboru"
 
 msgid "Clear screen and scrollback"
-msgstr ""
+msgstr "Vymazat obrazovku a posun"
 
 msgid "Main menu"
-msgstr ""
+msgstr "Hlavní menu"
 
 msgid "Last selected menu item"
-msgstr ""
+msgstr "Poslední vybraná položka menu"
 
-#, fuzzy
-#| msgid "&User defined:"
 msgid "User-defined menu"
-msgstr "&Vlastní formát:"
+msgstr "Menu definované uživatelem"
 
-#, fuzzy
-#| msgid "User menu"
 msgid "Edit user menu"
-msgstr "Uživatelská nabídka"
+msgstr "Upravit uživatelské menu"
 
-#, fuzzy
-#| msgid "Search done"
 msgid "Search next"
-msgstr "Hledání dokončeno"
+msgstr "Hledat další"
 
-#, fuzzy
-#| msgid "Replace"
 msgid "Replace next"
-msgstr "Nahradit"
+msgstr "Nahradit další"
 
 msgid "Show help"
-msgstr ""
+msgstr "Zobrazit nápovědu"
 
-#, fuzzy
-#| msgid "Terminal options"
 msgid "Terminal"
-msgstr "Nastavení terminálu"
+msgstr "Terminál"
 
 msgid "Edit file"
 msgstr "Upravit soubor"
 
-#, fuzzy
-#| msgid "Edit file"
 msgid "Edit new file"
-msgstr "Upravit soubor"
+msgstr "Upravit nový soubor"
 
-#, fuzzy
-#| msgid "&All charsets"
 msgid "Select charset"
-msgstr "Všechny zn&akové sady"
+msgstr "Vybrat znakovou sadu"
 
 msgid "Editor/viewer history"
-msgstr ""
+msgstr "Historie editoru/prohlížeče"
 
-#, fuzzy
-#| msgid "Command &history"
 msgid "Command history"
-msgstr "&Historie příkazů"
+msgstr "Historie příkazů"
 
 msgid "Next in history"
-msgstr ""
+msgstr "Další v historii"
 
 msgid "Previous in history"
-msgstr ""
+msgstr "Předchozí v historii"
 
 msgid "Auto-complete"
-msgstr ""
+msgstr "Automatické dokončování"
 
-#, fuzzy
-#| msgid "Save &as..."
 msgid "Save as..."
-msgstr "Uložit j&ako…"
+msgstr "Uložit jako…"
 
 #, fuzzy
-#| msgid "Goto line"
 msgid "Go to line"
 msgstr "Přejít na řádek"
 
-#, fuzzy
-#| msgid "Indexed directory"
 msgid "Re-read directory"
-msgstr "Indexovaná složka"
+msgstr "Znovu načíst adresář"
 
-#, fuzzy
-#| msgid "&Refresh screen"
 msgid "Refresh screen"
-msgstr "Přek&reslit obrazovku"
+msgstr "Obnovit obrazovku"
 
-#, fuzzy
-#| msgid "Setup saved to %s"
 msgid "Suspend to shell"
-msgstr "Nastavení uloženo do %s"
+msgstr "Uspat do shellu"
 
-#, fuzzy
-#| msgid "S&wap panels"
 msgid "Swap panels"
-msgstr "Proh&odit panely"
+msgstr "Prohodit panely"
 
-#, fuzzy
-#| msgid "Hotlist Load"
 msgid "Hotlist"
-msgstr "Načtení seznamu pro rychlý přístup"
+msgstr "Horký seznam"
 
-#, fuzzy
-#| msgid "&Invert selection"
 msgid "Invert selection"
-msgstr "Převrát&it výběr"
+msgstr "Převrátit výběr"
 
 msgid "List open screens"
-msgstr ""
+msgstr "Seznam otevřených obrazovek"
 
-#, fuzzy
-#| msgid "&Refresh screen"
 msgid "Next screen"
-msgstr "Přek&reslit obrazovku"
+msgstr "Další obrazovka"
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous screen"
-msgstr "&Předchozí"
+msgstr "Předchozí obrazovka"
 
-#, fuzzy
-#| msgid "Insert file"
 msgid "Next file"
-msgstr "Vložit soubor"
+msgstr "Další soubor"
 
-#, fuzzy
-#| msgid "&Previous"
 msgid "Previous file"
-msgstr "&Předchozí"
+msgstr "Předchozí soubor"
 
-#, fuzzy
-#| msgid "&Toggle line state"
 msgid "Delete to line start"
-msgstr "Přepnout &zobrazení řádků"
+msgstr "Smazat k začátku řádku"
 
-#, fuzzy
-#| msgid "Delete on keypad"
 msgid "Delete to line end"
-msgstr "Delete na numerické klávesnici"
+msgstr "Smazat ke konci řádku"
 
 msgid "Delete to word start"
-msgstr ""
+msgstr "Smazat k začátku slova"
 
-#, fuzzy
-#| msgid "Delete on keypad"
 msgid "Delete to word end"
-msgstr "Delete na numerické klávesnici"
+msgstr "Smazat ke konci slova"
 
-#, fuzzy
-#| msgid "&Cut to clipfile"
 msgid "Cut to clipboard"
-msgstr "&Vyjmout do ústřižku"
+msgstr "Vystřihnout do schránky"
 
-#, fuzzy
-#| msgid "Co&py to clipfile"
 msgid "Copy to clipboard"
-msgstr "Zko&pírovat do ústřižku"
+msgstr "Zkopírovat do schránky"
 
-#, fuzzy
-#| msgid "Pa&ste from clipfile"
 msgid "Paste from clipboard"
-msgstr "Vložit z ú&střižku"
+msgstr "Vložit ze schránky"
 
-#, fuzzy
-#| msgid "In se&lection"
 msgid "Toggle selection"
-msgstr "&Ve výběru"
+msgstr "Přepnout výběr"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select left"
-msgstr "Výběr"
+msgstr "Vybrat vlevo"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select right"
-msgstr "Výběr"
+msgstr "Vybrat vpravo"
 
-#, fuzzy
-#| msgid "Select &group"
 msgid "Select up"
-msgstr "Vy&brat skupinu"
+msgstr "Vybrat nahoře"
 
-#, fuzzy
-#| msgid "Select"
 msgid "Select down"
-msgstr "Výběr"
+msgstr "Vybrat dole"
 
 msgid "Select to word start"
-msgstr ""
+msgstr "Vybrat k začátku slova"
 
-#, fuzzy
-#| msgid "Select compare method:"
 msgid "Select to word end"
-msgstr "Vyberte metodu porovnání:"
+msgstr "Vybrat ke konci slova"
 
-#, fuzzy
-#| msgid "&Toggle line state"
 msgid "Select to line start"
-msgstr "Přepnout &zobrazení řádků"
+msgstr "Vybrat k začátku řádku"
 
-#, fuzzy
-#| msgid "Select language"
 msgid "Select to line end"
-msgstr "Výběr jazyka"
+msgstr "Vybrat ke konci řádku"
 
 msgid "Toggle navigate/browse mode"
-msgstr ""
+msgstr "Přepnout režim navigace/procházení"
 
-#, fuzzy
-#| msgid "&Sort order..."
 msgid "Sort order..."
-msgstr "&Pořadí řazení…"
+msgstr "Pořadí řazení…"
 
-#, fuzzy
-#| msgid "Panel options"
 msgid "General options"
-msgstr "Nastavení panelu"
+msgstr "Obecné volby"
 
-#, fuzzy
-#| msgid "Learn keys"
 msgid "Learn terminal keys"
-msgstr "Naučit klávesy"
+msgstr "Naučit klávesy terminálu"
 
 msgid "Key bindings"
-msgstr ""
+msgstr "Mapování kláves"
 
 msgid "Key sniffer"
-msgstr ""
+msgstr "Čtečka kláves"
 
 msgid "Manage plugins"
-msgstr ""
+msgstr "Spravovat doplňky"
 
-#, fuzzy
-#| msgid "&Next bookmark"
 msgid "Set bookmark"
-msgstr "&Další záložka"
+msgstr "Nastavit záložku"
 
 msgid "Quit program"
-msgstr ""
+msgstr "Ukončit program"
 
 msgid "Quit without confirmation"
-msgstr ""
+msgstr "Ukončit bez potvrzení"
 
 msgid "Extended key prefix"
-msgstr ""
+msgstr "Rozšířená předpona klíče"
 
-#, fuzzy
-#| msgid "Use internal edi&t"
 msgid "Edit with internal editor"
-msgstr "Použít vestavěný edi&tor"
+msgstr "Upravit interním editorem"
 
 msgid "View file"
-msgstr "Prohlížet soubor"
+msgstr "Zobrazit soubor"
 
-#, fuzzy
-#| msgid "View file"
 msgid "View raw file"
-msgstr "Prohlížet soubor"
+msgstr "Zobrazit surový soubor"
 
-#, fuzzy
-#| msgid "View file"
 msgid "View named file"
-msgstr "Prohlížet soubor"
+msgstr "Zobrazit pojmenovaný soubor"
 
 msgid "View command output"
-msgstr ""
+msgstr "Zobrazit výstup příkazu"
 
-#, fuzzy
-#| msgid "&Find file"
 msgid "Find file"
-msgstr "&Najít soubor"
+msgstr "Najít soubor"
 
-#, fuzzy
-#| msgid "Show directory s&izes"
 msgid "Show directory size"
-msgstr "Zobrazit velikost&i složek"
+msgstr "Zobrazit velikost složky"
 
 msgid "Compare directories"
 msgstr "Porovnat složky"
 
-#, fuzzy
-#| msgid "C&ompare files"
 msgid "Compare files (diff)"
-msgstr "P&orovnat soubory"
+msgstr "Porovnat soubory (diff)"
 
 msgid "VFS settings"
-msgstr ""
+msgstr "Nastavení VFS"
 
-#, fuzzy
-#| msgid "Confirmation"
 msgid "Confirmation settings"
-msgstr "Potvrzování"
+msgstr "Nastavení potvrzování"
 
-#, fuzzy
-#| msgid "Edit &extension file"
 msgid "Edit extensions file"
-msgstr "Upravit akc&e k příponám"
+msgstr "Upravit soubor s příponami"
 
 #, fuzzy
 #| msgid "Synta&x highlighting"
