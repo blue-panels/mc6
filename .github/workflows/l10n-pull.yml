@@ -41,11 +41,14 @@ jobs:
       - name: Point at the branch
         if: steps.merge.outputs.changed == 'true'
         run: |
+          title='l10n: update translations from Weblate'
+          body=$'Translations from https://translate.codeberg.org/projects/mc6/mc6/\n\nMerge, do not squash: the commits carry the names of the translators who wrote them.'
+          url="https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/weblate"
+          url="${url}?expand=1&labels=Chore"
+          url="${url}&title=$(jq -rn --arg s "$title" '$s|@uri')"
+          url="${url}&body=$(jq -rn --arg s "$body" '$s|@uri')"
           {
             echo
-            echo "Open the pull request:"
-            echo "https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/weblate?expand=1"
-            echo
-            echo "Merge it, do not squash it: the commits carry the names of the"
-            echo "translators who wrote them."
+            echo "Open the pull request, the title, text and label are filled in:"
+            echo "$url"
           } >> "$GITHUB_STEP_SUMMARY"

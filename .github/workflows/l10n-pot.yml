@@ -70,11 +70,14 @@ jobs:
       - name: Point at the branch
         if: steps.pot.outputs.changed == 'true'
         run: |
+          title='po: update mc.pot'
+          body=$'The gettext template no longer matches the sources.\n\nOnce this lands in master, Weblate pulls the template over the webhook and spreads the new strings over the po files.'
+          url="https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/pot"
+          url="${url}?expand=1&labels=Chore"
+          url="${url}&title=$(jq -rn --arg s "$title" '$s|@uri')"
+          url="${url}&body=$(jq -rn --arg s "$body" '$s|@uri')"
           {
             echo
-            echo "Open the pull request:"
-            echo "https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/pot?expand=1"
-            echo
-            echo "Once it lands in master, Weblate pulls the template over the webhook"
-            echo "and spreads the new strings over the po files."
+            echo "Open the pull request, the title, text and label are filled in:"
+            echo "$url"
           } >> "$GITHUB_STEP_SUMMARY"
