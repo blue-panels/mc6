@@ -1,0 +1,61 @@
+name: l10n-pull
+
+on:
+  workflow_dispatch:
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Merge the translations into a branch
+        id: merge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch --no-tags https://translate.codeberg.org/git/mc6/mc6/ master
+          base=$(git rev-parse HEAD)
+          if git merge-base --is-ancestor FETCH_HEAD "$base"; then
+            echo "Weblate has nothing new." >> "$GITHUB_STEP_SUMMARY"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git switch -C l10n/weblate
+          git merge --no-edit FETCH_HEAD
+          git push --force origin l10n/weblate
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo "Commits taken from Weblate:"
+            echo
+            git log --format='- %h %an: %s' "$base"..FETCH_HEAD
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open the pull request
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open=$(gh pr list --head l10n/weblate --state open --json number --jq '.[].number')
+          if [ -n "$open" ]; then
+            echo "Pull request #$open is already open and now holds the new commits." \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          printf '%s\n' \
+            'Translations from <https://translate.codeberg.org/projects/mc6/mc6/>.' \
+            '' \
+            'Weblate has no write access to this repository, so its commits are brought' \
+            'in by this workflow. Merge, do not squash: the commits carry the names of' \
+            'the translators who wrote them.' > body.md
+          gh pr create --base master --head l10n/weblate \
+            --title "l10n: update translations from Weblate" \
+            --body-file body.md

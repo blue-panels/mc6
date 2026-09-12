@@ -1,3 +1,16 @@
+- [ ] Refresh the gettext template, a week before the tag so that translators
+      have time. Run `./autogen.sh` to rebuild `po/POTFILES.in`, then in the
+      build directory:
+
+      make -C po mc.pot-update
+
+      Commit `po/mc.pot` if it changed. Weblate reads it from master and puts
+      the new strings into the po files by itself.
+
+- [ ] Actions -> **l10n-pull** -> **Run workflow**: it brings the translations
+      from Weblate into a pull request. Merge that pull request, do not squash
+      it, the commits carry the names of the translators.
+
 - [ ] Rename the open milestone to `vX.Y.Z`.
 
 - [ ] Actions -> **Create release notes** -> **Run workflow**: milestone `vX.Y.Z`, all three
