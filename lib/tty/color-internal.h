@@ -33,6 +33,10 @@ typedef struct
     int attr;
     size_t pair_index;
     gboolean is_temp;
+    /* Temporary pairs are shared between independent owners (syntax rule sets, the
+       viewer's ANSI colors, the skin editor).  Each allocation of an existing pair
+       takes a reference; the pair goes away when the last owner releases it. */
+    guint refs;
 } tty_color_lib_pair_t;
 
 /*** global variables defined in .c file *********************************************************/

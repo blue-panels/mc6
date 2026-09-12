@@ -3100,6 +3100,14 @@ Toggle show of hunk status.
 .B Alt\-n, l
 Toggle show of line numbers.
 .TP
+.B Ctrl\-s
+Toggle syntax highlighting. The text of each line is then colored by the
+syntax rules, the way the internal editor colors it, and the state of the line
+is left to the background and to the marker column. Where a skin tells a
+changed word from the rest of its line by the color of the text alone, the word
+is underlined instead. The setting is remembered separately from the editor's
+own.
+.TP
 .B f
 Maximize left panel.
 .TP
@@ -3277,6 +3285,15 @@ Continue search in the chosen direction.
 .B N
 Temporary change the search direction: backwards if forward search is chosen,
 and vice versa.
+.TP
+.B Shift\-F8
+Toggle syntax highlighting: the text is colored by the syntax rules, the same
+ones and the same way the internal editor uses. Above a few megabytes a file
+gets the line\-local rules instead, which color numbers, quoted strings and
+punctuation without having to read everything above the line being shown.
+.TP
+.B Shift\-F9
+Toggle interpretation of ANSI color escape sequences found in the text.
 .TP
 .B F8
 Toggle Raw/Parsed mode: This will show the file as found on disk or if

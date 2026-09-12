@@ -1,4 +1,4 @@
-SUBDIRS = mctree filemanager man2hlp vfs viewer panel-plugins
+SUBDIRS = syntax mctree filemanager man2hlp vfs viewer panel-plugins
 
 if ENABLE_LUA_PLUGIN
 SUBDIRS += lua
@@ -58,6 +58,7 @@ MCTERMLIB = mcterm/libmcterm.la
 endif
 
 libinternal_la_LIBADD = \
+	syntax/libmcsyntax.la \
 	mctree/libmctree.la \
 	filemanager/libmcfilemanager.la \
 	vfs/libmc-vfs.la \

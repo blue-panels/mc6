@@ -3,21 +3,24 @@
 
    Copyright (C) 2007-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Daniel Borca <dborca@yahoo.com>, 2007
    Slava Zanko <slavazanko@gmail.com>, 2010, 2013
    Andrew Borodin <aborodin@vmail.ru>, 2010-2022
-   Ilia Maslakov <il.smind@gmail.com>, 2010
+   Ilia Maslakov <il.smind@gmail.com>, 2010, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -39,6 +42,7 @@
 #include "lib/global.h"
 #include "lib/tty/tty.h"
 #include "lib/tty/color.h"
+#include "lib/tty/color-internal.h"  // FLAG_TRUECOLOR, tty_color_get_name_by_index()
 #include "lib/tty/key.h"
 #include "lib/skin.h"  // EDITOR_NORMAL_COLOR
 #include "lib/vfs/vfs.h"
@@ -89,6 +93,23 @@
 
 /*** file scope type declarations ****************************************************************/
 
+typedef struct
+{
+    const dview_syntax_t *ds;  // turns a run's color into a screen pair
+    const syntax_run_t *runs;
+    guint32 count;
+    guint32 idx;
+    guint32 upto;  // source byte at which the current run ends
+} run_walk_t;
+
+typedef struct
+{
+    int fg;
+    int bg;
+    gboolean mark;  // the changed-word mark had to go into an attribute
+    int pair;
+} compose_entry_t;
+
 typedef enum
 {
     FROM_LEFT_TO_RIGHT,
@@ -97,7 +118,26 @@ typedef enum
 
 /*** forward declarations (file scope functions) *************************************************/
 
+static int dview_frame_keep (int pair);
+
 /*** file scope variables ************************************************************************/
+
+/* How far a changed line, and a changed word inside it, have to sit from the
+   ground; the same distances the skins were tuned to. */
+#define LINE_DISTANCE      110.0
+#define WORD_DISTANCE      185.0
+
+#define COMPOSE_CACHE_SIZE 64
+
+static compose_entry_t compose_cache[COMPOSE_CACHE_SIZE];
+static int compose_cache_n = 0;
+
+/* Temporary pairs taken for the frame being drawn: the composed ones and the few
+   the states are moved to when the skin leaves the ground to the terminal. */
+#define FRAME_PAIRS_MAX (COMPOSE_CACHE_SIZE + 8)
+
+static int frame_pairs[FRAME_PAIRS_MAX];
+static int frame_pairs_n = 0;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -620,7 +660,17 @@ dview_str_utf8_offset_to_pos (const char *text, size_t length)
         return length;
 
     if (g_utf8_validate (text, -1, NULL))
-        result = g_utf8_offset_to_pointer (text, length) - text;
+    {
+        const glong chars = g_utf8_strlen (text, -1);
+
+        if ((glong) length <= chars)
+            result = g_utf8_offset_to_pointer (text, length) - text;
+        else
+            /* Past the end of the line the rest is padding, a byte to a column.
+               g_utf8_offset_to_pointer() would count it out the same way, but by
+               walking over memory that is not the string's any more. */
+            result = (ptrdiff_t) strlen (text) + ((ptrdiff_t) length - chars);
+    }
     else
     {
         gunichar uni;
@@ -1096,6 +1146,7 @@ hdiff_multi (const char *s, const char *t, const BRACKET bracket, int min, GArra
         GArray *ret;
         BRACKET b;
         int len;
+        gboolean ok = TRUE;
 
         ret = g_array_new (FALSE, TRUE, sizeof (PAIR));
 
@@ -1111,10 +1162,9 @@ hdiff_multi (const char *s, const char *t, const BRACKET bracket, int min, GArra
             b[DIFF_LEFT].len = (*data)[0];
             b[DIFF_RIGHT].off = bracket[DIFF_RIGHT].off;
             b[DIFF_RIGHT].len = (*data)[1];
-            if (!hdiff_multi (s, t, b, min, hdiff, depth))
-                return FALSE;
+            ok = hdiff_multi (s, t, b, min, hdiff, depth);
 
-            for (k = 0; k < ret->len - 1; k++)
+            for (k = 0; ok && k < ret->len - 1; k++)
             {
                 data = (const PAIR *) &g_array_index (ret, PAIR, k);
                 data2 = (const PAIR *) &g_array_index (ret, PAIR, k + 1);
@@ -1122,20 +1172,25 @@ hdiff_multi (const char *s, const char *t, const BRACKET bracket, int min, GArra
                 b[DIFF_LEFT].len = (*data2)[0] - (*data)[0] - len;
                 b[DIFF_RIGHT].off = bracket[DIFF_RIGHT].off + (*data)[1] + len;
                 b[DIFF_RIGHT].len = (*data2)[1] - (*data)[1] - len;
-                if (!hdiff_multi (s, t, b, min, hdiff, depth))
-                    return FALSE;
+                ok = hdiff_multi (s, t, b, min, hdiff, depth);
             }
-            data = (const PAIR *) &g_array_index (ret, PAIR, k);
-            b[DIFF_LEFT].off = bracket[DIFF_LEFT].off + (*data)[0] + len;
-            b[DIFF_LEFT].len = bracket[DIFF_LEFT].len - (*data)[0] - len;
-            b[DIFF_RIGHT].off = bracket[DIFF_RIGHT].off + (*data)[1] + len;
-            b[DIFF_RIGHT].len = bracket[DIFF_RIGHT].len - (*data)[1] - len;
-            if (!hdiff_multi (s, t, b, min, hdiff, depth))
-                return FALSE;
+
+            if (ok)
+            {
+                data = (const PAIR *) &g_array_index (ret, PAIR, k);
+                b[DIFF_LEFT].off = bracket[DIFF_LEFT].off + (*data)[0] + len;
+                b[DIFF_LEFT].len = bracket[DIFF_LEFT].len - (*data)[0] - len;
+                b[DIFF_RIGHT].off = bracket[DIFF_RIGHT].off + (*data)[1] + len;
+                b[DIFF_RIGHT].len = bracket[DIFF_RIGHT].len - (*data)[1] - len;
+                ok = hdiff_multi (s, t, b, min, hdiff, depth);
+            }
 
             g_array_free (ret, TRUE);
-            return TRUE;
+            return ok;
         }
+
+        // nothing in common: the whole bracket is one difference, recorded below
+        g_array_free (ret, TRUE);
     }
 
     p[DIFF_LEFT].off = bracket[DIFF_LEFT].off;
@@ -1215,6 +1270,369 @@ is_inside (int k, GArray *hdiff, diff_place_t ord)
             return TRUE;
     }
     return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * How far apart two colors look, squared; weighted so that it roughly follows
+ * the eye.
+ *
+ * Not the luminance ratio: two backgrounds are told apart by their color, and a
+ * dark red on black is plain to see though it is barely brighter.
+ */
+
+static double
+color_distance2 (const int a[3], const int b[3])
+{
+    const double rm = (a[0] + b[0]) / 2.0;
+    const double dr = a[0] - b[0];
+    const double dg = a[1] - b[1];
+    const double db = a[2] - b[2];
+
+    // squared, so that no square root and no libm are needed to compare two
+    return (2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Name a computed color so that the terminal at hand can actually show it.
+ *
+ * Where there is no true color, the 6x6x6 cube is all there is; a tinted color
+ * must not be rounded onto the gray ramp, which is often the nearest by distance
+ * and would throw the hue away.
+ */
+
+static void
+color_name_of (const int rgb[3], char *buf, size_t size)
+{
+    static const int level[6] = { 0, 95, 135, 175, 215, 255 };
+    int mx = MAX (rgb[0], MAX (rgb[1], rgb[2]));
+    int mn = MIN (rgb[0], MIN (rgb[1], rgb[2]));
+    gboolean tinted = mx - mn >= 24;
+    int best = 16;
+    double bestd = 1e30;
+    int i;
+
+    if (tty_use_truecolors (NULL))
+    {
+        g_snprintf (buf, size, "#%02x%02x%02x", (unsigned) rgb[0], (unsigned) rgb[1],
+                    (unsigned) rgb[2]);
+        return;
+    }
+
+    for (i = 16; i < (tinted ? 232 : 256); i++)
+    {
+        int c[3];
+        double d;
+
+        if (i < 232)
+        {
+            const int n = i - 16;
+
+            c[0] = level[n / 36];
+            c[1] = level[(n / 6) % 6];
+            c[2] = level[n % 6];
+            if (tinted && MAX (c[0], MAX (c[1], c[2])) - MIN (c[0], MIN (c[1], c[2])) < 40)
+                continue;
+        }
+        else
+            c[0] = c[1] = c[2] = 8 + (i - 232) * 10;
+
+        d = color_distance2 (c, rgb);
+        if (d < bestd)
+        {
+            bestd = d;
+            best = i;
+        }
+    }
+
+    g_snprintf (buf, size, "color%d", best);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * A shade of the given hue sitting the target distance away from the ground.
+ *
+ * Walks out from the ground and stops at the first shade that is different
+ * enough, so it never goes further than it must: the text drawn on top has to
+ * stay legible.
+ *
+ * @param ground color to walk away from
+ * @param hue_rgb color whose hue the result keeps
+ * @param target perceptual distance to reach
+ * @param out where the result is stored
+ */
+
+static void
+color_step_from (const int ground[3], const int hue_rgb[3], double target, int out[3])
+{
+    int vivid[3];
+    int i, mx = 0, mn = 255;
+    int step;
+
+    for (i = 0; i < 3; i++)
+    {
+        mx = MAX (mx, hue_rgb[i]);
+        mn = MIN (mn, hue_rgb[i]);
+    }
+
+    if (mx - mn < 24 || mx == 0)
+    {
+        // colorless: the step is in gray, away from the ground
+        const int to = ground[0] + ground[1] + ground[2] > 3 * 128 ? 0 : 255;
+
+        for (i = 0; i < 3; i++)
+            vivid[i] = to;
+    }
+    else
+    {
+        // the same hue at full strength, at a lightness the ground can be left for
+        const int lift = ground[0] + ground[1] + ground[2] > 3 * 128 ? 140 : 191;
+
+        for (i = 0; i < 3; i++)
+            vivid[i] = (hue_rgb[i] - mn) * lift / (mx - mn);
+    }
+
+    for (step = 1; step <= 200; step++)
+    {
+        for (i = 0; i < 3; i++)
+            out[i] = ground[i] + (vivid[i] - ground[i]) * step / 200;
+        if (color_distance2 (out, ground) >= target * target)
+            return;
+    }
+
+    for (i = 0; i < 3; i++)
+        out[i] = vivid[i];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The same pair, but on a ground of its own where the skin left the ground to
+ * the terminal.
+ *
+ * A skin that leaves the ground to the terminal says nothing about what the text
+ * sits on, so its diff colors cannot have been chosen to sit near it.  They are
+ * picked here instead, keeping the hue the skin gave each state and putting it a
+ * fixed distance from the background the terminal reported at startup.  A
+ * terminal that did not answer leaves the pairs as they were.
+ */
+
+static int
+dview_pair_on_terminal_ground (int pair, double target)
+{
+    int fg_rgb, bg_rgb, core_bg, src;
+    int ground[3], hue[3], out[3];
+    int r, g, b;
+    char bgname[16];
+    tty_color_pair_t spec;
+    const char *fgname;
+
+    // The skins that name their own ground were tuned against it already.
+    if (!tty_color_pair_rgb (CORE_NORMAL_COLOR, NULL, &core_bg) || core_bg >= 0)
+        return pair;
+    if (!tty_background_rgb (&r, &g, &b))
+        return pair;
+    if (!tty_color_pair_rgb (pair, &fg_rgb, &bg_rgb))
+        return pair;
+
+    // the hue the skin gave this state, from wherever it put it
+    src = bg_rgb >= 0 ? bg_rgb : fg_rgb;
+    if (src < 0)
+        return pair;
+
+    ground[0] = r;
+    ground[1] = g;
+    ground[2] = b;
+    hue[0] = (src >> 16) & 0xFF;
+    hue[1] = (src >> 8) & 0xFF;
+    hue[2] = src & 0xFF;
+
+    color_step_from (ground, hue, target, out);
+    color_name_of (out, bgname, sizeof (bgname));
+
+    fgname = tty_color_pair_foreground (pair);
+    spec.fg = (char *) (fgname != NULL ? fgname : "default");
+    spec.bg = bgname;
+    spec.attrs = NULL;
+
+    return dview_frame_keep (tty_try_alloc_color_pair (&spec, TRUE));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Walks a line's syntax runs in step with the source bytes being converted.
+ * Source bytes are visited in increasing order, so one cursor is enough.
+ */
+
+static void
+run_walk_init (run_walk_t *w, const WDiff *dview, diff_place_t ord, const DIFFLN *p)
+{
+    w->ds = dview->syntax_src[ord];
+    w->runs = NULL;
+    w->count = 0;
+    w->idx = 0;
+    w->upto = 0;
+
+    if (!dview->syntax || dview->syntax_runs[ord] == NULL || w->ds == NULL || p == NULL
+        || p->run_count == 0)
+        return;
+
+    w->runs = &g_array_index (dview->syntax_runs[ord], syntax_run_t, p->run_first);
+    w->count = p->run_count;
+    w->upto = w->runs[0].len;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Color of source byte @k, or -1 when the line carries no syntax. */
+
+static int
+run_walk_color (run_walk_t *w, int k)
+{
+    if (w->runs == NULL)
+        return -1;
+
+    while (w->idx + 1 < w->count && (guint32) k >= w->upto)
+    {
+        w->idx++;
+        w->upto += w->runs[w->idx].len;
+    }
+
+    return dview_syntax_color (w->ds, w->runs[w->idx].color);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Hold a temporary pair for as long as the frame is on the screen.
+ */
+
+static int
+dview_frame_keep (int pair)
+{
+    if (pair >= 0 && frame_pairs_n < FRAME_PAIRS_MAX)
+        frame_pairs[frame_pairs_n++] = pair;
+
+    return pair;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Give back what the previous frame took.
+ *
+ * Only ever called before anything of the next frame is drawn: the screen keeps
+ * pair numbers rather than colors, and a released number is free to be handed out
+ * again, which would repaint what is still on it.
+ */
+
+static void
+dview_frame_colors_drop (void)
+{
+    while (frame_pairs_n > 0)
+        tty_color_release_temp (frame_pairs[--frame_pairs_n]);
+
+    compose_cache_n = 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * Pair drawing one pair's text on another pair's background.
+ *
+ * Composing scans the color pair table, too expensive to do per character, so
+ * remember what this frame has asked for already.  The cache is dropped once a
+ * frame, which also keeps it honest across a skin change.
+ *
+ * @param fg_pair pair the text color comes from
+ * @param bg_pair pair the background comes from
+ * @param mark whether the changed-word mark has to go into an attribute
+ * @return index of the pair to draw with
+ */
+
+static int
+dview_compose (int fg_pair, int bg_pair, gboolean mark)
+{
+    int i;
+
+    if (fg_pair < 0)
+        return bg_pair;
+
+    for (i = 0; i < compose_cache_n; i++)
+        if (compose_cache[i].fg == fg_pair && compose_cache[i].bg == bg_pair
+            && compose_cache[i].mark == mark)
+            return compose_cache[i].pair;
+
+    /* More colors than one frame was meant to hold: the background alone still
+       tells the state, and nothing is taken that could not be given back. */
+    if (compose_cache_n == COMPOSE_CACHE_SIZE || frame_pairs_n == FRAME_PAIRS_MAX)
+        return bg_pair;
+
+    i = tty_color_pair_compose (fg_pair, bg_pair, mark ? "underline" : NULL, TRUE);
+    if (i < 0)
+        return bg_pair;
+
+    dview_frame_keep (i);
+    compose_cache[compose_cache_n].fg = fg_pair;
+    compose_cache[compose_cache_n].bg = bg_pair;
+    compose_cache[compose_cache_n].mark = mark;
+    compose_cache[compose_cache_n].pair = i;
+    compose_cache_n++;
+
+    return i;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Can the body of a line carry the state of the line at all?
+ *
+ * It cannot when the skin paints a changed line on the same background as an
+ * unchanged one: with the foreground given over to the syntax, a changed line
+ * would look untouched.  The marker column then has to carry the state, whether
+ * the user asked for it or not.
+ */
+
+/**
+ * Does this skin give a changed word a background of its own?
+ *
+ * When it does not, and about half of the shipped skins do not because they tell
+ * the word apart by its foreground, the syntax colors would swallow the distinction,
+ * so it has to be carried by an attribute instead.
+ */
+
+static gboolean
+dview_state_needs_gutter (const int *states, size_t n)
+{
+    int normal = -1;
+    size_t i;
+
+    if (!tty_color_pair_rgb (CORE_NORMAL_COLOR, NULL, &normal))
+        return TRUE;
+
+    for (i = 0; i < n; i++)
+    {
+        int bg = -1;
+
+        if (!tty_color_pair_rgb (states[i], NULL, &bg) || bg == normal)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+dview_word_needs_mark (int word_pair, int line_pair)
+{
+    int a = -1, b = -1;
+
+    if (!tty_color_pair_rgb (word_pair, NULL, &a) || !tty_color_pair_rgb (line_pair, NULL, &b))
+        return TRUE;
+
+    return a == b;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1315,17 +1733,17 @@ cvt_ncpy (char *dst, int dstsize, const char **_src, size_t srcsize, int base, i
 
 static int
 cvt_mget (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int ts,
-          gboolean show_cr)
+          gboolean show_cr, run_walk_t *w, int *scol)
 {
     int sz = 0;
 
     if (src != NULL)
     {
-        int i;
+        int i, k;
         char *tmp = dst;
         const int base = 0;
 
-        for (i = 0; dstsize != 0 && srcsize != 0 && *src != '\n'; i++, src++, srcsize--)
+        for (i = 0, k = 0; dstsize != 0 && srcsize != 0 && *src != '\n'; i++, k++, src++, srcsize--)
         {
             if (*src == '\t')
             {
@@ -1340,6 +1758,8 @@ cvt_mget (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int
                     else if (dstsize != 0)
                     {
                         dstsize--;
+                        if (scol != NULL)
+                            *scol++ = run_walk_color (w, k);
                         *dst++ = ' ';
                     }
                 }
@@ -1351,12 +1771,19 @@ cvt_mget (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int
                     if (dstsize > 1)
                     {
                         dstsize -= 2;
+                        if (scol != NULL)
+                        {
+                            *scol++ = run_walk_color (w, k);
+                            *scol++ = run_walk_color (w, k);
+                        }
                         *dst++ = '^';
                         *dst++ = 'M';
                     }
                     else
                     {
                         dstsize--;
+                        if (scol != NULL)
+                            *scol++ = run_walk_color (w, k);
                         *dst++ = '.';
                     }
                 }
@@ -1375,6 +1802,8 @@ cvt_mget (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int
             else
             {
                 dstsize--;
+                if (scol != NULL)
+                    *scol++ = run_walk_color (w, k);
                 *dst++ = *src;
             }
         }
@@ -1407,7 +1836,7 @@ cvt_mget (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int
 
 static int
 cvt_mgeta (const char *src, size_t srcsize, char *dst, int dstsize, int skip, int ts,
-           gboolean show_cr, GArray *hdiff, diff_place_t ord, char *att)
+           gboolean show_cr, GArray *hdiff, diff_place_t ord, char *att, run_walk_t *w, int *scol)
 {
     int sz = 0;
 
@@ -1432,6 +1861,8 @@ cvt_mgeta (const char *src, size_t srcsize, char *dst, int dstsize, int skip, in
                     else if (dstsize != 0)
                     {
                         dstsize--;
+                        if (scol != NULL)
+                            *scol++ = run_walk_color (w, k);
                         *att++ = is_inside (k, hdiff, ord);
                         *dst++ = ' ';
                     }
@@ -1444,6 +1875,11 @@ cvt_mgeta (const char *src, size_t srcsize, char *dst, int dstsize, int skip, in
                     if (dstsize > 1)
                     {
                         dstsize -= 2;
+                        if (scol != NULL)
+                        {
+                            *scol++ = run_walk_color (w, k);
+                            *scol++ = run_walk_color (w, k);
+                        }
                         *att++ = is_inside (k, hdiff, ord);
                         *dst++ = '^';
                         *att++ = is_inside (k, hdiff, ord);
@@ -1452,6 +1888,8 @@ cvt_mgeta (const char *src, size_t srcsize, char *dst, int dstsize, int skip, in
                     else
                     {
                         dstsize--;
+                        if (scol != NULL)
+                            *scol++ = run_walk_color (w, k);
                         *att++ = is_inside (k, hdiff, ord);
                         *dst++ = '.';
                     }
@@ -1471,6 +1909,8 @@ cvt_mgeta (const char *src, size_t srcsize, char *dst, int dstsize, int skip, in
             else
             {
                 dstsize--;
+                if (scol != NULL)
+                    *scol++ = run_walk_color (w, k);
                 *att++ = is_inside (k, hdiff, ord);
                 *dst++ = *src;
             }
@@ -1624,6 +2064,10 @@ printer (void *ctx, int ch, int line, off_t off, size_t sz, const char *str)
         p.ch = ch;
         p.line = line;
         p.u.off = off;
+        p.run_first = 0;
+        p.run_count = 0;
+        if (((PRINTER_CTX *) ctx)->line_off != NULL)
+            g_array_append_val (((PRINTER_CTX *) ctx)->line_off, off);
         if (dsrc == DATA_SRC_MEM && line != 0)
         {
             if (sz != 0 && str[sz - 1] == '\n')
@@ -1659,6 +2103,66 @@ printer (void *ctx, int ch, int line, off_t off, size_t sz, const char *str)
         dview_fwrite (f, str, sz);
     }
     return 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Color one side of the diff in a single forward pass over the file.
+ *
+ * Done once here rather than per frame: the scanner is cheap going forward and
+ * expensive jumping back, and drawing jumps wherever the user scrolls.  Each line
+ * keeps a slice of the runs array; drawing is then a lookup.
+ */
+
+static void
+dview_build_syntax_runs (WDiff *dview, diff_place_t ord, const GArray *line_off)
+{
+    dview_syntax_t *ds;
+    GArray *runs;
+    guint i;
+
+    if (dview->syntax_runs[ord] != NULL)
+    {
+        g_array_free (dview->syntax_runs[ord], TRUE);
+        dview->syntax_runs[ord] = NULL;
+    }
+    dview_syntax_close (dview->syntax_src[ord]);
+    dview->syntax_src[ord] = NULL;
+
+    /* in the other data source modes the line text lives in a temporary file, and
+       the offsets collected here do not describe it */
+    if (!dview->syntax || dview->dsrc != DATA_SRC_MEM || line_off == NULL)
+        return;
+
+    ds = dview_syntax_open (dview->file[ord]);
+    if (ds == NULL)
+        return;
+    dview->syntax_src[ord] = ds;
+
+    runs = g_array_new (FALSE, FALSE, sizeof (syntax_run_t));
+
+    for (i = 0; i < dview->a[ord]->len; i++)
+    {
+        DIFFLN *p;
+        off_t start;
+
+        p = &g_array_index (dview->a[ord], DIFFLN, i);
+        p->run_first = runs->len;
+        p->run_count = 0;
+
+        // a filler line on this side has no text of its own
+        if (p->line == 0 || p->p == NULL || i >= line_off->len)
+            continue;
+
+        start = g_array_index (line_off, off_t, i);
+        dview_syntax_runs (ds, start, start + (off_t) p->u.len, runs);
+        p->run_count = runs->len - p->run_first;
+    }
+
+    // the bytes have done their job; the palette stays for drawing
+    dview_syntax_release_source (ds);
+    dview->syntax_runs[ord] = runs;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1705,13 +2209,22 @@ redo_diff (WDiff *dview)
     }
 
     ctx.dsrc = dview->dsrc;
+    ctx.line_off = g_array_new (FALSE, FALSE, sizeof (off_t));
+
     ctx.a = dview->a[DIFF_LEFT];
     ctx.f = f[DIFF_LEFT];
     rv |= dff_reparse (DIFF_LEFT, dview->file[DIFF_LEFT], ops, printer, &ctx);
+    if (rv == 0)
+        dview_build_syntax_runs (dview, DIFF_LEFT, ctx.line_off);
 
+    g_array_set_size (ctx.line_off, 0);
     ctx.a = dview->a[DIFF_RIGHT];
     ctx.f = f[DIFF_RIGHT];
     rv |= dff_reparse (DIFF_RIGHT, dview->file[DIFF_RIGHT], ops, printer, &ctx);
+    if (rv == 0)
+        dview_build_syntax_runs (dview, DIFF_RIGHT, ctx.line_off);
+
+    g_array_free (ctx.line_off, TRUE);
 
     if (ops != NULL)
         g_array_free (ops, TRUE);
@@ -2201,11 +2714,31 @@ dview_compute_areas (WDiff *dview)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+dview_free_syntax_runs (WDiff *dview)
+{
+    diff_place_t ord;
+
+    for (ord = DIFF_LEFT; ord < DIFF_COUNT; ord++)
+    {
+        if (dview->syntax_runs[ord] != NULL)
+        {
+            g_array_free (dview->syntax_runs[ord], TRUE);
+            dview->syntax_runs[ord] = NULL;
+        }
+        dview_syntax_close (dview->syntax_src[ord]);
+        dview->syntax_src[ord] = NULL;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
 dview_reread (WDiff *dview)
 {
     int ndiff;
 
     destroy_hdiff (dview);
+    dview_free_syntax_runs (dview);
     if (dview->a[DIFF_LEFT] != NULL)
         g_array_free (dview->a[DIFF_LEFT], TRUE);
     if (dview->a[DIFF_RIGHT] != NULL)
@@ -2268,6 +2801,7 @@ dview_load_options (WDiff *dview)
 
     dview->display_symbols =
         mc_config_get_bool (mc_global.main_config, "DiffView", "show_symbols", FALSE);
+    dview->syntax = mc_config_get_bool (mc_global.main_config, "DiffView", "syntax", FALSE);
     show_numbers = mc_config_get_bool (mc_global.main_config, "DiffView", "show_numbers", FALSE);
     if (show_numbers)
         dview->display_numbers = 1;
@@ -2299,6 +2833,7 @@ static void
 dview_save_options (WDiff *dview)
 {
     mc_config_set_bool (mc_global.main_config, "DiffView", "show_symbols", dview->display_symbols);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "syntax", dview->syntax);
     mc_config_set_bool (mc_global.main_config, "DiffView", "show_numbers",
                         dview->display_numbers != 0);
     mc_config_set_int (mc_global.main_config, "DiffView", "tab_size", dview->tab_size);
@@ -2429,6 +2964,10 @@ dview_init (WDiff *dview, const char *args, const char *file1, const char *file2
     dview->merged[DIFF_LEFT] = FALSE;
     dview->merged[DIFF_RIGHT] = FALSE;
     dview->hdiff = NULL;
+    dview->syntax_runs[DIFF_LEFT] = NULL;
+    dview->syntax_runs[DIFF_RIGHT] = NULL;
+    dview->syntax_src[DIFF_LEFT] = NULL;
+    dview->syntax_src[DIFF_RIGHT] = NULL;
     dview->dsrc = dsrc;
     dview->converter = str_cnv_from_term;
     dview_set_codeset (dview);
@@ -2455,6 +2994,7 @@ dview_fini (WDiff *dview)
         str_close_conv (dview->converter);
 
     destroy_hdiff (dview);
+    dview_free_syntax_runs (dview);
     if (dview->a[DIFF_LEFT] != NULL)
     {
         g_array_free (dview->a[DIFF_LEFT], TRUE);
@@ -2487,6 +3027,23 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
     const DIFFLN *p;
     int nwidth = display_numbers;
     int xwidth;
+    int scol[BUFSIZ];
+    int line_color;
+    int sz;
+    gboolean mark_line = FALSE;
+    const int c_added = dview_pair_on_terminal_ground (DIFFVIEWER_ADDED_COLOR, LINE_DISTANCE);
+    const int c_removed = dview_pair_on_terminal_ground (DIFFVIEWER_REMOVED_COLOR, LINE_DISTANCE);
+    const int c_changed = dview_pair_on_terminal_ground (DIFFVIEWER_CHANGED_COLOR, LINE_DISTANCE);
+    const int c_chgline =
+        dview_pair_on_terminal_ground (DIFFVIEWER_CHANGEDLINE_COLOR, LINE_DISTANCE);
+    const int c_chgnew = dview_pair_on_terminal_ground (DIFFVIEWER_CHANGEDNEW_COLOR, WORD_DISTANCE);
+    const int states[] = { c_added, c_removed, c_chgline };
+    run_walk_t w;
+    const gboolean word_mark = dview->syntax && dview_word_needs_mark (c_chgnew, c_chgline);
+
+    if (dview->syntax && !display_symbols
+        && dview_state_needs_gutter (states, G_N_ELEMENTS (states)))
+        display_symbols = TRUE;
 
     xwidth = display_numbers;
     if (display_symbols)
@@ -2527,12 +3084,35 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
 
         p = (DIFFLN *) &g_array_index (dview->a[ord], DIFFLN, i);
         ch = p->ch;
-        tty_setcolor (CORE_NORMAL_COLOR);
+        line_color = CORE_NORMAL_COLOR;
         if (display_symbols)
         {
+            /* In syntax mode the body of the line carries the syntax colors, so the
+               state of the line is shown here instead: the marker column keeps the
+               skin's own diff pair, which stays readable whatever the skin does. */
+            int gutter = CORE_NORMAL_COLOR;
+
+            if (dview->syntax)
+                switch (ch)
+                {
+                case ADD_CH:
+                    gutter = c_added;
+                    break;
+                case DEL_CH:
+                    gutter = c_removed;
+                    break;
+                case CHG_CH:
+                    gutter = c_chgline;
+                    break;
+                default:
+                    break;
+                }
+
+            tty_setcolor (gutter);
             tty_gotoyx (r + j, c - 2);
             tty_print_char (ch);
         }
+        tty_setcolor (line_color);
         if (p->line != 0)
         {
             if (display_numbers != 0)
@@ -2542,13 +3122,17 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
                 tty_print_string (str_fit_to_term (buf, nwidth, J_LEFT_FIT));
             }
             if (ch == ADD_CH)
-                tty_setcolor (DIFFVIEWER_ADDED_COLOR);
+                line_color = c_added;
             if (ch == CHG_CH)
-                tty_setcolor (DIFFVIEWER_CHANGEDLINE_COLOR);
+                line_color = c_chgline;
+            tty_setcolor (line_color);
             if (f == NULL)
             {
                 if (i == (size_t) dview->search.last_found_line)
-                    tty_setcolor (CORE_MARKED_SELECTED_COLOR);
+                {
+                    line_color = CORE_MARKED_SELECTED_COLOR;
+                    tty_setcolor (line_color);
+                }
                 else if (dview->hdiff != NULL && g_ptr_array_index (dview->hdiff, i) != NULL)
                 {
                     char att[BUFSIZ];
@@ -2558,8 +3142,27 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
                     else
                         k = width;
 
-                    cvt_mgeta (p->p, p->u.len, buf, k, skip, tab_size, show_cr,
-                               g_ptr_array_index (dview->hdiff, i), ord, att);
+                    memset (scol, -1, sizeof (scol));
+                    run_walk_init (&w, dview, ord, p);
+                    sz = cvt_mgeta (p->p, p->u.len, buf, k, skip, tab_size, show_cr,
+                                    g_ptr_array_index (dview->hdiff, i), ord, att, &w, scol);
+
+                    /* An emphasis has to be the exception to mean anything.  Where
+                       most of the line differs, marking the words that do would
+                       cover almost all of it, point at nothing, and make the text
+                       harder to read than leaving it alone; the line already says
+                       it changed, by its background. */
+                    mark_line = FALSE;
+                    if (word_mark)
+                    {
+                        int t, marked = 0, total = 0;
+
+                        for (t = 0; t < sz && t < width; t++, total++)
+                            if (att[t] != 0)
+                                marked++;
+                        mark_line = marked != 0 && marked * 2 < total;
+                    }
+
                     tty_gotoyx (r + j, c);
 
                     for (size_t cnt = 0; cnt < strlen (buf) && cnt < (size_t) width; cnt++)
@@ -2577,8 +3180,10 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
                         else
                             next_ch = dview_get_byte (buf, cnt);
 
-                        tty_setcolor (att[cnt] ? DIFFVIEWER_CHANGEDNEW_COLOR
-                                               : DIFFVIEWER_CHANGEDLINE_COLOR);
+                        /* the word-level state stays in the background; the
+                           foreground belongs to the syntax */
+                        tty_setcolor (dview_compose (scol[cnt], att[cnt] ? c_chgnew : c_chgline,
+                                                     att[cnt] != 0 && mark_line));
                         if (mc_global.utf8_display)
                         {
                             if (!dview->utf8)
@@ -2596,16 +3201,24 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
                 }
 
                 if (ch == CHG_CH)
-                    tty_setcolor (DIFFVIEWER_CHANGEDNEW_COLOR);
+                {
+                    line_color = c_chgnew;
+                    tty_setcolor (line_color);
+                }
 
                 if (dview->utf8)
                     k = dview_str_utf8_offset_to_pos (p->p, width);
                 else
                     k = width;
-                cvt_mget (p->p, p->u.len, buf, k, skip, tab_size, show_cr);
+                memset (scol, -1, sizeof (scol));
+                run_walk_init (&w, dview, ord, p);
+                cvt_mget (p->p, p->u.len, buf, k, skip, tab_size, show_cr, &w, scol);
             }
             else
+            {
+                memset (scol, -1, sizeof (scol));
                 cvt_fget (f, p->u.off, buf, width, skip, tab_size, show_cr);
+            }
         }
         else
         {
@@ -2616,9 +3229,11 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
                 tty_print_string (buf);
             }
             if (ch == DEL_CH)
-                tty_setcolor (DIFFVIEWER_REMOVED_COLOR);
+                line_color = c_removed;
             if (ch == CHG_CH)
-                tty_setcolor (DIFFVIEWER_CHANGED_COLOR);
+                line_color = c_changed;
+            tty_setcolor (line_color);
+            memset (scol, -1, sizeof (scol));
             fill_by_space (buf, width, TRUE);
         }
         tty_gotoyx (r + j, c);
@@ -2638,6 +3253,8 @@ dview_display_file (const WDiff *dview, diff_place_t ord, int r, int c, int heig
             }
             else
                 next_ch = dview_get_byte (buf, cnt);
+
+            tty_setcolor (dview_compose (scol[cnt], line_color, FALSE));
 
             if (mc_global.utf8_display)
             {
@@ -2744,6 +3361,11 @@ dview_update (WDiff *dview)
 
     if (height < 2)
         return;
+
+    /* Composed pairs live for the frame only, so a skin change cannot leave stale
+       indices behind, and the pairs go back to the terminal when the frame does.
+       Both halves are drawn below, and they share what they compose. */
+    dview_frame_colors_drop ();
 
     // use an actual length of dview->a
     if (dview->display_numbers != 0)
@@ -3016,6 +3638,12 @@ dview_execute_cmd (WDiff *dview, long command)
         break;
     case CK_ShowSymbols:
         dview->display_symbols = !dview->display_symbols;
+        dview->new_frame = TRUE;
+        break;
+    case CK_SyntaxOnOff:
+        dview->syntax = !dview->syntax;
+        // the runs are built while the diff is parsed, so turning this on rebuilds
+        dview_reread (dview);
         dview->new_frame = TRUE;
         break;
     case CK_ShowNumbers:

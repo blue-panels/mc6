@@ -3,20 +3,23 @@
 
    Copyright (C) 2005-2026
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Roland Illig <roland.illig@gmx.de>, 2005.
    Andrew Borodin <aborodin@vmail.ru>, 2009.
    Ilia Maslakov <il.smind@gmail.com>, 2011, 2026.
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -85,6 +88,9 @@ typedef struct
 static GSList *painters = NULL;
 static gboolean painting = FALSE;
 
+/* The terminal's own background, as OSC 11 reported it; -1 while unknown. */
+static int background_rgb = -1;
+
 static gboolean has_sixel = FALSE;
 static int cell_width = 0;
 static int cell_height = 0;
@@ -102,6 +108,28 @@ sigintr_handler (int signo)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The terminal's own background color, as it answered at startup.
+ *
+ * Worth asking where a skin leaves the background to the terminal: mc then knows
+ * nothing about the ground its text sits on, and cannot pick a color to sit near
+ * it.  Not every terminal answers, hence the return value.
+ */
+
+gboolean
+tty_background_rgb (int *r, int *g, int *b)
+{
+    if (background_rgb < 0)
+        return FALSE;
+
+    *r = (background_rgb >> 16) & 0xFF;
+    *g = (background_rgb >> 8) & 0xFF;
+    *b = background_rgb & 0xFF;
+
+    return TRUE;
+}
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -182,7 +210,8 @@ tty_raw_write (const char *data, size_t len)
    and CSI 6 ; <height> ; <width> t. The sequences are taken out of the
    buffer as they are found, and what is left is the user's. */
 static void
-tty_parse_graphics_reply (char *buf, size_t *len, gboolean *sixel_seen, gboolean *cell_seen)
+tty_parse_graphics_reply (char *buf, size_t *len, gboolean *sixel_seen, gboolean *cell_seen,
+                          gboolean *bg_seen)
 {
     size_t i = 0;
 
@@ -191,6 +220,62 @@ tty_parse_graphics_reply (char *buf, size_t *len, gboolean *sixel_seen, gboolean
         const char *p = buf + i + 2;
         const char *end = buf + *len;
         size_t taken = 0;
+
+        if (buf[i] == ESC_CHAR && buf[i + 1] == ']')
+        {
+            /* OSC 11 ; rgb:RRRR/GGGG/BBBB, ended by BEL or ST */
+            const char *q = p;
+            int comp[3] = { 0, 0, 0 };
+            int n = 0;
+
+            if (strncmp (q, "11;rgb:", 7) == 0)
+            {
+                q += 7;
+                for (n = 0; n < 3 && q < end; n++)
+                {
+                    int v = 0, digits = 0;
+
+                    while (q < end && g_ascii_isxdigit (*q) && digits < 4)
+                    {
+                        v = v * 16 + g_ascii_xdigit_value (*q);
+                        q++;
+                        digits++;
+                    }
+                    if (digits == 0)
+                        break;
+                    // components may be 1 to 4 hex digits wide; bring them to 8 bits
+                    while (digits < 4)
+                    {
+                        v = v * 16 + (v & 0xF);
+                        digits++;
+                    }
+                    comp[n] = v >> 8;
+                    if (n < 2)
+                    {
+                        if (q >= end || *q != '/')
+                            break;
+                        q++;
+                    }
+                }
+            }
+
+            // find the terminator so the reply is not left for the keyboard
+            while (q < end && *q != '\a' && !(*q == ESC_CHAR && q + 1 < end && q[1] == '\\'))
+                q++;
+            if (q >= end)
+                break;  // still arriving
+
+            if (n == 3)
+            {
+                background_rgb = (comp[0] << 16) | (comp[1] << 8) | comp[2];
+                *bg_seen = TRUE;
+            }
+            q += *q == '\a' ? 1 : 2;
+            taken = (size_t) (q - (buf + i));
+            memmove (buf + i, buf + i + taken, *len - i - taken);
+            *len -= taken;
+            continue;
+        }
 
         if (buf[i] != ESC_CHAR || buf[i + 1] != '[')
         {
@@ -269,6 +354,7 @@ tty_probe_graphics (void)
     char buf[512];
     size_t len = 0;
     gboolean sixel_seen = FALSE, cell_seen = FALSE;
+    gboolean bg_seen = FALSE;
     gboolean forced_off = env != NULL && env[0] == '0';
     gboolean forced_on = env != NULL && env[0] == '1';
     int waited_ms = 0;
@@ -304,15 +390,19 @@ tty_probe_graphics (void)
 
     if (isatty (STDIN_FILENO) && isatty (STDOUT_FILENO))
     {
-        static const char query[] = ESC_STR "[c" ESC_STR "[16t";
+        static const char query[] = ESC_STR "[c" ESC_STR "[16t" ESC_STR "]11;?\a";
 
         tty_raw_write (query, sizeof (query) - 1);
 
-        /* Every terminal answers DA1; not every one answers about the cell,
-           so once DA1 is in, the cell gets a short while only. A terminal
-           that answers neither costs the whole wait once, at startup. */
-        while (len < sizeof (buf) - 1 && !(sixel_seen && cell_seen)
-               && waited_ms < (sixel_seen ? 100 : 300))
+        /* Every terminal answers DA1; not every one answers about the cell or the
+           background, so once DA1 is in, the rest gets a short while only, and the
+           background, which only a skin that keeps the terminal's own ground even asks
+           about, a shorter one still. A terminal that answers nothing costs
+           the whole wait once, at startup. */
+        while (len < sizeof (buf) - 1 && !(sixel_seen && cell_seen && bg_seen)
+               && waited_ms < (!sixel_seen      ? 300
+                                   : !cell_seen ? 100
+                                                : 50))
         {
             fd_set fds;
             struct timeval tv = { 0, 50000 };
@@ -329,7 +419,7 @@ tty_probe_graphics (void)
             if (n <= 0)
                 break;
             len += (size_t) n;
-            tty_parse_graphics_reply (buf, &len, &sixel_seen, &cell_seen);
+            tty_parse_graphics_reply (buf, &len, &sixel_seen, &cell_seen, &bg_seen);
         }
 
         /* Whatever else came in was typed: it goes back to the keyboard. */

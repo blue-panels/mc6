@@ -23,7 +23,8 @@ typedef struct
     gboolean hex;         // Plainview or hexview
     gboolean magic;       // Preprocess the file using external programs
     gboolean nroff;       // Nroff-style highlighting
-    gboolean syntax;      // SGR background-color extension (ANSI text mode)
+    gboolean ansi;        // interpret SGR escape sequences found in the text
+    gboolean highlight;   // color the text by syntax, as the editor does
     gboolean terminal;    // ANSI terminal replay mode (virtual screen buffer)
     gboolean structured;  // Structured (tree) view of JSON/YAML/XML content
 } mcview_mode_flags_t;

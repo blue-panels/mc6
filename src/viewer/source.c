@@ -158,7 +158,7 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
     {
         view->mode_flags.hex = FALSE;
         view->mode_flags.nroff = FALSE;
-        view->mode_flags.syntax = FALSE;
+        view->mode_flags.ansi = FALSE;
         view->mode_flags.structured = FALSE;
         view->mode_flags.terminal = TRUE;
         if (view->vterm == NULL)

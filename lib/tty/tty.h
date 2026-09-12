@@ -98,6 +98,8 @@ extern char *tty_tigetstr (const char *terminfo_cap, const char *termcap_cap);
 
 /*** declarations of public functions ************************************************************/
 
+gboolean tty_background_rgb (int *r, int *g, int *b);
+
 extern void tty_beep (void);
 
 /* {{{ Input }}} */

@@ -3,6 +3,8 @@
 
    Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1996
@@ -16,14 +18,15 @@
    The mc_realpath routine is mostly from uClibc package, written
    by Rick Sladkey <jrs@world.std.com>
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -198,19 +201,31 @@ my_system_make_arg_array (int flags, const char *shell)
 {
     GPtrArray *args_array;
 
+    /* Everything in here belongs to the array and goes when it does: the words a
+       command is cut into have nowhere else to be freed. */
     if ((flags & EXECUTE_AS_SHELL) != 0)
     {
-        args_array = g_ptr_array_new ();
-        g_ptr_array_add (args_array, (gpointer) shell);
-        g_ptr_array_add (args_array, (gpointer) "-c");
+        args_array = g_ptr_array_new_with_free_func (g_free);
+        g_ptr_array_add (args_array, g_strdup (shell));
+        g_ptr_array_add (args_array, g_strdup ("-c"));
     }
     else if (shell == NULL || *shell == '\0')
     {
-        args_array = g_ptr_array_new ();
+        args_array = g_ptr_array_new_with_free_func (g_free);
         g_ptr_array_add (args_array, NULL);
     }
     else
+    {
         args_array = str_tokenize (shell);
+        if (args_array == NULL)
+        {
+            // a command of nothing but blanks is no command at all
+            args_array = g_ptr_array_new_with_free_func (g_free);
+            g_ptr_array_add (args_array, NULL);
+        }
+        else
+            g_ptr_array_set_free_func (args_array, g_free);
+    }
 
     return args_array;
 }
@@ -527,7 +542,7 @@ my_systemv_flags (int flags, const char *command, char *const argv[])
     execute_name = g_ptr_array_index (args_array, 0);
 
     for (; argv != NULL && *argv != NULL; argv++)
-        g_ptr_array_add (args_array, *argv);
+        g_ptr_array_add (args_array, g_strdup (*argv));
 
     g_ptr_array_add (args_array, NULL);
     status = my_systemv (execute_name, (char *const *) args_array->pdata);

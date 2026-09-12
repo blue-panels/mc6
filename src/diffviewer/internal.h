@@ -2,6 +2,8 @@
 #define MC__DIFFVIEW_INTERNAL_H
 
 #include "lib/global.h"
+
+#include "src/syntax/syntax.h"
 #include "lib/mcconfig.h"
 #include "lib/search.h"
 #include "lib/tty/color.h"
@@ -72,6 +74,9 @@ typedef struct
         size_t len;
     } u;
     void *p;
+    /* slice of WDiff::syntax_runs[ord] covering this line; count 0 means no colors */
+    guint32 run_first;
+    guint32 run_count;
 } DIFFLN;
 
 typedef struct
@@ -79,7 +84,15 @@ typedef struct
     FBUF *f;
     GArray *a;
     DSRC dsrc;
+    /* byte offset in the original file of each line appended to `a`, in step with
+       it; the union in DIFFLN cannot keep it, and it is only needed while the
+       syntax runs are being built */
+    GArray *line_off;
 } PRINTER_CTX;
+
+/* A run of bytes sharing one color of the rule set; pass the color to
+   dview_syntax_color() to get something to draw with. */
+typedef struct dview_syntax_t dview_syntax_t;
 
 typedef struct WDiff
 {
@@ -93,8 +106,11 @@ typedef struct WDiff
     gboolean merged[DIFF_COUNT];
     GArray *a[DIFF_COUNT];
     GPtrArray *hdiff;
-    int ndiff;  // number of hunks
-    DSRC dsrc;  // data source: memory or temporary file
+    gboolean syntax;                         // color the text by syntax instead of by diff state
+    GArray *syntax_runs[DIFF_COUNT];         // syntax_run_t, sliced per line by DIFFLN
+    dview_syntax_t *syntax_src[DIFF_COUNT];  // kept for its palette while drawing
+    int ndiff;                               // number of hunks
+    DSRC dsrc;                               // data source: memory or temporary file
 
     gboolean view_quit;  // Quit flag
 
@@ -146,5 +162,13 @@ typedef struct WDiff
 /* search.c */
 void dview_search_cmd (WDiff *dview);
 void dview_continue_search_cmd (WDiff *dview);
+
+/* syntax.c */
+dview_syntax_t *dview_syntax_open (const char *filename);
+void dview_syntax_release_source (dview_syntax_t *ds);
+void dview_syntax_close (dview_syntax_t *ds);
+off_t dview_syntax_size (const dview_syntax_t *ds);
+void dview_syntax_runs (dview_syntax_t *ds, off_t from, off_t to, GArray *runs);
+int dview_syntax_color (const dview_syntax_t *ds, guint32 run_color);
 
 #endif

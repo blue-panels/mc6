@@ -1252,6 +1252,7 @@ src/vfs/local/Makefile
 src/vfs/sfs/Makefile
 
 lib/Makefile
+src/syntax/Makefile
 lib/event/Makefile
 lib/filehighlight/Makefile
 lib/mcconfig/Makefile
@@ -1298,6 +1299,7 @@ AC_CONFIG_FILES(
 
 AC_CONFIG_FILES([
 tests/Makefile
+tests/src/syntax/Makefile
 tests/lib/Makefile
 tests/lib/mcconfig/Makefile
 tests/lib/search/Makefile

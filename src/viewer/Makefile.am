@@ -19,6 +19,7 @@ libmcviewer_la_SOURCES = \
 	move.c \
 	nroff.c \
 	search.c \
+	syntax.c \
 	selection.c \
 	source.c \
 	structured.c \

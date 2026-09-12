@@ -3,6 +3,8 @@
 
    Copyright (C) 1996-2026
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Paul Sheer, 1996, 1997
@@ -10,14 +12,15 @@
    Slava Zanko <slavazanko@gmail.com>, 2013
    Ilia Maslakov <il.smind@gmail.com> 2010-2012, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -542,7 +545,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
     int brace_depth = 0;
     long fold_line_count = 0;
     char line_stat[LINE_STATE_WIDTH + 1] = "\0";
-    edit_line_local_syntax_state_t line_syntax_state;
+    syntax_line_local_state_t line_syntax_state;
 
     if (row > w->rect.lines - 1 - EDIT_TEXT_VERTICAL_OFFSET - 2 * (edit->fullscreen != 0 ? 0 : 1))
         return;
@@ -579,7 +582,7 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
     start_col_real = col + edit->start_col;
     first_visible = q;
 
-    if (book_mark == 0 && edit->syntax_line_local && edit_options.syntax_highlighting)
+    if (book_mark == 0 && edit_syntax_is_line_local (edit) && edit_options.syntax_highlighting)
     {
         edit_line_local_syntax_reset (&line_syntax_state, q);
     }
@@ -685,11 +688,12 @@ edit_draw_this_line (WEdit *edit, off_t b, long row, long start_col, long end_co
                     p->style |= book_mark << 16;
                 else
                 {
-                    int color;
+                    int color = EDITOR_NORMAL_COLOR;
 
-                    color = edit->syntax_line_local && edit_options.syntax_highlighting
-                        ? edit_get_line_local_syntax_color (edit, &line_syntax_state, q)
-                        : edit_get_syntax_color (edit, q);
+                    if (edit_options.syntax_highlighting)
+                        color = edit_syntax_is_line_local (edit)
+                            ? edit_get_line_local_syntax_color (edit, &line_syntax_state, q)
+                            : edit_get_syntax_color (edit, q);
                     p->style |= color << 16;
                 }
 

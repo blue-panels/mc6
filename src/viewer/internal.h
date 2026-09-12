@@ -19,6 +19,8 @@
 #include "src/mctree/mctree-view.h"
 
 #include "mcviewer.h"
+#include "src/syntax/syntax.h"
+
 #include "ansi.h"
 #include "terminal_buffer.h"
 #include "vterm.h"
@@ -165,6 +167,13 @@ struct WView
     gboolean growbuf_finished;    // TRUE when all data has been read.
 
     mcview_mode_flags_t mode_flags;
+
+    /* syntax highlighting; NULL when off, unavailable or the file is too big */
+    syntax_scanner_t *syntax;
+    syntax_palette_t *palette;
+    syntax_line_local_state_t ll;  // carried between calls while drawing one line
+    off_t ll_bol;
+    off_t ll_at;
 
     // Hex editor modes
     gboolean hexedit_mode;  // Hexview or Hexedit
@@ -325,6 +334,9 @@ gboolean mcview_isprint (const WView *view, int c);
 int mcview_char_display (const WView *view, int c, char *s);
 void mcview_lcache_flush (WView *view);
 int mcview_ansi_get_color (const mcview_ansi_state_t *ansi);
+void mcview_syntax_load (WView *view);
+void mcview_syntax_unload (WView *view);
+int mcview_syntax_color (WView *view, off_t offset);
 int mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_colors_t *colors);
 void mcview_ascii_move_down (WView *view, off_t lines);
 void mcview_ascii_move_up (WView *view, off_t lines);
@@ -402,6 +414,7 @@ void mcview_toggle_magic_mode (WView *view);
 void mcview_toggle_wrap_mode (WView *view);
 void mcview_toggle_nroff_mode (WView *view);
 void mcview_toggle_ansi_mode (WView *view);
+void mcview_toggle_syntax_mode (WView *view);
 void mcview_cycle_display_mode (WView *view);
 void mcview_toggle_hex_mode (WView *view);
 void mcview_init (WView *view);

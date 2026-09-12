@@ -3,18 +3,22 @@
 
    Copyright (C) 2013-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Slava Zanko <slavazanko@gmail.com>, 2013
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -85,6 +89,9 @@ my_sigaction (int signum, const struct sigaction *act, struct sigaction *oldact)
     // store oldact
     if (oldact != NULL)
     {
+        /* The real sigaction() fills this in; without the same here the test
+           compares bytes that nobody has ever written. */
+        memset (oldact, 0, sizeof (*oldact));
         tmp_act = g_new (struct sigaction, 1);
         memcpy (tmp_act, oldact, sizeof (*tmp_act));
     }

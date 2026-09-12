@@ -435,7 +435,7 @@ START_TEST (test_copy_text_is_ansi_and_nroff_processed)
 {
     char *text;
 
-    view.mode_flags.syntax = TRUE;
+    view.mode_flags.ansi = TRUE;
     load ("\033[31mA\033[0m\tC\r\n");
 
     ck_assert (mcview_selection_command (&view, CK_MarkAll));
@@ -444,7 +444,7 @@ START_TEST (test_copy_text_is_ansi_and_nroff_processed)
     ck_assert_str_eq (text, "A       C\n");
     g_free (text);
 
-    view.mode_flags.syntax = FALSE;
+    view.mode_flags.ansi = FALSE;
     view.mode_flags.nroff = TRUE;
     load ("A _\bB\tC\r\n");
     ck_assert (mcview_selection_command (&view, CK_MarkAll));

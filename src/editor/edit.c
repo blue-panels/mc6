@@ -2666,8 +2666,11 @@ edit_init (WEdit *edit, const WRect *r, const edit_arg_t *arg)
     edit->runtime_revision = 1;
     edit->modified = 0;
     edit->locked = 0;
-    edit_load_syntax (edit, NULL, NULL);
-    edit_get_syntax_color (edit, -1);
+    if (edit_options.syntax_highlighting)
+    {
+        edit_load_syntax (edit, NULL, NULL);
+        edit_get_syntax_color (edit, -1);
+    }
 
     // load saved cursor position and/or boolmarks
     if ((line == 0) && edit_options.save_position)
@@ -3120,7 +3123,7 @@ edit_insert (WEdit *edit, int c)
     // update markers
     edit->mark1 += (edit->mark1 > edit->buffer.curs1) ? 1 : 0;
     edit->mark2 += (edit->mark2 > edit->buffer.curs1) ? 1 : 0;
-    edit->last_get_rule += (edit->last_get_rule > edit->buffer.curs1) ? 1 : 0;
+    syntax_notify_insert (edit->syntax, edit->buffer.curs1, FALSE);
 
     edit_buffer_insert (&edit->buffer, c);
     if (edit->loading_done != 0)
@@ -3175,7 +3178,7 @@ edit_insert_ahead (WEdit *edit, int c)
 
     edit->mark1 += (edit->mark1 >= edit->buffer.curs1) ? 1 : 0;
     edit->mark2 += (edit->mark2 >= edit->buffer.curs1) ? 1 : 0;
-    edit->last_get_rule += (edit->last_get_rule >= edit->buffer.curs1) ? 1 : 0;
+    syntax_notify_insert (edit->syntax, edit->buffer.curs1, TRUE);
 
     edit_buffer_insert_ahead (&edit->buffer, c);
     if (edit->loading_done != 0)
@@ -3245,8 +3248,7 @@ edit_delete (WEdit *edit, gboolean byte_delete)
         }
         if (edit->mark2 > edit->buffer.curs1)
             edit->mark2--;
-        if (edit->last_get_rule > edit->buffer.curs1)
-            edit->last_get_rule--;
+        syntax_notify_delete (edit->syntax, edit->buffer.curs1, FALSE);
 
         p = edit_buffer_delete (&edit->buffer);
 
@@ -3319,8 +3321,7 @@ edit_backspace (WEdit *edit, gboolean byte_delete)
         }
         if (edit->mark2 >= edit->buffer.curs1)
             edit->mark2--;
-        if (edit->last_get_rule >= edit->buffer.curs1)
-            edit->last_get_rule--;
+        syntax_notify_delete (edit->syntax, edit->buffer.curs1, TRUE);
 
         p = edit_buffer_backspace (&edit->buffer);
 

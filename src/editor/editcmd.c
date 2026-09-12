@@ -1050,7 +1050,7 @@ edit_syntax_onoff_cb (void *data, void *user_data)
         WEdit *edit = EDIT (data);
 
         if (edit_options.syntax_highlighting)
-            edit_load_syntax (edit, NULL, edit->syntax_type);
+            edit_load_syntax (edit, NULL, edit_get_syntax_type (edit));
         edit->force |= REDRAW_PAGE;
     }
 }
@@ -1345,8 +1345,8 @@ edit_save_as_cmd (WEdit *edit)
             edit->undo_content_saved = edit->undo_content_seq;
             edit->undo_content_saved_gen = edit->undo_content_gen;
             edit->delete_file = 0;
-            if (different_filename)
-                edit_load_syntax (edit, NULL, edit->syntax_type);
+            if (different_filename && edit_options.syntax_highlighting)
+                edit_load_syntax (edit, NULL, edit_get_syntax_type (edit));
             edit_publish_runtime_save (edit, previous_path, TRUE);
             ret = TRUE;
             break;

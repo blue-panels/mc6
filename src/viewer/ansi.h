@@ -49,8 +49,8 @@ typedef struct
     gboolean reverse;
 
     /* --- internal parser state --- */
-    gboolean in_escape; /**< seen ESC, waiting for '[' */
-    gboolean in_csi;    /**< inside CSI sequence (ESC[...) */
+    gboolean in_escape;   /**< seen ESC, waiting for '[' */
+    gboolean in_csi;      /**< inside CSI sequence (ESC[...) */
     gboolean csi_private; /**< CSI carries a private marker or intermediate; not an SGR */
     int params[MCVIEW_ANSI_MAX_PARAMS];
     gboolean is_colon_sep[MCVIEW_ANSI_MAX_PARAMS]; /**< TRUE if preceded by ':' */
