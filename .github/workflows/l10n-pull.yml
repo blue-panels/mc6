@@ -44,7 +44,7 @@ jobs:
           title='l10n: update translations from Weblate'
           body=$'Translations from https://translate.codeberg.org/projects/mc6/mc6/\n\nMerge, do not squash: the commits carry the names of the translators who wrote them.'
           url="https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/weblate"
-          url="${url}?expand=1&labels=Chore"
+          url="${url}?expand=1&labels=Chore,infra,Docs"
           url="${url}&title=$(jq -rn --arg s "$title" '$s|@uri')"
           url="${url}&body=$(jq -rn --arg s "$body" '$s|@uri')"
           {

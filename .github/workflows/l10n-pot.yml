@@ -73,7 +73,7 @@ jobs:
           title='po: update mc.pot'
           body=$'The gettext template no longer matches the sources.\n\nOnce this lands in master, Weblate pulls the template over the webhook and spreads the new strings over the po files.'
           url="https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/pot"
-          url="${url}?expand=1&labels=Chore"
+          url="${url}?expand=1&labels=Chore,infra,Docs"
           url="${url}&title=$(jq -rn --arg s "$title" '$s|@uri')"
           url="${url}&body=$(jq -rn --arg s "$body" '$s|@uri')"
           {
