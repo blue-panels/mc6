@@ -97,6 +97,17 @@ skip the dependency and replacement handling.
 - Built-in help: press `F1` inside mc
 - Manual pages: `mc(1)`, `mcedit(1)`, `mcview(1)`
 
+## Translations
+
+[![Translation status](https://translate.codeberg.org/widget/mc6/mc6/svg-badge.svg)](https://translate.codeberg.org/engage/mc6/)
+
+Program strings are translated on Codeberg Weblate:
+<https://translate.codeberg.org/engage/mc6/>
+
+Sign in with a Codeberg account and start translating, no other setup is
+needed. A maintainer brings the finished translations into `po/`, so please
+do not open pull requests that edit `po/*.po` by hand.
+
 ## Reporting problems
 
 Open an issue: <https://github.com/blue-panels/mc6/issues>
