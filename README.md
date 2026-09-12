@@ -21,7 +21,7 @@ Full notes: **[Releases wiki](https://github.com/blue-panels/mc6/wiki/Releases)*
   Shipped: git, docker, Kubernetes, MongoDB, S3, FTP/FTPS, SFTP, Samba, systemd,
   shell connections, External Panelize, arcmc and mcstruct. The old built-in `ftpfs` and
   `sftpfs` VFS modules are replaced by the FTP and SFTP plugins.
-- **arcmc** — an archive manager on libarchive: browse, create, pack and extract
+- **arcmc** - an archive manager on libarchive: browse, create, pack and extract
   (zip, 7z, tar.\*, cpio) with progress and cancel. The legacy built-in `tarfs`
   and `cpiofs` VFS modules have been removed. See the
   [arcmc documentation](src/panel-plugins/arcmc/README.md) for external archive
@@ -37,18 +37,18 @@ Full notes: **[Releases wiki](https://github.com/blue-panels/mc6/wiki/Releases)*
   [mcstruct guide](https://github.com/blue-panels/mc6/wiki/Mcstruct).
 
   ![mcstruct](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/mcstruct.gif)
-- **Editor** — code folding, an undo history browser, a macro explorer, and an
+- **Editor** - code folding, an undo history browser, a macro explorer, and an
   editor plugin framework.
-- **Viewer** — a structured tree mode for JSON, YAML, XML and HTML, a grep-style
+- **Viewer** - a structured tree mode for JSON, YAML, XML and HTML, a grep-style
   live filter, ANSI colour and terminal replay, and streaming of never-ending
   command output.
 
   ![Structured tree viewer](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-tree.gif)
 
   ![Grep-style live filter](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-filter.gif)
-- **Embedded terminal** — run a shell inside the file manager, panels stay in
+- **Embedded terminal** - run a shell inside the file manager, panels stay in
   sync with its directory.
-- **Panels** — user-editable view modes, dialogs for managing key bindings and
+- **Panels** - user-editable view modes, dialogs for managing key bindings and
   learning terminal keys, and the classic hide-a-panel / run-a-command flow.
 
   ![Hide a panel, run a command](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/panel-hide.gif)
