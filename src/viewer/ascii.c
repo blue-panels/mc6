@@ -1128,6 +1128,9 @@ mcview_display_line (WView *view, mcview_state_machine_t *state, int row, gboole
         if (view->search_start <= state->offset && state->offset < view->search_end)
             color = VIEWER_SELECTED_COLOR;
 
+        if (mcview_selection_contains (view, state_saved.offset, state->offset))
+            color = VIEWER_SELECTED_COLOR;
+
         if (cs[0] == '\n')
         {
             // For empty lines (col==0), use the newline's own color which may
@@ -1135,6 +1138,8 @@ mcview_display_line (WView *view, mcview_state_machine_t *state, int row, gboole
             // For non-empty lines, use the last drawn character's color.
             int line_fill = (col > 0) ? fill_color : color;
 
+            mcview_selection_record (view, row, (int) ((off_t) col - dpy_text_column), 1,
+                                     &state_saved, state->offset, cs[0]);
             mcview_fill_line_remaining (view, row, col, line_fill, dpy_text_column);
 
             if (par != NULL)
@@ -1195,6 +1200,9 @@ mcview_display_line (WView *view, mcview_state_machine_t *state, int row, gboole
                 *linewidth = col;
             return 1;
         }
+
+        mcview_selection_record (view, row, (int) ((off_t) col - dpy_text_column), charwidth,
+                                 &state_saved, state->offset, cs[0]);
 
         // Display, unless outside of the viewport.
         if (row >= 0 && row < r->lines)
@@ -1395,6 +1403,7 @@ mcview_display_text (WView *view)
         again = FALSE;
 
         mcview_display_clean (view);
+        mcview_selection_render_begin (view);
         mcview_display_ruler (view);
         /* Draw the status line right away: long parses below may flush intermediate
          * frames (progress spinner), which must not show a headless screen. */
@@ -1463,6 +1472,7 @@ mcview_display_text (WView *view)
     }
     while (again);
 
+    mcview_selection_render_end (view);
     view->dpy_end = state.offset;
     view->dpy_state_bottom = state;
 
