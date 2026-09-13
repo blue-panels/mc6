@@ -83,11 +83,25 @@
 
 /*** file scope type declarations ****************************************************************/
 
+/**
+ * A set of bytes a rule tests one byte against: what counts as part of a word.
+ *
+ * The .syntax file spells it as a string, and the automaton used to walk that
+ * string with strchr() for every byte of the text.  It is a table now, built
+ * once when the rules are read.  A set is shared by every rule that asks for
+ * the same bytes, so a rule set holds one or two of them.
+ */
+typedef struct
+{
+    char *chars;  // the set as the file spelled it, for interning
+    gboolean in_set[UCHAR_MAX + 1];
+} syntax_charset_t;
+
 typedef struct
 {
     GString *keyword;
-    char *whole_word_chars_left;
-    char *whole_word_chars_right;
+    const syntax_charset_t *whole_word_chars_left;
+    const syntax_charset_t *whole_word_chars_right;
     gboolean line_start;
     guint color;
 } syntax_keyword_t;
@@ -101,8 +115,8 @@ typedef struct
     gboolean line_start_left;
     gboolean line_start_right;
     gboolean between_delimiters;
-    char *whole_word_chars_left;
-    char *whole_word_chars_right;
+    const syntax_charset_t *whole_word_chars_left;
+    const syntax_charset_t *whole_word_chars_right;
     char *keyword_first_chars;
     gboolean spelling;
     // first word is word[1]
@@ -132,7 +146,8 @@ struct syntax_rules_t
     char *type;
     GPtrArray *contexts;  // context_rule_t
     GTree *defines;
-    GArray *colors;  // syntax_color_t, index 0 unused
+    GPtrArray *charsets;  // syntax_charset_t, shared by the rules that ask alike
+    GArray *colors;       // syntax_color_t, index 0 unused
     gboolean case_insensitive;
 
     gboolean line_local;
@@ -249,8 +264,6 @@ syntax_keyword_free (gpointer keyword)
     syntax_keyword_t *k = SYNTAX_KEYWORD (keyword);
 
     g_string_free (k->keyword, TRUE);
-    g_free (k->whole_word_chars_left);
-    g_free (k->whole_word_chars_right);
     g_free (k);
 }
 
@@ -263,8 +276,6 @@ context_rule_free (gpointer rule)
 
     g_string_free (r->left, TRUE);
     g_string_free (r->right, TRUE);
-    g_free (r->whole_word_chars_left);
-    g_free (r->whole_word_chars_right);
     g_free (r->keyword_first_chars);
 
     if (r->keyword != NULL)
@@ -306,6 +317,11 @@ syntax_rules_clear (syntax_rules_t *r)
         g_ptr_array_free (r->contexts, TRUE);
         r->contexts = NULL;
     }
+    if (r->charsets != NULL)
+    {
+        g_ptr_array_free (r->charsets, TRUE);
+        r->charsets = NULL;
+    }
 
     for (i = 1; i < r->colors->len; i++)
     {
@@ -345,6 +361,56 @@ destroy_defines (GTree **defines)
  * Kept symbolically on purpose: a rule set outlives the skin it is looked at
  * through, and is shared by consumers that draw in different ways.
  */
+
+static void
+syntax_charset_free (gpointer charset)
+{
+    syntax_charset_t *cs = (syntax_charset_t *) charset;
+
+    g_free (cs->chars);
+    g_free (cs);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The set of bytes @chars names, as a table to look one byte up in.
+ *
+ * Rules that name the same bytes get the same set back: a .syntax file says
+ * 'wholechars' once and every rule below it asks for that same set.
+ *
+ * The byte 0 is in every set, because strchr(), which this replaces, finds it
+ * at the end of any string.
+ */
+static const syntax_charset_t *
+syntax_intern_charset (syntax_rules_t *r, const char *chars)
+{
+    syntax_charset_t *cs;
+    const char *p;
+    guint i;
+
+    if (r->charsets == NULL)
+        r->charsets = g_ptr_array_new_with_free_func (syntax_charset_free);
+
+    for (i = 0; i < r->charsets->len; i++)
+    {
+        cs = (syntax_charset_t *) g_ptr_array_index (r->charsets, i);
+
+        if (strcmp (cs->chars, chars) == 0)
+            return cs;
+    }
+
+    cs = g_new0 (syntax_charset_t, 1);
+    cs->chars = g_strdup (chars);
+    cs->in_set[0] = TRUE;
+    for (p = chars; *p != '\0'; p++)
+        cs->in_set[(unsigned char) *p] = TRUE;
+    g_ptr_array_add (r->charsets, cs);
+
+    return cs;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static guint
 syntax_intern_color (syntax_rules_t *r, const syntax_color_spec_t *color)
@@ -400,6 +466,8 @@ syntax_rules_free (syntax_rules_t *r)
         destroy_defines (&r->defines);
     if (r->contexts != NULL)
         g_ptr_array_free (r->contexts, TRUE);
+    if (r->charsets != NULL)
+        g_ptr_array_free (r->charsets, TRUE);
 
     for (i = 0; i < r->colors->len; i++)
     {
@@ -515,8 +583,8 @@ in_char_set (const unsigned char *p, int c, unsigned char token)
  * to step over.
  */
 static gboolean
-match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned char **pp,
-            off_t *ii)
+match_star (const syntax_scanner_t *sc, const syntax_charset_t *whole_right,
+            const unsigned char **pp, off_t *ii)
 {
     const unsigned char *p = *pp + 1;
     off_t i = *ii;
@@ -526,7 +594,7 @@ match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned 
         int c;
 
         c = get_byte_folded (sc, i);
-        if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
+        if (*p == '\0' && whole_right != NULL && !whole_right->in_set[(unsigned char) c])
             break;
         if (c == *p)
             break;
@@ -545,7 +613,7 @@ match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned 
 
 /** '+' in a pattern: a run of bytes that are part of a word.  Empty will do. */
 static gboolean
-match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_right,
+match_plus (const syntax_scanner_t *sc, const GString *text, const syntax_charset_t *whole_right,
             const unsigned char **pp, off_t *ii)
 {
     const unsigned char *p = *pp + 1;
@@ -566,7 +634,7 @@ match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_r
         if (j != 0
             && strchr ((const char *) p + 1, c) != NULL)  // c exists further down, matched later
             break;
-        if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
+        if (whiteness (c) || (whole_right != NULL && !whole_right->in_set[(unsigned char) c]))
         {
             if (*p == '\0')
             {
@@ -650,13 +718,14 @@ match_brace (const syntax_scanner_t *sc, const unsigned char **pp, const unsigne
  */
 static off_t
 compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
-                       const char *whole_left, const char *whole_right, gboolean line_start)
+                       const syntax_charset_t *whole_left, const syntax_charset_t *whole_right,
+                       gboolean line_start)
 {
     const unsigned char *p, *q;
     int c;
 
     c = get_byte_folded (sc, i - 1);
-    if ((line_start && c != '\n') || (whole_left != NULL && strchr (whole_left, c) != NULL))
+    if ((line_start && c != '\n') || (whole_left != NULL && whole_left->in_set[(unsigned char) c]))
         return -1;
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
@@ -689,7 +758,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
     if (whole_right == NULL)
         return i;
 
-    return strchr (whole_right, get_byte_folded (sc, i)) != NULL ? -1 : i;
+    return whole_right->in_set[(unsigned char) get_byte_folded (sc, i)] ? -1 : i;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1154,25 +1223,26 @@ xx_lowerize_line (gboolean case_insensitive, char *line, size_t len)
  * side of it has to fall on a word border.
  */
 static void
-read_whole_word_chars (const syntax_parser_t *p, char ***args, char **left, char **right)
+read_whole_word_chars (syntax_parser_t *p, char ***args, const syntax_charset_t **left,
+                       const syntax_charset_t **right)
 {
     char **a = *args;
 
     if (strcmp (*a, "whole") == 0)
     {
         a++;
-        *left = g_strdup (p->whole_left);
-        *right = g_strdup (p->whole_right);
+        *left = syntax_intern_charset (p->rules, p->whole_left);
+        *right = syntax_intern_charset (p->rules, p->whole_right);
     }
     else if (strcmp (*a, "wholeleft") == 0)
     {
         a++;
-        *left = g_strdup (p->whole_left);
+        *left = syntax_intern_charset (p->rules, p->whole_left);
     }
     else if (strcmp (*a, "wholeright") == 0)
     {
         a++;
-        *right = g_strdup (p->whole_right);
+        *right = syntax_intern_charset (p->rules, p->whole_right);
     }
 
     *args = a;
