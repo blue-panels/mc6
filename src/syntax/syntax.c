@@ -435,6 +435,15 @@ xx_tolower (gboolean case_insensitive, int c)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** The byte at @i as the automaton reads it: folded when the rule set ignores case. */
+inline static int
+get_byte_folded (const syntax_scanner_t *sc, off_t i)
+{
+    return xx_tolower (sc->rules->case_insensitive, sc->get_byte (sc->data, i));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 subst_defines (GTree *defines, char **argv, char **argv_end)
 {
@@ -479,8 +488,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
     const unsigned char *p, *q;
     int c, d, j;
 
-    c = sc->get_byte (sc->data, i - 1);
-    c = xx_tolower (sc->rules->case_insensitive, c);
+    c = get_byte_folded (sc, i - 1);
     if ((line_start && c != '\n') || (whole_left != NULL && strchr (whole_left, c) != NULL))
         return -1;
 
@@ -492,8 +500,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             p++;
             while (TRUE)
             {
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
+                c = get_byte_folded (sc, i);
                 if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
                     break;
                 if (c == *p)
@@ -508,8 +515,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             j = 0;
             while (TRUE)
             {
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
+                c = get_byte_folded (sc, i);
                 if (c == *p)
                 {
                     j = i;
@@ -542,8 +548,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             while (TRUE)
             {
                 d = c;
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
+                c = get_byte_folded (sc, i);
                 for (j = 0; p[j] != SYNTAX_TOKEN_BRACKET && p[j] != '\0'; j++)
                     if (c == p[j])
                         goto found_char2;
@@ -561,8 +566,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
             break;
         case SYNTAX_TOKEN_BRACE:
             p++;
-            c = sc->get_byte (sc->data, i);
-            c = xx_tolower (sc->rules->case_insensitive, c);
+            c = get_byte_folded (sc, i);
             for (; *p != SYNTAX_TOKEN_BRACE && *p != '\0'; p++)
                 if (c == *p)
                     goto found_char3;
@@ -572,8 +576,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
                 p++;
             break;
         default:
-            c = sc->get_byte (sc->data, i);
-            if (*p != xx_tolower (sc->rules->case_insensitive, c))
+            if (*p != get_byte_folded (sc, i))
                 return -1;
         }
     }
@@ -581,8 +584,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
     if (whole_right == NULL)
         return i;
 
-    c = sc->get_byte (sc->data, i);
-    c = xx_tolower (sc->rules->case_insensitive, c);
+    c = get_byte_folded (sc, i);
     return strchr (whole_right, c) != NULL ? -1 : i;
 }
 
@@ -668,8 +670,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
     gboolean is_end;
     syntax_rule_t _rule = sc->rule;
 
-    c = sc->get_byte (sc->data, i);
-    c = xx_tolower (sc->rules->case_insensitive, c);
+    c = get_byte_folded (sc, i);
     if (c == 0)
         return;
 
