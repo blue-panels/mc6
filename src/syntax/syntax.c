@@ -176,6 +176,24 @@ typedef struct
     unsigned char border;
 } syntax_rule_t;
 
+/**
+ * What one pass over one byte has found so far.
+ *
+ * The pass answers five questions in a fixed order - is the keyword over, is
+ * the context over, does a keyword start here, does a context start here, and
+ * does a keyword of the new context start here - and every answer is read by
+ * the questions below it.
+ */
+typedef struct
+{
+    gboolean left;             // a border was closed here
+    gboolean right;            // a right delimiter matched here
+    gboolean keyword_left;     // the keyword ended here
+    gboolean keyword_right;    // a keyword started here
+    gboolean context_changed;  // the context is not the one the byte was entered with
+    off_t end;                 // how far the longest match found here reaches
+} syntax_found_t;
+
 /** A resumable point in the walk.  State only, never bytes. */
 typedef struct
 {
@@ -581,16 +599,73 @@ xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Turn on the keyword of the current context that starts at byte @i, if there
+ * is one.
+ *
+ * @param c the byte at @i, folded
+ * @param end how far the longest match found at @i reaches
+ * @param stop_newline_overflow hand the line break back to the context when the
+ *        keyword and the context both end with one
+ * @return TRUE when a keyword was turned on
+ */
+static gboolean
+try_keyword (const syntax_scanner_t *sc, off_t i, int c, syntax_rule_t *rule, off_t *end,
+             gboolean stop_newline_overflow)
+{
+    const context_rule_t *r;
+    const char *p;
+
+    r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->context));
+    p = r->keyword_first_chars;
+    if (p == NULL)
+        return FALSE;
+
+    while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c)) != '\0')
+    {
+        const syntax_keyword_t *k;
+        int count;
+        off_t e = -1;
+
+        count = p - r->keyword_first_chars;
+        k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
+        if (k->keyword != NULL)
+            e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
+                                       k->whole_word_chars_right, k->line_start);
+        if (e > 0)
+        {
+            /* when both context and keyword terminate with a newline,
+               the context overflows to the next line and colorizes it incorrectly */
+            if (stop_newline_overflow && e > i + 1 && rule->_context != 0
+                && k->keyword->str[k->keyword->len - 1] == '\n')
+            {
+                const context_rule_t *rc;
+
+                rc = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->_context));
+                if (rc->right != NULL && rc->right->len != 0
+                    && rc->right->str[rc->right->len - 1] == '\n')
+                    e--;
+            }
+
+            *end = e;
+            rule->end = e;
+            rule->keyword = count;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 {
     context_rule_t *r;
     int c;
-    gboolean contextchanged = FALSE;
-    gboolean found_left = FALSE, found_right = FALSE;
-    gboolean keyword_foundleft = FALSE, keyword_foundright = FALSE;
+    syntax_found_t found = { FALSE, FALSE, FALSE, FALSE, FALSE, 0 };
     gboolean is_end;
-    off_t end = 0;
     syntax_rule_t _rule = sc->rule;
 
     c = sc->get_byte (sc->data, i);
@@ -608,7 +683,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         if (is_end)
         {
             _rule.keyword = 0;
-            keyword_foundleft = TRUE;
+            found.keyword_left = TRUE;
         }
     }
 
@@ -625,7 +700,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                 > 0)
         {
             _rule.end = e;
-            found_right = TRUE;
+            found.right = TRUE;
             _rule.border = RULE_ON_RIGHT_BORDER;
             if (r->between_delimiters)
                 _rule.context = 0;
@@ -633,72 +708,33 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         else if (is_end && (sc->rule.border & RULE_ON_RIGHT_BORDER) != 0)
         {
             // always turn off a context at 4
-            found_left = TRUE;
+            found.left = TRUE;
             _rule.border = 0;
-            if (!keyword_foundleft)
+            if (!found.keyword_left)
                 _rule.context = 0;
         }
         else if (is_end && (sc->rule.border & RULE_ON_LEFT_BORDER) != 0)
         {
             // never turn off a context at 2
-            found_left = TRUE;
+            found.left = TRUE;
             _rule.border = 0;
         }
     }
 
     // check to turn on a keyword
     if (_rule.keyword == 0)
-    {
-        const char *p;
-
-        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
-        p = r->keyword_first_chars;
-
-        if (p != NULL)
-            while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c))
-                   != '\0')
-            {
-                syntax_keyword_t *k;
-                int count;
-                off_t e = -1;
-
-                count = p - r->keyword_first_chars;
-                k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-                if (k->keyword != 0)
-                    e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
-                                               k->whole_word_chars_right, k->line_start);
-                if (e > 0)
-                {
-                    /* when both context and keyword terminate with a newline,
-                       the context overflows to the next line and colorizes it incorrectly */
-                    if (e > i + 1 && _rule._context != 0
-                        && k->keyword->str[k->keyword->len - 1] == '\n')
-                    {
-                        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule._context));
-                        if (r->right != NULL && r->right->len != 0
-                            && r->right->str[r->right->len - 1] == '\n')
-                            e--;
-                    }
-
-                    end = e;
-                    _rule.end = e;
-                    _rule.keyword = count;
-                    keyword_foundright = TRUE;
-                    break;
-                }
-            }
-    }
+        found.keyword_right = try_keyword (sc, i, c, &_rule, &found.end, TRUE);
 
     // check to turn on a context
     if (_rule.context == 0)
     {
-        if (!found_left && is_end)
+        if (!found.left && is_end)
         {
             if ((sc->rule.border & RULE_ON_RIGHT_BORDER) != 0)
             {
                 _rule.border = 0;
                 _rule.context = 0;
-                contextchanged = TRUE;
+                found.context_changed = TRUE;
                 _rule.keyword = 0;
             }
             else if ((sc->rule.border & RULE_ON_LEFT_BORDER) != 0)
@@ -708,7 +744,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                 if (r->between_delimiters)
                 {
                     _rule.context = _rule._context;
-                    contextchanged = TRUE;
+                    found.context_changed = TRUE;
                     _rule.keyword = 0;
 
                     if (r->first_right == c)
@@ -719,10 +755,10 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                             e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
                                                        r->whole_word_chars_right,
                                                        r->line_start_right);
-                        if (e >= end)
+                        if (e >= found.end)
                         {
                             _rule.end = e;
-                            found_right = TRUE;
+                            found.right = TRUE;
                             _rule.border = RULE_ON_RIGHT_BORDER;
                             _rule.context = 0;
                         }
@@ -731,7 +767,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
             }
         }
 
-        if (!found_right)
+        if (!found.right)
         {
             size_t count;
 
@@ -745,7 +781,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                     if (r->left->len != 0)
                         e = compare_word_to_right (sc, i, r->left, r->whole_word_chars_left,
                                                    r->whole_word_chars_right, r->line_start_left);
-                    if (e >= end && (_rule.keyword == 0 || keyword_foundright))
+                    if (e >= found.end && (_rule.keyword == 0 || found.keyword_right))
                     {
                         _rule.end = e;
                         _rule.border = RULE_ON_LEFT_BORDER;
@@ -753,7 +789,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                         if (!r->between_delimiters && _rule.keyword == 0)
                         {
                             _rule.context = count;
-                            contextchanged = TRUE;
+                            found.context_changed = TRUE;
                         }
                         break;
                     }
@@ -762,35 +798,12 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         }
     }
 
-    // check again to turn on a keyword if the context switched
-    if (contextchanged && _rule.keyword == 0)
-    {
-        const char *p;
-
-        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
-        p = r->keyword_first_chars;
-
-        while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c))
-               != '\0')
-        {
-            syntax_keyword_t *k;
-            int count;
-            off_t e = -1;
-
-            count = p - r->keyword_first_chars;
-            k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-
-            if (k->keyword->len != 0)
-                e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
-                                           k->whole_word_chars_right, k->line_start);
-            if (e > 0)
-            {
-                _rule.end = e;
-                _rule.keyword = count;
-                break;
-            }
-        }
-    }
+    /* check again to turn on a keyword if the context switched.  The guard
+       against a keyword and a context that both end with a line break is not
+       applied here; a keyword that starts on the byte the context starts on
+       keeps the break.  Pinned by test_newline_keyword_at_context_start. */
+    if (found.context_changed && _rule.keyword == 0)
+        (void) try_keyword (sc, i, c, &_rule, &found.end, FALSE);
 
     sc->rule = _rule;
 }
