@@ -538,7 +538,7 @@ match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_r
 {
     const unsigned char *p = *pp + 1;
     off_t i = *ii;
-    int j = 0;
+    off_t j = 0;
 
     while (TRUE)
     {
