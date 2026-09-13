@@ -1,6 +1,6 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"TOPICS "Tartalomjegyzék"
-.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "GNU Midnight Commander"
+.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NÉV"
 mc \- Fájlkezelő Unix típusú rendszerekhez
@@ -10,7 +10,7 @@ mc \- Fájlkezelő Unix típusú rendszerekhez
 [\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-v file]
 .\"NODE "DESCRIPTION"
 .SH "LEÍRÁS"
-A Midnight Commander Unix típusú operációs rendszerekhez készített
+A M\-Commander Unix típusú operációs rendszerekhez készített
 könyvtár böngésző és filekezelő eszköz
 .\"DONT_SPLIT"
 .\"NODE "OPTIONS"
@@ -32,7 +32,7 @@ részt további információkért.
 Nem engedélyezi az egér használatát.
 .TP
 .I "\-f"
-Megjeleníti a Midnight Commander fájlainak elérési útvonalát, ahogy azt
+Megjeleníti a M\-Commander fájlainak elérési útvonalát, ahogy azt
 a fordításnál beállítottuk.
 .TP
 .I "\-k"
@@ -44,10 +44,10 @@ ahol a funkció billentyűk nem működnek.
 Fájlba menti a szerverrel lebonyolított ftpfs dialógus adatait.
 .TP
 .I "\-P"
-A program befejezésekor a Midnight Commander kiírja az utolsó
+A program befejezésekor a M\-Commander kiírja az utolsó
 munkakönyvtárat, ez nem használható közvetlenül, csak olyan különleges
 shell funkcióval, amely lehetővé teszi az aktuális shell könyvtár
-helyett a Midnight Commander által utoljára meglátogatott könyvtárra való
+helyett a M\-Commander által utoljára meglátogatott könyvtárra való
 átváltást (köszönet a funkcióért és a funkcióhoz szükséges kódért Torben
 Fjerdingstad\-nek és Sergey\-nek közreműködésükért). Kérlek, ne csinálj
 szó szerinti másolatot a funkció beállításairól. A fájlok forrása a
@@ -78,11 +78,11 @@ váltózó értékét használja, és nem a rendszer szintű terminál adatbázi
 .TP
 .I "\-u"
 Nem engedélyezi a konkurrens shell\-ek használatát (csak akkor használható,
-ha a Midnight Commandert a "concurrent shell" támogatással fordították).
+ha a M\-Commandert a "concurrent shell" támogatással fordították).
 .TP
 .I "\-U"
 Engedélyezi a konkurens shell támogatást (csak akkor használható ha
-a Midnight Commander fordításakor beállították a subshell támogatást,
+a M\-Commander fordításakor beállították a subshell támogatást,
 mint választható lehetőséget).
 .TP
 .I "\-v fájl"
@@ -106,7 +106,7 @@ Ha megadtad, akkor az első útvonal tartalma jelenik meg az aktuális
 panelen; a második könyvtár útvonal pedig a másik panelen jelenik meg.
 .\"NODE "Overview"
 .SH "Áttekintés"
-A Midnight Commander képernyőjének négy része van.  Csaknem az egész
+A M\-Commander képernyőjének négy része van.  Csaknem az egész
 képernyőt a két könyvtár panelre tölti ki.  Alapértelmezésben a képernyőn
 alulról a második sor a parancssor, a legalsó sor pedig a funkció gombok
 elnevezéseit jeleníti meg. A legfelső sor a
@@ -116,7 +116,7 @@ Menüsor
 A menüsor esetleg nem látható, de könnyen megjeleníthető úgy, hogy a
 felső sorra kattintasz az egérrel, vagy lenyomod az F9\-et.
 .PP
-A Midnight Commander lehetővé teszi, hogy egyszerre két panelt
+A M\-Commander lehetővé teszi, hogy egyszerre két panelt
 láthassunk. Az egyik a panelek közül az aktív "current" panel
 (a kiválasztó sáv az aktív panelen található). Majdnem minden
 művelet a jelenlegi panelben történik. Néhány fájlművelet, úgy, mint
@@ -136,9 +136,9 @@ Fájl menü
 .\"File Menu"
 részt.
 .PP
-Futtathatsz rendszer parancsot is a Midnight Commander\-ből, annak egyszerű
+Futtathatsz rendszer parancsot is a M\-Commander\-ből, annak egyszerű
 begépelésével. A megjelenő shell parancssorba mindíg begépelheted a
-parancsot és az Enter lenyomásakor a Midnight Commander lefuttatja azt;
+parancsot és az Enter lenyomásakor a M\-Commander lefuttatja azt;
 olvasd el a
 .\"LINK2"
 Shell parancssor
@@ -150,7 +150,7 @@ Beviteli gombok
 részt, hogy többet is megtudhass a parancssorról.
 .\"NODE "Mouse Support"
 .SH "Egér kezelés"
-A Midnight Commander eredendően tartalmazza az egér támogatást. Ez
+A M\-Commander eredendően tartalmazza az egér támogatást. Ez
 aktiválódik, ha
 .B xterm(1)
 terminálon futtatod (akkor is működik, amikor telnet, vagy rlogin
@@ -200,7 +200,7 @@ tulajdonságok (szöveg kivágás és beillesztés) a Shift gomb lenyomásával
 érhetők el.
 .\"NODE "Keys"
 .SH "Billentyűzet"
-Néhány Midnight Commander parancshoz szükséges a
+Néhány M\-Commander parancshoz szükséges a
 .I Control (~vezérlő)
 (ezeket CTRL\-lal vagy CTL\-lel jelöljük) és a
 .I Meta (~Váltó)
@@ -217,7 +217,7 @@ Meta, vagy az Alt billentyű, akkor használd az ESC\-et, a megfelelő
 karakter <kar> begépelésekor. A Meta funkció Linux alatt úgy érhető el,
 hogy megnyomjuk, majd elengedjük az ESC billentyűt. A Meta funkció az
 ezután megnyomott billentyűre vonatkozik!
-.PP A Midnight Commander
+.PP A M\-Commander
 beviteli eszköze a GNU Emacs szerkesztő billentyűzet\-kombinációihoz
 hasonlóan működik.
 .PP
@@ -264,8 +264,8 @@ egyetlen más kategóriába sem:
 .B Enter.
 Ha található valamilyen szöveg a parancssorban (az egyik sor a panelek
 aljánál), akkor azt lefuttatja, mint parancsot. Ha nem található szöveg
-a parancssorban, és a kiválasztás egy könyvtár felett van a Midnight
-Commander\-ben, akkor végrehajtja a
+a parancssorban, és a kiválasztás egy könyvtár felett van a
+M\-Commander\-ben, akkor végrehajtja a
 .B chdir(2)
 (könyvtárváltás) parancsot a kiválasztott könyvtárra és újraolvassa a
 panel információit; ha a kiválasztás egy futtatható fájlon van, akkor
@@ -276,7 +276,7 @@ társításoknál\&,
 akkor a kijelölt parancs fut le.
 .PP
 .B C\-l
-Frissít minden információt a Midnight Commander.
+Frissít minden információt a M\-Commander.
 .PP
 .B C\-x c
 Futtatja a
@@ -343,16 +343,16 @@ dialógboxba.
 .B C\-o
 A parancs futtatásakor xterm\-en Linux, vagy FreeBSD konzolon, megmutatja
 az előzö parancs kimeneteit. Linux konzolon történő futtatáskor a
-Midnight Commander egy beépített programot használ (cons.saver) a
+M\-Commander egy beépített programot használ (cons.saver) a
 képernyő\-információk elmentésére és visszaállítására. Tehát az MC
 képernyőjét bármikor kikapcsolhatjuk, és visszakapcsolhatjuk.
 .PP
 Ha a subshell támogatást is befordították, bármikor begépelheted a C\-o
-gombokat ahhoz, hogy visszatérhess a Midnight Commander saját
+gombokat ahhoz, hogy visszatérhess a M\-Commander saját
 képernyőjéhez, majd a C\-o gombok használatával visszatérhetsz a
 parancsodhoz. Ha az alkalmazásod felfüggesztett állapotba kerül, ennek a
 trükknek a használatakor, nem leszel képes futtatni más parancsot a
-Midnight Commander\-ből addíg, amíg a felfüggesztett alkalmazást meg nem
+M\-Commander\-ből addíg, amíg a felfüggesztett alkalmazást meg nem
 szakítod.
 .\"NODE "  Directory Panels"
 .SH "  Könyvtár panelek"
@@ -404,7 +404,7 @@ Könyvjelzőket
 .PP
 .B + \ (plusz)
 Ez használható a fájlok csoportjainak kiválasztásához (kijelöléséhez). A
-Midnight Commander megjelenít egy ablakot a jelölendő csoport pontos
+M\-Commander megjelenít egy ablakot a jelölendő csoport pontos
 kiterjesztésének megadásához. Ha a
 .I Shell kifejezések
 opció engedélyezve van, csak a pontos kiterjesztések használhatók a
@@ -506,7 +506,7 @@ könyvtárának elérési útját másolja át a parancssorba.
 .PP
 .B C\-q
 A quote (idézet) parancsot olyan karakterek beillesztésére használhatod,
-amelyeket egyébként a Midnight Commander használ (ilyen pl. a '+'
+amelyeket egyébként a M\-Commander használ (ilyen pl. a '+'
 szimbólum). Például a C\-+ elindítja a fájlkijelőlést ahelyett, hogy
 beíródna a parancssorba. A
 .B C\-q
@@ -526,7 +526,7 @@ mozgáshoz. Emiatt ezek pontosan ugyanazokat a billentyűket fogadják el.
 Ezeken túl néhány olyan van, amely csak az adott eszköz számára
 fogadható el.
 .PP
-A Midnight Commander többi része is használ néhány billentyűt a
+A M\-Commander többi része is használ néhány billentyűt a
 mozgáshoz, ezért ebben a részben ezek is használhatók a mozgáshoz.
 .PP
 .B crsr Up, C\-p
@@ -843,7 +843,7 @@ Parancskimenet panel
 részt további információkért).
 .\"NODE "  File Menu"
 .SH "  Fájl menü"
-A Midnight Commander az F1 \- F10 gombokat, mint gyorsbillentyűket
+A M\-Commander az F1 \- F10 gombokat, mint gyorsbillentyűket
 használja a Fájl menü parancsainak végrehajtásához. Az F\-es gombok
 (funkciógombok) a TERMINFO kf1 ... kf10 escape szekvenciáit használják. Ha
 a terminálon nincs funkciógomb támogatás, neked kell néhány funkciót
@@ -871,7 +871,7 @@ Ez segítségül hívja a
 felhasználói menüt\&.
 .\"Edit Menu File"
 A felhasználói menü könnyű használatot biztosít az új menükkel és az
-extra eszközökkel a Midnight Commander\-hez.
+extra eszközökkel a M\-Commander\-hez.
 .PP
 .B Megnéz (F3, Shift\-F3)
 .PP
@@ -951,8 +951,8 @@ nem igazán tudod mit akarsz csinálni.
 .PP
 A szimbolikus link az eredeti fájl nevére vonatkozik. Ha az eredeti fájlt
 töröljük, a szimbolikus link használhatatlan lesz. Ezt elég egyszerű
-úgy megjegyezni, hogy ez a fájlok megjelenítése más néven. A Midnight
-Commander "@"\-jelet jelenít meg a fájlnév előtt, ha az szimbolikus linkkel
+úgy megjegyezni, hogy ez a fájlok megjelenítése más néven. A
+M\-Commander "@"\-jelet jelenít meg a fájlnév előtt, ha az szimbolikus linkkel
 mutat valahova (a könyvtárakat kivéve, ahol tilde (~) jelet mutat). Az
 eredeti fájl, ahova mutat a link, láthatóvá válik a mini\-fájlinfó sorban,
 ha a
@@ -999,7 +999,7 @@ parancsot, ha teljes parancssort akarsz alkalmazni a könyvtárváltáshoz.
 .B Csoport kiválasztás (+)
 .PP
 Ez a fájlok csoportjainak kiválasztására (kijelölésére) használható. A
-Midnight Commander promptot (dialógus ablakot) jelenít meg a csoport
+M\-Commander promptot (dialógus ablakot) jelenít meg a csoport
 meghatározásának leírására. Ha a
 .I Shell kifejezések
 et engedélyezted, a pontos beírásnak megfelelő fájlnevek választódnak
@@ -1018,10 +1018,10 @@ parancs ellentéte.
 .PP
 .B Kilépés (F10, Shift\-F10)
 .PP
-Leállítja a Midnight Commander\-t. A Shift\-F10 akkor használható a
-kilépéshez, ha rejtett shellt használsz. A Shift\-F10 nem a Midnight
-Commander\-rel utoljára meglátogatott könyvtárat őrzi meg, hanem a Midnight
-Commander induláskori könyvtárát.
+Leállítja a M\-Commander\-t. A Shift\-F10 akkor használható a
+kilépéshez, ha rejtett shellt használsz. A Shift\-F10 nem a
+M\-Commander\-rel utoljára meglátogatott könyvtárat őrzi meg, hanem a
+M\-Commander induláskori könyvtárát.
 .\"NODE "    Quick cd"
 .SH "    Gyors cd"
 Ez a parancs akkor használható, amikor a teljes parancssort akarod a
@@ -1098,14 +1098,14 @@ lenyomásával elérhető).
 .\"NODE "    Directory Tree"
 .SH "    Könyvtárfa"
 A Könyvtárfa parancs fa formában mutatja meg a könyvtárakat. Ebből a
-listából kiválaszthatsz egy könyvtárat és a Midnight Commander abba a
+listából kiválaszthatsz egy könyvtárat és a M\-Commander abba a
 könyvtárba lép át.
 .PP
 Két lehetőség van a fa megjelenítésére. Az igazi könyvtárfa parancs
 elérhető a Parancsok menüből. A másik mód a Bal, vagy a Jobb menüben a
 fa nézet kiválasztása.
 .PP
-A Midnight Commander a fa nézet készítéséhez csak minden könyvtár belső
+A M\-Commander a fa nézet készítéséhez csak minden könyvtár belső
 beállításait szkenneli le, így magszabadít téged a hosszú várakozástól. Ha
 megtalálod a megtekinteni kívánt könyvtárat, menj rá a szülökönyvtárára
 és nyomd le a C\-r\-t (vagy az F2\-t).
@@ -1275,7 +1275,7 @@ mégegyszer begépelned azt.
 .\"NODE "    Hotlist"
 .SH "    Könyvjelzők"
 A Könyvjelzők parancs megmutatja a gyorslistában szereplő könyvtárakat.
-A Midnight Commander  a kiválasztott értéknek megfelelő könyvtárra
+A M\-Commander  a kiválasztott értéknek megfelelő könyvtárra
 váltja át a panel tartalmát. A Könyvjelzők dialógus ablakból kiveheted a
 már létező elnevezés\-\-könyvtár párokat, és hozzáadhatsz újakat is.
 Továbbiak hozzáadásához a Hozzáadás a kedvencekhez parancsot
@@ -1345,7 +1345,7 @@ A       A kiválasztott fájlok listázása oktális formában
 B       A hiba leírás szerkesztése és elküldése a root\-nak
 	I=`mktemp ${MC_TMPDIR:\-/tmp}/mail.XXXXXX` || exit 1
         vi $I
-        mail \-s "Midnight Commander bug" root < $I
+        mail \-s "M\-Commander bug" root < $I
 	rm \-f $I
 
 M       Levél olvasás
@@ -1462,7 +1462,7 @@ A magyarázat sorát '#'\-kal kell kezdened. A kiegészítő magyarázat sorait
 \&'#'\-kal, space\-szel, vagy tab\-bal kell kezdened.
 .\"NODE "  Options Menu"
 .SH "  Beállítások"
-A Midnight Commander rendelkezik néhány olyan opcióval, amely lehetővé
+A M\-Commander rendelkezik néhány olyan opcióval, amely lehetővé
 teszi a be\- illetve a kikapcsolását néhány dialógus eszköznek, amely az
 adott menüből elérhető. Az opció engedélyezett, ha csillag, vagy "x" áll
 előtte.
@@ -1471,7 +1471,7 @@ A
 .\"LINK2"
 Beállítások
 .\"Configuration"
-parancs dialógus ablakot nyit meg, amelyben a Midnight Commander főbb
+parancs dialógus ablakot nyit meg, amelyben a M\-Commander főbb
 beállításait elvégezheted.
 .PP
 A
@@ -1516,11 +1516,11 @@ Beállítások, Futtatás után vár... és Egyéb.
 .B Panel Beállítások
 .PP
 .I Backup fájlt mutat.
-Alapértelmezésben a Midnight Commander nem mutatja a '~'\-re végzödő
+Alapértelmezésben a M\-Commander nem mutatja a '~'\-re végzödő
 fájlokat (a GNU' \-B opciójának megfelelően).
 .PP
 .I Rejtett fájlt mutat.
-Alapértelmezésben a Midnight Commander láthatóvá teszi a ponttal kezdődő
+Alapértelmezésben a M\-Commander láthatóvá teszi a ponttal kezdődő
 fájlokat (az ls \-a \-hoz hasonlóan).
 .PP
 .I Kijelölés után lefele lép
@@ -1542,7 +1542,7 @@ könyvtár linkekkel) fog kezdődni, és ezeket az egyéb fájlok követik.
 .PP
 .I Gyors könyvtárlista.
 Ez az opció alapértelmezésben ki van kapcsolva. Ha bekapcsolod a gyors
-könyvtárlista funkciót, a Midnight Commander egy trükköt fog használni
+könyvtárlista funkciót, a M\-Commander egy trükköt fog használni
 akkor, ha a könyvtár tartalma megváltozik. A trükk az, hogy csak
 akkor olvassa újra a könyvtárat, ha a könyvtár inode\-ja megváltozott;
 ez azt jelenti, hogy csak fájl létrehozásakor, és törlésekor kerül
@@ -1554,7 +1554,7 @@ kapcsolva, kézzel tudod újraolvastatni a könyvtár tartalmát (a
 .PP
 .B Futtatás után vár
 .PP
-Az általad kiadott parancs lefutása után a Midnight Commander várhat
+Az általad kiadott parancs lefutása után a M\-Commander várhat
 amiatt, hogy meg tudd vizsgálni a parancs kimenetét. Három beállítás
 adható meg ennek a változónak:
 .I Soha
@@ -1581,7 +1581,7 @@ műveletek. Automatikusan kikapcsolódik ez a beállítás, ha a
 terminálod sebessége kissebb mint 9600 bps.
 .PP
 .I Byteok számítása
-Ha ez az opció engedélyezve van, a Midnight Commander számítja a teljes
+Ha ez az opció engedélyezve van, a M\-Commander számítja a teljes
 byte méretet és a teljes fájlszámot a Másolás, Átnevezés és a Törlés
 műveleteknél. Ez a funkció ellát téged több pontos folyamat sávval,
 kiegészítve azt néhány sebességgel. Ez az opció nem látható, ha a
@@ -1598,7 +1598,7 @@ engedélyezett, akkor a szokásos kiterjesztések azonosak a ed\-ben lévőkkel:
 .IR "man ed" .
 .PP
 .I Beállítások automatikus mentése
-Ha ez az opciót bekapcsoltad, amikor kilépsz a Midnight Commander\-ből,
+Ha ez az opciót bekapcsoltad, amikor kilépsz a M\-Commander\-ből,
 az MC opcióinak beállításait az ~/.config/mc6/ini fájlba menti.
 .PP
 .I Auto menük.
@@ -1632,7 +1632,7 @@ Belső fájlnéző
 részben.
 .PP
 .I Kiegészítés: minden mutat
-Alapértelmezésben a Midnight Commander megjelenít minden elem
+Alapértelmezésben a M\-Commander megjelenít minden elem
 .\"LINK2"
 Kiegészítést\&.
 .\"Completion"
@@ -1645,7 +1645,7 @@ beep hangot is kapsz. Ha látni szeretnéd az összes kiegészítést, az első
 lenyomása után, engedélyezd ezt az opciót.
 .PP
 .I Forgó törtjel
-Ha ezt az opciót engedélyezted, a Midnight Commander forgó törtjelet
+Ha ezt az opciót engedélyezted, a M\-Commander forgó törtjelet
 jelenít meg a jobb felső sarokban, mutatva ezzel azt, hogy munka van
 folyamatban.
 .PP
@@ -1656,10 +1656,10 @@ könyvtár és a shell parancssor elérhető. Alapértelmezésben ez a
 beállítás ki van kapcsolva.
 .PP
 .I Cd követi a linket
-Ez az opció, ha be van állítva, akkor a Midnight Commander követi a
+Ez az opció, ha be van állítva, akkor a M\-Commander követi a
 könyvtárak logikai kapcsolatait ha könyvtárat váltasz valamelyik
 panelben, vagy a cd parancsot használod. Ez alapértelmezésben a bash
-jellemzője. Amikor ez nincs beállítva, a Midnight Commander a valós
+jellemzője. Amikor ez nincs beállítva, a M\-Commander a valós
 könyvtárszerkezetet követi, úgy, mint amikor a cd..\-t gépeled be, a
 könyvtáron keresztül átlépsz a "szülő" könyvtárba, és nem abba a
 könyvtárba, amelyre a link mutat.
@@ -1695,7 +1695,7 @@ Ha pl. a jogosultságokat kérted, a
 .I jogok
 és a
 .I mode
-értékek a Midnight Commander\-t futtató felhasználó jogainak megfelelően
+értékek a M\-Commander\-t futtató felhasználó jogainak megfelelően
 láthatók a
 .\"LINK2"
 Fájllistában
@@ -1755,12 +1755,12 @@ Csatolt fájlrendszer
 .\"Virtual File System"
 informcáció cache\-ének beállítását.
 .PP
-A Midnight Commander a memóriában tárolja a csatolt fájlrendszer
+A M\-Commander a memóriában tárolja a csatolt fájlrendszer
 információit a fájlrendszeren lévő fájlok gyorsabb elérése érdekében
 (Például, könyvtár listázás trükkje távoli ftp szerverek esetén).
 .PP
 Azonfelül a tömörített fájlok tartalmához való hozzáféréskor (például,
-tömörített tar fájlok) a Midnight Commander készít egy kitömörített temp
+tömörített tar fájlok) a M\-Commander készít egy kitömörített temp
 fájlt a merevlemezeden.
 .PP
 A memóriában és a temp fájlban lévő információk között van némi időbeni
@@ -1780,7 +1780,7 @@ tarfájl hozzáférhető, mint szabványos tar fájl.
 .PP
 Ha elkezdjük böngészni a merevlemezen található tar fájlokat, majd
 elkezdjük nézni a többit, elveszne a rájuk vonatkozó információ. A
-Midnight Commander a memória cache\-ben tárolja ezeket egy időre, hogy
+M\-Commander a memória cache\-ben tárolja ezeket egy időre, hogy
 gyorsabb legyen az újraolvasásuk. Az alap frissítési idő egy perc.
 .PP
 Az
@@ -1795,14 +1795,14 @@ lassúvá válhat az FTP fájlrendszeren, mivel minden művelet az ftp szerver
 lekérdezésével történik.
 .PP
 Ezenfelül definiálhatod a proxy host\-ot az ftp adatforgalomhoz, és
-beállíthatod a Midnight Commander\-t, hogy mindíg használja a proxy
+beállíthatod a M\-Commander\-t, hogy mindíg használja a proxy
 host\-ot. Az ezzel kapcsolatos információkat lásd az
 .\"LINK2"
 FTP fájlrendszernél\&.
 .\"FTP File System"
 .\"NODE "    Save Setup"
 .SH "    Beállítások mentése"
-A Midnight Commander indításkor megpróbálja az indítási információkat
+A M\-Commander indításkor megpróbálja az indítási információkat
 beolvasni az
 .I ~/.config/mc6/ini
 fájlból. Ha ez a fájl nem létezik, ezeket az információkat a
@@ -1836,13 +1836,13 @@ részt a további információkért.
 .SH ""
 .\"NODE "Executing operating system commands"
 .SH "Az operációs rendszer parancsainak futtatása"
-Közvetlenül futtathatod a parancsokat azok begépelésével a Midnight
-Commander beviteli sorába, vagy a futtatandó program kiválaszátásval
+Közvetlenül futtathatod a parancsokat azok begépelésével a
+M\-Commander beviteli sorába, vagy a futtatandó program kiválaszátásval
 valamely panelben a kiválasztó sáv segítségével, és az Enter
 használatával.
 .PP
 Ha az Enter\-t az adott fájl felett lenyomod, nem indul el azonnal, hanem
-a Midnight Commander leellenőrzi a kiválasztott fájl kiterjesztését a
+a M\-Commander leellenőrzi a kiválasztott fájl kiterjesztését a
 .\"LINK2"
 Társításokban
 .\"Edit Extension File"
@@ -1856,7 +1856,7 @@ végzi ezt el a parancs futtatása előtt.
 .SH "  A cd belső parancs"
 A
 .I cd
-parancs végrehajtását a Midnight Commander nem adja át a shellnek. Tehát
+parancs végrehajtását a M\-Commander nem adja át a shellnek. Tehát
 a shellben értelmezett makrók és helyettesítések helyett a saját
 beállításai szerint dolgozik:
 .PP
@@ -1876,7 +1876,7 @@ speciális könyvtárnévvel így:
 .I CDPATH könyvtárak
 Ha a könyvtármeghatározás a
 .B cd
-parancs és nem a jelenlegi könyvtár, akkor a Midnight Commander a
+parancs és nem a jelenlegi könyvtár, akkor a M\-Commander a
 .B CDPATH
 környezeti változót keresi a könyvtárnevek között.
 .PP
@@ -2014,7 +2014,7 @@ a felhasználó.  Ez a makró jelenleg még nem működik a parancssorban.
 A subshell támogatás fordításkori opció, amely a shellek alkalmazásával
 működik: bash, tcsh and zsh.
 .PP
-Amikor a subshell kódot aktiváljuk, a Midnight Commander létrehozza a
+Amikor a subshell kódot aktiváljuk, a M\-Commander létrehozza a
 shell\-ed másolatát (azét, amelyik a
 .B SHELL
 változóban definiálva van, vagy ilyen nincs, akkor az /etc/passwd fájlban
@@ -2022,7 +2022,7 @@ találhatóét) és egy ál\-terminált fog futtatni, ahelyett, hogy minden
 parancsfuttatáskor az új shellt aktiválná, a parancs a subshellt fogja
 használni, ha megadtál ilyet. Ez lehetővé teszi számodra azt is, hogy
 megváltoztasd a környezeti változókat is, a shell funkciók használatával
-és megadva az értéküket, amelyeket a Midnight Commander\-ből való kilépésig
+és megadva az értéküket, amelyeket a M\-Commander\-ből való kilépésig
 használni fog.
 .PP
 Ha
@@ -2036,11 +2036,11 @@ lehetőségük megadni.
 Amikor a subshell kódot használod, bármikor megszakíthatod az
 alkalmazásokat
 .BR C\-o \-val,
-és visszaugrasz a Midnight Commander\-be. Ha félbeszakítod az alkalmazást,
+és visszaugrasz a M\-Commander\-be. Ha félbeszakítod az alkalmazást,
 nincs lehetőséged más külső parancsot futtatni, amíg ki nem lépsz a
 megszakított alkalmazásból.
 .PP
-A subshell által használt további eszköz a Midnight Commander által
+A subshell által használt további eszköz a M\-Commander által
 megjelenített prompt, amely ugyanaz, mint amit a jelenleg használt shell
 is használ.
 .PP
@@ -2127,7 +2127,7 @@ parancsok kombinációja egyetlen ablakban. Egyszerre tudod megváltoztatni
 a fájlok jogosultságait, és tulajdonos, vagy csoport azonosítóját.
 .\"NODE "File Operations"
 .SH "Fájl műveletek"
-Amikor fájlokat másolsz, mozgatsz, vagy törölsz, a Midnight Commander a
+Amikor fájlokat másolsz, mozgatsz, vagy törölsz, a M\-Commander a
 Fájl műveletek dialógus ablakot jeleníti meg. Majd megjeleníti az
 elkezdett művelet fájljait, ahol jobbára három folyamatsávot jelenít
 meg. A fájl sáv azt mutatja meg, hogy a kijelölt fájlok közül a jelenleg
@@ -2273,7 +2273,7 @@ Használhatsz kevert hivatkozást is ezen értékeknek megfelelően: "Szöveg"
 hivatkozás szövegét nem veszi figyelembe.
 .PP
 Ez a lista tartalmazza azokat a gombokat, amelyekhez művelet kapcsolódik
-a Midnight Commander belső fájlnézőjében.
+a M\-Commander belső fájlnézőjében.
 .PP
 .B F1
 Elindítja a beépített hypertext súgót.
@@ -2430,7 +2430,7 @@ beállíthatod a
 7 bitre a térközök tisztasága miatt.
 .\"NODE "Completion"
 .SH "Kiegészítés"
-A Midnight Commander begépeli neked a kívánt szöveget.
+A M\-Commander begépeli neked a kívánt szöveget.
 .PP
 Megkísérli kiegészíteni a szöveget a jelenlegi pozíciótól. Az MC
 kiegészíti a szöveget (ha a szöveg
@@ -2477,20 +2477,20 @@ második lenyomására jelenik meg, az első lenyomáskor, az MC csak
 hangjelzést ad.
 .\"NODE "Virtual File System"
 .SH "Csatolt (látszólagos) fájlrendszer"
-A Midnight Commander kód rétegekkel biztosítja azt, hozzáférj a
+A M\-Commander kód rétegekkel biztosítja azt, hozzáférj a
 fájlrednszerhez; Ez a kód réteg arra képes, hogy átváltson csatolt
 fájlrendszerre. A csatolt fájlrendszerre történő átváltás lehetővé teszi
-a Midnight Commander számára azt, hogy a fájl műveleteket végezzen akkor
+a M\-Commander számára azt, hogy a fájl műveleteket végezzen akkor
 is, ha a fájlok nincsenek a UNIX fájlrendszeren.
 .PP
-Jelenleg a Midnight Commander a következő Csatolt Fájlrendszerekkel
+Jelenleg a M\-Commander a következő Csatolt Fájlrendszerekkel
 rendelkezik (VFS): a helyi fájlrendszert a szokásos Unix fájlrendszeren
 lévő fájlokhoz használja; az ftpfs\-t, az FTP protokollal rendelkező
 távoli gépek fájlainak módosítására használja; az undelfs\-t, a
 törölt fájlok visszaállítására használja az ext2\-es fájlrendszeren
 (az alapértelmezett fájlrendszer Linux rendszereken), a fish (a fájlok
 shellen keresztüli módosításához, mint pl. rsh és ssh) és végül az mcfs
-(a Midnight Commander fájlrendszere), amely hálózat alapú fájlrendszer.
+(a M\-Commander fájlrendszere), amely hálózat alapú fájlrendszer.
 .PP
 A VFS kódváltója minden elérési útvonal leírást értelmez és
 követi azt a megfelelő fájlrendszerrel, azt, hogy melyik
@@ -2512,7 +2512,7 @@ A
 .I távoli\-könyvtár
 elemek opcionálisak. Ha megadod a
 .I felhasználó
-elemet, akkor a Midnight Commander a távoli gépre megpróbál ezzel a
+elemet, akkor a M\-Commander a távoli gépre megpróbál ezzel a
 felhasználónévvel belépni, egyébként a te bejelentkező nevedet fogja
 használni. Opcionális a
 .I jelszó
@@ -2533,7 +2533,7 @@ Példák:
 .PP
 Tűzfalon keresztüli kapcsolat létrehozásához, az ftp://!  kiegészítés
 használatára van szükséged (pl., felkiáltójel a dupla perjel után)
-ahhoz, hogy a Midnight Commander használni tudja a proxy host\-ot az ftp
+ahhoz, hogy a M\-Commander használni tudja a proxy host\-ot az ftp
 átvitelhez. A
 .\"LINK2"
 Csatolt fájlrendszer...
@@ -2559,7 +2559,7 @@ kell a program számára megadnod azt, hogy a fájlokat passzív módon
 nyissa meg. Ennek használatához állítsd be az
 ftpfs_use_passive_connections opciót az indító fájlban.
 .PP
-A Midnight Commander a könyvtárlistát a cache\-ben tárolja. A
+A M\-Commander a könyvtárlistát a cache\-ben tárolja. A
 cache frissítésének ideje a
 .\"LINK2"
 Csatolt fájlrendszer...
@@ -2591,7 +2591,7 @@ A
 .I távoli\-könyvtár
 elemek opcionálisak. Ha megadod a
 .I felhasználó
-elemet, akkor a Midnight Commander megpróbál belépni a távoli gépre
+elemet, akkor a M\-Commander megpróbál belépni a távoli gépre
 ezzel a felhasználó névvel, egyébként pedig a te belépő nevedet
 használja.
 .PP
@@ -2612,8 +2612,8 @@ Példák:
 .\"NODE "  EXTernal File System"
 .SH "  EXTernal File System"
 .B extfs
-allows to integrate numerous features and file types into GNU Midnight
-Commander in an easy way, by writing scripts.
+allows to integrate numerous features and file types into
+M\-Commander in an easy way, by writing scripts.
 .PP
 Extfs filesystems can be divided into two categories:
 .PP
@@ -2651,7 +2651,7 @@ instance, you can add it to the hotlist or change to it from directory
 history.  An important limitation is that you cannot invoke shell
 commands inside extfs, just like any other non\-local VFS.
 .PP
-Common extfs scripts included with Midnight Commander are:
+Common extfs scripts included with M\-Commander are:
 .TP
 .B a
 access 'A:' DOS/Windows diskette
@@ -2722,7 +2722,7 @@ section.  Here is an example entry for Debian packages:
 .fi
 .\"NODE "Colors"
 .SH "Színek"
-A Midnight Commander megpróbálja megállapítani azt, hogy a terminál
+A M\-Commander megpróbálja megállapítani azt, hogy a terminál
 amelyet használsz, támogatja\-e a színhasználatot a terminál adatbázis és
 a terminál név segítségével. Néha ez összezavarodhat, ezért
 előfordulhat, hogy neked kell megmondanod azt, hogy színes, vagy
@@ -2738,7 +2738,7 @@ Magadhatod azt a terminálnak, hogy mindíg a színes módot használja a
 Colors részben
 .I color_terminals
 változónál az indító fájlban. Így a terminál színtámogatásának vizsgálatát
-a Midnight Commander nem végzi el. Például:
+a M\-Commander nem végzi el. Például:
 .PP
 .nf
 [Colors]
@@ -2750,14 +2750,14 @@ A program mindkét opcióval fordítható (ncurses és S\-Lang).  Az ncurses nem
 jelent feltétlenül színes üzemmódot; csak a terminál adatbázist használja.
 .\"NODE "Special Settings"
 .SH "Speciális Beállítások"
-A legtöbb Midnight Commander beállítás a menükből is elérhető. Ám van
+A legtöbb M\-Commander beállítás a menükből is elérhető. Ám van
 néhány beállítás, ami csak a setup fájl szerkesztésével állítható be.
 .PP
 Ezeket a változókat az ~/.config/mc6/ini fájlban állíthatod be:
 .PP
 .I clear_before_exec
 .IP
-Alapértelmezésben a Midnight Commander törli a képernyőt, mielőtt
+Alapértelmezésben a M\-Commander törli a képernyőt, mielőtt
 futtatna egy parancsot. Ha a parancs kimenetét a képernyő alján
 szeretnéd látni, az ~/mc.ini fájlban javítsd ki a clear_before_exec
 értékét 0\-ra.
@@ -2803,7 +2803,7 @@ oldalanként, vagy sorról sorra a Belső fájlnézőben.
 .PP
 .I old_esc_mode
 .IP
-Alapesetben a Midnight Commander az ESC gombot a gomb rendeltetésének
+Alapesetben a M\-Commander az ESC gombot a gomb rendeltetésének
 megfelelően használja (Meta) (old_esc_mode=0), ha beállítod ezt az
 opciót, (old_esc_mode=1), akkor az ESC gomb egy másodpercig vár, és, ha
 ilyenkor nem nyomsz le egy kiegészítő gombot, az ESC műveletet
@@ -2828,7 +2828,7 @@ csak egy fájlt fog legördítani ilyenkor.
 Ez a változó csak akkor működik, ha a subshell támogatást nem használod.
 Amikor a C\-o billentyű kombinációt használod, visszalépsz a felhasználói
 képernyőre, ha "egy" a beállítás, akkor a shellt frissíted. Egyébként
-bármely gomb lenyomásával visszatérhetsz a Midnight Commander\-hez.
+bármely gomb lenyomásával visszatérhetsz a M\-Commander\-hez.
 .PP
 .I use_file_to_guess_type
 .IP
@@ -2847,9 +2847,9 @@ akkor, amikor a fájlrendszert a Fa panelben böngészed, az automatikusan
 tartalommal.
 .\"NODE "Terminal databases"
 .SH "Terminál adatbázisok"
-A Midnight Commander lehetőséget nyújt a terminál adatbázis root jogok
-használata nélküli módosítására. A Midnight Commander a rendszer indító
-fájlban (az mc.lib fájlt a Midnight Commander library könyvtárában
+A M\-Commander lehetőséget nyújt a terminál adatbázis root jogok
+használata nélküli módosítására. A M\-Commander a rendszer indító
+fájlban (az mc.lib fájlt a M\-Commander library könyvtárában
 találjuk), vagy az ~/.config/mc6/ini file "terminal:your\-terminal\-name" részében
 keres, és, a "terminal:general" rész minden sora tartalmazza azokat a
 billentyűzet szimbólumokat az egyenlőségjelet és a definiált szimbólumot
@@ -2911,13 +2911,13 @@ van ilyen.
 .PP
 .I %pkgdatadir%/mc.ini
 .IP
-Az alapértelmezett rendszerszintű Midnight Commander beállítás, amelyet
+Az alapértelmezett rendszerszintű M\-Commander beállítás, amelyet
 csak akkor használ, ha a felhasználónak nincs saját ~/.config/mc6/ini fájlja.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
-A Midnight Commander globális beállításai. Az ebben a fájlban elvégzett
-beállítások minden felhasználó Midnight Commander\-jére vonatkoznak, ez
+A M\-Commander globális beállításai. Az ebben a fájlban elvégzett
+beállítások minden felhasználó M\-Commander\-jére vonatkoznak, ez
 használható a site\-globális terminál beállításaihoz.
 .PP
 .I ~/.config/mc6/ini
@@ -2949,7 +2949,7 @@ a fájlt el akarod készíteni a következő parancsot használd:
 .nf
 find / \-type d \-print | sort > ~/.cache/mc6/Tree"
 .fi
-Normálisan nincs erre szükséged, mert a Midnight Commander automatikusan
+Normálisan nincs erre szükséged, mert a M\-Commander automatikusan
 frissíti ezt.
 .PP
 .I ./.mc.menu
@@ -2963,7 +2963,7 @@ environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
 or empty, MC directories are get from GLib library.
 .\"NODE "AVAILABILITY"
-.SH "A Midnight Commander frissítése"
+.SH "A M\-Commander frissítése"
 A program legutolsó verzióját az ftp.nuclecu.unam.mx címen a
 /linux/local könyvtárban találhatod meg, Európából pedig a
 sunsite.mff.cuni.cz címen a /GNU/mc könyvtárban és az ftp.teuto.de címen
