@@ -561,6 +561,26 @@ subst_defines (GTree *defines, char **argv, char **argv_end)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Can a rule that wants @whole_left on its left, or the start of a line, begin
+ * on the byte that follows @prev?
+ *
+ * This is the first thing compare_word_to_right() asks, and the answer is the
+ * same for every rule that wants the same border, so the loop that tries the
+ * keywords of a context asks it before it calls: more than half of the calls
+ * used to end right here.
+ */
+inline static gboolean
+border_allows_start (const syntax_charset_t *whole_left, gboolean line_start, int prev)
+{
+    if (line_start && prev != '\n')
+        return FALSE;
+
+    return whole_left == NULL || !whole_left->in_set[(unsigned char) prev];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** Is @c one of the bytes listed at @p, up to the closing @token? */
 static gboolean
 in_char_set (const unsigned char *p, int c, unsigned char token)
@@ -723,8 +743,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, int prev, const GStr
 {
     const unsigned char *p, *q;
 
-    if ((line_start && prev != '\n')
-        || (whole_left != NULL && whole_left->in_set[(unsigned char) prev]))
+    if (!border_allows_start (whole_left, line_start, prev))
         return -1;
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
@@ -803,7 +822,8 @@ try_keyword (const syntax_scanner_t *sc, off_t i, int c, int prev, syntax_rule_t
 
         count = p - r->keyword_first_chars;
         k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-        if (k->keyword != NULL)
+        if (k->keyword != NULL
+            && border_allows_start (k->whole_word_chars_left, k->line_start, prev))
             e = compare_word_to_right (sc, i, prev, k->keyword, k->whole_word_chars_left,
                                        k->whole_word_chars_right, k->line_start);
         if (e > 0)
