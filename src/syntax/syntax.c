@@ -118,6 +118,10 @@ typedef struct
     const syntax_charset_t *whole_word_chars_left;
     const syntax_charset_t *whole_word_chars_right;
     char *keyword_first_chars;
+    /* which keywords to try for a byte: keyword_candidates[start[b] .. start[b + 1])
+       are the ones that can begin with byte b, in the order the rules name them */
+    guint32 *keyword_candidates;
+    guint32 *keyword_candidate_start;  // UCHAR_MAX + 2 entries
     gboolean spelling;
     // first word is word[1]
     GPtrArray *keyword;
@@ -277,6 +281,8 @@ context_rule_free (gpointer rule)
     g_string_free (r->left, TRUE);
     g_string_free (r->right, TRUE);
     g_free (r->keyword_first_chars);
+    g_free (r->keyword_candidates);
+    g_free (r->keyword_candidate_start);
 
     if (r->keyword != NULL)
         g_ptr_array_free (r->keyword, TRUE);
@@ -781,17 +787,6 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, int prev, const GStr
 
 /* --------------------------------------------------------------------------------------------- */
 
-static const char *
-xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
-{
-    while (*s >= '\005' && xx_tolower (case_insensitive, *s) != char_byte)
-        s++;
-
-    return (const char *) s;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 /**
  * Turn on the keyword of the current context that starts at byte @i, if there
  * is one.
@@ -807,20 +802,20 @@ try_keyword (const syntax_scanner_t *sc, off_t i, int c, int prev, syntax_rule_t
              gboolean stop_newline_overflow)
 {
     const context_rule_t *r;
-    const char *p;
+    guint n, last;
 
     r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->context));
-    p = r->keyword_first_chars;
-    if (p == NULL)
+    if (r->keyword_candidates == NULL)
         return FALSE;
 
-    while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c)) != '\0')
+    last = r->keyword_candidate_start[(unsigned char) c + 1];
+    for (n = r->keyword_candidate_start[(unsigned char) c]; n < last; n++)
     {
         const syntax_keyword_t *k;
-        int count;
+        guint count;
         off_t e = -1;
 
-        count = p - r->keyword_first_chars;
+        count = r->keyword_candidates[n];
         k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
         if (k->keyword != NULL
             && border_allows_start (k->whole_word_chars_left, k->line_start, prev))
@@ -1661,6 +1656,50 @@ run_directive (syntax_parser_t *p)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Which keywords of @c can begin with which byte.
+ *
+ * The scanner used to walk the string of first bytes for every byte of the
+ * text, about seventy steps a byte. The walk is done once here instead, and
+ * what it would have found is kept.
+ *
+ * Three rules of that walk are kept with it: it starts past the first byte,
+ * which is a marker and no keyword; it ends at the first NUL, so a keyword
+ * that is an empty word hides the ones named after it; and a keyword that
+ * begins with a pattern token is tried whatever the byte is, because a
+ * pattern can match anything.
+ */
+static void
+build_keyword_candidates (context_rule_t *c, gboolean case_insensitive)
+{
+    GArray *cand;
+    guint b;
+
+    cand = g_array_new (FALSE, FALSE, sizeof (guint32));
+    c->keyword_candidate_start = g_new (guint32, UCHAR_MAX + 2);
+
+    for (b = 0; b <= UCHAR_MAX; b++)
+    {
+        const unsigned char *first = (const unsigned char *) c->keyword_first_chars;
+        const unsigned char *s;
+
+        c->keyword_candidate_start[b] = cand->len;
+
+        for (s = first + 1; *s != '\0'; s++)
+            if (*s < '\005' || (guint) xx_tolower (case_insensitive, *s) == b)
+            {
+                guint32 n = (guint32) (s - first);
+
+                g_array_append_val (cand, n);
+            }
+    }
+    c->keyword_candidate_start[UCHAR_MAX + 1] = cand->len;
+
+    c->keyword_candidates = (guint32 *) g_array_free (cand, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** The first byte of every keyword of every context, for the scanner to sieve by. */
 static void
 collect_keyword_first_chars (syntax_rules_t *r)
@@ -1688,6 +1727,7 @@ collect_keyword_first_chars (syntax_rules_t *r)
         }
 
         c->keyword_first_chars = g_strndup (first_chars->str, first_chars->len);
+        build_keyword_candidates (c, r->case_insensitive);
     }
 
     g_string_free (first_chars, TRUE);
