@@ -1657,44 +1657,108 @@ run_directive (syntax_parser_t *p)
 /* --------------------------------------------------------------------------------------------- */
 
 /**
+ * The bytes the pattern @text can begin with, marked in @set.
+ *
+ * @return FALSE when the answer is any byte at all, and @set says nothing
+ */
+static gboolean
+pattern_first_bytes (const GString *text, gboolean case_insensitive, guchar *set)
+{
+    const unsigned char *p = (const unsigned char *) text->str;
+    const unsigned char *q = p + text->len;
+
+    for (; p < q; p++)
+        switch (*p)
+        {
+        case SYNTAX_TOKEN_STAR:
+        case SYNTAX_TOKEN_PLUS:
+            // both run over bytes of any kind, and both are happy with none
+            return FALSE;
+
+        case SYNTAX_TOKEN_BRACKET:
+            /* a run out of the set, and an empty run will do, so whatever
+               stands after the set can be the first byte as well */
+            for (p++; p < q && *p != SYNTAX_TOKEN_BRACKET; p++)
+                set[*p] = TRUE;
+            break;
+
+        case SYNTAX_TOKEN_BRACE:
+            // exactly one byte out of the set, so the set is the answer
+            for (p++; p < q && *p != SYNTAX_TOKEN_BRACE; p++)
+                set[*p] = TRUE;
+            return TRUE;
+
+        default:
+            set[xx_tolower (case_insensitive, *p)] = TRUE;
+            return TRUE;
+        }
+
+    // nothing of the pattern is left: it is happy anywhere
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
  * Which keywords of @c can begin with which byte.
  *
  * The scanner used to walk the string of first bytes for every byte of the
  * text, about seventy steps a byte. The walk is done once here instead, and
  * what it would have found is kept.
  *
- * Three rules of that walk are kept with it: it starts past the first byte,
- * which is a marker and no keyword; it ends at the first NUL, so a keyword
- * that is an empty word hides the ones named after it; and a keyword that
- * begins with a pattern token is tried whatever the byte is, because a
- * pattern can match anything.
+ * Two rules of that walk are kept with it: it starts past the first byte, which
+ * is a marker and no keyword, and it ends at the first NUL, so a keyword that is
+ * an empty word hides the ones named after it.
+ *
+ * The third rule, that a keyword beginning with a pattern token is tried
+ * whatever the byte is, is asked properly instead: '{abc}' wants one byte out of
+ * its set and nothing else will do, '[abc]' wants that set or whatever follows
+ * it, and only '*' and '+' are really happy with any byte.
  */
 static void
 build_keyword_candidates (context_rule_t *c, gboolean case_insensitive)
 {
     GArray *cand;
+    guchar *sets;
     guint b;
+    size_t j, n;
+
+    // an empty word hides every word named after it, as it did for the walk
+    for (n = 1; n < c->keyword->len && c->keyword_first_chars[n] != '\0'; n++)
+        ;
+
+    sets = g_new0 (guchar, n * (UCHAR_MAX + 2));
+    for (j = 1; j < n; j++)
+    {
+        const syntax_keyword_t *k = SYNTAX_KEYWORD (g_ptr_array_index (c->keyword, j));
+        guchar *set = sets + j * (UCHAR_MAX + 2);
+
+        // the last slot of a set says "any byte will do"
+        set[UCHAR_MAX + 1] = !pattern_first_bytes (k->keyword, case_insensitive, set);
+    }
 
     cand = g_array_new (FALSE, FALSE, sizeof (guint32));
     c->keyword_candidate_start = g_new (guint32, UCHAR_MAX + 2);
 
     for (b = 0; b <= UCHAR_MAX; b++)
     {
-        const unsigned char *first = (const unsigned char *) c->keyword_first_chars;
-        const unsigned char *s;
-
         c->keyword_candidate_start[b] = cand->len;
 
-        for (s = first + 1; *s != '\0'; s++)
-            if (*s < '\005' || (guint) xx_tolower (case_insensitive, *s) == b)
-            {
-                guint32 n = (guint32) (s - first);
+        for (j = 1; j < n; j++)
+        {
+            const guchar *set = sets + j * (UCHAR_MAX + 2);
 
-                g_array_append_val (cand, n);
+            if (set[UCHAR_MAX + 1] || set[b])
+            {
+                guint32 idx = (guint32) j;
+
+                g_array_append_val (cand, idx);
             }
+        }
     }
     c->keyword_candidate_start[UCHAR_MAX + 1] = cand->len;
 
+    g_free (sets);
     c->keyword_candidates = (guint32 *) g_array_free (cand, FALSE);
 }
 
