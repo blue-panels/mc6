@@ -86,6 +86,7 @@ load (const char *body)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
     res = syntax_rules_load (syntax_file, &sel, &rules, NULL);
     ck_assert_int_eq (res, 0);
     ck_assert_ptr_nonnull (rules);
@@ -113,6 +114,7 @@ load_result (const char *body)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
     res = syntax_rules_load (syntax_file, &sel, &rules, NULL);
 
     return res;
@@ -131,6 +133,7 @@ load_toplevel (const char *content)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
 
     return syntax_rules_load (syntax_file, &sel, &rules, NULL);
 }
@@ -936,6 +939,39 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_include_then_a_file_line)
+{
+    char *lang;
+    char *content;
+    syntax_select_t sel;
+
+    lang = g_build_filename (tmpdir, "included.syntax", (char *) NULL);
+    write_file (lang, "context default\n  keyword int blue\n");
+
+    content = g_strdup_printf ("include %s\n"
+                               "file .\\* Tested\n"
+                               "context default\n"
+                               "  keyword int red\n",
+                               lang);
+    write_file (syntax_file, content);
+    g_free (content);
+
+    sel.type = NULL;
+    sel.filename = "whatever.txt";
+    sel.first_line = "";
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), 0);
+
+    // the rules are read twice, and the ones of the "file" line are what is kept
+    ck_assert_str_eq (syntax_rules_type (rules), "Tested");
+    check_mask ("int", "rrr");
+
+    unlink (lang);
+    g_free (lang);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_rules_without_any_keyword)
 {
     // a rule set of nothing but its default context colors nothing, so it is
@@ -1010,6 +1046,7 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_list_of_types);
     tcase_add_test (tc_core, test_include_before_any_file_line);
     tcase_add_test (tc_core, test_include_that_opens);
+    tcase_add_test (tc_core, test_include_then_a_file_line);
     tcase_add_test (tc_core, test_rules_without_any_keyword);
     tcase_add_test (tc_core, test_broken_file_line);
     tcase_add_test (tc_core, test_error_inside_the_chosen_rules);
