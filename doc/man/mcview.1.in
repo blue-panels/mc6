@@ -1,6 +1,6 @@
-.TH MCVIEW 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "GNU Midnight Commander"
+.TH MCVIEW 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
 .SH NAME
-mcview \- Internal file viewer of GNU Midnight Commander.
+mcview \- Internal file viewer of M\-Commander.
 .SH SYNOPSIS
 .B mcview
 [\-bcCdfhstVx?] file
@@ -8,8 +8,8 @@ mcview \- Internal file viewer of GNU Midnight Commander.
 .LP
 mcview is a link to
 .BR mc ,
-the main GNU Midnight Commander executable.  Executing GNU Midnight
-Commander under this name requests staring the internal viewer and
+the main M\-Commander executable.  Executing
+M\-Commander under this name requests staring the internal viewer and
 opening the
 .I file
 specified on the command line.
@@ -27,7 +27,7 @@ defaults to black and white.
 Disable mouse support.
 .TP
 .I "\-f"
-Display the compiled\-in search paths for Midnight Commander files.
+Display the compiled\-in search paths for M\-Commander files.
 .TP
 .I \-S arg, \-\-skin=arg
 Specify a name of skin in the command line.  See the
@@ -36,7 +36,7 @@ section in mc(1) for more information.
 .TP
 .I "\-t"
 Used only if the code was compiled with S\-Lang and terminfo: it makes
-Midnight Commander use the value of the
+M\-Commander use the value of the
 .B TERMCAP
 variable for the terminal information instead of the information on
 the system wide terminal database
@@ -55,12 +55,12 @@ The help file for the program.
 .PP
 .I %pkgdatadir%/mc.ini
 .IP
-The default system\-wide setup for GNU Midnight Commander, used only if
+The default system\-wide setup for M\-Commander, used only if
 the user's own ~/.config/mc6/ini file is missing.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
-Global settings for Midnight Commander. Settings in this file
+Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.
 .PP
 .I ~/.config/mc6/ini
@@ -71,7 +71,7 @@ here instead of the system\-wide startup file.
 .SH LICENSE
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built\-in
-help of Midnight Commander for details on the License and the lack
+help of M\-Commander for details on the License and the lack
 of warranty.
 .SH AVAILABILITY
 The latest version of this program can be found at

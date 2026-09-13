@@ -6,7 +6,7 @@
 .\"	David H. Martín Alonso <david.martin@telefonica.net>
 .\"
 .\"TOPICS "Índice de Contenidos:"
-.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Versión %MAN_VERSION%" "GNU Midnight Commander"
+.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Versión %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NOMBRE"
 mc \- entorno visual para sistemas tipo Unix.
@@ -21,7 +21,7 @@ mc \- entorno visual para sistemas tipo Unix.
 .IR arch ]
 .\"NODE "DESCRIPTION"
 .SH "DESCRIPCIÓN"
-"Midnight Commander" (Comandante de Medianoche) es
+"M\-Commander" (Comandante de Medianoche) es
 un navegador de directorios/gestor de archivos para
 sistemas operativos tipo Unix.
 .\"NODE "OPTIONS"
@@ -53,11 +53,11 @@ página de manual de
 .BR "mcedit (1)" .
 .TP
 .I \-f, \-\-datadir
-Muestra las rutas de búsqueda compiladas para archivos de Midnight Commander.
+Muestra las rutas de búsqueda compiladas para archivos de M\-Commander.
 .TP
 .I \-F, \-\-datadir\-info
 Muestra información más extensa sobre las rutas de búsqueda compiladas
-en Midnight Commander.
+en M\-Commander.
 .TP
 .I \-g, \-\-oldmouse
 Fuerza el uso de ratón en modo de seguimiento «normal». Se usa para
@@ -74,11 +74,11 @@ No cargar asociaciones de teclas desde ningún archivo, utilizar las
 teclas nativas del sistema.
 .TP
 .I \-P arch, \-\-printwd=arch
-Al salir del programa, Midnight Commander registrará el último
+Al salir del programa, M\-Commander registrará el último
 directorio de trabajo en el archivo indicado.  Esta opción no debe ser
 usada directamente, sino desde un guión de shell adecuado, para dejar
 como directorio activo el directorio que estaba en uso dentro de
-Midnight Commander.  Consúltese en los archivos
+M\-Commander.  Consúltese en los archivos
 .B %pkglibexecdir%/mc.sh
 (usuarios de bash y zsh),
 .B %pkglibexecdir%/mc.csh
@@ -144,18 +144,18 @@ Skins\&.
 .TP
 .I \-t, \-\-termcap
 Usado solo si el código fue compilado con S\-Lang y terminfo: hace que
-Midnight Commander use el valor de la variable de entorno
+M\-Commander use el valor de la variable de entorno
 .B TERMCAP
 para obtener la información del terminal, en vez de la base de datos de
 terminales del sistema.
 .TP
 .I \-u, \-\-nosubshell
 Deshabilita el uso de shell concurrente (solo tiene sentido si este
-Midnight Commander fue construido con soporte de shell concurrente).
+M\-Commander fue construido con soporte de shell concurrente).
 .TP
 .I \-U, \-\-subshell
 Habilita el uso de shell concurrente (solo tiene sentido si este
-Midnight Commander fue construido con soporte de subshell opcional).
+M\-Commander fue construido con soporte de subshell opcional).
 .TP
 .I \-v arch, \-\-view=arch
 Iniciar el visor interno para ver el archivo indicado. Véase la página
@@ -184,7 +184,7 @@ panel activo; el valor de «other_dir» de panels.ini será el nombre del direct
 en el panel pasivo.
 .\"NODE "Overview"
 .SH "Introducción"
-La pantalla de Midnight Commander está divida en cuatro partes. La mayor
+La pantalla de M\-Commander está divida en cuatro partes. La mayor
 parte de la pantalla está ocupada por los dos paneles de directorio. Por defecto,
 la segunda línea más inferior de la pantalla es la línea de órdenes del sistema, y
 la línea inferior muestra las etiquetas de las teclas de función. La línea superior es la
@@ -194,7 +194,7 @@ barra de menú\&.
 La línea de la barra de menú podría no ser visible, pero aparece si pulsamos
 en la primea línea de la pantalla con el ratón o pulsamos la tecla F9.
 .PP
-Midnight Commander pone a la vista dos directorios al mismo
+M\-Commander pone a la vista dos directorios al mismo
 tiempo. Uno de los paneles es el panel actual (hay una barra de selección
 en el panel actual). La mayoría de las operaciones tienen lugar en el
 panel actual. Algunas operaciones con archivos como Renombrar y Copiar utilizan
@@ -213,11 +213,11 @@ y el
 Menú de Archivo\&.
 .\"File Menu"
 .PP
-Podemos ejecutar comandos del sistema desde el Midnight Commander simplemente
+Podemos ejecutar comandos del sistema desde el M\-Commander simplemente
 escribiéndolos. Todo lo que escribamos aparecerá en la línea de órdenes del sistema
 y cuando pulsemos 
 .IR Intro ,
-Midnight Commander ejecutará estos comandos; ver las secciones
+M\-Commander ejecutará estos comandos; ver las secciones
 .\"LINK2"
 Línea de Órdenes del Sistema
 .\"Shell Command Line"
@@ -228,7 +228,7 @@ Teclas de la Línea de Entrada
 para aprender más sobre la línea de órdenes.
 .\"NODE "Mouse Support"
 .SH "Soporte de Ratón"
-Se puede utilizar Midnight Commander con un ratón o mouse.  Se activa cuando
+Se puede utilizar M\-Commander con un ratón o mouse.  Se activa cuando
 estamos ejecutándolo en un entorno gráfico con un terminal tipo
 .B xterm(1)
 (funciona incluso si realizamos una conexión de telnet, ssh o rlogin a
@@ -259,13 +259,13 @@ milisegundos. Este valor se puede modificar editando el archivo
 y cambiando el parámetro
 .IR mouse_repeat_rate .
 .PP
-Si estamos ejecutando Midnight Commander con soporte para ratón, podemos
+Si estamos ejecutando M\-Commander con soporte para ratón, podemos
 recuperar el comportamiento habitual del ratón (cortar y pegar texto)
 manteniendo pulsada la tecla Mayúsculas.
 .SH ""
 .\"NODE "Keys"
 .SH "Teclas"
-Algunos comandos en Midnight Commander implican el uso de las teclas
+Algunos comandos en M\-Commander implican el uso de las teclas
 .I Control
 (etiquetada habitualmente CTRL o CTL) y
 .I Meta
@@ -286,7 +286,7 @@ soltar, y entonces pulsar el carácter <car>.
 significa mantener pulsada la tecla de Mayúsculas (o Shift) y teclear
 <car>.
 .PP
-Todas las líneas de entrada en Midnight Commander usan una aproximación
+Todas las líneas de entrada en M\-Commander usan una aproximación
 a las asociaciones de teclas del editor GNU Emacs.
 .PP
 Se pueden redefinir las asociaciones de las teclas. El resto de los
@@ -385,7 +385,7 @@ Se incluyen aquí las teclas que no encajan en ninguna categoría concreta:
 Si hay algún texto en la línea de órdenes (la de la parte inferior de
 los paneles), entonces ese comando es ejecutado. Si no hay texto en la línea
 de comandos entonces si la barra de selección está situada sobre un directorio
-Midnight Commander realiza un
+M\-Commander realiza un
 .B chdir(2)
 al directorio seleccionado y recarga la información en el panel;
 si la selección es un archivo ejecutable entonces es ejecutado. Por último,
@@ -397,7 +397,7 @@ archivo de extensiones
 entonces se ejecuta la aplicación correspondiente.
 .TP
 .B Ctrl\-l
-redibuja toda la pantalla de Midnight Commander.
+redibuja toda la pantalla de M\-Commander.
 .TP
 .B Ctrl\-x c
 .\"LINK2"
@@ -464,18 +464,18 @@ cambiar de directorio\&.
 .TP
 .B Ctrl\-o
 en la consola de Linux o FreeBSD o bajo un xterm, se muestra la salida
-de la orden anterior. En la consola de Linux, Midnight Commander usa un
+de la orden anterior. En la consola de Linux, M\-Commander usa un
 programa externo (cons.saver) para controlar la copia y restauración de
 la pantalla.
 .PP
-Cuando se haya creado Midnight Commander con soporte de subshell
+Cuando se haya creado M\-Commander con soporte de subshell
 incluido, podemos pulsar
 .I Ctrl\-o
 en cualquier momento y volver a la pantalla principal;
 para volver a nuestra aplicación bastará con volver a pulsar
 .IR Ctrl\-o .
 Si tenemos una aplicación suspendida en esta situación, no podremos
-ejecutar otros programas desde Midnight Commander hasta que terminemos
+ejecutar otros programas desde M\-Commander hasta que terminemos
 la aplicación suspendida.
 .\"NODE "  Directory Panels"
 .SH "  Paneles de Directorio"
@@ -533,7 +533,7 @@ método no funciona directamente.
 
 .TP
 .B + \ (más)
-usado para seleccionar (marcar) un grupo de archivos. Midnight Commander
+usado para seleccionar (marcar) un grupo de archivos. M\-Commander
 ofrecerá distintas opciones.  Indicando
 .I Solo archivos
 los directorios no se seleccionan.  Con los
@@ -675,7 +675,7 @@ línea de órdenes.
 .TP
 .B Ctrl\-q
 el comando cita (quote) puede ser utilizado para insertar caracteres
-que de otro modo serían interpretados por Midnight Commander (como el símbolo '+')
+que de otro modo serían interpretados por M\-Commander (como el símbolo '+')
 .TP
 .B Alt\-p, Alt\-n
 usaremos esas teclas para navegar a través del histórico de comandos. Alt\-p devuelve
@@ -689,7 +689,7 @@ El visor de ayuda, el visor de archivo y el árbol de directorios usan
 un código de control de movimiento común. Por consiguiente, reconocen las
 mismas teclas. Además, cada uno reconoce algunas otras teclas propias.
 .PP
-Otras partes de Midnight Commander utilizan algunas de las mismas
+Otras partes de M\-Commander utilizan algunas de las mismas
 teclas de movimiento, por lo que esta sección podría ser aplicada a ellas también.
 .TP
 .B Arriba, Ctrl\-p
@@ -1015,7 +1015,7 @@ Búsquedas externas
 para más información.
 .\"NODE "  File Menu"
 .SH "  Menú de Archivo"
-Midnight Commander utiliza las teclas de función
+M\-Commander utiliza las teclas de función
 .I F1
 \-
 .I F10
@@ -1060,7 +1060,7 @@ Invoca el
 Menú de usuario
 .\"Edit Menu File"
 El menú de usuario otorga una manera fácil de tener usuarios con un menú
-y añadir asimismo características extra a Midnight Commander.
+y añadir asimismo características extra a M\-Commander.
 .PP
 .B Ver (F3, Mayús\-F3)
 .PP
@@ -1161,7 +1161,7 @@ necesitemos saberlo.
 Un enlace simbólico es, en cambio, solo una referencia al nombre del
 archivo original.  Si se borra el archivo original, el enlace simbólico
 queda sin utilidad. Es bastante fácil advertir que los archivos
-representan la misma imagen. Midnight Commander muestra un símbolo "@"
+representan la misma imagen. M\-Commander muestra un símbolo "@"
 delante del nombre del archivo si es un enlace simbólico a alguna parte
 (excepto a un directorio, caso en que muestra una tilde (~)). El archivo
 original al cual apunta el enlace se muestra en la línea de estado si la
@@ -1209,7 +1209,7 @@ si tenemos llena la línea de órdenes y queremos hacer un cd a algún lugar.
 .PP
 .B Seleccionar Grupo (+)
 .PP
-Se utiliza para seleccionar (marcar) un grupo de archivos.  Midnight Commander
+Se utiliza para seleccionar (marcar) un grupo de archivos.  M\-Commander
 ofrecerá distintas opciones.  Indicando
 .I Solo archivos
 los directorios no se seleccionan.  Con los
@@ -1232,10 +1232,10 @@ Utilizado para deseleccionar un grupo de archivos. Es la operación antagonista 
 .PP
 .B Salir (F10, Mayús\-F10)
 .PP
-Finaliza Midnight Commander. Mayús\-F10 es usado cuando queremos
+Finaliza M\-Commander. Mayús\-F10 es usado cuando queremos
 salir y estamos utilizando la envoltura del shell. Mayús\-F10 no nos llevará
-al último directorio visitado con Midnight Commander, en vez de eso
-nos llevará al directorio donde fue invocado Midnight Commander.
+al último directorio visitado con M\-Commander, en vez de eso
+nos llevará al directorio donde fue invocado M\-Commander.
 .\"NODE "    Quick cd"
 .SH "    Cambiar de directorio"
 Este comando es útil si tenemos completa la línea de órdenes y
@@ -1307,14 +1307,14 @@ pulsar F2).
 .\"NODE "    Directory Tree"
 .SH "    Árbol de Directorios"
 El comando Árbol de directorios muestra una figura con la estructura de los directorios.
-Podemos seleccionar un directorio de la figura y Midnight Commander cambiará
+Podemos seleccionar un directorio de la figura y M\-Commander cambiará
 a ese directorio.
 .PP
 Hay dos modos de invocar el árbol. El comando de árbol de directorios
 está disponible desde el menú Utilidades. El otro modo es seleccionar la vista en árbol
 desde el menú Izquierdo o Derecho.
 .PP
-Para evitar largos retardos Midnight Commander crea la figura de árbol
+Para evitar largos retardos M\-Commander crea la figura de árbol
 escaneando solamente un pequeño subconjunto de todos los directorios. Si
 el directorio que queremos ver no está, nos moveremos hasta su directorio padre
 y pulsaremos Ctrl\-r (o F2).
@@ -1509,7 +1509,7 @@ or system\-wide
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Trabajos en Segundo Plano"
-Nos permite controlar el estado de cualquier proceso de Midnight Commander
+Nos permite controlar el estado de cualquier proceso de M\-Commander
 en segundo plano (solo las operaciones de copiar y mover archivos pueden realizarse
 en segundo plano). Podemos parar, reiniciar y eliminar procesos en segundo plano desde
 aquí.
@@ -1549,7 +1549,7 @@ A	Vuelca el contenido del archivo seleccionado
 B	Edita un informe de errores y lo envía al superusuario
 	I=`mktemp ${MC_TMPDIR:\-/tmp}/mail.XXXXXX` || exit 1
 	vi $I
-	mail \-s "Error Midnight Commander" root < $I
+	mail \-s "Error M\-Commander" root < $I
 	rm \-f $I
 
 M	Lee al correo
@@ -1660,7 +1660,7 @@ Los comentarios empiezan con '#'. Las líneas adicionales de comentarios deben e
 con '#', espacio o tabulación.
 .\"NODE "  Options Menu"
 .SH "  Menú de Opciones"
-Midnight Commander tiene opciones que pueden ser activadas o desactivadas
+M\-Commander tiene opciones que pueden ser activadas o desactivadas
 a través de una serie de diálogos a los que se accede desde este menú. Una
 opción está activada cuando tiene delante un asterisco o una "x".
 .PP
@@ -1668,7 +1668,7 @@ En
 .\"LINK2"
 Configuración
 .\"Configuration"
-se pueden cambiar la mayoría de opciones de Midnight Commander.
+se pueden cambiar la mayoría de opciones de M\-Commander.
 .PP
 En
 .\"LINK2"
@@ -1731,7 +1731,7 @@ la operación detallada. Se desactiva automáticamente si la velocidad de
 nuestro terminal es menor de 9600 bps.
 .PP
 .I Calcular Totales.
-Hace que Midnight Commander calcule el total de bytes y el número de
+Hace que M\-Commander calcule el total de bytes y el número de
 archivos antes de iniciar operaciones de Copiar, Mover y Borrar. Esto
 proporciona una barra de progreso más precisa a costa de cierta
 velocidad. Esta opción no tiene efecto si la
@@ -1755,7 +1755,7 @@ completo. Por defecto está desactivado.
 .PP
 .B Tecla de Escape.
 .PP
-Midnight Commander utiliza la tecla ESC como prefijo para ciertas teclas.
+M\-Commander utiliza la tecla ESC como prefijo para ciertas teclas.
 Por ello hay que pulsar ESC dos veces para abandonar los diálogos. Se
 puede configurar para que esto se pueda realizar con una única pulsación.
 .I Pulsación Única
@@ -1773,7 +1773,7 @@ sobre el valor de esta opción Tiempo.
 .PP
 .B Pausa Después de Ejecutar.
 .PP
-Después de ejecutar comandos, Midnight Commander puede realizar una pausa,
+Después de ejecutar comandos, M\-Commander puede realizar una pausa,
 y darnos tiempo a examinar la salida del comando. Hay tres posibles
 valores para esta variable:
 .PP
@@ -1830,8 +1830,8 @@ F9. Si está desactivada solo la barra de títulos de los menús está
 visible, y será necesario abrir cada menú con las flechas de movimiento
 o con las teclas de acceso rápido.
 .I Completar: Mostrar Todos.
-Por defecto, al completar nombres en situaciones de ambigüedad, Midnight
-Commander completa todo lo posible al pulsar
+Por defecto, al completar nombres en situaciones de ambigüedad,
+M\-Commander completa todo lo posible al pulsar
 .B Alt\-Tab
 y produce un pitido; al intentarlo por segunda vez se muestra una lista
 con las posibilidades que han dado lugar a la ambigüedad. Con esta opción,
@@ -1848,7 +1848,7 @@ punto literal. Si la opción está desactivada, entonces las expresiones
 regulares son las descritas en ed(1).
 .PP
 .I Completar: Mostrar Todos.
-Por defecto Midnight Commander presenta todas las posibilidades de
+Por defecto M\-Commander presenta todas las posibilidades de
 .\"LINK2"
 terminación
 .\"Completion"
@@ -1864,10 +1864,10 @@ Mostrar un guión rotatorio en la esquina superior derecha a modo de
 indicador de progreso.
 .PP
 .I Cd Sigue los Enlaces.
-Esta opción, si está seleccionada, hace que Midnight Commander siga la
+Esta opción, si está seleccionada, hace que M\-Commander siga la
 secuencia de directorios lógica al cambiar el directorio actual, tanto en
 el panel como usando el comando cd. Este es el comportamiento por defecto
-de la shell bash. Sin esto, Midnight Commander sigue la estructura real
+de la shell bash. Sin esto, M\-Commander sigue la estructura real
 de directorios, y cd .. nos trasladará al padre real del directorio
 actual aunque hayamos entrado en ese directorio a través de un enlace,
 y no al directorio donde se encontraba el enlace.
@@ -1878,8 +1878,8 @@ diálogo de confirmación de borrado se cambia a "No". Por defecto, esta
 opción está desactivada.
 .PP
 .I Auto\-Guarda Configuración.
-Si esta opción está activada, cuando salimos de Midnight Commander las
-opciones configurables de Midnight Commander se guardan en el archivo
+Si esta opción está activada, cuando salimos de M\-Commander las
+opciones configurables de M\-Commander se guardan en el archivo
 .IR ~/.config/mc6/ini .
 .\"NODE "    Layout"
 .SH "    Presentación"
@@ -1910,7 +1910,7 @@ del
 .\"LINK2"
 Modo de Listado
 .\"Listing Format..."
-aplicables al usuario actual de Midnight Commander serán resaltados
+aplicables al usuario actual de M\-Commander serán resaltados
 usando el color indicado por medio de la palabra clave
 .I selected.
 Si se activa el resaltado de tipos de archivos, los nombres aparecerán
@@ -1924,7 +1924,7 @@ Resaltado de nombres\&.
 
 .PP
 Si se está ejecutando en X Window dentro de un emulador de terminal,
-Midnight Commander toma control del titulo de la ventana mostrando allí
+M\-Commander toma control del titulo de la ventana mostrando allí
 el nombre del directorio actual.  El título se actualiza cuando sea preciso.
 Podemos desactivar la opción de
 .I Titular las ventanas Xterm
@@ -1960,7 +1960,7 @@ Mostrar los archivos que comiencen con un punto (como ls \-a). Por defecto,
 está desactivado.
 .PP
 .I Recarga Rápida de Directorios.
-Hace que Midnight Commander emplee una pequeña trampa al determinar
+Hace que M\-Commander emplee una pequeña trampa al determinar
 si los contenidos del directorio han cambiado. El truco consiste en
 recargar el directorio solo si el inodo del directorio ha cambiado. Las
 recargas se producen si se crean o borran archivos, pero si lo que cambia
@@ -2098,7 +2098,7 @@ Este diálogo permite ajustar opciones del
 Sistema de Archivos Virtual (VFS)\&.
 .\"Virtual File System"
 .PP
-Midnight Commander guarda en memoria o en disco información de algunos
+M\-Commander guarda en memoria o en disco información de algunos
 de los sistemas de archivos virtuales con el fin de acelerar el acceso
 a sus archivos.  Ejemplo de esto son los listados descargados desde
 servidores FTP o los archivos temporales descomprimidos creados para
@@ -2170,7 +2170,7 @@ y puede ser impedida por algún cortafuegos.
 .PP
 .\"NODE "    Save Setup"
 .SH "    Guardar Configuración"
-Al arrancar Midnight Commander se carga la información de inicio del
+Al arrancar M\-Commander se carga la información de inicio del
 archivo
 .IR ~/.config/mc6/ini .
 Si este no existe, se cargará la información del
@@ -2205,15 +2205,15 @@ Ajustes Especiales\&.
 .SH ""
 .\"NODE "Executing operating system commands"
 .SH "Ejecutando Órdenes del Sistema Operativo"
-Podemos ejecutar comandos tecleando en la línea de órdenes de Midnight
-Commander, o seleccionando el programa que queremos ejecutar
+Podemos ejecutar comandos tecleando en la línea de órdenes de
+M\-Commander, o seleccionando el programa que queremos ejecutar
 en alguno de los paneles y pulsando
 .IR Intro .
 .PP
 Si pulsamos 
 .I Intro
- sobre un archivo que no es ejecutable, Midnight
-Commander compara la extensión del archivo seleccionado con las extensiones
+ sobre un archivo que no es ejecutable,
+M\-Commander compara la extensión del archivo seleccionado con las extensiones
 recogidas en el
 .\"LINK2"
 Archivo de Extensiones\&.
@@ -2228,7 +2228,7 @@ muy simple antes de ejecutar el comando.
 .SH "  Comando cd Interno"
 El comando
 .I cd
-es interpretado directamente por Midnight Commander, en vez de pasarlo
+es interpretado directamente por M\-Commander, en vez de pasarlo
 al interprete de comandos para su ejecución. Por ello puede que no todas
 las posibilidades de expansión y sustitución de macro que hace nuestro
 shell estén disponibles, pero sí algunas de ellas:
@@ -2250,7 +2250,7 @@ nombre de directorio especial '\-' del siguiente modo:
 .I Directorios en CDPATH.
 Si el directorio especificado al comando
 .B cd
-no está en el directorio actual, entonces Midnight Commander utiliza el
+no está en el directorio actual, entonces M\-Commander utiliza el
 valor de la variable de entorno
 .B CDPATH
 para buscar el directorio en cualquiera de los directorios enumerados.
@@ -2359,7 +2359,7 @@ para cancelar. Esta macro no funciona aún sobre la línea de órdenes.
 El soporte del subshell es una opción de tiempo de compilación, que funciona con los
 shells: bash, tcsh y zsh.
 .PP
-Cuando el código del subshell es activado Midnight Commander
+Cuando el código del subshell es activado M\-Commander
 engendrará una copia de nuestro shell (la definida en la variable
 .B SHELL
 y si no está definida, el que aparece en el archivo /etc/passwd)
@@ -2367,7 +2367,7 @@ y lo ejecuta en un pseudoterminal, en lugar de invocar un nuevo shell
 cada vez que ejecutamos un comando, el comando será pasado al
 subshell como si lo hubiésemos escrito. Esto además permite cambiar las
 variables de entorno, usaremos las funciones del shell y los alias definidos
-que serán válidos hasta salir de Midnight Commander.
+que serán válidos hasta salir de M\-Commander.
 .PP
 Si estamos usando
 .B bash
@@ -2381,12 +2381,12 @@ podrán especificar los comandos de arranque en el archivo ~/.local/share/mc6/tc
 Cuando utilizamos el código del subshell, podemos suspender aplicaciones en
 cualquier momento con la secuencia
 .I Ctrl\-o
-y volver a Midnight Commander, si interrumpimos una aplicación, no
+y volver a M\-Commander, si interrumpimos una aplicación, no
 podremos ejecutar otros comandos externos hasta que quitemos la
 aplicación que hemos interrumpido.
 .PP
 Una característica extra añadida de uso del subshell es que el prompt
-mostrado por Midnight Commander es el mismo que estamos usando en
+mostrado por M\-Commander es el mismo que estamos usando en
 nuestro shell.
 .PP
 La sección
@@ -2477,7 +2477,7 @@ en una única ventana. Se puede así cambiar los permisos, propietario y grupo
 del archivo de una sola vez.
 .\"NODE "File Operations"
 .SH "Operaciones con Archivos"
-Cuando copiamos, movemos o borramos archivos, Midnight Commander muestra el
+Cuando copiamos, movemos o borramos archivos, M\-Commander muestra el
 diálogo de operaciones con archivos. En él aparecen los archivos que se estén procesando
 y hasta tres barras de progreso. La barra de archivo indica qué parte del archivo actual
 va siendo copiada, la barra de contador indica cuántos de los archivos marcados
@@ -2754,7 +2754,7 @@ pueden entremezclar como en:
 Nótese que 012 es un número octal y \-1 se convierte en 0xFF.
 .PP
 He aquí una lista de las acciones asociadas a cada tecla que
-Midnight Commander gestiona en el visor interno de archivos.
+M\-Commander gestiona en el visor interno de archivos.
 .PP
 .B F1
 Invoca el visor de ayuda de hipertexto interno.
@@ -2929,10 +2929,10 @@ archivos binarios, debemos configurar los
 a 7 bits en el menú de opciones para mantener el espaciado saneado.
 .\"NODE "Completion"
 .SH "Terminación"
-Permite a Midnight Commander escribir por nosotros.
+Permite a M\-Commander escribir por nosotros.
 .PP
 Intenta completar el texto escrito antes de la posición
-actual.  Midnight Commander intenta la terminación tratando
+actual.  M\-Commander intenta la terminación tratando
 el texto como si fuera una variable (si el texto comienza con
 .BR $ ),
 nombre de usuario (si el texto empieza por
@@ -2948,7 +2948,7 @@ la terminación con nombres de archivo.
 La terminación de nombres de archivo, usuario y máquina funciona en
 todas las líneas de entrada; la terminación de comandos es específica de
 la línea de órdenes. Si la terminación es ambigua (hay varias
-posibilidades diferentes), Midnight Commander pita, y la acción siguiente
+posibilidades diferentes), M\-Commander pita, y la acción siguiente
 depende de la opción
 .I Completar: Mostrar Todos
 en el diálogo de
@@ -2974,7 +2974,7 @@ Completar: Mostrar Todos
 .\"Configuration"
 está desactivado, la lista aparece cuando pulsamos
 .B Alt\-Tab
-por segunda vez; con la primera Midnight Commander solo emite un pitido.
+por segunda vez; con la primera M\-Commander solo emite un pitido.
 .PP
 Aplica escapes a los símbolos
 .BR ? ", " * " y " &
@@ -2983,12 +2983,12 @@ en los nombres de archivo para evitar su interpretación en expresiones
 regulares al realizar sustituciones en la línea de entrada.
 .\"NODE "Virtual File System"
 .SH "Sistemas de Archivos Virtuales (VFS)"
-Midnight Commander dispone de una capa de código de acceso al sistema
+M\-Commander dispone de una capa de código de acceso al sistema
 de archivos; esta capa se denomina Sistema de Archivos Virtual (VFS).
-El Sistema de Archivos Virtual permite a Midnight Commander manipular
+El Sistema de Archivos Virtual permite a M\-Commander manipular
 archivos no ubicados en el sistema de archivos Unix.
 .PP
-Midnight Commander incluye actualmente varios Sistemas de Archivos
+M\-Commander incluye actualmente varios Sistemas de Archivos
 Virtuales: el sistema de archivos
 .IR local ,
 utilizado para acceder al sistema de archivos Unix habitual;
@@ -3031,7 +3031,7 @@ y
 .I directorio\-remoto
 son opcionales. Si especificamos el elemento
 .IR usuario ,
-entonces Midnight Commander intentará conectarse con la máquina remota
+entonces M\-Commander intentará conectarse con la máquina remota
 como ese usuario, y si no, establecerá una conexión en modo anónimo o
 con el nombre de usuario indicado en el archivo
 .IR ~/.netrc .
@@ -3081,7 +3081,7 @@ y
 .I directorio\-remoto
 son opcionales. Si se especifica el elemento
 .I usuario
-Midnight Commander intentará entrar en la máquina remota como ese
+M\-Commander intentará entrar en la máquina remota como ese
 usuario, y si no usará nuestro nombre.
 .PP
 Como
@@ -3117,7 +3117,7 @@ y
 .I directorio\-remoto
 son opcionales. Si se especifica el elemento
 .I usuario
-Midnight Commander intentará acceder a la máquina remota como ese
+M\-Commander intentará acceder a la máquina remota como ese
 usuario, y si no usará nuestro nombre. El
 .I puerto
 indica el puerto utilizado por el servidor remoto, por defecto 22.
@@ -3137,7 +3137,7 @@ Ejemplos:
 .\"NODE "  EXTernal File System"
 .SH "  Sistema de archivos EXTerno (extfs)"
 .B extfs
-permite incorporar a GNU Midnight Commander numerosas utilidades y tipos
+permite incorporar a M\-Commander numerosas utilidades y tipos
 de archivos de manera sencilla, simplemente escribiendo guiones
 (scripts).
 .PP
@@ -3180,7 +3180,7 @@ cambiar a él desde la historia de directorios. Una limitación importante
 es que, estando dentro de él, no se puede ejecutar órdenes del sistema,
 como por otra parte ocurre en cualquier sistema de archivos VFS no local.
 .PP
-Midnigth Commander incluye inicialmente guiones para algunos sistemas de
+M\-Commander incluye inicialmente guiones para algunos sistemas de
 archivos externos:
 .TP
 .B a
@@ -3245,7 +3245,7 @@ de archivos externo tal como se describe en la sección sobre cómo
 .\"LINK2"
 Editar el Archivo de Extensiones
 .\"Edit Extension File"
-de Midnight Commander. He aquí, a modo de ejemplo, una entrada para
+de M\-Commander. He aquí, a modo de ejemplo, una entrada para
 paquetes Debian:
 .PP
 .nf
@@ -3254,7 +3254,7 @@ paquetes Debian:
 .fi
 .\"NODE "Colors"
 .SH "Colores"
-Midnight Commander intentará determinar si nuestro terminal soporta
+M\-Commander intentará determinar si nuestro terminal soporta
 el uso de color utilizando la base de datos de terminales y nuestro nombre de terminal. Algunas veces
 estará confundido, por lo que deberemos forzar el modo en color o deshabilitar el modo de color
 usando el argumento \-c y \-b respectivamente.
@@ -3268,7 +3268,7 @@ Podemos especificar a los terminales que siempre fuercen el modo en color
 añadiendo la variable
 .I color_terminals
 a la sección Colors del archivo de inicialización. Esto evitará que
-Midnight Commander intente la detección de soporte de color. Ejemplo:
+M\-Commander intente la detección de soporte de color. Ejemplo:
 .PP
 .nf
 [Colors]
@@ -3285,7 +3285,7 @@ información de la base de datos de terminales.
 .\"NODE "Skins"
 .SH "Skins"
 Con los «skins» (pieles, caretas) se puede cambiar la apariencia global de
-Midnight Commander.  Para ello hay que proporcionar un archivo que contenga
+M\-Commander.  Para ello hay que proporcionar un archivo que contenga
 descripciones de colores y formas de trazar las líneas de borde de los
 paneles y diálogos.  La redefinición de colores es completamente compatible
 con la configuración tradicional detallada en la sección sobre
@@ -3667,7 +3667,7 @@ hace la regla 'extensions' sensible o no a mayúsculas (true o false).
 
 .\"NODE "Special Settings"
 .SH "Ajustes Especiales"
-La mayoría de las opciones de Midnight Commander pueden cambiarse desde
+La mayoría de las opciones de M\-Commander pueden cambiarse desde
 los menús. Sin embargo, hay un pequeño número de ajustes para los que
 es necesario editar el archivo de configuración.
 .PP
@@ -3675,7 +3675,7 @@ Estas variables se pueden cambiar en nuestro archivo
 .IR ~/.config/mc6/ini :
 .TP
 .I clear_before_exec
-Por defecto Midnight Commander limpia la pantalla antes de ejecutar un
+Por defecto M\-Commander limpia la pantalla antes de ejecutar un
 comando. Si preferimos ver la salida del comando en la parte inferior
 de la pantalla, editaremos nuestro archivo
 .I ~/mc.ini
@@ -3683,13 +3683,13 @@ y cambiaremos el
 valor del campo clear_before_exec a 0.
 .TP
 .I confirm_view_dir
-Al pulsar F3 en un directorio, normalmente Midnight Commander entra
+Al pulsar F3 en un directorio, normalmente M\-Commander entra
 en ese directorio.  Si este valor está a 1, entonces el programa
 nos pedirá confirmación antes de cambiar el directorio si tenemos
 archivos marcados.
 .TP
 .I ftpfs_retry_seconds
-Este valor es el número de segundos que Midnight Commander esperará
+Este valor es el número de segundos que M\-Commander esperará
 antes de intentar volver a conectar con un servidor de ftp que ha denegado el
 acceso. Si el valor es cero, el programa no reintentará el acceso.
 .TP
@@ -3720,7 +3720,7 @@ Cuando utilizamos la combinación
 .I Ctrl\-o
 para volver a la pantalla de usuario, si está activada, tendremos un
 nuevo shell.  De otro modo, pulsando cualquier tecla nos devolverá a
-Midnight Commander.
+M\-Commander.
 .TP
 .I timeformat_recent
 Cambiar el formato de fecha y hora empleado para fechas dentro de los seis
@@ -3781,8 +3781,8 @@ autodetect_codeset=russian
 .fi
 .\"NODE "Parameters for external editor or viewer"
 .SH "Parámetros para editor o visor externo"
-Midnight Commander permite especificar opciones para editores y visores
-externos.  Midnight Commander busca la sección
+M\-Commander permite especificar opciones para editores y visores
+externos.  M\-Commander busca la sección
 .I [External editor or viewer parameters]
 en el archivo de inicialización del sistema
 .B %pkgdatadir%/mc.lib
@@ -3818,7 +3818,7 @@ defecto el archivo donde se abrió la última vez.  MC no evita que el editor o 
 externo pueda guardar y restaurar posiciones en los archivos abiertos.
 .\"NODE "Terminal databases"
 .SH "Ajustes del Terminal"
-Midnight Commander permite hacer ajustes a la base de datos de terminales
+M\-Commander permite hacer ajustes a la base de datos de terminales
 del sistema sin necesidad de privilegios de superusuario. El programa
 busca definiciones de teclas en el archivo de inicialización del sistema
 .B %pkgdatadir%/mc.lib
@@ -3866,7 +3866,7 @@ Por ejemplo:
 
 .PP
 Esto significa que Ctrl + Alt + Izquierda envía la secuencia de escape
-\ee[[1;6D y que entonces Midnight Commander debe interpretar "\ee[[1;6D"
+\ee[[1;6D y que entonces M\-Commander debe interpretar "\ee[[1;6D"
 como Ctrl\-Alt\-Izquierda.
 .PP
 El identificador
@@ -3901,13 +3901,13 @@ está presente prevalece sobre el contenido de los archivos del sistema.
 .PP
 .I %pkgdatadir%/mc.ini
 .IP
-Archivo de configuración del sistema para Midnight Commander, solo si
+Archivo de configuración del sistema para M\-Commander, solo si
 el usuario no dispone de su propio
 .IR ~/.config/mc6/ini .
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
-Opciones globales de Midnight Commander. Se aplican siempre a todos los
+Opciones globales de M\-Commander. Se aplican siempre a todos los
 usuarios, tengan
 .I ~/.config/mc6/ini
 o no. Actualmente solo se emplea para los
@@ -4002,4 +4002,4 @@ también útil disponer del estado de la pila.
 Francisco Gabriel Aroca, 1998.  Reformateado y actualizado por David
 Martín, 2002\-2015.
 .PP
-Midnight Commander traducido a castellano por David Martín.
+M\-Commander traducido a castellano por David Martín.
