@@ -513,6 +513,22 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_newline_keyword_at_context_start)
+{
+    load ("context default\n"
+          "context # \\n green\n"
+          "  keyword #TODO\\n red\n");
+
+    /* the same keyword that ends with a line break, but starting on the byte
+       the context starts on: here the keyword keeps the line break and the
+       context is carried into the next line.  Compare with
+       test_newline_keyword_in_newline_context, where it is not. */
+    check_mask ("#TODO\nx", "rrrrrrg");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_wholechars)
 {
     // the characters a word is made of are the file's to choose
@@ -955,6 +971,7 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_exclusive_empty);
     tcase_add_test (tc_core, test_newline_keyword_in_newline_context);
     tcase_add_test (tc_core, test_keyword_at_context_start);
+    tcase_add_test (tc_core, test_newline_keyword_at_context_start);
     tcase_add_test (tc_core, test_wholechars);
     tcase_add_test (tc_core, test_context_word_borders);
     tcase_add_test (tc_core, test_context_linestart_right);
