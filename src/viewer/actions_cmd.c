@@ -741,10 +741,17 @@ mcview_handle_key (WView *view, int key)
 
     command = mcview_lookup_key (view, key);
 
-    /* Enter copies the selection; with nothing selected it keeps its Down action, as in mcterm
-       it goes back to the shell. The other Store keys leave the view where it is. */
+    /* Enter copies the selection; with nothing marked it turns the reading cursor on, and off
+       again. Where there is no cursor to turn on it keeps its Down action. */
     if (command == CK_Store && (key == '\n' || key == KEY_ENTER) && !mcview_selection_active (view))
+    {
+        if (mcview_selection_cursor_toggle (view))
+        {
+            view->dirty++;
+            return MSG_HANDLED;
+        }
         command = CK_Down;
+    }
 
     if (command != CK_IgnoreKey && mcview_execute_cmd (view, command) == MSG_HANDLED)
         return MSG_HANDLED;

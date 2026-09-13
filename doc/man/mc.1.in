@@ -3179,20 +3179,24 @@ Some character sequences, which appear most often in preformatted manual
 pages, are displayed bold and underlined, thus making a pretty display
 of your files.
 .PP
-In ASCII mode, drag with the left mouse button to select text.  A double
-click selects a word and a triple click selects a visual line.  A single
-click only places the terminal cursor on a character; it marks the
-point the keys below extend the selection from.  The
-Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and Shift\-PageDown keys
-extend the selection.  When the text scrolls (PageDown, the mouse
+In ASCII mode the arrow keys move the view until the reading cursor is
+turned on.  Enter turns it on, and off again; a click and the keys that
+mark turn it on as well.  With the cursor on, the arrow keys walk the
+text and the Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and
+Shift\-PageDown keys mark it.
+.PP
+Drag with the left mouse button to select text.  A double click selects
+a word and a triple click selects a visual line.  A single click only
+places the cursor on a character; it marks the point the shifted keys
+extend the selection from.  When the text scrolls (PageDown, the mouse
 wheel), the cursor stays on the screen in the same row and column.
-Press Ctrl\-Insert or
-Enter to copy the selection to the clipfile and then to the external
-clipboard; C\-u clears it.  Enter acts as Down when there is no
-selection.  Any cursor movement without Shift drops the selection and
-keeps the cursor.  The copied value is the displayed text: ANSI and
-nroff formatting is removed, tabs are expanded to spaces, and in filter
-mode only the visible lines are copied.
+Press Ctrl\-Insert or Enter to copy the selection to the clipfile and
+then to the external clipboard; C\-u clears the selection and turns the
+cursor off, and so does copying.  Enter acts as Down where there is no
+cursor to turn on, in hex and tree modes.  Any cursor movement without
+Shift drops the selection and keeps the cursor.  The copied value is the
+displayed text: ANSI and nroff formatting is removed, tabs are expanded
+to spaces, and in filter mode only the visible lines are copied.
 .PP
 Since the left button selects text, scrolling by clicking in the upper
 or lower third of the view (see
