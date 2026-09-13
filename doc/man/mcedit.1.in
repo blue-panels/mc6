@@ -1,6 +1,6 @@
-.TH MCEDIT 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "GNU Midnight Commander"
+.TH MCEDIT 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
 .SH NAME
-mcedit \- Internal file editor of GNU Midnight Commander.
+mcedit \- Internal file editor of M\-Commander.
 .SH SYNOPSIS
 .B mcedit
 [\-bcCdfhstVx?] [+lineno] [file1] [file2] ...
@@ -11,7 +11,7 @@ mcedit \- Internal file editor of GNU Midnight Commander.
 .LP
 mcedit is a link to
 .BR mc ,
-the main GNU Midnight Commander executable. Executing GNU Midnight Commander
+the main M\-Commander executable. Executing M\-Commander
 under this name runs the internal editor and opens files
 specified on the command line. The editor is based on the terminal version of
 .B cooledit
@@ -35,7 +35,7 @@ support.
 Disable mouse support.
 .TP
 .I "\-f"
-Display the compiled\-in search path for GNU Midnight Commander data
+Display the compiled\-in search path for M\-Commander data
 files.
 .TP
 .I \-S arg, \-\-skin=arg
@@ -45,7 +45,7 @@ section in mc(1) for more information.
 .TP
 .I "\-t"
 Force using termcap database instead of terminfo.  This option is only
-applicable if GNU Midnight Commander was compiled with S\-Lang library
+applicable if M\-Commander was compiled with S\-Lang library
 with terminfo support.
 .TP
 .I "\-V"
@@ -643,12 +643,12 @@ The help file for the program.
 .PP
 .I %pkgdatadir%/mc.ini
 .IP
-The default system\-wide setup for GNU Midnight Commander, used only if
+The default system\-wide setup for M\-Commander, used only if
 the user's own ~/.config/mc6/ini file is missing.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP
-Global settings for Midnight Commander. Settings in this file
+Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.
 .PP
 .I %pkgdatadir%/syntax/*
@@ -670,7 +670,7 @@ user's own syntax files are located.
 .SH LICENSE
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built\-in
-help of Midnight Commander for details on the License and the lack
+help of M\-Commander for details on the License and the lack
 of warranty.
 .SH AVAILABILITY
 The latest version of this program can be found at
@@ -679,7 +679,7 @@ The latest version of this program can be found at
 cooledit(1), mc(1), gpm(1), terminfo(1), scanf(3).
 .SH AUTHORS
 Paul Sheer (psheer@obsidian.co.za) is the original author of
-Midnight Commander's internal editor.
+M\-Commander's internal editor.
 .SH BUGS
 Bugs should be reported to
 \X'tty: link https://github.com/MidnightCommander/mc/issues'https://github.com/MidnightCommander/mc/issues\X'tty: link' .
