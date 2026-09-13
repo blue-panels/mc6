@@ -717,15 +717,14 @@ match_brace (const syntax_scanner_t *sc, const unsigned char **pp, const unsigne
  * @return the byte after the match, or -1 if the pattern does not match
  */
 static off_t
-compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
+compare_word_to_right (const syntax_scanner_t *sc, off_t i, int prev, const GString *text,
                        const syntax_charset_t *whole_left, const syntax_charset_t *whole_right,
                        gboolean line_start)
 {
     const unsigned char *p, *q;
-    int c;
 
-    c = get_byte_folded (sc, i - 1);
-    if ((line_start && c != '\n') || (whole_left != NULL && whole_left->in_set[(unsigned char) c]))
+    if ((line_start && prev != '\n')
+        || (whole_left != NULL && whole_left->in_set[(unsigned char) prev]))
         return -1;
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
@@ -785,7 +784,7 @@ xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
  * @return TRUE when a keyword was turned on
  */
 static gboolean
-try_keyword (const syntax_scanner_t *sc, off_t i, int c, syntax_rule_t *rule, off_t *end,
+try_keyword (const syntax_scanner_t *sc, off_t i, int c, int prev, syntax_rule_t *rule, off_t *end,
              gboolean stop_newline_overflow)
 {
     const context_rule_t *r;
@@ -805,7 +804,7 @@ try_keyword (const syntax_scanner_t *sc, off_t i, int c, syntax_rule_t *rule, of
         count = p - r->keyword_first_chars;
         k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
         if (k->keyword != NULL)
-            e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
+            e = compare_word_to_right (sc, i, prev, k->keyword, k->whole_word_chars_left,
                                        k->whole_word_chars_right, k->line_start);
         if (e > 0)
         {
@@ -838,7 +837,7 @@ static void
 apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 {
     context_rule_t *r;
-    int c;
+    int c, prev;
     syntax_found_t found = { FALSE, FALSE, FALSE, FALSE, FALSE, 0 };
     gboolean is_end;
     syntax_rule_t _rule = sc->rule;
@@ -847,12 +846,15 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
     if (c == 0)
         return;
 
+    /* the byte before is what every rule that starts here is tested against:
+       read it once, not once per rule */
+    prev = get_byte_folded (sc, i - 1);
     is_end = (sc->rule.end == i);
 
     // check to turn off a keyword
     if (_rule.keyword != 0)
     {
-        if (sc->get_byte (sc->data, i - 1) == '\n')
+        if (prev == '\n')
             _rule.keyword = 0;
         if (is_end)
         {
@@ -869,7 +871,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
         if (r->first_right == c && (sc->rule.border & RULE_ON_RIGHT_BORDER) == 0
             && r->right->len != 0
-            && (e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
+            && (e = compare_word_to_right (sc, i, prev, r->right, r->whole_word_chars_left,
                                            r->whole_word_chars_right, r->line_start_right))
                 > 0)
         {
@@ -897,7 +899,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 
     // check to turn on a keyword
     if (_rule.keyword == 0)
-        found.keyword_right = try_keyword (sc, i, c, &_rule, &found.end, TRUE);
+        found.keyword_right = try_keyword (sc, i, c, prev, &_rule, &found.end, TRUE);
 
     // check to turn on a context
     if (_rule.context == 0)
@@ -926,9 +928,9 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                         off_t e = -1;
 
                         if (r->right->len != 0)
-                            e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
-                                                       r->whole_word_chars_right,
-                                                       r->line_start_right);
+                            e = compare_word_to_right (
+                                sc, i, prev, r->right, r->whole_word_chars_left,
+                                r->whole_word_chars_right, r->line_start_right);
                         if (e >= found.end)
                         {
                             _rule.end = e;
@@ -953,7 +955,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                     off_t e = -1;
 
                     if (r->left->len != 0)
-                        e = compare_word_to_right (sc, i, r->left, r->whole_word_chars_left,
+                        e = compare_word_to_right (sc, i, prev, r->left, r->whole_word_chars_left,
                                                    r->whole_word_chars_right, r->line_start_left);
                     if (e >= found.end && (_rule.keyword == 0 || found.keyword_right))
                     {
@@ -977,7 +979,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
        applied here; a keyword that starts on the byte the context starts on
        keeps the break.  Pinned by test_newline_keyword_at_context_start. */
     if (found.context_changed && _rule.keyword == 0)
-        (void) try_keyword (sc, i, c, &_rule, &found.end, FALSE);
+        (void) try_keyword (sc, i, c, prev, &_rule, &found.end, FALSE);
 
     sc->rule = _rule;
 }
