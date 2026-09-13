@@ -1639,6 +1639,11 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size, 
     MC_PTR_FREE (r->ll_symbols);
     r->ll_symbols_color = SYNTAX_COLOR_NONE;
 
+    /* a set of rules can be read twice into the same object: an 'include' above
+       the first 'file' line reads one, the 'file' line that matches reads the
+       one that is kept */
+    if (r->contexts != NULL)
+        g_ptr_array_free (r->contexts, TRUE);
     r->contexts = g_ptr_array_new_with_free_func (context_rule_free);
 
     if (r->defines == NULL)
