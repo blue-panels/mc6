@@ -1686,6 +1686,10 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size, 
     }
     MC_PTR_FREE (l);
 
+    // the parser stopped inside an included file: that file is ours to close
+    if (p.g != NULL && p.f != NULL)
+        fclose (p.f);
+
     if (r->contexts->len == 0)
     {
         g_ptr_array_free (r->contexts, TRUE);
