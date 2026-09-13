@@ -481,12 +481,167 @@ subst_defines (GTree *defines, char **argv, char **argv_end)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Is @c one of the bytes listed at @p, up to the closing @token? */
+static gboolean
+in_char_set (const unsigned char *p, int c, unsigned char token)
+{
+    for (; *p != token && *p != '\0'; p++)
+        if (c == (int) *p)
+            return TRUE;
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * '*' in a pattern: any run of bytes up to the one the pattern asks for next,
+ * never across a line break.
+ *
+ * Every match_* below takes the token at @pp and the byte at @ii and leaves
+ * both on the last byte the token ate, for the loop of compare_word_to_right()
+ * to step over.
+ */
+static gboolean
+match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned char **pp,
+            off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+
+    while (TRUE)
+    {
+        int c;
+
+        c = get_byte_folded (sc, i);
+        if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
+            break;
+        if (c == *p)
+            break;
+        if (c == '\n')
+            return FALSE;
+        i++;
+    }
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '+' in a pattern: a run of bytes that are part of a word.  Empty will do. */
+static gboolean
+match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_right,
+            const unsigned char **pp, off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+    int j = 0;
+
+    while (TRUE)
+    {
+        int c;
+
+        c = get_byte_folded (sc, i);
+        if (c == *p)
+        {
+            j = i;
+            if (p[0] == text->str[0] && p[1] == '\0')  // handle eg '+' and @+@ keywords properly
+                break;
+        }
+        if (j != 0
+            && strchr ((const char *) p + 1, c) != NULL)  // c exists further down, matched later
+            break;
+        if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
+        {
+            if (*p == '\0')
+            {
+                i--;
+                break;
+            }
+            if (j == 0)
+                return FALSE;
+            i = j;
+            break;
+        }
+        i++;
+    }
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '[abc]' in a pattern: a run of bytes out of the set. */
+static gboolean
+match_bracket (const syntax_scanner_t *sc, const unsigned char **pp, const unsigned char *q,
+               off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+    int c = -1, d;
+
+    while (TRUE)
+    {
+        d = c;
+        c = get_byte_folded (sc, i);
+        if (!in_char_set (p, c, SYNTAX_TOKEN_BRACKET))
+            break;
+        i++;
+    }
+    i--;
+
+    while (*p != SYNTAX_TOKEN_BRACKET && p <= q)
+        p++;
+    if (p > q)
+        return FALSE;
+    // the last byte of the set is what the pattern asks for next: give it back
+    if (p[1] == d)
+        i--;
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '{abc}' in a pattern: one byte out of the set. */
+static gboolean
+match_brace (const syntax_scanner_t *sc, const unsigned char **pp, const unsigned char *q, off_t i)
+{
+    const unsigned char *p = *pp + 1;
+
+    if (!in_char_set (p, get_byte_folded (sc, i), SYNTAX_TOKEN_BRACE))
+        return FALSE;
+
+    while (*p != SYNTAX_TOKEN_BRACE && p < q)
+        p++;
+
+    *pp = p;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * How far the pattern @text matches the bytes from @i to the right.
+ *
+ * @return the byte after the match, or -1 if the pattern does not match
+ */
 static off_t
 compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
                        const char *whole_left, const char *whole_right, gboolean line_start)
 {
     const unsigned char *p, *q;
-    int c, d, j;
+    int c;
 
     c = get_byte_folded (sc, i - 1);
     if ((line_start && c != '\n') || (whole_left != NULL && strchr (whole_left, c) != NULL))
@@ -494,98 +649,35 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
     {
+        gboolean ok;
+
         switch (*p)
         {
         case SYNTAX_TOKEN_STAR:
-            p++;
-            while (TRUE)
-            {
-                c = get_byte_folded (sc, i);
-                if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
-                    break;
-                if (c == *p)
-                    break;
-                if (c == '\n')
-                    return -1;
-                i++;
-            }
+            ok = match_star (sc, whole_right, &p, &i);
             break;
         case SYNTAX_TOKEN_PLUS:
-            p++;
-            j = 0;
-            while (TRUE)
-            {
-                c = get_byte_folded (sc, i);
-                if (c == *p)
-                {
-                    j = i;
-                    if (p[0] == text->str[0]
-                        && p[1] == '\0')  // handle eg '+' and @+@ keywords properly
-                        break;
-                }
-                if (j != 0
-                    && strchr ((const char *) p + 1, c)
-                        != NULL)  // c exists further down, so it will get matched later
-                    break;
-                if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
-                {
-                    if (*p == '\0')
-                    {
-                        i--;
-                        break;
-                    }
-                    if (j == 0)
-                        return -1;
-                    i = j;
-                    break;
-                }
-                i++;
-            }
+            ok = match_plus (sc, text, whole_right, &p, &i);
             break;
         case SYNTAX_TOKEN_BRACKET:
-            p++;
-            c = -1;
-            while (TRUE)
-            {
-                d = c;
-                c = get_byte_folded (sc, i);
-                for (j = 0; p[j] != SYNTAX_TOKEN_BRACKET && p[j] != '\0'; j++)
-                    if (c == p[j])
-                        goto found_char2;
-                break;
-            found_char2:
-                i++;
-            }
-            i--;
-            while (*p != SYNTAX_TOKEN_BRACKET && p <= q)
-                p++;
-            if (p > q)
-                return -1;
-            if (p[1] == d)
-                i--;
+            ok = match_bracket (sc, &p, q, &i);
             break;
         case SYNTAX_TOKEN_BRACE:
-            p++;
-            c = get_byte_folded (sc, i);
-            for (; *p != SYNTAX_TOKEN_BRACE && *p != '\0'; p++)
-                if (c == *p)
-                    goto found_char3;
-            return -1;
-        found_char3:
-            while (*p != SYNTAX_TOKEN_BRACE && p < q)
-                p++;
+            ok = match_brace (sc, &p, q, i);
             break;
         default:
-            if (*p != get_byte_folded (sc, i))
-                return -1;
+            ok = (*p == get_byte_folded (sc, i));
+            break;
         }
+
+        if (!ok)
+            return -1;
     }
 
     if (whole_right == NULL)
         return i;
 
-    c = get_byte_folded (sc, i);
-    return strchr (whole_right, c) != NULL ? -1 : i;
+    return strchr (whole_right, get_byte_folded (sc, i)) != NULL ? -1 : i;
 }
 
 /* --------------------------------------------------------------------------------------------- */
