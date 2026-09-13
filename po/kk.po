@@ -5,57 +5,59 @@
 # Translators:
 # Aidos Kakimzhanov <aidos.kakimzhan@gmail.com>, 2016
 # Yury V. Zaytsev <yury@shurup.com>, 2025
+# baurzhanm <baurzhanm@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Yury V. Zaytsev <yury@shurup.com>, 2025\n"
-"Language-Team: Kazakh (http://app.transifex.com/mc/mc/language/kk/)\n"
+"PO-Revision-Date: 2026-09-13 10:54+0000\n"
+"Last-Translator: baurzhanm <baurzhanm@noreply.codeberg.org>\n"
+"Language-Team: Kazakh <https://translate.codeberg.org/projects/mc6/mc6/kk/>\n"
 "Language: kk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.8.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
-msgstr ""
+msgstr "Аударма жоқ"
 
 msgid "Warning: cannot load codepages list"
-msgstr ""
+msgstr "Ескерту: кодтық беттер тізімін жүктеп алу мүмкін емес"
 
 msgid "7-bit ASCII"
 msgstr "7-битті ASCII-таңбалары"
 
 #, c-format
 msgid "Cannot translate from %s to %s"
-msgstr ""
+msgstr "%s форматынан %s форматына аудару мүмкін емес"
 
 msgid "Event system already initialized"
-msgstr ""
+msgstr "Оқиғалар жүйесі бұрыннан инициализацияланған"
 
 msgid "Failed to initialize event system"
-msgstr ""
+msgstr "Оқиғалар жүйесін инициализациялау сәтсіз аяқталды"
 
 msgid "Event system not initialized"
-msgstr ""
+msgstr "Оқиғалар жүйесі инициализацияланбаған"
 
 msgid "Check input data! Some of parameters are NULL!"
-msgstr ""
+msgstr "Кіріс деректерін тексеріңіз! Кейбір параметрлер мәні NULL!"
 
 #, c-format
 msgid "Unable to create group '%s' for events!"
-msgstr ""
+msgstr "Оқиғалар үшін '%s' тобын жасау мүмкін емес!"
 
 #, c-format
 msgid "Unable to create event '%s'!"
-msgstr ""
+msgstr "'%s' оқиғасын жасау мүмкін емес!"
 
 #, c-format
 msgid "Copyright (C) 1996-%zu the Free Software Foundation"
-msgstr ""
+msgstr "Copyright (C) 1996-%zu Free Software Foundation"
 
 msgid "Switch active panel"
 msgstr ""
@@ -100,7 +102,7 @@ msgid "Move/rename file(s)"
 msgstr ""
 
 msgid "Delete"
-msgstr ""
+msgstr "Өшіру"
 
 msgid "Create directory"
 msgstr ""
@@ -145,7 +147,7 @@ msgid "Terminal"
 msgstr ""
 
 msgid "Edit file"
-msgstr ""
+msgstr "Файлды түзету"
 
 msgid "Edit new file"
 msgstr ""
@@ -292,7 +294,7 @@ msgid "Edit with internal editor"
 msgstr ""
 
 msgid "View file"
-msgstr ""
+msgstr "Файлды қарау"
 
 msgid "View raw file"
 msgstr ""
@@ -310,7 +312,7 @@ msgid "Show directory size"
 msgstr ""
 
 msgid "Compare directories"
-msgstr ""
+msgstr "Бумаларды салыстыру"
 
 msgid "Compare files (diff)"
 msgstr ""
@@ -331,7 +333,7 @@ msgid "Edit symbolic link"
 msgstr ""
 
 msgid "External panelize"
-msgstr ""
+msgstr "Сыртқы панельге"
 
 msgid "Filter view"
 msgstr ""
@@ -343,7 +345,7 @@ msgid "Info panel"
 msgstr ""
 
 msgid "Background jobs"
-msgstr ""
+msgstr "Фондық тапсырмалар"
 
 msgid "Layout settings"
 msgstr ""
@@ -367,10 +369,10 @@ msgid "Panel listing mode"
 msgstr ""
 
 msgid "Panel options"
-msgstr ""
+msgstr "Панель опциялары"
 
 msgid "Quick cd"
-msgstr ""
+msgstr "Жылдам cd"
 
 msgid "Quick view panel"
 msgstr ""
@@ -388,7 +390,7 @@ msgid "Panel tree view"
 msgstr ""
 
 msgid "Directory tree"
-msgstr ""
+msgstr "Бумалар ағашы"
 
 msgid "Put current link to cmdline"
 msgstr ""
@@ -397,7 +399,7 @@ msgid "Put other link to cmdline"
 msgstr ""
 
 msgid "Add to hotlist"
-msgstr ""
+msgstr "Ыстық тізімге қосу"
 
 msgid "Toggle hidden files"
 msgstr ""
@@ -592,7 +594,7 @@ msgid "Save selected block"
 msgstr ""
 
 msgid "Insert file"
-msgstr ""
+msgstr "Файлды кірістіру"
 
 msgid "Toggle insert/overwrite"
 msgstr ""
@@ -739,7 +741,7 @@ msgid "Toggle syntax highlighting"
 msgstr ""
 
 msgid "Choose syntax highlighting"
-msgstr ""
+msgstr "Синтаксисті түрлі-түсті етуді таңдау"
 
 msgid "Toggle right margin"
 msgstr ""
@@ -885,19 +887,22 @@ msgid ""
 "User: %s\n"
 "Process ID: %d"
 msgstr ""
+"\"%s\" файлы бұрыннан түзетіліп жатыр.\n"
+"Пайдаланушы: %s\n"
+"Процесс ID: %d"
 
 msgid "File locked"
-msgstr ""
+msgstr "Файл құлыпталған"
 
 msgid "&Grab lock"
-msgstr ""
+msgstr "Құлыпты &иелену"
 
 msgid "&Ignore lock"
-msgstr ""
+msgstr "Құлыпты &елемеу"
 
 #, c-format
 msgid "Cannot create %s directory"
-msgstr ""
+msgstr "%s бумасын жасау мүмкін емес"
 
 #, c-format
 msgid "Imported %s to %s\n"
@@ -908,58 +913,64 @@ msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
 
 msgid "FATAL: not a directory:"
-msgstr ""
+msgstr "КРИТИКАЛЫҚ: бума емес:"
 
 msgid ""
 "Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
 "hex)"
 msgstr ""
+"Сан ауқымнан тыс (байт ауқымында болуы тиіс, 0 <= n <= 0xFF, он алтылық "
+"пішімде)"
 
 msgid "Invalid character"
-msgstr ""
+msgstr "Жарамсыз таңба"
 
 msgid "Unmatched quotes character"
-msgstr ""
+msgstr "Сәйкес келмейтін тырнақша таңбасы"
 
 #, c-format
 msgid ""
 "Hex pattern error at position %d:\n"
 "%s."
 msgstr ""
+"%d позициясында он алтылық үлгі қатесі:\n"
+"%s."
 
 msgid "Search string not found"
-msgstr ""
+msgstr "Іздеу жолы табылмады"
 
 msgid "Not implemented yet"
-msgstr ""
+msgstr "Әлі іске асырылмаған"
 
 msgid "Num of replace tokens not equal to num of found tokens"
-msgstr ""
+msgstr "Алмастыру токендерінің саны табылған токендер санына тең емес"
 
 #, c-format
 msgid "Invalid token number %d"
-msgstr ""
+msgstr "Жарамсыз токен нөмірі %d"
 
 msgid "Regular expression error"
-msgstr ""
+msgstr "Тұрақты өрнек қатесі"
 
 msgid "No&rmal"
-msgstr ""
+msgstr "Қа&лыпты"
 
 msgid "Re&gular expression"
-msgstr ""
+msgstr "Тұрақты ө&рнек"
 
 msgid "He&xadecimal"
-msgstr ""
+msgstr "Он алт&ылық"
 
 msgid "Wil&dcard search"
-msgstr ""
+msgstr "Мас&камен іздеу"
 
 #, c-format
 msgid ""
 "Unable to parse '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
+"'%s' темасын талдау мүмкін емес.\n"
+"Бастапқы тема жүктелді"
 
 #, c-format
 msgid ""
@@ -967,6 +978,9 @@ msgid ""
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
+"'%s' темасын «true colors» қолдауымен пайдалану мүмкін емес:\n"
+"%s\n"
+"Бастапқы тема жүктелді"
 
 #, c-format
 msgid ""
@@ -974,12 +988,17 @@ msgid ""
 "%s\n"
 "Default skin has been loaded"
 msgstr ""
+"'%s' темасын 256 түс қолдауымен пайдалану мүмкін емес:\n"
+"%s\n"
+"Бастапқы тема жүктелді"
 
 #, c-format
 msgid ""
 "Unable to load '%s' skin.\n"
 "Default skin has been loaded"
 msgstr ""
+"'%s' темасын жүктеп алу мүмкін емес.\n"
+"Бастапқы тема жүктелді"
 
 msgid ""
 "\n"
@@ -988,12 +1007,21 @@ msgid ""
 "a *-256color or *-direct256 variant. Use the 'toe -a'\n"
 "command to list all available variants on your system.\n"
 msgstr ""
+"\n"
+"Егер терминалыңыз 256 түсті қолдаса, TERM орта айнымалысын\n"
+"терминалыңызға сәйкес орнатуыңыз керек, мысалы *-256color немесе\n"
+"*-direct256 нұсқасын қолданып. Жүйеңізде қолжетімді барлық нұсқаларды\n"
+"тізімдеу үшін 'toe -a' командасын қолданыңыз.\n"
 
 msgid ""
 "For true color support, you need version 6.1 or later of the ncurses\n"
 "library with wide character and ABI 6 or higher support.\n"
 "Please upgrade your system.\n"
 msgstr ""
+"True color қолдауы үшін ncurses кітапханасының 6.1 немесе одан кейінгі\n"
+"нұсқасы, кең таңбаларды қолдауы және ABI 6 немесе одан жоғары қолдауы "
+"қажет.\n"
+"Жүйеңізді жаңғыртыңыз.\n"
 
 msgid ""
 "\n"
@@ -1001,9 +1029,14 @@ msgid ""
 "environment variable to a *-direct256, *-direct16, or *-direct variant.\n"
 "Use the 'toe -a' command to list all available variants on your system.\n"
 msgstr ""
+"\n"
+"Егер терминалыңыз «true colors» қолдаса, TERM орта айнымалысын\n"
+"*-direct256, *-direct16 немесе *-direct нұсқасына орнатуыңыз керек.\n"
+"Жүйеңіздегі қолжетімді барлық нұсқаларды тізімдеу үшін 'toe -a' командасын "
+"қолданыңыз.\n"
 
 msgid "True color not supported in this slang version."
-msgstr ""
+msgstr "Бұл slang нұсқасында «true color» қолдалмайды."
 
 msgid ""
 "\n"
@@ -1012,397 +1045,418 @@ msgid ""
 "Use the 'toe -a' command to list all available variants on your system.\n"
 "Alternatively, you can set COLORTERM=truecolor.\n"
 msgstr ""
+"\n"
+"Егер терминалыңыз «true colors» қолдаса, TERM орта айнымалысын\n"
+"*-direct256, *-direct16 немесе *-direct нұсқасына орнатуыңыз керек.\n"
+"Жүйеңіздегі қолжетімді барлық нұсқаларды тізімдеу үшін 'toe -a' командасын "
+"қолданыңыз.\n"
+"Сондай-ақ, COLORTERM=truecolor айнымалысын орнатуға болады.\n"
 
 msgid "Escape"
-msgstr ""
+msgstr "Escape"
 
 msgid "Function key 1"
-msgstr ""
+msgstr "Функц. перне 1"
 
 msgid "Function key 2"
-msgstr ""
+msgstr "Функц. перне 2"
 
 msgid "Function key 3"
-msgstr ""
+msgstr "Функц. перне 3"
 
 msgid "Function key 4"
-msgstr ""
+msgstr "Функц. перне 4"
 
 msgid "Function key 5"
-msgstr ""
+msgstr "Функц. перне 5"
 
 msgid "Function key 6"
-msgstr ""
+msgstr "Функц. перне 6"
 
 msgid "Function key 7"
-msgstr ""
+msgstr "Функц. перне 7"
 
 msgid "Function key 8"
-msgstr ""
+msgstr "Функц. перне 8"
 
 msgid "Function key 9"
-msgstr ""
+msgstr "Функц. перне 9"
 
 msgid "Function key 10"
-msgstr ""
+msgstr "Функц. перне 10"
 
 msgid "Function key 11"
-msgstr ""
+msgstr "Функц. перне 11"
 
 msgid "Function key 12"
-msgstr ""
+msgstr "Функц. перне 12"
 
 msgid "Function key 13"
-msgstr ""
+msgstr "Функц. перне 13"
 
 msgid "Function key 14"
-msgstr ""
+msgstr "Функц. перне 14"
 
 msgid "Function key 15"
-msgstr ""
+msgstr "Функц. перне 15"
 
 msgid "Function key 16"
-msgstr ""
+msgstr "Функц. перне 16"
 
 msgid "Function key 17"
-msgstr ""
+msgstr "Функц. перне 17"
 
 msgid "Function key 18"
-msgstr ""
+msgstr "Функц. перне 18"
 
 msgid "Function key 19"
-msgstr ""
+msgstr "Функц. перне 19"
 
 msgid "Function key 20"
-msgstr ""
+msgstr "Функц. перне 20"
 
 msgid "Completion/M-tab"
-msgstr ""
+msgstr "Толықтыру/M-tab"
 
 msgid "BackTab/S-tab"
-msgstr ""
+msgstr "BackTab/S-tab"
 
 msgid "Backspace"
-msgstr ""
+msgstr "Backspace"
 
 msgid "Up arrow"
-msgstr ""
+msgstr "Жоғары бағдарша"
 
 msgid "Down arrow"
-msgstr ""
+msgstr "Төмен бағдарша"
 
 msgid "Left arrow"
-msgstr ""
+msgstr "Сол жақ бағдарша"
 
 msgid "Right arrow"
-msgstr ""
+msgstr "Оң жақ бағдарша"
 
 msgid "Insert"
-msgstr ""
+msgstr "Кірістіру"
 
 msgid "Home"
-msgstr ""
+msgstr "Home"
 
 msgid "End key"
-msgstr ""
+msgstr "End пернесі"
 
 msgid "Page Up"
-msgstr ""
+msgstr "Page Up"
 
 msgid "Page Down"
-msgstr ""
+msgstr "Page Down"
 
 msgid "/ on keypad"
-msgstr ""
+msgstr "Цифр. пернет.-ғы /"
 
 msgid "* on keypad"
-msgstr ""
+msgstr "Цифр. пернет.-ғы *"
 
 msgid "- on keypad"
-msgstr ""
+msgstr "Цифр. пернет.-ғы -"
 
 msgid "+ on keypad"
-msgstr ""
+msgstr "Цифр. пернет.-ғы +"
 
 msgid "Left arrow keypad"
-msgstr ""
+msgstr "Сол жақ бағдарша (цифр.)"
 
 msgid "Right arrow keypad"
-msgstr ""
+msgstr "Оң жақ бағдарша (цифр.)"
 
 msgid "Up arrow keypad"
-msgstr ""
+msgstr "Жоғары бағдарша (цифр.)"
 
 msgid "Down arrow keypad"
-msgstr ""
+msgstr "Төмен бағдарша (цифр.)"
 
 msgid "Home on keypad"
-msgstr ""
+msgstr "Home (цифр.)"
 
 msgid "End on keypad"
-msgstr ""
+msgstr "End (цифр.)"
 
 msgid "Page Down keypad"
-msgstr ""
+msgstr "Page Down (цифр.)"
 
 msgid "Page Up keypad"
-msgstr ""
+msgstr "Page Up (цифр.)"
 
 msgid "Insert on keypad"
-msgstr ""
+msgstr "Кірістіру (цифр.)"
 
 msgid "Delete on keypad"
-msgstr ""
+msgstr "Өшіру (цифр.)"
 
 msgid "Enter on keypad"
-msgstr ""
+msgstr "Enter (цифр.)"
 
 msgid "Function key 21"
-msgstr ""
+msgstr "Функц. перне 21"
 
 msgid "Function key 22"
-msgstr ""
+msgstr "Функц. перне 22"
 
 msgid "Function key 23"
-msgstr ""
+msgstr "Функц. перне 23"
 
 msgid "Function key 24"
-msgstr ""
+msgstr "Функц. перне 24"
 
 msgid "A1 key"
-msgstr ""
+msgstr "A1 пернесі"
 
 msgid "C1 key"
-msgstr ""
+msgstr "C1 пернесі"
 
 msgid "Asterisk"
-msgstr ""
+msgstr "Жұлдызша"
 
 msgid "Minus"
-msgstr ""
+msgstr "Минус"
 
 msgid "Plus"
-msgstr ""
+msgstr "Плюс"
 
 msgid "Dot"
-msgstr ""
+msgstr "Нүкте"
 
 msgid "Less than"
-msgstr ""
+msgstr "Кіші"
 
 msgid "Great than"
-msgstr ""
+msgstr "Үлкен"
 
 msgid "Equal"
-msgstr ""
+msgstr "Тең"
 
 msgid "Comma"
-msgstr ""
+msgstr "Үтір"
 
 msgid "Apostrophe"
-msgstr ""
+msgstr "Апостроф"
 
 msgid "Colon"
-msgstr ""
+msgstr "Қос нүкте"
 
 msgid "Semicolon"
-msgstr ""
+msgstr "Нүктелі үтір"
 
 msgid "Exclamation mark"
-msgstr ""
+msgstr "Леп белгісі"
 
 msgid "Question mark"
-msgstr ""
+msgstr "Сұрақ белгісі"
 
 msgid "Ampersand"
-msgstr ""
+msgstr "Амперсанд"
 
 msgid "Dollar sign"
-msgstr ""
+msgstr "Доллар таңбасы"
 
 msgid "Quotation mark"
-msgstr ""
+msgstr "Тырнақша"
 
 msgid "Percent sign"
-msgstr ""
+msgstr "Пайыз таңбасы"
 
 msgid "Caret"
-msgstr ""
+msgstr "Карет"
 
 msgid "Tilda"
-msgstr ""
+msgstr "Тильда"
 
 msgid "Prime"
-msgstr ""
+msgstr "Штрих"
 
 msgid "Underline"
-msgstr ""
+msgstr "Астын сызу"
 
 msgid "Understrike"
-msgstr ""
+msgstr "Сызықша"
 
 msgid "Pipe"
-msgstr ""
+msgstr "Тік сызық"
 
 msgid "Left parenthesis"
-msgstr ""
+msgstr "Сол жақ жақша"
 
 msgid "Right parenthesis"
-msgstr ""
+msgstr "Оң жақ жақша"
 
 msgid "Left bracket"
-msgstr ""
+msgstr "Сол жақ тік жақша"
 
 msgid "Right bracket"
-msgstr ""
+msgstr "Оң жақ тік жақша"
 
 msgid "Left brace"
-msgstr ""
+msgstr "Сол жақ жүйелі жақша"
 
 msgid "Right brace"
-msgstr ""
+msgstr "Оң жақ жүйелі жақша"
 
 msgid "Enter"
-msgstr ""
+msgstr "Enter"
 
 msgid "Tab key"
-msgstr ""
+msgstr "Tab пернесі"
 
 msgid "Space key"
-msgstr ""
+msgstr "Бос орын пернесі"
 
 msgid "Slash key"
-msgstr ""
+msgstr "Қиғаш сызық пернесі"
 
 msgid "Backslash key"
-msgstr ""
+msgstr "Кері қиғаш сызық пернесі"
 
 msgid "Number sign #"
-msgstr ""
+msgstr "Тор таңбасы #"
 
 #. TRANSLATORS: Please translate as in "at sign" (@).
 msgid "At sign"
-msgstr ""
+msgstr "Айқұлақ таңбасы"
 
 msgid "Ctrl"
-msgstr ""
+msgstr "Ctrl"
 
 msgid "Alt"
-msgstr ""
+msgstr "Alt"
 
 msgid "RAlt"
 msgstr ""
 
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #, c-format
 msgid ""
 "\n"
 "Cannot create pipe for SIGWINCH: %s (%d)\n"
 msgstr ""
+"\n"
+"SIGWINCH үшін арна жасау мүмкін емес: %s (%d)\n"
 
 #, c-format
 msgid ""
 "\n"
 "Cannot configure write end of SIGWINCH pipe: %s (%d)\n"
 msgstr ""
+"\n"
+"SIGWINCH арнасының жазу жағын баптау мүмкін емес: %s (%d)\n"
 
 #, c-format
 msgid ""
 "\n"
 "Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
 msgstr ""
+"\n"
+"SIGWINCH арнасының оқу жағын баптау мүмкін емес: %s (%d)\n"
 
 #, c-format
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
 msgstr ""
+"%dx%d экран өлшеміне қолдау көрсетілмейді.\n"
+"TERM орта айнымалысын тексеріңіз.\n"
 
 msgid "The TERM environment variable is unset!\n"
-msgstr ""
+msgstr "TERM орта айнымалысы орнатылмаған!\n"
 
 msgid "Cannot check SIGWINCH pipe"
-msgstr ""
+msgstr "SIGWINCH арнасын тексеру мүмкін емес"
 
 msgid "B"
-msgstr ""
+msgstr "Б"
 
 msgid "kB"
-msgstr ""
+msgstr "кБ"
 
 msgid "KiB"
-msgstr ""
+msgstr "КиБ"
 
 msgid "MB"
-msgstr ""
+msgstr "МБ"
 
 msgid "MiB"
-msgstr ""
+msgstr "МиБ"
 
 msgid "GB"
-msgstr ""
+msgstr "ГБ"
 
 msgid "GiB"
-msgstr ""
+msgstr "ГиБ"
 
 msgid "Cannot create pipe descriptor"
-msgstr ""
+msgstr "Арна дескрипторын жасау мүмкін емес"
 
 msgid "Cannot create pipe streams"
-msgstr ""
+msgstr "Арна ағындарын жасау мүмкін емес"
 
 #, c-format
 msgid ""
 "Unexpected error in select() reading data from a child process:\n"
 "%s"
 msgstr ""
+"Еншілес процестен деректерді оқу кезінде select() функциясында күтпеген қате "
+"туындады:\n"
+"%s"
 
 msgid "Cannot close pipe descriptor (p == NULL)"
-msgstr ""
+msgstr "Арна дескрипторын жабу мүмкін емес (p == NULL)"
 
 #, c-format
 msgid ""
 "Unexpected error in waitpid():\n"
 "%s"
 msgstr ""
+"waitpid() функциясында күтпеген қате туындады:\n"
+"%s"
 
 #, c-format
 msgid "Directory cache expired for %s"
-msgstr ""
+msgstr "%s үшін бума кэшінің мерзімі аяқталды"
 
 #, c-format
 msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr ""
+msgstr "%s: %s: %s %3d%% (%lld) байт тасымалданды"
 
 #, c-format
 msgid "%s: %s: %s %lld bytes transferred"
-msgstr ""
+msgstr "%s: %s: %s %lld байт тасымалданды"
 
 msgid "Starting linear transfer..."
-msgstr ""
+msgstr "Сызықтық тасымалдауды бастау..."
 
 msgid "Getting file"
-msgstr ""
+msgstr "Файлды алу"
 
 msgid "Changes to file lost"
-msgstr ""
+msgstr "Файлдағы өзгерістер жоғалды"
 
 #, c-format
 msgid ""
 "Cannot create temporary directory %s: %s.\n"
 "Temporary files will not be created\n"
 msgstr ""
+"%s уақытша бумасын жасау мүмкін емес: %s.\n"
+"Уақытша файлдар жасалмайды\n"
 
 msgid "Press any key to continue..."
-msgstr ""
+msgstr "Жалғастыру үшін кез келген пернені басыңыз..."
 
 msgid "Cannot parse:"
-msgstr ""
+msgstr "Талдау мүмкін емес:"
 
 msgid "More parsing errors will be ignored."
-msgstr ""
+msgstr "Келесі талдау қателері еленбейді."
 
 msgid ""
 "The utar:// virtual filesystem has been removed.\n"
@@ -1415,16 +1469,16 @@ msgid ""
 msgstr ""
 
 msgid "Internal error:"
-msgstr ""
+msgstr "Ішкі қате:"
 
 msgid "Password:"
-msgstr ""
+msgstr "Пароль:"
 
 msgid "Screens"
-msgstr ""
+msgstr "Экрандар"
 
 msgid "History"
-msgstr ""
+msgstr "Тарих"
 
 msgid "Paste"
 msgstr ""
@@ -1435,117 +1489,117 @@ msgid ""
 msgstr ""
 
 msgid "&Yes"
-msgstr ""
+msgstr "&Иә"
 
 msgid "&No"
-msgstr ""
+msgstr "&Жоқ"
 
 #. TRANSLATORS: no need to translate 'DialogTitle', it's just a context prefix
 msgid "DialogTitle|History cleanup"
-msgstr ""
+msgstr "DialogTitle|Тарихты тазалау"
 
 msgid "Do you want clean this history?"
-msgstr ""
+msgstr "Бұл тарихты тазалағыңыз келе ме?"
 
 msgid "&OK"
-msgstr ""
+msgstr "&OK"
 
 msgid "&Cancel"
-msgstr ""
+msgstr "Бас &тарту"
 
 msgid "Background process:"
-msgstr ""
+msgstr "Фондық процесс:"
 
 msgid "Error"
-msgstr ""
+msgstr "Қате"
 
 #, c-format
 msgid "%s (%d)"
-msgstr ""
+msgstr "%s (%d)"
 
 msgid "&Abort"
-msgstr ""
+msgstr "&Тоқтату"
 
 msgid "Displays the current version"
-msgstr ""
+msgstr "Ағымдағы нұсқаны көрсетеді"
 
 msgid "Print data directory"
-msgstr ""
+msgstr "Деректер бумасын шығару"
 
 msgid "Print extended info about used data directories"
-msgstr ""
+msgstr "Қолданылатын деректер бумалары туралы кеңейтілген ақпаратты шығару"
 
 msgid "Print configure options"
-msgstr ""
+msgstr "Баптау опцияларын шығару"
 
 msgid "Print last working directory to specified file"
-msgstr ""
+msgstr "Соңғы жұмыс бумасын көрсетілген файлға жазу"
 
 msgid "<file>"
-msgstr ""
+msgstr "<файл>"
 
 msgid "Disables Lua support"
 msgstr ""
 
 msgid "Launches the file viewer on a file"
-msgstr ""
+msgstr "Файлды қарау құралын іске қосады"
 
 msgid "Edit files"
-msgstr ""
+msgstr "Файлдарды түзету"
 
 msgid "<file> ..."
-msgstr ""
+msgstr "<файл> ..."
 
 msgid "Forces xterm features"
-msgstr ""
+msgstr "xterm мүмкіндіктерін мәжбүрлеп қолдану"
 
 msgid "Disable X11 support"
-msgstr ""
+msgstr "X11 қолдауын сөндіру"
 
 msgid "Tries to use an old highlight mouse tracking"
-msgstr ""
+msgstr "Тышқанның ескі іздеу режимін қолданып көру"
 
 msgid "Disable mouse support in text version"
-msgstr ""
+msgstr "Мәтіндік нұсқада тышқан қолдауын сөндіру"
 
 msgid "Tries to use termcap instead of terminfo"
-msgstr ""
+msgstr "terminfo орнына termcap қолданып көру"
 
 msgid "To run on slow terminals"
-msgstr ""
+msgstr "Баяу терминалдарда жұмыс істеу үшін"
 
 msgid "Use stickchars to draw"
-msgstr ""
+msgstr "Сызу үшін арнайы таңбаларды қолдану"
 
 msgid "Load definitions of key bindings from specified file"
-msgstr ""
+msgstr "Пернелер тіркесімінің анықтамаларын көрсетілген файлдан жүктеу"
 
 msgid "Don't load definitions of key bindings from file, use defaults"
-msgstr ""
+msgstr "Пернелер тіркесімін файлдан жүктемей, бастапқы мәндерді қолдану"
 
 msgid "Requests to run in black and white"
-msgstr ""
+msgstr "Ақ-қара режимде жұмыс істеуді сұрау"
 
 msgid "Request to run in color mode"
-msgstr ""
+msgstr "Түрлі-түсті режимде жұмыс істеуді сұрау"
 
 msgid "Show mc with specified skin"
-msgstr ""
+msgstr "mc-ны көрсетілген темамен іске қосу"
 
 msgid "<string>"
-msgstr ""
+msgstr "<жол>"
 
 msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
-msgstr ""
+msgstr "[+жол_нөмірі] файл1[:жол_нөмірі] [файл2[:жол_нөмірі]...]"
 
 msgid "file"
-msgstr ""
+msgstr "файл"
 
 msgid "file1 file2"
-msgstr ""
+msgstr "файл1 файл2"
 
 msgid "[this_dir] [other_panel_dir]"
-msgstr ""
+msgstr "[осы_бума] [басқа_панель_бумасы]"
 
 #, c-format
 msgid ""
@@ -1553,18 +1607,21 @@ msgid ""
 "Please send any bug reports (including the output of '%s -V')\n"
 "as tickets at %s\n"
 msgstr ""
+"\n"
+"Қателер туралы есептерді (соның ішінде '%s -V' нәтижесін)\n"
+"мына адрес бойынша тикет ретінде жіберіңіз: %s\n"
 
 msgid "Main options"
-msgstr ""
+msgstr "Негізгі опциялар"
 
 msgid "Terminal options"
-msgstr ""
+msgstr "Терминал опциялары"
 
 msgid "Color options"
-msgstr ""
+msgstr "Түс опциялары"
 
 msgid "Arguments parse error!"
-msgstr ""
+msgstr "Аргументтерді талдау қатесі!"
 
 msgid "No arguments given to mcstruct."
 msgstr ""
@@ -1573,171 +1630,179 @@ msgid "No arguments given to mctree."
 msgstr ""
 
 msgid "MC is built without builtin editor."
-msgstr ""
+msgstr "MC ішкі түзеткішсіз құрастырылған."
 
 msgid "No arguments given to the viewer."
-msgstr ""
+msgstr "Қарау құралына ешқандай аргумент берілмеді."
 
 msgid "Two files are required to invoke the diffviewer."
-msgstr ""
+msgstr "Diffviewer іске қосу үшін екі файл қажет."
 
 msgid "Background protocol error"
-msgstr ""
+msgstr "Фондық хаттама қатесі"
 
 msgid "Reading failed"
-msgstr ""
+msgstr "Оқу сәтсіз аяқталды"
 
 msgid "Background process error"
-msgstr ""
+msgstr "Фондық процесс қатесі"
 
 msgid "Unknown error in child"
-msgstr ""
+msgstr "Еншілес процестегі белгісіз қате"
 
 msgid "Child died unexpectedly"
-msgstr ""
+msgstr "Еншілес процесс күтпеген жерден аяқталды"
 
 msgid ""
 "Background process sent us a request for more arguments\n"
 "than we can handle."
-msgstr ""
+msgstr "Фондық процесс біз өңдей алатын мөлшерден көп аргумент сұрады."
 
 msgid "&Dismiss"
-msgstr ""
+msgstr "&Жабу"
 
 msgid "Enter search string:"
-msgstr ""
+msgstr "Іздеу жолын енгізіңіз:"
 
 msgid "Cas&e sensitive"
-msgstr ""
+msgstr "Регистрді &ескеру"
 
 msgid "&Backwards"
-msgstr ""
+msgstr "&Кері бағытта"
 
 msgid "&Whole words"
-msgstr ""
+msgstr "&Толық сөздер"
 
 msgid "&All charsets"
-msgstr ""
+msgstr "&Барлық кодтаулар"
 
 msgid "Search"
-msgstr ""
+msgstr "Іздеу"
 
 msgid "Search is disabled"
-msgstr ""
+msgstr "Іздеу сөндірілген"
 
 msgid "Cannot create temporary diff file"
-msgstr ""
+msgstr "Уақытша diff файлын жасау мүмкін емес"
 
 #, c-format
 msgid ""
 "Cannot create backup file\n"
 "%s~~~"
 msgstr ""
+"Сақтық көшірме файлын жасау мүмкін емес\n"
+"%s~~~"
 
 msgid "Cannot create temporary merge file"
-msgstr ""
+msgstr "Уақытша біріктіру файлын жасау мүмкін емес"
 
 msgid "&Fastest (Assume large files)"
-msgstr ""
+msgstr "Ең &жылдам (үлкен файлдар үшін)"
 
 msgid "&Minimal (Find a smaller set of change)"
-msgstr ""
+msgstr "&Минималды (өзгерістердің ең аз жиынтығын табу)"
 
 msgid "Diff algorithm"
-msgstr ""
+msgstr "Diff алгоритмі"
 
 msgid "Diff extra options"
-msgstr ""
+msgstr "Diff қосымша опциялары"
 
 msgid "&Ignore case"
-msgstr ""
+msgstr "Регистрді &елемеу"
 
 msgid "Ignore tab &expansion"
-msgstr ""
+msgstr "Табуляцияның &кеңеюін елемеу"
 
 msgid "Ignore &space change"
-msgstr ""
+msgstr "&Бос орын өзгерісін елемеу"
 
 msgid "Ignore all &whitespace"
-msgstr ""
+msgstr "Барлық &бос орындарды елемеу"
 
 msgid "Strip &trailing carriage return"
-msgstr ""
+msgstr "Соңғы каретка &қайтуын жою"
 
 msgid "Diff Options"
-msgstr ""
+msgstr "Diff опциялары"
 
 msgid "Edit"
-msgstr ""
+msgstr "Түзету"
 
 msgid "Edit is disabled"
-msgstr ""
+msgstr "Түзету сөндірілген"
 
 msgid "Goto line (left)"
-msgstr ""
+msgstr "Жолға өту (сол жақ)"
 
 msgid "Goto line (right)"
-msgstr ""
+msgstr "Жолға өту (оң жақ)"
 
 msgid "Enter line:"
-msgstr ""
+msgstr "Жолды енгізіңіз:"
 
 msgid "ButtonBar|Help"
-msgstr ""
+msgstr "ButtonBar|Көмек"
 
 msgid "ButtonBar|Save"
-msgstr ""
+msgstr "ButtonBar|Сақтау"
 
 msgid "ButtonBar|Edit"
-msgstr ""
+msgstr "ButtonBar|Түзету"
 
 msgid "ButtonBar|Merge"
-msgstr ""
+msgstr "ButtonBar|Бірікт"
 
 msgid "ButtonBar|Search"
-msgstr ""
+msgstr "ButtonBar|Іздеу"
 
 msgid "ButtonBar|Options"
-msgstr ""
+msgstr "ButtonBar|Опциял"
 
 msgid "ButtonBar|Quit"
-msgstr ""
+msgstr "ButtonBar|Шығу"
 
 msgid "File(s) was modified. Save with exit?"
-msgstr ""
+msgstr "Файл(дар) өзгертілді. Шығу алдында сақтау керек пе?"
 
 #, c-format
 msgid ""
 "%s is being shut down.\n"
 "Save modified file(s)?"
 msgstr ""
+"%s жұмысын аяқтауда.\n"
+"Өзгертілген файл(дар)ды сақтау керек пе?"
 
 msgid "Quit"
-msgstr ""
+msgstr "Шығу"
 
 msgid "Diff:"
-msgstr ""
+msgstr "Diff:"
 
 msgid "File name is empty!"
-msgstr ""
+msgstr "Файл аты бос!"
 
 #, c-format
 msgid ""
 "%s\n"
 "is a directory"
 msgstr ""
+"%s\n"
+"бума болып табылады"
 
 #, c-format
 msgid ""
 "Cannot stat\n"
 "%s"
 msgstr ""
+"Күйін алу мүмкін емес\n"
+"%s"
 
 msgid "Diff viewer: invalid mode"
-msgstr ""
+msgstr "Diff қарау құралы: жарамсыз режим"
 
 msgid "Two files are needed to compare"
-msgstr ""
+msgstr "Салыстыру үшін екі файл қажет"
 
 msgid "Spell"
 msgstr ""
@@ -1922,7 +1987,7 @@ msgid "Go to &declaration"
 msgstr ""
 
 msgid "&Find declaration"
-msgstr ""
+msgstr "Анықтаманы &табу"
 
 msgid "Find &references"
 msgstr ""
@@ -1979,7 +2044,7 @@ msgid "(unknown)"
 msgstr ""
 
 msgid "&Close"
-msgstr ""
+msgstr "&Жабу"
 
 msgid "No references found."
 msgstr ""
@@ -1988,36 +2053,38 @@ msgid "Members"
 msgstr ""
 
 msgid "Warning"
-msgstr ""
+msgstr "Ескерту"
 
 msgid ""
 "Current text was modified without a file save.\n"
 "Continue discards these changes."
 msgstr ""
+"Ағымдағы мәтін файлға сақталмай өзгертілді.\n"
+"Жалғастыру бұл өзгерістерді жояды."
 
 msgid "C&ontinue"
-msgstr ""
+msgstr "Жал&ғастыру"
 
 msgid "&Add word"
-msgstr ""
+msgstr "Сөзді &қосу"
 
 msgid "&Replace"
-msgstr ""
+msgstr "&Алмастыру"
 
 msgid "&Skip"
-msgstr ""
+msgstr "Өткізіп &жіберу"
 
 msgid "Language"
-msgstr ""
+msgstr "Тіл"
 
 msgid "Misspelled"
-msgstr ""
+msgstr "Қате жазылған"
 
 msgid "Check word"
-msgstr ""
+msgstr "Сөзді тексеру"
 
 msgid "Suggest"
-msgstr ""
+msgstr "Ұсыну"
 
 msgid "(no suggestions)"
 msgstr ""
@@ -2079,49 +2146,57 @@ msgid "Spell plugin settings"
 msgstr ""
 
 msgid "Select language"
-msgstr ""
+msgstr "Тілді таңдау"
 
 #, c-format
 msgid "Loading: %3d%%"
-msgstr ""
+msgstr "Жүктелуде: %3d%%"
 
 msgid "Loading..."
-msgstr ""
+msgstr "Жүктелуде..."
 
 #, c-format
 msgid ""
 "Cannot open\n"
 "%s"
 msgstr ""
+"Ашу мүмкін емес\n"
+"%s"
 
 msgid "Load file"
-msgstr ""
+msgstr "Файлды жүктеу"
 
 #, c-format
 msgid "Error reading %s"
-msgstr ""
+msgstr "%s оқу қатесі"
 
 #, c-format
 msgid ""
 "%s\n"
 "is not a regular file"
 msgstr ""
+"%s\n"
+"кәдімгі файл емес"
 
 #, c-format
 msgid ""
 "File \"%s\" is too large.\n"
 "Open it anyway?"
 msgstr ""
+"\"%s\" файлы тым үлкен.\n"
+"Сонда да ашу керек пе?"
 
 #, c-format
 msgid "Error reading from pipe: %s"
-msgstr ""
+msgstr "Арнадан оқу қатесі: %s"
 
 #, c-format
 msgid ""
 "Cannot open pipe for reading\n"
 "%s"
 msgstr ""
+"Оқу үшін арнаны ашу мүмкін емес\n"
+"%s"
 
 msgid "Undo"
 msgstr ""
@@ -2145,17 +2220,17 @@ msgid ""
 msgstr ""
 
 msgid "&Retry"
-msgstr ""
+msgstr "Қайта &көру"
 
 msgid "File has hard-links. Detach before saving?"
-msgstr ""
+msgstr "Файлда қатаң сілтемелер бар. Сақтау алдында ажырату керек пе?"
 
 msgid "The file has been modified in the meantime. Save anyway?"
-msgstr ""
+msgstr "Файл осы уақыт ішінде өзгертілді. Сонда да сақтау керек пе?"
 
 #, c-format
 msgid "Error writing to pipe: %s"
-msgstr ""
+msgstr "Арнаға жазу қатесі: %s"
 
 #, c-format
 msgid ""
@@ -2163,51 +2238,56 @@ msgid ""
 "%s\n"
 "for writing"
 msgstr ""
+"Файлды\n"
+"%s\n"
+"жазу үшін ашу мүмкін емес"
 
 msgid "The file you are saving does not end with a newline."
-msgstr ""
+msgstr "Сақталатын файл жаңа жол таңбасымен аяқталмайды."
 
 msgid "&Do not change"
-msgstr ""
+msgstr "Өз&гертпеу"
 
 msgid "&Unix format (LF)"
-msgstr ""
+msgstr "&Unix пішімі (LF)"
 
 msgid "&Windows/DOS format (CR LF)"
-msgstr ""
+msgstr "&Windows/DOS пішімі (CR LF)"
 
 msgid "&Macintosh format (CR)"
-msgstr ""
+msgstr "&Macintosh пішімі (CR)"
 
 msgid "Enter file name:"
-msgstr ""
+msgstr "Файл атын енгізіңіз:"
 
 msgid "Change line breaks to:"
-msgstr ""
+msgstr "Жол үзілістерін келесіге өзгерту:"
 
 msgid "Save As"
-msgstr ""
+msgstr "Қалай сақтау"
 
 #, c-format
 msgid ""
 "Cannot create directory\n"
 "%s"
 msgstr ""
+"Буманы жасау мүмкін емес\n"
+"%s"
 
 msgid "&Quick save"
-msgstr ""
+msgstr "&Жылдам сақтау"
 
 msgid "&Safe save"
-msgstr ""
+msgstr "&Қауіпсіз сақтау"
 
 msgid "&Do backups with following extension:"
-msgstr ""
+msgstr "Келесі кеңейтіліммен &сақтық көшірме жасау:"
 
 msgid "Check &POSIX new line"
-msgstr ""
+msgstr "&POSIX жаңа жолын тексеру"
 
 msgid "Edit Save Mode"
-msgstr ""
+msgstr "Түзетудің сақтау режимі"
 
 #, c-format
 msgid ""
@@ -2215,103 +2295,109 @@ msgid ""
 "%s:\n"
 "not a regular file"
 msgstr ""
+"%s\n"
+"сақтау мүмкін емес: кәдімгі файл емес"
 
 msgid "A file already exists with this name"
-msgstr ""
+msgstr "Мұндай атпен файл бұрыннан бар"
 
 msgid "&Overwrite"
-msgstr ""
+msgstr "Үстінен &жазу"
 
 msgid "Cannot save file"
-msgstr ""
+msgstr "Файлды сақтау мүмкін емес"
 
 #, c-format
 msgid "Confirm save file: \"%s\""
-msgstr ""
+msgstr "Файлды сақтауды растау: \"%s\""
 
 msgid "Save file"
-msgstr ""
+msgstr "Файлды сақтау"
 
 msgid "&Save"
-msgstr ""
+msgstr "&Сақтау"
 
 msgid "Load"
-msgstr ""
+msgstr "Жүктеу"
 
 msgid "Syntax file edit"
-msgstr ""
+msgstr "Синтаксис файлын түзету"
 
 msgid "Which syntax file you want to edit?"
-msgstr ""
+msgstr "Қай синтаксис файлын түзеткіңіз келеді?"
 
 msgid "&User"
-msgstr ""
+msgstr "&Пайдаланушы"
 
 msgid "&System wide"
-msgstr ""
+msgstr "&Жүйелік"
 
 msgid "Menu edit"
-msgstr ""
+msgstr "Мәзірді түзету"
 
 msgid "Which menu file do you want to edit?"
-msgstr ""
+msgstr "Қай мәзір файлын түзеткіңіз келеді?"
 
 msgid "&Local"
-msgstr ""
+msgstr "&Жергілікті"
 
 msgid "[NoName]"
-msgstr ""
+msgstr "[Атсыз]"
 
 #, c-format
 msgid ""
 "File %s was modified.\n"
 "Save before close?"
 msgstr ""
+"%s файлы өзгертілді.\n"
+"Жабу алдында сақтау керек пе?"
 
 msgid "Close file"
-msgstr ""
+msgstr "Файлды жабу"
 
 #, c-format
 msgid ""
 "%s is being shut down.\n"
 "Save modified file %s?"
 msgstr ""
+"%s жұмысын аяқтауда.\n"
+"Өзгертілген %s файлын сақтау керек пе?"
 
 msgid "This function is not implemented"
-msgstr ""
+msgstr "Бұл функция іске асырылмаған"
 
 msgid "Unable to save to file"
-msgstr ""
+msgstr "Файлға сақтау мүмкін емес"
 
 msgid "Goto line"
-msgstr ""
+msgstr "Жолға өту"
 
 msgid "Save block"
-msgstr ""
+msgstr "Блокты сақтау"
 
 msgid "Cannot save block"
-msgstr ""
+msgstr "Блокты сақтау мүмкін емес"
 
 msgid "Cannot insert file"
-msgstr ""
+msgstr "Файлды кірістіру мүмкін емес"
 
 msgid "mail -s <subject> -c <cc> <to>"
-msgstr ""
+msgstr "mail -s <тақырыбы> -c <көшірме> <кімге>"
 
 msgid "To"
-msgstr ""
+msgstr "Кімге"
 
 msgid "Subject"
-msgstr ""
+msgstr "Тақырыбы"
 
 msgid "Copies to"
-msgstr ""
+msgstr "Көшірмелер"
 
 msgid "Mail"
-msgstr ""
+msgstr "Пошта"
 
 msgid "Cancel"
-msgstr ""
+msgstr "Бас тарту"
 
 #, c-format
 msgid "insert %d"
@@ -2331,29 +2417,29 @@ msgid "Undo History"
 msgstr ""
 
 msgid "Collect completions"
-msgstr ""
+msgstr "Толықтыруларды жинау"
 
 msgid "NoName"
-msgstr ""
+msgstr "Атсыз"
 
 msgid "Save macro"
-msgstr ""
+msgstr "Макросты сақтау"
 
 msgid "Press the macro's new hotkey:"
-msgstr ""
+msgstr "Макростың жаңа ыстық пернесін басыңыз:"
 
 msgid "Repeat last commands"
-msgstr ""
+msgstr "Соңғы командаларды қайталау"
 
 msgid "Repeat times:"
-msgstr ""
+msgstr "Қайталау саны:"
 
 #, c-format
 msgid "Delete macro %s?"
 msgstr ""
 
 msgid "Delete macro"
-msgstr ""
+msgstr "Макросты өшіру"
 
 msgid "Macro Explorer"
 msgstr ""
@@ -2368,88 +2454,88 @@ msgid "Close"
 msgstr ""
 
 msgid "&Open file..."
-msgstr ""
+msgstr "Файлды &ашу..."
 
 msgid "&New"
-msgstr ""
+msgstr "&Жаңа"
 
 msgid "&History..."
-msgstr ""
+msgstr "&Тарих..."
 
 msgid "Save &as..."
-msgstr ""
+msgstr "Қалай &сақтау..."
 
 msgid "&Insert file..."
-msgstr ""
+msgstr "Файлды &кірістіру..."
 
 msgid "Cop&y to file..."
-msgstr ""
+msgstr "Файлға &көшіру..."
 
 msgid "&User menu..."
-msgstr ""
+msgstr "&Пайдаланушы мәзірі..."
 
 msgid "A&bout..."
-msgstr ""
+msgstr "Осы &туралы..."
 
 msgid "&Quit"
-msgstr ""
+msgstr "&Шығу"
 
 msgid "&Undo"
-msgstr ""
+msgstr "&Болдырмау"
 
 msgid "&Redo"
-msgstr ""
+msgstr "&Қайталау"
 
 msgid "Undo &History..."
 msgstr ""
 
 msgid "&Toggle ins/overw"
-msgstr ""
+msgstr "Кірістіру/Үстінен жазуды &ауыстыру"
 
 msgid "To&ggle mark"
-msgstr ""
+msgstr "Белгіні &ауыстыру"
 
 msgid "&Mark columns"
-msgstr ""
+msgstr "Бағандарды &белгілеу"
 
 msgid "Mark &all"
-msgstr ""
+msgstr "&Барлығын белгілеу"
 
 msgid "Unmar&k"
-msgstr ""
+msgstr "Белгіні &алу"
 
 msgid "Cop&y"
-msgstr ""
+msgstr "&Көшіру"
 
 msgid "Mo&ve"
-msgstr ""
+msgstr "&Жылжыту"
 
 msgid "&Delete"
-msgstr ""
+msgstr "&Өшіру"
 
 msgid "Co&py to clipfile"
-msgstr ""
+msgstr "Clipfile-ға &көшіру"
 
 msgid "&Cut to clipfile"
-msgstr ""
+msgstr "Clipfile-ға &қиып алу"
 
 msgid "Pa&ste from clipfile"
-msgstr ""
+msgstr "Clipfile-дан &кірістіру"
 
 msgid "&Beginning"
-msgstr ""
+msgstr "&Басына"
 
 msgid "&End"
-msgstr ""
+msgstr "&Соңына"
 
 msgid "&Search..."
-msgstr ""
+msgstr "&Іздеу..."
 
 msgid "Search &again"
-msgstr ""
+msgstr "&Қайта іздеу"
 
 msgid "&Replace..."
-msgstr ""
+msgstr "&Алмастыру..."
 
 msgid "Toggle &line filter"
 msgstr ""
@@ -2458,37 +2544,37 @@ msgid "Filter by &word"
 msgstr ""
 
 msgid "&Toggle bookmark"
-msgstr ""
+msgstr "Бетбелгіні &ауыстыру"
 
 msgid "&Next bookmark"
-msgstr ""
+msgstr "&Келесі бетбелгі"
 
 msgid "&Prev bookmark"
-msgstr ""
+msgstr "&Алдыңғы бетбелгі"
 
 msgid "&Flush bookmarks"
-msgstr ""
+msgstr "Бетбелгілерді &тазалау"
 
 msgid "&Go to line..."
-msgstr ""
+msgstr "&Жолға өту..."
 
 msgid "&Toggle line state"
-msgstr ""
+msgstr "Жол күйін &ауыстыру"
 
 msgid "Go to matching &bracket"
-msgstr ""
+msgstr "Сәйкес &жақшаға өту"
 
 msgid "Toggle s&yntax highlighting"
-msgstr ""
+msgstr "Синтаксисті &түрлі-түсті етуді ауыстыру"
 
 msgid "Togg&le right margin"
-msgstr ""
+msgstr "Оң &жақ жиекті ауыстыру"
 
 msgid "Toggle &control characters"
 msgstr ""
 
 msgid "Encod&ing..."
-msgstr ""
+msgstr "&Кодтау..."
 
 msgid "&Fold / Unfold block"
 msgstr ""
@@ -2497,46 +2583,46 @@ msgid "&Unfold all"
 msgstr ""
 
 msgid "&Refresh screen"
-msgstr ""
+msgstr "Экранды &жаңарту"
 
 msgid "&Start/Stop record macro"
-msgstr ""
+msgstr "Макросты жазуды &бастау/тоқтату"
 
 msgid "Macro e&xplorer..."
 msgstr ""
 
 msgid "Record/Repeat &actions"
-msgstr ""
+msgstr "Әрекеттерді &жазу/қайталау"
 
 msgid "&Move"
-msgstr ""
+msgstr "&Жылжыту"
 
 msgid "&Resize"
-msgstr ""
+msgstr "Өлшемін &өзгерту"
 
 msgid "&Toggle fullscreen"
-msgstr ""
+msgstr "Толық экранға &ауыстыру"
 
 msgid "&Next"
-msgstr ""
+msgstr "&Келесі"
 
 msgid "&Previous"
-msgstr ""
+msgstr "&Алдыңғы"
 
 msgid "&List..."
-msgstr ""
+msgstr "&Тізім..."
 
 msgid "&General..."
-msgstr ""
+msgstr "&Жалпы..."
 
 msgid "Save &mode..."
-msgstr ""
+msgstr "Сақтау &режимі..."
 
 msgid "Learn &keys..."
-msgstr ""
+msgstr "Пернелерді &үйрету..."
 
 msgid "Syntax &highlighting..."
-msgstr ""
+msgstr "Синтаксисті &түрлі-түсті ету..."
 
 msgid "Pl&ugin info..."
 msgstr ""
@@ -2545,40 +2631,40 @@ msgid "&Lua scripts..."
 msgstr ""
 
 msgid "S&yntax file"
-msgstr ""
+msgstr "&Синтаксис файлы"
 
 msgid "&Menu file"
-msgstr ""
+msgstr "&Мәзір файлы"
 
 msgid "&Save setup"
-msgstr ""
+msgstr "Баптауды &сақтау"
 
 msgid "(no plugins loaded)"
 msgstr ""
 
 msgid "&File"
-msgstr ""
+msgstr "&Файл"
 
 msgid "&Edit"
-msgstr ""
+msgstr "&Түзету"
 
 msgid "&Search"
-msgstr ""
+msgstr "&Іздеу"
 
 msgid "&Command"
-msgstr ""
+msgstr "&Команда"
 
 msgid "&Navigate"
 msgstr ""
 
 msgid "&Window"
-msgstr ""
+msgstr "&Терезе"
 
 msgid "Pl&ugins"
 msgstr ""
 
 msgid "&Options"
-msgstr ""
+msgstr "&Опциялар"
 
 msgid "Lua action"
 msgstr ""
@@ -2587,109 +2673,109 @@ msgid "Action failed"
 msgstr ""
 
 msgid "&None"
-msgstr ""
+msgstr "&Жоқ"
 
 msgid "&Dynamic paragraphing"
-msgstr ""
+msgstr "&Динамикалық параграфтау"
 
 msgid "Type &writer wrap"
-msgstr ""
+msgstr "&Жазу машинкасының тасымалдауы"
 
 msgid "Wrap mode"
-msgstr ""
+msgstr "Тасымалдау режимі"
 
 msgid "Tabulation"
-msgstr ""
+msgstr "Табуляция"
 
 msgid "&Fake half tabs"
-msgstr ""
+msgstr "&Жалған жартылай табтар"
 
 msgid "&Backspace through tabs"
-msgstr ""
+msgstr "Табтар арқылы &Backspace қолдану"
 
 msgid "Fill tabs with &spaces"
-msgstr ""
+msgstr "Табтарды &бос орындармен толтыру"
 
 msgid "Tab spacing:"
-msgstr ""
+msgstr "Таб аралығы:"
 
 msgid "Other options"
-msgstr ""
+msgstr "Басқа опциялар"
 
 msgid "&Return does autoindent"
-msgstr ""
+msgstr "&Return автоматты шегініс жасайды"
 
 msgid "Confir&m before saving"
-msgstr ""
+msgstr "Сақтау алдында &растау"
 
 msgid "Save file &position"
-msgstr ""
+msgstr "Файл &позициясын сақтау"
 
 msgid "&Visible trailing spaces"
-msgstr ""
+msgstr "Көрінетін &соңғы бос орындар"
 
 msgid "Visible &tabs"
-msgstr ""
+msgstr "Көрінетін &табтар"
 
 msgid "S&how control characters"
 msgstr ""
 
 msgid "Synta&x highlighting"
-msgstr ""
+msgstr "Синтаксисті &түрлі-түсті ету"
 
 msgid "C&ursor after inserted block"
-msgstr ""
+msgstr "Кірістірілген блоктан кейінгі &курсор"
 
 msgid "Pers&istent selection"
-msgstr ""
+msgstr "Тұрақты &белгілеу"
 
 msgid "Cursor be&yond end of line"
-msgstr ""
+msgstr "Жол соңынан &тыс курсор"
 
 msgid "&Group undo"
-msgstr ""
+msgstr "&Топтық болдырмау"
 
 msgid "Word wrap line length:"
-msgstr ""
+msgstr "Тасымалдау жолының ұзындығы:"
 
 msgid "Editor options"
-msgstr ""
+msgstr "Түзеткіш опциялары"
 
 msgid "In se&lection"
-msgstr ""
+msgstr "&Белгіленгенде"
 
 msgid "&Find all"
-msgstr ""
+msgstr "Барлығын &табу"
 
 msgid "Fil&ter"
 msgstr ""
 
 #, c-format
 msgid "Searching %s: %3d%%"
-msgstr ""
+msgstr "%s ізделуде: %3d%%"
 
 #, c-format
 msgid "Searching %s"
-msgstr ""
+msgstr "%s ізделуде"
 
 msgid "Enter replacement string:"
-msgstr ""
+msgstr "Алмастыру жолын енгізіңіз:"
 
 msgid "Replace"
-msgstr ""
+msgstr "Алмастыру"
 
 msgid "Replace with:"
-msgstr ""
+msgstr "Келесіге алмастыру:"
 
 msgid "A&ll"
-msgstr ""
+msgstr "&Барлығы"
 
 msgid "Confirm replace"
-msgstr ""
+msgstr "Алмастыруды растау"
 
 #, c-format
 msgid "%ld replacements made"
-msgstr ""
+msgstr "%ld алмастыру жасалды"
 
 msgid "Plugin"
 msgstr ""
@@ -2699,9 +2785,11 @@ msgid ""
 "A user friendly text editor\n"
 "written for the %s."
 msgstr ""
+"%s үшін жазылған\n"
+"пайдаланушыға ыңғайлы мәтін түзеткіші."
 
 msgid "About"
-msgstr ""
+msgstr "Туралы"
 
 msgid "Plugin info"
 msgstr ""
@@ -2716,61 +2804,63 @@ msgid "Selected plugin has no configuration callback."
 msgstr ""
 
 msgid "Open files"
-msgstr ""
+msgstr "Ашық файлдар"
 
 msgid "Edit: "
-msgstr ""
+msgstr "Түзету: "
 
 msgid "ButtonBar|Mark"
-msgstr ""
+msgstr "ButtonBar|Белгіл"
 
 msgid "ButtonBar|Replac"
-msgstr ""
+msgstr "ButtonBar|Алмаст"
 
 msgid "ButtonBar|Copy"
-msgstr ""
+msgstr "ButtonBar|Көшіру"
 
 msgid "ButtonBar|Move"
-msgstr ""
+msgstr "ButtonBar|Жылжыт"
 
 msgid "ButtonBar|Delete"
-msgstr ""
+msgstr "ButtonBar|Өшіру"
 
 msgid "ButtonBar|PullDn"
-msgstr ""
+msgstr "ButtonBar|Мәзір"
 
 #, c-format
 msgid "Filtering %s: %3d%%"
 msgstr ""
 
 msgid "Filter"
-msgstr ""
+msgstr "Сүзгі"
 
 msgid "No lines match"
 msgstr ""
 
 msgid "< Auto >"
-msgstr ""
+msgstr "< Авто >"
 
 msgid "< Reload Current Syntax >"
-msgstr ""
+msgstr "< Ағымдағы синтаксисті қайта жүктеу >"
 
 #, c-format
 msgid ""
 "Cannot open file\n"
 "%s"
 msgstr ""
+"Файлды ашу мүмкін емес\n"
+"%s"
 
 msgid "Load syntax file"
-msgstr ""
+msgstr "Синтаксис файлын жүктеу"
 
 #, c-format
 msgid "Error in file %s on line %d"
-msgstr ""
+msgstr "%s файлының %d жолындағы қате"
 
 #, c-format
 msgid "Cannot fetch a local copy of %s"
-msgstr ""
+msgstr "%s жергілікті көшірмесін алу мүмкін емес"
 
 msgid ""
 "Not an xterm or Linux console;\n"
@@ -2779,238 +2869,247 @@ msgstr ""
 
 #, c-format
 msgid "Type 'exit' to return to the %s"
-msgstr ""
+msgstr "%s ортасына қайту үшін 'exit' енгізіңіз"
 
 msgid "Set &all"
-msgstr ""
+msgstr "&Барлығын орнату"
 
 msgid "S&kip"
-msgstr ""
+msgstr "Өткізіп &жіберу"
 
 msgid "&Set"
-msgstr ""
+msgstr "&Орнату"
 
 msgid "owner"
-msgstr ""
+msgstr "иесі"
 
 msgid "group"
-msgstr ""
+msgstr "тобы"
 
 msgid "other"
-msgstr ""
+msgstr "басқалар"
 
 msgid "Flag"
-msgstr ""
+msgstr "Жалауша"
 
 #, c-format
 msgid "Permissions (octal): %o"
-msgstr ""
+msgstr "Құқықтар (сегіздік): %o"
 
 msgid "Chown advanced command"
-msgstr ""
+msgstr "Кеңейтілген chown командасы"
 
 #, c-format
 msgid ""
 "Cannot chmod\n"
 "%sn%s"
 msgstr ""
+"chmod орындау мүмкін емес\n"
+"%sn%s"
 
 #, c-format
 msgid ""
 "Cannot chown\n"
 "%sn%s"
 msgstr ""
+"chown орындау мүмкін емес\n"
+"%sn%s"
 
 #, c-format
 msgid ""
 "Cannot chmod\n"
 "%s"
 msgstr ""
+"chmod орындау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chown\n"
 "%s"
 msgstr ""
+"chown орындау мүмкін емес\n"
+"%s"
 
 msgid "< Default >"
-msgstr ""
+msgstr "< Бастапқы >"
 
 msgid "Skins"
-msgstr ""
+msgstr "Темалар"
 
 msgid "Running"
-msgstr ""
+msgstr "Орындалуда"
 
 msgid "Stopped"
-msgstr ""
+msgstr "Тоқтатылды"
 
 #, c-format
 msgid "Detected display codepage: %s"
-msgstr ""
+msgstr "Анықталған экран кодтауы: %s"
 
 #, c-format
 msgid "Selected source (file I/O) codepage: %s"
-msgstr ""
+msgstr "Таңдалған бастапқы (файлдық I/O) кодтау: %s"
 
 msgid "Classic terminal file manager inspired by Norton Commander."
 msgstr ""
+"Norton Commander негізінде жасалған классикалық терминалдық файл менеджері."
 
 msgid "&Never"
-msgstr ""
+msgstr "&Ешқашан"
 
 msgid "On dum&b terminals"
-msgstr ""
+msgstr "&Нашар терминалдарда"
 
 msgid "Alwa&ys"
-msgstr ""
+msgstr "Әр&қашан"
 
 msgid "File operations"
-msgstr ""
+msgstr "Файлдық әрекеттер"
 
 msgid "&Verbose operation"
-msgstr ""
+msgstr "&Егжей-тегжейлі әрекет"
 
 msgid "Compute tota&ls"
-msgstr ""
+msgstr "Жиынтықты &есептеу"
 
 msgid "Classic pro&gressbar"
-msgstr ""
+msgstr "Классикалық &прогресс-бар"
 
 msgid "Mkdi&r autoname"
-msgstr ""
+msgstr "Mkdi&r автоматты атауы"
 
 msgid "&Preallocate space"
-msgstr ""
+msgstr "Орынды &алдын ала бөлу"
 
 msgid "Esc key mode"
-msgstr ""
+msgstr "Esc пернесінің режимі"
 
 msgid "S&ingle press"
-msgstr ""
+msgstr "&Бір рет басу"
 
 msgid "Timeout:"
-msgstr ""
+msgstr "Күту уақыты:"
 
 msgid "Pause after run"
-msgstr ""
+msgstr "Орындалған соң аялдату"
 
 msgid "Use internal edi&t"
-msgstr ""
+msgstr "Ішкі &түзеткішті қолдану"
 
 msgid "Use internal vie&w"
-msgstr ""
+msgstr "Ішкі &қарау құралын қолдану"
 
 msgid "A&sk new file name"
-msgstr ""
+msgstr "Жаңа файл атын &сұрау"
 
 msgid "Auto m&enus"
-msgstr ""
+msgstr "Авто&матты мәзірлер"
 
 msgid "&Drop down menus"
-msgstr ""
+msgstr "&Ашылмалы мәзірлер"
 
 msgid "S&hell patterns"
-msgstr ""
+msgstr "&Қоршам үлгілері"
 
 msgid "Co&mplete: show all"
-msgstr ""
+msgstr "&Толықтыру: барлығын көрсету"
 
 msgid "Rotating d&ash"
-msgstr ""
+msgstr "Айналмалы &сызықша"
 
 msgid "Cd follows lin&ks"
-msgstr ""
+msgstr "Cd сілтемелер бойынша &өтеді"
 
 msgid "Sa&fe delete"
-msgstr ""
+msgstr "&Қауіпсіз өшіру"
 
 msgid "Safe overwrite"
-msgstr ""
+msgstr "Қауіпсіз үстінен жазу"
 
 msgid "A&uto save setup"
-msgstr ""
+msgstr "Баптауды &автосақтау"
 
 msgid "Configure options"
-msgstr ""
+msgstr "Баптау опциялары"
 
 msgid "Skin:"
-msgstr ""
+msgstr "Тема:"
 
 msgid "&Shadows"
-msgstr ""
+msgstr "&Көлеңкелер"
 
 msgid "Appearance"
-msgstr ""
+msgstr "Сыртқы түрі"
 
 msgid "Case &insensitive"
-msgstr ""
+msgstr "Регистрді &ескермеу"
 
 msgid "Use panel sort mo&de"
-msgstr ""
+msgstr "Панельдің сұрыптау &режимін қолдану"
 
 msgid "Show mi&ni-status"
-msgstr ""
+msgstr "&Мини-статусты көрсету"
 
 msgid "Use SI si&ze units"
-msgstr ""
+msgstr "SI өлшем &бірліктерін қолдану"
 
 msgid "Mi&x all files"
-msgstr ""
+msgstr "Барлық файлдарды &араластыру"
 
 msgid "Show &backup files"
-msgstr ""
+msgstr "&Сақтық көшірме файлдарын көрсету"
 
 msgid "Show &hidden files"
-msgstr ""
+msgstr "&Жасырын файлдарды көрсету"
 
 msgid "&Fast dir reload"
-msgstr ""
+msgstr "Буманы &жылдам қайта жүктеу"
 
 msgid "Ma&rk moves down"
-msgstr ""
+msgstr "Белгі &төмен жылжиды"
 
 msgid "Re&verse files only"
-msgstr ""
+msgstr "Тек файлдарды &кері айналдыру"
 
 msgid "Simple s&wap"
-msgstr ""
+msgstr "Қарапайым &алмастыру"
 
 msgid "A&uto save panels setup"
-msgstr ""
+msgstr "Панельдер баптауын &автосақтау"
 
 msgid "Navigation"
-msgstr ""
+msgstr "Навигация"
 
 msgid "L&ynx-like motion"
-msgstr ""
+msgstr "&Lynx-тәрізді қозғалыс"
 
 msgid "Pa&ge scrolling"
-msgstr ""
+msgstr "&Бетпен айналдыру"
 
 msgid "Center &scrolling"
-msgstr ""
+msgstr "&Орталықтан айналдыру"
 
 msgid "&Mouse page scrolling"
-msgstr ""
+msgstr "&Тышқанмен бетті айналдыру"
 
 msgid "File highlight"
-msgstr ""
+msgstr "Файлды түрлі-түсті ету"
 
 msgid "File &types"
-msgstr ""
+msgstr "Файл &түрлері"
 
 msgid "&Permissions"
-msgstr ""
+msgstr "&Құқықтар"
 
 msgid "Permission c&olors"
 msgstr ""
 
 msgid "Quick search"
-msgstr ""
+msgstr "Жылдам іздеу"
 
 msgid "Information"
-msgstr ""
+msgstr "Ақпарат"
 
 msgid ""
 "Using the fast reload option may not reflect the exact\n"
@@ -3018,280 +3117,291 @@ msgid ""
 "manual reload of the directory. See the man page for\n"
 "the details."
 msgstr ""
+"Жылдам қайта жүктеу опциясын қолдану бума мазмұнын дәл көрсетпеуі мүмкін. "
+"Бұл жағдайда буманы қолмен қайта жүктеу керек болады. Толығырақ man "
+"парақшасынан қараңыз."
 
 msgid "&Full file list"
-msgstr ""
+msgstr "Файлдардың &толық тізімі"
 
 msgid "&Brief file list:"
-msgstr ""
+msgstr "Файлдардың &қысқа тізімі:"
 
 msgid "&Long file list"
-msgstr ""
+msgstr "Файлдардың &ұзын тізімі"
 
 msgid "&User defined:"
-msgstr ""
+msgstr "&Пайдаланушы анықтаған:"
 
 msgid "columns"
-msgstr ""
+msgstr "баған"
 
 msgid "User &mini status"
-msgstr ""
+msgstr "Пайдаланушы &мини статусы"
 
 msgid "Listing format"
-msgstr ""
+msgstr "Тізімдеу пішімі"
 
 msgid "Executable &first"
-msgstr ""
+msgstr "&Орындалатын файлдар бірінші"
 
 msgid "&Reverse"
-msgstr ""
+msgstr "&Кері бағытта"
 
 msgid "Sort order"
-msgstr ""
+msgstr "Сұрыптау реті"
 
 #. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
-msgstr ""
+msgstr "Confirmation|&Өшіру"
 
 msgid "Confirmation|O&verwrite"
-msgstr ""
+msgstr "Confirmation|Үстінен &жазу"
 
 msgid "Confirmation|&Execute"
-msgstr ""
+msgstr "Confirmation|&Орындау"
 
 msgid "Confirmation|E&xit"
-msgstr ""
+msgstr "Confirmation|&Шығу"
 
 msgid "Confirmation|Di&rectory hotlist delete"
-msgstr ""
+msgstr "Confirmation|Бумалар &ыстық тізімін өшіру"
 
 msgid "Confirmation|&History cleanup"
-msgstr ""
+msgstr "Confirmation|&Тарихты тазалау"
 
 msgid "Confirmation"
-msgstr ""
+msgstr "Растау"
 
 msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
+msgstr "VFS-терді босату күту уақыты (сек):"
 
 msgid "Virtual File System Setting"
-msgstr ""
+msgstr "Виртуалды файлдық жүйе баптауы"
 
 msgid "Existing filename (filename symlink will point to):"
-msgstr ""
+msgstr "Бар файл аты (символдық сілтеме нұсқайтын файл):"
 
 msgid "Symbolic link filename:"
-msgstr ""
+msgstr "Символдық сілтеме файлының аты:"
 
 msgid "Symbolic link"
-msgstr ""
+msgstr "Символдық сілтеме"
 
 msgid "&Stop"
-msgstr ""
+msgstr "&Тоқтату"
 
 msgid "&Resume"
-msgstr ""
+msgstr "&Жалғастыру"
 
 msgid "&Kill"
-msgstr ""
+msgstr "&Жою"
 
 #, c-format
 msgid ""
 "Cannot change directory to\n"
 "%s"
 msgstr ""
+"Бумаға ауысу мүмкін емес\n"
+"%s"
 
 msgid "Secure deletion"
-msgstr ""
+msgstr "Қауіпсіз өшіру"
 
 msgid "Undelete"
-msgstr ""
+msgstr "Өшіруді болдырмау"
 
 msgid "Synchronous updates"
-msgstr ""
+msgstr "Синхронды жаңартулар"
 
 msgid "Synchronous directory updates"
-msgstr ""
+msgstr "Буманың синхронды жаңартулары"
 
 msgid "Immutable"
-msgstr ""
+msgstr "Өзгермейтін"
 
 msgid "Append only"
-msgstr ""
+msgstr "Тек соңына қосу"
 
 msgid "No dump"
-msgstr ""
+msgstr "Дамп жасалмасын"
 
 msgid "No update atime"
-msgstr ""
+msgstr "atime жаңарту жоқ"
 
 msgid "Compress"
-msgstr ""
+msgstr "Сығу"
 
 msgid "Compressed clusters"
-msgstr ""
+msgstr "Сығылған кластерлер"
 
 msgid "Compressed dirty file"
-msgstr ""
+msgstr "Сығылған «лас» файл"
 
 msgid "Compression raw access"
-msgstr ""
+msgstr "Сығуға тікелей қол жеткізу"
 
 msgid "Encrypted inode"
-msgstr ""
+msgstr "Шифрленген inode"
 
 msgid "Journaled data"
-msgstr ""
+msgstr "Журналдалатын деректер"
 
 msgid "Indexed directory"
-msgstr ""
+msgstr "Индекстелген бума"
 
 msgid "No tail merging"
-msgstr ""
+msgstr "Tail біріктіруі жоқ"
 
 msgid "Top of directory hierarchies"
-msgstr ""
+msgstr "Бума иерархиясының жоғарғы жағы"
 
 msgid "Inode uses extents"
-msgstr ""
+msgstr "Inode extent-терді қолданады"
 
 msgid "Huge file"
-msgstr ""
+msgstr "Өте үлкен файл"
 
 msgid "No COW"
-msgstr ""
+msgstr "COW жоқ"
 
 msgid "Direct access for files"
-msgstr ""
+msgstr "Файлдарға тікелей қол жеткізу"
 
 msgid "Casefolded file"
-msgstr ""
+msgstr "Casefolded файлы"
 
 msgid "Inode has inline data"
-msgstr ""
+msgstr "Inode-та ішкі деректер бар"
 
 msgid "Project hierarchy"
-msgstr ""
+msgstr "Жоба иерархиясы"
 
 msgid "Verity protected inode"
-msgstr ""
+msgstr "Verity-мен қорғалған inode"
 
 msgid "&Marked all"
-msgstr ""
+msgstr "&Барлығы белгіленген"
 
 msgid "S&et marked"
-msgstr ""
+msgstr "Белгіленгенді &орнату"
 
 msgid "C&lear marked"
-msgstr ""
+msgstr "Белгіленгенді &тазалау"
 
 msgid "Chattr command"
-msgstr ""
+msgstr "Chattr командасы"
 
 #, c-format
 msgid ""
 "Cannot chattr\n"
 "%sn%s"
 msgstr ""
+"chattr орындау мүмкін емес\n"
+"%sn%s"
 
 #, c-format
 msgid ""
 "Cannot get ext2 attributes of\n"
 "%s"
 msgstr ""
+"ext2 атрибуттарын алу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chattr\n"
 "%s"
 msgstr ""
+"chattr орындау мүмкін емес\n"
+"%s"
 
 msgid "set &user ID on execution"
-msgstr ""
+msgstr "орындау кезінде &user ID орнату"
 
 msgid "set &group ID on execution"
-msgstr ""
+msgstr "орындау кезінде &group ID орнату"
 
 msgid "stick&y bit"
-msgstr ""
+msgstr "stick&y биті"
 
 msgid "&read by owner"
-msgstr ""
+msgstr "иесіне &оқуға"
 
 msgid "&write by owner"
-msgstr ""
+msgstr "иесіне &жазуға"
 
 msgid "e&xecute/search by owner"
-msgstr ""
+msgstr "иесіне орын&дауға/іздеуге"
 
 msgid "rea&d by group"
-msgstr ""
+msgstr "топқа о&қуға"
 
 msgid "write by grou&p"
-msgstr ""
+msgstr "топқа ж&азуға"
 
 msgid "execu&te/search by group"
-msgstr ""
+msgstr "топқа орында&уға/іздеуге"
 
 msgid "read &by others"
-msgstr ""
+msgstr "басқалар&ға оқуға"
 
 msgid "wr&ite by others"
-msgstr ""
+msgstr "басқаларға ж&азуға"
 
 msgid "execute/searc&h by others"
-msgstr ""
+msgstr "басқаларға орындау&ға/іздеуге"
 
 msgid "Name:"
-msgstr ""
+msgstr "Аты:"
 
 msgid "Permissions (octal):"
-msgstr ""
+msgstr "Құқықтар (сегіздік):"
 
 msgid "Owner name:"
-msgstr ""
+msgstr "Иесінің аты:"
 
 msgid "Group name:"
-msgstr ""
+msgstr "Топ аты:"
 
 msgid "Chmod command"
-msgstr ""
+msgstr "Chmod командасы"
 
 msgid "Permission"
-msgstr ""
+msgstr "Құқық"
 
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 msgid "Set &groups"
-msgstr ""
+msgstr "&Топтарды орнату"
 
 msgid "Set &users"
-msgstr ""
+msgstr "&Пайдаланушыларды орнату"
 
 msgid "Name"
-msgstr ""
+msgstr "Аты"
 
 msgid "Owner name"
-msgstr ""
+msgstr "Иесінің аты"
 
 msgid "Group name"
-msgstr ""
+msgstr "Топ аты"
 
 msgid "Size"
-msgstr ""
+msgstr "Өлшемі"
 
 msgid "Chown command"
-msgstr ""
+msgstr "Chown командасы"
 
 msgid "User name"
-msgstr ""
+msgstr "Пайдаланушы аты"
 
 msgid "<Unknown user>"
-msgstr ""
+msgstr "<Белгісіз пайдаланушы>"
 
 msgid "<Unknown group>"
-msgstr ""
+msgstr "<Белгісіз топ>"
 
 #, c-format
 msgid "The magic.ini operation %s:%s cannot view %s"
@@ -3305,7 +3415,7 @@ msgid "The runtime file handler failed"
 msgstr ""
 
 msgid "Files tagged, want to cd?"
-msgstr ""
+msgstr "Файлдар белгіленген, бумаға ауысқыңыз келе ме?"
 
 msgid "This plugin does not support file viewing"
 msgstr ""
@@ -3319,31 +3429,35 @@ msgstr ""
 
 #, c-format
 msgid "Link %s to:"
-msgstr ""
+msgstr "%s сілтемесін келесіге бағыттау:"
 
 msgid "Link"
-msgstr ""
+msgstr "Сілтеме"
 
 #, c-format
 msgid ""
 "Cannot create link\n"
 "%s"
 msgstr ""
+"Сілтемені жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create symbolic link\n"
 "%s"
 msgstr ""
+"Символдық сілтемені жасау мүмкін емес\n"
+"%s"
 
 msgid "Filename:"
-msgstr ""
+msgstr "Файл аты:"
 
 msgid "Filtered view"
-msgstr ""
+msgstr "Сүзілген көрініс"
 
 msgid "Filter command and arguments:"
-msgstr ""
+msgstr "Сүзгі командасы мен аргументтері:"
 
 msgid "This plugin does not support file editing"
 msgstr ""
@@ -3353,91 +3467,93 @@ msgid "Cannot save %s back to plugin"
 msgstr ""
 
 msgid "Create a new Directory"
-msgstr ""
+msgstr "Жаңа бума жасау"
 
 msgid "Enter directory name:"
-msgstr ""
+msgstr "Бума атын енгізіңіз:"
 
 msgid "Extension file edit"
-msgstr ""
+msgstr "Кеңейтілім файлын түзету"
 
 msgid "Which extension file you want to edit?"
-msgstr ""
+msgstr "Қай кеңейтілім файлын түзеткіңіз келеді?"
 
 msgid "&System Wide"
-msgstr ""
+msgstr "&Жүйелік"
 
 msgid "Highlighting groups file edit"
-msgstr ""
+msgstr "Түрлі-түсті топтар файлын түзету"
 
 msgid "Which highlighting file you want to edit?"
-msgstr ""
+msgstr "Қай түрлі-түсті ету файлын түзеткіңіз келеді?"
 
 msgid "Select compare method:"
-msgstr ""
+msgstr "Салыстыру әдісін таңдаңыз:"
 
 msgid "&Quick"
-msgstr ""
+msgstr "&Жылдам"
 
 msgid "&Size only"
-msgstr ""
+msgstr "Тек &өлшемі бойынша"
 
 msgid "&Thorough"
-msgstr ""
+msgstr "&Мұқият"
 
 msgid ""
 "Both panels should be in the listing mode\n"
 "to use this command"
-msgstr ""
+msgstr "Бұл команданы қолдану үшін екі панель де тізім режимінде болуы керек"
 
 #, c-format
 msgid "'%s' is not a symbolic link"
-msgstr ""
+msgstr "'%s' символдық сілтеме емес"
 
 #, c-format
 msgid "Symlink '%s' points to:"
-msgstr ""
+msgstr "'%s' символдық сілтемесі келесіге нұсқайды:"
 
 msgid "Edit symlink"
-msgstr ""
+msgstr "Символдық сілтемені түзету"
 
 #, c-format
 msgid ""
 "Edit symlink, unable to remove\n"
 "%s"
-msgstr ""
+msgstr "Символдық сілтемені түзету кезінде %s өшіру мүмкін болмады"
 
 #, c-format
 msgid ""
 "Cannot edit symlink\n"
 "%s"
 msgstr ""
+"Символдық сілтемені түзету мүмкін емес\n"
+"%s"
 
 msgid "Directory scanning"
-msgstr ""
+msgstr "Буманы сканерлеу"
 
 msgid "Setup"
-msgstr ""
+msgstr "Баптау"
 
 #, c-format
 msgid "Setup saved to %s"
-msgstr ""
+msgstr "Баптау %s файлына сақталды"
 
 #, c-format
 msgid "Unable to save setup to %s"
-msgstr ""
+msgstr "Баптауды %s файлына сақтау мүмкін емес"
 
 msgid "Cannot execute commands on non-local filesystems"
-msgstr ""
+msgstr "Жергілікті емес файлдық жүйелерде командаларды орындау мүмкін емес"
 
 msgid "Parameter"
-msgstr ""
+msgstr "Параметр"
 
 msgid "Cannot create temporary command file"
-msgstr ""
+msgstr "Уақытша команда файлын жасау мүмкін емес"
 
 msgid "Pipe failed"
-msgstr ""
+msgstr "Арна сәтсіз аяқталды"
 
 #, c-format
 msgid ""
@@ -3445,6 +3561,9 @@ msgid ""
 "%s now uses %s file.\n"
 "Please copy your modifications of the old file to the new one."
 msgstr ""
+"Сіздегі %s файлы ескірген.\n"
+"%s енді %s файлын қолданады.\n"
+"Ескі файлдағы өзгерістерді жаңасына көшіріңіз."
 
 #, c-format
 msgid ""
@@ -3454,6 +3573,9 @@ msgid ""
 "It seems that the installation has failed.\n"
 "Please fetch a fresh copy from the %s package."
 msgstr ""
+"%s%s файлының пішімі 4.0 нұсқасында өзгерді.\n"
+"Орнату сәтсіз аяқталған сияқты.\n"
+"%s дестесінен жаңа нұсқасын алыңыз."
 
 #, c-format
 msgid ""
@@ -3464,78 +3586,92 @@ msgid ""
 "%s%s\n"
 "or use that file as an example of how to write it."
 msgstr ""
+"%s файлының пішімі 4.0 нұсқасында өзгерді.\n"
+"Оны %s%s ішінен көшіріп алуға немесе оны мысал ретінде қолдануға болады."
 
 msgid "DialogTitle|Copy"
-msgstr ""
+msgstr "DialogTitle|Көшіру"
 
 msgid "DialogTitle|Move"
-msgstr ""
+msgstr "DialogTitle|Жылжыту"
 
 msgid "DialogTitle|Delete"
-msgstr ""
+msgstr "DialogTitle|Өшіру"
 
 msgid "FileOperation|Copy"
-msgstr ""
+msgstr "FileOperation|Көшіру"
 
 msgid "FileOperation|Move"
-msgstr ""
+msgstr "FileOperation|Жылжыту"
 
 msgid "FileOperation|Delete"
-msgstr ""
+msgstr "FileOperation|Өшіру"
 
 #, no-c-format
 msgid "%o %f%n\"%s\"%m"
-msgstr ""
+msgstr "%o %f%n\"%s\"%m"
 
 #, no-c-format
 msgid "%o %d %f%m"
-msgstr ""
+msgstr "%o %d %f%m"
 
 msgid "files"
-msgstr ""
+msgstr "файлдар"
 
 msgid "directory"
-msgstr ""
+msgstr "бума"
 
 msgid "directories"
-msgstr ""
+msgstr "бумалар"
 
 msgid "files/directories"
-msgstr ""
+msgstr "файлдар/бумалар"
 
 #. TRANSLATORS: keep leading space here to split words in Copy/Move dialog
 msgid " with source mask:"
-msgstr ""
+msgstr " бастапқы маскамен:"
 
 #, c-format
 msgid ""
 "Cannot stat hardlink source file\n"
 "%s"
 msgstr ""
+"Қатаң сілтеменің бастапқы файлын stat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create target hardlink\n"
 "%s"
 msgstr ""
+"Нысаналы қатаң сілтемені жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot read source link\n"
 "%s"
 msgstr ""
+"Бастапқы сілтемені оқу мүмкін емес\n"
+"%s"
 
 msgid ""
 "Cannot make stable symlinks across non-local filesystems:\n"
 "\n"
 "Option Stable Symlinks will be disabled"
 msgstr ""
+"Жергілікті емес файлдық жүйелер арасында тұрақты символдық сілтемелерді "
+"жасау мүмкін емес:\n"
+"\n"
+"«Тұрақты символдық сілтемелер» опциясы сөндіріледі"
 
 #, c-format
 msgid ""
 "Cannot create target symlink\n"
 "%s"
 msgstr ""
+"Нысаналы символдық сілтемені жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3544,6 +3680,10 @@ msgid ""
 "\"%s\"\n"
 "are the same directory"
 msgstr ""
+"\"%s\"\n"
+"және\n"
+"\"%s\"\n"
+"бір бума болып табылады"
 
 #, c-format
 msgid ""
@@ -3552,12 +3692,16 @@ msgid ""
 "\"%s\"\n"
 "are the same file"
 msgstr ""
+"\"%s\"\n"
+"және\n"
+"\"%s\"\n"
+"бір файл болып табылады"
 
 msgid "&Ignore"
-msgstr ""
+msgstr "&Елемеу"
 
 msgid "Ignore a&ll"
-msgstr ""
+msgstr "&Барлығын елемеу"
 
 #, c-format
 msgid ""
@@ -3566,6 +3710,8 @@ msgid ""
 "is not empty.\n"
 "Delete it recursively?"
 msgstr ""
+"%s бумасы бос емес.\n"
+"Оны рекурсивті түрде өшіру керек пе?"
 
 #, c-format
 msgid ""
@@ -3575,25 +3721,32 @@ msgid ""
 "is not empty.\n"
 "Delete it recursively?"
 msgstr ""
+"Фондық процесс:\n"
+"%s бумасы бос емес.\n"
+"Оны рекурсивті түрде өшіру керек пе?"
 
 msgid "Non&e"
-msgstr ""
+msgstr "&Жоқ"
 
 #, c-format
 msgid ""
 "Cannot remove file\n"
 "%s"
 msgstr ""
+"Файлды өшіру мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot stat file\n"
 "%s"
 msgstr ""
+"Файлды stat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid "Cannot overwrite directory \"%s\""
-msgstr ""
+msgstr "\"%s\" бумасының үстінен жазу мүмкін емес"
 
 #, c-format
 msgid ""
@@ -3602,30 +3755,42 @@ msgid ""
 "to\n"
 "%s"
 msgstr ""
+"Файлды\n"
+"%s\n"
+"мынаған жылжыту мүмкін емес:\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot remove directory\n"
 "%s"
 msgstr ""
+"Буманы өшіру мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot enter into directory\n"
 "%s"
 msgstr ""
+"Бумаға кіру мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot overwrite directory\n"
 "%s"
 msgstr ""
+"Буманың үстінен жазу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot overwrite file\n"
 "%s"
 msgstr ""
+"Файлдың үстінен жазу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3634,144 +3799,188 @@ msgid ""
 "to\n"
 "%s"
 msgstr ""
+"Буманы\n"
+"%s\n"
+"мынаған жылжыту мүмкін емес:\n"
+"%s"
 
 msgid "Cannot operate on \"..\"!"
-msgstr ""
+msgstr "\"..\" бойынша әрекет жасау мүмкін емес!"
 
 #, c-format
 msgid ""
 "Cannot stat source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлды stat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot get ext2 attributes of source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлдың ext2 атрибуттарын алу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot set ext2 attributes of target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлдың ext2 атрибуттарын орнату мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create special file\n"
 "%s"
 msgstr ""
+"Арнайы файлды жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chown target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлдың иесін (chown) өзгерту мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chmod target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлдың құқықтарын (chmod) өзгерту мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлды ашу мүмкін емес\n"
+"%s"
 
 msgid "Reget failed, about to overwrite file"
-msgstr ""
+msgstr "Reget сәтсіз аяқталды, файлдың үстінен жазылады"
 
 #, c-format
 msgid ""
 "Cannot fstat source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлды fstat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлды жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot fstat target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлды fstat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot preallocate space for target file\n"
 "%s"
 msgstr ""
+"Нысаналы файл үшін орынды алдын ала бөлу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot read source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлды оқу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot write target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлды жазу мүмкін емес\n"
+"%s"
 
 msgid "(stalled)"
-msgstr ""
+msgstr "(тоқтап қалды)"
 
 msgid "Incomplete file was retrieved"
-msgstr ""
+msgstr "Толық емес файл алынды"
 
 msgid "&Keep"
-msgstr ""
+msgstr "&Қалдыру"
 
 msgid "&Continue copy"
-msgstr ""
+msgstr "Көшіруді &жалғастыру"
 
 #, c-format
 msgid ""
 "Cannot close source file\n"
 "%s"
 msgstr ""
+"Бастапқы файлды жабу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot close target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлды жабу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot set ext2 attributes for target file\n"
 "%s"
 msgstr ""
+"Нысаналы файлдың ext2 атрибуттарын орнату мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot stat source directory\n"
 "%s"
 msgstr ""
+"Бастапқы буманы stat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot get ext2 attributes of source directory\n"
 "%s"
 msgstr ""
+"Бастапқы буманың ext2 атрибуттарын алу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Source \"%s\" is not a directory\n"
 "%s"
 msgstr ""
+"Бастапқы \"%s\" нысаны бума емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot copy cyclic symbolic link\n"
 "\"%s\""
 msgstr ""
+"Циклдік символдық сілтемені көшіру мүмкін емес\n"
+"\"%s\""
 
 #, c-format
 msgid ""
@@ -3780,276 +3989,283 @@ msgid ""
 "must be a directory\n"
 "%s"
 msgstr ""
+"Нысана бума болуы тиіс\n"
+"%s\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot create target directory\n"
 "%s"
 msgstr ""
+"Нысаналы буманы жасау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot chown target directory\n"
 "%s"
 msgstr ""
+"Нысаналы буманың иесін (chown) өзгерту мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid "Directories: %zu, total size: %s"
-msgstr ""
+msgstr "Бумалар: %zu, жалпы өлшемі: %s"
 
 msgid "Sorry, I could not put the job in background"
-msgstr ""
+msgstr "Кешіріңіз, тапсырманы фондық режимге жіберу мүмкін болмады"
 
 msgid "S&uspend"
-msgstr ""
+msgstr "Аялда&ту"
 
 msgid "Con&tinue"
-msgstr ""
+msgstr "Жал&ғастыру"
 
 #, c-format
 msgid "%d:%02d:%02d"
-msgstr ""
+msgstr "%d:%02d:%02d"
 
 #, c-format
 msgid "ETA %s"
-msgstr ""
+msgstr "Қалды %s"
 
 #, c-format
 msgid "%.2f MB/s"
-msgstr ""
+msgstr "%.2f МБ/с"
 
 #, c-format
 msgid "%.2f KB/s"
-msgstr ""
+msgstr "%.2f КБ/s"
 
 #, c-format
 msgid "%ld B/s"
-msgstr ""
+msgstr "%ld Б/с"
 
 msgid "New     :"
-msgstr ""
+msgstr "Жаңа     :"
 
 msgid "Existing:"
-msgstr ""
+msgstr "Бар нысан:"
 
 msgid "Overwrite this file?"
-msgstr ""
+msgstr "Файлдың үстінен жазу керек пе?"
 
 msgid "A&ppend"
-msgstr ""
+msgstr "&Қосу"
 
 msgid "&Reget"
-msgstr ""
+msgstr "Қайта &алу"
 
 msgid "Overwrite all files?"
-msgstr ""
+msgstr "Барлық файлдардың үстінен жазу керек пе?"
 
 msgid "Don't overwrite with &zero length file"
-msgstr ""
+msgstr "&Нөлдік файлмен үстінен жазбау"
 
 msgid "&Older"
-msgstr ""
+msgstr "&Ескі болса"
 
 msgid "S&maller"
-msgstr ""
+msgstr "&Кіші болса"
 
 msgid "&Size differs"
-msgstr ""
+msgstr "&Өлшемі әртүрлі болса"
 
 msgid "File exists"
-msgstr ""
+msgstr "Файл бұрыннан бар"
 
 msgid "Background process: File exists"
-msgstr ""
+msgstr "Фондық процесс: Файл бұрыннан бар"
 
 #, c-format
 msgid "Files processed: %zu / %zu"
-msgstr ""
+msgstr "Өңделген файлдар: %zu / %zu"
 
 #, c-format
 msgid "Files processed: %zu"
-msgstr ""
+msgstr "Өңделген файлдар: %zu"
 
 #, c-format
 msgid "Time: %s %s"
-msgstr ""
+msgstr "Уақыт: %s %s"
 
 #, c-format
 msgid "Time: %s %s (%s)"
-msgstr ""
+msgstr "Уақыт: %s %s (%s)"
 
 #, c-format
 msgid "Time: %s"
-msgstr ""
+msgstr "Уақыт: %s"
 
 #, c-format
 msgid "Time: %s (%s)"
-msgstr ""
+msgstr "Уақыт: %s (%s)"
 
 #, c-format
 msgid " Total: %s "
-msgstr ""
+msgstr " Жалпы: %s "
 
 #, c-format
 msgid " Total: %s / %s "
-msgstr ""
+msgstr " Жалпы: %s / %s "
 
 msgid "Source"
-msgstr ""
+msgstr "Бастапқы"
 
 msgid "Target"
-msgstr ""
+msgstr "Нысана"
 
 msgid "Deleting"
-msgstr ""
+msgstr "Өшірілуде"
 
 msgid "&Using shell patterns"
-msgstr ""
+msgstr "Қоршам &үлгілерін қолдану"
 
 msgid "to:"
-msgstr ""
+msgstr "мынаған:"
 
 msgid "Follow &links"
-msgstr ""
+msgstr "Сілтемелермен &өту"
 
 msgid "Preserve &attributes"
-msgstr ""
+msgstr "&Атрибуттарды сақтау"
 
 msgid "Preserve e&xt2 attributes"
-msgstr ""
+msgstr "&Ext2 атрибуттарын сақтау"
 
 msgid "Di&ve into subdir if exists"
-msgstr ""
+msgstr "Бар болса ішкі бумаға &кіру"
 
 msgid "&Stable symlinks"
-msgstr ""
+msgstr "&Тұрақты символдық сілтемелер"
 
 msgid "&Background"
-msgstr ""
+msgstr "&Фон"
 
 #, c-format
 msgid "Invalid source pattern '%s'"
-msgstr ""
+msgstr "Бастапқы үлгі жарамсыз: '%s'"
 
 msgid "File listin&g"
-msgstr ""
+msgstr "Файлдар &тізімі"
 
 msgid "&Quick view"
-msgstr ""
+msgstr "&Жылдам қарау"
 
 msgid "&Info"
-msgstr ""
+msgstr "&Ақпарат"
 
 msgid "&Tree"
-msgstr ""
+msgstr "&Ағаш"
 
 msgid "Panel &modes..."
 msgstr ""
 
 msgid "&Listing format..."
-msgstr ""
+msgstr "&Тізімдеу пішімі..."
 
 msgid "&Sort order..."
-msgstr ""
+msgstr "&Сұрыптау реті..."
 
 msgid "&Filter..."
-msgstr ""
+msgstr "&Сүзгі..."
 
 msgid "&Encoding..."
-msgstr ""
+msgstr "&Кодтау..."
 
 msgid "&Rescan"
-msgstr ""
+msgstr "Қайта &сканерлеу"
 
 msgid "Change &drive"
 msgstr ""
 
 msgid "&View"
-msgstr ""
+msgstr "&Қарау"
 
 msgid "Vie&w file..."
-msgstr ""
+msgstr "Файлды &қарау..."
 
 msgid "&Filtered view"
-msgstr ""
+msgstr "&Сүзілген көрініс"
 
 msgid "&Copy"
-msgstr ""
+msgstr "&Көшіру"
 
 msgid "C&hmod"
-msgstr ""
+msgstr "C&hmod"
 
 msgid "&Link"
-msgstr ""
+msgstr "&Сілтеме"
 
 msgid "&Symlink"
-msgstr ""
+msgstr "&Символдық сілтеме"
 
 msgid "Relative symlin&k"
-msgstr ""
+msgstr "Салыстырмалы &символдық сілтеме"
 
 msgid "Edit s&ymlink"
-msgstr ""
+msgstr "&Символдық сілтемені түзету"
 
 msgid "Ch&own"
-msgstr ""
+msgstr "Ch&own"
 
 msgid "&Advanced chown"
-msgstr ""
+msgstr "&Кеңейтілген chown"
 
 msgid "Cha&ttr"
-msgstr ""
+msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
-msgstr ""
+msgstr "Атын &өзгерту/Жылжыту"
 
 msgid "&Mkdir"
-msgstr ""
+msgstr "&Mkdir"
 
 msgid "&Quick cd"
-msgstr ""
+msgstr "&Жылдам cd"
 
 msgid "Select &group"
-msgstr ""
+msgstr "Топты &белгілеу"
 
 msgid "U&nselect group"
-msgstr ""
+msgstr "Топты белгілеуден &алу"
 
 msgid "&Invert selection"
-msgstr ""
+msgstr "Белгілеуді &ауыстыру"
 
 msgid "E&xit"
-msgstr ""
+msgstr "&Шығу"
 
 msgid "&User menu"
-msgstr ""
+msgstr "&Пайдаланушы мәзірі"
 
 msgid "&Directory tree"
-msgstr ""
+msgstr "Бумалар &ағашы"
 
 msgid "&Find file"
-msgstr ""
+msgstr "Файлды &табу"
 
 msgid "S&wap panels"
-msgstr ""
+msgstr "Панельдерді &алмастыру"
 
 msgid "Toggle &terminal"
 msgstr ""
 
 msgid "&Compare directories"
-msgstr ""
+msgstr "Бумаларды &салыстыру"
 
 msgid "C&ompare files"
-msgstr ""
+msgstr "Файлдарды &салыстыру"
 
 msgid "Show directory s&izes"
-msgstr ""
+msgstr "Бума &өлшемдерін көрсету"
 
 msgid "Command &history"
-msgstr ""
+msgstr "Командалар &тахриы"
 
 msgid "Viewed/edited files hi&story"
-msgstr ""
+msgstr "Қаралған/түзетілген файлдар &тахриы"
 
 msgid "Hot&list"
 msgstr ""
@@ -4058,40 +4274,40 @@ msgid "Add current &path to hotlist"
 msgstr ""
 
 msgid "&Background jobs"
-msgstr ""
+msgstr "&Фондық тапсырмалар"
 
 msgid "Screen lis&t"
-msgstr ""
+msgstr "Экрандар &тізімі"
 
 msgid "Edit &extension file"
-msgstr ""
+msgstr "&Кеңейтулер файлын түзету"
 
 msgid "Edit &menu file"
-msgstr ""
+msgstr "&Мәзір файлын түзету"
 
 msgid "Edit hi&ghlighting group file"
-msgstr ""
+msgstr "Түрлі-түсті &ету файлын түзету"
 
 msgid "Pl&ugin panel..."
 msgstr ""
 
 msgid "&Configuration..."
-msgstr ""
+msgstr "&Конфигурация..."
 
 msgid "&Layout..."
-msgstr ""
+msgstr "&Жайма..."
 
 msgid "&Panel options..."
-msgstr ""
+msgstr "&Панель опциялары..."
 
 msgid "File panel m&odes..."
 msgstr ""
 
 msgid "C&onfirmation..."
-msgstr ""
+msgstr "&Растау..."
 
 msgid "&Appearance..."
-msgstr ""
+msgstr "&Сыртқы түрі..."
 
 msgid "Key &bindings..."
 msgstr ""
@@ -4103,19 +4319,19 @@ msgid "&Manage plugins..."
 msgstr ""
 
 msgid "&Virtual FS..."
-msgstr ""
+msgstr "&Виртуалды ФЖ..."
 
 msgid "Panels:"
-msgstr ""
+msgstr "Панельдер:"
 
 #, c-format
 msgid "You have %zu opened screen. Quit anyway?"
 msgid_plural "You have %zu opened screens. Quit anyway?"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Сізде %zu ашық экран бар. Сонда да шығу керек пе?"
+msgstr[1] "Сізде %zu ашық экран бар. Сонда да шығу керек пе?"
 
 msgid "Do you really want to quit?"
-msgstr ""
+msgstr "Шынымен шыққыңыз келе ме?"
 
 msgid "This operation is not supported for plugin panels"
 msgstr ""
@@ -4132,47 +4348,47 @@ msgid "Plugin %s has no show operation"
 msgstr ""
 
 msgid "&Above"
-msgstr ""
+msgstr "Үс&тінде"
 
 msgid "&Left"
-msgstr ""
+msgstr "&Сол жақта"
 
 msgid "&Below"
-msgstr ""
+msgstr "Ас&тында"
 
 msgid "&Right"
-msgstr ""
+msgstr "&Оң жақта"
 
 msgid "ButtonBar|Menu"
-msgstr ""
+msgstr "ButtonBar|Мәзір"
 
 msgid "ButtonBar|View"
-msgstr ""
+msgstr "ButtonBar|Қарау"
 
 msgid "ButtonBar|RenMov"
-msgstr ""
+msgstr "ButtonBar|ЖылжАтӨзг"
 
 msgid "ButtonBar|Mkdir"
-msgstr ""
+msgstr "ButtonBar|БумаЖас"
 
 msgid "&Chdir"
-msgstr ""
+msgstr "&Chdir"
 
 msgid "&Again"
-msgstr ""
+msgstr "&Қайталау"
 
 msgid "Pane&lize"
-msgstr ""
+msgstr "Панель&ге"
 
 msgid "&View - F3"
-msgstr ""
+msgstr "&Қарау - F3"
 
 msgid "&Edit - F4"
-msgstr ""
+msgstr "&Түзету - F4"
 
 #, c-format
 msgid "Found: %lu"
-msgstr ""
+msgstr "Табылды: %lu"
 
 #, c-format
 msgid "Found: %lu in %lu files"
@@ -4183,10 +4399,10 @@ msgid "Press \"Left\" or click %s to show the matches"
 msgstr ""
 
 msgid "SUB-DIR"
-msgstr ""
+msgstr "ІШК-БУМ"
 
 msgid "SYMLINK"
-msgstr ""
+msgstr "СИМ-СІЛТ"
 
 #, c-format
 msgid "%u match"
@@ -4195,56 +4411,56 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Malformed regular expression"
-msgstr ""
+msgstr "Тұрақты өрнек қатесі"
 
 msgid "File name:"
-msgstr ""
+msgstr "Файл аты:"
 
 msgid "&Find recursively"
-msgstr ""
+msgstr "&Рекурсивті іздеу"
 
 msgid "Follow s&ymlinks"
-msgstr ""
+msgstr "Символдық &сілтемелермен өту"
 
 msgid "S&kip hidden"
-msgstr ""
+msgstr "&Жасырынды өткізіп жіберу"
 
 msgid "Content:"
-msgstr ""
+msgstr "Мазмұны:"
 
 msgid "Sea&rch for content"
-msgstr ""
+msgstr "Мазмұны бойынша &іздеу"
 
 msgid "Case sens&itive"
-msgstr ""
+msgstr "Регистрді &ескеру"
 
 msgid "A&ll charsets"
-msgstr ""
+msgstr "&Барлық кодтаулар"
 
 msgid "Fir&st hit"
-msgstr ""
+msgstr "&Бірінші сәйкестік"
 
 msgid "Find File"
-msgstr ""
+msgstr "Файлды табу"
 
 msgid "Start at:"
-msgstr ""
+msgstr "Бастау бумасы:"
 
 msgid "Ena&ble ignore directories:"
-msgstr ""
+msgstr "Еленбейтін &бумаларды іске қосу:"
 
 #, c-format
 msgid "Grepping in %s"
-msgstr ""
+msgstr "%s ішінде іздеу (grep)"
 
 msgid "Finished"
-msgstr ""
+msgstr "Аяқталды"
 
 #, c-format
 msgid "Finished (ignored %zu directory)"
 msgid_plural "Finished (ignored %zu directories)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Аяқталды (%zu бума еленбеді)"
+msgstr[1] "Аяқталды (%zu бума еленбеді)"
 
 #, c-format
 msgid "Matches in %s (%u)"
@@ -4252,20 +4468,20 @@ msgstr ""
 
 #, c-format
 msgid "Find File: \"%s\". Content: \"%s\""
-msgstr ""
+msgstr "Файлды табу: \"%s\". Мазмұны: \"%s\""
 
 #, c-format
 msgid "Find File: \"%s\""
-msgstr ""
+msgstr "Файлды табу: \"%s\""
 
 msgid "Searching"
-msgstr ""
+msgstr "Ізделуде"
 
 msgid "Parent group"
 msgstr ""
 
 msgid "Group"
-msgstr ""
+msgstr "Тобы"
 
 #, c-format
 msgid "Plugin: %s"
@@ -4301,13 +4517,13 @@ msgid "Info"
 msgstr ""
 
 msgid "&Append"
-msgstr ""
+msgstr "&Соңына қосу"
 
 msgid "&Insert"
-msgstr ""
+msgstr "&Кірістіру"
 
 msgid "New hotlist entry"
-msgstr ""
+msgstr "Жаңа ыстық тізім жазбасы"
 
 msgid "Label:"
 msgstr ""
@@ -4316,10 +4532,10 @@ msgid "Location:"
 msgstr ""
 
 msgid "New hotlist group"
-msgstr ""
+msgstr "Жаңа ыстық тізім тобы"
 
 msgid "Name of new group:"
-msgstr ""
+msgstr "Жаңа топ аты:"
 
 msgid "Edit hotlist group"
 msgstr ""
@@ -4332,150 +4548,152 @@ msgstr ""
 
 #, c-format
 msgid "Are you sure you want to remove entry \"%s\"?"
-msgstr ""
+msgstr "\"%s\" жазбасын өшіргіңіз келетініне сенімдісіз бе?"
 
 #, c-format
 msgid ""
 "Group \"%s\" is not empty.\n"
 "Remove it?"
 msgstr ""
+"\"%s\" тобы бос емес.\n"
+"Өшіру керек пе?"
 
 msgid "Top level group"
-msgstr ""
+msgstr "Жоғарғы деңгейдегі топ"
 
 msgid "Hotlist Load"
-msgstr ""
+msgstr "Ыстық тізімді жүктеу"
 
 #, c-format
 msgid ""
 "MC was unable to write %s file,\n"
 "your old hotlist entries were not deleted"
-msgstr ""
+msgstr "MC %s файлын жаза алмады, ескі ыстық тізім жазбалары өшірілмеді"
 
 #, c-format
 msgid "Label for \"%s\":"
-msgstr ""
+msgstr "\"%s\" үшін белгі:"
 
 #, c-format
 msgid "File: %s"
-msgstr ""
+msgstr "Файл: %s"
 
 msgid "No node information"
-msgstr ""
+msgstr "Node ақпараты жоқ"
 
 msgid "Free nodes:"
-msgstr ""
+msgstr "Бос node-тар:"
 
 msgid "No space information"
-msgstr ""
+msgstr "Орын туралы ақпарат жоқ"
 
 #, c-format
 msgid "Free space: %s / %s (%d%%)"
-msgstr ""
+msgstr "Бос орын: %s / %s (%d%%)"
 
 #, c-format
 msgid "Type:       %s"
-msgstr ""
+msgstr "Түрі:       %s"
 
 msgid "non-local vfs"
-msgstr ""
+msgstr "жергілікті емес vfs"
 
 #, c-format
 msgid "Device:     %s"
-msgstr ""
+msgstr "Құрылғы:    %s"
 
 #, c-format
 msgid "Filesystem: %s"
-msgstr ""
+msgstr "Файлдық жүйе: %s"
 
 #, c-format
 msgid "Accessed:   %s"
-msgstr ""
+msgstr "Қол жеткізілген: %s"
 
 #, c-format
 msgid "Modified:   %s"
-msgstr ""
+msgstr "Өзгертілген:   %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
 msgid "Changed:    %s"
-msgstr ""
+msgstr "Ауыстырылған:  %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
-msgstr ""
+msgstr "Құрылғы түрі: major %lu, minor %lu"
 
 #, c-format
 msgid "Size:       %s"
-msgstr ""
+msgstr "Өлшемі:       %s"
 
 #, c-format
 msgid " (%lu block)"
 msgid_plural " (%lu blocks)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] " (%lu блок)"
+msgstr[1] " (%lu блок)"
 
 #, c-format
 msgid "Owner:      %s/%s"
-msgstr ""
+msgstr "Иесі:      %s/%s"
 
 #, c-format
 msgid "Links:      %d"
-msgstr ""
+msgstr "Сілтемелер:   %d"
 
 #, c-format
 msgid "Attributes: %s"
-msgstr ""
+msgstr "Атрибуттар: %s"
 
 msgid "Attributes: unavailable"
-msgstr ""
+msgstr "Атрибуттар: қолжетімсіз"
 
 #, c-format
 msgid "Mode:       %s (%04o)"
-msgstr ""
+msgstr "Құқық режимі: %s (%04o)"
 
 #, c-format
 msgid "Location:   %Xh:%Xh"
-msgstr ""
+msgstr "Орналасуы:   %Xh:%Xh"
 
 msgid "&Equal split"
-msgstr ""
+msgstr "&Бірдей бөлу"
 
 msgid "&Menubar visible"
-msgstr ""
+msgstr "&Мәзір жолағы көрінеді"
 
 msgid "Command &prompt"
-msgstr ""
+msgstr "Командалық &жол"
 
 msgid "&Keybar visible"
-msgstr ""
+msgstr "&Пернелер жолағы көрінеді"
 
 msgid "H&intbar visible"
-msgstr ""
+msgstr "&Кеңес жолағы көрінеді"
 
 msgid "&XTerm window title"
-msgstr ""
+msgstr "&XTerm терезе атауы"
 
 msgid "&Show free space"
-msgstr ""
+msgstr "&Бос орынды көрсету"
 
 msgid "Panel split"
-msgstr ""
+msgstr "Панельдің бөлінуі"
 
 msgid "Console output"
-msgstr ""
+msgstr "Консоль шығысы"
 
 msgid "&Vertical"
-msgstr ""
+msgstr "&Вертикалды"
 
 msgid "&Horizontal"
-msgstr ""
+msgstr "&Горизонталды"
 
 msgid "Output lines:"
-msgstr ""
+msgstr "Шығыс жолдары:"
 
 msgid "Layout"
-msgstr ""
+msgstr "Жайма"
 
 msgid "ButtonBar|Filter"
 msgstr ""
@@ -4496,109 +4714,109 @@ msgid "The shell did not take the whole text"
 msgstr ""
 
 msgid "Memory exhausted!"
-msgstr ""
+msgstr "Жад таусылды!"
 
 #. TRANSLATORS: one single character to represent 'unsorted' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|u"
-msgstr ""
+msgstr "sort|u"
 
 msgid "&Unsorted"
-msgstr ""
+msgstr "&Сұрыпталмаған"
 
 #. TRANSLATORS: one single character to represent 'name' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|n"
-msgstr ""
+msgstr "sort|n"
 
 msgid "&Name"
-msgstr ""
+msgstr "&Аты бойынша"
 
 #. TRANSLATORS: one single character to represent 'version' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|v"
-msgstr ""
+msgstr "sort|v"
 
 msgid "&Version"
-msgstr ""
+msgstr "&Нұсқасы бойынша"
 
 #. TRANSLATORS: one single character to represent 'extension' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|e"
-msgstr ""
+msgstr "sort|e"
 
 msgid "E&xtension"
-msgstr ""
+msgstr "&Кеңейтуі бойынша"
 
 #. TRANSLATORS: one single character to represent 'size' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|s"
-msgstr ""
+msgstr "sort|s"
 
 msgid "&Size"
-msgstr ""
+msgstr "&Өлшемі бойынша"
 
 msgid "Block Size"
-msgstr ""
+msgstr "Блок өлшемі"
 
 #. TRANSLATORS: one single character to represent 'Modify time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|m"
-msgstr ""
+msgstr "sort|m"
 
 msgid "&Modify time"
-msgstr ""
+msgstr "Ө&згертілген уақыты"
 
 #. TRANSLATORS: one single character to represent 'Access time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|a"
-msgstr ""
+msgstr "sort|a"
 
 msgid "&Access time"
-msgstr ""
+msgstr "&Қол жеткізілген уақыты"
 
 #. TRANSLATORS: one single character to represent 'Change time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|h"
-msgstr ""
+msgstr "sort|h"
 
 msgid "C&hange time"
-msgstr ""
+msgstr "Ау&ыстырылған уақыты"
 
 msgid "Perm"
-msgstr ""
+msgstr "Құқық"
 
 msgid "Nl"
-msgstr ""
+msgstr "Nl"
 
 #. TRANSLATORS: one single character to represent 'inode' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
 msgid "sort|i"
-msgstr ""
+msgstr "sort|i"
 
 msgid "&Inode"
-msgstr ""
+msgstr "&Inode"
 
 msgid "UID"
-msgstr ""
+msgstr "UID"
 
 msgid "GID"
-msgstr ""
+msgstr "GID"
 
 msgid "Owner"
-msgstr ""
+msgstr "Иесі"
 
 msgid "[dev]"
-msgstr ""
+msgstr "[құрылғы]"
 
 msgid "UP--DIR"
-msgstr ""
+msgstr "ЖОҒ-БУМ"
 
 msgid "Filter: "
 msgstr ""
 
 msgid "<readlink failed>"
-msgstr ""
+msgstr "<readlink сәтсіз аяқталды>"
 
 #, c-format
 msgid "%d marked (+%d more)"
@@ -4607,42 +4825,42 @@ msgstr ""
 #, c-format
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%s - %d файлда"
+msgstr[1] "%s - %d файлда"
 
 msgid "Panelize"
-msgstr ""
+msgstr "Панельге"
 
 msgid "Plugin column metadata not found"
 msgstr ""
 
 msgid "Unknown tag on display format:"
-msgstr ""
+msgstr "Көрсету пішіміндегі белгісіз тег:"
 
 msgid "&Files only"
-msgstr ""
+msgstr "Тек &файлдар"
 
 msgid "&Case sensitive"
-msgstr ""
+msgstr "&Регистрді ескеру"
 
 msgid "Select"
-msgstr ""
+msgstr "Белгілеу"
 
 msgid "Unselect"
-msgstr ""
+msgstr "Белгілеуді алу"
 
 #, c-format
 msgid "The magic.ini operation %s:%s cannot open %s"
 msgstr ""
 
 msgid "Do you really want to execute?"
-msgstr ""
+msgstr "Шынымен орындағыңыз келе ме?"
 
 msgid "Cannot read directory contents"
-msgstr ""
+msgstr "Бума мазмұнын оқу мүмкін емес"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr ""
+msgstr "Пайдаланушы берген пішім жарамсыз сияқты, бастапқы нұсқаға қайтарылады."
 
 msgid "Column types must not be empty."
 msgstr ""
@@ -4821,20 +5039,24 @@ msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
 msgstr ""
+"%s файлын жазу үшін ашу мүмкін емес:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
-msgstr ""
+msgstr "\"%s\" бумасын мынаған көшіру:"
 
 #, c-format
 msgid "Move \"%s\" directory to:"
-msgstr ""
+msgstr "\"%s\" бумасын мынаған жылжыту:"
 
 #, c-format
 msgid ""
 "Cannot stat the destination\n"
 "%s"
 msgstr ""
+"Нысананы stat-тау мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -4842,53 +5064,58 @@ msgid ""
 "%s\n"
 "must be a directory"
 msgstr ""
+"Нысана\n"
+"%s\n"
+"бума болуы тиіс"
 
 #, c-format
 msgid "Delete %s?"
-msgstr ""
+msgstr "%s өшіру керек пе?"
 
 msgid "ButtonBar|Static"
-msgstr ""
+msgstr "ButtonBar|Статикт"
 
 msgid "ButtonBar|Dynamc"
-msgstr ""
+msgstr "ButtonBar|Динамик"
 
 msgid "ButtonBar|Rescan"
-msgstr ""
+msgstr "ButtonBar|ҚайтаСк"
 
 msgid "ButtonBar|Forget"
-msgstr ""
+msgstr "ButtonBar|Ұмыту"
 
 msgid "ButtonBar|Rmdir"
-msgstr ""
+msgstr "ButtonBar|Rmdir"
 
 #, c-format
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
 msgstr ""
+"%s файлына жазу мүмкін емес:\n"
+"%s\n"
 
 msgid "Help file format error\n"
-msgstr ""
+msgstr "Көмек файлы пішімінің қатесі\n"
 
 msgid "Internal bug: Double start of link area"
-msgstr ""
+msgstr "Ішкі қате: Сілтеме аймағының қос басталуы"
 
 #, c-format
 msgid "Cannot find node %s in help file"
-msgstr ""
+msgstr "Көмек файлында %s node-ы табылмады"
 
 msgid "See also"
 msgstr ""
 
 msgid "Help"
-msgstr ""
+msgstr "Көмек"
 
 msgid "ButtonBar|Index"
-msgstr ""
+msgstr "ButtonBar|Индекс"
 
 msgid "ButtonBar|Prev"
-msgstr ""
+msgstr "ButtonBar|Алдыңғы"
 
 msgid "Function keys"
 msgstr ""
@@ -5057,9 +5284,11 @@ msgid ""
 "Failed to run:\n"
 "%s\n"
 msgstr ""
+"Іске қосу сәтсіз аяқталды:\n"
+"%s\n"
 
 msgid "Home directory path is not absolute"
-msgstr ""
+msgstr "Үй бумасының жолы абсолютті емес"
 
 #, c-format
 msgid ""
@@ -5067,6 +5296,9 @@ msgid ""
 "Failed while close:\n"
 "%s\n"
 msgstr ""
+"\n"
+"Жабу кезіндегі қате:\n"
+"%s\n"
 
 msgid "unspecified"
 msgstr ""
@@ -6186,19 +6418,19 @@ msgid "Jump target 0x%llX is outside the file"
 msgstr ""
 
 msgid "Goto"
-msgstr ""
+msgstr "Өту"
 
 msgid "ButtonBar|Struct"
 msgstr ""
 
 msgid "ButtonBar|Goto"
-msgstr ""
+msgstr "ButtonBar|Өту"
 
 msgid "ButtonBar|DefFil"
 msgstr ""
 
 msgid "ButtonBar|Hex"
-msgstr ""
+msgstr "ButtonBar|Hex"
 
 msgid "ButtonBar|Errors"
 msgstr ""
@@ -6524,16 +6756,16 @@ msgid "Paneli&ze (empty)"
 msgstr ""
 
 msgid "E&xternal panelize"
-msgstr ""
+msgstr "Сыртқы &панельге"
 
 msgid "Paneli&ze"
-msgstr ""
+msgstr "Панель&ге"
 
 msgid "Add to external panelize"
-msgstr ""
+msgstr "Сыртқы панельге қосу"
 
 msgid "Enter command label:"
-msgstr ""
+msgstr "Команда белгісін енгізіңіз:"
 
 msgid "Edit preset"
 msgstr ""
@@ -6548,25 +6780,25 @@ msgid "Command produced no output; nothing to panelize."
 msgstr ""
 
 msgid "Modified git files"
-msgstr ""
+msgstr "Өзгертілген git файлдары"
 
 msgid "Find rejects after patching"
-msgstr ""
+msgstr "Патчтан кейін қабылданбағандарды табу"
 
 msgid "Find *.orig after patching"
-msgstr ""
+msgstr "Патчтан кейін *.orig файлдарын табу"
 
 msgid "Find SUID and SGID programs"
-msgstr ""
+msgstr "SUID және SGID бағдарламаларын табу"
 
 msgid "&Add new"
-msgstr ""
+msgstr "&Жаңадан қосу"
 
 msgid "&Remove"
-msgstr ""
+msgstr "&Өшіру"
 
 msgid "Command"
-msgstr ""
+msgstr "Команда"
 
 msgid "S3"
 msgstr ""
@@ -6921,7 +7153,7 @@ msgid "shell: cannot store the file"
 msgstr ""
 
 msgid "shell: storing file"
-msgstr ""
+msgstr "shell: файл сақталуда"
 
 msgid "shell: continuing"
 msgstr ""
@@ -7950,7 +8182,7 @@ msgid "The skin has unsaved changes."
 msgstr ""
 
 msgid "&Discard"
-msgstr ""
+msgstr "&Болдырмау"
 
 msgid "Edit as &file"
 msgstr ""
@@ -7984,46 +8216,48 @@ msgid "Runtime errors"
 msgstr ""
 
 msgid "Choose codepage"
-msgstr ""
+msgstr "Кодтық бетті таңдаңыз"
 
 msgid "-  < No translation >"
-msgstr ""
+msgstr "-  < Аударма жоқ >"
 
 msgid "%b %e  %Y"
-msgstr ""
+msgstr "%b %e  %Y"
 
 msgid "%b %e %H:%M"
-msgstr ""
+msgstr "%b %e %H:%M"
 
 #, c-format
 msgid ""
 "Cannot save file %s:\n"
 "%s"
 msgstr ""
+"%s файлын сақтау мүмкін емес:\n"
+"%s"
 
 msgid "With builtin editor and aspell support"
-msgstr ""
+msgstr "Ішкі түзеткіш және aspell қолдауымен"
 
 msgid "With builtin editor"
-msgstr ""
+msgstr "Ішкі түзеткішпен"
 
 msgid "With support for background operations"
-msgstr ""
+msgstr "Фондық әрекеттерді қолдаумен"
 
 msgid "With mouse support on xterm and Linux console"
-msgstr ""
+msgstr "xterm және Linux консолінде тышқанды қолдаумен"
 
 msgid "With mouse support on xterm"
-msgstr ""
+msgstr "xterm-де тышқанды қолдаумен"
 
 msgid "With support for X11 events"
-msgstr ""
+msgstr "X11 оқиғаларын қолдаумен"
 
 msgid "With internationalization support"
-msgstr ""
+msgstr "Халықаралықтандыру қолдауымен"
 
 msgid "With ext2fs attributes support"
-msgstr ""
+msgstr "ext2fs атрибуттарын қолдаумен"
 
 #, c-format
 msgid "   based on GNU Midnight Commander.\n"
@@ -8031,53 +8265,53 @@ msgstr ""
 
 #, c-format
 msgid "Built with GLib %d.%d.%d (using GLib %u.%u.%u)\n"
-msgstr ""
+msgstr "GLib %d.%d.%d нұсқасымен құрастырылған (GLib %u.%u.%u қолданылуда)\n"
 
 #, c-format
 msgid "Built with S-Lang"
-msgstr ""
+msgstr "S-Lang-пен құрастырылған"
 
 #, c-format
 msgid " and terminfo database (using S-Lang %s)\n"
-msgstr ""
+msgstr " және terminfo дерекқорымен (S-Lang %s қолданылуда)\n"
 
 #, c-format
 msgid "Built with %s"
-msgstr ""
+msgstr "%s нұсқасымен құрастырылған"
 
 #, c-format
 msgid " (using %s)\n"
-msgstr ""
+msgstr " (%s қолданылуда)\n"
 
 msgid "Virtual File Systems:"
-msgstr ""
+msgstr "Виртуалды файлдық жүйелер:"
 
 msgid "Data types:"
-msgstr ""
+msgstr "Деректер түрлері:"
 
 msgid "directory not found"
 msgstr ""
 
 msgid "Home directory:"
-msgstr ""
+msgstr "Үй бумасы:"
 
 msgid "Profile root directory:"
-msgstr ""
+msgstr "Профиль түбірлік бумасы:"
 
 msgid "System data"
-msgstr ""
+msgstr "Жүйелік деректер"
 
 msgid "Config directory:"
-msgstr ""
+msgstr "Баптау бумасы:"
 
 msgid "Data directory:"
-msgstr ""
+msgstr "Деректер бумасы:"
 
 msgid "File extension handlers:"
-msgstr ""
+msgstr "Файл кеңейтілімдерін өңдегіштер:"
 
 msgid "VFS plugins and scripts:"
-msgstr ""
+msgstr "VFS плагиндері мен скрипттері:"
 
 msgid "Panel plugins:"
 msgstr ""
@@ -8095,7 +8329,7 @@ msgid "Lua modules:"
 msgstr ""
 
 msgid "User data"
-msgstr ""
+msgstr "Пайдаланушы деректері"
 
 msgid "Legacy Lua scripts:"
 msgstr ""
@@ -8104,49 +8338,52 @@ msgid "Legacy Lua modules:"
 msgstr ""
 
 msgid "Cache directory:"
-msgstr ""
+msgstr "Кэш бумасы:"
 
 msgid "Debug"
-msgstr ""
+msgstr "Жөндеу"
 
 msgid "ERROR:"
-msgstr ""
+msgstr "ҚАТЕ:"
 
 msgid "True:"
-msgstr ""
+msgstr "Ақиқат:"
 
 msgid "False:"
-msgstr ""
+msgstr "Жалған:"
 
 msgid "Error calling program"
-msgstr ""
+msgstr "Бағдарламаны шақыру қатесі"
 
 msgid "Warning -- ignoring file"
-msgstr ""
+msgstr "Ескерту — файл еленбейді"
 
 #, c-format
 msgid ""
 "File %s is not owned by root or you or is world writable.\n"
 "Using it may compromise your security"
 msgstr ""
+"%s файлы сізге немесе әкімшіге (root) тиесілі емес немесе оған кез келген "
+"адам жаза алады.\n"
+"Оны қолдану қауіпсіздігіңізге нұқсан келтіруі мүмкін"
 
 msgid "Format error on file Extensions File"
-msgstr ""
+msgstr "Кеңейтілімдер файлындағы пішім қатесі"
 
 #, c-format
 msgid "The %%var macro has no default"
-msgstr ""
+msgstr "%%var макросының бастапқы мәні жоқ"
 
 #, c-format
 msgid "The %%var macro has no variable"
-msgstr ""
+msgstr "%%var макросының айнымалысы жоқ"
 
 #, c-format
 msgid "No suitable entries found in %s"
-msgstr ""
+msgstr "%s ішінде сәйкес келетін жазбалар табылмады"
 
 msgid "User menu"
-msgstr ""
+msgstr "Пайдаланушы мәзірі"
 
 #, c-format
 msgid ""
@@ -8253,13 +8490,15 @@ msgid "Delete this entry?"
 msgstr ""
 
 msgid "Inconsistent archive"
-msgstr ""
+msgstr "Сәйкес емес архив"
 
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
 "%s"
 msgstr ""
+"%s архивін ашу мүмкін емес\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -8267,22 +8506,32 @@ msgid ""
 "%s:\n"
 "%s"
 msgstr ""
+"%s архивін\n"
+"%s\n"
+"ашу мүмкін емес:\n"
+"%s"
 
 #, c-format
 msgid ""
 "EXTFS virtual file system:\n"
 "%s"
 msgstr ""
+"EXTFS виртуалды файлдық жүйесі:\n"
+"%s"
 
 msgid ""
 "EXTFS virtual file system:\n"
 "wrong file name"
 msgstr ""
+"EXTFS виртуалды файлдық жүйесі:\n"
+"файл аты қате"
 
 msgid ""
 "EXTFS virtual file system:\n"
 "wrong archive name"
 msgstr ""
+"EXTFS виртуалды файлдық жүйесі:\n"
+"архив аты қате"
 
 msgid ""
 "EXTFS virtual file system:\n"
@@ -8291,41 +8540,49 @@ msgstr ""
 
 #, c-format
 msgid "Warning: cannot open %s directory\n"
-msgstr ""
+msgstr "Ескерту: %s бумасын ашу мүмкін емес\n"
 
 #, c-format
 msgid ""
 "SFS virtual file system:\n"
 "%s"
 msgstr ""
+"SFS виртуалды файлдық жүйесі:\n"
+"%s"
 
 #, c-format
 msgid "%s: Warning: file %s not found\n"
-msgstr ""
+msgstr "%s: Ескерту: %s файлы табылмады\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid line in %s:\n"
 "%s\n"
 msgstr ""
+"Ескерту: %s ішіндегі жарамсыз жол:\n"
+"%s\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid flag %c in %s:\n"
 "%s\n"
 msgstr ""
+"Ескерту: жарамсыз %c жалаушасы, %s ішінде:\n"
+"%s\n"
 
 msgid "Invalid value"
-msgstr ""
+msgstr "Жарамсыз мән"
 
 msgid "File was modified. Save with exit?"
-msgstr ""
+msgstr "Файл өзгертілді. Шығу алдында сақтау керек пе?"
 
 #, c-format
 msgid ""
 "%s is being shut down.\n"
 "Save modified file?"
 msgstr ""
+"%s жұмысын аяқтауда.\n"
+"Өзгертілген файлды сақтау керек пе?"
 
 msgid "The structure viewer works on local files only"
 msgstr ""
@@ -8337,46 +8594,46 @@ msgid "(no matches)"
 msgstr ""
 
 msgid "&Line number"
-msgstr ""
+msgstr "&Жол нөмірі"
 
 msgid "Pe&rcents"
-msgstr ""
+msgstr "&Пайыздар"
 
 msgid "&Decimal offset"
-msgstr ""
+msgstr "&Ондық офсет"
 
 msgid "He&xadecimal offset"
-msgstr ""
+msgstr "&Он алтылық офсет"
 
 msgid "ButtonBar|Text"
 msgstr ""
 
 msgid "ButtonBar|Ascii"
-msgstr ""
+msgstr "ButtonBar|Ascii"
 
 msgid "ButtonBar|HxSrch"
-msgstr ""
+msgstr "ButtonBar|HxІздеу"
 
 msgid "ButtonBar|UnWrap"
-msgstr ""
+msgstr "ButtonBar|Жайылма"
 
 msgid "ButtonBar|Wrap"
-msgstr ""
+msgstr "ButtonBar|Тасымал"
 
 msgid "ButtonBar|Raw"
-msgstr ""
+msgstr "ButtonBar|Шикі"
 
 msgid "ButtonBar|Parse"
-msgstr ""
+msgstr "ButtonBar|Талдау"
 
 msgid "ButtonBar|Unform"
-msgstr ""
+msgstr "ButtonBar|Пішімсіз"
 
 msgid "ButtonBar|Term mode"
 msgstr ""
 
 msgid "ButtonBar|Format"
-msgstr ""
+msgstr "ButtonBar|Пішім"
 
 #, c-format
 msgid "Filter: %s  %u matches  scanning..."
@@ -8391,7 +8648,7 @@ msgid "Filter: %s  %u matches"
 msgstr ""
 
 msgid "Quick view"
-msgstr ""
+msgstr "Жылдам қарау"
 
 msgid "Error: out of memory"
 msgstr ""
@@ -8422,7 +8679,7 @@ msgid "Expression"
 msgstr ""
 
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Preview is not available in hexadecimal mode."
 msgstr ""
@@ -8441,7 +8698,7 @@ msgid "unknown error"
 msgstr ""
 
 msgid "Failed to read data from child stdout"
-msgstr ""
+msgstr "Еншілес процестің stdout-ынан деректер оқылмады"
 
 #, c-format
 msgid ""
@@ -8449,15 +8706,20 @@ msgid ""
 "%s\n"
 "Data may have been written or not"
 msgstr ""
+"Файлды жабу кезіндегі қате:\n"
+"%s\n"
+"Деректер жазылған болуы немесе жазылмаған болуы мүмкін"
 
 #, c-format
 msgid ""
 "Cannot save file:\n"
 "%s"
 msgstr ""
+"Файлды сақтау мүмкін емес:\n"
+"%s"
 
 msgid "View: "
-msgstr ""
+msgstr "Қарау: "
 
 msgid "Cannot open source."
 msgstr ""
@@ -8468,12 +8730,14 @@ msgid ""
 "%s\n"
 "Not a regular file"
 msgstr ""
+"%s\n"
+"қарау мүмкін емес. Кәдімгі файл емес"
 
 msgid "Search done"
-msgstr ""
+msgstr "Іздеу аяқталды"
 
 msgid "Continue from beginning?"
-msgstr ""
+msgstr "Басынан бастап жалғастыру керек пе?"
 
 msgid "Source spec must set either command or file."
 msgstr ""
@@ -8526,4 +8790,4 @@ msgid "Cannot build structured view"
 msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
-msgstr ""
+msgstr "/ftp://some.host/editme.txt жергілікті көшірмесін алу мүмкін емес"
