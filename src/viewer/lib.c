@@ -215,6 +215,8 @@ mcview_cycle_display_mode (WView *view)
         view->dpy_wrap_dirty = TRUE;
     }
 
+    // the syntax steps aside for the escapes, or comes back when they are shown again
+    mcview_syntax_load (view);
     view->dpy_bbar_dirty = TRUE;
     view->dirty++;
 }
