@@ -2067,14 +2067,20 @@ mcterm_execute_cmd (WMcTerm *t, long command, int key)
     switch (command)
     {
     case CK_Store:
-        // A panel over it, or nothing marked: the key is someone else's.
         if (!t->scroll_allowed || !t->sel.active)
         {
             /* Enter is the shell's line and follows the output down to where that line is
                typed; the other keys of this command leave the view where it is. */
             if (key == '\n' || key == KEY_ENTER)
+            {
                 mcterm_follow_end (t);
-            break;
+                break;
+            }
+            // A panel over it: the key is the file manager's.
+            if (!t->scroll_allowed)
+                break;
+            // Nothing marked: the key is still the terminal's, it just has nothing to take.
+            return MSG_HANDLED;
         }
         // Copied and done with: what is on the clipfile needs no marker.
         mcterm_sel_copy (&t->sel, t->vterm, WIDGET (t)->rect.cols, mcterm_skip_abs (t));
@@ -2099,8 +2105,7 @@ mcterm_execute_cmd (WMcTerm *t, long command, int key)
             mcterm_follow_end (t);
             break;
         }
-        if (!mcterm_mark_all (t))
-            break;
+        mcterm_mark_all (t);
         return MSG_HANDLED;
 
     case CK_MarkLeft:
@@ -2150,14 +2155,16 @@ mcterm_execute_cmd (WMcTerm *t, long command, int key)
             mcterm_follow_end (t);
             break;
         }
-        if (!mcterm_filter_by_word (t))
-            break;
+        // No word under the cursor: nothing to cut the output down to, and nothing to pass on.
+        mcterm_filter_by_word (t);
         return MSG_HANDLED;
 
     case CK_FilterToggle:
-        // Without a filter of its own the terminal has no use for the key.
-        if (!t->scroll_allowed || !mcterm_filter_toggle (t))
+        // A panel over it: the key is the file manager's.
+        if (!t->scroll_allowed)
             break;
+        // Without a filter of its own the terminal has nothing to toggle, and the key stops here.
+        mcterm_filter_toggle (t);
         return MSG_HANDLED;
 
     case CK_ScrollUp:
