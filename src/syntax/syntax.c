@@ -209,9 +209,6 @@ static void destroy_defines (GTree **defines);
 
 /*** file scope variables ************************************************************************/
 
-/* name of the included file the parser choked on, handed out by syntax_rules_load() */
-static char *error_file_name = NULL;
-
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -975,28 +972,33 @@ read_line_local_color (syntax_rules_t *r, char ***args)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Open a file named by an 'include' line.  @error_file is left holding the path
+ * tried last: while an included file is open it names the file being read, and
+ * that is the name handed out when the parser chokes on it.
+ */
 static FILE *
-open_include_file (const char *filename)
+open_include_file (const char *filename, char **error_file)
 {
     FILE *f;
 
-    g_free (error_file_name);
-    error_file_name = g_strdup (filename);
+    g_free (*error_file);
+    *error_file = g_strdup (filename);
     if (g_path_is_absolute (filename))
         return fopen (filename, "r");
 
-    g_free (error_file_name);
-    error_file_name =
+    g_free (*error_file);
+    *error_file =
         g_build_filename (mc_config_get_data_path (), EDIT_SYNTAX_DIR, filename, (char *) NULL);
-    f = fopen (error_file_name, "r");
+    f = fopen (*error_file, "r");
     if (f != NULL)
         return f;
 
-    g_free (error_file_name);
-    error_file_name =
+    g_free (*error_file);
+    *error_file =
         g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_DIR, filename, (char *) NULL);
 
-    return fopen (error_file_name, "r");
+    return fopen (*error_file, "r");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1014,10 +1016,17 @@ xx_lowerize_line (gboolean case_insensitive, char *line, size_t len)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** returns line number on error */
+/**
+ * Read the rules of one set, from the 'file' line already read up to the next
+ * one, or the whole of an included file.
+ *
+ * @param error_file holds the name of the included file being read, NULL while
+ *        the parser is in the Syntax file itself; freed by the caller
+ * @return 0 on success, otherwise the line the parser choked on
+ */
 
 static int
-edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
+edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size, char **error_file)
 {
     FILE *g = NULL;
     syntax_color_spec_t color;
@@ -1069,7 +1078,7 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
             f = g;
             g = NULL;
             line = save_line + 1;
-            MC_PTR_FREE (error_file_name);
+            MC_PTR_FREE (*error_file);
             MC_PTR_FREE (l);
             len = read_one_line (&l, f);
             if (len == 0)
@@ -1158,10 +1167,10 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
                 break;
             }
             g = f;
-            f = open_include_file (args[1]);
+            f = open_include_file (args[1], error_file);
             if (f == NULL)
             {
-                MC_PTR_FREE (error_file_name);
+                MC_PTR_FREE (*error_file);
                 result = line;
                 break;
             }
@@ -1429,33 +1438,103 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* returns -1 on file error, line number on error in file syntax */
+/** Open the Syntax file, falling back to the one shipped with the program. */
+static FILE *
+open_syntax_file (const char *syntax_file)
+{
+    FILE *f;
+    char *global_syntax_file;
+
+    f = fopen (syntax_file, "r");
+    if (f != NULL)
+        return f;
+
+    global_syntax_file =
+        g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_FILE, (char *) NULL);
+    f = fopen (global_syntax_file, "r");
+    g_free (global_syntax_file);
+
+    return f;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Does this 'file' line describe the rule set the caller asked for?
+ *
+ * Two ways to ask: by name, and by regular expressions on the name of the file
+ * being edited and on its first line.
+ */
+static gboolean
+syntax_file_line_selected (const syntax_rules_t *r, char **args, const char *editor_file,
+                           const char *first_line, const char *type)
+{
+    // rule set was explicitly specified by the caller
+    if (type != NULL)
+        return strcmp (type, args[2]) == 0;
+
+    if (editor_file == NULL || r == NULL)
+        return FALSE;
+
+    // does filename match arg 1 ?
+    if (mc_search (args[1], NULL, editor_file, MC_SEARCH_T_REGEX))
+        return TRUE;
+
+    // does first line match arg 3 ?
+    return args[3] != NULL && mc_search (args[3], NULL, first_line, MC_SEARCH_T_REGEX);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** A set of one empty context colors nothing; highlighting is turned off for speed. */
+static gboolean
+syntax_rules_are_empty (const syntax_rules_t *r)
+{
+    const context_rule_t *r0;
+
+    if (r->contexts == NULL || r->contexts->len != 1)
+        return FALSE;
+
+    r0 = CONTEXT_RULE (g_ptr_array_index (r->contexts, 0));
+
+    return r0->keyword->len == 1 && !r0->spelling;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Walk the Syntax file and read the rules of the set it selects.
+ *
+ * Three ways to ask, most specific first: @pnames collects the name of every
+ * set and reads none, @type names the set wanted, and without either the set is
+ * guessed from @editor_file and @first_line.
+ *
+ * @param error_file name of the included file at fault, if any; freed by the caller
+ * @return 0 on success, -1 if no Syntax file could be opened, otherwise the
+ *         line the parser choked on
+ */
 static int
 edit_read_syntax_file (syntax_rules_t *r, GPtrArray *pnames, const char *syntax_file,
-                       const char *editor_file, const char *first_line, const char *type)
+                       const char *editor_file, const char *first_line, const char *type,
+                       char **error_file)
 {
-    FILE *f, *g = NULL;
+    FILE *f;
     char *args[ARGS_LEN], *l = NULL;
     long line = 0;
     int result = 0;
     gboolean found = FALSE;
 
-    f = fopen (syntax_file, "r");
+    f = open_syntax_file (syntax_file);
     if (f == NULL)
-    {
-        char *global_syntax_file;
-
-        global_syntax_file =
-            g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_FILE, (char *) NULL);
-        f = fopen (global_syntax_file, "r");
-        g_free (global_syntax_file);
-        if (f == NULL)
-            return -1;
-    }
+        return -1;
 
     args[0] = NULL;
     while (TRUE)
     {
+        FILE *g = NULL;
+        const char *syntax_type;
+        int line_error;
+
         line++;
         MC_PTR_FREE (l);
         if (read_one_line (&l, f) == 0)
@@ -1467,93 +1546,70 @@ edit_read_syntax_file (syntax_rules_t *r, GPtrArray *pnames, const char *syntax_
         // Looking for 'include ...' lines before first 'file ...' ones
         if (!found && strcmp (args[0], "include") == 0)
         {
-            if (args[1] == NULL || (g = open_include_file (args[1])) == NULL)
+            if (args[1] == NULL || (g = open_include_file (args[1], error_file)) == NULL)
             {
                 result = line;
                 break;
             }
-            goto found_type;
+        }
+        else
+        {
+            // looking for 'file ...' lines only
+            if (strcmp (args[0], "file") != 0)
+                continue;
+
+            found = TRUE;
+
+            // must have two args or report error
+            if (args[1] == NULL || args[2] == NULL)
+            {
+                result = line;
+                break;
+            }
+
+            if (pnames != NULL)
+            {
+                // just collecting a list of names of rule sets
+                g_ptr_array_add (pnames, g_strdup (args[2]));
+                continue;
+            }
+
+            if (!syntax_file_line_selected (r, args, editor_file, first_line, type))
+                continue;
         }
 
-        // looking for 'file ...' lines only
-        if (strcmp (args[0], "file") != 0)
-            continue;
-
-        found = TRUE;
-
-        // must have two args or report error
-        if (args[1] == NULL || args[2] == NULL)
+        /* The rules of the set are read from here on.  args[] is refilled by the
+           parser, so the name of the set has to be kept before the call; it
+           points into l, which the parser does not touch. */
+        syntax_type = args[2];
+        line_error = edit_read_syntax_rules (r, g != NULL ? g : f, args, ARGS_LEN - 1, error_file);
+        if (line_error != 0)
         {
-            result = line;
+            // an included file counts its own lines, the Syntax file continues ours
+            result = *error_file != NULL ? line_error : line + line_error;
+        }
+        else
+        {
+            g_free (r->type);
+            r->type = g_strdup (syntax_type);
+
+            // if there are no rules then turn off syntax highlighting for speed
+            if (g == NULL && syntax_rules_are_empty (r))
+            {
+                syntax_rules_clear (r);
+                break;
+            }
+        }
+
+        if (g == NULL)
             break;
-        }
 
-        if (pnames != NULL)
-        {
-            // 1: just collecting a list of names of rule sets
-            g_ptr_array_add (pnames, g_strdup (args[2]));
-        }
-        else if (type != NULL)
-        {
-            // 2: rule set was explicitly specified by the caller
-            if (strcmp (type, args[2]) == 0)
-                goto found_type;
-        }
-        else if (editor_file != NULL && r != NULL)
-        {
-            // 3: auto-detect rule set from regular expressions
-            gboolean q;
-
-            q = mc_search (args[1], NULL, editor_file, MC_SEARCH_T_REGEX);
-            // does filename match arg 1 ?
-            if (!q && args[3] != NULL)
-            {
-                // does first line match arg 3 ?
-                q = mc_search (args[3], NULL, first_line, MC_SEARCH_T_REGEX);
-            }
-            if (q)
-            {
-                int line_error;
-                char *syntax_type;
-
-            found_type:
-                syntax_type = args[2];
-                line_error = edit_read_syntax_rules (r, g ? g : f, args, ARGS_LEN - 1);
-                if (line_error != 0)
-                {
-                    if (error_file_name == NULL)  // an included file
-                        result = line + line_error;
-                    else
-                        result = line_error;
-                }
-                else
-                {
-                    g_free (r->type);
-                    r->type = g_strdup (syntax_type);
-                    // if there are no rules then turn off syntax highlighting for speed
-                    if (g == NULL && r->contexts != NULL && r->contexts->len == 1)
-                    {
-                        context_rule_t *r0;
-
-                        r0 = CONTEXT_RULE (g_ptr_array_index (r->contexts, 0));
-                        if (r0->keyword->len == 1 && !r0->spelling)
-                        {
-                            syntax_rules_clear (r);
-                            break;
-                        }
-                    }
-                }
-
-                if (g == NULL)
-                    break;
-
-                fclose (g);
-                g = NULL;
-            }
-        }
+        fclose (g);
     }
+
     g_free (l);
     fclose (f);
+
     return result;
 }
 
@@ -1741,6 +1797,7 @@ syntax_rules_load (const char *syntax_file, const syntax_select_t *sel, syntax_r
                    char **error_file)
 {
     syntax_rules_t *r;
+    char *err_file = NULL;
     int res;
 
     if (error_file != NULL)
@@ -1749,20 +1806,22 @@ syntax_rules_load (const char *syntax_file, const syntax_select_t *sel, syntax_r
 
     r = syntax_rules_new ();
     res = edit_read_syntax_file (r, NULL, syntax_file, sel->filename,
-                                 sel->first_line != NULL ? sel->first_line : "", sel->type);
+                                 sel->first_line != NULL ? sel->first_line : "", sel->type,
+                                 &err_file);
 
     if (res != 0 || (r->contexts == NULL && !r->line_local))
     {
         if (error_file != NULL)
         {
-            *error_file = error_file_name;
-            error_file_name = NULL;
+            *error_file = err_file;
+            err_file = NULL;
         }
+        g_free (err_file);
         syntax_rules_free (r);
         return res != 0 ? res : -1;
     }
 
-    MC_PTR_FREE (error_file_name);
+    g_free (err_file);
     *rules = r;
 
     return 0;
@@ -1774,12 +1833,13 @@ int
 syntax_rules_list_types (const char *syntax_file, GPtrArray *names)
 {
     syntax_rules_t *r;
+    char *err_file = NULL;
     int res;
 
     r = syntax_rules_new ();
-    res = edit_read_syntax_file (r, names, syntax_file, NULL, "", NULL);
+    res = edit_read_syntax_file (r, names, syntax_file, NULL, "", NULL, &err_file);
     syntax_rules_free (r);
-    MC_PTR_FREE (error_file_name);
+    g_free (err_file);
 
     return res;
 }
