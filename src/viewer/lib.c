@@ -366,10 +366,16 @@ mcview_done (WView *view)
         /* A view built before the settings were read has this off; letting it
            write that back would lose the user's choice. */
         const gboolean hl = mcview_global_flags.highlight;
+        const gboolean nroff = mcview_global_flags.nroff;
 
         mcview_global_flags = view->mode_flags;
         if (!mcview_altered_flags.highlight)
             mcview_global_flags.highlight = hl;
+        /* A source's display format (for example rendered Markdown) belongs to
+           that source. Keeping nroff on would bypass syntax colors in the next file. */
+        if (view->source_spec != NULL
+            && (view->source_spec->initial_nroff || view->source_spec->initial_terminal))
+            mcview_global_flags.nroff = nroff;
     }
     mcview_global_flags.structured = FALSE;
 

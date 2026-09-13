@@ -1,23 +1,23 @@
 /*
    src/viewer - tests for mcview_load() with PK/ZIP magic bytes
 
-   Copyright (C) 2025
-   Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov il.smind@gmail.com
 
-   This file is part of the Midnight Commander.
+   This file is part of M-Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #define TEST_SUITE_NAME "/src/viewer"
@@ -275,6 +275,52 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_nroff_source_does_not_change_next_viewer_mode)
+{
+    static const mcview_source_controller_t controller = { 0 };
+    const unsigned char rendered[] = "H\bH\beading\n";
+    char *path = create_test_file (rendered, sizeof (rendered) - 1);
+    const mcview_mode_flags_t saved_flags = mcview_global_flags;
+
+    ck_assert_ptr_nonnull (path);
+    mcview_global_flags.nroff = _i;
+    test_view.converter = str_cnv_from_term;
+    test_view.source_controller = &controller;
+    test_view.source_spec = g_new0 (mcview_source_spec_t, 1);
+    test_view.source_spec->file = g_strdup (path);
+    test_view.source_spec->raw_file = g_strdup (path);
+    test_view.source_spec->initial_nroff = TRUE;
+
+    mctest_assert_true (mcview_source_set_raw (&test_view, FALSE));
+    mctest_assert_true (test_view.mode_flags.nroff);
+    mcview_done (&test_view);
+
+    ck_assert_int_eq (mcview_global_flags.nroff, _i);
+
+    mcview_global_flags = saved_flags;
+    unlink (path);
+    g_free (path);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_plain_viewer_remembers_nroff_choice)
+{
+    const mcview_mode_flags_t saved_flags = mcview_global_flags;
+
+    test_view.converter = str_cnv_from_term;
+    mcview_global_flags.nroff = FALSE;
+    mcview_toggle_nroff_mode (&test_view);
+    mcview_done (&test_view);
+
+    mctest_assert_true (mcview_global_flags.nroff);
+    mcview_global_flags = saved_flags;
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_zip_magic_file_reload_no_crash)
 {
     // given -- a file with ZIP magic
@@ -396,6 +442,8 @@ main (void)
     tcase_add_test (tc_core, test_normal_file_loads_as_ds_file);
     tcase_add_test (tc_core, test_plain_load_detaches_previous_source_controller);
     tcase_add_test (tc_core, test_magic_toggle_keeps_source_controller_for_raw_file);
+    tcase_add_loop_test (tc_core, test_nroff_source_does_not_change_next_viewer_mode, 0, 2);
+    tcase_add_test (tc_core, test_plain_viewer_remembers_nroff_choice);
     tcase_add_test (tc_core, test_nonexistent_file_fails);
     tcase_add_test (tc_core, test_gzip_magic_file_loads_as_ds_file);
     /* *********************************** */
