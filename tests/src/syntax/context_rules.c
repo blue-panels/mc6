@@ -713,6 +713,34 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_error_file_names_the_include)
+{
+    char *lang;
+    char *top;
+    char *error_file = NULL;
+    syntax_select_t sel;
+
+    lang = g_build_filename (tmpdir, "tested.syntax", (char *) NULL);
+    write_file (lang, "context default\n  nonsense\n");
+
+    top = g_strdup_printf ("file .\\* Tested\ninclude %s\n", lang);
+    write_file (syntax_file, top);
+    g_free (top);
+
+    sel.type = NULL;
+    sel.filename = "whatever.txt";
+    sel.first_line = "";
+
+    // the included file counts its own lines and gives its own name away
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, &error_file), 2);
+    ck_assert_str_eq (error_file, lang);
+    g_free (error_file);
+    g_free (lang);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_no_syntax_file_at_all)
 {
     syntax_select_t sel;
@@ -776,6 +804,26 @@ START_TEST (test_type_chosen_by_first_line)
     sel.first_line = "#!/bin/sh";
     ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), 0);
     ck_assert_str_eq (syntax_rules_type (rules), "TheShell");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_nothing_to_choose_by)
+{
+    syntax_select_t sel;
+
+    write_file (syntax_file,
+                "file \\.c$ TheC\n"
+                "context default\n"
+                "  keyword int red\n");
+
+    // no name asked for and no file to match against: no rule set is chosen
+    sel.type = NULL;
+    sel.filename = NULL;
+    sel.first_line = "";
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), -1);
+    ck_assert_ptr_null (rules);
 }
 END_TEST
 
@@ -919,9 +967,11 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_second_file_line_ends_the_rules);
     tcase_add_test (tc_core, test_full_colors);
     tcase_add_test (tc_core, test_more_parse_errors);
+    tcase_add_test (tc_core, test_error_file_names_the_include);
     tcase_add_test (tc_core, test_no_syntax_file_at_all);
     tcase_add_test (tc_core, test_type_chosen_by_caller);
     tcase_add_test (tc_core, test_type_chosen_by_first_line);
+    tcase_add_test (tc_core, test_nothing_to_choose_by);
     tcase_add_test (tc_core, test_list_of_types);
     tcase_add_test (tc_core, test_include_before_any_file_line);
     tcase_add_test (tc_core, test_include_that_opens);
