@@ -73,32 +73,10 @@
 #define SYNTAX_TOKEN_BRACKET  '\003'
 #define SYNTAX_TOKEN_BRACE    '\004'
 
-#define break_a                                                                                    \
-    {                                                                                              \
-        result = line;                                                                             \
-        break;                                                                                     \
-    }
-#define check_a                                                                                    \
-    {                                                                                              \
-        if (*a == NULL)                                                                            \
-        {                                                                                          \
-            result = line;                                                                         \
-            break;                                                                                 \
-        }                                                                                          \
-    }
-#define check_not_a                                                                                \
-    {                                                                                              \
-        if (*a != NULL)                                                                            \
-        {                                                                                          \
-            result = line;                                                                         \
-            break;                                                                                 \
-        }                                                                                          \
-    }
+#define SYNTAX_KEYWORD(x)     ((syntax_keyword_t *) (x))
+#define CONTEXT_RULE(x)       ((context_rule_t *) (x))
 
-#define SYNTAX_KEYWORD(x) ((syntax_keyword_t *) (x))
-#define CONTEXT_RULE(x)   ((context_rule_t *) (x))
-
-#define ARGS_LEN          1024
+#define ARGS_LEN              1024
 
 /* color 0 is "whatever an uncolored byte gets"; the table starts at 1 */
 #define SYNTAX_COLOR_NONE 0
@@ -176,6 +154,58 @@ typedef struct
     unsigned char border;
 } syntax_rule_t;
 
+/**
+ * What one pass over one byte has found so far.
+ *
+ * The pass answers five questions in a fixed order - is the keyword over, is
+ * the context over, does a keyword start here, does a context start here, and
+ * does a keyword of the new context start here - and every answer is read by
+ * the questions below it.
+ */
+typedef struct
+{
+    gboolean left;             // a border was closed here
+    gboolean right;            // a right delimiter matched here
+    gboolean keyword_left;     // the keyword ended here
+    gboolean keyword_right;    // a keyword started here
+    gboolean context_changed;  // the context is not the one the byte was entered with
+    off_t end;                 // how far the longest match found here reaches
+} syntax_found_t;
+
+/** What a directive of a .syntax file says about the line it was read from. */
+typedef enum
+{
+    SYNTAX_DIRECTIVE_OK,
+    SYNTAX_DIRECTIVE_ERROR,
+    SYNTAX_DIRECTIVE_END  // 'file': the rule set is over
+} syntax_directive_result_t;
+
+/** What the directives of one rule set read and write while it is parsed. */
+typedef struct
+{
+    syntax_rules_t *rules;
+    char **args;  // the line, split into words
+    int argc;
+    context_rule_t *context;  // the context opened last
+    gboolean no_words;        // no context has been opened yet
+
+    // what counts as a word, as the last 'wholechars' left it
+    char whole_left[BUF_MEDIUM];
+    char whole_right[BUF_MEDIUM];
+
+    // the color a keyword inherits from the context it is in
+    char last_fg[BUF_TINY / 2];
+    char last_bg[BUF_TINY / 2];
+    char last_attrs[BUF_TINY];
+
+    // the file being read, and the one 'include' interrupted
+    FILE *f;
+    FILE *g;
+    int line;
+    int save_line;
+    char **error_file;
+} syntax_parser_t;
+
 /** A resumable point in the walk.  State only, never bytes. */
 typedef struct
 {
@@ -208,9 +238,6 @@ static void syntax_rules_free (syntax_rules_t *r);
 static void destroy_defines (GTree **defines);
 
 /*** file scope variables ************************************************************************/
-
-/* name of the included file the parser choked on, handed out by syntax_rules_load() */
-static char *error_file_name = NULL;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -420,6 +447,15 @@ xx_tolower (gboolean case_insensitive, int c)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** The byte at @i as the automaton reads it: folded when the rule set ignores case. */
+inline static int
+get_byte_folded (const syntax_scanner_t *sc, off_t i)
+{
+    return xx_tolower (sc->rules->case_insensitive, sc->get_byte (sc->data, i));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 subst_defines (GTree *defines, char **argv, char **argv_end)
 {
@@ -457,118 +493,203 @@ subst_defines (GTree *defines, char **argv, char **argv_end)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Is @c one of the bytes listed at @p, up to the closing @token? */
+static gboolean
+in_char_set (const unsigned char *p, int c, unsigned char token)
+{
+    for (; *p != token && *p != '\0'; p++)
+        if (c == (int) *p)
+            return TRUE;
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * '*' in a pattern: any run of bytes up to the one the pattern asks for next,
+ * never across a line break.
+ *
+ * Every match_* below takes the token at @pp and the byte at @ii and leaves
+ * both on the last byte the token ate, for the loop of compare_word_to_right()
+ * to step over.
+ */
+static gboolean
+match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned char **pp,
+            off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+
+    while (TRUE)
+    {
+        int c;
+
+        c = get_byte_folded (sc, i);
+        if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
+            break;
+        if (c == *p)
+            break;
+        if (c == '\n')
+            return FALSE;
+        i++;
+    }
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '+' in a pattern: a run of bytes that are part of a word.  Empty will do. */
+static gboolean
+match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_right,
+            const unsigned char **pp, off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+    off_t j = 0;
+
+    while (TRUE)
+    {
+        int c;
+
+        c = get_byte_folded (sc, i);
+        if (c == *p)
+        {
+            j = i;
+            if (p[0] == text->str[0] && p[1] == '\0')  // handle eg '+' and @+@ keywords properly
+                break;
+        }
+        if (j != 0
+            && strchr ((const char *) p + 1, c) != NULL)  // c exists further down, matched later
+            break;
+        if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
+        {
+            if (*p == '\0')
+            {
+                i--;
+                break;
+            }
+            if (j == 0)
+                return FALSE;
+            i = j;
+            break;
+        }
+        i++;
+    }
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '[abc]' in a pattern: a run of bytes out of the set. */
+static gboolean
+match_bracket (const syntax_scanner_t *sc, const unsigned char **pp, const unsigned char *q,
+               off_t *ii)
+{
+    const unsigned char *p = *pp + 1;
+    off_t i = *ii;
+    int c = -1, d;
+
+    while (TRUE)
+    {
+        d = c;
+        c = get_byte_folded (sc, i);
+        if (!in_char_set (p, c, SYNTAX_TOKEN_BRACKET))
+            break;
+        i++;
+    }
+    i--;
+
+    while (*p != SYNTAX_TOKEN_BRACKET && p <= q)
+        p++;
+    if (p > q)
+        return FALSE;
+    // the last byte of the set is what the pattern asks for next: give it back
+    if (p[1] == d)
+        i--;
+
+    *pp = p;
+    *ii = i;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** '{abc}' in a pattern: one byte out of the set. */
+static gboolean
+match_brace (const syntax_scanner_t *sc, const unsigned char **pp, const unsigned char *q, off_t i)
+{
+    const unsigned char *p = *pp + 1;
+
+    if (!in_char_set (p, get_byte_folded (sc, i), SYNTAX_TOKEN_BRACE))
+        return FALSE;
+
+    while (*p != SYNTAX_TOKEN_BRACE && p < q)
+        p++;
+
+    *pp = p;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * How far the pattern @text matches the bytes from @i to the right.
+ *
+ * @return the byte after the match, or -1 if the pattern does not match
+ */
 static off_t
 compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
                        const char *whole_left, const char *whole_right, gboolean line_start)
 {
     const unsigned char *p, *q;
-    int c, d, j;
+    int c;
 
-    c = sc->get_byte (sc->data, i - 1);
-    c = xx_tolower (sc->rules->case_insensitive, c);
+    c = get_byte_folded (sc, i - 1);
     if ((line_start && c != '\n') || (whole_left != NULL && strchr (whole_left, c) != NULL))
         return -1;
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
     {
+        gboolean ok;
+
         switch (*p)
         {
         case SYNTAX_TOKEN_STAR:
-            p++;
-            while (TRUE)
-            {
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
-                if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
-                    break;
-                if (c == *p)
-                    break;
-                if (c == '\n')
-                    return -1;
-                i++;
-            }
+            ok = match_star (sc, whole_right, &p, &i);
             break;
         case SYNTAX_TOKEN_PLUS:
-            p++;
-            j = 0;
-            while (TRUE)
-            {
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
-                if (c == *p)
-                {
-                    j = i;
-                    if (p[0] == text->str[0]
-                        && p[1] == '\0')  // handle eg '+' and @+@ keywords properly
-                        break;
-                }
-                if (j != 0
-                    && strchr ((const char *) p + 1, c)
-                        != NULL)  // c exists further down, so it will get matched later
-                    break;
-                if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
-                {
-                    if (*p == '\0')
-                    {
-                        i--;
-                        break;
-                    }
-                    if (j == 0)
-                        return -1;
-                    i = j;
-                    break;
-                }
-                i++;
-            }
+            ok = match_plus (sc, text, whole_right, &p, &i);
             break;
         case SYNTAX_TOKEN_BRACKET:
-            p++;
-            c = -1;
-            while (TRUE)
-            {
-                d = c;
-                c = sc->get_byte (sc->data, i);
-                c = xx_tolower (sc->rules->case_insensitive, c);
-                for (j = 0; p[j] != SYNTAX_TOKEN_BRACKET && p[j] != '\0'; j++)
-                    if (c == p[j])
-                        goto found_char2;
-                break;
-            found_char2:
-                i++;
-            }
-            i--;
-            while (*p != SYNTAX_TOKEN_BRACKET && p <= q)
-                p++;
-            if (p > q)
-                return -1;
-            if (p[1] == d)
-                i--;
+            ok = match_bracket (sc, &p, q, &i);
             break;
         case SYNTAX_TOKEN_BRACE:
-            p++;
-            c = sc->get_byte (sc->data, i);
-            c = xx_tolower (sc->rules->case_insensitive, c);
-            for (; *p != SYNTAX_TOKEN_BRACE && *p != '\0'; p++)
-                if (c == *p)
-                    goto found_char3;
-            return -1;
-        found_char3:
-            while (*p != SYNTAX_TOKEN_BRACE && p < q)
-                p++;
+            ok = match_brace (sc, &p, q, i);
             break;
         default:
-            c = sc->get_byte (sc->data, i);
-            if (*p != xx_tolower (sc->rules->case_insensitive, c))
-                return -1;
+            ok = (*p == get_byte_folded (sc, i));
+            break;
         }
+
+        if (!ok)
+            return -1;
     }
 
     if (whole_right == NULL)
         return i;
 
-    c = sc->get_byte (sc->data, i);
-    c = xx_tolower (sc->rules->case_insensitive, c);
-    return strchr (whole_right, c) != NULL ? -1 : i;
+    return strchr (whole_right, get_byte_folded (sc, i)) != NULL ? -1 : i;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -584,20 +705,76 @@ xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Turn on the keyword of the current context that starts at byte @i, if there
+ * is one.
+ *
+ * @param c the byte at @i, folded
+ * @param end how far the longest match found at @i reaches
+ * @param stop_newline_overflow hand the line break back to the context when the
+ *        keyword and the context both end with one
+ * @return TRUE when a keyword was turned on
+ */
+static gboolean
+try_keyword (const syntax_scanner_t *sc, off_t i, int c, syntax_rule_t *rule, off_t *end,
+             gboolean stop_newline_overflow)
+{
+    const context_rule_t *r;
+    const char *p;
+
+    r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->context));
+    p = r->keyword_first_chars;
+    if (p == NULL)
+        return FALSE;
+
+    while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c)) != '\0')
+    {
+        const syntax_keyword_t *k;
+        int count;
+        off_t e = -1;
+
+        count = p - r->keyword_first_chars;
+        k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
+        if (k->keyword != NULL)
+            e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
+                                       k->whole_word_chars_right, k->line_start);
+        if (e > 0)
+        {
+            /* when both context and keyword terminate with a newline,
+               the context overflows to the next line and colorizes it incorrectly */
+            if (stop_newline_overflow && e > i + 1 && rule->_context != 0
+                && k->keyword->str[k->keyword->len - 1] == '\n')
+            {
+                const context_rule_t *rc;
+
+                rc = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->_context));
+                if (rc->right != NULL && rc->right->len != 0
+                    && rc->right->str[rc->right->len - 1] == '\n')
+                    e--;
+            }
+
+            *end = e;
+            rule->end = e;
+            rule->keyword = count;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 {
     context_rule_t *r;
     int c;
-    gboolean contextchanged = FALSE;
-    gboolean found_left = FALSE, found_right = FALSE;
-    gboolean keyword_foundleft = FALSE, keyword_foundright = FALSE;
+    syntax_found_t found = { FALSE, FALSE, FALSE, FALSE, FALSE, 0 };
     gboolean is_end;
-    off_t end = 0;
     syntax_rule_t _rule = sc->rule;
 
-    c = sc->get_byte (sc->data, i);
-    c = xx_tolower (sc->rules->case_insensitive, c);
+    c = get_byte_folded (sc, i);
     if (c == 0)
         return;
 
@@ -611,7 +788,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         if (is_end)
         {
             _rule.keyword = 0;
-            keyword_foundleft = TRUE;
+            found.keyword_left = TRUE;
         }
     }
 
@@ -628,7 +805,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                 > 0)
         {
             _rule.end = e;
-            found_right = TRUE;
+            found.right = TRUE;
             _rule.border = RULE_ON_RIGHT_BORDER;
             if (r->between_delimiters)
                 _rule.context = 0;
@@ -636,72 +813,33 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         else if (is_end && (sc->rule.border & RULE_ON_RIGHT_BORDER) != 0)
         {
             // always turn off a context at 4
-            found_left = TRUE;
+            found.left = TRUE;
             _rule.border = 0;
-            if (!keyword_foundleft)
+            if (!found.keyword_left)
                 _rule.context = 0;
         }
         else if (is_end && (sc->rule.border & RULE_ON_LEFT_BORDER) != 0)
         {
             // never turn off a context at 2
-            found_left = TRUE;
+            found.left = TRUE;
             _rule.border = 0;
         }
     }
 
     // check to turn on a keyword
     if (_rule.keyword == 0)
-    {
-        const char *p;
-
-        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
-        p = r->keyword_first_chars;
-
-        if (p != NULL)
-            while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c))
-                   != '\0')
-            {
-                syntax_keyword_t *k;
-                int count;
-                off_t e = -1;
-
-                count = p - r->keyword_first_chars;
-                k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-                if (k->keyword != 0)
-                    e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
-                                               k->whole_word_chars_right, k->line_start);
-                if (e > 0)
-                {
-                    /* when both context and keyword terminate with a newline,
-                       the context overflows to the next line and colorizes it incorrectly */
-                    if (e > i + 1 && _rule._context != 0
-                        && k->keyword->str[k->keyword->len - 1] == '\n')
-                    {
-                        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule._context));
-                        if (r->right != NULL && r->right->len != 0
-                            && r->right->str[r->right->len - 1] == '\n')
-                            e--;
-                    }
-
-                    end = e;
-                    _rule.end = e;
-                    _rule.keyword = count;
-                    keyword_foundright = TRUE;
-                    break;
-                }
-            }
-    }
+        found.keyword_right = try_keyword (sc, i, c, &_rule, &found.end, TRUE);
 
     // check to turn on a context
     if (_rule.context == 0)
     {
-        if (!found_left && is_end)
+        if (!found.left && is_end)
         {
             if ((sc->rule.border & RULE_ON_RIGHT_BORDER) != 0)
             {
                 _rule.border = 0;
                 _rule.context = 0;
-                contextchanged = TRUE;
+                found.context_changed = TRUE;
                 _rule.keyword = 0;
             }
             else if ((sc->rule.border & RULE_ON_LEFT_BORDER) != 0)
@@ -711,7 +849,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                 if (r->between_delimiters)
                 {
                     _rule.context = _rule._context;
-                    contextchanged = TRUE;
+                    found.context_changed = TRUE;
                     _rule.keyword = 0;
 
                     if (r->first_right == c)
@@ -722,10 +860,10 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                             e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
                                                        r->whole_word_chars_right,
                                                        r->line_start_right);
-                        if (e >= end)
+                        if (e >= found.end)
                         {
                             _rule.end = e;
-                            found_right = TRUE;
+                            found.right = TRUE;
                             _rule.border = RULE_ON_RIGHT_BORDER;
                             _rule.context = 0;
                         }
@@ -734,7 +872,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
             }
         }
 
-        if (!found_right)
+        if (!found.right)
         {
             size_t count;
 
@@ -748,7 +886,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                     if (r->left->len != 0)
                         e = compare_word_to_right (sc, i, r->left, r->whole_word_chars_left,
                                                    r->whole_word_chars_right, r->line_start_left);
-                    if (e >= end && (_rule.keyword == 0 || keyword_foundright))
+                    if (e >= found.end && (_rule.keyword == 0 || found.keyword_right))
                     {
                         _rule.end = e;
                         _rule.border = RULE_ON_LEFT_BORDER;
@@ -756,7 +894,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                         if (!r->between_delimiters && _rule.keyword == 0)
                         {
                             _rule.context = count;
-                            contextchanged = TRUE;
+                            found.context_changed = TRUE;
                         }
                         break;
                     }
@@ -765,35 +903,12 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         }
     }
 
-    // check again to turn on a keyword if the context switched
-    if (contextchanged && _rule.keyword == 0)
-    {
-        const char *p;
-
-        r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
-        p = r->keyword_first_chars;
-
-        while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c))
-               != '\0')
-        {
-            syntax_keyword_t *k;
-            int count;
-            off_t e = -1;
-
-            count = p - r->keyword_first_chars;
-            k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-
-            if (k->keyword->len != 0)
-                e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
-                                           k->whole_word_chars_right, k->line_start);
-            if (e > 0)
-            {
-                _rule.end = e;
-                _rule.keyword = count;
-                break;
-            }
-        }
-    }
+    /* check again to turn on a keyword if the context switched.  The guard
+       against a keyword and a context that both end with a line break is not
+       applied here; a keyword that starts on the byte the context starts on
+       keeps the break.  Pinned by test_newline_keyword_at_context_start. */
+    if (found.context_changed && _rule.keyword == 0)
+        (void) try_keyword (sc, i, c, &_rule, &found.end, FALSE);
 
     sc->rule = _rule;
 }
@@ -952,51 +1067,68 @@ get_args (char *l, char **args, int args_size)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** The up to three color words that end a line: foreground, background, attributes. */
+static void
+read_color_spec (syntax_color_spec_t *color, char ***args)
+{
+    char **a = *args;
+
+    color->fg = *a;
+    if (*a != NULL)
+        a++;
+    color->bg = *a;
+    if (*a != NULL)
+        a++;
+    color->attrs = *a;
+    if (*a != NULL)
+        a++;
+    *args = a;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static int
 read_line_local_color (syntax_rules_t *r, char ***args)
 {
     syntax_color_spec_t color;
-    char **a = *args;
 
-    if (*a == NULL)
+    if (**args == NULL)
         return -1;
 
-    color.fg = *a++;
-    color.bg = *a;
-    if (*a != NULL)
-        a++;
-    color.attrs = *a;
-    if (*a != NULL)
-        a++;
-    *args = a;
+    read_color_spec (&color, args);
 
     return (int) syntax_intern_color (r, &color);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Open a file named by an 'include' line.  @error_file is left holding the path
+ * tried last: while an included file is open it names the file being read, and
+ * that is the name handed out when the parser chokes on it.
+ */
 static FILE *
-open_include_file (const char *filename)
+open_include_file (const char *filename, char **error_file)
 {
     FILE *f;
 
-    g_free (error_file_name);
-    error_file_name = g_strdup (filename);
+    g_free (*error_file);
+    *error_file = g_strdup (filename);
     if (g_path_is_absolute (filename))
         return fopen (filename, "r");
 
-    g_free (error_file_name);
-    error_file_name =
+    g_free (*error_file);
+    *error_file =
         g_build_filename (mc_config_get_data_path (), EDIT_SYNTAX_DIR, filename, (char *) NULL);
-    f = fopen (error_file_name, "r");
+    f = fopen (*error_file, "r");
     if (f != NULL)
         return f;
 
-    g_free (error_file_name);
-    error_file_name =
+    g_free (*error_file);
+    *error_file =
         g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_DIR, filename, (char *) NULL);
 
-    return fopen (error_file_name, "r");
+    return fopen (*error_file, "r");
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1014,23 +1146,488 @@ xx_lowerize_line (gboolean case_insensitive, char *line, size_t len)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** returns line number on error */
+/*** the directives of a .syntax file ************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The optional 'whole', 'wholeleft' or 'wholeright' in front of a pattern: which
+ * side of it has to fall on a word border.
+ */
+static void
+read_whole_word_chars (const syntax_parser_t *p, char ***args, char **left, char **right)
+{
+    char **a = *args;
+
+    if (strcmp (*a, "whole") == 0)
+    {
+        a++;
+        *left = g_strdup (p->whole_left);
+        *right = g_strdup (p->whole_right);
+    }
+    else if (strcmp (*a, "wholeleft") == 0)
+    {
+        a++;
+        *left = g_strdup (p->whole_left);
+    }
+    else if (strcmp (*a, "wholeright") == 0)
+    {
+        a++;
+        *right = g_strdup (p->whole_right);
+    }
+
+    *args = a;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** line-local: the rules of this set keep no state between lines. */
+static syntax_directive_result_t
+directive_line_local (syntax_parser_t *p)
+{
+    if (p->argc != 1 || p->rules->contexts->len != 0)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    p->rules->line_local = TRUE;
+
+    return SYNTAX_DIRECTIVE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** number <max> <color>: line-local rules color numbers up to <max>. */
+static syntax_directive_result_t
+directive_number (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    char *end;
+    guint64 max;
+    int syntax_color;
+
+    if (!r->line_local || *a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    errno = 0;
+    max = g_ascii_strtoull (*a++, &end, 10);
+    if (errno != 0 || *end != '\0' || max == 0 || max > G_MAXUINT)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    syntax_color = read_line_local_color (r, &a);
+    if (syntax_color < 0)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    r->ll_number_max = (guint) max;
+    r->ll_number_color = syntax_color;
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** string <quote> <color>: line-local rules color what stands between quotes. */
+static syntax_directive_result_t
+directive_string (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    char quote_char;
+    int syntax_color;
+
+    if (!r->line_local || *a == NULL || (*a)[1] != '\0')
+        return SYNTAX_DIRECTIVE_ERROR;
+    quote_char = **a;
+    if (quote_char != '\'' && quote_char != '"')
+        return SYNTAX_DIRECTIVE_ERROR;
+    a++;
+
+    syntax_color = read_line_local_color (r, &a);
+    if (syntax_color < 0)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    if (quote_char == '\'')
+        r->ll_single_quote_color = syntax_color;
+    else
+        r->ll_double_quote_color = syntax_color;
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** symbols <chars> <color>: line-local rules color these bytes wherever they stand. */
+static syntax_directive_result_t
+directive_symbols (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    int syntax_color;
+
+    if (!r->line_local || *a == NULL || **a == '\0')
+        return SYNTAX_DIRECTIVE_ERROR;
+    MC_PTR_FREE (r->ll_symbols);
+    r->ll_symbols = g_strdup (*a++);
+
+    syntax_color = read_line_local_color (r, &a);
+    if (syntax_color < 0)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    r->ll_symbols_color = syntax_color;
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** include <file>: go on reading the rules there.  One level deep, no nesting. */
+static syntax_directive_result_t
+directive_include (syntax_parser_t *p)
+{
+    if (p->g != NULL || p->argc != 2)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    p->g = p->f;
+    p->f = open_include_file (p->args[1], p->error_file);
+    if (p->f == NULL)
+    {
+        MC_PTR_FREE (*p->error_file);
+        return SYNTAX_DIRECTIVE_ERROR;
+    }
+    p->save_line = p->line;
+    p->line = 0;
+
+    return SYNTAX_DIRECTIVE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** caseinsensitive: fold every byte of the text and of the rules. */
+static syntax_directive_result_t
+directive_caseinsensitive (syntax_parser_t *p)
+{
+    p->rules->case_insensitive = TRUE;
+
+    return SYNTAX_DIRECTIVE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** wholechars [left|right] <chars>: what counts as a word from here on. */
+static syntax_directive_result_t
+directive_wholechars (syntax_parser_t *p)
+{
+    char **a = p->args + 1;
+
+    if (*a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    if (strcmp (*a, "left") == 0)
+    {
+        a++;
+        g_strlcpy (p->whole_left, *a, sizeof (p->whole_left));
+    }
+    else if (strcmp (*a, "right") == 0)
+    {
+        a++;
+        g_strlcpy (p->whole_right, *a, sizeof (p->whole_right));
+    }
+    else
+    {
+        g_strlcpy (p->whole_left, *a, sizeof (p->whole_left));
+        g_strlcpy (p->whole_right, *a, sizeof (p->whole_right));
+    }
+    a++;
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** context [exclusive] [whole...] [linestart] <left> [linestart] <right> [colors] */
+static syntax_directive_result_t
+directive_context (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    syntax_color_spec_t color;
+    context_rule_t *c;
+    syntax_keyword_t *k;
+
+    if (r->line_local)
+        return SYNTAX_DIRECTIVE_ERROR;
+    if (*a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    if (r->contexts->len == 0)
+    {
+        // first context is the default
+        if (strcmp (*a, "default") != 0)
+            return SYNTAX_DIRECTIVE_ERROR;
+
+        a++;
+        c = g_new0 (context_rule_t, 1);
+        g_ptr_array_add (r->contexts, c);
+        c->left = g_string_new (" ");
+        c->right = g_string_new (" ");
+    }
+    else
+    {
+        // Start new context.
+        c = g_new0 (context_rule_t, 1);
+        g_ptr_array_add (r->contexts, c);
+        if (strcmp (*a, "exclusive") == 0)
+        {
+            a++;
+            c->between_delimiters = TRUE;
+        }
+        if (*a == NULL)
+            return SYNTAX_DIRECTIVE_ERROR;
+        read_whole_word_chars (p, &a, &c->whole_word_chars_left, &c->whole_word_chars_right);
+        if (*a == NULL)
+            return SYNTAX_DIRECTIVE_ERROR;
+        if (strcmp (*a, "linestart") == 0)
+        {
+            a++;
+            c->line_start_left = TRUE;
+        }
+        if (*a == NULL)
+            return SYNTAX_DIRECTIVE_ERROR;
+        c->left = g_string_new (*a++);
+        if (*a == NULL)
+            return SYNTAX_DIRECTIVE_ERROR;
+        if (strcmp (*a, "linestart") == 0)
+        {
+            a++;
+            c->line_start_right = TRUE;
+        }
+        if (*a == NULL)
+            return SYNTAX_DIRECTIVE_ERROR;
+        c->right = g_string_new (*a++);
+        c->first_left = c->left->str[0];
+        c->first_right = c->right->str[0];
+    }
+
+    c->keyword = g_ptr_array_new_with_free_func (syntax_keyword_free);
+    k = g_new0 (syntax_keyword_t, 1);
+    g_ptr_array_add (c->keyword, k);
+
+    p->context = c;
+    p->no_words = FALSE;
+
+    subst_defines (r->defines, a, &p->args[ARGS_LEN]);
+    read_color_spec (&color, &a);
+    // a keyword of this context that names no color of its own takes this one
+    g_strlcpy (p->last_fg, color.fg != NULL ? color.fg : "", sizeof (p->last_fg));
+    g_strlcpy (p->last_bg, color.bg != NULL ? color.bg : "", sizeof (p->last_bg));
+    g_strlcpy (p->last_attrs, color.attrs != NULL ? color.attrs : "", sizeof (p->last_attrs));
+    k->color = syntax_intern_color (r, &color);
+    k->keyword = g_string_new (" ");
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** spellcheck: the words of this context are run past the spell checker. */
+static syntax_directive_result_t
+directive_spellcheck (syntax_parser_t *p)
+{
+    if (p->rules->line_local || p->context == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    p->context->spelling = TRUE;
+
+    return SYNTAX_DIRECTIVE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** keyword [whole...] [linestart] <word> [colors] */
+static syntax_directive_result_t
+directive_keyword (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    syntax_color_spec_t color;
+    context_rule_t *last_rule;
+    syntax_keyword_t *k;
+
+    if (r->line_local || p->no_words)
+        return SYNTAX_DIRECTIVE_ERROR;
+    if (*a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    last_rule = CONTEXT_RULE (g_ptr_array_index (r->contexts, r->contexts->len - 1));
+    k = g_new0 (syntax_keyword_t, 1);
+    g_ptr_array_add (last_rule->keyword, k);
+
+    read_whole_word_chars (p, &a, &k->whole_word_chars_left, &k->whole_word_chars_right);
+    if (*a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+    if (strcmp (*a, "linestart") == 0)
+    {
+        a++;
+        k->line_start = TRUE;
+    }
+    if (*a == NULL)
+        return SYNTAX_DIRECTIVE_ERROR;
+    if (strcmp (*a, "whole") == 0)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    k->keyword = g_string_new (*a++);
+    subst_defines (r->defines, a, &p->args[ARGS_LEN]);
+    read_color_spec (&color, &a);
+    if (color.fg == NULL)
+        color.fg = p->last_fg;
+    if (color.bg == NULL)
+        color.bg = p->last_bg;
+    if (color.attrs == NULL)
+        color.attrs = p->last_attrs;
+    k->color = syntax_intern_color (r, &color);
+
+    return *a == NULL ? SYNTAX_DIRECTIVE_OK : SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** file: the next rule set starts here, this one is done. */
+static syntax_directive_result_t
+directive_file (syntax_parser_t *p)
+{
+    (void) p;
+
+    return SYNTAX_DIRECTIVE_END;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** define <name> <words...>: one word of a rule stands for several. */
+static syntax_directive_result_t
+directive_define (syntax_parser_t *p)
+{
+    syntax_rules_t *r = p->rules;
+    char **a = p->args + 1;
+    char *key = *a++;
+    char **argv;
+
+    if (p->argc < 3)
+        return SYNTAX_DIRECTIVE_ERROR;
+
+    argv = g_tree_lookup (r->defines, key);
+    if (argv != NULL)
+        mc_defines_destroy (NULL, argv, NULL);
+    else
+        key = g_strdup (key);
+
+    argv = g_new (char *, p->argc - 1);
+    g_tree_insert (r->defines, key, argv);
+    while (*a != NULL)
+        *argv++ = g_strdup (*a++);
+    *argv = NULL;
+
+    return SYNTAX_DIRECTIVE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const struct
+{
+    const char *name;
+    syntax_directive_result_t (*handler) (syntax_parser_t *p);
+} syntax_directives[] = {
+    { "line-local", directive_line_local },
+    { "number", directive_number },
+    { "string", directive_string },
+    { "symbols", directive_symbols },
+    { "include", directive_include },
+    { "caseinsensitive", directive_caseinsensitive },
+    { "wholechars", directive_wholechars },
+    { "context", directive_context },
+    { "spellcheck", directive_spellcheck },
+    { "keyword", directive_keyword },
+    { "file", directive_file },
+    { "define", directive_define },
+};
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Run the directive the line begins with.  An unknown word is an error. */
+static syntax_directive_result_t
+run_directive (syntax_parser_t *p)
+{
+    size_t n;
+
+    // an empty line and a comment say nothing
+    if (p->args[0] == NULL || p->args[0][0] == '#')
+        return SYNTAX_DIRECTIVE_OK;
+
+    for (n = 0; n < G_N_ELEMENTS (syntax_directives); n++)
+        if (strcmp (p->args[0], syntax_directives[n].name) == 0)
+            return syntax_directives[n].handler (p);
+
+    return SYNTAX_DIRECTIVE_ERROR;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The first byte of every keyword of every context, for the scanner to sieve by. */
+static void
+collect_keyword_first_chars (syntax_rules_t *r)
+{
+    GString *first_chars;
+    size_t i;
+
+    first_chars = g_string_sized_new (32);
+
+    for (i = 0; i < r->contexts->len; i++)
+    {
+        context_rule_t *c;
+        size_t j;
+
+        g_string_set_size (first_chars, 0);
+        c = CONTEXT_RULE (g_ptr_array_index (r->contexts, i));
+
+        g_string_append_c (first_chars, (char) 1);
+        for (j = 1; j < c->keyword->len; j++)
+        {
+            syntax_keyword_t *k;
+
+            k = SYNTAX_KEYWORD (g_ptr_array_index (c->keyword, j));
+            g_string_append_c (first_chars, k->keyword->str[0]);
+        }
+
+        c->keyword_first_chars = g_strndup (first_chars->str, first_chars->len);
+    }
+
+    g_string_free (first_chars, TRUE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Read the rules of one set, from the 'file' line already read up to the next
+ * one, or the whole of an included file.
+ *
+ * @param error_file holds the name of the included file being read, NULL while
+ *        the parser is in the Syntax file itself; freed by the caller
+ * @return 0 on success, otherwise the line the parser choked on
+ */
 
 static int
-edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
+edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size, char **error_file)
 {
-    FILE *g = NULL;
-    syntax_color_spec_t color;
-    char last_fg[BUF_TINY / 2] = "";
-    char last_bg[BUF_TINY / 2] = "";
-    char last_attrs[BUF_TINY] = "";
-    char whole_right[BUF_MEDIUM];
-    char whole_left[BUF_MEDIUM];
+    syntax_parser_t p;
     char *l = NULL;
-    int save_line = 0, line = 0;
-    context_rule_t *c = NULL;
-    gboolean no_words = TRUE;
     int result = 0;
+
+    memset (&p, 0, sizeof (p));
+    p.rules = r;
+    p.args = args;
+    p.no_words = TRUE;
+    p.f = f;
+    p.error_file = error_file;
+
+    strcpy (p.whole_left, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_01234567890");
+    strcpy (p.whole_right, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_01234567890");
 
     args[0] = NULL;
     r->case_insensitive = FALSE;
@@ -1042,9 +1639,11 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
     MC_PTR_FREE (r->ll_symbols);
     r->ll_symbols_color = SYNTAX_COLOR_NONE;
 
-    strcpy (whole_left, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_01234567890");
-    strcpy (whole_right, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_01234567890");
-
+    /* a set of rules can be read twice into the same object: an 'include' above
+       the first 'file' line reads one, the 'file' line that matches reads the
+       one that is kept */
+    if (r->contexts != NULL)
+        g_ptr_array_free (r->contexts, TRUE);
     r->contexts = g_ptr_array_new_with_free_func (context_rule_free);
 
     if (r->defines == NULL)
@@ -1052,338 +1651,49 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
 
     while (TRUE)
     {
-        char **a;
         size_t len;
-        int argc;
+        syntax_directive_result_t res;
 
-        line++;
+        p.line++;
         l = NULL;
 
-        len = read_one_line (&l, f);
+        len = read_one_line (&l, p.f);
         if (len == 0)
         {
-            if (g == NULL)
+            // the included file is over: go on where 'include' left off
+            if (p.g == NULL)
                 break;
 
-            fclose (f);
-            f = g;
-            g = NULL;
-            line = save_line + 1;
-            MC_PTR_FREE (error_file_name);
+            fclose (p.f);
+            p.f = p.g;
+            p.g = NULL;
+            p.line = p.save_line + 1;
+            MC_PTR_FREE (*error_file);
             MC_PTR_FREE (l);
-            len = read_one_line (&l, f);
+            len = read_one_line (&l, p.f);
             if (len == 0)
                 break;
         }
 
         xx_lowerize_line (r->case_insensitive, l, len);
+        p.argc = get_args (l, args, args_size);
 
-        argc = get_args (l, args, args_size);
-        a = args + 1;
-        if (args[0] == NULL)
+        res = run_directive (&p);
+        if (res == SYNTAX_DIRECTIVE_ERROR)
         {
-            // do nothing
-        }
-        else if (strcmp (args[0], "line-local") == 0)
-        {
-            if (argc != 1 || r->contexts->len != 0)
-                break_a;
-            r->line_local = TRUE;
-        }
-        else if (strcmp (args[0], "number") == 0)
-        {
-            char *end;
-            guint64 max;
-            int syntax_color;
-
-            if (!r->line_local || *a == NULL)
-                break_a;
-
-            errno = 0;
-            max = g_ascii_strtoull (*a++, &end, 10);
-            if (errno != 0 || *end != '\0' || max == 0 || max > G_MAXUINT)
-                break_a;
-
-            syntax_color = read_line_local_color (r, &a);
-            if (syntax_color < 0)
-                break_a;
-
-            r->ll_number_max = (guint) max;
-            r->ll_number_color = syntax_color;
-            check_not_a;
-        }
-        else if (strcmp (args[0], "string") == 0)
-        {
-            char quote_char;
-            int syntax_color;
-
-            if (!r->line_local || *a == NULL || (*a)[1] != '\0')
-                break_a;
-            quote_char = **a;
-            if (quote_char != '\'' && quote_char != '"')
-                break_a;
-            a++;
-
-            syntax_color = read_line_local_color (r, &a);
-            if (syntax_color < 0)
-                break_a;
-
-            if (quote_char == '\'')
-                r->ll_single_quote_color = syntax_color;
-            else
-                r->ll_double_quote_color = syntax_color;
-            check_not_a;
-        }
-        else if (strcmp (args[0], "symbols") == 0)
-        {
-            int syntax_color;
-
-            if (!r->line_local || *a == NULL || **a == '\0')
-                break_a;
-            MC_PTR_FREE (r->ll_symbols);
-            r->ll_symbols = g_strdup (*a++);
-
-            syntax_color = read_line_local_color (r, &a);
-            if (syntax_color < 0)
-                break_a;
-
-            r->ll_symbols_color = syntax_color;
-            check_not_a;
-        }
-        else if (strcmp (args[0], "include") == 0)
-        {
-            if (g != NULL || argc != 2)
-            {
-                result = line;
-                break;
-            }
-            g = f;
-            f = open_include_file (args[1]);
-            if (f == NULL)
-            {
-                MC_PTR_FREE (error_file_name);
-                result = line;
-                break;
-            }
-            save_line = line;
-            line = 0;
-        }
-        else if (strcmp (args[0], "caseinsensitive") == 0)
-        {
-            r->case_insensitive = TRUE;
-        }
-        else if (strcmp (args[0], "wholechars") == 0)
-        {
-            check_a;
-            if (strcmp (*a, "left") == 0)
-            {
-                a++;
-                g_strlcpy (whole_left, *a, sizeof (whole_left));
-            }
-            else if (strcmp (*a, "right") == 0)
-            {
-                a++;
-                g_strlcpy (whole_right, *a, sizeof (whole_right));
-            }
-            else
-            {
-                g_strlcpy (whole_left, *a, sizeof (whole_left));
-                g_strlcpy (whole_right, *a, sizeof (whole_right));
-            }
-            a++;
-            check_not_a;
-        }
-        else if (strcmp (args[0], "context") == 0)
-        {
-            syntax_keyword_t *k;
-
-            if (r->line_local)
-                break_a;
-            check_a;
-            if (r->contexts->len == 0)
-            {
-                // first context is the default
-                if (strcmp (*a, "default") != 0)
-                    break_a;
-
-                a++;
-                c = g_new0 (context_rule_t, 1);
-                g_ptr_array_add (r->contexts, c);
-                c->left = g_string_new (" ");
-                c->right = g_string_new (" ");
-            }
-            else
-            {
-                // Start new context.
-                c = g_new0 (context_rule_t, 1);
-                g_ptr_array_add (r->contexts, c);
-                if (strcmp (*a, "exclusive") == 0)
-                {
-                    a++;
-                    c->between_delimiters = TRUE;
-                }
-                check_a;
-                if (strcmp (*a, "whole") == 0)
-                {
-                    a++;
-                    c->whole_word_chars_left = g_strdup (whole_left);
-                    c->whole_word_chars_right = g_strdup (whole_right);
-                }
-                else if (strcmp (*a, "wholeleft") == 0)
-                {
-                    a++;
-                    c->whole_word_chars_left = g_strdup (whole_left);
-                }
-                else if (strcmp (*a, "wholeright") == 0)
-                {
-                    a++;
-                    c->whole_word_chars_right = g_strdup (whole_right);
-                }
-                check_a;
-                if (strcmp (*a, "linestart") == 0)
-                {
-                    a++;
-                    c->line_start_left = TRUE;
-                }
-                check_a;
-                c->left = g_string_new (*a++);
-                check_a;
-                if (strcmp (*a, "linestart") == 0)
-                {
-                    a++;
-                    c->line_start_right = TRUE;
-                }
-                check_a;
-                c->right = g_string_new (*a++);
-                c->first_left = c->left->str[0];
-                c->first_right = c->right->str[0];
-            }
-            c->keyword = g_ptr_array_new_with_free_func (syntax_keyword_free);
-            k = g_new0 (syntax_keyword_t, 1);
-            g_ptr_array_add (c->keyword, k);
-            no_words = FALSE;
-            subst_defines (r->defines, a, &args[ARGS_LEN]);
-            color.fg = *a;
-            if (*a != NULL)
-                a++;
-            color.bg = *a;
-            if (*a != NULL)
-                a++;
-            color.attrs = *a;
-            if (*a != NULL)
-                a++;
-            g_strlcpy (last_fg, color.fg != NULL ? color.fg : "", sizeof (last_fg));
-            g_strlcpy (last_bg, color.bg != NULL ? color.bg : "", sizeof (last_bg));
-            g_strlcpy (last_attrs, color.attrs != NULL ? color.attrs : "", sizeof (last_attrs));
-            k->color = syntax_intern_color (r, &color);
-            k->keyword = g_string_new (" ");
-            check_not_a;
-        }
-        else if (strcmp (args[0], "spellcheck") == 0)
-        {
-            if (r->line_local)
-                break_a;
-            if (c == NULL)
-            {
-                result = line;
-                break;
-            }
-            c->spelling = TRUE;
-        }
-        else if (strcmp (args[0], "keyword") == 0)
-        {
-            context_rule_t *last_rule;
-            syntax_keyword_t *k;
-
-            if (r->line_local)
-                break_a;
-            if (no_words)
-                break_a;
-            check_a;
-            last_rule = CONTEXT_RULE (g_ptr_array_index (r->contexts, r->contexts->len - 1));
-            k = g_new0 (syntax_keyword_t, 1);
-            g_ptr_array_add (last_rule->keyword, k);
-            if (strcmp (*a, "whole") == 0)
-            {
-                a++;
-                k->whole_word_chars_left = g_strdup (whole_left);
-                k->whole_word_chars_right = g_strdup (whole_right);
-            }
-            else if (strcmp (*a, "wholeleft") == 0)
-            {
-                a++;
-                k->whole_word_chars_left = g_strdup (whole_left);
-            }
-            else if (strcmp (*a, "wholeright") == 0)
-            {
-                a++;
-                k->whole_word_chars_right = g_strdup (whole_right);
-            }
-            check_a;
-            if (strcmp (*a, "linestart") == 0)
-            {
-                a++;
-                k->line_start = TRUE;
-            }
-            check_a;
-            if (strcmp (*a, "whole") == 0)
-                break_a;
-
-            k->keyword = g_string_new (*a++);
-            subst_defines (r->defines, a, &args[ARGS_LEN]);
-            color.fg = *a;
-            if (*a != NULL)
-                a++;
-            color.bg = *a;
-            if (*a != NULL)
-                a++;
-            color.attrs = *a;
-            if (*a != NULL)
-                a++;
-            if (color.fg == NULL)
-                color.fg = last_fg;
-            if (color.bg == NULL)
-                color.bg = last_bg;
-            if (color.attrs == NULL)
-                color.attrs = last_attrs;
-            k->color = syntax_intern_color (r, &color);
-            check_not_a;
-        }
-        else if (*(args[0]) == '#')
-        {
-            // do nothing for comment
-        }
-        else if (strcmp (args[0], "file") == 0)
-        {
+            result = p.line;
             break;
         }
-        else if (strcmp (args[0], "define") == 0)
-        {
-            char *key = *a++;
-            char **argv;
+        if (res == SYNTAX_DIRECTIVE_END)
+            break;
 
-            if (argc < 3)
-                break_a;
-            argv = g_tree_lookup (r->defines, key);
-            if (argv != NULL)
-                mc_defines_destroy (NULL, argv, NULL);
-            else
-                key = g_strdup (key);
-
-            argv = g_new (char *, argc - 1);
-            g_tree_insert (r->defines, key, argv);
-            while (*a != NULL)
-                *argv++ = g_strdup (*a++);
-            *argv = NULL;
-        }
-        else
-        {
-            // anything else is an error
-            break_a;
-        }
         MC_PTR_FREE (l);
     }
     MC_PTR_FREE (l);
+
+    // the parser stopped inside an included file: that file is ours to close
+    if (p.g != NULL && p.f != NULL)
+        fclose (p.f);
 
     if (r->contexts->len == 0)
     {
@@ -1391,71 +1701,116 @@ edit_read_syntax_rules (syntax_rules_t *r, FILE *f, char **args, int args_size)
         r->contexts = NULL;
     }
 
-    if (result == 0)
-    {
-        size_t i;
-        GString *first_chars;
+    if (result != 0)
+        return result;
 
-        if (r->contexts == NULL)
-            return r->line_local ? 0 : line;
+    if (r->contexts == NULL)
+        return r->line_local ? 0 : p.line;
 
-        first_chars = g_string_sized_new (32);
+    collect_keyword_first_chars (r);
 
-        // collect first character of keywords
-        for (i = 0; i < r->contexts->len; i++)
-        {
-            size_t j;
-
-            g_string_set_size (first_chars, 0);
-            c = CONTEXT_RULE (g_ptr_array_index (r->contexts, i));
-
-            g_string_append_c (first_chars, (char) 1);
-            for (j = 1; j < c->keyword->len; j++)
-            {
-                syntax_keyword_t *k;
-
-                k = SYNTAX_KEYWORD (g_ptr_array_index (c->keyword, j));
-                g_string_append_c (first_chars, k->keyword->str[0]);
-            }
-
-            c->keyword_first_chars = g_strndup (first_chars->str, first_chars->len);
-        }
-
-        g_string_free (first_chars, TRUE);
-    }
-
-    return result;
+    return 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* returns -1 on file error, line number on error in file syntax */
+/** Open the Syntax file, falling back to the one shipped with the program. */
+static FILE *
+open_syntax_file (const char *syntax_file)
+{
+    FILE *f;
+    char *global_syntax_file;
+
+    f = fopen (syntax_file, "r");
+    if (f != NULL)
+        return f;
+
+    global_syntax_file =
+        g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_FILE, (char *) NULL);
+    f = fopen (global_syntax_file, "r");
+    g_free (global_syntax_file);
+
+    return f;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Does this 'file' line describe the rule set the caller asked for?
+ *
+ * Two ways to ask: by name, and by regular expressions on the name of the file
+ * being edited and on its first line.
+ */
+static gboolean
+syntax_file_line_selected (const syntax_rules_t *r, char **args, const char *editor_file,
+                           const char *first_line, const char *type)
+{
+    // rule set was explicitly specified by the caller
+    if (type != NULL)
+        return strcmp (type, args[2]) == 0;
+
+    if (editor_file == NULL || r == NULL)
+        return FALSE;
+
+    // does filename match arg 1 ?
+    if (mc_search (args[1], NULL, editor_file, MC_SEARCH_T_REGEX))
+        return TRUE;
+
+    // does first line match arg 3 ?
+    return args[3] != NULL && mc_search (args[3], NULL, first_line, MC_SEARCH_T_REGEX);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** A set of one empty context colors nothing; highlighting is turned off for speed. */
+static gboolean
+syntax_rules_are_empty (const syntax_rules_t *r)
+{
+    const context_rule_t *r0;
+
+    if (r->contexts == NULL || r->contexts->len != 1)
+        return FALSE;
+
+    r0 = CONTEXT_RULE (g_ptr_array_index (r->contexts, 0));
+
+    return r0->keyword->len == 1 && !r0->spelling;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Walk the Syntax file and read the rules of the set it selects.
+ *
+ * Three ways to ask, most specific first: @pnames collects the name of every
+ * set and reads none, @type names the set wanted, and without either the set is
+ * guessed from @editor_file and @first_line.
+ *
+ * @param error_file name of the included file at fault, if any; freed by the caller
+ * @return 0 on success, -1 if no Syntax file could be opened, otherwise the
+ *         line the parser choked on
+ */
 static int
 edit_read_syntax_file (syntax_rules_t *r, GPtrArray *pnames, const char *syntax_file,
-                       const char *editor_file, const char *first_line, const char *type)
+                       const char *editor_file, const char *first_line, const char *type,
+                       char **error_file)
 {
-    FILE *f, *g = NULL;
+    FILE *f;
     char *args[ARGS_LEN], *l = NULL;
     long line = 0;
     int result = 0;
     gboolean found = FALSE;
 
-    f = fopen (syntax_file, "r");
+    f = open_syntax_file (syntax_file);
     if (f == NULL)
-    {
-        char *global_syntax_file;
-
-        global_syntax_file =
-            g_build_filename (mc_global.share_data_dir, EDIT_SYNTAX_FILE, (char *) NULL);
-        f = fopen (global_syntax_file, "r");
-        g_free (global_syntax_file);
-        if (f == NULL)
-            return -1;
-    }
+        return -1;
 
     args[0] = NULL;
     while (TRUE)
     {
+        FILE *g = NULL;
+        const char *syntax_type;
+        int line_error;
+
         line++;
         MC_PTR_FREE (l);
         if (read_one_line (&l, f) == 0)
@@ -1467,93 +1822,70 @@ edit_read_syntax_file (syntax_rules_t *r, GPtrArray *pnames, const char *syntax_
         // Looking for 'include ...' lines before first 'file ...' ones
         if (!found && strcmp (args[0], "include") == 0)
         {
-            if (args[1] == NULL || (g = open_include_file (args[1])) == NULL)
+            if (args[1] == NULL || (g = open_include_file (args[1], error_file)) == NULL)
             {
                 result = line;
                 break;
             }
-            goto found_type;
+        }
+        else
+        {
+            // looking for 'file ...' lines only
+            if (strcmp (args[0], "file") != 0)
+                continue;
+
+            found = TRUE;
+
+            // must have two args or report error
+            if (args[1] == NULL || args[2] == NULL)
+            {
+                result = line;
+                break;
+            }
+
+            if (pnames != NULL)
+            {
+                // just collecting a list of names of rule sets
+                g_ptr_array_add (pnames, g_strdup (args[2]));
+                continue;
+            }
+
+            if (!syntax_file_line_selected (r, args, editor_file, first_line, type))
+                continue;
         }
 
-        // looking for 'file ...' lines only
-        if (strcmp (args[0], "file") != 0)
-            continue;
-
-        found = TRUE;
-
-        // must have two args or report error
-        if (args[1] == NULL || args[2] == NULL)
+        /* The rules of the set are read from here on.  args[] is refilled by the
+           parser, so the name of the set has to be kept before the call; it
+           points into l, which the parser does not touch. */
+        syntax_type = args[2];
+        line_error = edit_read_syntax_rules (r, g != NULL ? g : f, args, ARGS_LEN - 1, error_file);
+        if (line_error != 0)
         {
-            result = line;
+            // an included file counts its own lines, the Syntax file continues ours
+            result = *error_file != NULL ? line_error : line + line_error;
+        }
+        else
+        {
+            g_free (r->type);
+            r->type = g_strdup (syntax_type);
+
+            // if there are no rules then turn off syntax highlighting for speed
+            if (g == NULL && syntax_rules_are_empty (r))
+            {
+                syntax_rules_clear (r);
+                break;
+            }
+        }
+
+        if (g == NULL)
             break;
-        }
 
-        if (pnames != NULL)
-        {
-            // 1: just collecting a list of names of rule sets
-            g_ptr_array_add (pnames, g_strdup (args[2]));
-        }
-        else if (type != NULL)
-        {
-            // 2: rule set was explicitly specified by the caller
-            if (strcmp (type, args[2]) == 0)
-                goto found_type;
-        }
-        else if (editor_file != NULL && r != NULL)
-        {
-            // 3: auto-detect rule set from regular expressions
-            gboolean q;
-
-            q = mc_search (args[1], NULL, editor_file, MC_SEARCH_T_REGEX);
-            // does filename match arg 1 ?
-            if (!q && args[3] != NULL)
-            {
-                // does first line match arg 3 ?
-                q = mc_search (args[3], NULL, first_line, MC_SEARCH_T_REGEX);
-            }
-            if (q)
-            {
-                int line_error;
-                char *syntax_type;
-
-            found_type:
-                syntax_type = args[2];
-                line_error = edit_read_syntax_rules (r, g ? g : f, args, ARGS_LEN - 1);
-                if (line_error != 0)
-                {
-                    if (error_file_name == NULL)  // an included file
-                        result = line + line_error;
-                    else
-                        result = line_error;
-                }
-                else
-                {
-                    g_free (r->type);
-                    r->type = g_strdup (syntax_type);
-                    // if there are no rules then turn off syntax highlighting for speed
-                    if (g == NULL && r->contexts != NULL && r->contexts->len == 1)
-                    {
-                        context_rule_t *r0;
-
-                        r0 = CONTEXT_RULE (g_ptr_array_index (r->contexts, 0));
-                        if (r0->keyword->len == 1 && !r0->spelling)
-                        {
-                            syntax_rules_clear (r);
-                            break;
-                        }
-                    }
-                }
-
-                if (g == NULL)
-                    break;
-
-                fclose (g);
-                g = NULL;
-            }
-        }
+        fclose (g);
     }
+
     g_free (l);
     fclose (f);
+
     return result;
 }
 
@@ -1741,6 +2073,7 @@ syntax_rules_load (const char *syntax_file, const syntax_select_t *sel, syntax_r
                    char **error_file)
 {
     syntax_rules_t *r;
+    char *err_file = NULL;
     int res;
 
     if (error_file != NULL)
@@ -1749,20 +2082,22 @@ syntax_rules_load (const char *syntax_file, const syntax_select_t *sel, syntax_r
 
     r = syntax_rules_new ();
     res = edit_read_syntax_file (r, NULL, syntax_file, sel->filename,
-                                 sel->first_line != NULL ? sel->first_line : "", sel->type);
+                                 sel->first_line != NULL ? sel->first_line : "", sel->type,
+                                 &err_file);
 
     if (res != 0 || (r->contexts == NULL && !r->line_local))
     {
         if (error_file != NULL)
         {
-            *error_file = error_file_name;
-            error_file_name = NULL;
+            *error_file = err_file;
+            err_file = NULL;
         }
+        g_free (err_file);
         syntax_rules_free (r);
         return res != 0 ? res : -1;
     }
 
-    MC_PTR_FREE (error_file_name);
+    g_free (err_file);
     *rules = r;
 
     return 0;
@@ -1774,12 +2109,13 @@ int
 syntax_rules_list_types (const char *syntax_file, GPtrArray *names)
 {
     syntax_rules_t *r;
+    char *err_file = NULL;
     int res;
 
     r = syntax_rules_new ();
-    res = edit_read_syntax_file (r, names, syntax_file, NULL, "", NULL);
+    res = edit_read_syntax_file (r, names, syntax_file, NULL, "", NULL, &err_file);
     syntax_rules_free (r);
-    MC_PTR_FREE (error_file_name);
+    g_free (err_file);
 
     return res;
 }

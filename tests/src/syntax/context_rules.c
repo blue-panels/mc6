@@ -86,6 +86,7 @@ load (const char *body)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
     res = syntax_rules_load (syntax_file, &sel, &rules, NULL);
     ck_assert_int_eq (res, 0);
     ck_assert_ptr_nonnull (rules);
@@ -113,6 +114,7 @@ load_result (const char *body)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
     res = syntax_rules_load (syntax_file, &sel, &rules, NULL);
 
     return res;
@@ -131,6 +133,7 @@ load_toplevel (const char *content)
     sel.type = NULL;
     sel.filename = "whatever.txt";
     sel.first_line = "";
+    syntax_rules_unref (rules);
 
     return syntax_rules_load (syntax_file, &sel, &rules, NULL);
 }
@@ -513,6 +516,22 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_newline_keyword_at_context_start)
+{
+    load ("context default\n"
+          "context # \\n green\n"
+          "  keyword #TODO\\n red\n");
+
+    /* the same keyword that ends with a line break, but starting on the byte
+       the context starts on: here the keyword keeps the line break and the
+       context is carried into the next line.  Compare with
+       test_newline_keyword_in_newline_context, where it is not. */
+    check_mask ("#TODO\nx", "rrrrrrg");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_wholechars)
 {
     // the characters a word is made of are the file's to choose
@@ -713,6 +732,51 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_error_file_names_the_include)
+{
+    char *lang;
+    char *top;
+    char *error_file = NULL;
+    syntax_select_t sel;
+
+    lang = g_build_filename (tmpdir, "tested.syntax", (char *) NULL);
+    write_file (lang, "context default\n  nonsense\n");
+
+    top = g_strdup_printf ("file .\\* Tested\ninclude %s\n", lang);
+    write_file (syntax_file, top);
+    g_free (top);
+
+    sel.type = NULL;
+    sel.filename = "whatever.txt";
+    sel.first_line = "";
+
+    // the included file counts its own lines and gives its own name away
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, &error_file), 2);
+    ck_assert_str_eq (error_file, lang);
+    g_free (error_file);
+    g_free (lang);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_truncated_context_and_keyword_lines)
+{
+    // a context line that stops before every word of it has been read
+    ck_assert_int_eq (load_result ("context default\ncontext exclusive\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext whole\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext linestart\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext <\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext < linestart\n"), 2);
+
+    // and a keyword line that says which side of it is a word border, and nothing else
+    ck_assert_int_eq (load_result ("context default\n  keyword whole\n"), 2);
+    ck_assert_int_eq (load_result ("context default\n  keyword wholeleft\n"), 2);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_no_syntax_file_at_all)
 {
     syntax_select_t sel;
@@ -776,6 +840,26 @@ START_TEST (test_type_chosen_by_first_line)
     sel.first_line = "#!/bin/sh";
     ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), 0);
     ck_assert_str_eq (syntax_rules_type (rules), "TheShell");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_nothing_to_choose_by)
+{
+    syntax_select_t sel;
+
+    write_file (syntax_file,
+                "file \\.c$ TheC\n"
+                "context default\n"
+                "  keyword int red\n");
+
+    // no name asked for and no file to match against: no rule set is chosen
+    sel.type = NULL;
+    sel.filename = NULL;
+    sel.first_line = "";
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), -1);
+    ck_assert_ptr_null (rules);
 }
 END_TEST
 
@@ -855,6 +939,39 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_include_then_a_file_line)
+{
+    char *lang;
+    char *content;
+    syntax_select_t sel;
+
+    lang = g_build_filename (tmpdir, "included.syntax", (char *) NULL);
+    write_file (lang, "context default\n  keyword int blue\n");
+
+    content = g_strdup_printf ("include %s\n"
+                               "file .\\* Tested\n"
+                               "context default\n"
+                               "  keyword int red\n",
+                               lang);
+    write_file (syntax_file, content);
+    g_free (content);
+
+    sel.type = NULL;
+    sel.filename = "whatever.txt";
+    sel.first_line = "";
+    ck_assert_int_eq (syntax_rules_load (syntax_file, &sel, &rules, NULL), 0);
+
+    // the rules are read twice, and the ones of the "file" line are what is kept
+    ck_assert_str_eq (syntax_rules_type (rules), "Tested");
+    check_mask ("int", "rrr");
+
+    unlink (lang);
+    g_free (lang);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_rules_without_any_keyword)
 {
     // a rule set of nothing but its default context colors nothing, so it is
@@ -907,6 +1024,7 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_exclusive_empty);
     tcase_add_test (tc_core, test_newline_keyword_in_newline_context);
     tcase_add_test (tc_core, test_keyword_at_context_start);
+    tcase_add_test (tc_core, test_newline_keyword_at_context_start);
     tcase_add_test (tc_core, test_wholechars);
     tcase_add_test (tc_core, test_context_word_borders);
     tcase_add_test (tc_core, test_context_linestart_right);
@@ -919,12 +1037,16 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_second_file_line_ends_the_rules);
     tcase_add_test (tc_core, test_full_colors);
     tcase_add_test (tc_core, test_more_parse_errors);
+    tcase_add_test (tc_core, test_error_file_names_the_include);
+    tcase_add_test (tc_core, test_truncated_context_and_keyword_lines);
     tcase_add_test (tc_core, test_no_syntax_file_at_all);
     tcase_add_test (tc_core, test_type_chosen_by_caller);
     tcase_add_test (tc_core, test_type_chosen_by_first_line);
+    tcase_add_test (tc_core, test_nothing_to_choose_by);
     tcase_add_test (tc_core, test_list_of_types);
     tcase_add_test (tc_core, test_include_before_any_file_line);
     tcase_add_test (tc_core, test_include_that_opens);
+    tcase_add_test (tc_core, test_include_then_a_file_line);
     tcase_add_test (tc_core, test_rules_without_any_keyword);
     tcase_add_test (tc_core, test_broken_file_line);
     tcase_add_test (tc_core, test_error_inside_the_chosen_rules);
