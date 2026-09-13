@@ -352,6 +352,107 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_keyword_starting_with_bracket)
+{
+    load ("context default\n"
+          "  keyword \\[abc\\]z red\n");
+
+    // the set eats a run, and then the rest of the word has to be there
+    check_mask ("abz .", "rrr..");
+    check_mask ("cz .", "rr..");
+    /* an empty run will do, so the word can begin with what stands after the
+       set: this is why a set at the start of a word does not say which bytes
+       the word can begin with all by itself */
+    check_mask ("z .", "r..");
+    check_mask ("qz .", ".r..");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_keyword_starting_with_two_brackets)
+{
+    load ("context default\n"
+          "  keyword \\[ab\\]\\[cd\\]z red\n");
+
+    check_mask ("abcdz .", "rrrrr..");
+    // the first set gives up and the second one takes over
+    check_mask ("cdz .", "rrr..");
+    // both give up, and the word is what is left of it
+    check_mask ("z .", "r..");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_keyword_starting_with_star)
+{
+    load ("context default\n"
+          "  keyword *z red\n");
+
+    // the star runs over anything, so the word can begin on any byte at all
+    check_mask ("abz .", "rrr..");
+    // an empty run will do
+    check_mask ("z .", "r..");
+    // but the line break stops it
+    check_mask ("ab\nz .", "...r..");
+    check_mask ("q .", "...");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_keyword_starting_with_plus)
+{
+    load ("context default\n"
+          "  keyword +z red\n");
+
+    // the plus runs over the bytes that are part of a word
+    check_mask ("abz .", "rrr..");
+    // and at the start of a word it wants at least one of them
+    check_mask ("z .", "...");
+    check_mask ("q .", "...");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_keyword_starting_with_brace)
+{
+    load ("context default\n"
+          "  keyword \\{xy\\}z red\n");
+
+    check_mask ("xz .", "rr..");
+    // exactly one byte out of the set, and an empty one will not do
+    check_mask ("z .", "...");
+    check_mask ("qz .", "....");
+    // the set eats one byte only, so the word begins on the second x here
+    check_mask ("xyz .", ".rr..");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_two_keywords_that_both_fit)
+{
+    load ("context default\n"
+          "  keyword \\{ab\\}c red\n"
+          "  keyword ac green\n");
+
+    // the word named first wins
+    check_mask ("ac .", "rr..");
+
+    load ("context default\n"
+          "  keyword ac green\n"
+          "  keyword \\{ab\\}c red\n");
+
+    // and it is the order they are named in, not the kind of word
+    check_mask ("ac .", "gg..");
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_case_insensitive)
 {
     load ("caseinsensitive\n"
@@ -1012,6 +1113,12 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_plus);
     tcase_add_test (tc_core, test_bracket);
     tcase_add_test (tc_core, test_brace);
+    tcase_add_test (tc_core, test_keyword_starting_with_bracket);
+    tcase_add_test (tc_core, test_keyword_starting_with_two_brackets);
+    tcase_add_test (tc_core, test_keyword_starting_with_star);
+    tcase_add_test (tc_core, test_keyword_starting_with_plus);
+    tcase_add_test (tc_core, test_keyword_starting_with_brace);
+    tcase_add_test (tc_core, test_two_keywords_that_both_fit);
     tcase_add_test (tc_core, test_case_insensitive);
     tcase_add_test (tc_core, test_context);
     tcase_add_test (tc_core, test_context_exclusive);
