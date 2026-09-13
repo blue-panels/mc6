@@ -63,6 +63,9 @@ struct mcview_selection
     mcview_selection_point_t point;
     mcview_selection_point_t cursor;
 
+    /* The cursor walks the text and marks it while it is on; with it off the same keys
+       move the view and no cursor is shown. Enter and a click turn it on. */
+    gboolean cursor_mode;
     gboolean cursor_on_screen;
     gboolean wrap;  // the hit map was drawn in wrap mode
 
@@ -361,6 +364,18 @@ mcview_selection_line (struct mcview_selection *sel, const mcview_selection_poin
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The mark goes, the cursor stays where it is reading. */
+static void
+mcview_selection_drop_mark (struct mcview_selection *sel)
+{
+    sel->anchored = FALSE;
+    sel->active = FALSE;
+    memset (&sel->anchor, 0, sizeof (sel->anchor));
+    memset (&sel->point, 0, sizeof (sel->point));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The cursor stays on the screen when the text scrolls away from under it: it keeps its screen
    cell, taking the character now shown there. Without a cursor yet, the first visible one. */
 static gboolean
@@ -480,7 +495,7 @@ mcview_selection_move_cursor (WView *view, struct mcview_selection *sel, long co
     if (!mcview_selection_locate_cursor (sel))
         return FALSE;
 
-    mcview_selection_clear (view);
+    mcview_selection_drop_mark (sel);
 
     for (; steps > 0; steps--)
     {
@@ -575,16 +590,39 @@ mcview_selection_done (WView *view)
 void
 mcview_selection_clear (WView *view)
 {
-    struct mcview_selection *sel;
-
     if (view == NULL || view->selection == NULL)
         return;
 
+    mcview_selection_drop_mark (view->selection);
+    // Nothing is marked any more, and the keys that mark are back to moving the view.
+    view->selection->cursor_mode = FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Turn the reading cursor on, or off again when it is on. FALSE where there is no cursor to
+   show: hex, tree and terminal modes have none, and neither has an empty screen. */
+gboolean
+mcview_selection_cursor_toggle (WView *view)
+{
+    struct mcview_selection *sel;
+
+    if (!mcview_selection_supported (view) || view->selection == NULL)
+        return FALSE;
+
     sel = view->selection;
-    sel->anchored = FALSE;
-    sel->active = FALSE;
-    memset (&sel->anchor, 0, sizeof (sel->anchor));
-    memset (&sel->point, 0, sizeof (sel->point));
+
+    if (sel->cursor_mode)
+    {
+        mcview_selection_clear (view);
+        return TRUE;
+    }
+
+    if (!mcview_selection_locate_cursor (sel))
+        return FALSE;
+
+    sel->cursor_mode = TRUE;
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -699,7 +737,7 @@ mcview_selection_cursor (const WView *view, int *row, int *col)
         return FALSE;
 
     sel = view->selection;
-    if (!sel->cursor.valid || !sel->cursor_on_screen)
+    if (!sel->cursor_mode || !sel->cursor.valid || !sel->cursor_on_screen)
         return FALSE;
 
     *row = sel->cursor.row;
@@ -782,6 +820,7 @@ mcview_selection_mouse (WView *view, mouse_msg_t msg, mouse_event_t *event)
         sel->point = at;
         sel->cursor = at;
         sel->cursor_on_screen = TRUE;
+        sel->cursor_mode = TRUE;
 
         if ((event->count & GPM_TRIPLE) != 0)
             mcview_selection_line (sel, &at);
@@ -817,10 +856,10 @@ mcview_selection_command (WView *view, long command)
 
     if (command == CK_Unmark)
     {
-        const gboolean active = sel->active;
+        const gboolean was_reading = sel->active || sel->cursor_mode;
 
         mcview_selection_clear (view);
-        return active;
+        return was_reading;
     }
 
     if (command == CK_MarkAll)
@@ -845,6 +884,7 @@ mcview_selection_command (WView *view, long command)
         sel->cursor.row = sel->rows - 1;
         sel->cursor.col = sel->cols - 1;
         sel->cursor_on_screen = FALSE;
+        sel->cursor_mode = TRUE;
         return TRUE;
     }
 
@@ -865,6 +905,9 @@ mcview_selection_command (WView *view, long command)
     case CK_Right:
     case CK_LeftQuick:
     case CK_RightQuick:
+        // Without the cursor these move the view, and the viewer moves it itself.
+        if (!sel->cursor_mode)
+            return FALSE;
         return mcview_selection_move_cursor (view, sel, command);
     default:
         return FALSE;
@@ -872,6 +915,9 @@ mcview_selection_command (WView *view, long command)
 
     if (!mcview_selection_locate_cursor (sel))
         return FALSE;
+
+    // A key that marks is a key that reads: the cursor comes with it.
+    sel->cursor_mode = TRUE;
 
     switch (command)
     {

@@ -407,6 +407,49 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_arrows_move_the_view_until_the_cursor_is_on)
+{
+    char *text;
+    int row, col;
+
+    load ("abc\ndef\n");
+    record_line (0, "abc\n", 0, 0);
+    record_line (1, "def\n", 4, 0);
+
+    /* No cursor yet: the arrows are the viewer's own and move the view. */
+    ck_assert (!mcview_selection_command (&view, CK_Down));
+    ck_assert (!mcview_selection_command (&view, CK_Right));
+    ck_assert (!mcview_selection_cursor (&view, &row, &col));
+
+    // Enter turns the cursor on, on the first character of the screen.
+    ck_assert (mcview_selection_cursor_toggle (&view));
+    ck_assert (mcview_selection_cursor (&view, &row, &col));
+    ck_assert_int_eq (row, 0);
+    ck_assert_int_eq (col, 0);
+
+    // It is the cursor that moves now, and a mark starts where it stands.
+    ck_assert (mcview_selection_command (&view, CK_Down));
+    ck_assert (mcview_selection_cursor (&view, &row, &col));
+    ck_assert_int_eq (row, 1);
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    text = mcview_selection_text (&view);
+    ck_assert_str_eq (text, "de");
+    g_free (text);
+
+    // Enter again turns it off: the mark goes with it and the arrows move the view.
+    ck_assert (mcview_selection_cursor_toggle (&view));
+    ck_assert (!mcview_selection_active (&view));
+    ck_assert (!mcview_selection_cursor (&view, &row, &col));
+    ck_assert (!mcview_selection_command (&view, CK_Down));
+
+    // A key that marks turns the cursor on by itself.
+    ck_assert (mcview_selection_command (&view, CK_MarkRight));
+    ck_assert (mcview_selection_cursor (&view, &row, &col));
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_cursor_keeps_its_screen_cell_after_a_scroll)
 {
     char *text;
@@ -473,6 +516,7 @@ main (void)
     tcase_add_test (tc_core, test_line_scrolled_out_to_the_left_keeps_its_row);
     tcase_add_test (tc_core, test_filter_mode_copies_visible_lines_only);
     tcase_add_test (tc_core, test_cursor_moves_drop_the_selection);
+    tcase_add_test (tc_core, test_arrows_move_the_view_until_the_cursor_is_on);
     tcase_add_test (tc_core, test_cursor_keeps_its_screen_cell_after_a_scroll);
     tcase_add_test (tc_core, test_copy_text_is_ansi_and_nroff_processed);
 
