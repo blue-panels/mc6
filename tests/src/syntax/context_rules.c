@@ -757,6 +757,23 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_truncated_context_and_keyword_lines)
+{
+    // a context line that stops before every word of it has been read
+    ck_assert_int_eq (load_result ("context default\ncontext exclusive\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext whole\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext linestart\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext <\n"), 2);
+    ck_assert_int_eq (load_result ("context default\ncontext < linestart\n"), 2);
+
+    // and a keyword line that says which side of it is a word border, and nothing else
+    ck_assert_int_eq (load_result ("context default\n  keyword whole\n"), 2);
+    ck_assert_int_eq (load_result ("context default\n  keyword wholeleft\n"), 2);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_no_syntax_file_at_all)
 {
     syntax_select_t sel;
@@ -985,6 +1002,7 @@ add_tests (TCase *tc_core)
     tcase_add_test (tc_core, test_full_colors);
     tcase_add_test (tc_core, test_more_parse_errors);
     tcase_add_test (tc_core, test_error_file_names_the_include);
+    tcase_add_test (tc_core, test_truncated_context_and_keyword_lines);
     tcase_add_test (tc_core, test_no_syntax_file_at_all);
     tcase_add_test (tc_core, test_type_chosen_by_caller);
     tcase_add_test (tc_core, test_type_chosen_by_first_line);
