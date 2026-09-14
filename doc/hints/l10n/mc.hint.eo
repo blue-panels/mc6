@@ -14,9 +14,9 @@ Konsilo: Aldoni oblikvon al la fino de ŝablono por elekti dosierujon.
 
 Konsilo: Se via terminalo malhavas funkciajn klavojn, uzu la kombinon Esk+numero.
 
-Konsilo: La ĉefpaĝo de Midnight Commander: https://midnight-commander.org
+Konsilo: La ĉefpaĝo de M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Konsilo: Tabo ŝanĝas la nunan flankon.
 
@@ -68,18 +68,10 @@ Konsilo: Ĉiuj konfirmo-petoj estas malaktivigeblaj en Agordo/Konfirmo.
 
 Konsilo: Stir-\ por ofte uzataj dosierujoj.
 
-Konsilo: 'cd ftp://machine.edu' por sennoma FTP-konekto al machine.org
-
-Konsilo: Dosiero/FTP por apriora FTP-kliento.
-
 Konsilo: Reg-t por rapide ŝanĝi la listan reĝimon.
-
-Konsilo: Specifi la salutnomon ĉe FTP-servilo per 'cd ftp://salutnomo@machine.edu'
 
 Konsilo: Klavi la enen-klavon super RPM-dosieron por rigardi ĝian enhavon.
 
 Konsilo: Por marki dosierujojn ĉe elektiloj almetu oblikvon.
 
 Konsilo: Eble vi devas premadi la registrumon por kopii kaj alglui per la muso
-
-Konsilo: Stir-\ por memori oftajn FTP-servilojn.

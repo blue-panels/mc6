@@ -14,9 +14,9 @@ Petunjuk: Memilih direktori: tambahkan garis miring di akhir pola yang cocok.
 
 Petunjuk: Bila terminal Anda tak punya tombol fungsi, gunakan urutan ESC+angka.
 
-Petunjuk: Laman web GNU Midnight Commander: https://midnight-commander.org
+Petunjuk: Laman web M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Petunjuk: Tab mengubah panel Anda saat ini.
 
@@ -68,18 +68,10 @@ Petunjuk: Anda dapat menonaktifkan semua permintaan konfirmasi dalam Opsi/Konfir
 
 Petunjuk: Melompatlah ke direktori yang sering dipakai dengan C-\.
 
-Petunjuk: Anda dapat melakukan FTP anonim memakai mc dengan mengetikkan 'cd ftp://server.ftp.yang.dituju'
-
-Petunjuk: FTP sudah ada dalam Midnight Commander, periksalah menu File/Taut FTP.
-
 Petunjuk: M-t mengubah secara cepat mode penampilan daftar.
-
-Petunjuk: Anda dapat menyatakan nama pengguna ketika melakukan ftp: 'cd ftp://pengguna@server.ftp.yang.dituju'
 
 Petunjuk: Anda dapat meramban file RPM dengan mengetuk enter pada suatu file rpm.
 
 Petunjuk: Untuk menandai direktori pada kotak dialog pilihan, tambahkan suatu garis miring.
 
 Petunjuk: Untuk memakai potong dan tempel tetikus mungkin perlu menahan tombol shift.
-
-Petunjuk: Masukkan situs-situs ftp yang sering dikunjungi ke daftar pintas: ketikkan C-\.

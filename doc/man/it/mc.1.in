@@ -1847,7 +1847,7 @@ Alla partenza il M\-Commander prova a caricare le informazioni di
 inizializzazione dal file ~/.config/mc6/ini. Se questo file non esiste, 
 caricherà le informazioni dal file di configurazione di sistema 
 posizionato in %pkgdatadir%/mc.ini. Se il file di configurazione di 
-sistema non esiste, MC userà le impostazioni predefinite.
+sistema non esiste, M\-Commander userà le impostazioni predefinite.
 .PP
 Il comando
 .I salva configurazione
@@ -1863,7 +1863,7 @@ opzioni\&.
 .PP
 Se si attiva l'opzione
 .IR "autosalva configurazione" ,
-MC salverà sempre le impostazioni correnti all'uscita.
+M\-Commander salverà sempre le impostazioni correnti all'uscita.
 .PP
 Esistono anche impostazioni che non possono essere cambiate dai menu.
 Per cambiare queste impostazioni è necessario modificare il file di
@@ -2252,7 +2252,7 @@ operazione sarà "*.*" e la destinazione sarà "\e2.\e1".
 .PP
 .B "Usa i modelli della shell, opzione disabilitata"
 .PP
-Quando l'opzione dei modelli della shell è disabilitata, MC non
+Quando l'opzione dei modelli della shell è disabilitata, M\-Commander non
 esegue più il raggruppamento automatico. E' necessario usare 
 espressioni tipo '\e(...\e)' nella maschera sorgente per dare significato
 ai caratteri jolly nella maschera obbiettivo. Altrimenti le maschere
@@ -2473,7 +2473,7 @@ a 7 bit nel menu opzioni, per mantenere la spaziatura pulita.
 Ovvero lascia che il M\-Commander scriva per te.
 .PP
 Tentativi per eseguire un completamento del testo prima della posizione
-corrente. MC tenta il completamento trattando il testo come una variabile
+corrente. M\-Commander tenta il completamento trattando il testo come una variabile
 (se il testo comincia con
 .BR $ ),
 nomeutente (se il testo comincia con
@@ -2489,7 +2489,7 @@ Completamenti di nomefile, nomeutente, variabili e nomehost funzionano
 su tutte le righe di ingresso, il completamento dei comandi invece è 
 specifico della riga di comando.
 Se il completamento è ambiguo (ci sono più possibilità differenti),
-MC emette un suono e l'azione seguente dipenderà a seconda delle impostazioni 
+M\-Commander emette un suono e l'azione seguente dipenderà a seconda delle impostazioni 
 dell'opzione
 .I completamento: visualizza tutto
 nella finestra
@@ -2515,7 +2515,7 @@ completamento: visualizza tutto
 .\"Configuration"
 è disabilitato, la finestra viene mostrata solo se si preme 
 .B M\-Tab
-una seconda volta; la prima volta MC emette solo un suono.
+una seconda volta; la prima volta M\-Commander emette solo un suono.
 .\"NODE "Virtual File System"
 .SH "File system virtuale"
 Il M\-Commander è provvisto di uno strato di codice per 
@@ -2779,8 +2779,8 @@ di un comando in fondo allo schermo, si modifichi la copia locale del file
 ~/.config/mc6/ini e si cambi il valore del campo clear_before_exec a 0.
 .TP
 .I confirm_view_dir
-Se si preme F3 su di una directory, normalmente MC entra nella directory.
-Se questa opzione è impostata a 1, MC chiederà una conferma prima di
+Se si preme F3 su di una directory, normalmente M\-Commander entra nella directory.
+Se questa opzione è impostata a 1, M\-Commander chiederà una conferma prima di
 cambiare directory se si hanno dei file marcati.
 .TP
 .I ftpfs_retry_seconds
@@ -2953,11 +2953,11 @@ L'elenco di directory per l'albero directory e per la vista ad albero.
 Menu locale definito dall'utente. Se questo file è presente viene usato
 al posto del menu delle applicazioni utente o di sistema.
 .PP
-To change default home directory of MC, you can use 
+To change default home directory of M\-Commander, you can use 
 .BR MC_PROFILE_ROOT
 environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
-or empty, MC directories are get from GLib library.
+or empty, M\-Commander directories are get from GLib library.
 .\"SKIP_SECTION"
 .SH "LICENZA"
 Questo programma è distribuito sotto i termini della Licenza Generale
@@ -2966,15 +2966,15 @@ per i dettagli sulla licenza e sulla mancanza di garanzie.
 .\"NODE "AVAILABILITY"
 .SH "REPERIBILITA'"
 L'ultima versione di questo programma si trova su
-\X'tty: link https://ftp.osuosl.org/pub/midnightcommander/'https://ftp.osuosl.org/pub/midnightcommander/\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "VEDERE ANCHE"
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
 tcsh(1), zsh(1).
 .PP
 .nf
-La pagina Web del Midnight Commander:
-	\X'tty: link https://midnight\-commander.org'https://midnight\-commander.org\X'tty: link'
+La pagina Web di M\-Commander:
+	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTORI"
@@ -3015,8 +3015,8 @@ Vedere il file TODO nella distribuzione per informazioni su
 quello che rimane ancora da fare.
 .PP
 Se si vuole fare un rapporto di un problema nel programma, si prega di
-spedire un messaggio di posta a questo indirizzo:
-mc\-devel@lists.midnight\-commander.org.
+aprire una segnalazione a questo indirizzo:
+\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Nel rapporto è necessario fornire una descrizione dettagliata del baco, 
 la versione del programma (mc \-v mostra quest'informazione), il sistema 

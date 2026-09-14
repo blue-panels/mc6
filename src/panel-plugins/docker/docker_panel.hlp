@@ -56,7 +56,7 @@
                      in the Pipe through field.  To make it available as
                      just "dlog", copy or symlink it to a PATH directory:
 
-                         cp ~/.local/lib/mc/panel-plugins/docker/dlog.sh \
+                         cp ~/.local/lib/mc6/panel-plugins/docker/dlog.sh \
                             ~/.local/bin/dlog
                          chmod +x ~/.local/bin/dlog
 

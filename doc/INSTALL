@@ -1,5 +1,5 @@
-Build requirements for GNU Midnight Commander
----------------------------------------------
+Build requirements for M-Commander
+----------------------------------
 
 - glibc or uClibc or musl
   - https://www.gnu.org/software/libc/
@@ -35,10 +35,10 @@ Build requirements for GNU Midnight Commander
   - https://e2fsprogs.sourceforge.net
 
 
-Installation instructions for GNU Midnight Commander
-----------------------------------------------------
+Installation instructions for M-Commander
+-----------------------------------------
 
-Midnight Commander is written in a portable manner and uses GNU Autoconf
+M-Commander is written in a portable manner and uses GNU Autoconf
 for configuration, so it is expected to compile without changes on many
 other operating systems.
 
@@ -74,7 +74,7 @@ By default, `make install' will install the package's files in
 installation prefix other than `/usr/local' by giving `configure' the
 option `--prefix=PATH'.
 
-If compiled on GNU/Linux, Midnight Commander detects if you have the gpm
+If compiled on GNU/Linux, M-Commander detects if you have the gpm
 library installed.  If you installed the gpm mouse library in a
 non-standard place, you will need to use the --with-gpm-mouse flag with
 the directory base where you installed the gpm package.
@@ -94,7 +94,7 @@ incomplete, use `configure --help' to get the full list):
      script, and exit.
 
 `--without-edit'
-     Configure GNU Midnight Commander to be compiled without the
+     Configure M-Commander to be compiled without the
      built-in file editor.  The built-in editor is compiled in by
      default.
 
@@ -114,7 +114,7 @@ incomplete, use `configure --help' to get the full list):
      some operating systems.
 
 `--without-x'
-     By default, the Midnight Commander tries to connect to the X Window
+     By default, M-Commander tries to connect to the X Window
      System events to query the status of the keyboard modifiers, such
      as Control, Shift and Alt, when invoked in a terminal emulator
      under X11.  This is necessary (but not always sufficient) to
@@ -149,7 +149,7 @@ VFS options:
 
 `--disable-vfs'
      This option disables the Virtual File System switch code in the
-     Midnight Commander and uses the standard file system calls for
+     M-Commander and uses the standard file system calls for
      file access.  If you specify this option, you won't get the
      transparent access to archives and remote directories.
 
@@ -179,13 +179,13 @@ VFS options:
      Support for sfs
 
 `--with-panel-plugins-dir=DIR'
-     Set the directory where Midnight Commander looks for dynamic panel
+     Set the directory where M-Commander looks for dynamic panel
      plugins at runtime [default=LIBDIR/mc/panel-plugins].  A dynamic
      panel plugin is a shared object (.so) that exports the
      mc_panel_plugin_register symbol.
 
 `--with-editor-plugins-dir=DIR'
-     Set the directory where Midnight Commander looks for dynamic editor
+     Set the directory where M-Commander looks for dynamic editor
      plugins at runtime [default=LIBDIR/mc/editor-plugins].  A dynamic
      editor plugin is a shared object (.so) that exports the
      mc_editor_plugin_register symbol.
@@ -195,7 +195,7 @@ Screen library:
 - - - - - - - -
 
 You may also tell configure which screen library you want to use with
-the Midnight Commander.  The configure script will use S-Lang as
+M-Commander.  The configure script will use S-Lang as
 default, and prefers an already installed S-Lang library over the
 included one, but you can override this by using the following flag
 (please note that since S-Lang is default, it is tested better than
@@ -229,7 +229,7 @@ line:
 documentation.
 
 If you're on a GNU/Linux system, this will install the `cons.saver'
-utility, which allows the Midnight Commander to save and restore the
+utility, which allows M-Commander to save and restore the
 console contents.  This utility can be installed setuid root, but it's
 only needed on systems where users cannot access /dev/vcsaN, where N is
 the virtual console number, on which the uses is logged on.

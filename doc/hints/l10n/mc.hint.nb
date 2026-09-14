@@ -14,9 +14,9 @@ Hint: For å velge mapper kan du legge til en skråstrek til slutt i søkemønst
 
 Hint: Hvis terminalen mangler funksjonstaster så kan du bruke ESC + tallet.
 
-Hint: Hjemmesiden til GNU Midnight Commander er https://midnight-commander.org
+Hint: Hjemmesiden til M-Commander er https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hint: Tabulatoren endrer det aktive panelet.
 
@@ -68,18 +68,10 @@ Hint: Du kan slå av bekreftelsesforespørsler i Innstillinger/Bekreftelser.
 
 Hint: Hurtigtasten C-\ åpner en liste over favorittmappene dine.
 
-Hint: Du kan koble til anonym FTP med mc ved å skrive «cd ftp://tjener.edu»
-
-Hint: FTP er bygd inn i Midnight Commander. Se «Koble til FTP».
-
 Hint: Hurtigtasten M-t endrer utlistingsformatet.
-
-Hint: Du kan angi FTP-brukernavn: «cd ftp://bruker@tjener.edu»
 
 Hint: Du kan se innholdet i RPM-filer ved å trykke Enter på den.
 
 Hint: Legg til en skråstrek for å markere mapper i utvalgsdialogen.
 
 Hint: Du må kanskje holde inn Shift-tasten for å klippe ut og lime inn med musa.
-
-Hint: Du kan legge til ofte besøkte FTP-steder i favorittmapper, C-\.

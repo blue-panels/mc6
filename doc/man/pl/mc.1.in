@@ -274,7 +274,7 @@ Włącza okno dialogowe quick cd (szybkiej zmiany katalogów)
 .BR C\-o .
 Jeśli program jest uruchamiany na konsoli typu Linux lub FreeBSD lub też
 na konsoli xterm, pokaże wyjście ostatnio wykonywanego programu. Jeśli
-uruchomiono M\-Commandera na konsoli type Linux, MC używa
+uruchomiono M\-Commandera na konsoli type Linux, M\-Commander używa
 zewnętrznego programu (cons.saver) w celu zachowywyania i odzyskiwania
 informacji na ekranie komputera.
 .PP
@@ -1252,7 +1252,7 @@ większość ustawień M\-Commandera.
 Menu
 .I Layout
 pozwala na zmianę wielu ustawień, które mają znaczący wpływ
-na to jak MC będzie wyglądał na ekranie.
+na to jak M\-Commander będzie wyglądał na ekranie.
 .PP
 Menu
 .I Confirmation
@@ -1359,7 +1359,7 @@ te, których używa w komenda
 .PP
 .I Auto Save Setup.
 Jeśli ta opcja jest włączona, kiedy wychodzisz z M\-Commandera
-konfiguracja MC zostanie zachowana automatycznie (bez pytania)
+konfiguracja M\-Commander zostanie zachowana automatycznie (bez pytania)
 do pliku ~/.config/mc6/ini.
 .PP
 .I Auto menus.
@@ -1509,7 +1509,7 @@ W rzeczywistości jednak, pliki tar najczęściej trzymane są jako
 skompresowane i jako iż natura tych plików nie pozwala na oglądanie ich bez
 dekompresji (nie ma tam
 widocznych od razu wejść do katalogów), system plików musi być najpierw
-zdekompresowany na dysk do pliku tymczasowego i dopiero potem MC ma do niego
+zdekompresowany na dysk do pliku tymczasowego i dopiero potem M\-Commander ma do niego
 dostęp taki jak do normalnego pliku typu tar.
 .PP
 Teraz, kiedy tak kochamy odwiedzać różne pliki i zwiedzać systemy
@@ -1534,7 +1534,7 @@ System plików FTP (FTP File System) po więcej szczegółów.
 .SH "    Zapisz ustawienia (Save Setup)"
 Na starcie M\-Commander będzie próbował odczytać opcje startowe
 z pliku ~/.config/mc6/ini. Jeśli on nie istnieje, odczyta on konfiguracje z
-ogólnodostępnego pliku %pkgdatadir%/mc.ini. Jeśli on też nie istnieje MC
+ogólnodostępnego pliku %pkgdatadir%/mc.ini. Jeśli on też nie istnieje M\-Commander
 użyje swoich domyślnych ustawień.
 .PP
 Komenda
@@ -1544,7 +1544,7 @@ jak również menu opcji.
 .PP
 Jeśli właczysz opcję
 .IR "auto save setup" ,
-MC zawsze będzie zachowywał standardowe ustawienie podczas wychodzenia.
+M\-Commander zawsze będzie zachowywał standardowe ustawienie podczas wychodzenia.
 .PP
 Istnieją również ustawienia, które nie mogą być zmienione z poziomu menu.
 Dla tych ustawień musisz wyedytować swój plik konfiguracyjny za pomocą
@@ -1877,7 +1877,7 @@ następująca: "*.*", natomiast docelowa: "\e2.\e1".
 .PP
 .B "Use shell patterns off"
 .PP
-Kiedy wzorce powłoki są wyłączone, MC nie dokonuje automatycznego grupowania
+Kiedy wzorce powłoki są wyłączone, M\-Commander nie dokonuje automatycznego grupowania
 plików. Musisz użyć wyrażenia'\e(...\e)' w masce źródłowej aby zasygnalizować
 istnienie jokerów w masce docelowej. Jest to trochę łatwiejsze, ale też
 wymaga aby trochę się napisać. Z drugiej jednak strony, makra są bardzo
@@ -2082,7 +2082,7 @@ cat /dev/null > ~/.cache/mc6/mcedit/cooledit.error
 .PP
 Pozwól M\-Commanderowi pisać za ciebie.
 .PP
-Spróbuj użyć dokończenia na tekście przed aktualną pozycją. MC próbuje
+Spróbuj użyć dokończenia na tekście przed aktualną pozycją. M\-Commander próbuje
 dokończyć tekst jako zmienną (jeśli tekst zaczyna się od znaku
 .BR $ ),
 nazwę użytkownika (jeśli tekst zaczyna się od znaku
@@ -2096,7 +2096,7 @@ jest spełniony, próbuje się dokańczać nazwę pliku.
 .PP
 Nazwa pliku, nazwa użytkownika i hosta, pracuje we wszystkich liniach
 wejścia, dokańczanie komend pracuje tylko w wybranych. Jeśli dokańczanie
-jest rozbudowane (jest więcej różnych możliwości), MC wyda krótki dźwięk, a
+jest rozbudowane (jest więcej różnych możliwości), M\-Commander wyda krótki dźwięk, a
 następna akcja będzie zależeć od wartości zmiennej
 .I Complete: show all
 w menu konfiguracja. Jeśli jest ona włączona, zostanie wyświetlona lista
@@ -2116,7 +2116,7 @@ oraz strzałek w lewo i prawo. Jeśli
 Complete: show all
 jest wyłączone, okno z listą włącza się dopiero wtedy, kiedy naciskasz
 .B M\-Tab
-po raz drugi. Za pierwszym razem MC wydaje tylko krótki dźwięk.
+po raz drugi. Za pierwszym razem M\-Commander wydaje tylko krótki dźwięk.
 .PP
 .\"NODE "Virtual File System"
 .SH "Wirtualny system plików (Virtual File System)"
@@ -2432,8 +2432,8 @@ Jeśli chciałbyś widzieć wyjście komendy na dole ekranu, wyedytuj twój plik
 .PP
 .I confirm_view_dir.
 .IP
-Jeśli naciskasz F3 na katalogu, normalnie MC wchodzi do niego. Jeśli ta opcja
-ma wartość 1, MC zapyta się o potwierdzenie przed wejściem do tego
+Jeśli naciskasz F3 na katalogu, normalnie M\-Commander wchodzi do niego. Jeśli ta opcja
+ma wartość 1, M\-Commander zapyta się o potwierdzenie przed wejściem do tego
 katalogu, jeśli masz zaznaczone jakieś pliki.
 .PP
 .I drop_menus.
@@ -2460,7 +2460,7 @@ ftp proxy.
 .I max_dirt_limit.
 .IP
 Opisuje jak wiele odświeżeń ekranu może być maksymalnie ominięte we wbudowanym
-podglądzie plików. Normalnie ta wartość jest ważna, gdyż MC automatycznie
+podglądzie plików. Normalnie ta wartość jest ważna, gdyż M\-Commander automatycznie
 dostosowuje liczbę odświeżeń do liczby naciśniętych klawiszy. Chociaż na bardzo
 wolnych komputerach lub na klawiaturach z szybkim powtarzaniem klawiszy,
 duża wartość mogłaby spowodować skoki ekranu i utratę płynności.
@@ -2660,11 +2660,11 @@ M\-Commander robi to sam za ciebie.
 Lokalny plik zdefiniowany przez użytkownika. Jeśli ten plik jest dostępny,
 jest używany zamiast pliku w katalogu domowym i ogólnosystemowego.
 .PP
-To change default home directory of MC, you can use 
+To change default home directory of M\-Commander, you can use 
 .BR MC_PROFILE_ROOT
 environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
-or empty, MC directories are get from GLib library.
+or empty, M\-Commander directories are get from GLib library.
 .\"SKIP_SECTION"
 .SH LICENCJA
 Program jest dystrybuowany na zasadach licencji GNU General Public License
@@ -2681,8 +2681,8 @@ ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
 tcsh(1), zsh(1).
 .PP
 .nf
-Strona Midnight Commander w sieci World Wide Web:
-	\X'tty: link https://midnight\-commander.org'https://midnight\-commander.org\X'tty: link'
+Strona M\-Commander w sieci World Wide Web:
+	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
 .fi
 .PP
 .\"NODE "AUTHORS"
@@ -2726,8 +2726,8 @@ W pliku TODO dystrybucji znajdziesz informacje na temat tego, co
 pozostało jeszcze do zrobienia.
 .PP
 Jeśli chcesz zgłosić kłopoty z programem [błędy w nim],
-wyślij e\-mail [po angielsku], na adres
-mc\-devel@lists.midnight\-commander.org.
+zgłoś go [po angielsku] pod adresem
+\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Do zgłoszenia błędu dołącz opis problemu, versję programu, którego używasz
 (wyświetla ją mc \-V), system operacyjny, na którym pracujesz i jeśli program

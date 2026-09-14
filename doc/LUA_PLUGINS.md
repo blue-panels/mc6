@@ -1,6 +1,6 @@
 # Lua runtime and scripts
 
-Midnight Commander can load optional Lua 5.3+ support.  Lua is not linked into
+M-Commander can load optional Lua 5.3+ support.  Lua is not linked into
 the `mc` executable: `mc-lua.so` is a runtime extension loaded through
 `dlopen` only when it is available and enabled.  That extension discovers and
 runs Lua scripts.

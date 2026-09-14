@@ -14,9 +14,9 @@ Tips: Välja kataloger: Lägg till snedstreck i slutet av det matchande mönstre
 
 Tips: Om din terminal saknar funktionstangenter, använd ESC+siffersekvens.
 
-Tips: Webbsidan för GNU Midnight Commander: https://midnight-commander.org
+Tips: Webbsidan för M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Tips: Tab ändrar din nuvarande panel.
 
@@ -68,18 +68,10 @@ Tips: Du kan slå av alla är-du-säker-frågor i Alternativ/Konfirmation.
 
 Tips: Hoppa till ofta använda kataloger i ett steg med C-\.
 
-Tips: Du kan använda anonym FTP i mc genom att skriva 'cd ftp://dator.se'
-
-Tips: FTP är inbyggt i Midnight Commander, se Fil/FTP-länk-menyn.
-
 Tips: M-t ändrar snabbt listningsläget.
-
-Tips: Du kan specificera användarnamnet med ftps: 'cd ftp://användare@dator.se'
 
 Tips: Du kan bläddra i RPM-filer genom att trycka enter på en RPM-fil.
 
 Tips: För att markera kataloger i markera-dialogrutan, lägg till snedstreck.
 
 Tips: Skift kan behöva hållas ned för att använda klipp och klistra med musen.
-
-Tips: Mata in ofta använda ftp-sajter i favoriter: tryck C-\.

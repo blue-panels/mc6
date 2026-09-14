@@ -14,9 +14,9 @@ Aholkua: Direktorioak hautatzea: erantsi «/» barra zeiharra bilaketa ereduaren
 
 Aholkua: Zure terminalari funtzio teklak falta bazaizkio, erabili Ihes+zenbakia sekuentzia.
 
-Aholkua: GNU Midnight Commander-ren atariko orria: https://midnight-commander.org
+Aholkua: M-Commander-ren atariko orria: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Aholkua: Tab teklak zure uneko panela aldatzen du.
 
@@ -68,18 +68,10 @@ Aholkua: Berresteko eskaera guztiak ezgaitu ditzakezu Aukerak/Berrespena-tik.
 
 Aholkua: Iritsi maiz erabilitako direktorioetara jauzi bakarrean C-\ erabiliz.
 
-Aholkua: FTP anonimoa egin dezakezu mc-rekin 'cd ftp://machine.edu' tekleatuta.
-
-Aholkua: FTP barneratua dag Midnight Commanderren, frogatu «Fitxategia/FTP esteka» menua.
-
 Aholkua: Alt-t zerrendatze modua azkar aldatzeko.
-
-Aholkua: Erabiltzaile izena zehaztu dezakezu ftp-ak egiterakoan: 'cd ftp://erabiltzailea@machine.edu'
 
 Aholkua: RPM fitxategiak arakatu ditzakezu rpm fitxategi baten gainean sartu sakatuta.
 
 Aholkua: Hautatu elkarrizketa-koadroan direktorioak markatzeko, erantsi «/» bat.
 
 Aholkua: Saguaren ebaki eta itsatsi erabiltzeko maius tekla sakatu behar izan dezakezu
-
-Aholkua: Txertatu maiz bisitatutako ftp lekuak gogokoetan: tekleatu C-\.

@@ -1,4 +1,4 @@
-# Midnight Commander 4.0 extension file
+# M-Commander extension file
 #
 # Warning: The structure of this file has been completely changed with the version 4.0!
 #
@@ -178,7 +178,7 @@
 #
 # Any new entries you want to add are always welcome if they are useful on more than one
 # system. You can post your modifications as a ticket in our tracker:
-# https://github.com/MidnightCommander/mc/issues
+# https://github.com/blue-panels/mc6/issues
 
 
 ### Changes ###

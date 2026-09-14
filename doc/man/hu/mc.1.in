@@ -58,12 +58,13 @@ szó szerinti másolatot a funkció beállításairól. A fájlok forrása a
 .I %pkglibexecdir%/mc.fish
 (fish felhasználóknak) fájl. Ilyenkor, amikor a funkció beállításokat
 változtatod, a profil értékeket nem szükséges megváltoztatnod, csak
-arról gondoskodj, hogy az MC\-t ne fordítsd eltérő beállításokkal.
+arról gondoskodj, hogy az M\-Commander\-t ne fordítsd eltérő beállításokkal.
 .PP
 A bash és zsh funkciók lehetnének rövidebbek is, de a bash környezete
-nem fogadja el a program C\-z háttérbe helyezését. A temp fájlok a saját
-~/.mc/tmp könyvtáradban találhatók, mert ez biztonságosabb, mint a közös
-írható /tmp könyvtár.
+nem fogadja el a program C\-z háttérbe helyezését. A temp fájlok a $TMPDIR
+(alapértelmezés szerint /tmp) alatt egy csak általad írható mc\-XXXXXX
+könyvtárba kerülnek, mert ez biztonságosabb, mint a közös írható /tmp
+könyvtár.
 .TP
 .I "\-s"
 Bekapcsolja a lassú terminál módot, ebben a módban a program nem használja
@@ -163,7 +164,7 @@ Amikor bal gombbal kattintasz a fájlra, a könyvtár panalben a fájl
 kiválasztódik; ha a jobb gombbal kattintasz, a fájlt ezzel megjelölöd
 (vagy megszünteted azt, az azt megelőző állapotnak megfelelően).
 .PP
-A fájlra történő dupla kattintásra az MC megpróbálja futtani
+A fájlra történő dupla kattintásra az M\-Commander megpróbálja futtani
 azt, ha futtatható fájlról van szó; ha a
 .\"LINK2"
 fájl kiterjesztését
@@ -344,7 +345,7 @@ dialógboxba.
 A parancs futtatásakor xterm\-en Linux, vagy FreeBSD konzolon, megmutatja
 az előzö parancs kimeneteit. Linux konzolon történő futtatáskor a
 M\-Commander egy beépített programot használ (cons.saver) a
-képernyő\-információk elmentésére és visszaállítására. Tehát az MC
+képernyő\-információk elmentésére és visszaállítására. Tehát az M\-Commander
 képernyőjét bármikor kikapcsolhatjuk, és visszakapcsolhatjuk.
 .PP
 Ha a subshell támogatást is befordították, bármikor begépelheted a C\-o
@@ -1509,7 +1510,7 @@ Beállítások mentése
 parancs elmenti a Bal, Jobb és a Beállítások jelenlegi értékeit. Néhány
 egyéb beállítás is elmentődik.
 .\"NODE "    Configuration"
-.SH "    Az MC konfigurálása"
+.SH "    Az M\-Commander konfigurálása"
 A dialógus ablalban lévő opciók három csoportra bonthatók: Panel
 Beállítások, Futtatás után vár... és Egyéb.
 .PP
@@ -1599,7 +1600,7 @@ engedélyezett, akkor a szokásos kiterjesztések azonosak a ed\-ben lévőkkel:
 .PP
 .I Beállítások automatikus mentése
 Ha ez az opciót bekapcsoltad, amikor kilépsz a M\-Commander\-ből,
-az MC opcióinak beállításait az ~/.config/mc6/ini fájlba menti.
+az M\-Commander opcióinak beállításait az ~/.config/mc6/ini fájlba menti.
 .PP
 .I Auto menük.
 Ha ez az opció engedélyezett, a felhasználói menü megjelenik az mc
@@ -1809,7 +1810,7 @@ fájlból. Ha ez a fájl nem létezik, ezeket az információkat a
 rendszerszintű konfigurációs fájlból fogja beolvasni, amelyek a
 .I %pkgdatadir%/mc.ini
 fájlban találhatóak meg. Ha ez a rendszerszintű konfigurációs fájl sem
-létezik, a MC az alapértelmezett beállításokat használja.
+létezik, a M\-Commander az alapértelmezett beállításokat használja.
 .PP
 A
 .I Beállítások mentése
@@ -1825,7 +1826,7 @@ menü beállításait az ~/.config/mc6/ini fájlba.
 .PP
 Ha aktiválod az
 .I Auto Beállításmentés
-opciót a MC mindíg elmenti a beállításait kilépéskor.
+opciót a M\-Commander mindíg elmenti a beállításait kilépéskor.
 .PP
 Még vannak beállítások, amelyek nem állíthatóak be a menükből. Ezek
 beállításához használd a kedvenc fájlszerkesztődet. Lásd a
@@ -1862,7 +1863,7 @@ beállításai szerint dolgozik:
 .PP
 .I Tilde helyettesítés
 A (~) karakter helyettesíti a home könyvtár nevét, ha hozzáfűzöl bármely
-felhasználói nevet, akkor az MC a megadott felhasználó saját HOME
+felhasználói nevet, akkor az M\-Commander a megadott felhasználó saját HOME
 könyvtárára ugrik.
 .PP
 Például a ~guest a guest felhasználó könyvtárára mutat, amíg a ~/guest a
@@ -2226,7 +2227,7 @@ a forrásmaszkja a "*.*" lesz, a rendeltetésé pedig a "\e2.\e1".
 .PP
 .B "Shell kifejezések ki"
 .PP
-Amikor a shell kifejezések opció ki van kapcsolva az MC a továbbiakban
+Amikor a shell kifejezések opció ki van kapcsolva az M\-Commander a továbbiakban
 nem csoportosít automatikusan. Az '\e(...\e)' kiegészítést kell
 használnod a forrásmaszkban, a célmaszk specifikációnak meagadásához. Ez
 jóval gördülékenyebb módszernel tűnik, de több gépelést igényel.
@@ -2432,7 +2433,7 @@ beállíthatod a
 .SH "Kiegészítés"
 A M\-Commander begépeli neked a kívánt szöveget.
 .PP
-Megkísérli kiegészíteni a szöveget a jelenlegi pozíciótól. Az MC
+Megkísérli kiegészíteni a szöveget a jelenlegi pozíciótól. Az M\-Commander
 kiegészíti a szöveget (ha a szöveg
 .BR $ \-ral
 kezdődik), felhasználónevet (ha a szöveg
@@ -2446,7 +2447,7 @@ egyik sem egyezik, akkor fájlnév kiegészítéssel próbálkozik.
 .PP
 A fájlnév, felhasználónév, változó és hostnév kiegészítése működik az
 összes beviteli sorban, a parancskiegészítés csak a parancssorban. Ha
-a kiegészítés kétértelmű (több érték megjelenítése lehetséges), a MC
+a kiegészítés kétértelmű (több érték megjelenítése lehetséges), a M\-Commander
 hangjelzést ad és a
 .\"LINK2"
 Beállítások
@@ -2473,7 +2474,7 @@ kiegészítés: összes
 .\"Configuration"
 nincs beállítva, a dialógus ablak csak a
 .B M\-Tab
-második lenyomására jelenik meg, az első lenyomáskor, az MC csak
+második lenyomására jelenik meg, az első lenyomáskor, az M\-Commander csak
 hangjelzést ad.
 .\"NODE "Virtual File System"
 .SH "Csatolt (látszólagos) fájlrendszer"
@@ -2764,8 +2765,8 @@ szeretnéd látni, az ~/mc.ini fájlban javítsd ki a clear_before_exec
 .PP
 .I confirm_view_dir
 .IP
-Ha lenyomod az F3 gombot a könyvtár felett állva, normálisan a MC belép
-a könyvtárba. Ha ez a flag 1\-re van állítva, akkor az MC kijelölt fájlok
+Ha lenyomod az F3 gombot a könyvtár felett állva, normálisan a M\-Commander belép
+a könyvtárba. Ha ez a flag 1\-re van állítva, akkor az M\-Commander kijelölt fájlok
 esetén megerősítő kérdést fog feltenni, mielőtt könyvtárat váltana.
 .PP
 .I ftpfs_retry_seconds
@@ -2957,11 +2958,11 @@ frissíti ezt.
 Helyi felhasználó által definiált menü. Ha ez a fájl létezik, ezt
 használja a home, vagy rendszerszintű alkalmazás menü helyett.
 .PP
-To change default home directory of MC, you can use 
+To change default home directory of M\-Commander, you can use 
 .BR MC_PROFILE_ROOT
 environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
-or empty, MC directories are get from GLib library.
+or empty, M\-Commander directories are get from GLib library.
 .\"NODE "AVAILABILITY"
 .SH "A M\-Commander frissítése"
 A program legutolsó verzióját az ftp.nuclecu.unam.mx címen a
@@ -2974,9 +2975,9 @@ ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1), tcsh(1),
 zsh(1).
 .PP
 .nf
-A Midnight Commander World Wide Web oldalának címe a
+A M\-Commander World Wide Web oldalának címe a
 következő:
-	\X'tty: link https://midnight\-commander.org'https://midnight\-commander.org\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "Szerzők"
@@ -3014,7 +3015,7 @@ Nézd meg a disztribúció TODO fájlát, hogy megtudhasd, milyen teendők
 vannak még vissza.
 .PP
 Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
-levélcímre: mc\-devel@lists.midnight\-commander.org.
+címre: \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Gondoskodj arról, hogy tartalmazza a hiba minél pontosabb
 meghatározását, a futtatott program verziószámát (az mc \-V parancs meg

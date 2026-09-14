@@ -1,7 +1,7 @@
 This document
 =============
 
-This document is a guide how to develop GNU Midnight Commander.  It's
+This document is a guide how to develop M-Commander.  It's
 quite incomplete, but may be worth reading anyway.
 
 The document was written by Miguel de Icaza and reworked by Pavel
@@ -32,18 +32,18 @@ used in the AM_GNU_GETTEXT_VERSION macro, which is 0.18.2.
 
 
 
-Working with GNU Midnight Commander
-===================================
+Working with M-Commander
+========================
 
 Please use the GIT version.  It may be quite different from the released
 versions.  A lot of cleanup is going on.  The GIT version may be easier
 to understand, in addition to the obvious fact that the merging is
 easier with the GIT version.
 
-In order to compile GNU Midnight Commander from a clean GIT checkout you
+In order to compile M-Commander from a clean GIT checkout you
 should use 'autogen.sh && ./configure' instead of 'configure'.
 
-GNU Midnight Commander uses Autoconf and Automake, with make it fairly
+M-Commander uses Autoconf and Automake, with make it fairly
 portable.  However, GNU Make is strongly recommended for development
 because other versions of make may not track dependencies properly. 
 This is very important for correct compilation, especially if you change
@@ -93,7 +93,7 @@ edit - the internal editor.
 
 This code has been contributed by Paul Sheer, the author of Cooledit.
 The internal editor shares some code with Cooledit, but now it's
-developed as part of GNU Midnight Commander.
+developed as part of M-Commander.
 
 src - the main part of the code.
 
@@ -103,7 +103,7 @@ code of the main application.
 Code structure - details
 ========================
 
-GNU Midnight Commander uses extensively the dialog manager written by
+M-Commander uses extensively the dialog manager written by
 Radek Doulik.  To understand how the dialog manager works, please read
 the dialog.c.  You will find the basic widgets in the files widget.c.
 Some more high-level functions, e.g. to display a message box, are
@@ -135,7 +135,7 @@ line and the button bar.
 Input handling
 ==============
 
-The routines for input handling on the Midnight Commander are:
+The routines for input handling on M-Commander are:
 getch, get_key_code, mi_getch and get_event.
 
 getch is an interface to the low level system input mechanism.  It
@@ -149,7 +149,7 @@ does not deal with the mouse.
     load a set of extra definitions.
 
 The get_key_code routine converts the data from getch to the
-constants the Midnight Commander uses.
+constants M-Commander uses.
 
     In the case of S-Lang, it will actually do all the jobs that getch
     does for curses.  In the case of curses it patches a couple of
@@ -173,7 +173,7 @@ available.
 Mouse support
 =============
 
-The mouse support in the Midnight Commander is based on the get_event
+The mouse support in M-Commander is based on the get_event
 routine.  The core of the mouse event dispatching is in the
 dlg.c:run_dlg routine.
 
@@ -243,7 +243,7 @@ Where to Find Bug Reports and Patches
 
 The official place for bug reports is:
 
-    https://github.com/MidnightCommander/mc/issues
+    https://github.com/blue-panels/mc6/issues
 
 There are various unofficial sources where bug reports and patches can
 be found (NOT maintained by the MC team).

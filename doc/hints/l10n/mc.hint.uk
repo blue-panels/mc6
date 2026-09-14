@@ -14,9 +14,9 @@
 
 Підказка. Якщо термінал не має функціональних клавіш, використовуйте комбінацію клавіш Esc+цифра.
 
-Підказка. Домашня сторінка Midnight Commander: https://midnight-commander.org
+Підказка. Домашня сторінка M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Підказка. Клавіша Tab змінює поточну панель.
 
@@ -68,18 +68,10 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Підказка. Щоб перейти до часто використовуваних каталогів, натисніть C-\.
 
-Підказка. Щоб відкрити анонімний FTP, введіть команду «cd ftp://machine.edu».
-
-Підказка. Щоб скористатися вбудованим у Midnight Commander клієнтом FTP, відкрийте вікно Панель|FTP-з’єднання.
-
 Підказка. Щоб швидко змінити формат списку панелі, натисніть M-t.
-
-Підказка. Щоб указати ім’я користувача ftpfs, введіть «cd ftp://user@machine.edu».
 
 Підказка. Щоб переглянути файл RPM, натисніть на ньому Enter.
 
 Підказка. Щоб відмітити каталоги в діалоговому вікні вибору, додайте похилу риску.
 
 Підказка. Щоб вирізати або вставити за допомогою мишки, утримуйте клавішу Shift.
-
-Підказка. Щоб зберегти часто відвідувані FTP у списку каталогів, натисніть C-\.

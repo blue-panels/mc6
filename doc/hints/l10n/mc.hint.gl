@@ -14,9 +14,9 @@ Consello: para seleccionar directorios: engada unha barra «/» na fin do patró
 
 Consello: se o seu terminal non ten teclas de función, use ESC+número.
 
-Consello: a páxina principal de GNU Midnight Commander é: https://midnight-commander.org
+Consello: a páxina principal de M-Commander é: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Consello: a tecla Tab cambia o seu panel actual.
 
@@ -68,18 +68,10 @@ Consello: Para desactivar as mensaxes de confirmación fagao no menú Opcións.
 
 Consello: marque os directorios e sitios máis usados en «Favoritos».
 
-Consello: para facer un FTP anónimo con mc: «cd ftp://maquina.dominio»
-
-Consello: FTP está integrado en Midnight Commander, en «Conexión por FTP».
-
 Consello: M-t cambia rapidamente entre varios modos de listaxe.
-
-Consello: para especificar o nome de usuario ao facer un FTP: «cd ftp://usuario@maquina.dominio»
 
 Consello: pode examinar un ficheiro RPM premendo Intro sobre del.
 
 Consello: para marcar os directorios no cadro de diálogo de selección, engada unha barra «/».
 
 Consello: para cortar e pegar co rato manteña premida a tecla Maiús.
-
-Consello: os sitios FTP habituais poden marcarse como «preferidos»: escriba C-\.

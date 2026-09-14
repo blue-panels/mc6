@@ -14,9 +14,9 @@ Hint: Selecting directories: add a slash to the end of the matching pattern.
 
 Hint: If your terminal lacks functions keys, use the ESC+number sequence.
 
-Συμβουλή: Η ιστοσελίδα του GNU Midnight Commander: https://midnight-commander.org
+Συμβουλή: Η ιστοσελίδα του M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hint: Tab changes your current panel.
 
@@ -68,18 +68,10 @@ Hint: You may specify the editor for F4 with the shell variable EDITOR.
 
 Hint: Leap to frequently used directories in a single bound with C-\.
 
-Συμβουλή: Μπορείτε να κάνετε ανώνυμο FTP με το mc πληκτρολογώντας 'cd ftp://machine.edu'
-
-Συμβουλή: Το Midnight Commander έχει ενσωματωμένο FTP, δείτε το μενού Αρχείο/FTP.
-
 Συμβουλή: Το M-t αλλάζει γρήγορα τη λειτουργία λίστας.
-
-Συμβουλή: Μπορείτε να ρυθμίσετε το όνομα χρήστη όταν κάνετε ftps: 'cd ftp://user@machine.edu'
 
 Συμβουλή: Μπορείτε να περιηγηθείτε σε αρχεία RPM πατώντας enter πάνω σε ένα αρχείο rpm.
 
 Hint: To mark directories on the select dialog box, append a slash.
 
 Συμβουλή: Η χρήση αντιγραφής και επικόλλησης με το ποντίκι μπορεί να απαιτεί να πατάτε το πλήκτρο shift
-
-Hint: Key frequently visited ftp sites in the hotlist: type C-\.

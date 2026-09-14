@@ -14,9 +14,9 @@
 
 İpucu: Eğer klavyenizde fonksiyon tuşları yoksa, ESC+numara kombinasyonunu kullanabilirsiniz.
 
-İpucu: GNU Midnight Commander web adresi: https://midnight-commander.org
+İpucu: M-Commander web adresi: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 İpucu: Tab aktif paneli değiştirir.
 
@@ -68,18 +68,10 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 İpucu: Sık kullanılan dizinlere tek hareketle geçmek için C-\ kullanabilirsiniz.
 
-İpucu: mc ile anonim FTP bağlantısı kurabilirsiniz. Örn: 'cd ftp://sunucu.edu.tr'
-
-İpucu: Midnight Commander içinde FTP desteği mevcuttur, menüden Dosya/FTP bağlantısı seçin.
-
 İpucu: M-t kombinasyonu ile hızlıca listeleme modunu değiştirebilirsiniz.
-
-İpucu: FTP bağlantısı kurarken kullancı adını belirtebilirsiniz. Örn: 'cd ftp://kullanıcı@sunucu.edu.tr'
 
 İpucu: RPM dosyalarının üzerinde Enter tuşuna basarak içine girebilirsiniz.
 
 İpucu: Seçim dialoğunda dizinleri işaretlemek için bölü ekleyin.
 
 İpucu: Fare ile kopyalamak/yapıştırmak için Shift tuşunu basılı tutmanız gerekebilir.
-
-İpucu: Sıklıklar ziyaret edilen FTP sitelerini kısayollara eklemek için C-\ kullanın.

@@ -14,13 +14,13 @@ Tipp: Könyvtárak kijelölése a minta végére / jelet írva lehetséges.
 
 Tipp: Ha a terminálon nincsenek funkcióbillentyűk, használja ezt: Esc E<lt>számE<gt>
 
-Tipp: A Midnight Commander honlapja: https://midnight-commander.org
+Tipp: A M-Commander honlapja: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Tipp: A Tab billentyűvel lehet panelt váltani.
 
-Tipp: A Midnight Commandernek van "man" (kézikönyv) lapja is.
+Tipp: A M-Commandernek van "man" (kézikönyv) lapja is.
 
 Tipp: Szeretne Lynx-stílusú navigációt? Be lehet állítani az Alapbeállításoknál.
 
@@ -68,18 +68,10 @@ Tipp: Az összes megerősítéskérés kikapcsolható: "Beállítások/Megerős�
 
 Tipp: Egyszerű módon elérhetők a gyakran használt könyvtárak: C-\.
 
-Tipp: "Anonymous" FTP-zés végezhető ezzel a paranccsal: "cd ftp://gépnév.edu".
-
-Tipp: Az FTP be van építve a Midnight Commanderbe: "FTP-kapcsolat" menüpontok.
-
 Tipp: A listázási mód gyorsan váltható a következő billentyűkombinációval: M-t.
-
-Tipp: FTP-zésnél felhasználónév is megadható: "cd ftp://felhasználó@gépnév.edu".
 
 Tipp: Az RPM-csomagfájlok böngészhetők, ehhez Entert kell nyomni az adott fájlon.
 
 Tipp: Könyvtárak kijelölése a "Kijelölés" ablakban: / jel hozzáfűzésével.
 
 Tipp: Az egérrel való szövegkimásoláshoz szükség lehet a Shift lenyomására.
-
-Tipp: A gyakran látogatott FTP-helyek betehetők a gyorslistába: C-\.
