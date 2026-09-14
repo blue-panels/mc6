@@ -307,7 +307,7 @@
   "klog" in the Pipe through field, copy or symlink it to a PATH
   location:
 
-    cp ~/.local/lib/mc/panel-plugins/k8s/klog.sh ~/.local/bin/klog
+    cp ~/.local/lib/mc6/panel-plugins/k8s/klog.sh ~/.local/bin/klog
     chmod +x ~/.local/bin/klog
 
   (Or use the system path /usr/lib/mc/panel-plugins/k8s/klog.sh.)

@@ -29,6 +29,7 @@
 
 #include "lib/global.h"
 #include "lib/event.h"
+#include "lib/fileloc.h"  // MC_USERCONF_DIR
 #include "lib/mcconfig.h"
 #include "lib/skin.h"
 #include "lib/strutil.h"
@@ -1149,8 +1150,8 @@ ui_help (void)
     char *user_path;
     ev_help_t ev = { NULL, "[skineditor]", "[main]" };
 
-    user_path = g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "panel-plugins",
-                                  "skineditor", "skineditor.hlp", (char *) NULL);
+    user_path = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
+                                  "panel-plugins", "skineditor", "skineditor.hlp", (char *) NULL);
     ev.filename =
         g_file_test (user_path, G_FILE_TEST_EXISTS) ? user_path : MC_PLUGIN_DIR "/skineditor.hlp";
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &ev);

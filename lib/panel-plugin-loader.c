@@ -199,7 +199,7 @@ mc_panel_plugins_load_from_dir (const gchar *plugins_dir)
 static gchar *
 mc_panel_plugins_user_dir (void)
 {
-    return g_build_filename (g_get_home_dir (), ".local", "lib", "mc", "panel-plugins",
+    return g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR, "panel-plugins",
                              (char *) NULL);
 }
 
@@ -331,7 +331,7 @@ mc_editor_plugins_load (void)
     mc_editor_plugins_load_from_dir (system_dir);
     g_free (system_dir);
 
-    /* load from user plugin directory (~/.local/lib/mc/editor-plugins) */
+    /* load from user plugin directory (~/.local/lib/mc6/editor-plugins) */
     user_dir = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
                                  "editor-plugins", (char *) NULL);
     mc_editor_plugins_load_from_dir (user_dir);

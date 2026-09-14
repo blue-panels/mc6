@@ -11,7 +11,7 @@
 # Usage from shell:  docker logs -f <container> | dlog
 #
 # Installation (copy or symlink to a directory on your PATH):
-#   cp ~/.local/lib/mc/panel-plugins/docker/dlog.sh ~/.local/bin/dlog
+#   cp ~/.local/lib/mc6/panel-plugins/docker/dlog.sh ~/.local/bin/dlog
 #   chmod +x ~/.local/bin/dlog
 # (Or use the system path /usr/lib/mc/panel-plugins/docker/dlog.sh.)
 
