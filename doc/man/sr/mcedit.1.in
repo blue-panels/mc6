@@ -612,7 +612,7 @@ M\-n смењује ову опцију.
 наредника за детаље о Лиценци и одсуству гаранције.
 .SH ДОСТУПНОСТ
 Најновија верзија овог програма се може наћи на адреси
-\X'tty: link https://github.com/blue-panels/mc6/releases'https://github.com/blue-panels/mc6/releases\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH ВИДЕТИ И
 cooledit(1), mc(1), gpm(1), terminfo(1), scanf(3).
 .SH АУТОРИ
@@ -620,4 +620,4 @@ cooledit(1), mc(1), gpm(1), terminfo(1), scanf(3).
 уређивача Поноћног наредника.
 .SH ГРЕШКЕ
 Грешке пријављивати на
-\X'tty: link https://github.com/blue-panels/mc6/issues'https://github.com/blue-panels/mc6/issues\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .

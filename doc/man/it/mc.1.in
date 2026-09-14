@@ -2966,7 +2966,7 @@ per i dettagli sulla licenza e sulla mancanza di garanzie.
 .\"NODE "AVAILABILITY"
 .SH "REPERIBILITA'"
 L'ultima versione di questo programma si trova su
-\X'tty: link https://github.com/blue-panels/mc6/releases'https://github.com/blue-panels/mc6/releases\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "VEDERE ANCHE"
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
@@ -2974,7 +2974,7 @@ tcsh(1), zsh(1).
 .PP
 .nf
 La pagina Web di M\-Commander:
-	\X'tty: link https://github.com/blue-panels/mc6'https://github.com/blue-panels/mc6\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTORI"
@@ -3016,7 +3016,7 @@ quello che rimane ancora da fare.
 .PP
 Se si vuole fare un rapporto di un problema nel programma, si prega di
 aprire una segnalazione a questo indirizzo:
-\X'tty: link https://github.com/blue-panels/mc6/issues'https://github.com/blue-panels/mc6/issues\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Nel rapporto è necessario fornire una descrizione dettagliata del baco, 
 la versione del programma (mc \-v mostra quest'informazione), il sistema 

@@ -2682,7 +2682,7 @@ tcsh(1), zsh(1).
 .PP
 .nf
 Strona M\-Commander w sieci World Wide Web:
-	\X'tty: link https://github.com/blue-panels/mc6'https://github.com/blue-panels/mc6\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
 .fi
 .PP
 .\"NODE "AUTHORS"
@@ -2727,7 +2727,7 @@ pozostało jeszcze do zrobienia.
 .PP
 Jeśli chcesz zgłosić kłopoty z programem [błędy w nim],
 zgłoś go [po angielsku] pod adresem
-\X'tty: link https://github.com/blue-panels/mc6/issues'https://github.com/blue-panels/mc6/issues\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Do zgłoszenia błędu dołącz opis problemu, versję programu, którego używasz
 (wyświetla ją mc \-V), system operacyjny, na którym pracujesz i jeśli program
