@@ -388,6 +388,32 @@ mcview_help (const WView *view)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Whether the screen shows what the source prepared: the keys it asked for
+   are its own there, and not over the hex of F4 or the raw file of F8, which
+   are the viewer's own ways of looking at the bytes. */
+static gboolean
+mcview_source_owns_display (const WView *view)
+{
+    if (view->source_spec == NULL)
+        return FALSE;
+    if (view->mode_flags.hex)
+        return FALSE;
+    return view->source_spec->raw_file == NULL || view->mode_flags.magic;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Terminal mode: show the scrollback from @row. Above its first row there is
+   nothing to show, and -1 is where the view follows the end of the output:
+   a step up from the top row is the top row, never the end. */
+static void
+mcview_terminal_scroll_to (WView *view, int row)
+{
+    mcview_vterm_set_dpy_top_row (view->vterm, MAX (row, 0));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static cb_ret_t
 mcview_execute_cmd (WView *view, long command)
 {
@@ -598,7 +624,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top - 1);
+            mcview_terminal_scroll_to (view, top - 1);
         }
         else
             mcview_move_up (view, 1);
@@ -607,7 +633,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top + 1);
+            mcview_terminal_scroll_to (view, top + 1);
         }
         else
             mcview_move_down (view, 1);
@@ -616,7 +642,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top - (view->data_area.lines + 1) / 2);
+            mcview_terminal_scroll_to (view, top - (view->data_area.lines + 1) / 2);
         }
         else
             mcview_move_up (view, (view->data_area.lines + 1) / 2);
@@ -625,7 +651,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top + (view->data_area.lines + 1) / 2);
+            mcview_terminal_scroll_to (view, top + (view->data_area.lines + 1) / 2);
         }
         else
             mcview_move_down (view, (view->data_area.lines + 1) / 2);
@@ -634,7 +660,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top - view->data_area.lines);
+            mcview_terminal_scroll_to (view, top - view->data_area.lines);
         }
         else
             mcview_move_up (view, view->data_area.lines);
@@ -643,7 +669,7 @@ mcview_execute_cmd (WView *view, long command)
         if (view->mode_flags.terminal && view->vterm != NULL)
         {
             int top = mcview_vterm_resolve_scrollback_top_row (view->vterm, view->data_area.lines);
-            mcview_vterm_set_dpy_top_row (view->vterm, top + view->data_area.lines);
+            mcview_terminal_scroll_to (view, top + view->data_area.lines);
         }
         else
             mcview_move_down (view, view->data_area.lines);
@@ -739,6 +765,24 @@ mcview_handle_key (WView *view, int key)
         && mcview_handle_editkey (view, key) == MSG_HANDLED)
         return MSG_HANDLED;
 
+    /* A key the source declared as its own comes before the viewer's keymap;
+       everything else the viewer looks up first and offers afterwards. */
+    if (view->source_controller != NULL && view->source_controller->owns_key != NULL
+        && view->source_controller->handle_key != NULL && mcview_source_owns_display (view)
+        && view->source_controller->owns_key (view->source_ctx, key))
+    {
+        switch (view->source_controller->handle_key (view->source_ctx, key))
+        {
+        case MCV_KEY_OPEN_OPTIONS:
+            mcview_source_options (view);
+            return MSG_HANDLED;
+        case MCV_KEY_HANDLED:
+            return MSG_HANDLED;
+        default:
+            break;
+        }
+    }
+
     command = mcview_lookup_key (view, key);
 
     /* Enter copies the selection; with nothing marked it turns the reading cursor on, and off
@@ -758,7 +802,8 @@ mcview_handle_key (WView *view, int key)
 
     /* Key not bound to a viewer command: offer it to the source controller,
        which owns its own hotkeys (mirrors the panel-plugin handle_key path). */
-    if (view->source_controller != NULL && view->source_controller->handle_key != NULL)
+    if (view->source_controller != NULL && view->source_controller->handle_key != NULL
+        && mcview_source_owns_display (view))
         switch (view->source_controller->handle_key (view->source_ctx, key))
         {
         case MCV_KEY_OPEN_OPTIONS:

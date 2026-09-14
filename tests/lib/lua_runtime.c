@@ -95,6 +95,7 @@ static mc_runtime_panel_provider_t registered_panel_provider;
 static mc_runtime_panel_help_t registered_panel_help;
 static gboolean panel_provider_registered = FALSE;
 static guint viewer_controller_open_count = 0;
+static guint viewer_controller_keys_count = 0;
 static guint viewer_controller_close_count = 0;
 static mc_runtime_handle_t viewer_controller_target;
 
@@ -567,6 +568,33 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
     ck_assert_str_eq (controller->initial_spec->title, "revision 1");
     ck_assert_str_eq (controller->help_node, "controller-help");
     viewer_controller_open_count++;
+
+    /* The keys the definition asked for, in the order it named them, and the
+       options carrying one of them: that is on_key(), told the name of the
+       key by its place in the list. */
+    if (controller->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, keys_len)
+                + sizeof (controller->keys_len)
+        && controller->keys_len != 0)
+    {
+        ck_assert_uint_eq (controller->keys_len, 2);
+        ck_assert_str_eq (controller->keys[0], "gt");
+        ck_assert_str_eq (controller->keys[1], "plus");
+
+        mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                  MC_RUNTIME_VIEWER_CONTROLLER_OPTIONS, 2, &draft,
+                                                  &handled, viewer_error));
+        mctest_assert_true (handled);
+        mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                  MC_RUNTIME_VIEWER_CONTROLLER_PREPARE, 0, &draft,
+                                                  &handled, viewer_error));
+        ck_assert_str_eq (draft.title, "revision plus");
+        controller->spec_free (context, &draft);
+        mctest_assert_true (controller->dispatch (context, controller->controller_id,
+                                                  MC_RUNTIME_VIEWER_CONTROLLER_ROLLBACK, 0, &draft,
+                                                  &handled, viewer_error));
+        viewer_controller_keys_count++;
+    }
+
     mctest_assert_true (controller->dispatch (context, controller->controller_id,
                                               MC_RUNTIME_VIEWER_CONTROLLER_OPTIONS, 0, &draft,
                                               &handled, viewer_error));
@@ -628,10 +656,12 @@ create_viewer_controller_script (void)
     write_file (entry_path,
                 "local d=assert(mc.viewer_source.define {id='test',"
                 "help={node='controller-help'},"
+                "keys={'gt','plus'},"
                 "open=function(identity)return {name=identity.name}end,"
                 "prepare=function(session,p)return {source=mc.source.bytes(p.text),"
                 "title='revision '..p.revision}end,"
                 "options=function(session,p)return {text='two',revision=2}end,"
+                "on_key=function(session,p,key)return {text=key,revision=key}end,"
                 "close=function(session)session.closed=true end})\n"
                 "local c=assert(d:create({name='demo'},{text='one',revision=1}))\n"
                 "assert(mc.ui.open_viewer {controller=c})\n");
@@ -2078,6 +2108,7 @@ setup (void)
     memset (&registered_panel_provider, 0, sizeof (registered_panel_provider));
     panel_provider_registered = FALSE;
     viewer_controller_open_count = 0;
+    viewer_controller_keys_count = 0;
     viewer_controller_close_count = 0;
     memset (&viewer_controller_target, 0, sizeof (viewer_controller_target));
     {
@@ -2446,6 +2477,7 @@ START_TEST (test_lua_runtime_viewer_source_controller)
     ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
                    error != NULL ? error->message : "unknown error");
     ck_assert_uint_eq (viewer_controller_open_count, 1);
+    ck_assert_uint_eq (viewer_controller_keys_count, 1);
     ck_assert_uint_eq (viewer_controller_close_count, 1);
 }
 END_TEST

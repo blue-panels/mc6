@@ -361,6 +361,17 @@ source as plain text, `"nroff"` turns on the viewer's nroff mode, so overstruck
 letters (`a\ba`, `_\ba`) are painted bold and underlined, and `"terminal"` feeds
 the source to the embedded terminal, so ANSI escapes and cursor movement work.
 
+In the terminal display a prepared spec may set `top_row`: the row of the output the
+viewer opens at, counted from 0.  It is what a source that writes a whole page at once
+uses to put a line of its own in view; `auto_scroll = "bottom"` ignores it.
+
+A viewer-source definition may take viewer keys of its own with `keys` (up to 32 key
+names, as in the keymap: `"gt"`, `"plus"`, `"alt-n"`) and the `on_key(session, params, key)`
+callback they go to.  Such a key reaches the source before the viewer looks it up in its
+own keymap, and `key` is the name the definition gave it.  `on_key` returns new params,
+and `prepare()` runs again with them, exactly like `options()`; `nil` leaves the source as
+it is.  Function keys, `Esc`, `q` and `Ctrl-O` are refused: they belong to the viewer.
+
 A prepared viewer spec may set `raw_path` to the original local file.  The viewer then keeps the
 controller attached while F8 switches between the generated source and the raw file.
 

@@ -1195,6 +1195,42 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_sixel_stays_in_the_history)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_image_t *image;
+    int i;
+
+    mcview_vterm_set_size (vt, 5, 40);
+    mcview_vterm_reset (vt);
+    mcview_vterm_set_cell_size (vt, 8, 16);
+    mcview_vterm_set_keep_history (vt, TRUE);
+
+    FEED (vt, "\033[2;1H");
+    FEED (vt, SIXEL_16x32); /* rows 1..2, cursor on row 3 */
+    FEED (vt, "\n");        /* row 4 */
+    FEED (vt, "\n");        /* scroll: picture on rows 0..1 */
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    ck_assert_int_eq (mcview_vterm_image (vt, 0)->row, 0);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 1);
+
+    /* The top row of the picture leaves the screen: the picture goes with the
+       row into the history, where its place is the same row as before. */
+    for (i = 0; i < 10; i++)
+        FEED (vt, "\n");
+
+    ck_assert_uint_eq (mcview_vterm_images_len (vt), 1);
+    image = mcview_vterm_image (vt, 0);
+    ck_assert_int_eq (image->row, -10);
+    ck_assert_int_eq (mcview_vterm_history_len (vt), 11);
+    ck_assert_int_eq (mcview_vterm_history_len (vt) + image->row, 1);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 START_TEST (test_sixel_below_the_bottom_scrolls_the_screen)
 {
     mcview_vterm_t *vt = mcview_vterm_new ();
@@ -1587,6 +1623,7 @@ main (void)
     tcase_add_test (tc_core, test_sixel_becomes_a_picture_at_the_cursor);
     tcase_add_test (tc_core, test_sixel_without_raster_attributes_is_measured);
     tcase_add_test (tc_core, test_sixel_scrolls_with_the_text_and_leaves_at_the_top);
+    tcase_add_test (tc_core, test_sixel_stays_in_the_history);
     tcase_add_test (tc_core, test_sixel_below_the_bottom_scrolls_the_screen);
     tcase_add_test (tc_core, test_erase_screen_takes_the_pictures);
     tcase_add_test (tc_core, test_erase_to_end_of_screen_takes_the_pictures_below);

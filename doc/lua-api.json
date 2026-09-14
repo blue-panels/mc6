@@ -295,7 +295,7 @@
       "capability": "viewer_source",
       "mutation": "yes",
       "errors": [],
-      "summary": "Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key (\"i\") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory."
+      "summary": "Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key (\"i\") that calls options(); prepare() then runs again with what options() returned. spec.keys lists up to 32 more key names (\"gt\", \"plus\", \"alt-n\") for on_key(session, params, key), which works the same way and is told which key by the name it was given; those keys reach the source before the viewer's own keymap, and function keys, Esc, \"q\" and Ctrl-O are refused. Returning nil from either leaves the source as it is. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory."
     },
     {
       "signature": "mc.file_handler.register(spec) -> boolean",
@@ -613,6 +613,14 @@
     },
     {
       "signature": "options(session, params) -> params?",
+      "workspace": "any",
+      "capability": "viewer_source",
+      "mutation": "no",
+      "errors": [],
+      "summary": ""
+    },
+    {
+      "signature": "on_key(session, params, key) -> params?",
       "workspace": "any",
       "capability": "viewer_source",
       "mutation": "no",

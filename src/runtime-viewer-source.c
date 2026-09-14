@@ -72,6 +72,9 @@ typedef struct
     char *help_file;
     char *help_node;
     int options_key;  // keycode, 0 for none
+    int *keys;        // the keycodes the source asked for
+    guint keys_len;
+    int pending_key;  // which of them opened the options, from 1; 0 for options_key
 } runtime_viewer_controller_t;
 
 /*** forward declarations (file scope functions) *************************************************/
@@ -80,6 +83,22 @@ typedef struct
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/* Keys the viewer never hands over: its own way out and its own modes. */
+static gboolean
+runtime_viewer_key_is_reserved (int key)
+{
+    int i;
+
+    if (key == ESC_CHAR || key == (int) 'q' || key == XCTRL ('o'))
+        return TRUE;
+    for (i = 1; i <= 24; i++)
+        if (key == KEY_F (i))
+            return TRUE;
+    return FALSE;
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
@@ -216,6 +235,9 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
     target->help_node =
         g_strdup (source->help_node != NULL ? source->help_node : default_help_node);
     target->auto_scroll_bottom = source->auto_scroll_bottom;
+    if (source->struct_size
+        >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, top_row) + sizeof (source->top_row))
+        target->top_row = source->top_row;
     if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, initial_display)
             + sizeof (source->initial_display))
     {
@@ -304,8 +326,11 @@ runtime_viewer_options (void *data, mcview_source_spec_t *draft)
     mc_runtime_viewer_spec_t ignored = { .struct_size = sizeof (ignored) };
     gboolean handled = FALSE;
 
+    const int key = controller->pending_key;
+
     (void) draft;
-    return runtime_viewer_dispatch (controller, MC_RUNTIME_VIEWER_CONTROLLER_OPTIONS, NULL, 0,
+    controller->pending_key = 0;
+    return runtime_viewer_dispatch (controller, MC_RUNTIME_VIEWER_CONTROLLER_OPTIONS, NULL, key,
                                     &ignored, &handled, NULL)
         && handled;
 }
@@ -423,7 +448,33 @@ runtime_viewer_free (void *data)
                                     &ignored, &handled, NULL);
     g_free (controller->help_file);
     g_free (controller->help_node);
+    g_free (controller->keys);
     g_free (controller);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The place of @key among the keys the source asked for, from 1; 0 for the
+   options key, and -1 for a key the source never named. */
+static int
+runtime_viewer_key_index (const runtime_viewer_controller_t *controller, int key)
+{
+    guint i;
+
+    if (controller->options_key != 0 && key == controller->options_key)
+        return 0;
+    for (i = 0; i < controller->keys_len; i++)
+        if (controller->keys[i] == key)
+            return (int) i + 1;
+    return -1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+runtime_viewer_owns_key (void *data, int key)
+{
+    return runtime_viewer_key_index (data, key) >= 0;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -434,9 +485,13 @@ runtime_viewer_key (void *data, int key)
     runtime_viewer_controller_t *controller = data;
     mc_runtime_viewer_spec_t ignored = { .struct_size = sizeof (ignored) };
     gboolean handled = FALSE;
+    const int index = runtime_viewer_key_index (controller, key);
 
-    if (controller->options_key != 0 && key == controller->options_key)
+    if (index >= 0)
+    {
+        controller->pending_key = index;
         return MCV_KEY_OPEN_OPTIONS;
+    }
 
     if (!runtime_viewer_dispatch (controller, MC_RUNTIME_VIEWER_CONTROLLER_KEY, NULL, key, &ignored,
                                   &handled, NULL))
@@ -498,6 +553,7 @@ runtime_viewer_controller_open (mc_runtime_plugin_context_t *context,
         .rollback = runtime_viewer_rollback,
         .free = runtime_viewer_free,
         .handle_key = runtime_viewer_key,
+        .owns_key = runtime_viewer_owns_key,
         .prepare_viewport = runtime_viewer_prepare_viewport,
         .rebuild_on_resize = FALSE,
         .source_state = runtime_viewer_source_state,
@@ -534,6 +590,26 @@ runtime_viewer_controller_open (mc_runtime_plugin_context_t *context,
                 + sizeof (source->options_key)
         && source->options_key != NULL)
         controller->options_key = tty_keyname_to_keycode (source->options_key, NULL);
+    if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, keys_len)
+                + sizeof (source->keys_len)
+        && source->keys != NULL && source->keys_len != 0)
+    {
+        guint i;
+
+        controller->keys = g_new0 (int, source->keys_len);
+        controller->keys_len = source->keys_len;
+        for (i = 0; i < source->keys_len; i++)
+        {
+            const int key = tty_keyname_to_keycode (source->keys[i], NULL);
+
+            if (key == 0 || runtime_viewer_key_is_reserved (key))
+            {
+                runtime_viewer_free (controller);
+                return runtime_viewer_error (error, "invalid_key");
+            }
+            controller->keys[i] = key;
+        }
+    }
     if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_controller_t, target_viewer)
                 + sizeof (source->target_viewer)
         && mc_runtime_handle_is_valid (&source->target_viewer))

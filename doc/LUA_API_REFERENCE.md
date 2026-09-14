@@ -76,7 +76,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.ui.screen(spec) -> screen\|nil, error?` | Describe a full-screen grid of widgets: a title, a status line on top, keys for the button bar at the bottom, and between them spec.layout, rows of cells; a row is height = n lines or weight = n, a cell is width = n columns or weight = n and holds one control: label, status, text, separator, input, checkbox, or a table with columns and rows(first, count).  help = {file, node}; the callbacks are on_key, on_enter, on_action, on_check, on_row, on_resize, on_close.  screen:run() shows it and returns when it is closed. | `ui` | yes |
 | `mc.ui.status(text) -> boolean\|nil, error?` | Display transient text in the MC status area. | `ui` | yes |
 | `mc.ui.text_width(text) -> integer\|nil, error?` | Measure UTF-8 text using terminal display columns. | `ui` | no |
-| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key ("i") that calls options(); prepare() then runs again with what options() returned. A key the viewer has a command for never reaches it. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory. | `viewer_source` | yes |
+| `mc.viewer_source.define(spec) -> definition\|nil, error?` | Define a reusable family of managed viewer sources with optional viewport rebuild. spec.options_key names the viewer key ("i") that calls options(); prepare() then runs again with what options() returned. spec.keys lists up to 32 more key names ("gt", "plus", "alt-n") for on_key(session, params, key), which works the same way and is told which key by the name it was given; those keys reach the source before the viewer's own keymap, and function keys, Esc, "q" and Ctrl-O are refused. Returning nil from either leaves the source as it is. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the script's directory. | `viewer_source` | yes |
 | `screen:close() -> boolean\|nil, error?` | Close a running screen; screen:run() then returns. | `ui` | yes |
 | `screen:run() -> boolean\|nil, error?` | Show the screen and return when it is closed: by F10 or Esc, by the "close" action, by screen:close(), or by a callback returning { close = true }. | `ui` | yes |
 | `screen:status(text) -> boolean\|nil, error?` | Change the status line of a running screen. | `ui` | yes |
@@ -100,6 +100,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `list(instance) -> PanelView` | `mc` | `panel_provider` |
 | `navigate(instance, request) -> OperationResult` | `mc` | `panel_provider` |
 | `new_connection(host) -> Connection` | `mc` | `panel_provider` |
+| `on_key(session, params, key) -> params?` | `any` | `viewer_source` |
 | `open(argument) -> session` | `any` | `viewer_source` |
 | `open(host, path) -> instance` | `mc` | `panel_provider` |
 | `open_read(instance, entry) -> Source` | `mc` | `panel_provider` |
