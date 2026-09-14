@@ -83,11 +83,25 @@
 
 /*** file scope type declarations ****************************************************************/
 
+/**
+ * A set of bytes a rule tests one byte against: what counts as part of a word.
+ *
+ * The .syntax file spells it as a string, and the automaton used to walk that
+ * string with strchr() for every byte of the text.  It is a table now, built
+ * once when the rules are read.  A set is shared by every rule that asks for
+ * the same bytes, so a rule set holds one or two of them.
+ */
+typedef struct
+{
+    char *chars;  // the set as the file spelled it, for interning
+    gboolean in_set[UCHAR_MAX + 1];
+} syntax_charset_t;
+
 typedef struct
 {
     GString *keyword;
-    char *whole_word_chars_left;
-    char *whole_word_chars_right;
+    const syntax_charset_t *whole_word_chars_left;
+    const syntax_charset_t *whole_word_chars_right;
     gboolean line_start;
     guint color;
 } syntax_keyword_t;
@@ -101,9 +115,13 @@ typedef struct
     gboolean line_start_left;
     gboolean line_start_right;
     gboolean between_delimiters;
-    char *whole_word_chars_left;
-    char *whole_word_chars_right;
+    const syntax_charset_t *whole_word_chars_left;
+    const syntax_charset_t *whole_word_chars_right;
     char *keyword_first_chars;
+    /* which keywords to try for a byte: keyword_candidates[start[b] .. start[b + 1])
+       are the ones that can begin with byte b, in the order the rules name them */
+    guint32 *keyword_candidates;
+    guint32 *keyword_candidate_start;  // UCHAR_MAX + 2 entries
     gboolean spelling;
     // first word is word[1]
     GPtrArray *keyword;
@@ -132,7 +150,8 @@ struct syntax_rules_t
     char *type;
     GPtrArray *contexts;  // context_rule_t
     GTree *defines;
-    GArray *colors;  // syntax_color_t, index 0 unused
+    GPtrArray *charsets;  // syntax_charset_t, shared by the rules that ask alike
+    GArray *colors;       // syntax_color_t, index 0 unused
     gboolean case_insensitive;
 
     gboolean line_local;
@@ -249,8 +268,6 @@ syntax_keyword_free (gpointer keyword)
     syntax_keyword_t *k = SYNTAX_KEYWORD (keyword);
 
     g_string_free (k->keyword, TRUE);
-    g_free (k->whole_word_chars_left);
-    g_free (k->whole_word_chars_right);
     g_free (k);
 }
 
@@ -263,9 +280,9 @@ context_rule_free (gpointer rule)
 
     g_string_free (r->left, TRUE);
     g_string_free (r->right, TRUE);
-    g_free (r->whole_word_chars_left);
-    g_free (r->whole_word_chars_right);
     g_free (r->keyword_first_chars);
+    g_free (r->keyword_candidates);
+    g_free (r->keyword_candidate_start);
 
     if (r->keyword != NULL)
         g_ptr_array_free (r->keyword, TRUE);
@@ -306,6 +323,11 @@ syntax_rules_clear (syntax_rules_t *r)
         g_ptr_array_free (r->contexts, TRUE);
         r->contexts = NULL;
     }
+    if (r->charsets != NULL)
+    {
+        g_ptr_array_free (r->charsets, TRUE);
+        r->charsets = NULL;
+    }
 
     for (i = 1; i < r->colors->len; i++)
     {
@@ -345,6 +367,56 @@ destroy_defines (GTree **defines)
  * Kept symbolically on purpose: a rule set outlives the skin it is looked at
  * through, and is shared by consumers that draw in different ways.
  */
+
+static void
+syntax_charset_free (gpointer charset)
+{
+    syntax_charset_t *cs = (syntax_charset_t *) charset;
+
+    g_free (cs->chars);
+    g_free (cs);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The set of bytes @chars names, as a table to look one byte up in.
+ *
+ * Rules that name the same bytes get the same set back: a .syntax file says
+ * 'wholechars' once and every rule below it asks for that same set.
+ *
+ * The byte 0 is in every set, because strchr(), which this replaces, finds it
+ * at the end of any string.
+ */
+static const syntax_charset_t *
+syntax_intern_charset (syntax_rules_t *r, const char *chars)
+{
+    syntax_charset_t *cs;
+    const char *p;
+    guint i;
+
+    if (r->charsets == NULL)
+        r->charsets = g_ptr_array_new_with_free_func (syntax_charset_free);
+
+    for (i = 0; i < r->charsets->len; i++)
+    {
+        cs = (syntax_charset_t *) g_ptr_array_index (r->charsets, i);
+
+        if (strcmp (cs->chars, chars) == 0)
+            return cs;
+    }
+
+    cs = g_new0 (syntax_charset_t, 1);
+    cs->chars = g_strdup (chars);
+    cs->in_set[0] = TRUE;
+    for (p = chars; *p != '\0'; p++)
+        cs->in_set[(unsigned char) *p] = TRUE;
+    g_ptr_array_add (r->charsets, cs);
+
+    return cs;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 static guint
 syntax_intern_color (syntax_rules_t *r, const syntax_color_spec_t *color)
@@ -400,6 +472,8 @@ syntax_rules_free (syntax_rules_t *r)
         destroy_defines (&r->defines);
     if (r->contexts != NULL)
         g_ptr_array_free (r->contexts, TRUE);
+    if (r->charsets != NULL)
+        g_ptr_array_free (r->charsets, TRUE);
 
     for (i = 0; i < r->colors->len; i++)
     {
@@ -493,6 +567,26 @@ subst_defines (GTree *defines, char **argv, char **argv_end)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Can a rule that wants @whole_left on its left, or the start of a line, begin
+ * on the byte that follows @prev?
+ *
+ * This is the first thing compare_word_to_right() asks, and the answer is the
+ * same for every rule that wants the same border, so the loop that tries the
+ * keywords of a context asks it before it calls: more than half of the calls
+ * used to end right here.
+ */
+inline static gboolean
+border_allows_start (const syntax_charset_t *whole_left, gboolean line_start, int prev)
+{
+    if (line_start && prev != '\n')
+        return FALSE;
+
+    return whole_left == NULL || !whole_left->in_set[(unsigned char) prev];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** Is @c one of the bytes listed at @p, up to the closing @token? */
 static gboolean
 in_char_set (const unsigned char *p, int c, unsigned char token)
@@ -515,8 +609,8 @@ in_char_set (const unsigned char *p, int c, unsigned char token)
  * to step over.
  */
 static gboolean
-match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned char **pp,
-            off_t *ii)
+match_star (const syntax_scanner_t *sc, const syntax_charset_t *whole_right,
+            const unsigned char **pp, off_t *ii)
 {
     const unsigned char *p = *pp + 1;
     off_t i = *ii;
@@ -526,7 +620,7 @@ match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned 
         int c;
 
         c = get_byte_folded (sc, i);
-        if (*p == '\0' && whole_right != NULL && strchr (whole_right, c) == NULL)
+        if (*p == '\0' && whole_right != NULL && !whole_right->in_set[(unsigned char) c])
             break;
         if (c == *p)
             break;
@@ -545,7 +639,7 @@ match_star (const syntax_scanner_t *sc, const char *whole_right, const unsigned 
 
 /** '+' in a pattern: a run of bytes that are part of a word.  Empty will do. */
 static gboolean
-match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_right,
+match_plus (const syntax_scanner_t *sc, const GString *text, const syntax_charset_t *whole_right,
             const unsigned char **pp, off_t *ii)
 {
     const unsigned char *p = *pp + 1;
@@ -566,7 +660,7 @@ match_plus (const syntax_scanner_t *sc, const GString *text, const char *whole_r
         if (j != 0
             && strchr ((const char *) p + 1, c) != NULL)  // c exists further down, matched later
             break;
-        if (whiteness (c) || (whole_right != NULL && strchr (whole_right, c) == NULL))
+        if (whiteness (c) || (whole_right != NULL && !whole_right->in_set[(unsigned char) c]))
         {
             if (*p == '\0')
             {
@@ -649,14 +743,13 @@ match_brace (const syntax_scanner_t *sc, const unsigned char **pp, const unsigne
  * @return the byte after the match, or -1 if the pattern does not match
  */
 static off_t
-compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
-                       const char *whole_left, const char *whole_right, gboolean line_start)
+compare_word_to_right (const syntax_scanner_t *sc, off_t i, int prev, const GString *text,
+                       const syntax_charset_t *whole_left, const syntax_charset_t *whole_right,
+                       gboolean line_start)
 {
     const unsigned char *p, *q;
-    int c;
 
-    c = get_byte_folded (sc, i - 1);
-    if ((line_start && c != '\n') || (whole_left != NULL && strchr (whole_left, c) != NULL))
+    if (!border_allows_start (whole_left, line_start, prev))
         return -1;
 
     for (p = (const unsigned char *) text->str, q = p + text->len; p < q; p++, i++)
@@ -689,18 +782,7 @@ compare_word_to_right (const syntax_scanner_t *sc, off_t i, const GString *text,
     if (whole_right == NULL)
         return i;
 
-    return strchr (whole_right, get_byte_folded (sc, i)) != NULL ? -1 : i;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static const char *
-xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
-{
-    while (*s >= '\005' && xx_tolower (case_insensitive, *s) != char_byte)
-        s++;
-
-    return (const char *) s;
+    return whole_right->in_set[(unsigned char) get_byte_folded (sc, i)] ? -1 : i;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -716,27 +798,28 @@ xx_strchr (gboolean case_insensitive, const unsigned char *s, int char_byte)
  * @return TRUE when a keyword was turned on
  */
 static gboolean
-try_keyword (const syntax_scanner_t *sc, off_t i, int c, syntax_rule_t *rule, off_t *end,
+try_keyword (const syntax_scanner_t *sc, off_t i, int c, int prev, syntax_rule_t *rule, off_t *end,
              gboolean stop_newline_overflow)
 {
     const context_rule_t *r;
-    const char *p;
+    guint n, last;
 
     r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, rule->context));
-    p = r->keyword_first_chars;
-    if (p == NULL)
+    if (r->keyword_candidates == NULL)
         return FALSE;
 
-    while (*(p = xx_strchr (sc->rules->case_insensitive, (const unsigned char *) p + 1, c)) != '\0')
+    last = r->keyword_candidate_start[(unsigned char) c + 1];
+    for (n = r->keyword_candidate_start[(unsigned char) c]; n < last; n++)
     {
         const syntax_keyword_t *k;
-        int count;
+        guint count;
         off_t e = -1;
 
-        count = p - r->keyword_first_chars;
+        count = r->keyword_candidates[n];
         k = SYNTAX_KEYWORD (g_ptr_array_index (r->keyword, count));
-        if (k->keyword != NULL)
-            e = compare_word_to_right (sc, i, k->keyword, k->whole_word_chars_left,
+        if (k->keyword != NULL
+            && border_allows_start (k->whole_word_chars_left, k->line_start, prev))
+            e = compare_word_to_right (sc, i, prev, k->keyword, k->whole_word_chars_left,
                                        k->whole_word_chars_right, k->line_start);
         if (e > 0)
         {
@@ -769,7 +852,7 @@ static void
 apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 {
     context_rule_t *r;
-    int c;
+    int c, prev;
     syntax_found_t found = { FALSE, FALSE, FALSE, FALSE, FALSE, 0 };
     gboolean is_end;
     syntax_rule_t _rule = sc->rule;
@@ -778,12 +861,15 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
     if (c == 0)
         return;
 
+    /* the byte before is what every rule that starts here is tested against:
+       read it once, not once per rule */
+    prev = get_byte_folded (sc, i - 1);
     is_end = (sc->rule.end == i);
 
     // check to turn off a keyword
     if (_rule.keyword != 0)
     {
-        if (sc->get_byte (sc->data, i - 1) == '\n')
+        if (prev == '\n')
             _rule.keyword = 0;
         if (is_end)
         {
@@ -800,7 +886,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
         r = CONTEXT_RULE (g_ptr_array_index (sc->rules->contexts, _rule.context));
         if (r->first_right == c && (sc->rule.border & RULE_ON_RIGHT_BORDER) == 0
             && r->right->len != 0
-            && (e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
+            && (e = compare_word_to_right (sc, i, prev, r->right, r->whole_word_chars_left,
                                            r->whole_word_chars_right, r->line_start_right))
                 > 0)
         {
@@ -828,7 +914,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
 
     // check to turn on a keyword
     if (_rule.keyword == 0)
-        found.keyword_right = try_keyword (sc, i, c, &_rule, &found.end, TRUE);
+        found.keyword_right = try_keyword (sc, i, c, prev, &_rule, &found.end, TRUE);
 
     // check to turn on a context
     if (_rule.context == 0)
@@ -857,9 +943,9 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                         off_t e = -1;
 
                         if (r->right->len != 0)
-                            e = compare_word_to_right (sc, i, r->right, r->whole_word_chars_left,
-                                                       r->whole_word_chars_right,
-                                                       r->line_start_right);
+                            e = compare_word_to_right (
+                                sc, i, prev, r->right, r->whole_word_chars_left,
+                                r->whole_word_chars_right, r->line_start_right);
                         if (e >= found.end)
                         {
                             _rule.end = e;
@@ -884,7 +970,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
                     off_t e = -1;
 
                     if (r->left->len != 0)
-                        e = compare_word_to_right (sc, i, r->left, r->whole_word_chars_left,
+                        e = compare_word_to_right (sc, i, prev, r->left, r->whole_word_chars_left,
                                                    r->whole_word_chars_right, r->line_start_left);
                     if (e >= found.end && (_rule.keyword == 0 || found.keyword_right))
                     {
@@ -908,7 +994,7 @@ apply_rules_going_right (syntax_scanner_t *sc, off_t i)
        applied here; a keyword that starts on the byte the context starts on
        keeps the break.  Pinned by test_newline_keyword_at_context_start. */
     if (found.context_changed && _rule.keyword == 0)
-        (void) try_keyword (sc, i, c, &_rule, &found.end, FALSE);
+        (void) try_keyword (sc, i, c, prev, &_rule, &found.end, FALSE);
 
     sc->rule = _rule;
 }
@@ -1154,25 +1240,26 @@ xx_lowerize_line (gboolean case_insensitive, char *line, size_t len)
  * side of it has to fall on a word border.
  */
 static void
-read_whole_word_chars (const syntax_parser_t *p, char ***args, char **left, char **right)
+read_whole_word_chars (syntax_parser_t *p, char ***args, const syntax_charset_t **left,
+                       const syntax_charset_t **right)
 {
     char **a = *args;
 
     if (strcmp (*a, "whole") == 0)
     {
         a++;
-        *left = g_strdup (p->whole_left);
-        *right = g_strdup (p->whole_right);
+        *left = syntax_intern_charset (p->rules, p->whole_left);
+        *right = syntax_intern_charset (p->rules, p->whole_right);
     }
     else if (strcmp (*a, "wholeleft") == 0)
     {
         a++;
-        *left = g_strdup (p->whole_left);
+        *left = syntax_intern_charset (p->rules, p->whole_left);
     }
     else if (strcmp (*a, "wholeright") == 0)
     {
         a++;
-        *right = g_strdup (p->whole_right);
+        *right = syntax_intern_charset (p->rules, p->whole_right);
     }
 
     *args = a;
@@ -1569,6 +1656,114 @@ run_directive (syntax_parser_t *p)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * The bytes the pattern @text can begin with, marked in @set.
+ *
+ * @return FALSE when the answer is any byte at all, and @set says nothing
+ */
+static gboolean
+pattern_first_bytes (const GString *text, gboolean case_insensitive, guchar *set)
+{
+    const unsigned char *p = (const unsigned char *) text->str;
+    const unsigned char *q = p + text->len;
+
+    for (; p < q; p++)
+        switch (*p)
+        {
+        case SYNTAX_TOKEN_STAR:
+        case SYNTAX_TOKEN_PLUS:
+            // both run over bytes of any kind, and both are happy with none
+            return FALSE;
+
+        case SYNTAX_TOKEN_BRACKET:
+            /* a run out of the set, and an empty run will do, so whatever
+               stands after the set can be the first byte as well */
+            for (p++; p < q && *p != SYNTAX_TOKEN_BRACKET; p++)
+                set[*p] = TRUE;
+            break;
+
+        case SYNTAX_TOKEN_BRACE:
+            // exactly one byte out of the set, so the set is the answer
+            for (p++; p < q && *p != SYNTAX_TOKEN_BRACE; p++)
+                set[*p] = TRUE;
+            return TRUE;
+
+        default:
+            set[xx_tolower (case_insensitive, *p)] = TRUE;
+            return TRUE;
+        }
+
+    // nothing of the pattern is left: it is happy anywhere
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Which keywords of @c can begin with which byte.
+ *
+ * The scanner used to walk the string of first bytes for every byte of the
+ * text, about seventy steps a byte. The walk is done once here instead, and
+ * what it would have found is kept.
+ *
+ * Two rules of that walk are kept with it: it starts past the first byte, which
+ * is a marker and no keyword, and it ends at the first NUL, so a keyword that is
+ * an empty word hides the ones named after it.
+ *
+ * The third rule, that a keyword beginning with a pattern token is tried
+ * whatever the byte is, is asked properly instead: '{abc}' wants one byte out of
+ * its set and nothing else will do, '[abc]' wants that set or whatever follows
+ * it, and only '*' and '+' are really happy with any byte.
+ */
+static void
+build_keyword_candidates (context_rule_t *c, gboolean case_insensitive)
+{
+    GArray *cand;
+    guchar *sets;
+    guint b;
+    size_t j, n;
+
+    // an empty word hides every word named after it, as it did for the walk
+    for (n = 1; n < c->keyword->len && c->keyword_first_chars[n] != '\0'; n++)
+        ;
+
+    sets = g_new0 (guchar, n * (UCHAR_MAX + 2));
+    for (j = 1; j < n; j++)
+    {
+        const syntax_keyword_t *k = SYNTAX_KEYWORD (g_ptr_array_index (c->keyword, j));
+        guchar *set = sets + j * (UCHAR_MAX + 2);
+
+        // the last slot of a set says "any byte will do"
+        set[UCHAR_MAX + 1] = !pattern_first_bytes (k->keyword, case_insensitive, set);
+    }
+
+    cand = g_array_new (FALSE, FALSE, sizeof (guint32));
+    c->keyword_candidate_start = g_new (guint32, UCHAR_MAX + 2);
+
+    for (b = 0; b <= UCHAR_MAX; b++)
+    {
+        c->keyword_candidate_start[b] = cand->len;
+
+        for (j = 1; j < n; j++)
+        {
+            const guchar *set = sets + j * (UCHAR_MAX + 2);
+
+            if (set[UCHAR_MAX + 1] || set[b])
+            {
+                guint32 idx = (guint32) j;
+
+                g_array_append_val (cand, idx);
+            }
+        }
+    }
+    c->keyword_candidate_start[UCHAR_MAX + 1] = cand->len;
+
+    g_free (sets);
+    c->keyword_candidates = (guint32 *) g_array_free (cand, FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** The first byte of every keyword of every context, for the scanner to sieve by. */
 static void
 collect_keyword_first_chars (syntax_rules_t *r)
@@ -1596,6 +1791,7 @@ collect_keyword_first_chars (syntax_rules_t *r)
         }
 
         c->keyword_first_chars = g_strndup (first_chars->str, first_chars->len);
+        build_keyword_candidates (c, r->case_insensitive);
     }
 
     g_string_free (first_chars, TRUE);
