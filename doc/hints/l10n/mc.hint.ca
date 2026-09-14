@@ -14,9 +14,9 @@ Consell: Seleccionar directoris: afegiu «/» al final del patró de coincidènc
 
 Consell: Si no funcionen les tecles de funció, empreu la seqüència «ESC+número».
 
-Consell: La pàgina inicial del Midnight Commander de GNU és https://midnight-commander.org
+Consell: La pàgina inicial del M-Commander és https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Consell: El tabulador canvia de plafó.
 
@@ -68,18 +68,10 @@ Consell: Podeu inhabilitar tots els missatges de confirmació a «Opcions/Confir
 
 Consell: Aneu als directoris emprats sovint amb «Ctrl-\».
 
-Consell: Podeu fer FTP anònim amb mc escrivint «cd ftp://màquina.edu».
-
-Consell: L'FTP està integrat al Midnight Commander, comproveu el menú «Fitxer/Enllaç FTP».
-
 Consell: «M-t» canvia ràpidament entre els modes de llistat.
-
-Consell: Podeu especificar el nom d'usuari quan feu FTPS: «cd ftp://usuari@màquina.domini»
 
 Consell: Podeu navegar pels fitxers RPM prement «Retorn» a sobre d'un fitxer RPM.
 
 Consell: Per a marcar directoris al diàleg de selecció, afegiu-l'hi un «/».
 
 Consell: Per a tallar i enganxar amb el ratolí, podria requerir mantenir premuda la tecla «Maj».
-
-Consell: Els FTP visitats sovint es poden desar a Favorits: escriviu «Ctrl-\».

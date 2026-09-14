@@ -14,9 +14,9 @@ Hint: Selecting directories: add a slash to the end of the matching pattern.
 
 Hint: If your terminal lacks functions keys, use the ESC+number sequence.
 
-Hint: The homepage of GNU Midnight Commander: https://midnight-commander.org
+Hint: The homepage of M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hint: Tab changes your current panel.
 
@@ -68,18 +68,10 @@ Hint: You can disable all requests for confirmation in Options/Confirmation.
 
 Hint: Leap to frequently used directories in a single bound with C-\.
 
-Hint: You can do anonymous FTP with mc by typing 'cd ftp://machine.example.com'
-
-Hint: FTP is built in the Midnight Commander, check the File/FTP link menu.
-
 Hint: M-t changes quickly the listing mode.
-
-Hint: You can specify the username when doing ftps: 'cd ftp://user@machine.example.com'
 
 Hint: You can browse RPM files by tapping enter on top of an rpm file.
 
 Hint: To mark directories on the select dialogue box, append a slash.
 
 Hint: To use the mouse cut and paste may require holding the shift key
-
-Hint: Key frequently visited ftp sites in the hotlist: type C-\.

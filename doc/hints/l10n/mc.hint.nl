@@ -14,9 +14,9 @@ Hint: Directories selecteren: zet een slash aan het eind van het zoekpatroon.
 
 Hint: Als je terminal geen functietoetsen ondersteunt, gebruik dan ESC+nummer.
 
-Hint: The homepage of GNU Midnight Commander: https://midnight-commander.org
+Hint: The homepage of M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hint: Tab verandert focus huidig paneel (links/rechts).
 
@@ -68,18 +68,10 @@ Hint: Je kunt alle aanvragen voor bevestiging instellen in Opties/Bevestiging.
 
 Hint: Spring naar veel gebruikte directories in een keer met C-\.
 
-Hint: Je kunt anonieme FTP draaien met mc door middel van 'cd ftp://machine.edu'
-
-Hint: FTP is in de Midnight Commander gebouwd, check het Bestand/FTP link menu.
-
 Hint: M-t verandert snel van lijst modus.
-
-Hint: Geef alsvolgt je gebruikersnaam op met ftps: 'cd ftp://naam@machine.edu'
 
 Hint: Je kunt RPM-bestanden bekijken door er op te enteren.
 
 Hint: Om directories toe te voegen aan de selectie, moet je een slash toevoegen.
 
 Hint: Voor de normale cut-and-paste muisfuncties moet je de shift key inhouden.
-
-Hint: Voer frequent bezochte ftp-sites toe aan je hotlist: type C-\.

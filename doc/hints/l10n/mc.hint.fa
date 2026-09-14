@@ -14,9 +14,9 @@ Hint: Need to quote a character? Use Control-q and the character.
 
 راهنمایی: اگر ترمینال شما از کلید‌های فانکشن پشتیبانی نمی‌کند، از Esc+عدد استفاده کنید.
 
-راهنمایی: نشانی وبگاه فرماندار نیمهشب: https://midnight-commander.org
+راهنمایی: نشانی وبگاه M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 راهنمایی: Tab قاب فعلی را عوض می‌کند.
 
@@ -68,18 +68,10 @@ Hint: You may specify the external viewer with the shell vars VIEWER or PAGER.
 
 Hint: Leap to frequently used directories in a single bound with C-\.
 
-Hint: You can do anonymous FTP with mc by typing 'cd ftp://machine.edu'
-
-راهنمایی: FTP در فرماندار نیمه‌شب گنجانده شده است. منوی فایل/FTP link را ببینید.
-
 Hint: M-t changes quickly the listing mode.
-
-Hint: You can specify the username when doing ftps: 'cd ftp://user@machine.edu'
 
 Hint: You can browse RPM files by tapping enter on top of an rpm file.
 
 Hint: To mark directories on the select dialog box, append a slash.
 
 راهنمایی: برای بریدن و چسباندن با استفاده از موشواره باید دکمه‌ی shift را نگه‌دارید
-
-Hint: Key frequently visited ftp sites in the hotlist: type C-\.

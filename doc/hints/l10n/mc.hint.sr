@@ -14,9 +14,9 @@
 
 Савет: Ако вашем терминалу недостају функцијски тастери, користите ESC+број.
 
-Савет: Страница ГНУ-овог Поноћног наредника: https://midnight-commander.org
+Савет: Страница програма M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Савет: Tab мења текући панел.
 
@@ -68,18 +68,10 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Савет: Скокните на често коришћене директоријуме користећи C-\.
 
-Савет: Можете анонимно користити FTP са „cd ftp://machine.edu“
-
-Савет: FTP је уграђен у Поноћни наредник, проверите мени Лево(Десно)/FTP веза.
-
 Савет: M-t брзо мења режим листинга.
-
-Савет: Можете навести корисничко име за ftps: „cd ftp://korisnik@machine.edu“
 
 Савет: Можете разгледати RPM датотеке куцнувши Enter на rpm датотеци.
 
 Савет: Да означите директоријуме у дијалогу за избор, додајте косу црту.
 
 Савет: За исецање и лепљење мишем може бити потребно држање тастера shift
-
-Савет: За често посећиване ftp сајтове у брзој листи: укуцајте C-\.

@@ -14,9 +14,9 @@ Suggerimento: Selezionare cartelle: aggiungere una barra dopo i caratteri di con
 
 Suggerimento: Se nel terminale mancano i tasti di funzione, utilizzare la sequenza ESC+numero.
 
-Suggerimento: La pagina principale su Internet di GNU Midnight Commander é: https://midnight-commander.org
+Suggerimento: La pagina principale su Internet di M-Commander é: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Suggerimento: Tab modifica il pannello corrente.
 
@@ -68,18 +68,10 @@ Suggerimento: È possibile disabilitare tutte le richieste di conferma
 
 Suggerimento: Si può saltare verso cartelle usate frequentemente mediante Ctrl-\.
 
-Suggerimento: È possibile creare una connessione FTP anonima con mc digitando 'cd ftp://host.edu'.
-
-Suggerimento: L'FTP è implementato in mc nel menu DESTRO/SINISTRO/FTP Link.
-
 Suggerimento: M-t modifica velocemente la modalità di lista.
-
-Suggerimento: È possibile specificare il nome utente per una sessione FTP: 'cd ftp://utente@host.edu'.
 
 Suggerimento: È possibile vedere il contenuto di un file RPM mediante Invio.
 
 Suggerimento: Per segnare delle cartelle nel riquadro di selezione, appendere una barra.
 
 Suggerimento: per utilizzare il mouse per il taglia e incolla premere il tasto Shift.
-
-Suggerimento: Per richiamare la lista degli indirizzi FTP più utilizzati: Ctrl-\.

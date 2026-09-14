@@ -14,9 +14,9 @@ Vihje: Kataloogide valimiseks lisa sobiva mustri lõppu kaldkriips.
 
 Vihje: Kui terminalil puuduvad funktsiooniklahvid, siis kasuta ESC+number jadasid.
 
-Vihje: GNU Midnight Commanderi koduleht: https://midnight-commander.org
+Vihje: M-Commanderi koduleht: https://github.com/blue-panels/mc6
 
-Vihje: Palun teata vigadest meie veahaldussüsteemis https://github.com/MidnightCommander/mc/issues
+Vihje: Palun teata vigadest meie veahaldussüsteemis https://github.com/blue-panels/mc6/issues
 
 Vihje: TAB vahetab aktiivset paneeli.
 
@@ -68,18 +68,10 @@ Vihje: Kinnituse küsimise kõigile päringutele saad keelata Seaded/Kinnitused.
 
 Vihje: Hüppa sageli kasutatud kataloogidesse ühe seotud C-\'ga.
 
-Vihje: Anonüümse FTP kasutamiseks mc-ga sisesta 'cd ftp://masin.ee'
-
-Vihje: FTP on Midnight Commanderisse sisse ehitatud; käsk menüüst Fail/FTP ühendus.
-
 Vihje: M-t võimaldab listingu režiimi kiiret muutmist.
-
-Vihje: Kasutaja määramine FTP ühenduses: 'cd ftp://kasutaja@masin.ee'
 
 Vihje: RPM faili sisuga tutvumiseks vajuta sellel Enter.
 
 Vihje: Kataloogide märkimiseks valiku dialoogis lisa kaldkriips.
 
 Vihje: Hiirega lõikamiseks ja asetamiseks võib olla vajalik vajutada klahvi Shift.
-
-Vihje: Sisesta tihti külastatud FTP saidid kiirvalikust: tipi C-\.

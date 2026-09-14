@@ -14,9 +14,9 @@ Porada: zaznaczanie katalogów: należy dodać ukośnik na końcu wzorca dopasow
 
 Porada: jeśli w terminalu nie ma klawiszy funkcyjnych, można użyć Esc+numer.
 
-Porada: witryna programu GNU Midnight Commander: https://midnight-commander.org
+Porada: witryna programu M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Porada: klawisz Tab zmienia bieżący panel.
 
@@ -68,18 +68,10 @@ Porada: można wyłączyć wszystkie żądania potwierdzenia w Opcje/Potwierdze
 
 Porada: do listy często używanych katalogów można przejść za pomocą C-\.
 
-Porada: można połączyć się z anonimowym FTP wpisując „cd ftp://komputer.edu”.
-
-Porada: FTP jest wbudowane w mc, proszę zobaczyć menu Plik/Połączenie FTP.
-
 Porada: M-t szybko zmienia tryb wyświetlania.
-
-Porada: można podać użytkownika dla ftps: „cd ftp://użytkownik@komputer.edu”.
 
 Porada: można przeglądać pakiety RPM naciskając na nich klawisz Enter.
 
 Porada: aby zaznaczyć katalogi w oknie zaznaczania, należy dodać ukośnik.
 
 Porada: użycie wycinania i wklejania za pomocą myszy wymaga klawisza Shift.
-
-Porada: wpisując C-\ można dodać często używane zasoby FTP do listy podręcznej.

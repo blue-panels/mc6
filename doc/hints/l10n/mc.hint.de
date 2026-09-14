@@ -14,9 +14,9 @@ Hinweis: Verzeichnisse auswählen: Füge am Ende des Mustervergleichs einen Schr
 
 Hinweis: Wenn dein Terminal keine Funktionstasten unterstützt, benutze die Kombination Esc+Nummer.
 
-Hinweis: Die Homepage von GNU Midnight Commander: https://midnight-commander.org
+Hinweis: Die Homepage von M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hinweis: Tabulator wechselt das aktuelle Panel.
 
@@ -68,18 +68,10 @@ Hinweis: Du kannst alle Bestätigungsanfragen unter Optionen / Nachfragen deakti
 
 Hinweis: Springe mit C-\ direkt zu häufig verwendeten Verzeichnissen.
 
-Hinweis: Du kannst eine anonyme FTP-Verbindung im MC mit der Eingabe von 'cd ftp://machine.edu' starten.
-
-Hinweis: FTP ist im Midnight Commander eingebaut, Menüeintrag: Datei/FTP-Verbindung.
-
 Hinweis: M-t wechselt schnell den Listenmodus.
-
-Hinweis: Du kannst den Benutzernamen verwenden, wenn du bei FTP 'cd ftp://user@machine.edu' eingibst.
 
 Hinweis: Du kannst eine RPM-Datei mit Enter auf die Datei durchsuchen.
 
 Hinweis: Um Verzeichnisse in der Auswahlbox zu markieren, füge einen Schrägstrich hinzu.
 
 Hinweis: Um mit der Maus Ausschneiden und Einfügen nutzen zu können, muss evtl. die Umschalttaste gedrückt werden.
-
-Hinweis: Speichere häufig verwendete FTP-Seiten mit C-\ in der Hotlist.

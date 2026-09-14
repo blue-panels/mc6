@@ -14,13 +14,13 @@ Consejo: Para seleccionar directorios añadir «/» tras el patrón a buscar.
 
 Consejo: Si no funcionan las teclas de función, ESC+número sirve.
 
-Consejo: El sitio oficial del Midnight Commander es https://midnight-commander.org
+Consejo: El sitio oficial del M-Commander es https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Consejo: El tabulador cambia de panel.
 
-Consejo: El Midnight Commander tiene manual: «man mc»
+Consejo: El M-Commander tiene manual: «man mc»
 
 Consejo: ¿Desea navegar con las flechas al estilo Lynx? Está en Configuración.
 
@@ -68,18 +68,10 @@ Consejo: Para deshabilitar los mensajes de Confirmación vaya al menú Opciones.
 
 Consejo: Apunte los directorios y sitios más usados en «Favoritos».
 
-Consejo: Para hacer un FTP anónimo con mc: «cd ftp://maquina.dominio»
-
-Consejo: FTP está integrado en Midnight Commander, en «conexión por FTP...»
-
 Consejo: M-t permite cambiar rápidamente entre varios modos de listado.
-
-Consejo: Para hacer un FTP no-anónimo: «cd ftp://usuario@maquina.dominio»
 
 Consejo: Para examinar un archivo RPM basta pulsar «intro» sobre él.
 
 Consejo: Para marcar directorios en el dialogo de selección, añadirle «/».
 
 Consejo: Para copiar y pegar con ratón mantener presionada la tecla MAYÚSCULAS.
-
-Consejo: Los ftp habituales se pueden guardar en «Favoritos».

@@ -14,9 +14,9 @@ Tip: Výber adresárov: pridajte lomku na koniec vyhľadávacieho vzoru.
 
 Tip: Ak váš terminál nemá funkčné klávesy, použite ESC+číselnú postupnosť.
 
-Tip: Domovská stránka GNU Midnight Commander: https://midnight-commander.org
+Tip: Domovská stránka M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Tip: Tabulátor mení váš aktuálny panel.
 
@@ -68,18 +68,10 @@ Tip: Môžete zakázať všetky žiadosti o potvrdenie pomocou Možnosti/Konfigu
 
 Tip: Do často používaných adresárov môžete skákať pomocou C-\.
 
-Tip: Prístup k anonymnému FTP z mc získate napísaním „cd ftp://machine.edu“
-
-Tip: FTP je súčasťou aplikácie Midnight Commander, pozrite si menu Súbor/Pripojenie FTP.
-
 Tip: M-t rýchlo zmení režim výpisu.
-
-Tip: Môžete uviesť meno používateľa v príkaze ftps: 'cd ftp://používateľ@počítač'
 
 Tip: Stlačením Enter na súbore .rpm môžete prechádzať súbory v RPM.
 
 Tip: Adresáre v dialógovom okne výberu môžete označiť pridaním lomky.
 
 Tip: Na kopírovanie a vkladanie pomocou myši môže byť potrebné podržať Shift.
-
-Tip: Uložte si často navštevované servery FTP do hotlistu: C-\

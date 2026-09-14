@@ -14,9 +14,9 @@
 
 提示：如果你的终端机没有功能键，可以使用 ESC + 数字按键。
 
-提示：Midnight Commander 网页：https://midnight-commander.org
+提示：M-Commander 网页：https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 提示：Tab 会切换使用中的面板。
 
@@ -68,18 +68,10 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 提示：使用 C-\ 可以即时跳到经常使用的目录。
 
-提示：你可以在 mc 使用匿名模式的 FTP，方法是输入 'cd ftp://machine.edu'
-
-提示：FTP 是 Midnight Commander 的内置功能，请检查「文件/FTP 连接」菜单。
-
 提示：M-t 可快速地切换列表模式。
-
-提示：你可以在使用 ftp 时指定用户名，例如：'cd ftp://user@machine.edu'
 
 提示：你可以在 rpm 归档上按 enter 来浏览 rpm 里的文件。
 
 提示：在选择对话框中选取目录时，要在后面加一个 "/"。
 
 提示：要使用鼠标剪贴功能需要你按下 shift 键
-
-提示：要将常到的网站输入常用列表里：键入 C-\。

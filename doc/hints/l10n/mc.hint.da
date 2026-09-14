@@ -14,9 +14,9 @@ Fif: Valg af mapper: tilføj en skråstreg til slutningen af det matchende møns
 
 Fif: Hvis din terminal mangler funktionstaster, så rug ESC+talsekvensen.
 
-Fif: Hjemmesiden for GNU Midnight Commander: https://midnight-commander.org
+Fif: Hjemmesiden for M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Fif: Tabulator skifter dit nuværende panel.
 
@@ -68,18 +68,10 @@ Fif: Du kan deaktivere alle anmodninger om bekræftelse i Indstillinger/Bekræft
 
 Fif: Hop hurtigt til mapper som ofte bruges med C-\.
 
-Fif: Du kan brug anonym FTP i mc ved at skrive 'cd ftp://maskine.edu'
-
-Fif: FTP er indbygget i Midnight Commander, tjek Fil/FTP-link-menuen.
-
 Fif: M-t ændre hurtigt listningstilstanden.
-
-Fif: Du kan angive brugernavnet når ftps bruges: 'cd ftp://bruger@maskine.edu'
 
 Fif: Du kan gennemse RPM-filer ved at trykke på enter, på en rpm-fil.
 
 Fif: Tilføj en skråstreg, til at markere mapper i den valgte dialogboks.
 
 Fif: Brug at klip og indsæt med musen kan kræve at skift-tasten holdes nede
-
-Fif: Tilknyt taster i hotlisten med ftp-steder som ofte bruges: skriv C-\.

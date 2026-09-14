@@ -14,9 +14,9 @@ Hint: Selecting directories: add a slash to the end of the matching pattern.
 
 Hint: If your terminal lacks functions keys, use the ESC+number sequence.
 
-Hint: The homepage of GNU Midnight Commander: https://midnight-commander.org
+Hint: The homepage of M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Hint: Tab changes your current panel.
 
@@ -32,7 +32,11 @@ Hint: The file listing format can be customized; do "man mc" for details.
 
 Hint: %D/%T expands to the tagged files in the opposite directory.
 
-Hint: Want your plain shell? Press C-o, and get back to MC with C-o again.
+Hint: Want a shell? Press C-o for a terminal under the panels, C-o to go back.
+
+Hint: The terminal starts where the panel is, and the panel follows its cd.
+
+Hint: C-F1 and C-F2 hide a panel, and the terminal takes the free space.
 
 Hint: Setting the CDPATH variable can save you keystrokes in cd commands.
 
@@ -46,7 +50,7 @@ Hint: On slow terminals the -s flag may help.
 
 Hint: Find File: you can work on the files found using the Panelize button.
 
-Hint: Want to do complex searches? Use the External Panelize command.
+Hint: Want to do complex searches? External Panelize is on C-x ! now.
 
 Hint: To change directory halfway through typing a command, use M-c (quick cd).
 
@@ -55,6 +59,10 @@ Hint: Shell commands will not work when you are on a non-local file system.
 Hint: Bring text back from the dead with C-y.
 
 Hint: Are some of your keys not working? Look at Options/Learn keys.
+
+Hint: Options/Key bindings shows every key of the program and changes it.
+
+Hint: Options/Key sniffer shows what your terminal really sends for a key.
 
 Hint: To look at the output of a command in the viewer, use M-!
 
@@ -68,18 +76,34 @@ Hint: You can disable all requests for confirmation in Options/Confirmation.
 
 Hint: Leap to frequently used directories in a single bound with C-\.
 
-Hint: You can do anonymous FTP with mc by typing 'cd ftp://machine.edu'
-
-Hint: FTP is built in the Midnight Commander, check the File/FTP link menu.
-
 Hint: M-t changes quickly the listing mode.
 
-Hint: You can specify the username when doing ftps: 'cd ftp://user@machine.edu'
+Hint: Alt-Shift-s filters the panel down to the names you are typing.
 
 Hint: You can browse RPM files by tapping enter on top of an rpm file.
+
+Hint: Press Enter on a zip, 7z, tar or cpio archive to open it in arcmc.
+
+Hint: A panel can hold a git repo, docker, Kubernetes, S3, FTP or a database.
+
+Hint: Command/Plugin panel puts a plugin in the panel; M-F1 and M-F2 list them.
+
+Hint: Plugins are turned on and off in Options/Manage plugins.
+
+Hint: F6 in the viewer keeps only the lines that match, the way grep does.
+
+Hint: M-s in the viewer shows JSON, YAML, XML and HTML as a tree.
+
+Hint: Shift-F4 in the viewer takes a file apart into named fields (mcstruct).
+
+Hint: M-s in the editor hides every line that your filter does not match.
+
+Hint: Alt-Shift-u in the editor walks the undo history.
+
+Hint: Alt-Shift-m in the editor opens the macro explorer.
+
+Hint: The F2 user menu edits itself: no menu file to write by hand any more.
 
 Hint: To mark directories on the select dialog box, append a slash.
 
 Hint: To use the mouse cut and paste may require holding the shift key
-
-Hint: Key frequently visited ftp sites in the hotlist: type C-\.

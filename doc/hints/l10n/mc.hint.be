@@ -14,9 +14,9 @@
 
 Падказка: калі ў тэрмінала няма функцыянальных клавіш, выкарыстоўвайце "ESC+лічба".
 
-Падказка: сайт GNU Midnight Commander — https://midnight-commander.org
+Падказка: сайт M-Commander — https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Падказка: клавішай "Tab" пераключаецца бягучая панэль.
 
@@ -68,18 +68,10 @@ Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/iss
 
 Падказка: з дапамогай "C-\" можна пераходзіць да каталогаў, якія часта ўжываюцца.
 
-Падказка: на FTP можна ўвайсці ананімна, набраўшы "cd ftp://machine.edu"
-
-Падказка: Midnight Commander мае ўбудаваны FTP — глядзіце "Файл" → "FTP".
-
 Падказка: з дапамогай "M-t" можна хутка змяніць выгляд спіса файлаў на панэлі.
-
-Падказка: на FTPS можна пазначаць імя карыстальніка з дапамогай "cd ftp://user@machine.edu"
 
 Падказка: можна паглядзець змесціва архіва RPM, калі націснуць на ім "Enter".
 
 Падказка: каб у дыялогавым акне выбару пазначыць каталогі, дадайце "/ ".
 
 Падказка: для выразання і ўстаўляння мышкаю можа спатрэбіцца націснуць і ўтрымліваць "Shift"
-
-Падказка: захаваць сайты FTP, якія часта наведваеце можна з дапамогай "C-\".

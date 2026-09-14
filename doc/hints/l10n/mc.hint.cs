@@ -14,9 +14,9 @@ Tip: Složky vyberete přidáním lomítka na konec vzoru pro hledání shody v 
 
 Tip: Pokud váš terminál nezná nebo nemá funkční (F1-12) klávesy, použijte Esc+číslo.
 
-Tip: Domovská stránka GNU Midnight Commander je: https://midnight-commander.org
+Tip: Domovská stránka M-Commander je: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Tip: Pomocí klávesy Tab přejdete na další panel.
 
@@ -68,18 +68,10 @@ Tip: Všechny žádosti o potvrzení je možné vypnout v Nastavení/Potvrzován
 
 Tip: K seznamu často používaných složek se můžete dostat i přes Ctrl-\.
 
-Tip: Na anonymní FTP se připojíte příkazem „cd ftp://stroj.example.com“.
-
-Tip: Midnight Commander obsahuje vestavěného FTP klienta. Naleznete ho v nabídce Vlevo/Vpravo → FTP spojení.
-
 Tip: Meta-t rychle změní režim výpisu v panelech.
-
-Tip: Pro SFTP spojení je možné zadat i uživatelské jméno: „cd ftp://uzivatel@stroj.example.com“.
 
 Tip: RPM soubory si prohlédnete stiskem Enter na nich.
 
 Tip: Pokud chcete v dialogovém okně výběru souborů označit složky, přidejte lomítko.
 
 Tip: Pokud chcete pro zkopírování/vložení textu použít myš, podržte Shift.
-
-Tip: V seznamu pro rychlý přístup můžete mít i často navštěvované FTP servery. Zkuste Ctrl-\.

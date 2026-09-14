@@ -14,9 +14,9 @@ Leid: Eolairí a roghnú: cuir slais isteach go dtí deireadh an patrún meaitse
 
 Leid: Má níl do críochfort eochracha feidhmeanna, bain úsáid as an ESC + seicheamh uimhir
 
-Leid: Leathanach baile GNU Midnight Commander: https://midnight-commander.org
+Leid: Leathanach baile M-Commander: https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Leid: Athraíonn an tábla do phainéal reatha.
 
@@ -68,18 +68,10 @@ Leid: Is féidir leat gach iarratas a dhíchumasú ar dheimhniú i Roghanna / De
 
 Leid: Luaigh eolairí a úsáidtear go minic i gceangal le C-\.
 
-Leid: Is féidir leat FTP gan ainm a dhéanamh le mc trí chlóscríobh 'cd ftp://machine.edu'
-
-Leid: tógtar FTP sa Cheannasaí Meán Oíche, seiceáil an roghchlár nasc File / FTP.
-
 Leid: Athraíonn M-t go tapa ar an mód liostaithe.
-
-Leid: Is féidir leat an t-ainm úsáideora a shonrú nuair a dhéanann tú ftps: 'cd ftp: //user@machine.edu'
 
 Leid: Is féidir leat brabhsáil comhaid RPM trí scanadh a chur isteach ar bharr comhad rpm.
 
 Leid: Chun comharthaí a mharcáil ar an mbosca dialóige roghnaigh, cuir slash ar.
 
 Leid: Úsáid a bhaint as an gearrtha luch agus greamaigh theastóidh a bhfuil an eochair-athrú
-
-Leid: Eochair láithreáin ftp a thugtar cuairt orthu go minic sa hotlist: cineál C-\.

@@ -14,9 +14,9 @@ Astuce : Sélection de répertoires: ajouter une barre oblique à la fin de moti
 
 Astuce : Si votre clavier n’a pas de touche de fonction, utilisez la combinaison ESC+nombre.
 
-Astuce : Site officiel de GNU Midnight Commander : https://midnight-commander.org
+Astuce : Site officiel de M-Commander : https://github.com/blue-panels/mc6
 
-Hint: Please file any bug reports at https://github.com/MidnightCommander/mc/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
 
 Astuce : La touche Tab permute le panneau courant.
 
@@ -68,18 +68,10 @@ Astuce : Vous pouvez désactiver toutes les demandes de confirmation dans le men
 
 Astuce : Allez dans vos répertoires favoris rapidement avec C-backslash.
 
-Astuce : Vous pouvez faire du FTP anonyme avec MC en tapant « cd ftp://machine.edu ».
-
-Astuce : Le support FTP est intégré à Midnight Commander, voir le menu « Lien FTP ».
-
 Astuce : M-t change le mode de listing courant.
-
-Astuce : Vous pouvez définir l’utilisateur quand vous utilisez FTP : « cd ftp://user@machine.edu ».
 
 Astuce : VFS: parcourez le contenu des fichiers RPM en tapant Entrée sur le fichier.
 
 Astuce : Pour ne sélectionner que les répertoires dans la fenêtre, sélectionnez (menu Fichiers/Sélectionner les groupes), ajoutez un « / ».
 
 Astuce : Le copier-coller par la souris peut nécessiter de maintenir la touche Shift.
-
-Astuce : Définissez vos sites FTP favoris dans la hotlist : taper C-backslash.
