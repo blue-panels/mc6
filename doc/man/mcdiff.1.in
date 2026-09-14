@@ -77,10 +77,10 @@ help of the M\-Commander for details on the License and the lack
 of warranty.
 .SH AVAILABILITY
 The latest version of this program can be found at
-\X'tty: link https://ftp.osuosl.org/pub/midnightcommander/'https://ftp.osuosl.org/pub/midnightcommander/\X'tty: link' .
+\X'tty: link https://github.com/blue-panels/mc6/releases'https://github.com/blue-panels/mc6/releases\X'tty: link' .
 .SH SEE ALSO
 mc(1), mcedit(1), mcview(1)
 .PP
 .SH BUGS
 Bugs should be reported to
-\X'tty: link https://github.com/MidnightCommander/mc/issues'https://github.com/MidnightCommander/mc/issues\X'tty: link' .
+\X'tty: link https://github.com/blue-panels/mc6/issues'https://github.com/blue-panels/mc6/issues\X'tty: link' .

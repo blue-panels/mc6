@@ -1364,7 +1364,7 @@ The
 "Screen list"
 .\"Screen selector"
 command shows a dialog window with the list of currently running
-internal editors, viewers and other MC modules that support this mode.
+internal editors, viewers and other M\-Commander modules that support this mode.
 .PP
 The
 .\"LINK2"
@@ -2392,7 +2392,7 @@ If this file doesn't exist, the system\-wide file
 .B %sysconfdir%/mc/mc.ini
 is used. If this file doesn't exist, the system\-wide file
 .B %pkgdatadir%/mc.ini
-is used. If this file doesn't exist, MC uses the default settings.
+is used. If this file doesn't exist, M\-Commander uses the default settings.
 .PP
 The
 .I Save Setup
@@ -2409,7 +2409,7 @@ menus.
 .PP
 If you activate the
 .I auto save setup
-option, MC will always save the current settings when exiting.
+option, M\-Commander will always save the current settings when exiting.
 .PP
 There also exist settings which can't be changed from the menus. To
 change these settings you have to edit the setup file with your
@@ -2688,7 +2688,7 @@ are currently using in your shell.
 full screen mode (Ctrl\-o), not when the panels are visible.)
 .PP
 To set a specific shell different from your current SHELL variable or
-login shell defined in /etc/passwd, you may call MC like this:
+login shell defined in /etc/passwd, you may call M\-Commander like this:
 .B SHELL=/bin/myshell mc
 .\"NODE "Chmod"
 .SH "Chmod"
@@ -2986,7 +2986,7 @@ destination is "\e2.\e1".
 .PP
 .B Use shell patterns off
 .PP
-When the shell patterns option is off the MC doesn't do automatic
+When the shell patterns option is off the M\-Commander doesn't do automatic
 grouping anymore. You must use '\e(...\e)' expressions in the source
 mask to specify meaning for the wildcards in the target mask. This is
 more flexible but also requires more typing. Otherwise target masks
@@ -3692,7 +3692,7 @@ open a dialog window with the list of currently open screens (or use the
 .SH "Completion"
 Let M\-Commander type for you.
 .PP
-Attempt to perform completion on the text before current position.  MC
+Attempt to perform completion on the text before current position.  M\-Commander
 attempts completion treating the text as variable (if the text begins
 with
 .BR $ ),
@@ -3707,7 +3707,7 @@ matches, filename completion is attempted.
 .PP
 Filename, username, variable and hostname completion works on all input
 lines, command completion is command line specific.  If the completion
-is ambiguous (there are more different possibilities), MC beeps and the
+is ambiguous (there are more different possibilities), M\-Commander beeps and the
 following action depends on the setting of the
 .\"LINK2"
 Complete: show all
@@ -3735,7 +3735,7 @@ Complete: show all
 .\"Configuration"
 is disabled, the dialog pops up only if you press
 .B Alt\-Tab
-for the second time, for the first time MC just beeps.
+for the second time, for the first time M\-Commander just beeps.
 .PP
 Apply escaping of \fB?\fR, \fB*\fR, and \fB&\fR symbols (as \fB\e?\fR, \fB\e*\fR,
 and \fB\e&\fR) in filenames to disallow use them as metasymbols in regular
@@ -4165,8 +4165,8 @@ bottom of the screen, edit your ~/.config/mc6/ini file and change the value of
 the field clear_before_exec to 0.
 .TP
 .I confirm_view_dir
-If you press F3 on a directory, normally MC enters that directory.  If
-this flag is set to 1, then MC will ask for confirmation before changing
+If you press F3 on a directory, normally M\-Commander enters that directory.  If
+this flag is set to 1, then M\-Commander will ask for confirmation before changing
 the directory if you have files tagged.
 .TP
 .I ftpfs_retry_seconds
@@ -4300,9 +4300,9 @@ Find file
 .\"Find File"
 results window.
 .PP
-If external editor/viewer is launched via F4/F3 keys, MC hopes that program
+If external editor/viewer is launched via F4/F3 keys, M\-Commander hopes that program
 (at least "joe", but probably others too) has an own feature that by default
-opens the file where it was last open. MC doesn't prevent external editor/viewer
+opens the file where it was last open. M\-Commander doesn't prevent external editor/viewer
 to save and restore position in opened files.
 .\"NODE "Terminal databases"
 .SH "Terminal databases"
@@ -4427,16 +4427,17 @@ is shown along with it.
 .IP
 The directory list for the directory tree and tree view features.
 .PP
-.I ~/.local/share/mc6.menu
+.I ./.mc.menu
 .IP
-Local user\-defined menu. If this file is present, it is used instead of
-the home or system\-wide applications menu.
+Local user\-defined menu. If this file is present in the current
+directory, it is used instead of the home or system\-wide applications
+menu.
 .PP
-To change default root directory of MC, you can use
+To change default root directory of M\-Commander, you can use
 .B MC_PROFILE_ROOT
 environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
-or empty, MC directories are get from GLib library.
+or empty, M\-Commander directories are get from GLib library.
 .\"SKIP_SECTION"
 .SH "LICENSE"
 This program is distributed under the terms of the GNU General Public
@@ -4445,15 +4446,15 @@ help for details on the License and the lack of warranty.
 .\"NODE "AVAILABILITY"
 .SH "AVAILABILITY"
 The latest version of this program can be found at
-\X'tty: link https://ftp.osuosl.org/pub/midnightcommander/'https://ftp.osuosl.org/pub/midnightcommander/\X'tty: link' .
+\X'tty: link https://github.com/blue-panels/mc6/releases'https://github.com/blue-panels/mc6/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "SEE ALSO"
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
 tcsh(1), zsh(1).
 .PP
 .nf
-Midnight Commander's page on the World Wide Web:
-	\X'tty: link https://midnight\-commander.org'https://midnight\-commander.org\X'tty: link'
+M\-Commander's page on the World Wide Web:
+	\X'tty: link https://github.com/blue-panels/mc6'https://github.com/blue-panels/mc6\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTHORS"
@@ -4465,7 +4466,7 @@ See the file TODO in the distribution for information on what remains to
 be done.
 .PP
 If you want to report a problem with the program, please create bugreport at
-\X'tty: link https://github.com/MidnightCommander/mc/issues'https://github.com/MidnightCommander/mc/issues\X'tty: link' .
+\X'tty: link https://github.com/blue-panels/mc6/issues'https://github.com/blue-panels/mc6/issues\X'tty: link' .
 .PP
 Provide a detailed description of the bug, the version of the program
 you are running
