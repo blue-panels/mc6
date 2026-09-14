@@ -34,8 +34,9 @@ usage: sandbox.sh [env] <command> [args]
   check     can every plugin be loaded, and does every protocol answer:
             check [plugins|remote|all]
   test      press the keys in the cases: test [-c subject] [-w transports]
-            [-l locale] [-o key=value]... [-k keymap] [-g] [dir...]
-            -g runs mc under valgrind memcheck (slow; debian-12 has it)
+            [-l locale] [-s shell] [-o key=value]... [-k keymap] [-g] [dir...]
+            -s picks the shell mc drives, -g runs mc under valgrind memcheck
+            (slow; debian-12 has it)
   ui        the same, chosen from menus
   shell     a shell next to mc, with ssh, curl and smbclient in it
   remote    a shell on the remote host
@@ -61,6 +62,7 @@ list ()
     echo "profiles:     $(sed -n 's/^\[\(.*\)\]$/\1/p' "$root/common/features.ini" | tr '\n' ' ')"
     echo "keymaps:      $(ls "$root"/common/keymaps/ 2>/dev/null | sed 's/\.keymap$//' | tr '\n' ' ')"
     echo "locales:      ru_RU.UTF-8 en_US.UTF-8 ru_RU.KOI8-R ru_RU.CP866 C"
+    echo "shells:       $(sed -n 's/^\([a-z]*\)$/\1/p' "$root/cases/shells/shells.txt" 2>/dev/null | tr '\n' ' ')"
 }
 
 # The environment may be named first; otherwise the default one is used.

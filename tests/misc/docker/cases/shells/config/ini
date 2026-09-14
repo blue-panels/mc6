@@ -1,0 +1,4 @@
+# F10 must not stop at a question: the case that asks whether anything of mc
+# is left behind presses it and then looks for the process.
+[Midnight-Commander]
+confirm_exit=false

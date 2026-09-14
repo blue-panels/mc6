@@ -4,7 +4,9 @@
 # usage: run-cases.sh [-c subject] [-w transports] [-l locale] [-o [sec.]key=val]...
 #                     [-k keymap] [-r report] [-g] [-v] [case-dir...]
 #
-# Each row of a cases.tsv is "file, keys, expect, why, transports".  mc is
+# Each row of a cases.tsv is "file, keys, expect, why, transports, shells".
+# The last two are optional: a row with transports named runs only over those,
+# and a row with shells named only under those (-s).  mc is
 # started under tmux with the panel in that directory, the file is found by
 # quick search, the keys are pressed in order and the screen is read.  A key
 # is Enter, F3, F5, F6, F8, C-o, ".." (up one level), "on <name>" (the cursor goes
@@ -17,6 +19,9 @@
 #   -c   the subject under cases/ (default archives)
 #   -w   comma separated: local, sftp, ftp, smb, sh (default local)
 #   -l   locale mc runs in; messages stay English (default ru_RU.UTF-8)
+#   -s   the shell mc drives: bash, zsh, dash, ash, mksh, tcsh, fish.  The
+#        image's own $SHELL when it is left out; a shell that is not in the
+#        image stops the run rather than failing a case.
 #   -o   an ini value written before mc starts, section Midnight-Commander
 #        unless given: -o old_esc_mode=true -o Layout.message_visible=false
 #   -k   a keymap from common/keymaps/ put in place as mc.keymap
@@ -33,6 +38,7 @@
 # is still run, a failure is reported as "known", and a pass as "FIXED".
 #
 # What must come of it: "archive panel", "listing", "error dialog",
+# "no process left" (mc was asked to quit and is gone),
 # "nothing, no error", "the panel it came from", "extfs panel", "copy to the
 # other panel" (the file is then in /tmp, the same size), "the name as
 # written" (the file's name is on the screen, in the shell's output),
@@ -49,6 +55,7 @@ env_name=${SANDBOX_ENV:-unknown}
 subject=archives
 transports=local
 locale=ru_RU.UTF-8
+shell=
 keymap=
 report=
 verbose=0
@@ -59,11 +66,12 @@ memcheck=0
 # to start
 slow=${SLOW:-1}
 
-while getopts "c:w:l:o:k:r:vg" opt; do
+while getopts "c:w:l:s:o:k:r:vg" opt; do
     case "$opt" in
     c) subject=$OPTARG ;;
     w) transports=$OPTARG ;;
     l) locale=$OPTARG ;;
+    s) shell=$OPTARG ;;
     o) options="$options
 $OPTARG" ;;
     k) keymap=$OPTARG ;;
@@ -76,6 +84,15 @@ done
 shift $((OPTIND - 1))
 
 [ -x "$MC" ] || { echo "run-cases.sh: no mc at $MC, run build first" >&2; exit 2; }
+
+shell_env=
+shell_path=
+if [ -n "$shell" ]; then
+    shell_path=$(command -v "$shell" 2>/dev/null) || shell_path=
+    [ -n "$shell_path" ] \
+        || { echo "run-cases.sh: no $shell in this image" >&2; exit 2; }
+    shell_env="SHELL=$shell_path"
+fi
 
 if [ $memcheck = 1 ]; then
     command -v valgrind >/dev/null 2>&1 \
@@ -320,6 +337,7 @@ start_mc ()
     # messages in English so that the screen can be read, the charset as asked
     $T new-session -d -s mc -x 120 -y 40 \
         "env -u LC_ALL LANG=$locale LC_CTYPE=$locale LC_MESSAGES=en_US.UTF-8 TERM=xterm-256color \
+         $shell_env \
          $(vg_prefix)$MC -S default '$open_path' /tmp 2>'$3'"
     case "$2" in
     local)
@@ -436,6 +454,10 @@ check ()
         ;;
     "the name as written")
         screen | grep -qF -- "$2"
+        ;;
+    "no process left")
+        # the case quit mc; neither it nor the shell it drove may still be here
+        ! pgrep -x mc >/dev/null
         ;;
     "text: "*)
         screen | grep -qF -- "${1#text: }"
@@ -595,6 +617,7 @@ total_run=0
     [ -n "$options" ] && echo "- ini: $(echo "$options" | grep . | tr '\n' ' ')"
     [ -n "$keymap" ] && echo "- keymap: $keymap"
     echo "- mc: $(readlink /work/opt/mc)"
+    [ -n "$shell" ] && echo "- shell: $shell ($shell_path)"
     [ $memcheck = 1 ] && echo "- valgrind: memcheck, waits x$slow"
     echo
     echo "| transport | passed | failed | known | fixed | skipped |"
@@ -619,11 +642,16 @@ for where in $(echo "$transports" | tr ',' ' '); do
         tsv=/work/local/$subject/$d/cases.tsv
         [ -f "$tsv" ] || { echo "  $d: no cases.tsv"; continue; }
 
-        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why only; do
+        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why only shells; do
             [ -n "$file" ] || continue
             rm -f "/tmp/$file"
             # a row for some transports only
             if [ -n "$only" ] && ! echo ",$only," | grep -qF ",$where,"; then
+                continue
+            fi
+            # a row for some shells only, when the run named one
+            if [ -n "${shells:-}" ] && [ -n "$shell" ] \
+                && ! echo ",$shells," | grep -qF ",$shell,"; then
                 continue
             fi
             name="$d/$file"
@@ -658,6 +686,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
             case "$expect" in
             "archive panel" | listing | "nothing, no error" | "error dialog" | "the panel it came from" \
                 | "extfs panel" | "copy to the other panel" | "the name as written" \
+                | "no process left" \
                 | "text: "* | "no text: "* | "clipfile: "*) ;;
             *)
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$expect"

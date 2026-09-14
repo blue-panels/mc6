@@ -166,6 +166,18 @@ which would cost the image a JRE.
 The PNG is in true colour on purpose: chafa's loader turns down a paletted
 one.
 
+### shells
+
+| directory     | what it is for                                                |
+|---------------|----------------------------------------------------------------|
+| `01-subshell` | that mc starts, that Ctrl-O gives a shell which runs a command, that a cd in that shell moves the panel, and that quitting mc leaves nothing running |
+
+`cases/shells/shells.txt` names them: sh, bash, zsh, dash, busybox ash, mksh,
+tcsh and fish. `test -s <name>` runs the subject under one of them and `ci.sh`
+walks the whole list, one report each. A shell the image does not carry is
+reported as not run rather than as a failure, so an environment carries the
+shells it wants to answer for; debian-12 carries all of them.
+
 ### sqlite
 
 | directory     | what it is for                                              |
@@ -202,6 +214,7 @@ open it.
     sandbox.sh debian-12 test -w sh 01-formats         # one directory
     sandbox.sh debian-12 test -l ru_RU.KOI8-R          # an 8-bit locale
     sandbox.sh debian-12 test -c editor -l ru_RU.CP866 # the DOS codepage
+    sandbox.sh debian-12 test -c shells -s dash      # mc over another shell
     sandbox.sh debian-12 test -o old_esc_mode=true -k shift-tab-complete
     sandbox.sh debian-12 build -f all,ncurses && sandbox.sh debian-12 test
 
@@ -228,7 +241,7 @@ written into `~/.config/mc6/term` before mc starts, so that `C-F1` and
 before each case, so one case does not hand the next the cursor position it
 left in a file.
 
-`-o` writes ini values before mc starts (`section.key=value`, the section
+`-s` is the shell mc drives, out of what the image has. `-o` writes ini values before mc starts (`section.key=value`, the section
 `Midnight-Commander` when left out), `-k` puts a keymap from `common/keymaps/`
 in place, `-l` picks the locale mc runs in (messages stay English so that
 the screen can be read). `build -f` picks a profile from

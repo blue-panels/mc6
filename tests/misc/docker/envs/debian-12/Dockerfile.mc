@@ -8,7 +8,8 @@ RUN apt-get update \
         libglib2.0-dev libncurses-dev libslang2-dev \
         libssh2-1-dev libcurl4-openssl-dev libarchive-dev libmagic-dev libsqlite3-dev libsmbclient-dev \
         check rsync file openssh-client curl sshpass smbclient ca-certificates \
-        zsh libarchive-tools procps unzip zip tmux \
+        zsh dash mksh tcsh busybox fish \
+        libarchive-tools procps unzip zip tmux \
         valgrind \
         liblua5.4-dev chafa sqlite3 \
         locales \
@@ -30,6 +31,13 @@ RUN chmod +x /usr/local/bin/build-mc.sh /usr/local/bin/check-remote.sh /usr/loca
 # new-user questionnaire, so give it an rc file of its own.
 COPY common/zshrc /root/.zshrc
 ENV SHELL=/usr/bin/zsh
+
+# The shells the "shells" subject is run under: busybox answers to the name mc
+# knows its shell by, and fish greets every new session unless it is told not
+# to, which would be on the screen a case reads.
+RUN ln -s /bin/busybox /usr/local/bin/ash \
+    && mkdir -p /root/.config/fish \
+    && printf 'set fish_greeting ""\n' > /root/.config/fish/config.fish
 
 ENV TERM=xterm-256color
 WORKDIR /work
