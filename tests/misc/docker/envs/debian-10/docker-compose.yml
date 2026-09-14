@@ -29,6 +29,10 @@ services:
       - work:/work
       # what a run leaves behind, on the host
       - ../../reports:/reports
+    tmpfs:
+      # a filesystem with nothing to spare: what mc does when the target is
+      # full is a case of its own
+      - /small:size=64k
     tty: true
     stdin_open: true
 

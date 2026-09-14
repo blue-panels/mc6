@@ -1,0 +1,11 @@
+# The shells this subject is run under, one per line: run-cases.sh -s takes
+# one of them, ci.sh walks the list.  A shell that the image does not carry is
+# reported as not run, not as a failure.
+sh
+bash
+zsh
+dash
+ash
+mksh
+tcsh
+fish

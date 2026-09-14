@@ -4,10 +4,12 @@
 # usage: run-cases.sh [-c subject] [-w transports] [-l locale] [-o [sec.]key=val]...
 #                     [-k keymap] [-r report] [-g] [-v] [case-dir...]
 #
-# Each row of a cases.tsv is "file, keys, expect, why, transports".  mc is
+# Each row of a cases.tsv is "file, keys, expect, why, transports, shells".
+# The last two are optional: a row with transports named runs only over those,
+# and a row with shells named only under those (-s).  mc is
 # started under tmux with the panel in that directory, the file is found by
 # quick search, the keys are pressed in order and the screen is read.  A key
-# is Enter, F3, F5, C-o, ".." (up one level), "on <name>" (the cursor goes
+# is Enter, F3, F5, F6, F8, C-o, ".." (up one level), "on <name>" (the cursor goes
 # there), "cd <path>" (through the Quick cd box), "type <text>",
 # "key <name>" for anything tmux can send (F4, M-S, C-M-l, Escape, C-F1), or
 # "width <n>" to make the terminal that many columns wide.
@@ -17,6 +19,9 @@
 #   -c   the subject under cases/ (default archives)
 #   -w   comma separated: local, sftp, ftp, smb, sh (default local)
 #   -l   locale mc runs in; messages stay English (default ru_RU.UTF-8)
+#   -s   the shell mc drives: bash, zsh, dash, ash, mksh, tcsh, fish.  The
+#        image's own $SHELL when it is left out; a shell that is not in the
+#        image stops the run rather than failing a case.
 #   -o   an ini value written before mc starts, section Midnight-Commander
 #        unless given: -o old_esc_mode=true -o Layout.message_visible=false
 #   -k   a keymap from common/keymaps/ put in place as mc.keymap
@@ -33,6 +38,7 @@
 # is still run, a failure is reported as "known", and a pass as "FIXED".
 #
 # What must come of it: "archive panel", "listing", "error dialog",
+# "no process left" (mc was asked to quit and is gone),
 # "nothing, no error", "the panel it came from", "extfs panel", "copy to the
 # other panel" (the file is then in /tmp, the same size), "the name as
 # written" (the file's name is on the screen, in the shell's output),
@@ -49,20 +55,23 @@ env_name=${SANDBOX_ENV:-unknown}
 subject=archives
 transports=local
 locale=ru_RU.UTF-8
+shell=
 keymap=
 report=
 verbose=0
 options=
 memcheck=0
-# valgrind makes mc some twenty times slower to start; every wait is
-# multiplied by this, and $SLOW overrides it for a slow machine
-slow=1
+# every wait is multiplied by this: $SLOW for a slow machine, a CI runner
+# among them, and six under valgrind, which makes mc some twenty times slower
+# to start
+slow=${SLOW:-1}
 
-while getopts "c:w:l:o:k:r:vg" opt; do
+while getopts "c:w:l:s:o:k:r:vg" opt; do
     case "$opt" in
     c) subject=$OPTARG ;;
     w) transports=$OPTARG ;;
     l) locale=$OPTARG ;;
+    s) shell=$OPTARG ;;
     o) options="$options
 $OPTARG" ;;
     k) keymap=$OPTARG ;;
@@ -75,6 +84,15 @@ done
 shift $((OPTIND - 1))
 
 [ -x "$MC" ] || { echo "run-cases.sh: no mc at $MC, run build first" >&2; exit 2; }
+
+shell_env=
+shell_path=
+if [ -n "$shell" ]; then
+    shell_path=$(command -v "$shell" 2>/dev/null) || shell_path=
+    [ -n "$shell_path" ] \
+        || { echo "run-cases.sh: no $shell in this image" >&2; exit 2; }
+    shell_env="SHELL=$shell_path"
+fi
 
 if [ $memcheck = 1 ]; then
     command -v valgrind >/dev/null 2>&1 \
@@ -95,6 +113,11 @@ nap ()
         sleep "$(awk -v a="$1" -v s="$slow" 'BEGIN { printf "%.2f", a * s }')"
     fi
 }
+# A subject the last build did not know about, or one built by an older build:
+# its files are made here rather than asking for a rebuild.
+if [ ! -d "/work/local/$subject" ] && [ -f "$SRC/cases/$subject/fixtures.sh" ]; then
+    sh "$SRC/cases/$subject/fixtures.sh" "/work/local/$subject" >/dev/null
+fi
 [ -d "/work/local/$subject" ] || { echo "run-cases.sh: no local fixtures for $subject" >&2; exit 2; }
 
 stamp=$(date +%Y-%m-%dT%H-%M-%S)
@@ -110,19 +133,6 @@ mkdir -p "$config"
 
 # where a copy lands: the same file the editor and the terminal write
 clipfile=${XDG_DATA_HOME:-$HOME/.local/share}/mc6/mcedit/mcedit.clip
-
-# -o values, grouped by section
-if [ -n "$options" ]; then
-    echo "$options" | grep . | awk -F= '
-    {
-        key = $1; sub(/^[^=]*=/, "", $0); val = $0
-        sec = "Midnight-Commander"
-        if (index(key, ".") > 0) { sec = substr(key, 1, index(key, ".") - 1); key = substr(key, index(key, ".") + 1) }
-        if (!(sec in seen)) { order[++n] = sec; seen[sec] = 1 }
-        body[sec] = body[sec] key "=" val "\n"
-    }
-    END { for (i = 1; i <= n; i++) printf "[%s]\n%s\n", order[i], body[order[i]] }' > "$config/ini"
-fi
 
 if [ -n "$keymap" ]; then
     cp "$SRC/common/keymaps/$keymap.keymap" "$config/mc.keymap" \
@@ -172,6 +182,43 @@ term_keys
 # rule known only to magic.ini gets in front of mc without touching the build.
 if [ -d "$SRC/cases/$subject/config" ]; then
     cp -r "$SRC/cases/$subject/config/." "$config/"
+fi
+
+# One value in mc's ini, section $1, key $2, value $3: what the subject brought
+# stays, and what -o says wins over it.
+ini_set ()
+{
+    awk -v sec="$1" -v key="$2" -v val="$3" '
+    /^\[.*\]$/ {
+        if (cur == sec && !done) { print key "=" val; done = 1 }
+        cur = substr($0, 2, length($0) - 2)
+    }
+    cur == sec && index($0, key "=") == 1 { next }
+    { print }
+    END {
+        if (!done) {
+            if (cur != sec) print "[" sec "]"
+            print key "=" val
+        }
+    }' "$config/ini" > "$config/ini.new"
+    mv "$config/ini.new" "$config/ini"
+}
+
+# -o section.key=value, the section Midnight-Commander when it is left out
+if [ -n "$options" ]; then
+    [ -f "$config/ini" ] || : > "$config/ini"
+    printf '%s\n' "$options" | grep . | while IFS= read -r opt; do
+        key=${opt%%=*}
+        val=${opt#*=}
+        sec=Midnight-Commander
+        case "$key" in
+        *.*)
+            sec=${key%%.*}
+            key=${key#*.}
+            ;;
+        esac
+        ini_set "$sec" "$key" "$val"
+    done
 fi
 
 # the connection each plugin reads on start; plain passwords are accepted
@@ -228,7 +275,7 @@ select_entry ()
     while [ "$n" -gt 0 ]; do
         $T send-keys -t mc C-s
         nap 0.2
-        $T send-keys -t mc -l "$1"
+        $T send-keys -t mc -l -- "$1"
         nap 0.3
         screen | grep -qF "/$1" && return 0
         $T send-keys -t mc Escape
@@ -255,6 +302,26 @@ vg_prefix ()
         --track-origins=yes --num-callers=30 --error-limit=no "
 }
 
+# The files a case works on, made again when the last case changed them: a
+# copy, a move or a delete leaves the tree as it is not, and the next case,
+# like the next run, is meant to start where this one did.  Building them is
+# cheaper than it looks, and a find over the tree is cheaper still, so it is
+# only done when something moved.  The stamp lives outside the tree: a file in
+# it would show up in the panel.
+refresh_fixtures ()
+{
+    [ "$1" = local ] || return 0
+    [ -f "$SRC/cases/$subject/fixtures.sh" ] || return 0
+    tree=/work/local/$subject
+    stamp=/work/local/.stamp-$subject
+    if [ -f "$stamp" ] && [ ! "$SRC/cases/$subject/fixtures.sh" -nt "$stamp" ] \
+        && [ -z "$(find "$tree" -newer "$stamp" -print -quit 2>/dev/null)" ]; then
+        return 0
+    fi
+    sh "$SRC/cases/$subject/fixtures.sh" "$tree" >/dev/null
+    touch "$stamp"
+}
+
 # start mc with the panel in case directory $1 over transport $2; stderr to $3
 start_mc ()
 {
@@ -270,6 +337,7 @@ start_mc ()
     # messages in English so that the screen can be read, the charset as asked
     $T new-session -d -s mc -x 120 -y 40 \
         "env -u LC_ALL LANG=$locale LC_CTYPE=$locale LC_MESSAGES=en_US.UTF-8 TERM=xterm-256color \
+         $shell_env \
          $(vg_prefix)$MC -S default '$open_path' /tmp 2>'$3'"
     case "$2" in
     local)
@@ -387,6 +455,10 @@ check ()
     "the name as written")
         screen | grep -qF -- "$2"
         ;;
+    "no process left")
+        # the case quit mc; neither it nor the shell it drove may still be here
+        ! pgrep -x mc >/dev/null
+        ;;
     "text: "*)
         screen | grep -qF -- "${1#text: }"
         ;;
@@ -405,9 +477,9 @@ check ()
 # can every step of $1 be pressed?
 steps_known ()
 {
-    echo "$1" | tr ',' '\n' | while read -r step; do
+    printf '%s\n' "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
-        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
+        Enter | F3 | F5 | F6 | F8 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
         *) exit 1 ;;
         esac
     done
@@ -415,12 +487,20 @@ steps_known ()
 
 press ()
 {
-    echo "$1" | tr ',' '\n' | while read -r step; do
+    printf '%s\n' "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
         F5)
             $T send-keys -t mc F5
             # the copy box takes its time over a remote panel
             wait_for " Copy " 15 >/dev/null
+            ;;
+        F6)
+            $T send-keys -t mc F6
+            wait_for " Move " 15 >/dev/null
+            ;;
+        F8)
+            # the question it opens is drawn at once; the nap below is the wait
+            $T send-keys -t mc F8
             ;;
         Enter | F3 | C-o)
             $T send-keys -t mc "$step"
@@ -437,12 +517,13 @@ press ()
         "cd "*)
             $T send-keys -t mc M-c
             wait_for "cd:" 5 >/dev/null
-            $T send-keys -t mc -l "${step#cd }"
+            $T send-keys -t mc -l -- "${step#cd }"
             nap 0.3
             $T send-keys -t mc Enter
             ;;
         "type "*)
-            $T send-keys -t mc -l "${step#type }"
+            # -- or a text that starts with a dash is read as tmux's own flags
+            $T send-keys -t mc -l -- "${step#type }"
             ;;
         # anything tmux has a name for: F4, M-S, C-M-l, Escape, C-F1
         "key "*)
@@ -536,6 +617,7 @@ total_run=0
     [ -n "$options" ] && echo "- ini: $(echo "$options" | grep . | tr '\n' ' ')"
     [ -n "$keymap" ] && echo "- keymap: $keymap"
     echo "- mc: $(readlink /work/opt/mc)"
+    [ -n "$shell" ] && echo "- shell: $shell ($shell_path)"
     [ $memcheck = 1 ] && echo "- valgrind: memcheck, waits x$slow"
     echo
     echo "| transport | passed | failed | known | fixed | skipped |"
@@ -554,19 +636,32 @@ for where in $(echo "$transports" | tr ',' ' '); do
     echo "cases: $subject over $where"
     for d in "$@"; do
         d=${d%/}
+        # the list of cases is read once per directory, so the files it comes
+        # from are made again before that, not only before each case
+        refresh_fixtures "$where"
         tsv=/work/local/$subject/$d/cases.tsv
         [ -f "$tsv" ] || { echo "  $d: no cases.tsv"; continue; }
 
-        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why only; do
+        tail -n +2 "$tsv" | while IFS="$(printf '\t')" read -r file key expect why only shells; do
             [ -n "$file" ] || continue
             rm -f "/tmp/$file"
             # a row for some transports only
             if [ -n "$only" ] && ! echo ",$only," | grep -qF ",$where,"; then
                 continue
             fi
+            # a row for some shells only, when the run named one
+            if [ -n "${shells:-}" ] && [ -n "$shell" ] \
+                && ! echo ",$shells," | grep -qF ",$shell,"; then
+                continue
+            fi
             name="$d/$file"
-            # a row that names a situation rather than a file is for a person
-            if [ ! -e "/work/local/$subject/$d/$file" ]; then
+            # the case before may have moved or deleted what this one works on
+            refresh_fixtures "$where"
+            # a row that names a situation rather than a file is for a person.
+            # -e says no to a link that points at nothing, which is a file a
+            # case may well be about.
+            if [ ! -e "/work/local/$subject/$d/$file" ] \
+                && [ ! -L "/work/local/$subject/$d/$file" ]; then
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$why"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
                 continue
@@ -591,6 +686,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
             case "$expect" in
             "archive panel" | listing | "nothing, no error" | "error dialog" | "the panel it came from" \
                 | "extfs panel" | "copy to the other panel" | "the name as written" \
+                | "no process left" \
                 | "text: "* | "no text: "* | "clipfile: "*) ;;
             *)
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$expect"
@@ -599,7 +695,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 ;;
             esac
 
-            slug=$(echo "$name.$key" | tr '/ ' '..')
+            slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
             stderr=$out/$slug.stderr
             vg_log=
             [ $memcheck = 1 ] && vg_log=$out/$slug.valgrind
@@ -719,7 +815,7 @@ done
         echo
         for where in $(echo "$transports" | tr ',' ' '); do
             grep "$(printf "\tFAIL\t")" "$report/$where/results.tsv" | while IFS="$(printf '\t')" read -r name key expect verdict ms why; do
-                slug=$(echo "$name.$key" | tr '/ ' '..')
+                slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
                 echo "- $where: $name $key, expected $expect ($why) - [screen]($where/$slug.screen)"
             done
         done
