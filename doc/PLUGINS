@@ -1,5 +1,5 @@
-Plugin Development Guide for GNU Midnight Commander
-===================================================
+Plugin Development Guide for M-Commander
+========================================
 
 This document describes how to create plugins from scratch for mc.
 It covers:

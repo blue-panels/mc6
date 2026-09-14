@@ -1,7 +1,7 @@
 # Plugin file-operation associations.
 #
 # This file is an overlay for plugin actions. It never replaces mc.ext.ini:
-# when no rule here matches, Midnight Commander follows its normal extension
+# when no rule here matches, M-Commander follows its normal extension
 # and panel-plugin handling.
 #
 # A user may add rules in ~/.config/mc6/magic.ini. Native values use
