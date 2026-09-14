@@ -1,0 +1,74 @@
+name: ci-sandbox
+
+on:
+  workflow_call:
+    inputs:
+      transports:
+        description: comma separated, out of local, sftp, ftp, smb, sh
+        type: string
+        default: local
+      subjects:
+        description: comma separated subjects, empty for every one
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      transports:
+        description: comma separated, out of local, sftp, ftp, smb, sh
+        type: string
+        default: local,sftp,ftp,smb,sh
+      subjects:
+        description: comma separated subjects, empty for every one
+        type: string
+        default: ''
+  schedule:
+    # Over the network the same cases take three times as long, so they run
+    # once a night rather than on every push.
+    - cron: '17 2 * * *'
+
+jobs:
+  sandbox-debian-12:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    permissions:
+      contents: read
+
+    env:
+      # A scheduled run gets no inputs; that is the run over the network.
+      TRANSPORTS: ${{ inputs.transports || 'local,sftp,ftp,smb,sh' }}
+      SUBJECTS: ${{ inputs.subjects || '' }}
+      # A runner is slower than the machine these waits were written on, and a
+      # wait that runs out fails a case that would have passed.
+      SLOW: 2
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the image and mc
+        run: tests/misc/docker/sandbox.sh debian-12 up
+
+      - name: Every plugin loads
+        run: tests/misc/docker/sandbox.sh debian-12 check plugins
+
+      - name: Every protocol answers
+        if: env.TRANSPORTS != 'local'
+        run: tests/misc/docker/sandbox.sh debian-12 check remote
+
+      - name: Press the keys
+        run: |
+          args="-w $TRANSPORTS"
+          if [ -n "$SUBJECTS" ]; then
+            args="$args -c $SUBJECTS"
+          fi
+          tests/misc/docker/ci.sh debian-12 $args
+
+      - name: The report
+        if: always()
+        run: cat tests/misc/docker/reports/*-ci/index.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: sandbox-report-debian-12
+          path: tests/misc/docker/reports/

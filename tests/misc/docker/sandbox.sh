@@ -31,7 +31,8 @@ usage: sandbox.sh [env] <command> [args]
   up        build the images, start the remote host, build mc      (first run)
   mc        run mc against that environment                        (what you want)
   build     rebuild mc from the working tree: build [-f profiles]
-  check     can every plugin be loaded, and does every protocol answer
+  check     can every plugin be loaded, and does every protocol answer:
+            check [plugins|remote|all]
   test      press the keys in the cases: test [-c subject] [-w transports]
             [-l locale] [-o key=value]... [-k keymap] [-g] [dir...]
             -g runs mc under valgrind memcheck (slow; debian-12 has it)
@@ -110,15 +111,34 @@ build)
     $COMPOSE run --rm mc /usr/local/bin/build-mc.sh "$@"
     ;;
 check)
-    $COMPOSE up -d remote
-    $COMPOSE run --rm mc sh -c \
-        'sh /src/tests/misc/docker/common/check-plugins.sh && /usr/local/bin/check-remote.sh'
+    # "plugins" needs no server and is what a build check wants; "remote" asks
+    # the far end instead; with nothing said, both.
+    case "${1:-all}" in
+    plugins)
+        $COMPOSE run --rm mc sh /src/tests/misc/docker/common/check-plugins.sh
+        ;;
+    remote)
+        $COMPOSE up -d remote
+        $COMPOSE run --rm mc /usr/local/bin/check-remote.sh
+        ;;
+    all)
+        $COMPOSE up -d remote
+        $COMPOSE run --rm mc sh -c \
+            'sh /src/tests/misc/docker/common/check-plugins.sh && /usr/local/bin/check-remote.sh'
+        ;;
+    *)
+        echo "sandbox.sh: check takes plugins, remote or all" >&2
+        exit 1
+        ;;
+    esac
     ;;
 test)
     $COMPOSE up -d remote
     # from the mounted tree, not from the image: an edit to the script takes
-    # effect at once, where a copy baked into the image needs it rebuilt
-    $COMPOSE run --rm mc sh /src/tests/misc/docker/common/run-cases.sh "$@"
+    # effect at once, where a copy baked into the image needs it rebuilt.
+    # $SLOW goes in because a slow machine, a CI runner among them, needs
+    # every wait stretched.
+    $COMPOSE run --rm -e SLOW="${SLOW:-}" mc sh /src/tests/misc/docker/common/run-cases.sh "$@"
     ;;
 shell)
     $COMPOSE up -d remote

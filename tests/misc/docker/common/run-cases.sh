@@ -54,9 +54,10 @@ report=
 verbose=0
 options=
 memcheck=0
-# valgrind makes mc some twenty times slower to start; every wait is
-# multiplied by this, and $SLOW overrides it for a slow machine
-slow=1
+# every wait is multiplied by this: $SLOW for a slow machine, a CI runner
+# among them, and six under valgrind, which makes mc some twenty times slower
+# to start
+slow=${SLOW:-1}
 
 while getopts "c:w:l:o:k:r:vg" opt; do
     case "$opt" in

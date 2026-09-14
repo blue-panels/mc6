@@ -30,3 +30,11 @@ jobs:
     with:
       # https://github.com/GNUAspell/aspell/pull/651
       CFLAGS: -Wno-strict-prototypes
+
+  call-sandbox:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    uses: ./.github/workflows/ci-sandbox.yml
+    with:
+      # The panel on a local directory; the protocols are for the nightly run,
+      # where a server that is slow to come up costs nobody a push.
+      transports: local

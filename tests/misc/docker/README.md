@@ -7,11 +7,13 @@ tree and runs mc against it.
     tests/misc/docker/sandbox.sh debian-12 up     # images, remote host, mc -- a few minutes
     tests/misc/docker/sandbox.sh debian-12 mc     # mc against that environment
     tests/misc/docker/sandbox.sh debian-12 test   # press the keys in every cases.tsv
+    tests/misc/docker/ci.sh debian-12             # every subject, as CI runs it
     tests/misc/docker/sandbox.sh ui               # the same, chosen from menus
 
 The environment name may be left out; `debian-12` is the default, or whatever
 `$MC_SANDBOX` says. `sandbox.sh` with no command lists the rest: `build` after
-an edit, `check` to ask every protocol for a listing without a terminal,
+an edit, `check` to load every plugin and ask every protocol for a listing
+without a terminal,
 `shell`, `remote`, `logs`, `down`, `clean`, and `list` for what there is.
 
 Sources are mounted read-only and copied inside the container, so a build
@@ -20,6 +22,7 @@ leaves nothing in the working tree and reuses its object files between runs.
 ## Layout
 
     sandbox.sh              the driver; it holds no list of environments
+    ci.sh                   every subject in one run, for CI and before a push
     common/                 what an environment should not have to write again
       build-mc.sh           copy the tree in, configure, make, install
       check-plugins.sh      can every plugin the build installed be loaded
@@ -249,6 +252,33 @@ transport and the list of failures, and under `<transport>/` a `results.tsv`
 (case, key, expectation, verdict, milliseconds, reason), the screen of every
 failure, and mc's stderr per case. `index.md` is what goes into a release
 issue.
+
+## In CI
+
+`ci.sh` walks every subject, one `sandbox.sh test` each, and writes them into
+one report directory:
+
+    tests/misc/docker/ci.sh debian-12                     # every subject, local panel
+    tests/misc/docker/ci.sh debian-12 -w local,sftp,ftp,smb,sh
+    tests/misc/docker/ci.sh debian-12 -c editor,panel -l ru_RU.KOI8-R
+
+It takes the same arguments as `test` beyond `-c` and `-w`, which it spells
+comma separated, and it does not stop at the first subject that fails: the
+`index.md` it writes says which ones did, each row a link to that subject's
+own report. A subject that could not be run at all -- no fixtures, a name
+that is not there -- is told apart from one whose cases failed.
+
+`.github/workflows/ci-sandbox.yml` is the job. On a push and on a pull request
+it builds the image and mc, asks whether every plugin loads, and presses the
+keys of every subject on a local panel. Over the network the same cases take
+about three times as long, so the protocols run on a schedule, nightly,
+and from `workflow_dispatch` when a person asks. A failing run keeps the whole
+`reports/` directory as an artifact, screens of the failures included, and the
+`index.md` goes into the job summary either way.
+
+`$SLOW` multiplies every wait; the job sets it to 2, because a runner is
+slower than the machine the waits were written on and a wait that runs out
+fails a case that would have passed.
 
 ## Poking at it by hand
 
