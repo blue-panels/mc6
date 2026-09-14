@@ -406,6 +406,9 @@ typedef struct
     mc_runtime_viewer_display_t initial_display;
     /* Original file displayed when the viewer switches to raw mode. */
     const char *raw_path;
+    /* Terminal display: the row of the output the viewer opens at, from 0.
+       Ignored where the view follows the end of the output. */
+    guint top_row;
 } mc_runtime_viewer_spec_t;
 
 typedef enum
@@ -489,6 +492,13 @@ typedef struct
     mc_runtime_viewer_source_state_callback_t source_state;
     /* The viewer key that opens the options, by name ("f2", "alt-s"); NULL for none. */
     const char *options_key;
+    /* The other viewer keys the source takes for itself, by name ("pgdn",
+       "alt-n", "plus"): the host offers them to the source before its own
+       keymap, and when one of them opens the options it says which by its
+       place in this list, from 1 (0 is @options_key).  Function keys, Esc,
+       "q" and Ctrl-O are refused: they belong to the viewer. */
+    const char *const *keys;
+    guint keys_len;
 } mc_runtime_viewer_controller_t;
 
 /* A screen: a full-screen group of widgets a runtime package fills and drives.

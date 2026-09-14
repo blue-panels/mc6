@@ -166,8 +166,8 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
         mcview_vterm_set_keep_history (view->vterm, TRUE);
         (void) mcview_vterm_set_size (view->vterm, MAX (view->data_area.lines, 1),
                                       MAX (view->data_area.cols, 1));
-        mcview_vterm_set_dpy_top_row (view->vterm,
-                                      spec->auto_scroll_bottom ? MCVIEW_VTERM_FOLLOW_END : 0);
+        mcview_vterm_set_dpy_top_row (
+            view->vterm, spec->auto_scroll_bottom ? MCVIEW_VTERM_FOLLOW_END : (int) spec->top_row);
     }
     if (handle->kind == SRC_PIPE)
     {
@@ -331,6 +331,7 @@ mcview_source_spec_clone (const mcview_source_spec_t *src)
     dst->help_file = g_strdup (src->help_file);
     dst->help_node = g_strdup (src->help_node);
     dst->auto_scroll_bottom = src->auto_scroll_bottom;
+    dst->top_row = src->top_row;
     dst->initial_terminal = src->initial_terminal;
     dst->initial_nroff = src->initial_nroff;
     dst->raw_file = g_strdup (src->raw_file);

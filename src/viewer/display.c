@@ -122,6 +122,16 @@ mcview_set_buttonbar (WView *view)
         buttonbar_set_label (b, 6, Q_ ("ButtonBar|Save"), keymap, w);
         buttonbar_set_label (b, 7, Q_ ("ButtonBar|HxSrch"), keymap, w);
     }
+    else if (view->mode_flags.terminal)
+    {
+        /* Wrapping, the goto, the filter and the search work on the rows of
+           the file, and the terminal screen is built from the stream instead:
+           the viewer has no command for them here, so the bar says so. */
+        buttonbar_set_label (b, 2, "", keymap, w);
+        buttonbar_set_label (b, 4, Q_ ("ButtonBar|Hex"), keymap, w);
+        buttonbar_set_label (b, 6, "", keymap, w);
+        buttonbar_set_label (b, 7, "", keymap, w);
+    }
     else
     {
         buttonbar_set_label (
@@ -132,7 +142,7 @@ mcview_set_buttonbar (WView *view)
         buttonbar_set_label (b, 7, Q_ ("ButtonBar|Search"), keymap, w);
     }
 
-    buttonbar_set_label (b, 5, Q_ ("ButtonBar|Goto"), keymap, w);
+    buttonbar_set_label (b, 5, view->mode_flags.terminal ? "" : Q_ ("ButtonBar|Goto"), keymap, w);
     buttonbar_set_label (
         b, 8, view->mode_flags.magic ? Q_ ("ButtonBar|Raw") : Q_ ("ButtonBar|Parse"), keymap, w);
 

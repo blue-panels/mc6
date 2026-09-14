@@ -39,6 +39,8 @@ typedef struct
     gboolean separate_stderr;
     char *file; /* local path -> mc_open + file load */
     gboolean auto_scroll_bottom;
+    /* Terminal display: the row of the output to open at, from 0. */
+    guint top_row;
     char *title;
     char *help_file;
     char *help_node;
@@ -89,6 +91,10 @@ typedef struct
     void (*free) (void *ctx);
 
     mcv_key_result_t (*handle_key) (void *ctx, int key);
+
+    /* TRUE for the keys the source declared as its own: the viewer offers
+       those to handle_key() before it looks them up in its own keymap. */
+    gboolean (*owns_key) (void *ctx, int key);
 
     gboolean (*prepare_viewport) (void *ctx, mcview_source_spec_t *draft, guint columns,
                                   guint lines, char **err_out);

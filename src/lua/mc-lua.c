@@ -58,10 +58,12 @@
 #define MC_LUA_SYSTEM_MODULES_DIR "/usr/share/mc/lua/lib"
 #endif
 
-#define MC_LUA_API_VERSION      1
-#define MC_LUA_ID_MAX_LENGTH    64
-#define MC_LUA_MANIFEST_FILE    "lua.ini"
-#define MC_LUA_MANIFEST_GROUP   "Lua"
+#define MC_LUA_API_VERSION    1
+#define MC_LUA_ID_MAX_LENGTH  64
+#define MC_LUA_MANIFEST_FILE  "lua.ini"
+#define MC_LUA_MANIFEST_GROUP "Lua"
+/* How many keys of its own one viewer source may take. */
+#define MC_LUA_VIEWER_MAX_KEYS  32
 #define MC_LUA_REGISTRY_PACKAGE "mc.lua.package"
 #define MC_LUA_REGISTRY_MODULES "mc.lua.modules"
 #define MC_LUA_HANDLE_METATABLE "mc.runtime.handle"
@@ -282,6 +284,9 @@ struct mc_lua_viewer_definition
     int close_ref;
     gboolean resize_rebuild;
     char *options_key;  // the name of the key that opens the options, or NULL
+    int on_key_ref;
+    char **keys;  // the names of the keys on_key() is called for
+    guint keys_len;
 };
 
 struct mc_lua_viewer_controller
@@ -3766,6 +3771,14 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
     spec->raw_path = mc_lua_dup_table_string (lua, table, "raw_path");
     scroll = mc_lua_dup_table_string (lua, table, "auto_scroll");
     spec->auto_scroll_bottom = g_strcmp0 (scroll, "bottom") == 0;
+    lua_getfield (lua, table, "top_row");
+    if (lua_isinteger (lua, -1))
+    {
+        const lua_Integer row = lua_tointeger (lua, -1);
+
+        spec->top_row = row > 0 ? (guint) row : 0;
+    }
+    lua_pop (lua, 1);
     g_free (scroll);
     display = mc_lua_dup_table_string (lua, table, "initial_display");
     if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0
@@ -3929,7 +3942,6 @@ mc_lua_viewer_dispatch (mc_runtime_plugin_context_t *context, guint64 controller
     lua_State *lua;
 
     (void) context;
-    (void) key;
     if (runtime == NULL || runtime->viewer_controllers == NULL)
         return FALSE;
     controller = g_hash_table_lookup (runtime->viewer_controllers, &controller_id);
@@ -3941,16 +3953,28 @@ mc_lua_viewer_dispatch (mc_runtime_plugin_context_t *context, guint64 controller
     switch (operation)
     {
     case MC_RUNTIME_VIEWER_CONTROLLER_OPTIONS:
-        if (controller->definition->options_ref == LUA_NOREF)
+    {
+        /* @key is the place of the key in the definition's list, from 1; 0 is
+           the options key, which calls options() instead. */
+        const gboolean by_key = key > 0 && (guint) key <= controller->definition->keys_len;
+        const int callback =
+            by_key ? controller->definition->on_key_ref : controller->definition->options_ref;
+
+        if (key > 0 && !by_key)
             return TRUE;
-        lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->definition->options_ref);
+        if (callback == LUA_NOREF)
+            return TRUE;
+        lua_rawgeti (lua, LUA_REGISTRYINDEX, callback);
         lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->session_ref);
         lua_rawgeti (lua, LUA_REGISTRYINDEX, controller->live_ref);
+        if (by_key)
+            lua_pushstring (lua, controller->definition->keys[key - 1]);
         package->callback_depth++;
-        if (lua_pcall (lua, 2, 1, 0) != LUA_OK)
+        if (lua_pcall (lua, by_key ? 3 : 2, 1, 0) != LUA_OK)
         {
             mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT,
-                                 "Lua viewer options callback failed");
+                                 by_key ? "Lua viewer on_key callback failed"
+                                        : "Lua viewer options callback failed");
             package->callback_depth--;
             return FALSE;
         }
@@ -3964,6 +3988,7 @@ mc_lua_viewer_dispatch (mc_runtime_plugin_context_t *context, guint64 controller
         controller->pending_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
         *handled = TRUE;
         return TRUE;
+    }
     case MC_RUNTIME_VIEWER_CONTROLLER_PREPARE:
         if (controller->pending_ref == LUA_NOREF)
             return FALSE;
@@ -4110,6 +4135,7 @@ mc_lua_viewer_controller_gc (lua_State *lua)
  * @lua-callback initial_params(session, params) -> params
  * @lua-callback prepare(session, params, viewport?) -> ViewerSpec
  * @lua-callback options(session, params) -> params?
+ * @lua-callback on_key(session, params, key) -> params?
  * @lua-callback source_state(session, event) -> nil
  * @lua-callback close(session)
  */
@@ -4172,9 +4198,12 @@ mc_lua_viewer_definition_create (lua_State *lua)
 /** @lua mc.viewer_source.define(spec) -> definition|nil, error? @capability viewer_source @mutation
  * yes @summary Define a reusable family of managed viewer sources with optional viewport rebuild.
  * spec.options_key names the viewer key ("i") that calls options(); prepare() then runs
- * again with what options() returned. A key the viewer has a command for never reaches it.
- * spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken from the
- * script's directory.
+ * again with what options() returned. spec.keys lists up to 32 more key names ("gt", "plus",
+ * "alt-n") for on_key(session, params, key), which works the same way and is told which key
+ * by the name it was given; those keys reach the source before the viewer's own keymap, and
+ * function keys, Esc, "q" and Ctrl-O are refused. Returning nil from either leaves the source
+ * as it is. spec.help = {file, node} is what F1 opens in the viewer; a relative file is taken
+ * from the script's directory.
  */
 static int
 mc_lua_viewer_source_define (lua_State *lua)
@@ -4195,7 +4224,8 @@ mc_lua_viewer_source_define (lua_State *lua)
     }
     lua_pop (lua, 1);
     definition->open_ref = definition->initial_params_ref = definition->prepare_ref =
-        definition->options_ref = definition->source_state_ref = definition->close_ref = LUA_NOREF;
+        definition->options_ref = definition->source_state_ref = definition->close_ref =
+            definition->on_key_ref = LUA_NOREF;
     if (definition->id == NULL)
     {
         mc_lua_viewer_definition_destroy (definition);
@@ -4220,6 +4250,44 @@ mc_lua_viewer_source_define (lua_State *lua)
         g_free (resize);
     }
     definition->options_key = mc_lua_dup_table_string (lua, 1, "options_key");
+    definition->on_key_ref = mc_lua_panel_callback_ref (lua, 1, "on_key", FALSE);
+    lua_getfield (lua, 1, "keys");
+    if (lua_istable (lua, -1))
+    {
+        const lua_Integer count = (lua_Integer) lua_rawlen (lua, -1);
+        lua_Integer i;
+
+        if (count < 1 || count > MC_LUA_VIEWER_MAX_KEYS)
+        {
+            lua_pop (lua, 1);
+            mc_lua_viewer_definition_destroy (definition);
+            return luaL_error (lua, "viewer keys must be a list of 1 to %d key names",
+                               MC_LUA_VIEWER_MAX_KEYS);
+        }
+        definition->keys = g_new0 (char *, (gsize) count + 1);
+        for (i = 1; i <= count; i++)
+        {
+            const char *name;
+
+            lua_rawgeti (lua, -1, i);
+            name = lua_tostring (lua, -1);
+            if (name == NULL || name[0] == '\0')
+            {
+                lua_pop (lua, 2);
+                mc_lua_viewer_definition_destroy (definition);
+                return luaL_error (lua, "viewer keys must be key names");
+            }
+            definition->keys[i - 1] = g_strdup (name);
+            lua_pop (lua, 1);
+        }
+        definition->keys_len = (guint) count;
+    }
+    lua_pop (lua, 1);
+    if (definition->keys_len != 0 && definition->on_key_ref == LUA_NOREF)
+    {
+        mc_lua_viewer_definition_destroy (definition);
+        return luaL_error (lua, "viewer keys need an on_key function");
+    }
     if (definition->open_ref == LUA_NOREF || definition->prepare_ref == LUA_NOREF
         || definition->close_ref == LUA_NOREF)
     {
@@ -4251,10 +4319,12 @@ mc_lua_viewer_definition_destroy (gpointer data)
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->options_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->source_state_ref);
         luaL_unref (lua, LUA_REGISTRYINDEX, definition->close_ref);
+        luaL_unref (lua, LUA_REGISTRYINDEX, definition->on_key_ref);
     }
     g_free (definition->id);
     g_free (definition->help_file);
     g_free (definition->options_key);
+    g_strfreev (definition->keys);
     g_free (definition->help_node);
     g_free (definition);
 }
@@ -4378,6 +4448,11 @@ mc_lua_viewer_controller_transfer (mc_lua_package_t *package,
     descriptor.options_key = controller->definition->options_ref != LUA_NOREF
         ? controller->definition->options_key
         : NULL;
+    if (controller->definition->on_key_ref != LUA_NOREF)
+    {
+        descriptor.keys = (const char *const *) controller->definition->keys;
+        descriptor.keys_len = controller->definition->keys_len;
+    }
     if (target_viewer != NULL)
         descriptor.target_viewer = *target_viewer;
     controller_index = lua_absindex (package->lua, controller_index);

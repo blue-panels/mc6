@@ -610,11 +610,16 @@ vterm_images_clear (mcview_vterm_t *vt)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Rows @top..@bottom moved by @delta (negative: up). A picture that would
-   leave the region is gone: sixel cannot be drawn in part. */
+/* Rows @top..@bottom moved by @delta (negative: up). Where the rows leaving
+   the top become the history, the pictures on them stay with it: their row
+   counts from the top of the live screen and so goes negative, and the
+   viewer draws them again when the user scrolls back. A picture that leaves
+   the region any other way is gone: sixel cannot be drawn in part. */
 static void
 vterm_images_shift (mcview_vterm_t *vt, int top, int bottom, int delta)
 {
+    const gboolean to_history = top == 0 && vt->keep_history && !vt->in_alt_screen;
+    const int oldest = to_history ? -mcview_vterm_history_len (vt) : 0;
     guint i;
 
     if (vt->images == NULL || delta == 0)
@@ -623,8 +628,9 @@ vterm_images_shift (mcview_vterm_t *vt, int top, int bottom, int delta)
     for (i = 0; i < vt->images->len;)
     {
         mcview_vterm_image_t *image = g_ptr_array_index (vt->images, i);
+        const gboolean above = image->row + image->rows - 1 < top;
 
-        if (image->row + image->rows - 1 < top || image->row > bottom)
+        if ((above && !to_history) || image->row > bottom)
         {
             i++;
             continue;
@@ -632,7 +638,8 @@ vterm_images_shift (mcview_vterm_t *vt, int top, int bottom, int delta)
 
         image->row += delta;
         vt->images_generation++;
-        if (image->row < top || image->row + image->rows - 1 > bottom)
+        if (image->row + image->rows - 1 > bottom
+            || (to_history ? image->row + image->rows - 1 < oldest : image->row < top))
         {
             vt->images_bytes -= image->data != NULL ? g_bytes_get_size (image->data) : 0;
             g_ptr_array_remove_index (vt->images, i);

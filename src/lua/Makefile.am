@@ -48,6 +48,16 @@ lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
 dist_lua_markdown_lib_DATA = \
 	scripts/mc/lua-markdown/lib/render.lua
 
+lua_pdfdir = $(lua_scripts_dir)/mc/lua-pdf
+dist_lua_pdf_DATA = \
+	scripts/mc/lua-pdf/lua.ini \
+	scripts/mc/lua-pdf/init.lua \
+	scripts/mc/lua-pdf/help.hlp
+lua_pdf_libdir = $(lua_scripts_dir)/mc/lua-pdf/lib
+dist_lua_pdf_lib_DATA = \
+	scripts/mc/lua-pdf/lib/pdfxml.lua \
+	scripts/mc/lua-pdf/lib/render.lua
+
 lua_readelfdir = $(lua_scripts_dir)/mc/lua-readelf
 if ENABLE_LUA_READELF
 dist_lua_readelf_DATA = \
