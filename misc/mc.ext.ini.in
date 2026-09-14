@@ -1067,11 +1067,6 @@ Type=^PostScript
 Open=@EXTHELPERSDIR@/doc.sh open ps
 View=%view{ascii} @EXTHELPERSDIR@/doc.sh view ps
 
-[pdf]
-Type=^PDF
-Open=@EXTHELPERSDIR@/doc.sh open pdf
-View=%view{ascii} @EXTHELPERSDIR@/doc.sh view pdf
-
 # Microsoft Word Document
 [msdoc-by-type]
 Type=^Microsoft Word

@@ -972,6 +972,19 @@ fi
 AC_SUBST([MAGIC_LUA_CHAFA_RULES])
 AM_SUBST_NOTMAKE([MAGIC_LUA_CHAFA_RULES])
 
+dnl PDFs go to lua-pdf: the text layer as text, the pictures in sixel where
+dnl the terminal draws them.  The tools it needs (pdftohtml, img2sixel) are
+dnl checked at run time, the way lua-sixel checks chafa.
+MAGIC_LUA_PDF_RULES=""
+if test x"$have_lua_plugin" = xyes && test x"$have_libmagic" = xyes; then
+    MAGIC_LUA_PDF_RULES='[[pdf]]
+Mime=^application/pdf
+Open=%plugin{lua(lua-pdf):open}
+View=%plugin{lua(lua-pdf):view}'
+fi
+AC_SUBST([MAGIC_LUA_PDF_RULES])
+AM_SUBST_NOTMAKE([MAGIC_LUA_PDF_RULES])
+
 MAGIC_LUA_JAVA_CLASS_RULES=""
 if test x"$have_lua_plugin" = xyes \
         && test -n "$PROCYON" && test x"$PROCYON" != xno \
