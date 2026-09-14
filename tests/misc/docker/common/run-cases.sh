@@ -7,7 +7,7 @@
 # Each row of a cases.tsv is "file, keys, expect, why, transports".  mc is
 # started under tmux with the panel in that directory, the file is found by
 # quick search, the keys are pressed in order and the screen is read.  A key
-# is Enter, F3, F5, C-o, ".." (up one level), "on <name>" (the cursor goes
+# is Enter, F3, F5, F6, F8, C-o, ".." (up one level), "on <name>" (the cursor goes
 # there), "cd <path>" (through the Quick cd box), "type <text>",
 # "key <name>" for anything tmux can send (F4, M-S, C-M-l, Escape, C-F1), or
 # "width <n>" to make the terminal that many columns wide.
@@ -96,6 +96,11 @@ nap ()
         sleep "$(awk -v a="$1" -v s="$slow" 'BEGIN { printf "%.2f", a * s }')"
     fi
 }
+# A subject the last build did not know about, or one built by an older build:
+# its files are made here rather than asking for a rebuild.
+if [ ! -d "/work/local/$subject" ] && [ -f "$SRC/cases/$subject/fixtures.sh" ]; then
+    sh "$SRC/cases/$subject/fixtures.sh" "/work/local/$subject" >/dev/null
+fi
 [ -d "/work/local/$subject" ] || { echo "run-cases.sh: no local fixtures for $subject" >&2; exit 2; }
 
 stamp=$(date +%Y-%m-%dT%H-%M-%S)
@@ -280,6 +285,26 @@ vg_prefix ()
         --track-origins=yes --num-callers=30 --error-limit=no "
 }
 
+# The files a case works on, made again when the last case changed them: a
+# copy, a move or a delete leaves the tree as it is not, and the next case,
+# like the next run, is meant to start where this one did.  Building them is
+# cheaper than it looks, and a find over the tree is cheaper still, so it is
+# only done when something moved.  The stamp lives outside the tree: a file in
+# it would show up in the panel.
+refresh_fixtures ()
+{
+    [ "$1" = local ] || return 0
+    [ -f "$SRC/cases/$subject/fixtures.sh" ] || return 0
+    tree=/work/local/$subject
+    stamp=/work/local/.stamp-$subject
+    if [ -f "$stamp" ] && [ ! "$SRC/cases/$subject/fixtures.sh" -nt "$stamp" ] \
+        && [ -z "$(find "$tree" -newer "$stamp" -print -quit 2>/dev/null)" ]; then
+        return 0
+    fi
+    sh "$SRC/cases/$subject/fixtures.sh" "$tree" >/dev/null
+    touch "$stamp"
+}
+
 # start mc with the panel in case directory $1 over transport $2; stderr to $3
 start_mc ()
 {
@@ -432,7 +457,7 @@ steps_known ()
 {
     printf '%s\n' "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
-        Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
+        Enter | F3 | F5 | F6 | F8 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
         *) exit 1 ;;
         esac
     done
@@ -446,6 +471,14 @@ press ()
             $T send-keys -t mc F5
             # the copy box takes its time over a remote panel
             wait_for " Copy " 15 >/dev/null
+            ;;
+        F6)
+            $T send-keys -t mc F6
+            wait_for " Move " 15 >/dev/null
+            ;;
+        F8)
+            # the question it opens is drawn at once; the nap below is the wait
+            $T send-keys -t mc F8
             ;;
         Enter | F3 | C-o)
             $T send-keys -t mc "$step"
@@ -580,6 +613,9 @@ for where in $(echo "$transports" | tr ',' ' '); do
     echo "cases: $subject over $where"
     for d in "$@"; do
         d=${d%/}
+        # the list of cases is read once per directory, so the files it comes
+        # from are made again before that, not only before each case
+        refresh_fixtures "$where"
         tsv=/work/local/$subject/$d/cases.tsv
         [ -f "$tsv" ] || { echo "  $d: no cases.tsv"; continue; }
 
@@ -591,8 +627,13 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 continue
             fi
             name="$d/$file"
-            # a row that names a situation rather than a file is for a person
-            if [ ! -e "/work/local/$subject/$d/$file" ]; then
+            # the case before may have moved or deleted what this one works on
+            refresh_fixtures "$where"
+            # a row that names a situation rather than a file is for a person.
+            # -e says no to a link that points at nothing, which is a file a
+            # case may well be about.
+            if [ ! -e "/work/local/$subject/$d/$file" ] \
+                && [ ! -L "/work/local/$subject/$d/$file" ]; then
                 printf '  skip  %-30s %-8s %s\n' "$name" "$key" "$why"
                 printf '%s\t%s\t%s\tskip\t\t%s\n' "$name" "$key" "$expect" "$why" >> "$results"
                 continue

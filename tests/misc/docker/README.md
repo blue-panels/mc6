@@ -128,6 +128,23 @@ server.
 | `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
 | `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
 
+### fileops
+
+| directory   | what it is for                                                  |
+|-------------|------------------------------------------------------------------|
+| `01-copy`   | F5: what the dialog says, a target that is already there, a directory, and a target filesystem with no room left |
+| `02-move`   | F6: the dialog, a rename in place, a move onto a file that exists |
+| `03-delete` | F8: the question, what the panel shows afterwards, a directory that is not empty |
+| `04-links`  | that a link is deleted and renamed as a link, and what it points at stays |
+
+These change the files they work on, so the subject is built again before every
+case that touched anything. The full filesystem is `/small`, a 64k tmpfs every
+environment mounts for this.
+
+What is not here: a file that cannot be read. mc runs as root in these
+containers, and root reads everything; a case for it would pass without
+proving anything.
+
 ### lua
 
 | directory | what it is for                                                    |
@@ -165,7 +182,7 @@ one.
 `config/` of its own, and what is in it is copied over mc's configuration
 before the run.
 
-These seven are local only: they press keys on mc itself, not on a file a
+These eight are local only: they press keys on mc itself, not on a file a
 server holds.
 
 **sftp** and **shell link** supply a stream, so an archive opens without being
