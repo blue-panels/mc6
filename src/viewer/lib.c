@@ -256,6 +256,19 @@ mcview_toggle_hex_mode (WView *view)
         view->dpy_start = mcview_bol (view, view->hex_cursor, 0);
         view->hex_cursor = view->dpy_start;
         widget_want_cursor (WIDGET (view), FALSE);
+        /* The terminal of a source that asked for one went with the hex:
+           without it the escape sequences of the source are shown as text.
+           The raw file behind F8 is text and stays text. */
+        if (view->source_spec != NULL && view->source_spec->initial_terminal
+            && (view->source_spec->raw_file == NULL || view->mode_flags.magic))
+        {
+            view->mode_flags.terminal = TRUE;
+            if (view->vterm == NULL)
+                view->vterm = mcview_vterm_new ();
+            mcview_vterm_set_keep_history (view->vterm, TRUE);
+            if (!view->source_spec->auto_scroll_bottom)
+                mcview_vterm_set_dpy_top_row (view->vterm, 0);
+        }
     }
     mcview_altered_flags.hex = TRUE;
     view->dpy_paragraph_skip_lines = 0;
