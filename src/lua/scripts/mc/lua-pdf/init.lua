@@ -457,7 +457,18 @@ local viewer = mc.viewer_source.define {
             session.pages = tonumber(info.stdout:match("Pages:%s+(%d+)")) or 0
         end
         if session.pages == 0 and session.tools.pdftohtml then
-            -- No pdfinfo: let pdftohtml say how far the file goes.
+            -- No pdfinfo: pdftohtml counts the pages itself.  The pictures
+            -- are ignored and nothing is written out, so this reads the text
+            -- of the file once and no more.
+            local counted = run(string.format(
+                "pdftohtml -xml -i -q -stdout -- %s 2>/dev/null | grep -c '<page number='",
+                quote(session.local_path)))
+
+            if counted ~= nil then
+                session.pages = tonumber((counted.stdout:gsub("%s+$", ""))) or 0
+            end
+        end
+        if session.pages == 0 and session.tools.pdftohtml then
             session.pages = 1
         end
 

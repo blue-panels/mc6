@@ -85,18 +85,17 @@ typedef struct
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-/* Keys the viewer never hands over: its own way out and its own modes. */
+/* Keys the viewer never hands over: its own way out and its own modes.  The
+   modifiers are bits over the key, so shift-f8 and alt-f5 are function keys
+   too; f24 is the last one MC has a name for. */
 static gboolean
 runtime_viewer_key_is_reserved (int key)
 {
-    int i;
+    const int plain = key & ~KEY_M_MASK;
 
     if (key == ESC_CHAR || key == (int) 'q' || key == XCTRL ('o'))
         return TRUE;
-    for (i = 1; i <= 24; i++)
-        if (key == KEY_F (i))
-            return TRUE;
-    return FALSE;
+    return plain >= KEY_F (1) && plain <= KEY_F (24);
 }
 
 /* --------------------------------------------------------------------------------------------- */
