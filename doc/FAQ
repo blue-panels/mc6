@@ -1,14 +1,15 @@
-GNU Midnight Commander
+M-Commander
 Frequently Asked Questions
 
      * 1 Getting started
-          + 1.1 What is Midnight Commander?
-          + 1.2 Does it run on my machine?
-          + 1.3 Does it work with my terminal?
-          + 1.4 What else do I need to run MC?
-          + 1.5 Is GNU Midnight Commander Public Domain?  Copyrighted?
-          + 1.6 Where can I get GNU Midnight Commander?
-          + 1.7 I cannot compile MC.  What should I do?
+          + 1.1 What is M-Commander?
+          + 1.2 How does it relate to GNU Midnight Commander?
+          + 1.3 Does it run on my machine?
+          + 1.4 Does it work with my terminal?
+          + 1.5 What else do I need to run it?
+          + 1.6 Is M-Commander Public Domain?  Copyrighted?
+          + 1.7 Where can I get M-Commander?
+          + 1.8 I cannot compile it.  What should I do?
 
      * 2 Keyboard
           + 2.1 What does documentation mean with the C-?, M-? and F?
@@ -21,6 +22,7 @@ Frequently Asked Questions
           + 2.7 What 'keys' are the "a1" and "c1" keys mentioned in the
             manual?
           + 2.8 How do I change the key bindings?
+          + 2.9 What does my terminal really send for this key?
 
      * 3 Mouse
           + 3.1 How do I enable mouse support?
@@ -31,149 +33,175 @@ Frequently Asked Questions
             SLang" or "Terminal not powerful enough for SLsmg"?
           + 4.2 Why don't line drawing characters work?
           + 4.3 Can one use latin-1 characters without losing the lines?
-          + 4.4 I have problems with entering/viewing national
-            characters!
-          + 4.5 How can I get colors?
-          + 4.6 My color_xterm goes completely (or partially) black!
-          + 4.7 Where can I get xterm or rxvt?
-          + 4.8 I got colors working with MC but the other programs
-            don't work at all anymore!
+          + 4.4 How can I get colors?
+          + 4.5 My color_xterm goes completely (or partially) black!
+          + 4.6 I got colors working here but the other programs don't
+            work at all anymore!
+          + 4.7 How do I change the colors of the program itself?
+          + 4.8 Why is the program linked with X libraries?
 
-     * 5 Graphical user interface
-          + 5.1 Xview, Tk and Gnome editions?
-          + 5.2 Why is MC linked with X libraries?
-
-     * 6 Command line problems
-          + 6.1 How do I stay in the last directory when I exit Midnight
-            Commander?
-          + 6.2 How can I access command line history?
-          + 6.3 How can I complete commands, file names, variable names
+     * 5 Command line and the terminal
+          + 5.1 How do I stay in the last directory when I exit?
+          + 5.2 How can I access command line history?
+          + 5.3 How can I complete commands, file names, variable names
             and so on?
-          + 6.4 I am using ksh.  Can I use functions defined in the
-            .kshrc within MC?
-          + 6.5 Is there any way to include additional options or hot
-            keys to MC?
-          + 6.6 When I use Ctrl-O the command line does not follow my
+          + 5.4 Which shells are supported?
+          + 5.5 Is there any way to include additional options or hot
+            keys?
+          + 5.6 When I use Ctrl-O the command line does not follow my
             shell.  How do I fix this?
-          + 6.7 Ctrl-O doesn't work at all.  What happens?
-          + 6.8 Why I see lot of strange 'cd "printf ' lines into my
+          + 5.7 Ctrl-O doesn't work at all.  What happens?
+          + 5.8 Why do I see lots of strange 'cd "printf ' lines in my
             .history file?
-          6.9 I have a problem with Screen which makes using Midnight
-            Commander problematic. I use Ctrl-O to disable panels. Output
-            of previous commands, just a clear, screen is blanked.
+          + 5.9 I use Screen and the output of previous commands is
+            blanked.
 
-     * 7 Virtual file systems
-          + 7.1 How can I see the contents of a tar archive?
-          + 7.2 How do I get out of a tar archive?
-          + 7.3 How do I do anonymous ftp with MC?
-          + 7.4 How do I do non-anonymous ftp with MC?
-          + 7.5 How do I close an ftp connection?
-          + 7.6 Why aren't the contents of ftp panel updated?
-          + 7.7 What kind of proxy server works with Midnight Commander?
+     * 6 Archives, remote hosts and virtual file systems
+          + 6.1 How can I see the contents of a tar or zip archive?
+          + 6.2 How do I get out of an archive?
+          + 6.3 How do I connect to FTP, SFTP or a Samba share?
+          + 6.4 What happened to "cd ftp://host"?
+          + 6.5 Which virtual file systems are left?
 
-     * 8 Internal editor
-          + 8.1 When I try pasting to the internal editor, it indents
-            the amount of indenting increases with each line!
-          + 8.2 Is it possible to use Colorer for syntax highlighting?
+     * 7 Plugins
+          + 7.1 What is a panel plugin?
+          + 7.2 How do I put a plugin in a panel?
+          + 7.3 How do I turn a plugin off, or configure it?
+          + 7.4 Where do plugins live?
+          + 7.5 My plugin in ~/.local/lib/mc is not loaded any more
+          + 7.6 What are editor plugins and Lua scripts?
 
-     * 9 Other common problems
-          + 9.1 Is there any way to 'bookmark' favorite ftp-fs links?
-          + 9.2 When I start Midnight Commander, nothing happens!
+     * 8 Editor and viewer
+          + 8.1 When I try pasting to the internal editor, the amount of
+            indenting increases with each line!
+          + 8.2 How do I add syntax highlighting for my language?
+          + 8.3 The file is huge and I only need the lines that match
+          + 8.4 Can the viewer show JSON or a binary structure?
 
-     * 10 Development
-          + 10.1 Who has written Midnight Commander?
-          + 10.2 Do I dare to use a development version?
-          + 10.3 How can I report a bug/request for a feature?
-          + 10.4 How can I join the development?
+     * 9 Configuration files
+          + 9.1 Where does the program keep my settings?
+          + 9.2 I upgraded from GNU Midnight Commander.  Where did my
+            settings go?
 
-     * 11 More information
-          + 11.1 This document didn't answer my question.  Where else
+     * 10 Other common problems
+          + 10.1 Is there any way to 'bookmark' favorite places?
+          + 10.2 When I start the program, nothing happens!
+
+     * 11 Development
+          + 11.1 Who has written this?
+          + 11.2 Do I dare to use a development version?
+          + 11.3 How can I report a bug/request for a feature?
+          + 11.4 How can I join the development?
+          + 11.5 How can I help with translations?
+
+     * 12 More information
+          + 12.1 This document didn't answer my question.  Where else
             can I look for an answer?
-          + 11.2 What mailing lists are there for Midnight Commander?
-          + 11.3 Where should I look on the World Wide Web for MC stuff?
-          + 11.4 Are the mailing lists archived anywhere?
+          + 12.2 Where should I look on the World Wide Web?
 
-     * 12 Legal issues
-          + 12.1 Authorship
-          + 12.2 Feedback is invited
-          + 12.3 Disclaimer and copyright
+     * 13 Legal issues
+          + 13.1 Authorship
+          + 13.2 Feedback is invited
+          + 13.3 Disclaimer and copyright
 
 
 1 Getting started
 
-1.1 What is Midnight Commander?
+1.1 What is M-Commander?
 
-   GNU Midnight Commander is a user-friendly yet powerful file manager
-   and visual shell, useful to novice and guru alike.  It provides a
-   clear, user-friendly, and somewhat protected interface to a Unix
-   system while making many frequent file operations more efficient and
+   M-Commander is a user-friendly yet powerful file manager and visual
+   shell, useful to novice and guru alike.  It provides a clear,
+   user-friendly, and somewhat protected interface to a Unix system
+   while making many frequent file operations more efficient and
    preserving the full power of the command prompt.  After some
    practice, you will wonder how you could ever live without it.
 
-1.2 Does it run on my machine?
+   The command is still called mc, and so are mcedit, mcview and
+   mcdiff.  The package, the repository and the configuration
+   directories are called mc6.
 
-   GNU Midnight Commander runs on POSIX (Unix-like) operating systems,
-   such as GNU/Linux, FreeBSD, Mac OS X, Solaris, HP-UX and others.  It
-   can also be compiled under Cygwin on Windows.
+1.2 How does it relate to GNU Midnight Commander?
 
-   GNU Midnight Commander uses GNU Autoconf which should automatically
-   configure it for every Unix clone.
+   M-Commander is a fork of GNU Midnight Commander 4.8.33.  It is not
+   an official GNU package, and the GNU project does not maintain it.
 
-1.3 Does it work with my terminal?
+   It keeps the keys, the layout and the file formats of the program it
+   comes from, and adds panel plugins, an embedded terminal, an archive
+   manager and a good deal more; the README file lists the additions.
+
+   Report problems with this fork here, not to the upstream project,
+   and do not report problems of the original program to us.
+
+1.3 Does it run on my machine?
+
+   M-Commander runs on POSIX (Unix-like) operating systems, such as
+   GNU/Linux, FreeBSD, macOS, Solaris and others.
+
+   It uses GNU Autoconf, which should configure it for every Unix
+   clone.  The packages built for each release cover Debian, Ubuntu,
+   Fedora, RHEL and Arch.
+
+1.4 Does it work with my terminal?
 
    Yes, it does.
 
-   Because GNU Midnight Commander is a full screen program it doesn't
-   run on dummy terminals but anything more advanced will do (like
-   vt100).  If your terminal works with vi, emacs, elm or pine it will
-   work with GNU Midnight Commander.
+   Because this is a full screen program it doesn't run on dummy
+   terminals, but anything more advanced will do (like vt100).  If your
+   terminal works with vi, emacs, elm or pine it will work here.
 
-1.4 What else do I need to run MC?
+1.5 What else do I need to run it?
 
-   You need a POSIX (Unix compatible) operating system.  If you are
-   running Windows, use Cygwin.
+   You need a POSIX (Unix compatible) operating system and glib >= 2.58,
+   available at https://download.gnome.org/sources/glib/ .
 
-   To compile any edition you need to have glib >= 2.32  installed.
-   It's available at https://download.gnome.org/sources/glib/ .
+   If you want to use the mouse on the Linux console you need the gpm
+   daemon from https://www.nico.schottelius.org/software/gpm/ .  You
+   need nothing extra to use the mouse on xterm.
 
-   If you want to use mouse on the Linux console you need the gpm daemon
-   from https://www.nico.schottelius.org/software/gpm/ .  You need nothing
-   extra to use mouse on xterm.
+   The screen is drawn through the S-Lang library or through ncurses;
+   "mc -V" says which one this build uses.  Panel plugins need GModule,
+   which comes with glib.  Everything else is optional and is listed in
+   the INSTALL file.
 
-   If you do not want to use the S-Lang library you could try using
-   ncurses version 4.1 and above.
+1.6 Is M-Commander Public Domain? Copyrighted?
 
-1.5 Is GNU Midnight Commander Public Domain? Copyrighted?
-
-   Midnight Commander is under GNU Public License which basically means
+   It is under the GNU General Public License, which basically means
    that you may freely copy, change and distribute it, but that you may
    not impose any restrictions on further distribution, and that you
    must make the source code available.  This is not the same as Public
-   Domain.  For details, the GNU license is included in GNU Midnight
-   Commander source distribution (the COPYING file).
+   Domain.  The license is included in the source distribution (the
+   COPYING file).
 
-   Midnight Commander is now officially a part of the GNU project.
-   All the authors of GNU Midnight Commander have given all their rights
-   on the program to the Free Software Foundation.
+   The code that comes from GNU Midnight Commander belongs to the Free
+   Software Foundation, to which its authors gave their rights.  The
+   code written for the fork belongs to its own authors, listed in the
+   AUTHORS file.
 
-1.6 Where can I get GNU Midnight Commander?
+1.7 Where can I get M-Commander?
 
-   The main site is https://midnight-commander.org .
+   The source and the packages of every release are at
 
-1.7 I cannot compile MC.  What should I do?
+     https://github.com/blue-panels/mc6/releases
+
+   and the development version is in the master branch of
+
+     https://github.com/blue-panels/mc6
+
+1.8 I cannot compile it.  What should I do?
 
    Make sure you have read the INSTALL file in the sources.  Report the
    error messages exactly as they appear, mention the versions of your
    OS, your compiler and whatever else software you think is relevant.
-   If you have compile problems in the VFS code, try disabling it by
-   using "--disable-vfs" option.
+   If a panel plugin is what fails to build, leave it out with
+   "./configure --enable-panel-plugin-<name>=no"; "./configure --help"
+   lists the names.
+
 
 2 Keyboard
 
 2.1 What does documentation mean with the C-?, M-? and F? keys?
 
-   GNU Midnight Commander documentation uses emacs style names for
-   keyboard keys.
+   The documentation uses emacs style names for keyboard keys.
 
    C stands for the Ctrl key.  For example, C-f means that you should
    hold down the Ctrl key and press the f key.
@@ -195,58 +223,55 @@ Frequently Asked Questions
 
    Your terminfo or termcap database has missing or incorrect
    definitions for function keys.  Type "mc -V" to see what terminal
-   database is being used.  If the result is "using the S-Lang library
-   with terminfo database" and you are using a very old terminfo
-   database, consider installing one of the enhanced terminfo files
-   included in GNU Midnight Commander source distribution.  For example,
-   if you are using xterm type "tic xterm.ti".
-
-   If the result is "using the S-Lang library with termcap database" you
-   should fix your /etc/termcap database.
+   database is being used.
 
    Up-to-date termcap and terminfo databases are available here:
 
      http://www.catb.org/~esr/terminfo/
      https://ftp.gnu.org/gnu/ncurses/
 
-   If you don't have permissions to edit terminal databases you can use
-   Learn keys feature of Midnight Commander instead.  Press Esc 9 o k
-   and follow instructions.
+   If you don't have permission to edit terminal databases, teach the
+   program the key instead: Options -> Learn keys (Esc 9 o k), press the
+   key and save.  What it learns is kept per terminal type in
+   ~/.config/mc6/term/$TERM, so a key learned in one terminal does not
+   disturb another.
+
+   Options -> Key sniffer shows the bytes your terminal really sends,
+   which is the fastest way to find out what is going on.
 
    If all else fails you can emulate function keys by first pressing the
    ESC key and then one of the number keys.  For example, if you want to
-   produce F9, press ESC, then 9.  If you don't have a ESC key on your
+   produce F9, press ESC, then 9.  If you don't have an ESC key on your
    keyboard you can try alt-9 or meta-9.
 
 2.3 How do I use function keys F11 to F20?
 
    These are normally mapped to function keys F1 to F10 with Shift held,
    e.g. function key F13 can be activated by pressing Shift-F3.  You can
-   define the keys this way in the Options->Learn Keys dialog.  The
+   define the keys this way in the Options -> Learn keys dialog.  The
    convention for PC keyboards is that F11-20 always means Shift with
    F1-10.
 
    You may find that on the Linux console with some keyboard layouts
    Shift-Fn is interpreted as F(n+12), not as F(n+10).  This is a result
-   of non-uniformity of keyboard layouts.  This is not an intended
-   behavior and it may be fixed some day.  In the meantime, use "Learn
-   Keys" to remedy this inconvenience.
+   of non-uniformity of keyboard layouts.  Use "Learn keys" to remedy
+   this inconvenience.
 
 2.4 Why does the ESC key behave funny?
 
-   Midnight Commander uses the ESC key as a prefix for simulating the
-   Meta and Alt keys (for terminals which don't have Meta or Alt, see
-   the three previous questions).  For example, pressing ESC-a is the
-   same as pressing Meta-a.  In addition most terminals use ESC for
-   internal representation of arrow keys, function keys and other
-   enhanced keys.  If you want to use ESC to cancel things you have to
-   press it twice i.e. ESC-ESC.  If you find this cumbersome you can
-   generally use F10 to cancel.  Alternatively turn on the old_esc_mode
-   setting in the ~/.config/mc6/ini file.  The
-   old_esc_mode setting makes ESC work as a prefix only if another key
-   is pressed within 0.5 seconds. After 0.5 seconds the ESC key cancels.
-   There is no way to make ESC cancel immediately (if we want to be able
-   to use arrows keys and function keys).
+   The ESC key is a prefix for simulating the Meta and Alt keys (for
+   terminals which don't have Meta or Alt, see the three previous
+   questions).  For example, pressing ESC-a is the same as pressing
+   Meta-a.  In addition most terminals use ESC for internal
+   representation of arrow keys, function keys and other enhanced keys.
+   If you want to use ESC to cancel things you have to press it twice,
+   i.e. ESC-ESC.  If you find this cumbersome you can generally use F10
+   to cancel.  Alternatively turn on the old_esc_mode setting in the
+   ~/.config/mc6/ini file.  The old_esc_mode setting makes ESC work as a
+   prefix only if another key is pressed within 0.5 seconds.  After 0.5
+   seconds the ESC key cancels.  There is no way to make ESC cancel
+   immediately (if we want to be able to use arrow keys and function
+   keys).
 
 2.5 How can I add the plus sign (+) on the command line?
 
@@ -276,11 +301,18 @@ Frequently Asked Questions
 
 2.8 How do I change the key bindings?
 
-   Key binding con be reconfigure via keymap files: /etc/mc/mc.keymap
-   and ~/.config/mc6/mc.keymap.
+   Options -> Key bindings lists every command of every part of the
+   program with the keys it answers to, and rebinds them on the spot.
+   What you change there is written to ~/.config/mc6/mc.keymap.
 
-   You can use the "Learn Keys" dialog to assign keys to some actions
-   listed in that dialog.
+   The same file can be written by hand, and so can the system-wide
+   /etc/mc/mc.keymap; the mc(1) man page describes the format.
+
+2.9 What does my terminal really send for this key?
+
+   Options -> Key sniffer shows the raw bytes of every key you press,
+   together with the name the program gives it.  Use it when a key does
+   nothing, or when two keys look the same to the program.
 
 
 3 Mouse
@@ -288,14 +320,14 @@ Frequently Asked Questions
 3.1 How do I enable mouse support?
 
    Invoke mc like this (without quotes): "mc -x".  If this doesn't work
-   upgrade to a terminal which compatible with the Xterm mouse
+   upgrade to a terminal which is compatible with the Xterm mouse
    sequences.
 
-   Alternatively, on Linux console you can use gpm.
+   Alternatively, on the Linux console you can use gpm.
 
 3.2 How do I cut and paste text with mouse?
 
-   Hold down shift key while using mouse to cut and paste.
+   Hold down the shift key while using the mouse to cut and paste.
 
 
 4 Display
@@ -317,9 +349,8 @@ Frequently Asked Questions
 
 4.2 Why don't line drawing characters work?
 
-   Since version 4.0.13 there's the command line option -a to force use
-   of charaters +, |, - for line drawing.  Use the -a option if any
-   of the suggestions below doesn't help.
+   The command line option -a forces the use of the characters +, |, -
+   for line drawing.  Use it if none of the suggestions below helps.
 
    In general, there are three cases:
      * Lines are shown as ASCII characters like this
@@ -352,40 +383,12 @@ Frequently Asked Questions
        in the terminfo database like this:
        acsc=a\376k\277l\332m\300j\331n\305w\302v\301u\264t\303q\304x
        \263h\2600\333
-       Don't forget issue 'tic' command.  This supposes you are using PC
-       character set.  The octal values might be different for other
-       character sets.  If you are using termcap instead of terminfo,
-       you should modify above solution appropriately.
+       Don't forget to issue the 'tic' command.  This supposes you are
+       using the PC character set.  The octal values might be different
+       for other character sets.  If you are using termcap instead of
+       terminfo, you should modify the above solution appropriately.
     3. Your terminal font might not support line drawing characters.
        Try changing the font.
-
-   Here is Miguel's answer to Torben on this subject.
-
-   Torben:
-
-     When I load consolefonts/iso01.f16, I get perfectly right national
-     characters, but the line drawing characters in mc get wrong.  Is it
-     a mc problem, or is it a problem with the font? (I guess it is).
-
-     Is there a trick?
-
-   Miguel:
-
-     First of all, we should determine whether the font has line drawing
-     characters or not.
-
-     If it has line drawing characters, then a new terminfo entry should
-     be written for this specific case.  Let's call this linux-iso01.
-     The acsc variable should be modified to reflect which characters
-     are used to do the line drawing.
-
-     If it does not have line drawing characters, then we should get rid
-     of the switch to acsc sequences and make the acsc sequence be just
-     a mapping to the ugly +, -, |, - characters.
-
-     You can get your terminfo definition by running the infocmp
-     program, making the proper changes and running the tic program to
-     compile your new terminfo database.
 
 4.3 Can one use latin-1 characters without losing the lines?
 
@@ -403,8 +406,8 @@ Frequently Asked Questions
    If you get colors, be happy.
 
    If your terminal stays black and white, your terminal doesn't support
-   color.  You might want to upgrade to a terminal which is compatible with
-   the ANSI color sequences.
+   color.  You might want to upgrade to a terminal which is compatible
+   with the ANSI color sequences.
 
    If your terminal goes completely black, see the next question.
 
@@ -434,7 +437,7 @@ Frequently Asked Questions
    appended with -256color. If your terminal supports true color, it
    should be appended with -direct, -direct16, or -direct256. All three
    variants provide both 256-color and true color support simultaneously.
-   The latter two variants make no difference in mc, and they support
+   The latter two variants make no difference here, and they support
    basic colors including their bright versions along with true color
    support, in contrast to the -direct variant, which supports only basic
    8 colors together with true color when used in a skin.
@@ -453,7 +456,7 @@ Frequently Asked Questions
 
    Some color_xterm terminals define all colors as black instead of the
    standard ANSI colors.  This makes them go completely black when you
-   try to use Midnight Commander with colors.
+   try to use colors.
 
    You will have to override the defaults.  Create a file
    "color.defaults" which has the following contents:
@@ -481,22 +484,12 @@ Frequently Asked Questions
    ever the name of your X configuration file is).  Or you can replace
    your non-ANSI color_xterm with an ANSI color_xterm.
 
-4.6 Where can I get xterm or rxvt?
+4.6 I got colors working here but the other programs don't work at all
+anymore!
 
-   xterm is included with the X Window System, so you probably already
-   have it if you have X.  This version is not actively maintained, but
-   Thomas Dickey maintains his more advanced version of xterm at
-   ftp://dickey.his.com/xterm/
-
-   rxvt has its own site https://rxvt.sourceforge.net - get the latest version
-   there.
-
-4.7 I got colors working with MC but the other programs don't work at
-all anymore!
-
-   Midnight Commander uses terminfo database (if available) but many
-   other programs use termcap database.  If you set the TERM environment
-   variable to a value which has no corresponding entry in termcap
+   This program uses the terminfo database (if available) but many other
+   programs use the termcap database.  If you set the TERM environment
+   variable to a value which has no corresponding entry in the termcap
    database those programs stop working.  You should add the new value
    of TERM to the termcap database.
 
@@ -509,70 +502,78 @@ all anymore!
 
     xterm|xterm-color|vs100|xterm terminal emulator
 
-5 Graphical user interface
+4.7 How do I change the colors of the program itself?
 
-5.1 Xview, Tk and Gnome editions?
+   Colors come from a skin file.  Options -> Appearance lists the skins
+   that are installed and applies one at once; the choice is kept in
+   ~/.config/mc6/ini.
 
-   Xview and Tk and GNOME editions have been removed from the sources.
+   System skins live in /usr/share/mc/skins, your own in
+   ~/.local/share/mc6/skins.  A skin is a plain ini file, so copying one
+   of the system skins into your own directory and editing it is the
+   usual way to make your own.  The skineditor plugin does the same job
+   in a dialog, with a preview.
 
-5.2 Why is MC linked with X libraries?
+4.8 Why is the program linked with X libraries?
 
-   GNU Midnight Commander is linked with X libraries to read key
-   modifiers from the X Server.  It may be helpful to distinguish
-   between keys that the terminal emulator reports in the same way, e.g.
-   PgUp and Ctrl-PgUp.  Versions of GNU Midnight Commander after 4.6.0
-   will load X libraries dynamically on the systems that support it.
+   It reads key modifiers from the X server, which helps to tell apart
+   keys that the terminal emulator reports in the same way, e.g. PgUp
+   and Ctrl-PgUp.  The libraries are loaded dynamically on the systems
+   that support it, and "mc -V" says whether this build has the support
+   at all.
 
 
-6 Command line problems
+5 Command line and the terminal
 
-6.1 How do I stay in the last directory when I exit Midnight Commander?
+5.1 How do I stay in the last directory when I exit?
 
    See the description of the -P option in the Options section of the
    manual.
 
-6.2 How can I access command line history?
+5.2 How can I access command line history?
 
    Meta-h shows the last commands you executed from the command line.
-   Duplicates are suppressed from the history.  Commands executed at
-   the terminal's own prompt are not shown.
+   Duplicates are suppressed from the history.  Commands executed at the
+   terminal's own prompt are not shown.
 
-   You can put previous commands to the command line with Meta-p.  Meta-n
-   moves you forward in history.
+   You can put previous commands on the command line with Meta-p.
+   Meta-n moves you forward in history.  All input widgets have a
+   permanent history; M-h summons the history listbox in each of them.
 
-   Since version 4.1.15 all the input widgets have permanent history.
-   You can summon the history listbox by pressing M-h.
-
-6.3 How can I complete commands, file names, variable names and so on?
+5.3 How can I complete commands, file names, variable names and so on?
 
    Just press M-Tab.  Press M-Tab again to get a listbox if there are
    multiple possible completions.
 
-6.4 I am using ksh.  Can I use functions defined in the .kshrc within
-MC?
+5.4 Which shells are supported?
 
-   Sorry, MC only supports bash, tcsh and zsh functions.  Ksh functions
-   are not supported because ksh lacks the necessary hooks needed for
-   the terminal integration.
+   Any shell runs in the terminal.  The integration that keeps the
+   command line, the prompt and the directory in step with the shell
+   works with bash, zsh and fish; ash, ksh, mksh and their relatives run
+   without it.
 
-   Switch to bash or zsh.  They are both quite compatible with ksh. 
-   Your ksh functions should work as such or after minimal changes.
+   Startup files of your own for those shells live in
+   ~/.local/share/mc6: bashrc, ashrc, kshrc, mkshrc and .zshrc, each
+   falling back to the one in your home directory.
 
-6.5 Is there any way to include additional options or hot keys to MC?
+5.5 Is there any way to include additional options or hot keys?
 
-   Yes, F2 invokes an user menu,  which is fully configurable.  You can
-   add any shell commands to the user menu.  See the mc(1) man page for
-   more info.
+   Yes, F2 invokes a user menu, which is fully configurable.  You can
+   add any shell commands to it.  Unlike in the program this one comes
+   from, the menu edits itself: F2 opens it, and its entries are added
+   and changed in the dialog, which keeps them in
+   ~/.config/mc6/menu.ini.  A menu file written by hand still works; see
+   the mc(1) man page.
 
-   Another way to add functionality is the external panelize feature.
-   See the mc(1) man page for more info.
+   Another way is a panel plugin: the panel can be filled by a program
+   of your own.  See doc/PLUGINS in the source distribution.
 
-   And finally, you can code any feature you want yourself.  MC source
-   code is free which means you can change it anyway you want.  There
-   are some limitations to make sure MC stays free.  See GNU General
+   And finally, you can code any feature you want yourself.  The source
+   code is free, which means you can change it any way you want.  There
+   are some limitations to make sure it stays free.  See the GNU General
    Public License for details.
 
-6.6 When I use Ctrl-O the command line does not follow my shell.  How
+5.6 When I use Ctrl-O the command line does not follow my shell.  How
 do I fix this?
 
    The command line reads its prompt and its directory from bash, zsh
@@ -580,27 +581,31 @@ do I fix this?
    your default shell to get it.  Other shells still run in the
    terminal, only without that integration.
 
-6.7 Ctrl-O doesn't work at all.  What happens?
+5.7 Ctrl-O doesn't work at all.  What happens?
 
-   Ctrl-O shows the terminal mc runs behind the panels.  If it does
-   nothing, there is no terminal to show.
+   Ctrl-O shows the terminal that runs behind the panels, and Ctrl-O
+   again brings the panels back.  The terminal starts in the directory
+   of the current panel, and the panel follows the shell when you cd in
+   it.
 
-   Only few terminals support screen saving.  It's xterm, rxvt and other
-   xterm-like terminals and virtual terminals on Linux and FreeBSD.
+   If Ctrl-O does nothing, your terminal may be eating the key; see
+   question 2.6.
 
-6.8 Why I see lot of strange 'cd "printf ' lines into my .history file?
+   C-F1 and C-F2 hide the left and the right panel, so the terminal can
+   have the whole screen while a panel is still in reach.
+
+5.8 Why do I see lots of strange 'cd "printf ' lines in my .history
+file?
 
   Add
 
     export HISTCONTROL="ignoreboth"
 
-  into your ~/.profile file (.bash_profile) for avoid this.
+  into your ~/.profile file (.bash_profile) to avoid this.
 
-6.9 I have a problem with Screen which makes using Midnight Commander
-problematic. I use Ctrl-O to disable panels. Output of previous commands,
-just a clear, screen is blanked.
+5.9 I use Screen and the output of previous commands is blanked.
 
-  Update GNU Screen to the last version. This bug was fixed in
+  Update GNU Screen to the last version.  This bug was fixed in
 
    commit ad56f746c6243d45124485d198d577bdbb78071c
    Author: Sadrul Habib Chowdhury <sadrul@users.sourceforge.net>
@@ -615,90 +620,220 @@ just a clear, screen is blanked.
 
   (see https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=558724)
 
-  or do not rewrite TERM (mustbe TERM=screen) and run mc as follow:
+  or do not rewrite TERM (must be TERM=screen) and run mc as follows:
 
    echo -e '\e[?1000h' && mc -x
 
-7 Virtual file systems
 
-7.1 How can I see the contents of a tar archive?
+6 Archives, remote hosts and virtual file systems
 
-   If the arcmc panel plugin is available, select the archive and press
-   Enter to browse it.  Otherwise Enter or F3 displays its contents;
-   use an external tar command to extract it.  The utar:// virtual
-   filesystem path is no longer supported.
+6.1 How can I see the contents of a tar or zip archive?
 
-7.2 How do I do anonymous ftp with MC?
+   Select the archive and press Enter.  The arcmc plugin opens it in the
+   panel, and you walk it like a directory; F5 copies files out of it,
+   and it can also create and extract archives.  It handles tar and its
+   compressed forms, zip, jar, 7z and cpio through libarchive, and hands
+   the formats libarchive does not know to external helpers.
 
-   Just type "cd ftp://hostname" where hostname is the name of the host
-   you want to connect.  Alternatively, select FTP link from the Left or
-   Right menu and type the name of the host you want to connect.
+   F3 on an archive shows what is inside it as text.
 
-7.3 How do I do non-anonymous ftp with MC?
+   The built-in tarfs and cpiofs of GNU Midnight Commander are gone,
+   with them the utar:// and ucpio:// paths.
 
-   Non-anonymous ftp works just like the anonymous ftp but you give the
-   login name with the host name.  For example, type "cd
-   ftp://username@hostname".
+6.2 How do I get out of an archive?
 
-7.4 How do I close an ftp connection?
+   Press Enter on ".." as usual.  At the top of the archive this closes
+   the plugin, and the panel goes back to the directory the archive is
+   in.
 
-   Just change to a non-ftp directory.  Simply typing "cd" with no
-   parameters is enough (it will take you to your home directory).
+6.3 How do I connect to FTP, SFTP or a Samba share?
 
-   GNU Midnight Commander closes ftp connection automatically after a
-   timeout or on exit.  The timeout is set in "Options" -> "Virtual FS".
+   Each of them is a panel plugin.  Open the list with M-F1 for the left
+   panel or M-F2 for the right one, or with Command -> Plugin panel, and
+   pick FTP, SFTP, Samba, shell link (that is ssh), S3, MongoDB, docker,
+   Kubernetes or systemd.
 
-7.5 Why aren't the contents of ftp panel updated?
+   The plugin asks for the host and the credentials, and keeps what you
+   answer in ~/.config/mc6, one file per plugin, for example
+   ftp-connections.ini or sftp-connections.ini.  From then on the
+   connection is one Enter away in that list.
 
-   Update is skipped because there would be a serious performance
-   penalty.  Constantly updating directory panels through a ftp
-   connection would take too much time.
+6.4 What happened to "cd ftp://host"?
 
-   You can use C-r to force an update.
+   The built-in ftpfs and sftpfs are gone; the FTP and SFTP plugins
+   replace them, and a path typed on the command line no longer opens a
+   connection.  Use the plugin list from question 6.3.
 
-7.6 What kind of proxy server works with Midnight Commander?
+   The upside is that a connection lives in a panel of its own and no
+   longer freezes the whole program while it waits for the network.
 
-   There are two kinds of ftp proxies: proxies for ftp clients and
-   proxies for web browsers.
+6.5 Which virtual file systems are left?
 
-   Midnight Commander only supports ftp proxies which are meant for ftp
-   clients.  Common WWW proxies (like Squid) are not supported.  A rule
-   of thumb is that if a ftp proxy requires a web browser, it won't work
-   with Midnight Commander.
+   Two, both local:
 
+     * extfs - a script per format, which lists an archive or another
+       container and extracts single files from it.  This is what shows
+       you the inside of an rpm, a deb, an iso9660 image, a mailbox or a
+       git commit.  "mc -V" prints where the scripts are installed;
+       copy one to ~/.local/share/mc6/extfs.d to change it.
 
-8 Other common problems
+     * sfs - a single command per format, run once, whose output becomes
+       the panel.
 
-8.1 When I try pasting to the internal editor, it indents the amount of
-indenting increases with each line!
-
-   Either turn off 'Return does autoindent' in the editor options or
-   update GNU Midnight Commander to version 4.6.0 or above - it doesn't
-   autoindent when you are holding Shift.
-
-8.2 Is it possible to use Colorer for syntax highlighting?
-
-   Yes if you submit the patch.  There are no legal problems with it
-   because it's licensed under GPL now.  The homepage of Colorer is
-   https://colorer.sourceforge.net/
+   Everything that used to need a network VFS is a panel plugin now.
 
 
-9 Other common problems
+7 Plugins
 
-9.1 Is there any way to 'bookmark' favorite ftp-fs links?
+7.1 What is a panel plugin?
+
+   A shared library that fills a panel with something that is not a
+   directory: a git repository, a docker host, a Kubernetes cluster, an
+   S3 bucket, a MongoDB collection, an archive, a remote host over FTP,
+   SFTP, Samba or ssh, the systemd units of the machine, the fields of a
+   binary file.  The panel keeps its keys, its marks and its file
+   operations; only the source of the rows is different.
+
+   The plugins shipped with the program are listed in the README file;
+   doc/PLUGINS in the source distribution describes how to write one.
+
+7.2 How do I put a plugin in a panel?
+
+   Command -> Plugin panel lists the plugins that are loaded and puts
+   the one you pick in the current panel.  M-F1 and M-F2 open the same
+   list for the left and the right panel, next to the drives.
+
+   Some plugins are opened for you: Enter on an archive starts arcmc,
+   and the rules that say so live in magic.ini.
+
+7.3 How do I turn a plugin off, or configure it?
+
+   Options -> Manage plugins lists every plugin that is installed, with
+   a switch for each.  What you turn off there is not loaded at the next
+   start; the state is kept in ~/.config/mc6/plugins.ini.
+
+   A plugin that has settings of its own opens them from that same
+   dialog with Enter or F4.  Its connections, if it has any, are in
+   ~/.config/mc6 in a file of its own.
+
+7.4 Where do plugins live?
+
+   Panel plugins are in $libdir/mc/panel-plugins, one directory per
+   plugin, and editor plugins in $libdir/mc/editor-plugins.  Your own
+   go to ~/.local/lib/mc6/panel-plugins and
+   ~/.local/lib/mc6/editor-plugins, and a plugin of yours takes
+   precedence over a system plugin of the same name.
+
+   "mc -V" prints both paths and what it found in them.
+
+7.5 My plugin in ~/.local/lib/mc is not loaded any more
+
+   That directory belonged to the older versions of the fork, when the
+   user directories were still called mc.  It is not read any more.
+
+   Do not move the files: a plugin is tied to the exact version it was
+   built against, and one built for an older release will not load.
+   Build it again, put the result in ~/.local/lib/mc6/panel-plugins,
+   and remove the old directory by hand:
+
+     rm -rf ~/.local/lib/mc/panel-plugins
+
+7.6 What are editor plugins and Lua scripts?
+
+   Editor plugins are the same idea inside mcedit: a shared library that
+   adds commands to the editor menu, for example the ctags source
+   navigator.
+
+   Lua scripts are smaller and need no compiler.  They live in
+   /usr/share/mc/lua/scripts and in ~/.local/share/mc6/lua/scripts, and
+   a script with the same name in your own directory shadows the system
+   one.  doc/LUA_PLUGINS.md and doc/LUA_API_REFERENCE.md describe what
+   they can do.
+
+
+8 Editor and viewer
+
+8.1 When I try pasting to the internal editor, the amount of indenting
+increases with each line!
+
+   Turn off 'Return does autoindent' in the editor options, or hold
+   Shift while you paste, which suspends the autoindent.
+
+8.2 How do I add syntax highlighting for my language?
+
+   The rules are in /usr/share/mc/syntax, one file per language, and the
+   file Syntax there says which of them a file name gets.  To add or
+   change a rule, copy the syntax directory to
+   ~/.local/share/mc6/syntax, edit your copy, and the editor takes it
+   instead of the system one.
+
+   The editor also has code folding, an undo history on Alt-Shift-u and
+   a macro explorer on Alt-Shift-m; a filter on Alt-s hides every line
+   that does not match, which is a quick way through a log.
+
+8.3 The file is huge and I only need the lines that match
+
+   F6 in the viewer asks for a pattern and then shows only the lines
+   that match it, the way grep does, without loading the file into
+   memory.  "[" and "]" step through the matches, Ctrl-t follows a file
+   that is still growing, and F6 again takes the filter off.
+
+8.4 Can the viewer show JSON or a binary structure?
+
+   Alt-s (or "t") in the viewer shows JSON, YAML, XML and HTML as a
+   tree, which you fold and unfold with Enter, "+" and "-".
+
+   Shift-F4 hands the file to mcstruct, which reads a def-file and shows
+   the file as a tree of named fields beside a hex dump; ELF, PE, ZIP,
+   DBF, MBR, FAT, uImage, DTB, PNG, BMP and WAV are shipped.  Fields are
+   edited in place.
+
+
+9 Configuration files
+
+9.1 Where does the program keep my settings?
+
+   In three directories, following the XDG layout:
+
+     ~/.config/mc6        ini, panels.ini, menu.ini, keymaps, plugin
+                          settings and connections
+     ~/.local/share/mc6   skins, syntax, extfs.d, Lua scripts, editor
+                          files, shell startup files
+     ~/.cache/mc6         Tree, and other data that can be thrown away
+
+   Plugins of your own live in ~/.local/lib/mc6.  "mc -V" prints every
+   one of these paths, which is the quickest way to see where a
+   particular file went.
+
+9.2 I upgraded from GNU Midnight Commander.  Where did my settings go?
+
+   Nowhere: on the first start, if ~/.config/mc6 does not exist yet and
+   ~/.config/mc does, it is copied over, and the same for the data and
+   cache directories.  The program says so on stderr.
+
+   The old directories are left where they are, so the original program
+   keeps working with them.  Nothing is written back to them.
+
+
+10 Other common problems
+
+10.1 Is there any way to 'bookmark' favorite places?
 
    Use the directory hotlist.  Just press control-backslash.  If your
-   national keyboard layout doesn't have backslash key, just press the
+   national keyboard layout doesn't have a backslash key, just press the
    control key with the key which is the backslash key in the English
    keyboard layout.
 
-9.2 When I start Midnight Commander, nothing happens!
+   A connection of a panel plugin is remembered by the plugin itself,
+   see question 7.3.
+
+10.2 When I start the program, nothing happens!
 
    Check the shell you are using.  The command line integration works
    best with bash, zsh and fish.  You might want to upgrade your shell
    to a newer version.
 
-   Another reason is problems with gpm.  Try using "--nomouse" option to
+   Another reason is problems with gpm.  Try the "--nomouse" option to
    see if it makes any difference.  Restarting gpm can help.  Sometimes
    it's enough to move the mouse.
 
@@ -707,171 +842,125 @@ indenting increases with each line!
    delay at startup.  Unset DISPLAY to see if that's the case.
 
 
-10 Development
+11 Development
 
-10.1 Who has written Midnight Commander?
+11.1 Who has written this?
 
-   Midnight Commander was started by Miguel de Icaza and was is the
-   maintainer of the package.  Other authors have joined the project
-   later:
+   M-Commander is maintained by Ilia Maslakov.  It is a fork of GNU
+   Midnight Commander, which was started by Miguel de Icaza and written
+   by many people since 1994; the AUTHORS file lists them all.
 
-     * Mauricio Plaza (early releases)
-     * Janne Kukonlehto (joined Sep 27 1994)
-     * Radek Doulik (joined Oct 30 1994)
-     * Fred Leeflang (joined Nov 2 1994)
-     * Dugan Porter (joined Dec 1 1994)
-     * Jakub Jelinek (joined Feb 8 1995)
-     * Ching Hui (joined Jun 27 1995)
-     * Andrej Borsenkow (joined Jul 1996)
-     * Paul Sheer (joined Nov 1 1996)
-     * Norbert Warmuth
-     * Alex I. Tkachenko
+11.2 Do I dare to use a development version?
 
-   Alessandro Rubini has been specially helpful with debugging and
-   enhancing of the mouse support.  John E. Davis has made his S-Lang
-   library available to us and answered many questions about it.
+   Yes, of course.  The master branch of
 
-   Many people have contributed bug reports, feature suggestions and
-   small code bits (alphabetical order):
+     https://github.com/blue-panels/mc6
 
-     * Thomasz Cholewo
-     * Juan Jose Ciarlante
-     * Alexander Dong (OS/2 port, NT port updates)
-     * Erwin van Eijk
-     * Torben Fjerdingstad
-     * Massimo Fontanelli
-     * Juan Grigera (NT port)
-     * Gerd Knorr
-     * Sergey Ya. Korshunoff
-     * Jean-Daniel Luiset
-     * Wim Osterholt
-     * Antonio Palama (old DOS port)
-     * Thomas Pundt
-     * Marcelo Roccasalva
-     * Ilya Rybkin
-     * Vadim Sinolits
-     * Jon Stevens
-     * Adam Tla/lka
+   is where the work happens; check it out and build it as the INSTALL
+   file describes.
 
-10.2 Do I dare to use a development version?
+   But always remember: development versions may have nasty bugs at some
+   points of time.  It's up to you to judge whether the new features and
+   fixes for the bugs you know outweigh the risk of unknown bugs.
 
-   Yes, of course. Feel free to test:
-   https://midnight-commander.org
-   As we do our development in git, please do a git checkout
-   of the master branch and build it
-
-   But always remember: development versions may have nasty bugs
-   at some points of time.  It's up to you to judge whether the new
-   features and fixes for the bugs you know outweigh the risk of unknown
-   bugs.
-
-10.3 How can I report a bug/request for a feature?
+11.3 How can I report a bug/request for a feature?
 
    You might first want to get the newest development version to see if
    the bug is fixed or the feature is added already.
 
-   If this is not the case, feel free to add a ticket in our ticket system,
-   which is located here: https://github.com/MidnightCommander/mc/issues
+   If this is not the case, open a ticket at
 
-   If you want to send an email instead write your report to
-   mc-devel@lists.midnight-commander.org or mc@lists.midnight-commander.org.
+     https://github.com/blue-panels/mc6/issues
 
-   These mailing lists are the most certain way to contact the
-   developers.  Remember to mention if you are not on the mailing list
-   to make sure that you will receive a copy of replies.
+   Bugs of this fork do not belong to the upstream project, and bugs of
+   the upstream program do not belong here.
 
-   Give as much details as possible.  A too long message is a lot better
-   than a too short message.
+   Give as many details as possible.  A too long message is a lot better
+   than a too short message.  Say which version you run ("mc -V"), which
+   terminal and which operating system.
 
    For segmentation faults a stack backtrace is appreciated.  You can
-   produce stack backtrace as follows:
-     * If segmentation fault produced a core file:
-         1. Load the core file by typing "gdb mc core" or "dbx mc core".
+   produce a stack backtrace as follows:
+     * If the segmentation fault produced a core file:
+         1. Load the core file by typing "gdb mc core".
          2. Type "where".
-         3. Cut and paste the results to your message.
-     * If segmentation fault didn't produce a core file:
-         1. Load mc by typing "gdb mc" or "dbx mc".
+         3. Cut and paste the results into your report.
+     * If the segmentation fault didn't produce a core file:
+         1. Load mc by typing "gdb mc".
          2. Start mc by typing "run".
          3. Try to reproduce the segmentation fault by doing whatever
             you did last time when the segmentation fault occurred.
          4. Type "where".
-         5. Cut and paste the results to your message.
-         6. For the future you might want to check out what is the
-            command in your shell to allow producing of the core files.
-            Usually it is "limit coredumpsize unlimited" or "ulimit
-            coredumpsize" or "ulimit -c unlimited".
+         5. Cut and paste the results into your report.
+         6. For the future you might want to check out what the command
+            in your shell is to allow producing of core files.  Usually
+            it is "ulimit -c unlimited".
 
-10.4 How can I join the development?
+11.4 How can I join the development?
 
-   To join the development just code the feature you want to add and
-   send your patch for inclusion.  Email address is mc-devel@lists.midnight-commander.org.
-   Before you start coding check the latest development version.  It
-   might be that your feature has already been implemented.
+   Send a pull request on GitHub, or open a ticket with the patch.
+   Before you start coding, check the latest development version; it
+   might be that your feature has already been implemented.  The HACKING
+   file describes how the source is laid out and how it is formatted.
 
-   Note that the authors of GNU Midnight Commander have given all their
-   rights on the program to the Free Software Foundation.  You will have
-   to do the same if you contribute non-trivial patches.  Otherwise we
-   have to reject your patches in order to avoid copyright problems.
+   The code you write stays yours.  Unlike the upstream project, this
+   fork asks for no copyright assignment.
 
+11.5 How can I help with translations?
 
-11 More information
+   The program strings are translated on Codeberg Weblate:
 
-11.1 This document didn't answer my question.  Where else can I look for
-an answer?
+     https://translate.codeberg.org/engage/mc6/
 
-   Read messages from the Discussion (mailing list archive) or read the
-   Manual.
-
-   Upgrade to a newer version of Midnight Commander.  Many problems are
-   fixed in the new versions.
-
-   If you still can't find an answer, post your question to the Midnight
-   Commander mailing list.  Its address is mc@lists.midnight-commander.org.
-
-11.2 What mailing lists are there for Midnight Commander?
-
-   Following mailing lists discuss about Midnight Commander:
-
-   mc@lists.midnight-commander.org
-          General discussion of GNU Midnight Commander
-          To subscribe visit
-          https://lists.midnight-commander.org/mailman/listinfo/mc/
-
-   mc-devel@lists.midnight-commander.org
-          Technical development discussion
-          To subscribe visit
-          https://lists.midnight-commander.org/mailman/listinfo/mc-devel/
-
-11.3 Where should I look on the World Wide Web for MC stuff?
-
-   There is a WWW page for Midnight Commander.  The URL is:
-
-     https://midnight-commander.org
-
-11.4 Are the mailing lists archived anywhere?
-
-   The mc and mc-devel lists are archived on the World Wide Web.  There
-   are links to the archives on the mailing list pages (see 10.2).
+   The hints in doc/hints and the manual pages in doc/man are not on
+   Weblate; send them as a pull request.
 
 
-12 Legal issues
+12 More information
 
-12.1 Authorship
+12.1 This document didn't answer my question.  Where else can I look
+for an answer?
 
-   Questions and Answers was written by Janne Kukonlehto.  Parts of it
-   originate from Ian Jackson, Miguel de Icaza, Dugan Porter, Norbert
-   Warmuth and Paul Sheer.
+   Press F1: the built-in help is the manual page, and it covers nearly
+   everything.  The wiki has the longer guides:
 
-12.2 Feedback is invited
+     https://github.com/blue-panels/mc6/wiki
 
-   Send your comments about this document and GNU Midnight Commander to
-   mc@lists.midnight-commander.org
+   Upgrade to a newer version.  Many problems are fixed in the new
+   versions.
 
-12.3 Disclaimer and copyright
+   If you still can't find an answer, ask in a ticket at
+   https://github.com/blue-panels/mc6/issues .
+
+12.2 Where should I look on the World Wide Web?
+
+   The project lives at
+
+     https://github.com/blue-panels/mc6
+
+   The program it comes from is at https://midnight-commander.org .
+
+
+13 Legal issues
+
+13.1 Authorship
+
+   Questions and Answers was written by Janne Kukonlehto for GNU
+   Midnight Commander.  Parts of it originate from Ian Jackson, Miguel
+   de Icaza, Dugan Porter, Norbert Warmuth and Paul Sheer.  It was
+   rewritten for M-Commander, where the answers had grown apart from the
+   program.
+
+13.2 Feedback is invited
+
+   Send your comments about this document and about the program to
+   https://github.com/blue-panels/mc6/issues .
+
+13.3 Disclaimer and copyright
 
    Note that this document is provided as is.  The information in it is
    not warranted to be correct; you use it at your own risk.
 
-   You can use Questions and Answers according to GNU General Public
-   License (see the COPYING file in GNU Midnight Commander source
-   distribution).  Questions and Answers is not public domain.
+   You can use Questions and Answers according to the GNU General Public
+   License (see the COPYING file in the source distribution).  Questions
+   and Answers is not public domain.
