@@ -111,19 +111,6 @@ mkdir -p "$config"
 # where a copy lands: the same file the editor and the terminal write
 clipfile=${XDG_DATA_HOME:-$HOME/.local/share}/mc6/mcedit/mcedit.clip
 
-# -o values, grouped by section
-if [ -n "$options" ]; then
-    echo "$options" | grep . | awk -F= '
-    {
-        key = $1; sub(/^[^=]*=/, "", $0); val = $0
-        sec = "Midnight-Commander"
-        if (index(key, ".") > 0) { sec = substr(key, 1, index(key, ".") - 1); key = substr(key, index(key, ".") + 1) }
-        if (!(sec in seen)) { order[++n] = sec; seen[sec] = 1 }
-        body[sec] = body[sec] key "=" val "\n"
-    }
-    END { for (i = 1; i <= n; i++) printf "[%s]\n%s\n", order[i], body[order[i]] }' > "$config/ini"
-fi
-
 if [ -n "$keymap" ]; then
     cp "$SRC/common/keymaps/$keymap.keymap" "$config/mc.keymap" \
         || { echo "run-cases.sh: no keymap $keymap in common/keymaps" >&2; exit 2; }
@@ -172,6 +159,43 @@ term_keys
 # rule known only to magic.ini gets in front of mc without touching the build.
 if [ -d "$SRC/cases/$subject/config" ]; then
     cp -r "$SRC/cases/$subject/config/." "$config/"
+fi
+
+# One value in mc's ini, section $1, key $2, value $3: what the subject brought
+# stays, and what -o says wins over it.
+ini_set ()
+{
+    awk -v sec="$1" -v key="$2" -v val="$3" '
+    /^\[.*\]$/ {
+        if (cur == sec && !done) { print key "=" val; done = 1 }
+        cur = substr($0, 2, length($0) - 2)
+    }
+    cur == sec && index($0, key "=") == 1 { next }
+    { print }
+    END {
+        if (!done) {
+            if (cur != sec) print "[" sec "]"
+            print key "=" val
+        }
+    }' "$config/ini" > "$config/ini.new"
+    mv "$config/ini.new" "$config/ini"
+}
+
+# -o section.key=value, the section Midnight-Commander when it is left out
+if [ -n "$options" ]; then
+    [ -f "$config/ini" ] || : > "$config/ini"
+    printf '%s\n' "$options" | grep . | while IFS= read -r opt; do
+        key=${opt%%=*}
+        val=${opt#*=}
+        sec=Midnight-Commander
+        case "$key" in
+        *.*)
+            sec=${key%%.*}
+            key=${key#*.}
+            ;;
+        esac
+        ini_set "$sec" "$key" "$val"
+    done
 fi
 
 # the connection each plugin reads on start; plain passwords are accepted
@@ -228,7 +252,7 @@ select_entry ()
     while [ "$n" -gt 0 ]; do
         $T send-keys -t mc C-s
         nap 0.2
-        $T send-keys -t mc -l "$1"
+        $T send-keys -t mc -l -- "$1"
         nap 0.3
         screen | grep -qF "/$1" && return 0
         $T send-keys -t mc Escape
@@ -405,7 +429,7 @@ check ()
 # can every step of $1 be pressed?
 steps_known ()
 {
-    echo "$1" | tr ',' '\n' | while read -r step; do
+    printf '%s\n' "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
         Enter | F3 | F5 | C-o | .. | "on "* | "cd "* | "type "* | "key "* | "width "*) ;;
         *) exit 1 ;;
@@ -415,7 +439,7 @@ steps_known ()
 
 press ()
 {
-    echo "$1" | tr ',' '\n' | while read -r step; do
+    printf '%s\n' "$1" | tr ',' '\n' | while read -r step; do
         case "$step" in
         F5)
             $T send-keys -t mc F5
@@ -437,12 +461,13 @@ press ()
         "cd "*)
             $T send-keys -t mc M-c
             wait_for "cd:" 5 >/dev/null
-            $T send-keys -t mc -l "${step#cd }"
+            $T send-keys -t mc -l -- "${step#cd }"
             nap 0.3
             $T send-keys -t mc Enter
             ;;
         "type "*)
-            $T send-keys -t mc -l "${step#type }"
+            # -- or a text that starts with a dash is read as tmux's own flags
+            $T send-keys -t mc -l -- "${step#type }"
             ;;
         # anything tmux has a name for: F4, M-S, C-M-l, Escape, C-F1
         "key "*)
@@ -599,7 +624,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 ;;
             esac
 
-            slug=$(echo "$name.$key" | tr '/ ' '..')
+            slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
             stderr=$out/$slug.stderr
             vg_log=
             [ $memcheck = 1 ] && vg_log=$out/$slug.valgrind
@@ -719,7 +744,7 @@ done
         echo
         for where in $(echo "$transports" | tr ',' ' '); do
             grep "$(printf "\tFAIL\t")" "$report/$where/results.tsv" | while IFS="$(printf '\t')" read -r name key expect verdict ms why; do
-                slug=$(echo "$name.$key" | tr '/ ' '..')
+                slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
                 echo "- $where: $name $key, expected $expect ($why) - [screen]($where/$slug.screen)"
             done
         done

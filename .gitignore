@@ -69,3 +69,7 @@ lib/stdckdint.h
 /packaging/arch/PKGBUILD
 /packaging/gentoo/mc6-*.ebuild
 /dist/
+
+# The sandbox subjects that carry mc's own configuration: "config" above is
+# autotools' directory, not theirs.
+!tests/misc/docker/cases/*/config

@@ -1,0 +1,5 @@
+# Lynx-like motion, which is what the Right and Left cases are about: without
+# it the arrows only move the cursor and a link to a directory is never
+# entered.
+[Panels]
+navigate_with_arrows=true
