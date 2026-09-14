@@ -49,14 +49,29 @@ local function clamp(value, low, high)
     return value
 end
 
+-- The columns the text takes on the screen.  ASCII is a column a byte; for
+-- the rest the terminal is asked, because a character of the far east takes
+-- two columns and an accent none.
 local function text_columns(text)
+    if not text:find("[\128-\255]") then
+        return #text
+    end
+    if mc ~= nil and mc.ui ~= nil and mc.ui.text_width ~= nil then
+        local width = mc.ui.text_width(text)
+
+        if width ~= nil then
+            return width
+        end
+    end
     local ok, len = pcall(utf8.len, text)
+
     if ok and len ~= nil then
         return len
     end
     return #text
 end
 
+-- The head of the text that fits in @limit columns, whole characters only.
 local function clip(text, limit)
     if limit <= 0 then
         return ""
@@ -64,11 +79,25 @@ local function clip(text, limit)
     if text_columns(text) <= limit then
         return text
     end
-    local ok, offset = pcall(utf8.offset, text, limit + 1)
-    if not ok or offset == nil then
+
+    local ok, count = pcall(utf8.len, text)
+    local take = (ok and count ~= nil) and math.min(count, limit) or nil
+
+    if take == nil then
         return text:sub(1, limit)
     end
-    return text:sub(1, offset - 1)
+    -- Every character is at least one column, so @limit of them is the most
+    -- that can fit; the wide ones are given back one at a time.
+    while take > 0 do
+        local offset = utf8.offset(text, take + 1)
+        local head = text:sub(1, (offset or (#text + 1)) - 1)
+
+        if text_columns(head) <= limit then
+            return head
+        end
+        take = take - 1
+    end
+    return ""
 end
 
 M.clip = clip

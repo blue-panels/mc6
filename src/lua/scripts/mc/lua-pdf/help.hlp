@@ -21,6 +21,10 @@ the arrows, Home and End.  The menu changes the page.
   F1         - this help
 
 The search reads the pages as it goes and stops after 200 of them.  The
+text of the last four runs of pages it read is kept, along with the
+files written out for them and the pictures of the page on the screen;
+the rest is read again when the reader comes back to it.  A terminal
+that draws no sixel gets no pictures written out at all.  The
 page with the match is drawn with the match in reverse video, and the
 viewer opens the page at its row.  F7 and F6, the search and the filter
 of the viewer, work on the rows of a file and are switched off here:

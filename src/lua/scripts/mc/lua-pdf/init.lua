@@ -37,8 +37,10 @@ local pdfxml = require("pdfxml")
 local render = require("render")
 
 -- Pages come out of the file in runs of this many: the first page of a big
--- file is not worth the wait for the rest.
+-- file is not worth the wait for the rest.  The text of this many runs is
+-- kept; older runs are read again when the reader comes back to them.
 local CHUNK_PAGES = 8
+local MAX_CACHED_CHUNKS = 4
 local MAX_XML_BYTES = 64 * 1024 * 1024
 local MAX_SIXEL_BYTES = 4 * 1024 * 1024
 
@@ -88,19 +90,39 @@ local function chunk_first(page_number)
     return math.floor((page_number - 1) / CHUNK_PAGES) * CHUNK_PAGES + 1
 end
 
+-- The text of a page is kept for as long as the reader may come back to it;
+-- a session that walks a long document keeps neither the text of every page
+-- it has been through nor the pictures written out with it.
+local function forget_old_chunks(session)
+    while #session.chunk_order > MAX_CACHED_CHUNKS do
+        local oldest = table.remove(session.chunk_order, 1)
+        local chunk = session.chunks[oldest]
+
+        if chunk ~= nil then
+            for page = chunk.from, chunk.to do
+                session.page_cache[page] = nil
+            end
+            session.chunks[oldest] = nil
+            run("rm -f -- " .. quote(string.format("%s/p%05d", session.dir, oldest)) .. "*")
+        end
+    end
+end
+
 -- The run of pages that holds @number, extracted once and kept.
 local function load_chunk(session, number)
     local first = chunk_first(number)
     if session.chunks[first] then
         return
     end
-    session.chunks[first] = true
 
     local last = math.min(first + CHUNK_PAGES - 1, session.pages)
     local xml_path = string.format("%s/p%05d.xml", session.dir, first)
+    -- A terminal that draws no sixel has no use for the pictures, and
+    -- writing them out is most of the work on a scanned document.
     local command = string.format(
-        "pdftohtml -xml -noroundcoord -enc UTF-8 -f %d -l %d -- %s %s >/dev/null 2>&1",
-        first, last, quote(session.local_path), quote(xml_path))
+        "pdftohtml -xml%s -noroundcoord -enc UTF-8 -f %d -l %d -- %s %s >/dev/null 2>&1",
+        session.want_images and "" or " -i", first, last, quote(session.local_path),
+        quote(xml_path))
     local result = run(command)
 
     if result == nil or result.exit_code ~= 0 then
@@ -112,9 +134,18 @@ local function load_chunk(session, number)
         mc.log.warn("lua-pdf: cannot read " .. xml_path)
         return
     end
-    for _, page in ipairs(pdfxml.parse(text)) do
+    local parsed = pdfxml.parse(text)
+
+    if #parsed == 0 then
+        mc.log.warn("lua-pdf: no pages in " .. xml_path)
+        return
+    end
+    for _, page in ipairs(parsed) do
         session.page_cache[page.number] = page
     end
+    session.chunks[first] = { from = first, to = last }
+    session.chunk_order[#session.chunk_order + 1] = first
+    forget_old_chunks(session)
 end
 
 local function page_of(session, number)
@@ -197,12 +228,18 @@ local MODE_LABELS = {
 -- out of whatever does not fit, so the name is shortened here instead, and
 -- the keys and the page stay whole.
 local function shorten(name, room)
-    if room < 8 or #name <= room then
+    if room < 8 or render.text_columns(name) <= room then
         return name
     end
-    local head = (room - 1) // 2
 
-    return name:sub(1, head) .. "~" .. name:sub(#name - (room - head - 2))
+    local head = (room - 1) // 2
+    local tail = room - head - 1
+    local ok, offset = pcall(utf8.offset, name, -tail)
+
+    if not ok or offset == nil then
+        return render.clip(name, room - 1) .. "~"
+    end
+    return render.clip(name, head) .. "~" .. name:sub(offset)
 end
 
 -- Without the tools there is no page to show and nothing to say about one:
@@ -251,7 +288,8 @@ local function status_text(session, params, plan, view)
         if #extra > 0 then
             rest = rest .. "   " .. table.concat(extra, "   ")
         end
-        if #extra == 0 or room - #rest >= 24 or #session.display_name <= room - #rest then
+        if #extra == 0 or room - #rest >= 24
+            or render.text_columns(session.display_name) <= room - #rest then
             break
         end
         table.remove (extra)
@@ -436,6 +474,7 @@ local viewer = mc.viewer_source.define {
             display_name = request.display_name or request.local_path,
             id = next_session_id,
             chunks = {},
+            chunk_order = {},
             page_cache = {},
             sixels = {},
             tools = {},
@@ -513,6 +552,15 @@ local viewer = mc.viewer_source.define {
         local body
         local top_row = 0
         local title = status_text(session, params, nil, view)
+
+        session.want_images = view.sixel
+        -- The pictures of a page are worth keeping while it is redrawn for a
+        -- new size or zoom, and worth forgetting the moment the page turns:
+        -- one screenful of sixel is hundreds of kilobytes.
+        if session.sixel_page ~= params.page then
+            session.sixels = {}
+            session.sixel_page = params.page
+        end
 
         params.page = math.max(1, math.min(params.page, math.max(1, session.pages)))
         local page = page_of(session, params.page)
