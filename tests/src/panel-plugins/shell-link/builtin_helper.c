@@ -26,24 +26,28 @@
 #include <config.h>
 
 #include <stdio.h>
-#include <string.h>
 
-#include "src/panel-plugins/shell-link/shelldef.h"
+#include "src/panel-plugins/shell-link/shfs.h"
 
 int
 main (int argc, char **argv)
 {
-    const char *name = argc > 1 ? argv[1] : "";
+    const char *text;
 
-    if (strcmp (name, "ls") == 0)
-        fputs (VFS_SHELL_LS_DEF_CONTENT, stdout);
-    else if (strcmp (name, "get") == 0)
-        fputs (VFS_SHELL_GET_DEF_CONTENT, stdout);
-    else
+    if (argc != 2)
     {
-        fprintf (stderr, "usage: %s ls|get\n", argv[0]);
+        fprintf (stderr, "usage: %s HELPER\n", argv[0]);
         return 2;
     }
+
+    text = shfs_helper_builtin (argv[1]);
+    if (text == NULL)
+    {
+        fprintf (stderr, "no built-in helper: %s\n", argv[1]);
+        return 2;
+    }
+
+    fputs (text, stdout);
 
     return 0;
 }

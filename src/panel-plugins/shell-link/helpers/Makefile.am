@@ -2,10 +2,10 @@
 # beside it. The per-host override in ~/.local/share/mc6/shell/ is unchanged.
 shelllinkhelpersdir = $(panel_plugins_dir)/shell-link/helpers
 
+include $(srcdir)/helpers.mk
+
 SHELL_MISC = README.shell
 
-shelllinkhelpers_DATA = $(SHELL_MISC) \
-	ls mkdir fexists unlink chown chmod rmdir ln mv hardlink \
-	get send append info utime putat cksumrange blockdigests
+shelllinkhelpers_DATA = $(SHELL_MISC) $(SHELL_LINK_HELPERS)
 
 EXTRA_DIST = $(shelllinkhelpers_DATA)
