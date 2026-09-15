@@ -2186,6 +2186,18 @@ If this option is enabled, when you exit M\-Commander, the
 current settings of panels are saved in the ~/.config/mc6/panels.ini file.
 Disabled by default.
 .PP
+.I Watch directories.
+If this option is enabled, M\-Commander asks the kernel to tell it about
+changes in the directories the panels show, and rereads a panel when a file
+in it is created, removed or changed by something else: another terminal, a
+build, or the shell of the terminal window. A panel that is off screen is
+reread when it comes back. One watch covers a whole directory, so the cost
+does not depend on the number of files in it, and a burst of changes leads
+to one reread. Directories of a virtual file system, and those on a file
+system the kernel cannot watch, such as NFS, work as they did: there C\-r
+does the job. While this option is on, Fast directory reload has nothing to
+save and is shown disabled. Enabled by default.
+.PP
 .B Navigation
 .PP
 .I Lynx\-like motion.
