@@ -21,6 +21,10 @@ on:
         description: comma separated subjects, empty for every one
         type: string
         default: ''
+  # The cases take minutes, so a push does not wait for them: a pull request
+  # runs them when it is given the 'sandbox' label.
+  pull_request:
+    types: [ opened, synchronize, reopened, labeled ]
   schedule:
     # Over the network the same cases take three times as long, so they run
     # once a night rather than on every push.
@@ -28,6 +32,8 @@ on:
 
 jobs:
   sandbox-debian-12:
+    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'sandbox')
+
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -35,8 +41,12 @@ jobs:
       contents: read
 
     env:
-      # A scheduled run gets no inputs; that is the run over the network.
-      TRANSPORTS: ${{ inputs.transports || 'local,sftp,ftp,smb,sh' }}
+      # A run with no inputs is either the nightly one, which goes over the
+      # network, or a labelled pull request, which stays on a local directory.
+      TRANSPORTS: >-
+        ${{ inputs.transports
+            || (github.event_name == 'schedule' && 'local,sftp,ftp,smb,sh')
+            || 'local' }}
       SUBJECTS: ${{ inputs.subjects || '' }}
       # A runner is slower than the machine these waits were written on, and a
       # wait that runs out fails a case that would have passed.
