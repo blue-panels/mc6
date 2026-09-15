@@ -754,6 +754,7 @@ static cb_ret_t
 mcview_handle_key (WView *view, int key)
 {
     long command;
+    gboolean offered;
 
     key = convert_from_input_c (key);
 
@@ -766,11 +767,14 @@ mcview_handle_key (WView *view, int key)
         return MSG_HANDLED;
 
     /* A key the source declared as its own comes before the viewer's keymap;
-       everything else the viewer looks up first and offers afterwards. */
-    if (view->source_controller != NULL && view->source_controller->owns_key != NULL
-        && view->source_controller->handle_key != NULL && mcview_source_owns_display (view)
+       everything else the viewer looks up first and offers afterwards.  Asked
+       here, it is not asked again below, whatever the source answered. */
+    offered = view->source_controller != NULL && view->source_controller->handle_key != NULL
+        && mcview_source_owns_display (view);
+    if (offered && view->source_controller->owns_key != NULL
         && view->source_controller->owns_key (view->source_ctx, key))
     {
+        offered = FALSE;
         switch (view->source_controller->handle_key (view->source_ctx, key))
         {
         case MCV_KEY_OPEN_OPTIONS:
@@ -802,8 +806,7 @@ mcview_handle_key (WView *view, int key)
 
     /* Key not bound to a viewer command: offer it to the source controller,
        which owns its own hotkeys (mirrors the panel-plugin handle_key path). */
-    if (view->source_controller != NULL && view->source_controller->handle_key != NULL
-        && mcview_source_owns_display (view))
+    if (offered)
         switch (view->source_controller->handle_key (view->source_ctx, key))
         {
         case MCV_KEY_OPEN_OPTIONS:

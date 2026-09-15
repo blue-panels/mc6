@@ -37,8 +37,10 @@ local pdfxml = require("pdfxml")
 local render = require("render")
 
 -- Pages come out of the file in runs of this many: the first page of a big
--- file is not worth the wait for the rest.
+-- file is not worth the wait for the rest.  The text of this many runs is
+-- kept; older runs are read again when the reader comes back to them.
 local CHUNK_PAGES = 8
+local MAX_CACHED_CHUNKS = 4
 local MAX_XML_BYTES = 64 * 1024 * 1024
 local MAX_SIXEL_BYTES = 4 * 1024 * 1024
 
@@ -88,19 +90,39 @@ local function chunk_first(page_number)
     return math.floor((page_number - 1) / CHUNK_PAGES) * CHUNK_PAGES + 1
 end
 
+-- The text of a page is kept for as long as the reader may come back to it;
+-- a session that walks a long document keeps neither the text of every page
+-- it has been through nor the pictures written out with it.
+local function forget_old_chunks(session)
+    while #session.chunk_order > MAX_CACHED_CHUNKS do
+        local oldest = table.remove(session.chunk_order, 1)
+        local chunk = session.chunks[oldest]
+
+        if chunk ~= nil then
+            for page = chunk.from, chunk.to do
+                session.page_cache[page] = nil
+            end
+            session.chunks[oldest] = nil
+            run("rm -f -- " .. quote(string.format("%s/p%05d", session.dir, oldest)) .. "*")
+        end
+    end
+end
+
 -- The run of pages that holds @number, extracted once and kept.
 local function load_chunk(session, number)
     local first = chunk_first(number)
     if session.chunks[first] then
         return
     end
-    session.chunks[first] = true
 
     local last = math.min(first + CHUNK_PAGES - 1, session.pages)
     local xml_path = string.format("%s/p%05d.xml", session.dir, first)
+    -- A terminal that draws no sixel has no use for the pictures, and
+    -- writing them out is most of the work on a scanned document.
     local command = string.format(
-        "pdftohtml -xml -noroundcoord -enc UTF-8 -f %d -l %d -- %s %s >/dev/null 2>&1",
-        first, last, quote(session.local_path), quote(xml_path))
+        "pdftohtml -xml%s -noroundcoord -enc UTF-8 -f %d -l %d -- %s %s >/dev/null 2>&1",
+        session.want_images and "" or " -i", first, last, quote(session.local_path),
+        quote(xml_path))
     local result = run(command)
 
     if result == nil or result.exit_code ~= 0 then
@@ -112,9 +134,18 @@ local function load_chunk(session, number)
         mc.log.warn("lua-pdf: cannot read " .. xml_path)
         return
     end
-    for _, page in ipairs(pdfxml.parse(text)) do
+    local parsed = pdfxml.parse(text)
+
+    if #parsed == 0 then
+        mc.log.warn("lua-pdf: no pages in " .. xml_path)
+        return
+    end
+    for _, page in ipairs(parsed) do
         session.page_cache[page.number] = page
     end
+    session.chunks[first] = { from = first, to = last }
+    session.chunk_order[#session.chunk_order + 1] = first
+    forget_old_chunks(session)
 end
 
 local function page_of(session, number)
@@ -134,10 +165,15 @@ local function image_path(session, src)
     return session.dir .. "/" .. src
 end
 
--- The bytes of one picture, in the size it takes on the screen.
-local function sixel_command(session, image)
+-- The bytes of one picture, in the size it takes on the screen: sixel where
+-- the terminal draws it, and chafa's characters where it does not.
+local function picture_command(session, image, sixel)
     local path = quote(image_path(session, image.src))
 
+    if not sixel then
+        return string.format("chafa --format=symbols --stretch --size=%dx%d -- %s 2>/dev/null",
+                             image.cols, image.rows, path)
+    end
     if session.tools.encoder == "img2sixel" then
         return string.format("img2sixel -w %d -h %d -- %s 2>/dev/null",
                              image.width, image.height, path)
@@ -147,30 +183,42 @@ local function sixel_command(session, image)
         math.max(1, image.width // 8), math.max(1, image.height // 8), path)
 end
 
-local function sixel_bytes(session, image)
-    if session.tools.encoder == nil then
+-- Only the picture itself: chafa wraps what it draws in sequences of its
+-- own, which the viewer has no use for.
+local function picture_bytes(result, sixel)
+    if result == nil or result.stdout_truncated then
         return nil
     end
-    local key = string.format("%s|%d|%d", image.src, image.width, image.height)
+    if sixel then
+        local first = result.stdout:find("\27P", 1, true)
+        local last = first ~= nil and result.stdout:find("\27\\", first, true) or nil
+
+        return last ~= nil and result.stdout:sub(first, last + 1) or nil
+    end
+
+    local text = result.stdout:gsub("\27%[%?%d+[hl]", ""):gsub("%s+$", "")
+
+    return text ~= "" and text or nil
+end
+
+local function picture_data(session, image, sixel)
+    if sixel and session.tools.encoder == nil then
+        return nil
+    end
+    if not sixel and not session.tools.chafa then
+        return nil
+    end
+
+    local key = string.format("%s|%d|%d|%s", image.src, image.width, image.height,
+                              sixel and "s" or "c")
     local cached = session.sixels[key]
+
     if cached ~= nil then
         return cached ~= false and cached or nil
     end
 
-    local command = sixel_command(session, image)
-    local data = nil
-    if command ~= nil then
-        local result = run(command, MAX_SIXEL_BYTES)
-        if result ~= nil and not result.stdout_truncated then
-            -- Only the picture itself: chafa wraps it in sequences of its
-            -- own, which the viewer has no use for.
-            local first = result.stdout:find("\27P", 1, true)
-            local last = first ~= nil and result.stdout:find("\27\\", first, true) or nil
-            if last ~= nil then
-                data = result.stdout:sub(first, last + 1)
-            end
-        end
-    end
+    local data = picture_bytes(run(picture_command(session, image, sixel), MAX_SIXEL_BYTES), sixel)
+
     session.sixels[key] = data ~= nil and data or false
     return data
 end
@@ -197,12 +245,18 @@ local MODE_LABELS = {
 -- out of whatever does not fit, so the name is shortened here instead, and
 -- the keys and the page stay whole.
 local function shorten(name, room)
-    if room < 8 or #name <= room then
+    if room < 8 or render.text_columns(name) <= room then
         return name
     end
-    local head = (room - 1) // 2
 
-    return name:sub(1, head) .. "~" .. name:sub(#name - (room - head - 2))
+    local head = (room - 1) // 2
+    local tail = room - head - 1
+    local ok, offset = pcall(utf8.offset, name, -tail)
+
+    if not ok or offset == nil then
+        return render.clip(name, room - 1) .. "~"
+    end
+    return render.clip(name, head) .. "~" .. name:sub(offset)
 end
 
 -- Without the tools there is no page to show and nothing to say about one:
@@ -234,8 +288,12 @@ local function status_text(session, params, plan, view)
         extra[#extra + 1] = string.format("%s %d%%", MODE_LABELS[plan.mode] or plan.mode,
                                           math.floor((params.zoom or 1.0) * 100 + 0.5))
     end
-    if plan ~= nil and not view.sixel and #plan.images > 0 then
-        extra[#extra + 1] = "no sixel"
+    -- Nothing can draw the pictures of this page: that is worth saying, and
+    -- worth saying even where the line is too short for the rest.
+    if plan ~= nil and #plan.images > 0
+        and ((view.sixel and session.tools.encoder == nil)
+             or (not view.sixel and not session.tools.chafa)) then
+        keys = keys .. "   no pictures"
     end
 
     -- What the viewer leaves for the label: the rest of its status line is
@@ -251,7 +309,8 @@ local function status_text(session, params, plan, view)
         if #extra > 0 then
             rest = rest .. "   " .. table.concat(extra, "   ")
         end
-        if #extra == 0 or room - #rest >= 24 or #session.display_name <= room - #rest then
+        if #extra == 0 or room - #rest >= 24
+            or render.text_columns(session.display_name) <= room - #rest then
             break
         end
         table.remove (extra)
@@ -436,6 +495,7 @@ local viewer = mc.viewer_source.define {
             display_name = request.display_name or request.local_path,
             id = next_session_id,
             chunks = {},
+            chunk_order = {},
             page_cache = {},
             sixels = {},
             tools = {},
@@ -444,9 +504,10 @@ local viewer = mc.viewer_source.define {
 
         session.tools.pdftohtml = have("pdftohtml")
         session.tools.pdfinfo = have("pdfinfo")
+        session.tools.chafa = have("chafa")
         if have("img2sixel") then
             session.tools.encoder = "img2sixel"
-        elseif have("chafa") then
+        elseif session.tools.chafa then
             session.tools.encoder = "chafa"
         end
 
@@ -457,7 +518,18 @@ local viewer = mc.viewer_source.define {
             session.pages = tonumber(info.stdout:match("Pages:%s+(%d+)")) or 0
         end
         if session.pages == 0 and session.tools.pdftohtml then
-            -- No pdfinfo: let pdftohtml say how far the file goes.
+            -- No pdfinfo: pdftohtml counts the pages itself.  The pictures
+            -- are ignored and nothing is written out, so this reads the text
+            -- of the file once and no more.
+            local counted = run(string.format(
+                "pdftohtml -xml -i -q -stdout -- %s 2>/dev/null | grep -c '<page number='",
+                quote(session.local_path)))
+
+            if counted ~= nil then
+                session.pages = tonumber((counted.stdout:gsub("%s+$", ""))) or 0
+            end
+        end
+        if session.pages == 0 and session.tools.pdftohtml then
             session.pages = 1
         end
 
@@ -503,6 +575,17 @@ local viewer = mc.viewer_source.define {
         local top_row = 0
         local title = status_text(session, params, nil, view)
 
+        -- The pictures are written out unless nothing here can draw them.
+        session.want_images = view.sixel and session.tools.encoder ~= nil
+            or not view.sixel and session.tools.chafa
+        -- The pictures of a page are worth keeping while it is redrawn for a
+        -- new size or zoom, and worth forgetting the moment the page turns:
+        -- one screenful of sixel is hundreds of kilobytes.
+        if session.sixel_page ~= params.page then
+            session.sixels = {}
+            session.sixel_page = params.page
+        end
+
         params.page = math.max(1, math.min(params.page, math.max(1, session.pages)))
         local page = page_of(session, params.page)
 
@@ -516,10 +599,12 @@ local viewer = mc.viewer_source.define {
             local plan = render.plan(page, view, params)
 
             body = render.compose(plan, view, function(image)
-                if not view.sixel then
+                local data = picture_data(session, image, view.sixel)
+
+                if data == nil then
                     return nil
                 end
-                return sixel_bytes(session, image)
+                return data, view.sixel and "sixel" or "symbols"
             end)
             title = status_text(session, params, plan, view)
             -- A match below the first screen is scrolled to, with a few rows

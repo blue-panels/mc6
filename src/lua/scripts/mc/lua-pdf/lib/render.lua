@@ -49,14 +49,29 @@ local function clamp(value, low, high)
     return value
 end
 
+-- The columns the text takes on the screen.  ASCII is a column a byte; for
+-- the rest the terminal is asked, because a character of the far east takes
+-- two columns and an accent none.
 local function text_columns(text)
+    if not text:find("[\128-\255]") then
+        return #text
+    end
+    if mc ~= nil and mc.ui ~= nil and mc.ui.text_width ~= nil then
+        local width = mc.ui.text_width(text)
+
+        if width ~= nil then
+            return width
+        end
+    end
     local ok, len = pcall(utf8.len, text)
+
     if ok and len ~= nil then
         return len
     end
     return #text
 end
 
+-- The head of the text that fits in @limit columns, whole characters only.
 local function clip(text, limit)
     if limit <= 0 then
         return ""
@@ -64,11 +79,25 @@ local function clip(text, limit)
     if text_columns(text) <= limit then
         return text
     end
-    local ok, offset = pcall(utf8.offset, text, limit + 1)
-    if not ok or offset == nil then
+
+    local ok, count = pcall(utf8.len, text)
+    local take = (ok and count ~= nil) and math.min(count, limit) or nil
+
+    if take == nil then
         return text:sub(1, limit)
     end
-    return text:sub(1, offset - 1)
+    -- Every character is at least one column, so @limit of them is the most
+    -- that can fit; the wide ones are given back one at a time.
+    while take > 0 do
+        local offset = utf8.offset(text, take + 1)
+        local head = text:sub(1, (offset or (#text + 1)) - 1)
+
+        if text_columns(head) <= limit then
+            return head
+        end
+        take = take - 1
+    end
+    return ""
 end
 
 M.clip = clip
@@ -426,11 +455,13 @@ local function move(out, state, row, col)
     end
 end
 
--- @sixel returns the bytes of a picture, or nil where the terminal draws
--- none and a label goes in its place.  The first row of the page is the
--- first row of the output: what page it is the viewer says in its status
--- line, not the page itself.
-function M.compose(plan, view, sixel)
+-- @picture returns the bytes of a picture and how they are drawn: "sixel",
+-- one block the terminal puts at the cursor, or "symbols", the rows of
+-- characters chafa draws it with.  Where it returns nothing a label goes in
+-- the place of the picture.  The first row of the page is the first row of
+-- the output: what page it is the viewer says in its status line, not the
+-- page itself.
+function M.compose(plan, view, picture)
     local out = { ESC .. "[?7l", ESC .. "[2J", ESC .. "[H" }
     local state = { row = 1, col = 1 }
     local items = {}
@@ -486,18 +517,37 @@ function M.compose(plan, view, sixel)
             end
         else
             local image = item.image
-            local data = sixel(image)
+            local data, kind = picture(image)
 
-            move(out, state, image.row, image.col)
-            if data ~= nil then
+            if data == nil then
+                local text = clip("[image]", view.columns - image.col + 1)
+
+                move(out, state, image.row, image.col)
+                out[#out + 1] = text
+                state.col = image.col + text_columns(text)
+            elseif kind == "symbols" then
+                -- A row of characters per row of the picture, each put in the
+                -- column the picture starts at.
+                local row = image.row
+
+                for line in (data .. "\n"):gmatch("(.-)\n") do
+                    if row > image.row + image.rows - 1 or row > view.lines then
+                        break
+                    end
+                    if line ~= "" then
+                        move(out, state, row, image.col)
+                        out[#out + 1] = line
+                        out[#out + 1] = ESC .. "[m"
+                        state.col = image.col + image.cols
+                    end
+                    row = row + 1
+                end
+            else
+                move(out, state, image.row, image.col)
                 out[#out + 1] = data
                 -- The picture leaves the cursor on the row below it.
                 state.row = image.row + image.rows
                 state.col = image.col
-            else
-                local text = clip("[image]", view.columns - image.col + 1)
-                out[#out + 1] = text
-                state.col = image.col + text_columns(text)
             end
         end
     end
