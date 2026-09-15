@@ -109,6 +109,8 @@ static WListbox *bg_list = NULL;
 
 static unsigned long shadows_id;
 
+static unsigned long watch_dirs_id, fast_reload_id;
+
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
@@ -475,6 +477,44 @@ task_cb (WButton *button, int action)
 #endif
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* While the panels follow the filesystem themselves, a reload the stat talks mc out of is of no
+   use, so the option that does that is left dimmed. */
+static void
+panel_options_show_fast_reload (Widget *w, gboolean watching)
+{
+    Widget *fast_reload;
+
+    fast_reload = widget_find_by_id (w, fast_reload_id);
+    if (fast_reload != NULL)
+        widget_disable (fast_reload, watching);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static cb_ret_t
+panel_options_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *data)
+{
+    switch (msg)
+    {
+    case MSG_INIT:
+        panel_options_show_fast_reload (w, panels_options.watch_dirs);
+        return MSG_HANDLED;
+
+    case MSG_NOTIFY:
+        if (sender != NULL && sender->id == watch_dirs_id)
+        {
+            panel_options_show_fast_reload (w, CHECK (sender)->state);
+            return MSG_HANDLED;
+        }
+        return MSG_NOT_HANDLED;
+
+    default:
+        return dlg_default_callback (w, sender, msg, parm, data);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -724,14 +764,16 @@ panel_options_box (void)
                     QUICK_CHECKBOX (_ ("Mi&x all files"), &panels_options.mix_all_files, NULL),
                     QUICK_CHECKBOX (_ ("Show &backup files"), &panels_options.show_backups, NULL),
                     QUICK_CHECKBOX (_ ("Show &hidden files"), &panels_options.show_dot_files, NULL),
-                    QUICK_CHECKBOX (_ ("&Fast dir reload"), &panels_options.fast_reload, NULL),
+                    QUICK_CHECKBOX (_ ("&Fast dir reload"), &panels_options.fast_reload,
+                                    &fast_reload_id),
                     QUICK_CHECKBOX (_ ("Ma&rk moves down"), &panels_options.mark_moves_down, NULL),
                     QUICK_CHECKBOX (_ ("Re&verse files only"), &panels_options.reverse_files_only,
                                     NULL),
                     QUICK_CHECKBOX (_ ("Simple s&wap"), &simple_swap, NULL),
                     QUICK_CHECKBOX (_ ("A&uto save panels setup"), &panels_options.auto_save_setup,
                                     NULL),
-                    QUICK_CHECKBOX (_ ("Watch &directories"), &panels_options.watch_dirs, NULL),
+                    QUICK_CHECKBOX (_ ("Watch &directories"), &panels_options.watch_dirs,
+                                    &watch_dirs_id),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
@@ -768,7 +810,7 @@ panel_options_box (void)
             .title = _ ("Panel options"),
             .help = "[Panel options]",
             .widgets = quick_widgets,
-            .callback = NULL,
+            .callback = panel_options_callback,
             .mouse_callback = NULL,
         };
 
