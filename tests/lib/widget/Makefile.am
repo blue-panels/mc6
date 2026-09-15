@@ -17,6 +17,7 @@ TESTS = \
 	complete_engine \
 	hotkey_equal \
 	group_init_destroy \
+	group_set_state \
 	hexstrip \
 	table_datasource \
 	textarea \
@@ -33,6 +34,9 @@ hotkey_equal_SOURCES = \
 
 group_init_destroy_SOURCES = \
 	group_init_destroy.c
+
+group_set_state_SOURCES = \
+	group_set_state.c
 
 table_datasource_SOURCES = \
 	table_datasource.c
