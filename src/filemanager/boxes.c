@@ -731,7 +731,7 @@ panel_options_box (void)
                     QUICK_CHECKBOX (_ ("Simple s&wap"), &simple_swap, NULL),
                     QUICK_CHECKBOX (_ ("A&uto save panels setup"), &panels_options.auto_save_setup,
                                     NULL),
-                    QUICK_SEPARATOR (FALSE),
+                    QUICK_CHECKBOX (_ ("Watch &directories"), &panels_options.watch_dirs, NULL),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
