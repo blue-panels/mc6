@@ -354,6 +354,28 @@ panel_publish_selection_changed (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The selection event carries the whole selection, so one event per marked file makes marking a
+   group of files quadratic. Marking in bulk goes between these two. */
+static void
+panel_mark_batch_begin (void)
+{
+    panel_selection_rebuild_depth++;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_mark_batch_end (WPanel *panel)
+{
+    if (panel_selection_rebuild_depth > 0)
+        panel_selection_rebuild_depth--;
+
+    if (panel_selection_rebuild_depth == 0)
+        panel_publish_selection_changed (panel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 panel_runtime_publish_file_open (WPanel *panel, const file_entry_t *entry, const char *open_mode)
 {
@@ -2681,6 +2703,8 @@ panel_select_ext_cmd (WPanel *panel)
     search->search_type = MC_SEARCH_T_REGEX;
     search->is_case_sensitive = FALSE;
 
+    panel_mark_batch_begin ();
+
     for (i = 0; i < panel->dir.len; i++)
     {
         fe = &panel->dir.list[i];
@@ -2693,6 +2717,8 @@ panel_select_ext_cmd (WPanel *panel)
 
         do_file_mark (panel, i, do_select ? 1 : 0);
     }
+
+    panel_mark_batch_end (panel);
 
     mc_search_free (search);
     g_free (reg_exp);
@@ -3372,6 +3398,8 @@ panel_select_unselect_files (WPanel *panel, const char *title, const char *histo
 
     files_only = (panels_options.select_flags & SELECT_FILES_ONLY) != 0;
 
+    panel_mark_batch_begin ();
+
     for (i = 0; i < panel->dir.len; i++)
     {
         if (DIR_IS_DOTDOT (panel->dir.list[i].fname->str))
@@ -3383,6 +3411,8 @@ panel_select_unselect_files (WPanel *panel, const char *title, const char *histo
                            NULL))
             do_file_mark (panel, i, do_select ? 1 : 0);
     }
+
+    panel_mark_batch_end (panel);
 
     mc_search_free (search);
 }
@@ -3412,6 +3442,8 @@ panel_select_invert_files (WPanel *panel)
 {
     int i;
 
+    panel_mark_batch_begin ();
+
     for (i = 0; i < panel->dir.len; i++)
     {
         file_entry_t *file = &panel->dir.list[i];
@@ -3419,6 +3451,8 @@ panel_select_invert_files (WPanel *panel)
         if (!panels_options.reverse_files_only || !S_ISDIR (file->st.st_mode))
             do_file_mark (panel, i, file->f.marked ? 0 : 1);
     }
+
+    panel_mark_batch_end (panel);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -6379,7 +6413,8 @@ recalculate_panel_summary (WPanel *panel)
     panel->dirs_marked = 0;
     panel->total = 0;
 
-    panel_selection_rebuild_depth++;
+    panel_mark_batch_begin ();
+
     for (i = 0; i < panel->dir.len; i++)
         if (panel->dir.list[i].f.marked != 0)
         {
@@ -6389,7 +6424,8 @@ recalculate_panel_summary (WPanel *panel)
             panel->dir.list[i].f.marked = 0;
             do_file_mark (panel, i, 1);
         }
-    panel_selection_rebuild_depth--;
+
+    panel_mark_batch_end (panel);
 }
 
 /* --------------------------------------------------------------------------------------------- */
