@@ -48,6 +48,7 @@ TESTS = \
 	runtime_events \
 	terminal \
 	tty \
+	utilunix__mc_pread_signal \
 	utilunix__mc_pstream_get_string \
 	utilunix__my_system_fork_fail \
 	utilunix__my_system_fork_child_shell \
@@ -110,6 +111,9 @@ terminal_SOURCES = \
 
 tty_SOURCES = \
 	tty.c
+
+utilunix__mc_pread_signal_SOURCES = \
+	utilunix__mc_pread_signal.c
 
 utilunix__mc_pstream_get_string_SOURCES = \
 	utilunix__mc_pstream_get_string.c

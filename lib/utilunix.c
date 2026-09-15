@@ -659,22 +659,32 @@ mc_pread (mc_pipe_t *p, GError **error)
         return;
     }
 
-    FD_ZERO (&fds);
-    if (read_out)
+    /* A signal leaves the sets with no meaning, so the wait starts again with
+       sets of its own. Reading a stream select() has not named blocks until
+       the child writes to it, and a child that is busy filling the other pipe
+       never gets there. */
+    do
     {
-        FD_SET (p->out.fd, &fds);
-        maxfd = p->out.fd;
-    }
+        maxfd = 0;
+        FD_ZERO (&fds);
+        if (read_out)
+        {
+            FD_SET (p->out.fd, &fds);
+            maxfd = p->out.fd;
+        }
 
-    if (read_err)
-    {
-        FD_SET (p->err.fd, &fds);
-        maxfd = MAX (maxfd, p->err.fd);
-    }
+        if (read_err)
+        {
+            FD_SET (p->err.fd, &fds);
+            maxfd = MAX (maxfd, p->err.fd);
+        }
 
-    // no timeout
-    res = select (maxfd + 1, &fds, NULL, NULL, NULL);
-    if (res < 0 && errno != EINTR)
+        // no timeout
+        res = select (maxfd + 1, &fds, NULL, NULL, NULL);
+    }
+    while (res < 0 && errno == EINTR);
+
+    if (res < 0)
     {
         mc_propagate_error (
             error, MC_PIPE_ERROR_READ,
