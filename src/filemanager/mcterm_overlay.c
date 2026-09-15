@@ -51,6 +51,7 @@
 #include "wprompt.h"
 #include "filemanager.h"
 #include "layout.h"
+#include "dir_watch.h"
 
 /*** file scope variables ************************************************************************/
 
@@ -1020,6 +1021,8 @@ mcterm_overlay_toggle (void)
         widget_set_options (WIDGET (cmdline), WOP_SELECTABLE, FALSE);
         layout_change ();
         widget_select (WIDGET (current_panel));
+        // The panels were off screen while the shell was doing things to the files.
+        dir_watch_reload_pending ();
         mcterm_overlay_set_buttonbar ();
         mcterm_overlay_repaint_screen ();
     }
@@ -1251,6 +1254,7 @@ mcterm_overlay_show_panel_if_hidden (int idx)
         && (current_panel == NULL || !widget_get_state (WIDGET (current_panel), WST_VISIBLE)))
         current_panel = PANEL (pw);
 
+    dir_watch_reload_pending ();
     mcterm_overlay_draw_visible_panels ();
     tty_refresh ();
 
@@ -1282,6 +1286,7 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
                     current_panel = PANEL (pw);
             }
 
+            dir_watch_reload_pending ();
             mcterm_overlay_draw_visible_panels ();
             tty_refresh ();
         }
@@ -1305,6 +1310,7 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
                     current_panel = PANEL (pw);
             }
 
+            dir_watch_reload_pending ();
             mcterm_overlay_draw_visible_panels ();
             tty_refresh ();
         }
@@ -1337,6 +1343,7 @@ mcterm_overlay_toggle_panel_command (gboolean right_panel_command)
                 if (current_panel != NULL
                     && !widget_get_state (WIDGET (current_panel), WST_VISIBLE))
                     current_panel = PANEL (pw);
+                dir_watch_reload_pending ();
             }
 
             mcterm_overlay_draw_visible_panels ();

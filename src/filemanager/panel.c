@@ -72,6 +72,7 @@
 #include "src/usermenu.h"
 
 #include "dir.h"
+#include "dir_watch.h"
 #include "boxes.h"
 #include "tree.h"
 #include "ext.h"  // regexp_command
@@ -4934,6 +4935,8 @@ panel_do_cd_int (WPanel *panel, const vfs_path_t *new_dir_vpath, enum cd_enum cd
     update_xterm_title_path ();
     update_terminal_cwd ();
 
+    dir_watch_track (panel);
+
     vfs_path_free (olddir_vpath, TRUE);
 
     return TRUE;
@@ -5423,6 +5426,7 @@ panel_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *dat
         mc_event_del (h->event_group, MCEVENT_HISTORY_LOAD, panel_load_history, w);
         // unsubscribe from "history_save" event
         mc_event_del (h->event_group, MCEVENT_HISTORY_SAVE, panel_save_history, w);
+        dir_watch_forget (panel);
         panel_destroy (panel);
         free_my_statfs ();
         return MSG_HANDLED;
@@ -6238,6 +6242,8 @@ panel_sized_with_dir_new (const char *panel_name, const WRect *r, const vfs_path
     }
     g_free (curdir);
 
+    dir_watch_track (panel);
+
     return panel;
 }
 
@@ -6896,6 +6902,8 @@ panel_init (void)
 
     panel_modes_init ();
 
+    dir_watch_init ();
+
     mc_event_add (MCEVENT_GROUP_FILEMANAGER, "update_panels", event_update_panels, NULL, NULL);
     mc_event_add (MCEVENT_GROUP_FILEMANAGER, "panel_save_current_file_to_clip_file",
                   panel_save_current_file_to_clip_file, NULL, NULL);
@@ -6916,6 +6924,8 @@ panel_deinit (void)
     g_free (panel_filename_scroll_left_char);
     g_free (panel_filename_scroll_right_char);
     g_string_free (string_file_name_buffer, TRUE);
+
+    dir_watch_shutdown ();
 }
 
 /* --------------------------------------------------------------------------------------------- */

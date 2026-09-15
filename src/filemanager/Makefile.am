@@ -11,6 +11,7 @@ libmcfilemanager_la_SOURCES = \
 	command.c command.h \
 	wprompt.c wprompt.h \
 	dir.c dir.h \
+	dir_watch.c dir_watch.h \
 	ext.c ext.h \
 	file.c file.h \
 	filegui.c filegui.h \

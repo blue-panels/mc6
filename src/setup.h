@@ -42,6 +42,7 @@ typedef struct
     gboolean show_backups;    // If TRUE, show files ending in ~
     gboolean show_dot_files;  // If TRUE, show files starting with a dot
     gboolean fast_reload;     // If TRUE then use stat() on the cwd to determine directory changes
+    gboolean watch_dirs;      // If TRUE, the panels follow what the filesystem does
     gboolean fast_reload_msg_shown;  // Have we shown the fast-reload warning in the past?
     gboolean mark_moves_down;        // If TRUE, marking a files moves the cursor down
     gboolean reverse_files_only;     // If TRUE, only selection of files is inverted
