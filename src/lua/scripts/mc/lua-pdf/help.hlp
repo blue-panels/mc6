@@ -23,8 +23,7 @@ the arrows, Home and End.  The menu changes the page.
 The search reads the pages as it goes and stops after 200 of them.  The
 text of the last four runs of pages it read is kept, along with the
 files written out for them and the pictures of the page on the screen;
-the rest is read again when the reader comes back to it.  A terminal
-that draws no sixel gets no pictures written out at all.  The
+the rest is read again when the reader comes back to it.  The
 page with the match is drawn with the match in reverse video, and the
 viewer opens the page at its row.  F7 and F6, the search and the filter
 of the viewer, work on the rows of a file and are switched off here:
@@ -46,10 +45,12 @@ The status line of the viewer says which page is shown, the keys that
 move it, the search if one is running, and the layout and the zoom
 when they are not the plain ones.
 
-The text needs poppler-utils (pdftohtml, pdfinfo); the pictures need
-libsixel (img2sixel) or chafa.  A picture larger than the window is
-drawn smaller: the viewer draws a picture whole or not at all.  Without
-a terminal that draws sixel the text is still shown, with [image] where
-a picture belongs.  Where pdftohtml is not installed there are no pages
-to show: the viewer shows the file as it is, and the status line names
-what is missing.
+The text needs poppler-utils (pdftohtml, pdfinfo).  The pictures need
+libsixel (img2sixel) or chafa where the terminal draws sixel, and chafa
+where it does not: there a picture is drawn with characters, in the
+place and the size it has on the page.  A picture larger than the window
+is drawn smaller: the viewer draws a picture whole or not at all.  With
+neither of them the status line says "no pictures" and [image] stands
+where a picture belongs.  Where pdftohtml is not installed there are no
+pages to show: the viewer shows the file as it is, and the status line
+names what is missing.

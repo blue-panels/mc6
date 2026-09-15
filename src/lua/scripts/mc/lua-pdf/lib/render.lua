@@ -455,11 +455,13 @@ local function move(out, state, row, col)
     end
 end
 
--- @sixel returns the bytes of a picture, or nil where the terminal draws
--- none and a label goes in its place.  The first row of the page is the
--- first row of the output: what page it is the viewer says in its status
--- line, not the page itself.
-function M.compose(plan, view, sixel)
+-- @picture returns the bytes of a picture and how they are drawn: "sixel",
+-- one block the terminal puts at the cursor, or "symbols", the rows of
+-- characters chafa draws it with.  Where it returns nothing a label goes in
+-- the place of the picture.  The first row of the page is the first row of
+-- the output: what page it is the viewer says in its status line, not the
+-- page itself.
+function M.compose(plan, view, picture)
     local out = { ESC .. "[?7l", ESC .. "[2J", ESC .. "[H" }
     local state = { row = 1, col = 1 }
     local items = {}
@@ -515,18 +517,37 @@ function M.compose(plan, view, sixel)
             end
         else
             local image = item.image
-            local data = sixel(image)
+            local data, kind = picture(image)
 
-            move(out, state, image.row, image.col)
-            if data ~= nil then
+            if data == nil then
+                local text = clip("[image]", view.columns - image.col + 1)
+
+                move(out, state, image.row, image.col)
+                out[#out + 1] = text
+                state.col = image.col + text_columns(text)
+            elseif kind == "symbols" then
+                -- A row of characters per row of the picture, each put in the
+                -- column the picture starts at.
+                local row = image.row
+
+                for line in (data .. "\n"):gmatch("(.-)\n") do
+                    if row > image.row + image.rows - 1 or row > view.lines then
+                        break
+                    end
+                    if line ~= "" then
+                        move(out, state, row, image.col)
+                        out[#out + 1] = line
+                        out[#out + 1] = ESC .. "[m"
+                        state.col = image.col + image.cols
+                    end
+                    row = row + 1
+                end
+            else
+                move(out, state, image.row, image.col)
                 out[#out + 1] = data
                 -- The picture leaves the cursor on the row below it.
                 state.row = image.row + image.rows
                 state.col = image.col
-            else
-                local text = clip("[image]", view.columns - image.col + 1)
-                out[#out + 1] = text
-                state.col = image.col + text_columns(text)
             end
         end
     end

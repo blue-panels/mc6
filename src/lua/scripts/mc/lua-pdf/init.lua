@@ -165,10 +165,15 @@ local function image_path(session, src)
     return session.dir .. "/" .. src
 end
 
--- The bytes of one picture, in the size it takes on the screen.
-local function sixel_command(session, image)
+-- The bytes of one picture, in the size it takes on the screen: sixel where
+-- the terminal draws it, and chafa's characters where it does not.
+local function picture_command(session, image, sixel)
     local path = quote(image_path(session, image.src))
 
+    if not sixel then
+        return string.format("chafa --format=symbols --stretch --size=%dx%d -- %s 2>/dev/null",
+                             image.cols, image.rows, path)
+    end
     if session.tools.encoder == "img2sixel" then
         return string.format("img2sixel -w %d -h %d -- %s 2>/dev/null",
                              image.width, image.height, path)
@@ -178,30 +183,42 @@ local function sixel_command(session, image)
         math.max(1, image.width // 8), math.max(1, image.height // 8), path)
 end
 
-local function sixel_bytes(session, image)
-    if session.tools.encoder == nil then
+-- Only the picture itself: chafa wraps what it draws in sequences of its
+-- own, which the viewer has no use for.
+local function picture_bytes(result, sixel)
+    if result == nil or result.stdout_truncated then
         return nil
     end
-    local key = string.format("%s|%d|%d", image.src, image.width, image.height)
+    if sixel then
+        local first = result.stdout:find("\27P", 1, true)
+        local last = first ~= nil and result.stdout:find("\27\\", first, true) or nil
+
+        return last ~= nil and result.stdout:sub(first, last + 1) or nil
+    end
+
+    local text = result.stdout:gsub("\27%[%?%d+[hl]", ""):gsub("%s+$", "")
+
+    return text ~= "" and text or nil
+end
+
+local function picture_data(session, image, sixel)
+    if sixel and session.tools.encoder == nil then
+        return nil
+    end
+    if not sixel and not session.tools.chafa then
+        return nil
+    end
+
+    local key = string.format("%s|%d|%d|%s", image.src, image.width, image.height,
+                              sixel and "s" or "c")
     local cached = session.sixels[key]
+
     if cached ~= nil then
         return cached ~= false and cached or nil
     end
 
-    local command = sixel_command(session, image)
-    local data = nil
-    if command ~= nil then
-        local result = run(command, MAX_SIXEL_BYTES)
-        if result ~= nil and not result.stdout_truncated then
-            -- Only the picture itself: chafa wraps it in sequences of its
-            -- own, which the viewer has no use for.
-            local first = result.stdout:find("\27P", 1, true)
-            local last = first ~= nil and result.stdout:find("\27\\", first, true) or nil
-            if last ~= nil then
-                data = result.stdout:sub(first, last + 1)
-            end
-        end
-    end
+    local data = picture_bytes(run(picture_command(session, image, sixel), MAX_SIXEL_BYTES), sixel)
+
     session.sixels[key] = data ~= nil and data or false
     return data
 end
@@ -271,8 +288,12 @@ local function status_text(session, params, plan, view)
         extra[#extra + 1] = string.format("%s %d%%", MODE_LABELS[plan.mode] or plan.mode,
                                           math.floor((params.zoom or 1.0) * 100 + 0.5))
     end
-    if plan ~= nil and not view.sixel and #plan.images > 0 then
-        extra[#extra + 1] = "no sixel"
+    -- Nothing can draw the pictures of this page: that is worth saying, and
+    -- worth saying even where the line is too short for the rest.
+    if plan ~= nil and #plan.images > 0
+        and ((view.sixel and session.tools.encoder == nil)
+             or (not view.sixel and not session.tools.chafa)) then
+        keys = keys .. "   no pictures"
     end
 
     -- What the viewer leaves for the label: the rest of its status line is
@@ -483,9 +504,10 @@ local viewer = mc.viewer_source.define {
 
         session.tools.pdftohtml = have("pdftohtml")
         session.tools.pdfinfo = have("pdfinfo")
+        session.tools.chafa = have("chafa")
         if have("img2sixel") then
             session.tools.encoder = "img2sixel"
-        elseif have("chafa") then
+        elseif session.tools.chafa then
             session.tools.encoder = "chafa"
         end
 
@@ -553,7 +575,9 @@ local viewer = mc.viewer_source.define {
         local top_row = 0
         local title = status_text(session, params, nil, view)
 
-        session.want_images = view.sixel
+        -- The pictures are written out unless nothing here can draw them.
+        session.want_images = view.sixel and session.tools.encoder ~= nil
+            or not view.sixel and session.tools.chafa
         -- The pictures of a page are worth keeping while it is redrawn for a
         -- new size or zoom, and worth forgetting the moment the page turns:
         -- one screenful of sixel is hundreds of kilobytes.
@@ -575,10 +599,12 @@ local viewer = mc.viewer_source.define {
             local plan = render.plan(page, view, params)
 
             body = render.compose(plan, view, function(image)
-                if not view.sixel then
+                local data = picture_data(session, image, view.sixel)
+
+                if data == nil then
                     return nil
                 end
-                return sixel_bytes(session, image)
+                return data, view.sixel and "sixel" or "symbols"
             end)
             title = status_text(session, params, plan, view)
             -- A match below the first screen is scrolled to, with a few rows
