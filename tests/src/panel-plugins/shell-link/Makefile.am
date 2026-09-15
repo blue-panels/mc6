@@ -20,7 +20,8 @@ endif
 TESTS = \
 	shfs_parse_ls \
 	helpers_ls.sh \
-	helpers_get.sh
+	helpers_get.sh \
+	helpers_builtin.sh
 
 check_PROGRAMS = shfs_parse_ls builtin_helper
 
@@ -31,8 +32,14 @@ shfs_parse_ls_SOURCES = \
 builtin_helper_SOURCES = \
 	builtin_helper.c
 
+# the library comes in through LIBS, which automake does not turn into a
+# dependency; without this a rebuilt libshfs leaves a stale test binary
+SHFS_LIB = $(top_builddir)/src/panel-plugins/shell-link/libshfs.la
+shfs_parse_ls_DEPENDENCIES = $(SHFS_LIB)
+builtin_helper_DEPENDENCIES = $(SHFS_LIB)
+
 TEST_EXTENSIONS = .sh
 SH_LOG_COMPILER = $(SHELL)
 AM_TESTS_ENVIRONMENT = srcdir='$(srcdir)'; export srcdir;
 
-EXTRA_DIST = helpers_ls.sh helpers_get.sh
+EXTRA_DIST = helpers_ls.sh helpers_get.sh helpers_builtin.sh

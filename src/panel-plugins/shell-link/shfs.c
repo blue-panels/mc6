@@ -50,7 +50,7 @@
 #include "lib/fileloc.h"      // VFS_SHELL_PREFIX
 #include "lib/mcconfig.h"     // mc_config_get_data_path()
 
-#include "shelldef.h"
+#include <shelldef.h>
 #include "shfs.h"
 #include "shfs-priv.h"
 
@@ -89,27 +89,26 @@ shfs_read_byte (shfs_conn_t *conn, char *c)
 static const struct
 {
     const char *name;
-    int version;
     const char *def_content;
 } shfs_helper_table[] = {
-    { VFS_SHELL_LS_FILE, 2, VFS_SHELL_LS_DEF_CONTENT },
-    { VFS_SHELL_EXISTS_FILE, 1, VFS_SHELL_EXISTS_DEF_CONTENT },
-    { VFS_SHELL_MKDIR_FILE, 1, VFS_SHELL_MKDIR_DEF_CONTENT },
-    { VFS_SHELL_UNLINK_FILE, 1, VFS_SHELL_UNLINK_DEF_CONTENT },
-    { VFS_SHELL_CHOWN_FILE, 1, VFS_SHELL_CHOWN_DEF_CONTENT },
-    { VFS_SHELL_CHMOD_FILE, 1, VFS_SHELL_CHMOD_DEF_CONTENT },
-    { VFS_SHELL_UTIME_FILE, 1, VFS_SHELL_UTIME_DEF_CONTENT },
-    { VFS_SHELL_RMDIR_FILE, 1, VFS_SHELL_RMDIR_DEF_CONTENT },
-    { VFS_SHELL_LN_FILE, 1, VFS_SHELL_LN_DEF_CONTENT },
-    { VFS_SHELL_MV_FILE, 1, VFS_SHELL_MV_DEF_CONTENT },
-    { VFS_SHELL_HARDLINK_FILE, 1, VFS_SHELL_HARDLINK_DEF_CONTENT },
-    { VFS_SHELL_GET_FILE, 4, VFS_SHELL_GET_DEF_CONTENT },
-    { VFS_SHELL_SEND_FILE, 1, VFS_SHELL_SEND_DEF_CONTENT },
-    { VFS_SHELL_APPEND_FILE, 1, VFS_SHELL_APPEND_DEF_CONTENT },
-    { VFS_SHELL_INFO_FILE, 2, VFS_SHELL_INFO_DEF_CONTENT },
-    { VFS_SHELL_PUTAT_FILE, 1, VFS_SHELL_PUTAT_DEF_CONTENT },
-    { VFS_SHELL_CKSUMRANGE_FILE, 1, VFS_SHELL_CKSUMRANGE_DEF_CONTENT },
-    { VFS_SHELL_BLOCKDIGESTS_FILE, 1, VFS_SHELL_BLOCKDIGESTS_DEF_CONTENT },
+    { VFS_SHELL_LS_FILE, VFS_SHELL_LS_DEF_CONTENT },
+    { VFS_SHELL_EXISTS_FILE, VFS_SHELL_EXISTS_DEF_CONTENT },
+    { VFS_SHELL_MKDIR_FILE, VFS_SHELL_MKDIR_DEF_CONTENT },
+    { VFS_SHELL_UNLINK_FILE, VFS_SHELL_UNLINK_DEF_CONTENT },
+    { VFS_SHELL_CHOWN_FILE, VFS_SHELL_CHOWN_DEF_CONTENT },
+    { VFS_SHELL_CHMOD_FILE, VFS_SHELL_CHMOD_DEF_CONTENT },
+    { VFS_SHELL_UTIME_FILE, VFS_SHELL_UTIME_DEF_CONTENT },
+    { VFS_SHELL_RMDIR_FILE, VFS_SHELL_RMDIR_DEF_CONTENT },
+    { VFS_SHELL_LN_FILE, VFS_SHELL_LN_DEF_CONTENT },
+    { VFS_SHELL_MV_FILE, VFS_SHELL_MV_DEF_CONTENT },
+    { VFS_SHELL_HARDLINK_FILE, VFS_SHELL_HARDLINK_DEF_CONTENT },
+    { VFS_SHELL_GET_FILE, VFS_SHELL_GET_DEF_CONTENT },
+    { VFS_SHELL_SEND_FILE, VFS_SHELL_SEND_DEF_CONTENT },
+    { VFS_SHELL_APPEND_FILE, VFS_SHELL_APPEND_DEF_CONTENT },
+    { VFS_SHELL_INFO_FILE, VFS_SHELL_INFO_DEF_CONTENT },
+    { VFS_SHELL_PUTAT_FILE, VFS_SHELL_PUTAT_DEF_CONTENT },
+    { VFS_SHELL_CKSUMRANGE_FILE, VFS_SHELL_CKSUMRANGE_DEF_CONTENT },
+    { VFS_SHELL_BLOCKDIGESTS_FILE, VFS_SHELL_BLOCKDIGESTS_DEF_CONTENT },
 };
 
 /* --------------------------------------------------------------------------------------------- */
@@ -243,7 +242,7 @@ shfs_helpers_list (const char *hostname)
         h->name = g_strdup (shfs_helper_table[i].name);
         h->source = SHFS_HELPER_BUILTIN;
         h->size = strlen (shfs_helper_table[i].def_content);
-        h->expected_version = shfs_helper_table[i].version;
+        h->expected_version = shfs_helper_parse_version (shfs_helper_table[i].def_content);
         h->version = h->expected_version;
 
         path = shfs_helper_user_path (hostname, h->name);
