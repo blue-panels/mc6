@@ -616,6 +616,14 @@ now_ms ()
     date +%s%3N
 }
 
+# The file name a case's screen, stderr and memcheck log are kept under.  The
+# report is uploaded as a CI artifact, which refuses " : < > | * ? and line
+# breaks in a name; a key such as "cd uzip://" has a colon in it.
+case_slug ()
+{
+    printf '%s' "$1" | tr '/ :"<>|*?\r\n' '...........'
+}
+
 # ------------------------------------------------------------------- run ---
 
 if [ $# -eq 0 ]; then
@@ -714,7 +722,7 @@ for where in $(echo "$transports" | tr ',' ' '); do
                 ;;
             esac
 
-            slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
+            slug=$(case_slug "$name.$key")
             stderr=$out/$slug.stderr
             vg_log=
             [ $memcheck = 1 ] && vg_log=$out/$slug.valgrind
@@ -834,7 +842,7 @@ done
         echo
         for where in $(echo "$transports" | tr ',' ' '); do
             grep "$(printf "\tFAIL\t")" "$report/$where/results.tsv" | while IFS="$(printf '\t')" read -r name key expect verdict ms why; do
-                slug=$(printf '%s' "$name.$key" | tr '/ ' '..')
+                slug=$(case_slug "$name.$key")
                 echo "- $where: $name $key, expected $expect ($why) - [screen]($where/$slug.screen)"
             done
         done
