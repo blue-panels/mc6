@@ -124,6 +124,42 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A group that is focused before it comes up, as a dialog is, hands the focus to its current
+   widget when it is activated: the viewer sets its button bar on that MSG_FOCUS. */
+START_TEST (test_activation_focuses_the_current_widget)
+{
+    WGroup *g;
+    Widget *child;
+    WRect r;
+
+    g = g_new0 (WGroup, 1);
+    rect_init (&r, 0, 0, 20, 20);
+    group_init (g, &r, group_default_callback, NULL);
+
+    child = g_new0 (Widget, 1);
+    rect_init (&r, 0, 0, 5, 5);
+    widget_init (child, &r, child_callback, NULL);
+    widget_set_options (child, WOP_SELECTABLE, TRUE);
+    group_add_widget (g, child);
+
+    send_message (g, NULL, MSG_INIT, 0, NULL);
+    WIDGET (g)->state |= WST_FOCUSED;
+
+    focus_msgs = 0;
+    unfocus_msgs = 0;
+
+    widget_set_state (WIDGET (g), WST_ACTIVE, TRUE);
+
+    ck_assert_msg (focus_msgs == 1, "MSG_FOCUS sent %d times", focus_msgs);
+    ck_assert_msg (unfocus_msgs == 0, "MSG_UNFOCUS sent %d times", unfocus_msgs);
+    ck_assert_msg (widget_get_state (child, WST_FOCUSED), "the widget did not take the focus");
+
+    widget_destroy (WIDGET (g));
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -134,6 +170,7 @@ main (void)
     // Add new tests here: ***************
     tcase_add_test (tc_core, test_own_state_keeps_the_focus);
     tcase_add_test (tc_core, test_focus_reaches_the_current_widget);
+    tcase_add_test (tc_core, test_activation_focuses_the_current_widget);
     // ***********************************
 
     return mctest_run_all (tc_core);
