@@ -686,10 +686,12 @@ group_default_set_state (Widget *w, widget_state_t state, gboolean enable)
 
     if ((w->state & WST_ACTIVE) != 0)
     {
-        /* The focus is the one state that goes to the current widget alone, and only when the
-           focus is what was asked for: a state the group keeps for itself, WST_IDLE for one,
-           must not reach its current widget as a focus change. */
-        if (state == WST_FOCUSED && (w->state & WST_FOCUSED) != 0)
+        /* The focus is the one state that goes to the current widget alone, when the focus is
+           what was asked for, or when a focused group comes up: a dialog is focused from the
+           start, and dlg_init() activating it is when its current widget gets the focus. Any
+           other state the group keeps for itself, WST_IDLE for one, must not reach its current
+           widget as a focus change. */
+        if ((state == WST_FOCUSED || state == WST_ACTIVE) && (w->state & WST_FOCUSED) != 0)
         {
             // update current widget
             if (g->current != NULL)
