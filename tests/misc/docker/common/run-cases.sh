@@ -222,7 +222,7 @@ if [ -n "$options" ]; then
 fi
 
 # the connection each plugin reads on start; plain passwords are accepted
-printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nuse_agent=false\n' "$subject" \
+printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nuse_agent=false\n\n[wrong-password]\nhost=remote\nuser=mc\npassword=wrong\nuse_agent=false\n\n[no-such-host]\nhost=no-such-host.invalid\nuser=mc\npassword=mc\nuse_agent=false\n' "$subject" \
     > "$config/sftp-connections.ini"
 printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\n' "$subject" \
     > "$config/shell-connections.ini"

@@ -619,11 +619,13 @@ sftp_auth_has_method (const char *auth_list, const char *method)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-sftp_open_socket (const sftp_connection_t *conn)
+sftp_open_socket (const sftp_connection_t *conn, char **reason)
 {
     struct addrinfo hints, *res = NULL, *curr;
     int sock = LIBSSH2_INVALID_SOCKET;
     char port_buf[BUF_TINY];
+    int rc;
+    int error = 0;
 
     if (conn->host == NULL || conn->host[0] == '\0')
         return LIBSSH2_INVALID_SOCKET;
@@ -639,14 +641,21 @@ sftp_open_socket (const sftp_connection_t *conn)
 
     g_snprintf (port_buf, sizeof (port_buf), "%d", conn->port > 0 ? conn->port : SFTP_DEFAULT_PORT);
 
-    if (getaddrinfo (conn->host, port_buf, &hints, &res) != 0)
+    rc = getaddrinfo (conn->host, port_buf, &hints, &res);
+    if (rc != 0)
+    {
+        *reason = g_strdup_printf (_ ("Cannot resolve %s: %s"), conn->host, gai_strerror (rc));
         return LIBSSH2_INVALID_SOCKET;
+    }
 
     for (curr = res; curr != NULL; curr = curr->ai_next)
     {
         sock = socket (curr->ai_family, curr->ai_socktype, curr->ai_protocol);
         if (sock < 0)
+        {
+            error = errno;
             continue;
+        }
 
         /* Apply connect timeout via SO_SNDTIMEO */
         if (conn->connect_timeout > 0)
@@ -661,11 +670,16 @@ sftp_open_socket (const sftp_connection_t *conn)
         if (connect (sock, curr->ai_addr, curr->ai_addrlen) == 0)
             break;
 
+        error = errno;
         close (sock);
         sock = LIBSSH2_INVALID_SOCKET;
     }
 
     freeaddrinfo (res);
+
+    if (sock == LIBSSH2_INVALID_SOCKET && error != 0)
+        *reason = g_strdup (unix_error_string (error));
+
     return sock;
 }
 
@@ -767,6 +781,7 @@ sftp_connect_status_update_cb (status_msg_t *sm)
     const char *text;
     int label_lines;
     WRect r;
+    WRect was = wd->rect;
 
     text = (fsm->log != NULL && fsm->log->len > 0) ? fsm->log->str : _ ("Please wait...");
     label_set_text (ssm->label, text);
@@ -806,6 +821,11 @@ sftp_connect_status_update_cb (status_msg_t *sm)
         widget_set_size_rect (fsm->button_w, &br);
     }
 
+    /* label_set_text() drew a longer log where the label stood in the smaller
+       window, past its frame; what it drew over has to come back */
+    if (r.cols != was.cols || r.lines != was.lines)
+        repaint_screen ();
+
     return status_msg_common_update (sm);
 }
 
@@ -834,6 +854,30 @@ sftp_connect_status_set_stage (sftp_connect_status_msg_t *fsm, const char *fmt, 
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Keep the status window up with its log after a failure, until it is closed. */
+static void
+sftp_connect_status_wait_close (sftp_connect_status_msg_t *fsm)
+{
+    status_msg_t *sm = STATUS_MSG (fsm);
+
+    if (sm->dlg == NULL)
+        return;
+
+    if (widget_get_state (WIDGET (sm->dlg), WST_CONSTRUCT))
+        dlg_init (sm->dlg);
+
+    if (fsm->button_w != NULL)
+    {
+        button_set_text (BUTTON (fsm->button_w), _ ("&Close"));
+        widget_select (fsm->button_w);
+    }
+
+    sm->dlg->ret_value = B_CANCEL;
+    (void) dlg_run (sm->dlg);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
 {
@@ -842,7 +886,7 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
     sftp_connect_status_msg_t status;
     gboolean status_inited = FALSE;
     gboolean result = FALSE;
-    const char *failed = NULL; /* what went wrong, shown once the progress box is gone */
+    const char *failed = NULL; /* what went wrong, added to the log that stays up */
     char *detail = NULL;
 
     if (data == NULL || conn == NULL)
@@ -858,7 +902,7 @@ sftp_connect (sftp_data_t *data, sftp_connection_t *conn)
                                         conn->port))
         goto out;
 
-    data->socket_handle = sftp_open_socket (conn);
+    data->socket_handle = sftp_open_socket (conn, &detail);
     if (data->socket_handle == LIBSSH2_INVALID_SOCKET)
     {
         failed = N_ ("Cannot connect to %s:%d");
@@ -1029,7 +1073,7 @@ auth_ok:
 
 fail:
     /* the library's own words, taken before the session goes away */
-    if (failed != NULL && data->session != NULL)
+    if (failed != NULL && detail == NULL && data->session != NULL)
     {
         char *msg = NULL;
 
@@ -1039,22 +1083,21 @@ fail:
     }
     sftp_disconnect (data);
 
+    /* The window stays with what it logged and the reason under it, until it
+       is closed: the steps are the explanation. A cancel has nothing to say. */
+    if (failed != NULL && status_inited)
+    {
+        (void) sftp_connect_status_set_stage (&status, _ (failed), conn->host, conn->port);
+        if (detail != NULL)
+            (void) sftp_connect_status_set_stage (&status, "%s", detail);
+        sftp_connect_status_wait_close (&status);
+    }
+
 out:
     if (status_inited)
         status_msg_deinit (STATUS_MSG (&status));
     if (status.log != NULL)
         g_string_free (status.log, TRUE);
-    if (failed != NULL)
-    {
-        char *what;
-
-        what = g_strdup_printf (_ (failed), conn->host, conn->port);
-        if (detail != NULL)
-            message (D_ERROR, _ ("SFTP"), "%s\n%s", what, detail);
-        else
-            message (D_ERROR, _ ("SFTP"), "%s", what);
-        g_free (what);
-    }
     g_free (detail);
     return result;
 }
@@ -1748,15 +1791,11 @@ sftp_enter (void *plugin_data, const char *name, const struct stat *st)
 
     (void) st;
 
+    /* A connection is a directory to the core, so it is opened by chdir(). The
+       core goes on to chdir() when enter() did not open one, and connecting
+       here as well tried a failed connection twice. */
     if (data->at_root)
-    {
-        sftp_connection_t *conn = (sftp_connection_t *) find_connection (data, name);
-
-        if (conn == NULL)
-            return MC_PPR_FAILED;
-
-        return sftp_activate_connection (data, conn) ? MC_PPR_OK : MC_PPR_FAILED;
-    }
+        return MC_PPR_NOT_SUPPORTED;
 
     {
         const sftp_entry_t *entry;
