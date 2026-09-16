@@ -1143,6 +1143,94 @@ git_parse_status_and_fill (git_data_t *data, dir_list *list, const char *out)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* First commit on the first-parent line of BASE that has REF merged in, or NULL. */
+static char *
+git_find_merge_commit (git_data_t *data, const char *base, const char *ref)
+{
+    char *range;
+    char *argv[] = { (char *) "git",
+                     (char *) "-C",
+                     data->repo_root,
+                     (char *) "rev-list",
+                     (char *) "--first-parent",
+                     (char *) "--ancestry-path",
+                     NULL,
+                     NULL };
+    char *out = NULL;
+    char *merge = NULL;
+
+    range = g_strdup_printf ("%s..%s", ref, base);
+    argv[6] = range;
+
+    if (git_run_stdout (argv, &out))
+    {
+        char *last;
+
+        g_strchomp (out);
+        last = strrchr (out, '\n');
+        last = (last != NULL) ? last + 1 : out;
+        if (*last != '\0')
+            merge = g_strdup (last);
+    }
+
+    g_free (out);
+    g_free (range);
+    return merge;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Log of BASE..REF. When the range is empty, REF is already merged into BASE:
+ * show the commits that the merge brought in, else the whole log of REF. */
+static gboolean
+git_run_branch_log (git_data_t *data, const char *base, const char *ref, char **out)
+{
+    char *argv[] = { (char *) "git",
+                     (char *) "-C",
+                     data->repo_root,
+                     (char *) "log",
+                     (char *) "--no-color",
+                     (char *) "--decorate=no",
+                     (char *) "--first-parent",
+                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
+                     (char *) "-n",
+                     (char *) "200",
+                     NULL,
+                     NULL };
+    char *range;
+    char *merge;
+    gboolean ok;
+
+    if (base != NULL)
+    {
+        range = g_strdup_printf ("%s..%s", base, ref);
+        argv[10] = range;
+        ok = git_run_stdout (argv, out);
+        g_free (range);
+        if (!ok || **out != '\0')
+            return ok;
+        g_free (*out);
+
+        merge = git_find_merge_commit (data, base, ref);
+        if (merge != NULL)
+        {
+            range = g_strdup_printf ("%s^1..%s", merge, ref);
+            g_free (merge);
+            argv[10] = range;
+            ok = git_run_stdout (argv, out);
+            g_free (range);
+            if (!ok || **out != '\0')
+                return ok;
+            g_free (*out);
+        }
+    }
+
+    argv[10] = (char *) ref;
+    return git_run_stdout (argv, out);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 git_parse_log_and_fill (git_data_t *data, dir_list *list, const char *out)
 {
@@ -2054,8 +2142,6 @@ git_get_items (void *plugin_data, void *list_ptr)
     }
     else if ((git_view_t) data->view == GIT_VIEW_COMMITS)
     {
-        char *upstream_ref;
-        char *range = NULL;
         char *out2 = NULL;
         gboolean ok2;
 
@@ -2128,97 +2214,18 @@ git_get_items (void *plugin_data, void *list_ptr)
                 }
             }
 
-            if (sel_upstream != NULL)
-                range = g_strdup_printf ("%s..%s", sel_upstream, data->selected_branch);
-
-            {
-                char *ref_arg = (range != NULL) ? range : data->selected_branch;
-                char *argv[] = { (char *) "git",
-                                 (char *) "-C",
-                                 data->repo_root,
-                                 (char *) "log",
-                                 (char *) "--no-color",
-                                 (char *) "--decorate=no",
-                                 (char *) "--first-parent",
-                                 (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                 (char *) "-n",
-                                 (char *) "200",
-                                 ref_arg,
-                                 NULL };
-                ok2 = git_run_stdout (argv, &out2);
-            }
-
-            g_free (range);
-            range = NULL;
+            ok2 = git_run_branch_log (data, sel_upstream, data->selected_branch, &out2);
             g_free (sel_upstream);
         }
         else
         {
-            upstream_ref = git_detect_upstream_ref (data);
-            if (upstream_ref != NULL)
-            {
-                char *argv[] = { (char *) "git",
-                                 (char *) "-C",
-                                 data->repo_root,
-                                 (char *) "log",
-                                 (char *) "--no-color",
-                                 (char *) "--decorate=no",
-                                 (char *) "--first-parent",
-                                 (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                 (char *) "-n",
-                                 (char *) "200",
-                                 NULL,
-                                 NULL };
+            char *base_ref;
 
-                range = g_strdup_printf ("%s..HEAD", upstream_ref);
-                argv[10] = range;
-                ok2 = git_run_stdout (argv, &out2);
-            }
-            else
-            {
-                char *base_ref;
-
+            base_ref = git_detect_upstream_ref (data);
+            if (base_ref == NULL)
                 base_ref = git_detect_base_ref (data);
-                if (base_ref != NULL)
-                {
-                    char *argv[] = { (char *) "git",
-                                     (char *) "-C",
-                                     data->repo_root,
-                                     (char *) "log",
-                                     (char *) "--no-color",
-                                     (char *) "--decorate=no",
-                                     (char *) "--first-parent",
-                                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                     (char *) "-n",
-                                     (char *) "200",
-                                     NULL,
-                                     NULL };
-
-                    range = g_strdup_printf ("%s..HEAD", base_ref);
-                    argv[10] = range;
-                    ok2 = git_run_stdout (argv, &out2);
-                    g_free (base_ref);
-                }
-                else
-                {
-                    char *argv[] = { (char *) "git",
-                                     (char *) "-C",
-                                     data->repo_root,
-                                     (char *) "log",
-                                     (char *) "--no-color",
-                                     (char *) "--decorate=no",
-                                     (char *) "--first-parent",
-                                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                     (char *) "-n",
-                                     (char *) "200",
-                                     (char *) "HEAD",
-                                     NULL };
-
-                    ok2 = git_run_stdout (argv, &out2);
-                }
-            }
-            g_free (range);
-            g_free (upstream_ref);
+            ok2 = git_run_branch_log (data, base_ref, "HEAD", &out2);
+            g_free (base_ref);
         }
 
         if (!ok2)
