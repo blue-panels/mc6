@@ -1143,6 +1143,47 @@ git_parse_status_and_fill (git_data_t *data, dir_list *list, const char *out)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Log of BASE..REF, or of REF alone when BASE is NULL or the range is empty
+ * (the branch is already merged into BASE). */
+static gboolean
+git_run_branch_log (git_data_t *data, const char *base, const char *ref, char **out)
+{
+    char *argv[] = { (char *) "git",
+                     (char *) "-C",
+                     data->repo_root,
+                     (char *) "log",
+                     (char *) "--no-color",
+                     (char *) "--decorate=no",
+                     (char *) "--first-parent",
+                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
+                     (char *) "-n",
+                     (char *) "200",
+                     NULL,
+                     NULL };
+
+    if (base != NULL)
+    {
+        char *range;
+        gboolean ok;
+
+        range = g_strdup_printf ("%s..%s", base, ref);
+        argv[10] = range;
+        ok = git_run_stdout (argv, out);
+        g_free (range);
+
+        if (!ok || **out != '\0')
+            return ok;
+
+        g_free (*out);
+        *out = NULL;
+    }
+
+    argv[10] = (char *) ref;
+    return git_run_stdout (argv, out);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 git_parse_log_and_fill (git_data_t *data, dir_list *list, const char *out)
 {
@@ -2054,8 +2095,6 @@ git_get_items (void *plugin_data, void *list_ptr)
     }
     else if ((git_view_t) data->view == GIT_VIEW_COMMITS)
     {
-        char *upstream_ref;
-        char *range = NULL;
         char *out2 = NULL;
         gboolean ok2;
 
@@ -2128,97 +2167,18 @@ git_get_items (void *plugin_data, void *list_ptr)
                 }
             }
 
-            if (sel_upstream != NULL)
-                range = g_strdup_printf ("%s..%s", sel_upstream, data->selected_branch);
-
-            {
-                char *ref_arg = (range != NULL) ? range : data->selected_branch;
-                char *argv[] = { (char *) "git",
-                                 (char *) "-C",
-                                 data->repo_root,
-                                 (char *) "log",
-                                 (char *) "--no-color",
-                                 (char *) "--decorate=no",
-                                 (char *) "--first-parent",
-                                 (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                 (char *) "-n",
-                                 (char *) "200",
-                                 ref_arg,
-                                 NULL };
-                ok2 = git_run_stdout (argv, &out2);
-            }
-
-            g_free (range);
-            range = NULL;
+            ok2 = git_run_branch_log (data, sel_upstream, data->selected_branch, &out2);
             g_free (sel_upstream);
         }
         else
         {
-            upstream_ref = git_detect_upstream_ref (data);
-            if (upstream_ref != NULL)
-            {
-                char *argv[] = { (char *) "git",
-                                 (char *) "-C",
-                                 data->repo_root,
-                                 (char *) "log",
-                                 (char *) "--no-color",
-                                 (char *) "--decorate=no",
-                                 (char *) "--first-parent",
-                                 (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                 (char *) "-n",
-                                 (char *) "200",
-                                 NULL,
-                                 NULL };
+            char *base_ref;
 
-                range = g_strdup_printf ("%s..HEAD", upstream_ref);
-                argv[10] = range;
-                ok2 = git_run_stdout (argv, &out2);
-            }
-            else
-            {
-                char *base_ref;
-
+            base_ref = git_detect_upstream_ref (data);
+            if (base_ref == NULL)
                 base_ref = git_detect_base_ref (data);
-                if (base_ref != NULL)
-                {
-                    char *argv[] = { (char *) "git",
-                                     (char *) "-C",
-                                     data->repo_root,
-                                     (char *) "log",
-                                     (char *) "--no-color",
-                                     (char *) "--decorate=no",
-                                     (char *) "--first-parent",
-                                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                     (char *) "-n",
-                                     (char *) "200",
-                                     NULL,
-                                     NULL };
-
-                    range = g_strdup_printf ("%s..HEAD", base_ref);
-                    argv[10] = range;
-                    ok2 = git_run_stdout (argv, &out2);
-                    g_free (base_ref);
-                }
-                else
-                {
-                    char *argv[] = { (char *) "git",
-                                     (char *) "-C",
-                                     data->repo_root,
-                                     (char *) "log",
-                                     (char *) "--no-color",
-                                     (char *) "--decorate=no",
-                                     (char *) "--first-parent",
-                                     (char *) "--pretty=format:%H%x09%h%x09%ct%x09%s",
-                                     (char *) "-n",
-                                     (char *) "200",
-                                     (char *) "HEAD",
-                                     NULL };
-
-                    ok2 = git_run_stdout (argv, &out2);
-                }
-            }
-            g_free (range);
-            g_free (upstream_ref);
+            ok2 = git_run_branch_log (data, base_ref, "HEAD", &out2);
+            g_free (base_ref);
         }
 
         if (!ok2)
