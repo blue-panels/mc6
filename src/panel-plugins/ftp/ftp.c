@@ -170,6 +170,7 @@ static int ftp_connect_progress_cb (void *clientp, double dltotal, double dlnow,
 
 #define FTP_DEFAULT_PORT              21
 #define FTP_CACHE_TTL_DEFAULT         60
+#define FTP_TREE_MAX_DEPTH            32
 
 #define FTP_PANEL_CONFIG_FILE         "panels.ftp.ini"
 #define FTP_PANEL_CONFIG_GROUP        "ftp-panel"
@@ -1303,8 +1304,10 @@ ftp_list_write_cb (void *ptr, size_t size, size_t nmemb, void *userdata)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** List the remote directory @path. @failed is set when the listing did not
+    come, which an empty result does not tell apart from an empty directory. */
 static GPtrArray *
-ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
+ftp_list_dir (ftp_data_t *data, const char *path, status_msg_t *sm, gboolean *failed)
 {
     GPtrArray *arr;
     CURL *curl;
@@ -1324,7 +1327,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     }
 
     /* ensure trailing slash for directory listing */
-    url = ftp_build_url (data->active_connection, data->current_path);
+    url = ftp_build_url (data->active_connection, path);
     if (url[strlen (url) - 1] != '/')
     {
         dir_url = g_strdup_printf ("%s/", url);
@@ -1379,7 +1382,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     {
         FTP_LOG ("load_entries: request failed, returning empty list");
         g_string_free (ctx.buf, TRUE);
-        data->load_failed = TRUE;
+        *failed = TRUE;
         return arr;
     }
 
@@ -1450,6 +1453,21 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     }
 
     g_strfreev (lines);
+    return arr;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static GPtrArray *
+ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
+{
+    gboolean failed = FALSE;
+    GPtrArray *arr;
+
+    arr = ftp_list_dir (data, data->current_path, sm, &failed);
+    if (failed)
+        data->load_failed = TRUE;
+
     return arr;
 }
 
@@ -2848,11 +2866,11 @@ ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/** One FTP command on a connection of its own. */
+/** One FTP command through @curl. A handle used again keeps its connection,
+    so a run of commands logs in once. */
 static gboolean
-ftp_quote_command (const ftp_connection_t *conn, const char *command)
+ftp_quote_on (CURL *curl, const ftp_connection_t *conn, const char *command)
 {
-    CURL *curl;
     CURLcode res;
     struct curl_slist *cmds = NULL;
     char *url;
@@ -2860,10 +2878,6 @@ ftp_quote_command (const ftp_connection_t *conn, const char *command)
     /* The command goes to the control connection as it stands, and a newline
        in it would be a second command. A local name may hold one. */
     if (strpbrk (command, "\r\n") != NULL)
-        return FALSE;
-
-    curl = curl_easy_init ();
-    if (curl == NULL)
         return FALSE;
 
     /* The command carries the whole path, so where the session stands after
@@ -2878,11 +2892,30 @@ ftp_quote_command (const ftp_connection_t *conn, const char *command)
 
     res = curl_easy_perform (curl);
 
+    curl_easy_setopt (curl, CURLOPT_QUOTE, NULL);
     curl_slist_free_all (cmds);
-    curl_easy_cleanup (curl);
     g_free (url);
 
     return res == CURLE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** One FTP command on a connection of its own. */
+static gboolean
+ftp_quote_command (const ftp_connection_t *conn, const char *command)
+{
+    CURL *curl;
+    gboolean ok;
+
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return FALSE;
+
+    ok = ftp_quote_on (curl, conn, command);
+    curl_easy_cleanup (curl);
+
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2952,10 +2985,65 @@ ftp_mkdir (void *plugin_data, const char *path)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Remove @remote_path. A directory is emptied first: RMD takes an empty one
+    only. A link is removed as itself, never followed. A name the server
+    refuses does not stop the rest, as with rm -r: what can go goes, and the
+    refused name stays with the directories above it. */
+static gboolean
+ftp_remove_tree (CURL *curl, ftp_data_t *data, const char *remote_path, gboolean is_dir, int depth)
+{
+    gboolean ok;
+    char *cmd;
+
+    if (is_dir)
+    {
+        GPtrArray *list;
+        gboolean unlisted = FALSE;
+        gboolean kept = FALSE;
+        guint i;
+
+        if (depth >= FTP_TREE_MAX_DEPTH)
+            return FALSE;
+
+        list = ftp_list_dir (data, remote_path, NULL, &unlisted);
+
+        for (i = 0; i < list->len; i++)
+        {
+            const mc_pp_dir_entry_t *e = (const mc_pp_dir_entry_t *) g_ptr_array_index (list, i);
+            char *child;
+
+            if (DIR_IS_DOT (e->name) || DIR_IS_DOTDOT (e->name))
+                continue;
+
+            child = mc_pp_join_path (remote_path, e->name);
+            if (!ftp_remove_tree (curl, data, child, e->is_dir && !S_ISLNK (e->st.st_mode),
+                                  depth + 1))
+                kept = TRUE;
+            g_free (child);
+        }
+
+        g_ptr_array_free (list, TRUE);
+
+        /* a directory with something left in it cannot go, and asking is a
+           round trip for a refusal */
+        if (unlisted || kept)
+            return FALSE;
+    }
+
+    cmd = g_strdup_printf ("%s %s", is_dir ? "RMD" : "DELE", remote_path);
+    ok = ftp_quote_on (curl, data->active_connection, cmd);
+    g_free (cmd);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 ftp_delete_items (void *plugin_data, const char **names, int count)
 {
     ftp_data_t *data = (ftp_data_t *) plugin_data;
+    CURL *curl;
     int i;
     gboolean failed = FALSE;
 
@@ -2985,71 +3073,27 @@ ftp_delete_items (void *plugin_data, const char **names, int count)
     if (data->active_connection == NULL)
         return MC_PPR_FAILED;
 
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return MC_PPR_FAILED;
+
     for (i = 0; i < count; i++)
     {
         const mc_pp_dir_entry_t *entry;
         char *remote_path;
-        char *url;
-        char *cmd;
-        CURL *curl;
-        CURLcode res;
-        struct curl_slist *header_list = NULL;
 
         entry = find_entry (data, names[i]);
         if (entry == NULL)
             continue;
 
         remote_path = mc_pp_join_path (data->current_path, names[i]);
-
-        /* build URL pointing to parent directory */
-        {
-            char *parent_url;
-
-            parent_url = ftp_build_url (data->active_connection, data->current_path);
-            if (parent_url[strlen (parent_url) - 1] != '/')
-            {
-                url = g_strdup_printf ("%s/", parent_url);
-                g_free (parent_url);
-            }
-            else
-            {
-                url = parent_url;
-            }
-        }
-
-        if (entry->is_dir)
-            cmd = g_strdup_printf ("RMD %s", remote_path);
-        else
-            cmd = g_strdup_printf ("DELE %s", remote_path);
-
+        if (!ftp_remove_tree (curl, data, remote_path,
+                              entry->is_dir && !S_ISLNK (entry->st.st_mode), 0))
+            failed = TRUE;
         g_free (remote_path);
-
-        curl = curl_easy_init ();
-        if (curl == NULL)
-        {
-            g_free (url);
-            g_free (cmd);
-            failed = TRUE;
-            continue;
-        }
-
-        header_list = curl_slist_append (header_list, cmd);
-
-        curl_easy_setopt (curl, CURLOPT_URL, url);
-        ftp_setup_curl_common (curl, data->active_connection);
-        curl_easy_setopt (curl, CURLOPT_QUOTE, header_list);
-        curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-
-        res = curl_easy_perform (curl);
-
-        curl_slist_free_all (header_list);
-        curl_easy_cleanup (curl);
-        g_free (url);
-        g_free (cmd);
-
-        if (res != CURLE_OK)
-            failed = TRUE;
     }
+
+    curl_easy_cleanup (curl);
 
     mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
     ftp_reload_entries (data, TRUE);

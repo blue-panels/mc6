@@ -143,6 +143,7 @@ the remote host.
 | `03-delete` | F8: the question, what the panel shows afterwards, a directory that is not empty |
 | `04-links`  | that a link is deleted and renamed as a link, and what it points at stays |
 | `05-upload` | F5 and F6 into a plugin panel over ftp: a file, a directory with what is below it, an empty one |
+| `06-plugin-delete` | F8 and F6 on a directory that is not empty, inside a plugin panel over ftp |
 
 These change the files they work on, so the subject is built again before every
 case that touched anything. The full filesystem is `/small`, a 64k tmpfs every
