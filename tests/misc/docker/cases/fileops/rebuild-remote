@@ -1,0 +1,2 @@
+Build these fixtures again on the remote host before each case: they are small,
+and the cases write into them.  See refresh_fixtures() in common/run-cases.sh.

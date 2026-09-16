@@ -81,4 +81,25 @@ dangling	F8,Enter	no text: dangling	a link to nothing is deleted like any other	
 tofile	F6,key C-a,key C-k,type renamed,Enter	text: @renamed	a renamed link is still a link	local
 EOF
 
+# ---------------------------------------------------------------- upload ---
+#
+# Copying into a panel a plugin drives.  The destination is not a filesystem
+# mc can write to, so the core makes each directory through the plugin and
+# hands it the files one by one.  The plugin panel is the one the transport
+# opened; the other panel is pointed at the local copy of this tree.
+
+mkdir -p 05-upload/source/tree/deep 05-upload/source/empty
+printf 'a file of its own\n' > 05-upload/source/plain.txt
+printf 'inside the tree\n' > 05-upload/source/tree/inner.txt
+printf 'two levels down\n' > 05-upload/source/tree/deep/deeper.txt
+
+cat > 05-upload/cases.tsv <<'EOF'
+file	key	expect	why	transports
+source	key Tab,cd /work/local/fileops/05-upload/source,on plain.txt,F5,Enter,key Tab,on plain.txt,F3	text: a file of its own	a file goes into the plugin panel	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F5,Enter,key Tab,on tree,Enter	text: inner.txt	a directory goes in with what is in it	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F5,Enter,key Tab,on tree,Enter,on deep,Enter	text: deeper.txt	and with the directories below it	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on empty,F5,Enter,key Tab,on empty,Enter	text: 05-upload/empty	an empty directory is made, not skipped	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F6,Enter,key Tab,on tree,Enter,on deep,Enter	text: deeper.txt	F6 takes the whole directory over as well	ftp
+EOF
+
 echo "fileops cases in $dir"

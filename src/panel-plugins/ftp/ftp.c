@@ -140,6 +140,7 @@ static mc_pp_result_t ftp_enter (void *plugin_data, const char *name, const stru
 static mc_pp_result_t ftp_get_local_copy (void *plugin_data, const char *fname, char **local_path);
 static mc_pp_result_t ftp_put_file (void *plugin_data, const char *local_path,
                                     const char *dest_name);
+static mc_pp_result_t ftp_mkdir (void *plugin_data, const char *path);
 static mc_pp_result_t ftp_delete_items (void *plugin_data, const char **names, int count);
 static const char *ftp_get_title (void *plugin_data);
 static mc_pp_result_t ftp_create_item (void *plugin_data);
@@ -298,6 +299,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .get_local_copy = ftp_get_local_copy,
     .put_file = ftp_put_file,
     .save_file = ftp_put_file,
+    .mkdir = ftp_mkdir,
     .delete_items = ftp_delete_items,
     .get_title = ftp_get_title,
     .handle_key = ftp_handle_key,
@@ -2738,6 +2740,48 @@ ftp_file_read_cb (void *ptr, size_t size, size_t nmemb, void *userdata)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Forget the listing that @name has just been written into, and ask for it
+    again when it is the one on the screen. */
+static void
+ftp_invalidate_written (ftp_data_t *data, const char *name)
+{
+    const char *sep;
+    char *rel;
+    char *path;
+    char *cut;
+
+    sep = strrchr (name, '/');
+    if (sep == NULL)
+    {
+        mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
+        ftp_reload_entries (data, TRUE);
+        return;
+    }
+
+    rel = g_strndup (name, (gsize) (sep - name));
+    path = mc_pp_join_path (data->current_path, rel);
+    mc_pp_dir_cache_invalidate (&data->dir_cache, path);
+    g_free (path);
+
+    /* What lands below this directory does not change the listing on the
+       screen, unless the first name of the path is new here: the server makes
+       the missing directories of an upload, and a whole tree is put in one
+       name at a time. */
+    cut = strchr (rel, '/');
+    if (cut != NULL)
+        *cut = '\0';
+
+    if (find_entry (data, rel) == NULL)
+    {
+        mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
+        ftp_reload_entries (data, TRUE);
+    }
+
+    g_free (rel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
 {
@@ -2784,7 +2828,10 @@ ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
     curl_easy_setopt (curl, CURLOPT_READFUNCTION, ftp_file_read_cb);
     curl_easy_setopt (curl, CURLOPT_READDATA, &ctx);
     curl_easy_setopt (curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t) st_local.st_size);
-    curl_easy_setopt (curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 0L);
+    /* @dest_name may name a path below this directory. The core makes those
+       directories first, but a name typed into Shift-F4 comes here without
+       that, so the server is asked to make what is missing. */
+    curl_easy_setopt (curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 
     res = curl_easy_perform (curl);
     curl_easy_cleanup (curl);
@@ -2794,10 +2841,113 @@ ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
     if (res != CURLE_OK)
         return MC_PPR_FAILED;
 
-    mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
-    ftp_reload_entries (data, TRUE);
+    ftp_invalidate_written (data, dest_name);
 
     return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** One FTP command on a connection of its own. */
+static gboolean
+ftp_quote_command (const ftp_connection_t *conn, const char *command)
+{
+    CURL *curl;
+    CURLcode res;
+    struct curl_slist *cmds = NULL;
+    char *url;
+
+    /* The command goes to the control connection as it stands, and a newline
+       in it would be a second command. A local name may hold one. */
+    if (strpbrk (command, "\r\n") != NULL)
+        return FALSE;
+
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return FALSE;
+
+    /* The command carries the whole path, so where the session stands after
+       login does not matter. */
+    url = ftp_build_url (conn, NULL);
+    cmds = curl_slist_append (cmds, command);
+
+    curl_easy_setopt (curl, CURLOPT_URL, url);
+    ftp_setup_curl_common (curl, conn);
+    curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt (curl, CURLOPT_QUOTE, cmds);
+
+    res = curl_easy_perform (curl);
+
+    curl_slist_free_all (cmds);
+    curl_easy_cleanup (curl);
+    g_free (url);
+
+    return res == CURLE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Is @remote_path a directory the server lets us into? */
+static gboolean
+ftp_dir_exists (const ftp_connection_t *conn, const char *remote_path)
+{
+    char *cmd;
+    gboolean ok;
+
+    cmd = g_strdup_printf ("CWD %s", remote_path);
+    ok = ftp_quote_command (conn, cmd);
+    g_free (cmd);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+ftp_mkdir (void *plugin_data, const char *path)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+    char **parts;
+    char *remote_path;
+    mc_pp_result_t result = MC_PPR_OK;
+    int i;
+
+    if (data->at_root || data->active_connection == NULL || data->current_path == NULL)
+        return MC_PPR_FAILED;
+
+    /* One MKD per component: a server makes one directory at a time. */
+    parts = g_strsplit (path, "/", -1);
+    remote_path = g_strdup (data->current_path);
+
+    for (i = 0; parts[i] != NULL && result == MC_PPR_OK; i++)
+    {
+        char *next;
+        char *cmd;
+
+        if (parts[i][0] == '\0')
+            continue;
+
+        next = mc_pp_join_path (remote_path, parts[i]);
+        g_free (remote_path);
+        remote_path = next;
+
+        cmd = g_strdup_printf ("MKD %s", remote_path);
+        /* A directory that is already there is not a failure: the server
+           refuses the MKD and lets us into it all the same. */
+        if (!ftp_quote_command (data->active_connection, cmd)
+            && !ftp_dir_exists (data->active_connection, remote_path))
+            result = MC_PPR_FAILED;
+
+        g_free (cmd);
+    }
+
+    g_strfreev (parts);
+    g_free (remote_path);
+
+    if (result == MC_PPR_OK)
+        ftp_invalidate_written (data, path);
+
+    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */

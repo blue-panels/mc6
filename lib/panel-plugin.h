@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 17
+#define MC_PANEL_PLUGIN_API_VERSION 18
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -232,6 +232,9 @@ typedef struct mc_panel_plugin_t
        sends the core to walk it item by item.
        If NULL, core falls back to get_local_copy + copy. */
     mc_pp_result_t (*copy_to_local) (void *plugin_data, const char *fname, const char *local_path);
+    /* Take the local file @local_path in under the name @dest_name, which is
+       relative to the current directory. It names a path below it only when
+       the plugin has mkdir(); the core makes those directories first. */
     mc_pp_result_t (*put_file) (void *plugin_data, const char *local_path, const char *dest_name);
     mc_pp_result_t (*save_file) (void *plugin_data, const char *local_path,
                                  const char *remote_name);
@@ -366,6 +369,13 @@ typedef struct mc_panel_plugin_t
        its options say. An address book or a menu of sections answers FALSE.
        NULL means never. */
     gboolean (*is_file_listing) (void *plugin_data);
+
+    /* API 18: make the directory @path, relative to the current one, together
+       with the directories above it; a name that is already a directory is not
+       an error. A plugin that sets this also takes a @dest_name with
+       directories in it in put_file(), and the core then copies a whole
+       directory into it. NULL: the plugin takes single files only. */
+    mc_pp_result_t (*mkdir) (void *plugin_data, const char *path);
 } mc_panel_plugin_t;
 
 typedef const mc_panel_plugin_t *(*mc_panel_plugin_register_fn) (void);
