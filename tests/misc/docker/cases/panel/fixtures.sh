@@ -45,4 +45,17 @@ runnable.sh	key F9	r, w, x, s and - each in a colour of its own	for a person: tu
 setuid.bin	key F9	the s bit in the colour of a special bit	for a person: same, and the marked triplet keeps its colour on top	local
 EOF
 
+# A connection that does not come up: the status window keeps what happened,
+# the server's reply among it, until it is closed.  The connections come from
+# run-cases.sh; ".." four times goes from here back to the list of them.
+mkdir -p 03-plugin-connect
+
+cat > 03-plugin-connect/cases.tsv <<'EOF'
+file	key	expect	why	transports
+cases.tsv	..,..,..,..,on wrong-password,Enter	text: 530 Login incorrect.	a refused login shows what the server said	ftp
+cases.tsv	..,..,..,..,on wrong-password,Enter	text: Authentication with remote:21 failed	and what that means	ftp
+cases.tsv	..,..,..,..,on wrong-password,Enter,Enter,width 120,width 120	no text: 530 Login incorrect.	Close ends it: the connection is not tried a second time	ftp
+cases.tsv	..,..,..,..,on no-such-host,Enter	text: Could not resolve host: no-such-host.invalid	a host that is not there says so, and asks for no password	ftp
+EOF
+
 echo "panel cases in $dir"

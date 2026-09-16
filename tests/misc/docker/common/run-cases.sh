@@ -226,7 +226,8 @@ printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nus
     > "$config/sftp-connections.ini"
 printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\n' "$subject" \
     > "$config/shell-connections.ini"
-printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/cases/%s\n' "$subject" \
+# and two that must not come up, for the cases about why
+printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/cases/%s\n\n[wrong-password]\nhost=remote\nuser=mc\npassword=wrong\n\n[no-such-host]\nhost=no-such-host.invalid\nuser=mc\n' "$subject" \
     > "$config/ftp-connections.ini"
 printf '[sandbox]\nserver=remote\nshare=cases\nusername=mc\npassword=mc\n' \
     > "$config/smb-connections.ini"

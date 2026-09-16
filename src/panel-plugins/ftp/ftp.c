@@ -2098,22 +2098,162 @@ ftp_connect_progress_cb (void *clientp, double dltotal, double dlnow, double ult
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Keep the status window up with its log after a failure, until it is closed:
+    the log is the explanation. */
+static void
+ftp_connect_status_wait_close (ftp_connect_status_msg_t *fsm)
+{
+    status_msg_t *sm = STATUS_MSG (fsm);
+
+    if (sm->dlg == NULL)
+        return;
+
+    if (widget_get_state (WIDGET (sm->dlg), WST_CONSTRUCT))
+        dlg_init (sm->dlg);
+
+    if (fsm->button_w != NULL)
+    {
+        button_set_text (BUTTON (fsm->button_w), _ ("&Close"));
+        widget_select (fsm->button_w);
+    }
+
+    sm->dlg->ret_value = B_CANCEL;
+    (void) dlg_run (sm->dlg);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The steps of a login as they happen, read off the FTP conversation: one
+    request does the connect, the login and the change of directory, and only
+    the conversation says how far it got. The password is never shown. */
+static int
+ftp_connect_debug_cb (CURL *curl, curl_infotype type, char *text, size_t size, void *userdata)
+{
+    ftp_connect_progress_t *progress = (ftp_connect_progress_t *) userdata;
+    ftp_connect_status_msg_t *fsm = (ftp_connect_status_msg_t *) progress->sm;
+    char *line;
+
+    (void) curl;
+
+    if (type != CURLINFO_TEXT && type != CURLINFO_HEADER_IN && type != CURLINFO_HEADER_OUT)
+        return 0;
+
+    line = g_strndup (text, size);
+    g_strchomp (line);
+
+    if (type == CURLINFO_TEXT)
+    {
+        if (g_str_has_prefix (line, "Connected to "))
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Connected"));
+    }
+    else if (type == CURLINFO_HEADER_OUT)
+    {
+        if (g_str_has_prefix (line, "USER "))
+            (void) ftp_connect_status_set_stage (fsm, _ ("Logging in as %s..."), line + 5);
+        else if (g_str_has_prefix (line, "AUTH "))
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Asking for TLS..."));
+        else if (g_str_has_prefix (line, "CWD "))
+            (void) ftp_connect_status_set_stage (fsm, _ ("Opening %s..."), line + 4);
+    }
+    /* the last line of a reply: three digits and a space; the lines before it
+       in a long greeting have a dash there */
+    else if (strlen (line) > 4 && g_ascii_isdigit (line[0]) && g_ascii_isdigit (line[1])
+             && g_ascii_isdigit (line[2]) && line[3] == ' ')
+    {
+        if (line[0] == '4' || line[0] == '5')
+            (void) ftp_connect_status_set_stage (fsm, "%s", line);
+        else if (strncmp (line, "220", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, _ ("Server: %s"), line + 4);
+        else if (strncmp (line, "230", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Logged in"));
+        else if (strncmp (line, "234", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("TLS accepted"));
+    }
+
+    g_free (line);
+
+    return 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Log in and look at the start directory of @conn. On failure @errbuf holds
+    what curl knows about it, which is more than the code says. */
+static CURLcode
+ftp_probe_connection (const ftp_connection_t *conn, ftp_connect_progress_t *progress, char *errbuf)
+{
+    CURL *curl;
+    CURLcode res;
+    struct curl_slist *post_cmds;
+    char *url;
+
+    errbuf[0] = '\0';
+
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return CURLE_FAILED_INIT;
+
+    url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
+    if (url[strlen (url) - 1] != '/')
+    {
+        char *dir_url;
+
+        dir_url = g_strconcat (url, "/", (char *) NULL);
+        g_free (url);
+        url = dir_url;
+    }
+
+    FTP_LOG ("activate: testing URL = %s", url);
+    curl_easy_setopt (curl, CURLOPT_URL, url);
+    ftp_setup_curl_common (curl, conn);
+    curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
+    curl_easy_setopt (curl, CURLOPT_ERRORBUFFER, errbuf);
+    curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt (curl, CURLOPT_DEBUGFUNCTION, ftp_connect_debug_cb);
+    curl_easy_setopt (curl, CURLOPT_DEBUGDATA, progress);
+    curl_easy_setopt (curl, CURLOPT_VERBOSE, 1L);
+
+    post_cmds = ftp_build_post_connect_commands (conn);
+    if (post_cmds != NULL)
+        curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds);
+
+#if LIBCURL_VERSION_NUM >= 0x072000
+    curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
+    curl_easy_setopt (curl, CURLOPT_XFERINFODATA, progress);
+#else
+    curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
+    curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, progress);
+#endif
+
+    res = curl_easy_perform (curl);
+    FTP_LOG ("activate: test result = %d (%s) %s", (int) res, curl_easy_strerror (res), errbuf);
+
+    curl_easy_cleanup (curl);
+    curl_slist_free_all (post_cmds);
+    g_free (url);
+
+    return res;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 ftp_activate_connection (ftp_data_t *data, ftp_connection_t *conn)
 {
     ftp_connect_status_msg_t status;
     ftp_connect_progress_t progress;
+    char errbuf[CURL_ERROR_SIZE];
     char *path;
     gboolean ok = FALSE;
     gboolean status_inited = FALSE;
-    CURL *curl;
     CURLcode res;
-    char *url;
 
     FTP_LOG ("activate: connecting to %s@%s:%d path=%s ssl_mode=%d passive=%d",
              conn->user != NULL ? conn->user : "(anon)", conn->host, conn->port,
              conn->path != NULL ? conn->path : "/", conn->ssl_mode, conn->passive_mode);
 
+    errbuf[0] = '\0';
     memset (&status, 0, sizeof (status));
     status.first = TRUE;
     status.log = g_string_new (NULL);
@@ -2127,201 +2267,67 @@ ftp_activate_connection (ftp_data_t *data, ftp_connection_t *conn)
                                        conn->port))
         goto out;
 
-    /* test connectivity by listing root */
-    url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
+    res = ftp_probe_connection (conn, &progress, errbuf);
 
-    if (!ftp_connect_status_set_stage (&status, _ ("Initializing network session...")))
+    /* A refused login with no password given is a password to ask for. Any
+       other failure is not, a host that does not answer least of all. */
+    if (res == CURLE_LOGIN_DENIED && (conn->password == NULL || conn->password[0] == '\0'))
     {
-        g_free (url);
-        goto out;
-    }
+        char *pwd;
+        char *prompt;
 
-    curl = curl_easy_init ();
-    if (curl == NULL)
-    {
-        FTP_LOG ("activate: curl_easy_init failed");
-        g_free (url);
-        goto out;
-    }
+        status_msg_deinit (STATUS_MSG (&status));
+        status_inited = FALSE;
 
-    {
-        char *dir_url;
+        FTP_LOG ("activate: no stored password, prompting user");
+        prompt = g_strdup_printf (_ ("Enter password for %s@%s"),
+                                  conn->user != NULL ? conn->user : "", conn->host);
+        pwd = input_dialog (_ ("FTP password"), prompt, "ftp-password", INPUT_PASSWORD,
+                            INPUT_COMPLETE_NONE);
+        g_free (prompt);
 
-        if (url[strlen (url) - 1] != '/')
+        if (pwd == NULL || pwd[0] == '\0')
         {
-            dir_url = g_strdup_printf ("%s/", url);
-            g_free (url);
-        }
-        else
-        {
-            dir_url = url;
+            FTP_LOG ("activate: user cancelled password dialog");
+            g_free (pwd);
+            goto out;
         }
 
-        {
-            struct curl_slist *post_cmds;
+        g_free (conn->password);
+        conn->password = pwd;
 
-            FTP_LOG ("activate: testing URL = %s", dir_url);
-            curl_easy_setopt (curl, CURLOPT_URL, dir_url);
-            ftp_setup_curl_common (curl, conn);
-            curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-            curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
-            curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
+        status.first = TRUE;
+        status_msg_init (STATUS_MSG (&status), _ ("FTP connection"), 0.0,
+                         ftp_connect_status_init_cb, ftp_connect_status_update_cb,
+                         ftp_connect_status_deinit_cb);
+        status_inited = TRUE;
 
-            post_cmds = ftp_build_post_connect_commands (conn);
-            if (post_cmds != NULL)
-                curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds);
+        if (!ftp_connect_status_set_stage (&status, _ ("Retrying with password...")))
+            goto out;
 
-#if LIBCURL_VERSION_NUM >= 0x072000
-            curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
-            curl_easy_setopt (curl, CURLOPT_XFERINFODATA, &progress);
-#else
-            curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
-            curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, &progress);
-#endif
-
-            if (!ftp_connect_status_set_stage (&status,
-                                               _ ("Authenticating and probing directory...")))
-            {
-                curl_slist_free_all (post_cmds);
-                curl_easy_cleanup (curl);
-                g_free (dir_url);
-                goto out;
-            }
-
-            FTP_LOG ("activate: performing test request...");
-            res = curl_easy_perform (curl);
-            FTP_LOG ("activate: test result = %d (%s)", (int) res, curl_easy_strerror (res));
-            curl_slist_free_all (post_cmds);
-            curl_easy_cleanup (curl);
-            g_free (dir_url);
-        }
+        res = ftp_probe_connection (conn, &progress, errbuf);
     }
 
     if (res != CURLE_OK)
     {
-        FTP_LOG ("activate: initial connect failed, code=%d", (int) res);
-
-        if (res == CURLE_ABORTED_BY_CALLBACK)
+        /* Abort in the status window is the user's own doing, nothing to say.
+           Otherwise the window stays with its log and the reason under it. */
+        if (res == CURLE_LOGIN_DENIED)
         {
-            FTP_LOG ("activate: aborted by user");
-            goto out;
+            /* the server's own reply is in the log already */
+            (void) ftp_connect_status_set_stage (&status, _ ("Authentication with %s:%d failed"),
+                                                 conn->host, conn->port);
+            ftp_connect_status_wait_close (&status);
         }
-
-        if (!ftp_connect_status_set_stage (&status, _ ("Initial attempt failed: %s"),
-                                           curl_easy_strerror (res)))
-            goto out;
-
-        /* if no stored password, prompt the user */
-        if (conn->password == NULL || conn->password[0] == '\0')
+        else if (res != CURLE_ABORTED_BY_CALLBACK)
         {
-            char *pwd;
-            char *prompt;
-
-            status_msg_deinit (STATUS_MSG (&status));
-            status_inited = FALSE;
-
-            FTP_LOG ("activate: no stored password, prompting user");
-            prompt = g_strdup_printf (_ ("Enter password for %s@%s"),
-                                      conn->user != NULL ? conn->user : "", conn->host);
-            pwd = input_dialog (_ ("FTP password"), prompt, "ftp-password", INPUT_PASSWORD,
-                                INPUT_COMPLETE_NONE);
-            g_free (prompt);
-
-            if (pwd != NULL && pwd[0] != '\0')
-            {
-                g_free (conn->password);
-                conn->password = pwd;
-
-                /* retry with password */
-                FTP_LOG ("activate: retrying with entered password...");
-                status.first = TRUE;
-                status_msg_init (STATUS_MSG (&status), _ ("FTP connection"), 0.0,
-                                 ftp_connect_status_init_cb, ftp_connect_status_update_cb,
-                                 ftp_connect_status_deinit_cb);
-                status_inited = TRUE;
-
-                url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
-                curl = curl_easy_init ();
-                if (curl != NULL)
-                {
-                    char *dir_url2;
-
-                    if (url[strlen (url) - 1] != '/')
-                    {
-                        dir_url2 = g_strdup_printf ("%s/", url);
-                        g_free (url);
-                    }
-                    else
-                    {
-                        dir_url2 = url;
-                    }
-
-                    {
-                        struct curl_slist *post_cmds2;
-
-                        curl_easy_setopt (curl, CURLOPT_URL, dir_url2);
-                        ftp_setup_curl_common (curl, conn);
-                        curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-                        curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
-                        curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
-
-                        post_cmds2 = ftp_build_post_connect_commands (conn);
-                        if (post_cmds2 != NULL)
-                            curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds2);
-
-#if LIBCURL_VERSION_NUM >= 0x072000
-                        curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
-                        curl_easy_setopt (curl, CURLOPT_XFERINFODATA, &progress);
-#else
-                        curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
-                        curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, &progress);
-#endif
-
-                        if (!ftp_connect_status_set_stage (&status,
-                                                           _ ("Retrying with password...")))
-                        {
-                            curl_slist_free_all (post_cmds2);
-                            curl_easy_cleanup (curl);
-                            g_free (dir_url2);
-                            goto out;
-                        }
-
-                        res = curl_easy_perform (curl);
-                        FTP_LOG ("activate: retry result = %d (%s)", (int) res,
-                                 curl_easy_strerror (res));
-                        curl_slist_free_all (post_cmds2);
-                        curl_easy_cleanup (curl);
-                        g_free (dir_url2);
-                    }
-                }
-                else
-                {
-                    FTP_LOG ("activate: curl_easy_init failed on retry");
-                    g_free (url);
-                    goto out;
-                }
-
-                if (res != CURLE_OK)
-                {
-                    FTP_LOG ("activate: retry failed, giving up");
-                    if (res != CURLE_ABORTED_BY_CALLBACK)
-                        (void) ftp_connect_status_set_stage (&status, _ ("Retry failed: %s"),
-                                                             curl_easy_strerror (res));
-                    goto out;
-                }
-            }
-            else
-            {
-                FTP_LOG ("activate: user cancelled password dialog");
-                g_free (pwd);
-                goto out;
-            }
+            (void) ftp_connect_status_set_stage (&status, _ ("Cannot connect to %s:%d"), conn->host,
+                                                 conn->port);
+            (void) ftp_connect_status_set_stage (
+                &status, "%s", errbuf[0] != '\0' ? errbuf : curl_easy_strerror (res));
+            ftp_connect_status_wait_close (&status);
         }
-        else
-        {
-            FTP_LOG ("activate: has password but connect failed, giving up");
-            goto out;
-        }
+        goto out;
     }
 
     FTP_LOG ("activate: connection successful");
@@ -2588,15 +2594,11 @@ ftp_enter (void *plugin_data, const char *name, const struct stat *st)
 
     FTP_LOG ("enter: name='%s', at_root=%d", name, data->at_root);
 
+    /* A connection is a directory to the core, so it is opened by chdir(). The
+       core goes on to chdir() when enter() did not open one, and connecting
+       here as well tried a failed connection twice. */
     if (data->at_root)
-    {
-        ftp_connection_t *conn = (ftp_connection_t *) find_connection (data, name);
-
-        if (conn == NULL)
-            return MC_PPR_FAILED;
-
-        return ftp_activate_connection (data, conn) ? MC_PPR_OK : MC_PPR_FAILED;
-    }
+        return MC_PPR_NOT_SUPPORTED;
 
     {
         const mc_pp_dir_entry_t *entry;

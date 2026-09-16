@@ -133,6 +133,7 @@ the remote host.
 |-----------------|-------------------------------------------------------------|
 | `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
 | `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
+| `03-plugin-connect` | an ftp connection that does not come up: a refused login, a host that is not there |
 
 ### fileops
 
