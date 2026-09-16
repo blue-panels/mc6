@@ -1143,8 +1143,45 @@ git_parse_status_and_fill (git_data_t *data, dir_list *list, const char *out)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Log of BASE..REF, or of REF alone when BASE is NULL or the range is empty
- * (the branch is already merged into BASE). */
+/* First commit on the first-parent line of BASE that has REF merged in, or NULL. */
+static char *
+git_find_merge_commit (git_data_t *data, const char *base, const char *ref)
+{
+    char *range;
+    char *argv[] = { (char *) "git",
+                     (char *) "-C",
+                     data->repo_root,
+                     (char *) "rev-list",
+                     (char *) "--first-parent",
+                     (char *) "--ancestry-path",
+                     NULL,
+                     NULL };
+    char *out = NULL;
+    char *merge = NULL;
+
+    range = g_strdup_printf ("%s..%s", ref, base);
+    argv[6] = range;
+
+    if (git_run_stdout (argv, &out))
+    {
+        char *last;
+
+        g_strchomp (out);
+        last = strrchr (out, '\n');
+        last = (last != NULL) ? last + 1 : out;
+        if (*last != '\0')
+            merge = g_strdup (last);
+    }
+
+    g_free (out);
+    g_free (range);
+    return merge;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Log of BASE..REF. When the range is empty, REF is already merged into BASE:
+ * show the commits that the merge brought in, else the whole log of REF. */
 static gboolean
 git_run_branch_log (git_data_t *data, const char *base, const char *ref, char **out)
 {
@@ -1160,22 +1197,32 @@ git_run_branch_log (git_data_t *data, const char *base, const char *ref, char **
                      (char *) "200",
                      NULL,
                      NULL };
+    char *range;
+    char *merge;
+    gboolean ok;
 
     if (base != NULL)
     {
-        char *range;
-        gboolean ok;
-
         range = g_strdup_printf ("%s..%s", base, ref);
         argv[10] = range;
         ok = git_run_stdout (argv, out);
         g_free (range);
-
         if (!ok || **out != '\0')
             return ok;
-
         g_free (*out);
-        *out = NULL;
+
+        merge = git_find_merge_commit (data, base, ref);
+        if (merge != NULL)
+        {
+            range = g_strdup_printf ("%s^1..%s", merge, ref);
+            g_free (merge);
+            argv[10] = range;
+            ok = git_run_stdout (argv, out);
+            g_free (range);
+            if (!ok || **out != '\0')
+                return ok;
+            g_free (*out);
+        }
     }
 
     argv[10] = (char *) ref;
