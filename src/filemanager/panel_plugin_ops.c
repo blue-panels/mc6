@@ -49,6 +49,8 @@
 #include "src/setup.h"    // confirm_delete, panels_options, use_internal_edit
 #include "src/history.h"  // MC_HISTORY_FM_PLUGIN_COPY
 
+#include "file.h"         // erase_dir()
+#include "filegui.h"      // file_op_context_new()
 #include "filemanager.h"  // other_panel
 #include "ioblksize.h"    // IO_BUFSIZE
 #include "panel.h"
@@ -1335,16 +1337,28 @@ plugin_panel_confirm_put (const WPanel *panel, gboolean move_op)
 {
     int result;
     const char *title = move_op ? _ ("Move") : _ ("Copy");
+    const char *question;
+    char *text = NULL;
 
     if (panel->marked <= 0)
-        result = query_dialog (
-            title, move_op ? _ ("Move file to plugin panel?") : _ ("Copy file to plugin panel?"),
-            D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
+        question = move_op ? _ ("Move file to plugin panel?") : _ ("Copy file to plugin panel?");
     else
-        result = query_dialog (title,
-                               move_op ? _ ("Move tagged files to plugin panel?")
-                                       : _ ("Copy tagged files to plugin panel?"),
-                               D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
+        question = move_op ? _ ("Move tagged files to plugin panel?")
+                           : _ ("Copy tagged files to plugin panel?");
+
+    /* A move deletes the source once the plugin says it has the file. Where
+       the source is not a local filesystem, that word is all mc goes by, so
+       the question says as much. */
+    if (move_op && (panel->is_plugin_panel || !vfs_file_is_local (panel->cwd_vpath)))
+        text = g_strconcat (question, "\n\n",
+                            _ ("This panel is not a local filesystem.\n"
+                               "Every file is deleted here as soon as the plugin says it has it."),
+                            (char *) NULL);
+
+    result =
+        query_dialog (title, text != NULL ? text : question, D_NORMAL, 2, _ ("&Yes"), _ ("&No"));
+
+    g_free (text);
 
     return (result == 0);
 }
@@ -1525,11 +1539,202 @@ plugin_panel_can_stream (const WPanel *src, const WPanel *dest)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Does this entry go into @dest as a directory? A plugin whose entries are
+    local paths is handed the path itself, whatever it names. */
+static gboolean
+plugin_panel_put_as_dir (const WPanel *dest, const file_entry_t *fe)
+{
+    return plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Can a directory of the source panel go into @dest as a directory?
+    A plugin source has no local tree for the core to walk. */
+static gboolean
+plugin_panel_can_put_dir (const WPanel *panel, const WPanel *dest)
+{
+    return !panel->is_plugin_panel && dest->plugin->mkdir != NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Say once, and not per directory, that this plugin takes files only. */
+static void
+plugin_panel_no_dirs_here (gboolean *told)
+{
+    if (!*told)
+    {
+        *told = TRUE;
+        message (D_ERROR, MSG_ERROR, _ ("This plugin takes files, not directories"));
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t plugin_panel_put_item (const WPanel *panel, const WPanel *dest,
+                                             const char *local_path, const char *dest_name,
+                                             gboolean allow_resume,
+                                             plugin_panel_overwrite_state_t *overwrite, int depth);
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Make @dest_name in the plugin and put what is in the local directory
+    @local_path there. */
+static mc_pp_result_t
+plugin_panel_put_dir (const WPanel *panel, const WPanel *dest, const char *local_path,
+                      const char *dest_name, gboolean allow_resume,
+                      plugin_panel_overwrite_state_t *overwrite, int depth)
+{
+    GDir *dir;
+    const char *child;
+    mc_pp_result_t result = MC_PPR_OK;
+    gboolean skipped = FALSE;
+
+    if (depth >= PP_COPY_MAX_DEPTH)
+        return MC_PPR_FAILED;
+
+    /* The local directory is read first: one that cannot be opened must not
+       leave an empty directory of its name behind in the plugin. */
+    dir = g_dir_open (local_path, 0, NULL);
+    if (dir == NULL)
+        return MC_PPR_FAILED;
+
+    /* Then the directory itself: an empty one is a directory too, and the
+       files below it have nowhere to land until it is there. */
+    if (dest->plugin->mkdir (dest->plugin_data, dest_name) != MC_PPR_OK)
+    {
+        g_dir_close (dir);
+        return MC_PPR_FAILED;
+    }
+
+    while (result == MC_PPR_OK && (child = g_dir_read_name (dir)) != NULL)
+    {
+        char *child_local;
+        char *child_dest;
+        mc_pp_result_t r;
+
+        if (overwrite->mode == PP_OVERWRITE_ABORT)
+        {
+            skipped = TRUE;
+            break;
+        }
+
+        child_local = mc_build_filename (local_path, child, (char *) NULL);
+        child_dest = mc_build_filename (dest_name, child, (char *) NULL);
+        r = plugin_panel_put_item (panel, dest, child_local, child_dest, allow_resume, overwrite,
+                                   depth + 1);
+        g_free (child_dest);
+        g_free (child_local);
+
+        /* One name left out is not a reason to leave the rest, but it does
+           mean the directory did not arrive whole. */
+        if (r == MC_PPR_SKIPPED)
+            skipped = TRUE;
+        else
+            result = r;
+    }
+
+    g_dir_close (dir);
+
+    if (result == MC_PPR_OK && skipped)
+        result = MC_PPR_SKIPPED;
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Put one local item into the plugin: a file through put_file(), a directory
+    through plugin_panel_put_dir(). The name under the cursor was asked about
+    before this is called; what is below it was not. */
+static mc_pp_result_t
+plugin_panel_put_item (const WPanel *panel, const WPanel *dest, const char *local_path,
+                       const char *dest_name, gboolean allow_resume,
+                       plugin_panel_overwrite_state_t *overwrite, int depth)
+{
+    struct stat st;
+
+    /* The name the user pointed at is followed, as it is everywhere else here:
+       a link to a directory is that directory. Below it a link is left alone
+       instead: a plugin has nowhere to keep one, and a link that points at a
+       directory above would be walked over and over. */
+    if (depth > 0 && lstat (local_path, &st) == 0 && S_ISLNK (st.st_mode))
+        return MC_PPR_SKIPPED;
+
+    if (stat (local_path, &st) != 0)
+        return MC_PPR_FAILED;
+
+    if (S_ISDIR (st.st_mode))
+        return plugin_panel_put_dir (panel, dest, local_path, dest_name, allow_resume, overwrite,
+                                     depth);
+
+    if (depth > 0)
+        switch (plugin_panel_put_decide (panel, dest, dest_name, allow_resume, overwrite))
+        {
+        case PP_ACT_WRITE:
+            break;
+        case PP_ACT_ABORT:
+        case PP_ACT_SKIP:
+            return MC_PPR_SKIPPED;
+        default:
+            // already carried out as a resume
+            return MC_PPR_OK;
+        }
+
+    return dest->plugin->put_file (dest->plugin_data, local_path, dest_name);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Remove the local directory a move has just sent to the plugin. */
+static gboolean
+plugin_panel_erase_local_dir (const char *path)
+{
+    file_op_context_t *ctx;
+    vfs_path_t *vpath;
+    gboolean ok;
+
+    vpath = vfs_path_from_str (path);
+    ctx = file_op_context_new (OP_DELETE);
+    file_progress_ui_create (ctx, FALSE, FILEGUI_DIALOG_ONE_ITEM);
+    /* The move was said yes to once, and what is here is on the other side
+       already: asking again for every directory in it is noise. The progress
+       dialog sets this, so it is set after it. */
+    ctx->recursive_result = RECURSIVE_ALWAYS;
+    ok = erase_dir (ctx, vpath) == FILE_CONT;
+    file_op_context_destroy (ctx);
+    vfs_path_free (vpath, TRUE);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Copy one entry of a local panel into the plugin panel @dest. */
+static mc_pp_result_t
+plugin_panel_put_entry (const WPanel *panel, const WPanel *dest, const file_entry_t *fe,
+                        gboolean allow_resume, plugin_panel_overwrite_state_t *overwrite)
+{
+    char *full_path;
+    mc_pp_result_t r;
+
+    full_path =
+        mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str, (char *) NULL);
+    r = plugin_panel_put_item (panel, dest, full_path, fe->fname->str, allow_resume, overwrite, 0);
+    g_free (full_path);
+
+    return r;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 plugin_panel_put_cmd (WPanel *panel)
 {
     const WPanel *dest;
     plugin_panel_overwrite_state_t overwrite = { PP_OVERWRITE_ASK };
+    gboolean told_no_dirs = FALSE;
     int i;
 
     dest = other_panel;
@@ -1549,9 +1754,16 @@ plugin_panel_put_cmd (WPanel *panel)
         const file_entry_t *fe;
 
         fe = panel_current_entry (panel);
-        if (fe == NULL
-            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+        /* ".." is the way back, not an item: going in through it would take
+           the whole directory above. */
+        if (fe == NULL || DIR_IS_DOTDOT (fe->fname->str))
             return;
+
+        if (plugin_panel_put_as_dir (dest, fe) && !plugin_panel_can_put_dir (panel, dest))
+        {
+            plugin_panel_no_dirs_here (&told_no_dirs);
+            return;
+        }
     }
 
     if (!plugin_panel_confirm_put (panel, FALSE))
@@ -1565,14 +1777,32 @@ plugin_panel_put_cmd (WPanel *panel)
             char *full_path;
             mc_pp_result_t r;
 
-            if (!fe->f.marked)
+            if (!fe->f.marked || DIR_IS_DOTDOT (fe->fname->str))
                 continue;
 
             if (overwrite.mode == PP_OVERWRITE_ABORT)
                 break;
 
-            if (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+            if (plugin_panel_put_as_dir (dest, fe))
+            {
+                if (!plugin_panel_can_put_dir (panel, dest))
+                {
+                    plugin_panel_no_dirs_here (&told_no_dirs);
+                    continue;
+                }
+
+                /* A directory is not resumed as a whole: what to continue is a
+                   question about each file in it, and put_item() asks it. */
+                if (plugin_panel_put_decide (panel, dest, fe->fname->str, FALSE, &overwrite)
+                    != PP_ACT_WRITE)
+                    continue;
+
+                r = plugin_panel_put_entry (panel, dest, fe, TRUE, &overwrite);
+                if (r != MC_PPR_OK && r != MC_PPR_SKIPPED)
+                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s to plugin"), fe->fname->str);
+
                 continue;
+            }
 
             if (plugin_panel_put_decide (panel, dest, fe->fname->str, TRUE, &overwrite)
                 != PP_ACT_WRITE)
@@ -1602,9 +1832,28 @@ plugin_panel_put_cmd (WPanel *panel)
 
         fe = panel_current_entry (panel);
         /* already validated above, but keep the guard */
-        if (fe == NULL
-            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+        if (fe == NULL || DIR_IS_DOTDOT (fe->fname->str))
             return;
+
+        if (plugin_panel_put_as_dir (dest, fe))
+        {
+            if (!plugin_panel_can_put_dir (panel, dest))
+            {
+                plugin_panel_no_dirs_here (&told_no_dirs);
+                return;
+            }
+
+            if (plugin_panel_put_decide (panel, dest, fe->fname->str, FALSE, &overwrite)
+                == PP_ACT_WRITE)
+            {
+                r = plugin_panel_put_entry (panel, dest, fe, TRUE, &overwrite);
+                if (r != MC_PPR_OK && r != MC_PPR_SKIPPED)
+                    message (D_ERROR, MSG_ERROR, _ ("Cannot copy %s to plugin"), fe->fname->str);
+            }
+
+            update_panels (UP_OPTIMIZE, UP_KEEPSEL);
+            return;
+        }
 
         if (plugin_panel_put_decide (panel, dest, fe->fname->str, TRUE, &overwrite) != PP_ACT_WRITE)
         {
@@ -1641,6 +1890,7 @@ plugin_panel_put_move_cmd (WPanel *panel)
 {
     const WPanel *dest;
     plugin_panel_overwrite_state_t overwrite = { PP_OVERWRITE_ASK };
+    gboolean told_no_dirs = FALSE;
     int i;
 
     dest = other_panel;
@@ -1660,9 +1910,16 @@ plugin_panel_put_move_cmd (WPanel *panel)
         const file_entry_t *fe;
 
         fe = panel_current_entry (panel);
-        if (fe == NULL
-            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+        /* ".." is the way back, not an item: going in through it would take
+           the whole directory above. */
+        if (fe == NULL || DIR_IS_DOTDOT (fe->fname->str))
             return;
+
+        if (plugin_panel_put_as_dir (dest, fe) && !plugin_panel_can_put_dir (panel, dest))
+        {
+            plugin_panel_no_dirs_here (&told_no_dirs);
+            return;
+        }
     }
 
     if (!plugin_panel_confirm_put (panel, TRUE))
@@ -1675,15 +1932,21 @@ plugin_panel_put_move_cmd (WPanel *panel)
             const file_entry_t *fe = &panel->dir.list[i];
             char *full_path;
             mc_pp_result_t r;
+            gboolean is_dir;
 
-            if (!fe->f.marked)
+            if (!fe->f.marked || DIR_IS_DOTDOT (fe->fname->str))
                 continue;
 
             if (overwrite.mode == PP_OVERWRITE_ABORT)
                 break;
 
-            if (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+            is_dir = plugin_panel_put_as_dir (dest, fe);
+
+            if (is_dir && !plugin_panel_can_put_dir (panel, dest))
+            {
+                plugin_panel_no_dirs_here (&told_no_dirs);
                 continue;
+            }
 
             /* No resume: the source is deleted once this is believed to have
                arrived, so only a complete arrival will do. */
@@ -1693,16 +1956,32 @@ plugin_panel_put_move_cmd (WPanel *panel)
 
             full_path = mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str,
                                            (char *) NULL);
-            r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
+
+            if (is_dir)
+                r = plugin_panel_put_item (panel, dest, full_path, fe->fname->str, FALSE,
+                                           &overwrite, 0);
+            else
+                r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
+
             if (r != MC_PPR_OK)
             {
-                message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
+                /* skipped: the question inside the directory was answered no */
+                if (r != MC_PPR_SKIPPED)
+                    message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
                 g_free (full_path);
                 continue;
             }
 
-            if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && unlink (full_path) != 0)
-                message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
+            /* A plugin whose entries are local files was handed the path
+               itself, and the source is where it put it. */
+            if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+            {
+                gboolean gone;
+
+                gone = is_dir ? plugin_panel_erase_local_dir (full_path) : unlink (full_path) == 0;
+                if (!gone)
+                    message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
+            }
 
             g_free (full_path);
         }
@@ -1712,11 +1991,15 @@ plugin_panel_put_move_cmd (WPanel *panel)
         const file_entry_t *fe;
         char *full_path;
         mc_pp_result_t r;
+        gboolean is_dir;
 
         fe = panel_current_entry (panel);
         /* already validated above, but keep the guard */
-        if (fe == NULL
-            || (plugin_panel_entry_is_dir (fe) && (dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0))
+        if (fe == NULL || DIR_IS_DOTDOT (fe->fname->str))
+            return;
+
+        is_dir = plugin_panel_put_as_dir (dest, fe);
+        if (is_dir && !plugin_panel_can_put_dir (panel, dest))
             return;
 
         if (plugin_panel_put_decide (panel, dest, fe->fname->str, FALSE, &overwrite)
@@ -1725,16 +2008,31 @@ plugin_panel_put_move_cmd (WPanel *panel)
 
         full_path =
             mc_build_filename (vfs_path_as_str (panel->cwd_vpath), fe->fname->str, (char *) NULL);
-        r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
+
+        if (is_dir)
+            r = plugin_panel_put_item (panel, dest, full_path, fe->fname->str, FALSE, &overwrite,
+                                       0);
+        else
+            r = dest->plugin->put_file (dest->plugin_data, full_path, fe->fname->str);
+
         if (r != MC_PPR_OK)
         {
-            message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
+            if (r != MC_PPR_SKIPPED)
+                message (D_ERROR, MSG_ERROR, _ ("Cannot move %s to plugin"), fe->fname->str);
             g_free (full_path);
             return;
         }
 
-        if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0 && unlink (full_path) != 0)
-            message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
+        /* A plugin whose entries are local files was handed the path itself,
+           and the source is where it put it. */
+        if ((dest->plugin->flags & MC_PPF_LOCAL_FILES) == 0)
+        {
+            gboolean gone;
+
+            gone = is_dir ? plugin_panel_erase_local_dir (full_path) : unlink (full_path) == 0;
+            if (!gone)
+                message (D_ERROR, MSG_ERROR, _ ("Cannot delete local file %s"), fe->fname->str);
+        }
 
         g_free (full_path);
     }

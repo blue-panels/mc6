@@ -226,7 +226,8 @@ printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\nus
     > "$config/sftp-connections.ini"
 printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/home/mc/cases/%s\n' "$subject" \
     > "$config/shell-connections.ini"
-printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/cases/%s\n' "$subject" \
+# and two that must not come up, for the cases about why
+printf '[sandbox]\nhost=remote\nuser=mc\npassword=mc\npath=/cases/%s\n\n[wrong-password]\nhost=remote\nuser=mc\npassword=wrong\n\n[no-such-host]\nhost=no-such-host.invalid\nuser=mc\n' "$subject" \
     > "$config/ftp-connections.ini"
 printf '[sandbox]\nserver=remote\nshare=cases\nusername=mc\npassword=mc\n' \
     > "$config/smb-connections.ini"
@@ -310,16 +311,34 @@ vg_prefix ()
 # it would show up in the panel.
 refresh_fixtures ()
 {
-    [ "$1" = local ] || return 0
     [ -f "$SRC/cases/$subject/fixtures.sh" ] || return 0
+
+    # The local tree holds the cases themselves, whatever the transport is, and
+    # for a case that copies into the remote host it holds what is copied.
     tree=/work/local/$subject
     stamp=/work/local/.stamp-$subject
-    if [ -f "$stamp" ] && [ ! "$SRC/cases/$subject/fixtures.sh" -nt "$stamp" ] \
-        && [ -z "$(find "$tree" -newer "$stamp" -print -quit 2>/dev/null)" ]; then
-        return 0
+    if [ ! -f "$stamp" ] || [ "$SRC/cases/$subject/fixtures.sh" -nt "$stamp" ] \
+        || [ -n "$(find "$tree" -newer "$stamp" -print -quit 2>/dev/null)" ]; then
+        sh "$SRC/cases/$subject/fixtures.sh" "$tree" >/dev/null
+        touch "$stamp"
     fi
-    sh "$SRC/cases/$subject/fixtures.sh" "$tree" >/dev/null
-    touch "$stamp"
+
+    [ "$1" = local ] && return 0
+
+    # The remote tree is built when the image is, so what a case writes to it
+    # would be handed to the next one.  A subject that says its fixtures can be
+    # built again -- a rebuild-remote file next to them -- gets them built again
+    # over ssh before each case.
+    [ -f "$SRC/cases/$subject/rebuild-remote" ] || return 0
+    if ! sshpass -p mc ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+        -o LogLevel=ERROR mc@remote "sh -s /home/mc/cases/$subject" \
+        < "$SRC/cases/$subject/fixtures.sh" >/dev/null 2>&1; then
+        # said out loud: a case that runs against what the last one left there
+        # can pass without proving anything
+        echo "  $subject: could not build the fixtures again on the remote host" >&2
+        return 1
+    fi
+    return 0
 }
 
 # start mc with the panel in case directory $1 over transport $2; stderr to $3

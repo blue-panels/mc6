@@ -111,6 +111,12 @@ API 17 adds mc_pp_add_entry_st(), which takes a whole struct stat and
 says what a symbolic link points to (see 3.4), and the optional
 is_file_listing() callback (see 3.5).
 
+API 18 adds the optional mkdir() callback.  A plugin that has it takes a
+whole directory from the other panel: the core makes each directory
+through mkdir() and hands each file to put_file() under a name that is
+relative to the panel's directory and may have directories in it.
+Without mkdir() the core takes single files only and says so.
+
 
 3.2 Capability Flags (mc_pp_flags_t)
 
@@ -240,8 +246,17 @@ Listing and content:
                                        direct download; if NULL core
                                        falls back to get_local_copy +
                                        copy
-  put_file(plugin_data, local, dest)   requires MC_PPF_PUT_FILES
+  put_file(plugin_data, local, dest)   requires MC_PPF_PUT_FILES; dest
+                                       names a path below the panel's
+                                       directory only when the plugin
+                                       has mkdir()
   save_file(plugin_data, local, name)  requires MC_PPF_PUT_FILES
+  mkdir(plugin_data, path)             make path, relative to the
+                                       panel's directory, and the
+                                       directories above it; a name that
+                                       is a directory already is not an
+                                       error.  NULL: the plugin takes
+                                       single files only
   create_item(plugin_data)             requires MC_PPF_CREATE
   delete_items(plugin_data, names[], count)  requires MC_PPF_DELETE
   handle_key(plugin_data, key)

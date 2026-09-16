@@ -86,6 +86,12 @@ serves it four ways, all as user `mc` with password `mc`: sftp and ssh on port
 container has the same tree in `/work/local/<subject>` for what needs no
 server.
 
+That remote tree is built when the image is, so a case that writes to it would
+hand what it left to the next one. A subject whose fixtures are small enough to
+build again says so with a `rebuild-remote` file next to them, and `test` runs
+them over ssh before each case; `fileops` is one, because its cases copy into
+the remote host.
+
 ### archives
 
 | directory      | what it is for                                            |
@@ -127,6 +133,7 @@ server.
 |-----------------|-------------------------------------------------------------|
 | `01-filter`     | the quick filter, Ctrl-G, quick cd in the panel, the find dialog |
 | `02-permissions`| files for a person to look at with Permission colors on: a captured screen carries no colour |
+| `03-plugin-connect` | an ftp connection that does not come up: a refused login, a host that is not there |
 
 ### fileops
 
@@ -136,6 +143,8 @@ server.
 | `02-move`   | F6: the dialog, a rename in place, a move onto a file that exists |
 | `03-delete` | F8: the question, what the panel shows afterwards, a directory that is not empty |
 | `04-links`  | that a link is deleted and renamed as a link, and what it points at stays |
+| `05-upload` | F5 and F6 into a plugin panel over ftp: a file, a directory with what is below it, an empty one |
+| `06-plugin-delete` | F8 and F6 on a directory that is not empty, inside a plugin panel over ftp |
 
 These change the files they work on, so the subject is built again before every
 case that touched anything. The full filesystem is `/small`, a 64k tmpfs every

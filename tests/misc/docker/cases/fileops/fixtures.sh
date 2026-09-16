@@ -8,6 +8,9 @@
 set -e
 
 dir="${1:-/home/mc/cases/fileops}"
+# the read-only directories below keep even their owner from removing what is
+# in them, and the tree is built again as that owner on the remote host
+[ -d "$dir" ] && chmod -R u+w "$dir"
 rm -rf "$dir"
 mkdir -p "$dir"
 cd "$dir"
@@ -80,5 +83,64 @@ tofile	F8,Enter	text: real.txt	and leaves what it points at	local
 dangling	F8,Enter	no text: dangling	a link to nothing is deleted like any other	local
 tofile	F6,key C-a,key C-k,type renamed,Enter	text: @renamed	a renamed link is still a link	local
 EOF
+
+# ---------------------------------------------------------------- upload ---
+#
+# Copying into a panel a plugin drives.  The destination is not a filesystem
+# mc can write to, so the core makes each directory through the plugin and
+# hands it the files one by one.  The plugin panel is the one the transport
+# opened; the other panel is pointed at the local copy of this tree.
+
+mkdir -p 05-upload/source/tree/deep 05-upload/source/empty
+printf 'a file of its own\n' > 05-upload/source/plain.txt
+printf 'inside the tree\n' > 05-upload/source/tree/inner.txt
+printf 'two levels down\n' > 05-upload/source/tree/deep/deeper.txt
+
+cat > 05-upload/cases.tsv <<'EOF'
+file	key	expect	why	transports
+source	key Tab,cd /work/local/fileops/05-upload/source,on plain.txt,F5,Enter,key Tab,on plain.txt,F3	text: a file of its own	a file goes into the plugin panel	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F5,Enter,key Tab,on tree,Enter	text: inner.txt	a directory goes in with what is in it	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F5,Enter,key Tab,on tree,Enter,on deep,Enter	text: deeper.txt	and with the directories below it	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on empty,F5,Enter,key Tab,on empty,Enter	text: 05-upload/empty	an empty directory is made, not skipped	ftp
+source	key Tab,cd /work/local/fileops/05-upload/source,on tree,F6,Enter,key Tab,on tree,Enter,on deep,Enter	text: deeper.txt	F6 takes the whole directory over as well	ftp
+EOF
+
+# --------------------------------------------------------- plugin delete ---
+#
+# A directory that is not empty, removed from inside a plugin panel: by F8, and
+# by F6, which removes what it has taken once the copy is there.  An FTP server
+# removes an empty directory only, so the plugin has to empty it first.
+
+mkdir -p 06-plugin-delete/doomed/deep 06-plugin-delete/moved/deep
+printf 'inside the directory\n' > 06-plugin-delete/doomed/inner.txt
+printf 'two levels down\n' > 06-plugin-delete/doomed/deep/deeper.txt
+printf 'inside the directory\n' > 06-plugin-delete/moved/inner.txt
+printf 'two levels down\n' > 06-plugin-delete/moved/deep/deeper.txt
+mkdir -p 06-plugin-delete/stuck/a-locked 06-plugin-delete/jammed/a-locked 06-plugin-delete/readonly
+for d in stuck jammed; do
+    printf 'a name the server removes\n' > 06-plugin-delete/$d/first.txt
+    printf 'another one\n' > 06-plugin-delete/$d/last.txt
+    printf 'the server will not remove this\n' > 06-plugin-delete/$d/a-locked/kept.txt
+done
+
+cat > 06-plugin-delete/cases.tsv <<'EOF'
+file	key	expect	why	transports
+doomed	F8,Enter	no text: /doomed	F8 takes a directory with everything in it	ftp
+doomed	F8,Enter	no text: Delete failed	and says nothing went wrong	ftp
+moved	F6,Enter	no text: delete from plugin failed	F6 out of a plugin panel removes the directory it took	ftp
+stuck	F8,Enter	text: Delete failed	a name the server will not remove is an error	ftp
+stuck	F8,Enter,Enter,on stuck,Enter	no text: first.txt	and everything it will remove is gone all the same	ftp
+stuck	F8,Enter,Enter,on stuck,Enter	no text: last.txt	whichever side of the refusal it was listed on	ftp
+stuck	F8,Enter,Enter,on stuck,Enter,on a-locked,Enter	text: kept.txt	while what it refused is still there	ftp
+stuck	F6,Enter	text: delete from plugin failed	F6 says the copy arrived but the source could not all go	ftp
+jammed	F6,Enter,Enter,key Tab,on jammed,Enter,on a-locked,Enter	text: kept.txt	and the copy has everything, the refused names too	ftp
+readonly	Enter,key Tab,cd /work/local/fileops/05-upload/source,on tree,F5,Enter	text: Cannot copy tree to plugin	a directory the server will not write to is an error	ftp
+readonly	Enter,key Tab,cd /work/local/fileops/05-upload/source,on tree,F6,Enter	text: Cannot move tree to plugin	and a move says so too	ftp
+readonly	Enter,key Tab,cd /work/local/fileops/05-upload/source,on tree,F6,Enter,Enter	text: /tree	and keeps the source	ftp
+EOF
+
+# the server refuses to remove what is in these, and to write into them; the
+# locked one is listed first, so that what comes after the refusal is tried too
+chmod 555 06-plugin-delete/stuck/a-locked 06-plugin-delete/jammed/a-locked 06-plugin-delete/readonly
 
 echo "fileops cases in $dir"

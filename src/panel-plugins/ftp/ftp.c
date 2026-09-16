@@ -140,6 +140,7 @@ static mc_pp_result_t ftp_enter (void *plugin_data, const char *name, const stru
 static mc_pp_result_t ftp_get_local_copy (void *plugin_data, const char *fname, char **local_path);
 static mc_pp_result_t ftp_put_file (void *plugin_data, const char *local_path,
                                     const char *dest_name);
+static mc_pp_result_t ftp_mkdir (void *plugin_data, const char *path);
 static mc_pp_result_t ftp_delete_items (void *plugin_data, const char **names, int count);
 static const char *ftp_get_title (void *plugin_data);
 static mc_pp_result_t ftp_create_item (void *plugin_data);
@@ -169,6 +170,7 @@ static int ftp_connect_progress_cb (void *clientp, double dltotal, double dlnow,
 
 #define FTP_DEFAULT_PORT              21
 #define FTP_CACHE_TTL_DEFAULT         60
+#define FTP_TREE_MAX_DEPTH            32
 
 #define FTP_PANEL_CONFIG_FILE         "panels.ftp.ini"
 #define FTP_PANEL_CONFIG_GROUP        "ftp-panel"
@@ -298,6 +300,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .get_local_copy = ftp_get_local_copy,
     .put_file = ftp_put_file,
     .save_file = ftp_put_file,
+    .mkdir = ftp_mkdir,
     .delete_items = ftp_delete_items,
     .get_title = ftp_get_title,
     .handle_key = ftp_handle_key,
@@ -1301,8 +1304,10 @@ ftp_list_write_cb (void *ptr, size_t size, size_t nmemb, void *userdata)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** List the remote directory @path. @failed is set when the listing did not
+    come, which an empty result does not tell apart from an empty directory. */
 static GPtrArray *
-ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
+ftp_list_dir (ftp_data_t *data, const char *path, status_msg_t *sm, gboolean *failed)
 {
     GPtrArray *arr;
     CURL *curl;
@@ -1322,7 +1327,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     }
 
     /* ensure trailing slash for directory listing */
-    url = ftp_build_url (data->active_connection, data->current_path);
+    url = ftp_build_url (data->active_connection, path);
     if (url[strlen (url) - 1] != '/')
     {
         dir_url = g_strdup_printf ("%s/", url);
@@ -1377,7 +1382,7 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     {
         FTP_LOG ("load_entries: request failed, returning empty list");
         g_string_free (ctx.buf, TRUE);
-        data->load_failed = TRUE;
+        *failed = TRUE;
         return arr;
     }
 
@@ -1448,6 +1453,21 @@ ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
     }
 
     g_strfreev (lines);
+    return arr;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static GPtrArray *
+ftp_load_entries (ftp_data_t *data, status_msg_t *sm)
+{
+    gboolean failed = FALSE;
+    GPtrArray *arr;
+
+    arr = ftp_list_dir (data, data->current_path, sm, &failed);
+    if (failed)
+        data->load_failed = TRUE;
+
     return arr;
 }
 
@@ -2078,22 +2098,162 @@ ftp_connect_progress_cb (void *clientp, double dltotal, double dlnow, double ult
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Keep the status window up with its log after a failure, until it is closed:
+    the log is the explanation. */
+static void
+ftp_connect_status_wait_close (ftp_connect_status_msg_t *fsm)
+{
+    status_msg_t *sm = STATUS_MSG (fsm);
+
+    if (sm->dlg == NULL)
+        return;
+
+    if (widget_get_state (WIDGET (sm->dlg), WST_CONSTRUCT))
+        dlg_init (sm->dlg);
+
+    if (fsm->button_w != NULL)
+    {
+        button_set_text (BUTTON (fsm->button_w), _ ("&Close"));
+        widget_select (fsm->button_w);
+    }
+
+    sm->dlg->ret_value = B_CANCEL;
+    (void) dlg_run (sm->dlg);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The steps of a login as they happen, read off the FTP conversation: one
+    request does the connect, the login and the change of directory, and only
+    the conversation says how far it got. The password is never shown. */
+static int
+ftp_connect_debug_cb (CURL *curl, curl_infotype type, char *text, size_t size, void *userdata)
+{
+    ftp_connect_progress_t *progress = (ftp_connect_progress_t *) userdata;
+    ftp_connect_status_msg_t *fsm = (ftp_connect_status_msg_t *) progress->sm;
+    char *line;
+
+    (void) curl;
+
+    if (type != CURLINFO_TEXT && type != CURLINFO_HEADER_IN && type != CURLINFO_HEADER_OUT)
+        return 0;
+
+    line = g_strndup (text, size);
+    g_strchomp (line);
+
+    if (type == CURLINFO_TEXT)
+    {
+        if (g_str_has_prefix (line, "Connected to "))
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Connected"));
+    }
+    else if (type == CURLINFO_HEADER_OUT)
+    {
+        if (g_str_has_prefix (line, "USER "))
+            (void) ftp_connect_status_set_stage (fsm, _ ("Logging in as %s..."), line + 5);
+        else if (g_str_has_prefix (line, "AUTH "))
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Asking for TLS..."));
+        else if (g_str_has_prefix (line, "CWD "))
+            (void) ftp_connect_status_set_stage (fsm, _ ("Opening %s..."), line + 4);
+    }
+    /* the last line of a reply: three digits and a space; the lines before it
+       in a long greeting have a dash there */
+    else if (strlen (line) > 4 && g_ascii_isdigit (line[0]) && g_ascii_isdigit (line[1])
+             && g_ascii_isdigit (line[2]) && line[3] == ' ')
+    {
+        if (line[0] == '4' || line[0] == '5')
+            (void) ftp_connect_status_set_stage (fsm, "%s", line);
+        else if (strncmp (line, "220", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, _ ("Server: %s"), line + 4);
+        else if (strncmp (line, "230", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("Logged in"));
+        else if (strncmp (line, "234", 3) == 0)
+            (void) ftp_connect_status_set_stage (fsm, "%s", _ ("TLS accepted"));
+    }
+
+    g_free (line);
+
+    return 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Log in and look at the start directory of @conn. On failure @errbuf holds
+    what curl knows about it, which is more than the code says. */
+static CURLcode
+ftp_probe_connection (const ftp_connection_t *conn, ftp_connect_progress_t *progress, char *errbuf)
+{
+    CURL *curl;
+    CURLcode res;
+    struct curl_slist *post_cmds;
+    char *url;
+
+    errbuf[0] = '\0';
+
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return CURLE_FAILED_INIT;
+
+    url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
+    if (url[strlen (url) - 1] != '/')
+    {
+        char *dir_url;
+
+        dir_url = g_strconcat (url, "/", (char *) NULL);
+        g_free (url);
+        url = dir_url;
+    }
+
+    FTP_LOG ("activate: testing URL = %s", url);
+    curl_easy_setopt (curl, CURLOPT_URL, url);
+    ftp_setup_curl_common (curl, conn);
+    curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
+    curl_easy_setopt (curl, CURLOPT_ERRORBUFFER, errbuf);
+    curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
+    curl_easy_setopt (curl, CURLOPT_DEBUGFUNCTION, ftp_connect_debug_cb);
+    curl_easy_setopt (curl, CURLOPT_DEBUGDATA, progress);
+    curl_easy_setopt (curl, CURLOPT_VERBOSE, 1L);
+
+    post_cmds = ftp_build_post_connect_commands (conn);
+    if (post_cmds != NULL)
+        curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds);
+
+#if LIBCURL_VERSION_NUM >= 0x072000
+    curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
+    curl_easy_setopt (curl, CURLOPT_XFERINFODATA, progress);
+#else
+    curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
+    curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, progress);
+#endif
+
+    res = curl_easy_perform (curl);
+    FTP_LOG ("activate: test result = %d (%s) %s", (int) res, curl_easy_strerror (res), errbuf);
+
+    curl_easy_cleanup (curl);
+    curl_slist_free_all (post_cmds);
+    g_free (url);
+
+    return res;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static gboolean
 ftp_activate_connection (ftp_data_t *data, ftp_connection_t *conn)
 {
     ftp_connect_status_msg_t status;
     ftp_connect_progress_t progress;
+    char errbuf[CURL_ERROR_SIZE];
     char *path;
     gboolean ok = FALSE;
     gboolean status_inited = FALSE;
-    CURL *curl;
     CURLcode res;
-    char *url;
 
     FTP_LOG ("activate: connecting to %s@%s:%d path=%s ssl_mode=%d passive=%d",
              conn->user != NULL ? conn->user : "(anon)", conn->host, conn->port,
              conn->path != NULL ? conn->path : "/", conn->ssl_mode, conn->passive_mode);
 
+    errbuf[0] = '\0';
     memset (&status, 0, sizeof (status));
     status.first = TRUE;
     status.log = g_string_new (NULL);
@@ -2107,201 +2267,67 @@ ftp_activate_connection (ftp_data_t *data, ftp_connection_t *conn)
                                        conn->port))
         goto out;
 
-    /* test connectivity by listing root */
-    url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
+    res = ftp_probe_connection (conn, &progress, errbuf);
 
-    if (!ftp_connect_status_set_stage (&status, _ ("Initializing network session...")))
+    /* A refused login with no password given is a password to ask for. Any
+       other failure is not, a host that does not answer least of all. */
+    if (res == CURLE_LOGIN_DENIED && (conn->password == NULL || conn->password[0] == '\0'))
     {
-        g_free (url);
-        goto out;
-    }
+        char *pwd;
+        char *prompt;
 
-    curl = curl_easy_init ();
-    if (curl == NULL)
-    {
-        FTP_LOG ("activate: curl_easy_init failed");
-        g_free (url);
-        goto out;
-    }
+        status_msg_deinit (STATUS_MSG (&status));
+        status_inited = FALSE;
 
-    {
-        char *dir_url;
+        FTP_LOG ("activate: no stored password, prompting user");
+        prompt = g_strdup_printf (_ ("Enter password for %s@%s"),
+                                  conn->user != NULL ? conn->user : "", conn->host);
+        pwd = input_dialog (_ ("FTP password"), prompt, "ftp-password", INPUT_PASSWORD,
+                            INPUT_COMPLETE_NONE);
+        g_free (prompt);
 
-        if (url[strlen (url) - 1] != '/')
+        if (pwd == NULL || pwd[0] == '\0')
         {
-            dir_url = g_strdup_printf ("%s/", url);
-            g_free (url);
-        }
-        else
-        {
-            dir_url = url;
+            FTP_LOG ("activate: user cancelled password dialog");
+            g_free (pwd);
+            goto out;
         }
 
-        {
-            struct curl_slist *post_cmds;
+        g_free (conn->password);
+        conn->password = pwd;
 
-            FTP_LOG ("activate: testing URL = %s", dir_url);
-            curl_easy_setopt (curl, CURLOPT_URL, dir_url);
-            ftp_setup_curl_common (curl, conn);
-            curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-            curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
-            curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
+        status.first = TRUE;
+        status_msg_init (STATUS_MSG (&status), _ ("FTP connection"), 0.0,
+                         ftp_connect_status_init_cb, ftp_connect_status_update_cb,
+                         ftp_connect_status_deinit_cb);
+        status_inited = TRUE;
 
-            post_cmds = ftp_build_post_connect_commands (conn);
-            if (post_cmds != NULL)
-                curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds);
+        if (!ftp_connect_status_set_stage (&status, _ ("Retrying with password...")))
+            goto out;
 
-#if LIBCURL_VERSION_NUM >= 0x072000
-            curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
-            curl_easy_setopt (curl, CURLOPT_XFERINFODATA, &progress);
-#else
-            curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
-            curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, &progress);
-#endif
-
-            if (!ftp_connect_status_set_stage (&status,
-                                               _ ("Authenticating and probing directory...")))
-            {
-                curl_slist_free_all (post_cmds);
-                curl_easy_cleanup (curl);
-                g_free (dir_url);
-                goto out;
-            }
-
-            FTP_LOG ("activate: performing test request...");
-            res = curl_easy_perform (curl);
-            FTP_LOG ("activate: test result = %d (%s)", (int) res, curl_easy_strerror (res));
-            curl_slist_free_all (post_cmds);
-            curl_easy_cleanup (curl);
-            g_free (dir_url);
-        }
+        res = ftp_probe_connection (conn, &progress, errbuf);
     }
 
     if (res != CURLE_OK)
     {
-        FTP_LOG ("activate: initial connect failed, code=%d", (int) res);
-
-        if (res == CURLE_ABORTED_BY_CALLBACK)
+        /* Abort in the status window is the user's own doing, nothing to say.
+           Otherwise the window stays with its log and the reason under it. */
+        if (res == CURLE_LOGIN_DENIED)
         {
-            FTP_LOG ("activate: aborted by user");
-            goto out;
+            /* the server's own reply is in the log already */
+            (void) ftp_connect_status_set_stage (&status, _ ("Authentication with %s:%d failed"),
+                                                 conn->host, conn->port);
+            ftp_connect_status_wait_close (&status);
         }
-
-        if (!ftp_connect_status_set_stage (&status, _ ("Initial attempt failed: %s"),
-                                           curl_easy_strerror (res)))
-            goto out;
-
-        /* if no stored password, prompt the user */
-        if (conn->password == NULL || conn->password[0] == '\0')
+        else if (res != CURLE_ABORTED_BY_CALLBACK)
         {
-            char *pwd;
-            char *prompt;
-
-            status_msg_deinit (STATUS_MSG (&status));
-            status_inited = FALSE;
-
-            FTP_LOG ("activate: no stored password, prompting user");
-            prompt = g_strdup_printf (_ ("Enter password for %s@%s"),
-                                      conn->user != NULL ? conn->user : "", conn->host);
-            pwd = input_dialog (_ ("FTP password"), prompt, "ftp-password", INPUT_PASSWORD,
-                                INPUT_COMPLETE_NONE);
-            g_free (prompt);
-
-            if (pwd != NULL && pwd[0] != '\0')
-            {
-                g_free (conn->password);
-                conn->password = pwd;
-
-                /* retry with password */
-                FTP_LOG ("activate: retrying with entered password...");
-                status.first = TRUE;
-                status_msg_init (STATUS_MSG (&status), _ ("FTP connection"), 0.0,
-                                 ftp_connect_status_init_cb, ftp_connect_status_update_cb,
-                                 ftp_connect_status_deinit_cb);
-                status_inited = TRUE;
-
-                url = ftp_build_url (conn, conn->path != NULL ? conn->path : "/");
-                curl = curl_easy_init ();
-                if (curl != NULL)
-                {
-                    char *dir_url2;
-
-                    if (url[strlen (url) - 1] != '/')
-                    {
-                        dir_url2 = g_strdup_printf ("%s/", url);
-                        g_free (url);
-                    }
-                    else
-                    {
-                        dir_url2 = url;
-                    }
-
-                    {
-                        struct curl_slist *post_cmds2;
-
-                        curl_easy_setopt (curl, CURLOPT_URL, dir_url2);
-                        ftp_setup_curl_common (curl, conn);
-                        curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-                        curl_easy_setopt (curl, CURLOPT_DIRLISTONLY, 1L);
-                        curl_easy_setopt (curl, CURLOPT_NOPROGRESS, 0L);
-
-                        post_cmds2 = ftp_build_post_connect_commands (conn);
-                        if (post_cmds2 != NULL)
-                            curl_easy_setopt (curl, CURLOPT_QUOTE, post_cmds2);
-
-#if LIBCURL_VERSION_NUM >= 0x072000
-                        curl_easy_setopt (curl, CURLOPT_XFERINFOFUNCTION, ftp_connect_progress_cb);
-                        curl_easy_setopt (curl, CURLOPT_XFERINFODATA, &progress);
-#else
-                        curl_easy_setopt (curl, CURLOPT_PROGRESSFUNCTION, ftp_connect_progress_cb);
-                        curl_easy_setopt (curl, CURLOPT_PROGRESSDATA, &progress);
-#endif
-
-                        if (!ftp_connect_status_set_stage (&status,
-                                                           _ ("Retrying with password...")))
-                        {
-                            curl_slist_free_all (post_cmds2);
-                            curl_easy_cleanup (curl);
-                            g_free (dir_url2);
-                            goto out;
-                        }
-
-                        res = curl_easy_perform (curl);
-                        FTP_LOG ("activate: retry result = %d (%s)", (int) res,
-                                 curl_easy_strerror (res));
-                        curl_slist_free_all (post_cmds2);
-                        curl_easy_cleanup (curl);
-                        g_free (dir_url2);
-                    }
-                }
-                else
-                {
-                    FTP_LOG ("activate: curl_easy_init failed on retry");
-                    g_free (url);
-                    goto out;
-                }
-
-                if (res != CURLE_OK)
-                {
-                    FTP_LOG ("activate: retry failed, giving up");
-                    if (res != CURLE_ABORTED_BY_CALLBACK)
-                        (void) ftp_connect_status_set_stage (&status, _ ("Retry failed: %s"),
-                                                             curl_easy_strerror (res));
-                    goto out;
-                }
-            }
-            else
-            {
-                FTP_LOG ("activate: user cancelled password dialog");
-                g_free (pwd);
-                goto out;
-            }
+            (void) ftp_connect_status_set_stage (&status, _ ("Cannot connect to %s:%d"), conn->host,
+                                                 conn->port);
+            (void) ftp_connect_status_set_stage (
+                &status, "%s", errbuf[0] != '\0' ? errbuf : curl_easy_strerror (res));
+            ftp_connect_status_wait_close (&status);
         }
-        else
-        {
-            FTP_LOG ("activate: has password but connect failed, giving up");
-            goto out;
-        }
+        goto out;
     }
 
     FTP_LOG ("activate: connection successful");
@@ -2568,15 +2594,11 @@ ftp_enter (void *plugin_data, const char *name, const struct stat *st)
 
     FTP_LOG ("enter: name='%s', at_root=%d", name, data->at_root);
 
+    /* A connection is a directory to the core, so it is opened by chdir(). The
+       core goes on to chdir() when enter() did not open one, and connecting
+       here as well tried a failed connection twice. */
     if (data->at_root)
-    {
-        ftp_connection_t *conn = (ftp_connection_t *) find_connection (data, name);
-
-        if (conn == NULL)
-            return MC_PPR_FAILED;
-
-        return ftp_activate_connection (data, conn) ? MC_PPR_OK : MC_PPR_FAILED;
-    }
+        return MC_PPR_NOT_SUPPORTED;
 
     {
         const mc_pp_dir_entry_t *entry;
@@ -2738,6 +2760,48 @@ ftp_file_read_cb (void *ptr, size_t size, size_t nmemb, void *userdata)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** Forget the listing that @name has just been written into, and ask for it
+    again when it is the one on the screen. */
+static void
+ftp_invalidate_written (ftp_data_t *data, const char *name)
+{
+    const char *sep;
+    char *rel;
+    char *path;
+    char *cut;
+
+    sep = strrchr (name, '/');
+    if (sep == NULL)
+    {
+        mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
+        ftp_reload_entries (data, TRUE);
+        return;
+    }
+
+    rel = g_strndup (name, (gsize) (sep - name));
+    path = mc_pp_join_path (data->current_path, rel);
+    mc_pp_dir_cache_invalidate (&data->dir_cache, path);
+    g_free (path);
+
+    /* What lands below this directory does not change the listing on the
+       screen, unless the first name of the path is new here: the server makes
+       the missing directories of an upload, and a whole tree is put in one
+       name at a time. */
+    cut = strchr (rel, '/');
+    if (cut != NULL)
+        *cut = '\0';
+
+    if (find_entry (data, rel) == NULL)
+    {
+        mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
+        ftp_reload_entries (data, TRUE);
+    }
+
+    g_free (rel);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
 {
@@ -2784,7 +2848,10 @@ ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
     curl_easy_setopt (curl, CURLOPT_READFUNCTION, ftp_file_read_cb);
     curl_easy_setopt (curl, CURLOPT_READDATA, &ctx);
     curl_easy_setopt (curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t) st_local.st_size);
-    curl_easy_setopt (curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 0L);
+    /* @dest_name may name a path below this directory. The core makes those
+       directories first, but a name typed into Shift-F4 comes here without
+       that, so the server is asked to make what is missing. */
+    curl_easy_setopt (curl, CURLOPT_FTP_CREATE_MISSING_DIRS, 1L);
 
     res = curl_easy_perform (curl);
     curl_easy_cleanup (curl);
@@ -2794,10 +2861,182 @@ ftp_put_file (void *plugin_data, const char *local_path, const char *dest_name)
     if (res != CURLE_OK)
         return MC_PPR_FAILED;
 
-    mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
-    ftp_reload_entries (data, TRUE);
+    ftp_invalidate_written (data, dest_name);
 
     return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** One FTP command through @curl. A handle used again keeps its connection,
+    so a run of commands logs in once. */
+static gboolean
+ftp_quote_on (CURL *curl, const ftp_connection_t *conn, const char *command)
+{
+    CURLcode res;
+    struct curl_slist *cmds = NULL;
+    char *url;
+
+    /* The command goes to the control connection as it stands, and a newline
+       in it would be a second command. A local name may hold one. */
+    if (strpbrk (command, "\r\n") != NULL)
+        return FALSE;
+
+    /* The command carries the whole path, so where the session stands after
+       login does not matter. */
+    url = ftp_build_url (conn, NULL);
+    cmds = curl_slist_append (cmds, command);
+
+    curl_easy_setopt (curl, CURLOPT_URL, url);
+    ftp_setup_curl_common (curl, conn);
+    curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt (curl, CURLOPT_QUOTE, cmds);
+
+    res = curl_easy_perform (curl);
+
+    curl_easy_setopt (curl, CURLOPT_QUOTE, NULL);
+    curl_slist_free_all (cmds);
+    g_free (url);
+
+    return res == CURLE_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** One FTP command on a connection of its own. */
+static gboolean
+ftp_quote_command (const ftp_connection_t *conn, const char *command)
+{
+    CURL *curl;
+    gboolean ok;
+
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return FALSE;
+
+    ok = ftp_quote_on (curl, conn, command);
+    curl_easy_cleanup (curl);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Is @remote_path a directory the server lets us into? */
+static gboolean
+ftp_dir_exists (const ftp_connection_t *conn, const char *remote_path)
+{
+    char *cmd;
+    gboolean ok;
+
+    cmd = g_strdup_printf ("CWD %s", remote_path);
+    ok = ftp_quote_command (conn, cmd);
+    g_free (cmd);
+
+    return ok;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static mc_pp_result_t
+ftp_mkdir (void *plugin_data, const char *path)
+{
+    ftp_data_t *data = (ftp_data_t *) plugin_data;
+    char **parts;
+    char *remote_path;
+    mc_pp_result_t result = MC_PPR_OK;
+    int i;
+
+    if (data->at_root || data->active_connection == NULL || data->current_path == NULL)
+        return MC_PPR_FAILED;
+
+    /* One MKD per component: a server makes one directory at a time. */
+    parts = g_strsplit (path, "/", -1);
+    remote_path = g_strdup (data->current_path);
+
+    for (i = 0; parts[i] != NULL && result == MC_PPR_OK; i++)
+    {
+        char *next;
+        char *cmd;
+
+        if (parts[i][0] == '\0')
+            continue;
+
+        next = mc_pp_join_path (remote_path, parts[i]);
+        g_free (remote_path);
+        remote_path = next;
+
+        cmd = g_strdup_printf ("MKD %s", remote_path);
+        /* A directory that is already there is not a failure: the server
+           refuses the MKD and lets us into it all the same. */
+        if (!ftp_quote_command (data->active_connection, cmd)
+            && !ftp_dir_exists (data->active_connection, remote_path))
+            result = MC_PPR_FAILED;
+
+        g_free (cmd);
+    }
+
+    g_strfreev (parts);
+    g_free (remote_path);
+
+    if (result == MC_PPR_OK)
+        ftp_invalidate_written (data, path);
+
+    return result;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Remove @remote_path. A directory is emptied first: RMD takes an empty one
+    only. A link is removed as itself, never followed. A name the server
+    refuses does not stop the rest, as with rm -r: what can go goes, and the
+    refused name stays with the directories above it. */
+static gboolean
+ftp_remove_tree (CURL *curl, ftp_data_t *data, const char *remote_path, gboolean is_dir, int depth)
+{
+    gboolean ok;
+    char *cmd;
+
+    if (is_dir)
+    {
+        GPtrArray *list;
+        gboolean unlisted = FALSE;
+        gboolean kept = FALSE;
+        guint i;
+
+        if (depth >= FTP_TREE_MAX_DEPTH)
+            return FALSE;
+
+        list = ftp_list_dir (data, remote_path, NULL, &unlisted);
+
+        for (i = 0; i < list->len; i++)
+        {
+            const mc_pp_dir_entry_t *e = (const mc_pp_dir_entry_t *) g_ptr_array_index (list, i);
+            char *child;
+
+            if (DIR_IS_DOT (e->name) || DIR_IS_DOTDOT (e->name))
+                continue;
+
+            child = mc_pp_join_path (remote_path, e->name);
+            if (!ftp_remove_tree (curl, data, child, e->is_dir && !S_ISLNK (e->st.st_mode),
+                                  depth + 1))
+                kept = TRUE;
+            g_free (child);
+        }
+
+        g_ptr_array_free (list, TRUE);
+
+        /* a directory with something left in it cannot go, and asking is a
+           round trip for a refusal */
+        if (unlisted || kept)
+            return FALSE;
+    }
+
+    cmd = g_strdup_printf ("%s %s", is_dir ? "RMD" : "DELE", remote_path);
+    ok = ftp_quote_on (curl, data->active_connection, cmd);
+    g_free (cmd);
+
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2806,6 +3045,7 @@ static mc_pp_result_t
 ftp_delete_items (void *plugin_data, const char **names, int count)
 {
     ftp_data_t *data = (ftp_data_t *) plugin_data;
+    CURL *curl;
     int i;
     gboolean failed = FALSE;
 
@@ -2835,71 +3075,27 @@ ftp_delete_items (void *plugin_data, const char **names, int count)
     if (data->active_connection == NULL)
         return MC_PPR_FAILED;
 
+    curl = curl_easy_init ();
+    if (curl == NULL)
+        return MC_PPR_FAILED;
+
     for (i = 0; i < count; i++)
     {
         const mc_pp_dir_entry_t *entry;
         char *remote_path;
-        char *url;
-        char *cmd;
-        CURL *curl;
-        CURLcode res;
-        struct curl_slist *header_list = NULL;
 
         entry = find_entry (data, names[i]);
         if (entry == NULL)
             continue;
 
         remote_path = mc_pp_join_path (data->current_path, names[i]);
-
-        /* build URL pointing to parent directory */
-        {
-            char *parent_url;
-
-            parent_url = ftp_build_url (data->active_connection, data->current_path);
-            if (parent_url[strlen (parent_url) - 1] != '/')
-            {
-                url = g_strdup_printf ("%s/", parent_url);
-                g_free (parent_url);
-            }
-            else
-            {
-                url = parent_url;
-            }
-        }
-
-        if (entry->is_dir)
-            cmd = g_strdup_printf ("RMD %s", remote_path);
-        else
-            cmd = g_strdup_printf ("DELE %s", remote_path);
-
+        if (!ftp_remove_tree (curl, data, remote_path,
+                              entry->is_dir && !S_ISLNK (entry->st.st_mode), 0))
+            failed = TRUE;
         g_free (remote_path);
-
-        curl = curl_easy_init ();
-        if (curl == NULL)
-        {
-            g_free (url);
-            g_free (cmd);
-            failed = TRUE;
-            continue;
-        }
-
-        header_list = curl_slist_append (header_list, cmd);
-
-        curl_easy_setopt (curl, CURLOPT_URL, url);
-        ftp_setup_curl_common (curl, data->active_connection);
-        curl_easy_setopt (curl, CURLOPT_QUOTE, header_list);
-        curl_easy_setopt (curl, CURLOPT_NOBODY, 1L);
-
-        res = curl_easy_perform (curl);
-
-        curl_slist_free_all (header_list);
-        curl_easy_cleanup (curl);
-        g_free (url);
-        g_free (cmd);
-
-        if (res != CURLE_OK)
-            failed = TRUE;
     }
+
+    curl_easy_cleanup (curl);
 
     mc_pp_dir_cache_invalidate (&data->dir_cache, data->current_path);
     ftp_reload_entries (data, TRUE);
