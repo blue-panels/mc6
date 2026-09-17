@@ -17,6 +17,13 @@ M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
+local LINK_END = "\27]8;;\27\\"
+
+-- The OSC 8 sequence that starts a link to url; bytes that could end the
+-- sequence early are dropped and spaces are escaped.
+local function link_start(url)
+    return "\27]8;;" .. url:gsub("[%c]", ""):gsub(" ", "%%20") .. "\27\\"
+end
 
 local BOX_H = "\u{2500}"
 local BOX_V = "\u{2502}"
@@ -402,7 +409,9 @@ tokenize = function(s)
             local tag_end = url == nil and (s:match("^<!%-%-.-%-%->()", i) or s:match("^<[!/]?%a[^<>]*>()", i))
                 or nil
             if url ~= nil then
-                text[#text + 1] = url
+                flush()
+                local target = url:find(":", 1, true) and url or "mailto:" .. url
+                tokens[#tokens + 1] = { "link", { { "text", url } }, target }
                 i = e
             elseif tag_end ~= nil then
                 if s:sub(i, tag_end - 1):match("^<[Bb][Rr]%s*/?>$") then
@@ -532,16 +541,22 @@ render_tokens = function(tokens, style, out)
             out[#out + 1] = styled(t[2], current())
         elseif t[1] == "code" then
             out[#out + 1] = styled(t[2], { under = true, heading = style.heading })
-        elseif t[1] == "link" then
+        elseif t[1] == "link" and (t[3] == nil or t[3] == "") then
+            -- a link without a target is only underlined
             local s = current()
             s.under = true
             render_tokens(t[2], s, out)
-            if t[3] ~= nil and t[3] ~= "" then
-                local plain = {}
-                render_tokens(t[2], {}, plain)
-                if table.concat(plain) ~= t[3] then
-                    out[#out + 1] = styled(" <" .. t[3] .. ">", current())
-                end
+        elseif t[1] == "link" then
+            -- the viewer underlines the text of an OSC 8 link itself
+            local label = {}
+            render_tokens(t[2], current(), label)
+            local lead, body, tail = table.concat(label):match("^( *)(.-)( *)$")
+            out[#out + 1] = lead .. link_start(t[3]) .. body .. LINK_END .. tail
+            local plain = {}
+            render_tokens(t[2], {}, plain)
+            local shown = t[3]:gsub("^mailto:", "")
+            if table.concat(plain) ~= shown then
+                out[#out + 1] = styled(" <" .. t[3] .. ">", current())
             end
         else
             if t.closes then
@@ -630,11 +645,18 @@ local function units_of(rendered)
     while i <= #cs do
         if cs[i] == "\27" then
             local j = i + 1
-            while cs[j] ~= nil and not (j > i + 1 and cs[j]:match("^[@-~]$")) do
-                j = j + 1
+            if cs[j] == "]" then
+                -- OSC, up to ST
+                while cs[j] ~= nil and not (cs[j] == "\\" and cs[j - 1] == "\27") do
+                    j = j + 1
+                end
+            else
+                while cs[j] ~= nil and not (j > i + 1 and cs[j]:match("^[@-~]$")) do
+                    j = j + 1
+                end
             end
             local seq = table.concat(cs, "", i, math.min(j, #cs))
-            if #units > 0 and (seq == SGR_ITALIC_OFF or seq == SGR_COLOR_OFF) then
+            if #units > 0 and (seq == SGR_ITALIC_OFF or seq == SGR_COLOR_OFF or seq == LINK_END) then
                 units[#units] = units[#units] .. seq
             else
                 prefix = prefix .. seq
@@ -657,13 +679,18 @@ local function units_of(rendered)
     return units
 end
 
--- One line out of wrapped units, with the SGR styles open at its start
+-- One line out of wrapped units, with the SGR styles and the link open at its start
 -- opened again and those still open at its end closed, so that each line
 -- stands on its own: the viewer may start reading at any of them.  state
 -- carries what is open from one line to the next.
 local function sgr_line(units, state)
-    local before = (state.italic and SGR_ITALIC or "") .. (state.color and "\27[" .. state.color .. "m" or "")
+    local before = (state.italic and SGR_ITALIC or "")
+        .. (state.color and "\27[" .. state.color .. "m" or "")
+        .. (state.link and link_start(state.link) or "")
     for _, u in ipairs(units) do
+        for url in u:gmatch("\27%]8;;(.-)\27\\") do
+            state.link = url ~= "" and url or nil
+        end
         for code in u:gmatch("\27%[(%d*)m") do
             if code == "3" then
                 state.italic = true
@@ -676,7 +703,9 @@ local function sgr_line(units, state)
             end
         end
     end
-    local after = (state.color and SGR_COLOR_OFF or "") .. (state.italic and SGR_ITALIC_OFF or "")
+    local after = (state.link and LINK_END or "")
+        .. (state.color and SGR_COLOR_OFF or "")
+        .. (state.italic and SGR_ITALIC_OFF or "")
     return before .. table.concat(units) .. after
 end
 
