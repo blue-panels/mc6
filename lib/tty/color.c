@@ -68,6 +68,10 @@ gboolean need_convert_256color = FALSE;
 /*** file scope variables ************************************************************************/
 
 static GHashTable *mc_tty_color__hashtable = NULL;
+/* The same pairs by their number: NULL where the number is free. The table owns them. */
+static GPtrArray *mc_tty_color__by_index = NULL;
+/* No number below this one is free. */
+static size_t mc_tty_color__lowest_free = 0;
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -94,43 +98,35 @@ tty_color_free_temp_cb (gpointer key, gpointer value, gpointer user_data)
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
-tty_color_release_temp_cb (gpointer key, gpointer value, gpointer user_data)
+/* A pair leaves the table: its number is free again. */
+static void
+tty_color_pair_free (gpointer data)
 {
-    const tty_color_lib_pair_t *mc_color_pair = (const tty_color_lib_pair_t *) value;
+    tty_color_lib_pair_t *mc_color_pair = (tty_color_lib_pair_t *) data;
+    const size_t cp = mc_color_pair->pair_index;
 
-    (void) key;
+    if (cp < mc_tty_color__by_index->len)
+    {
+        g_ptr_array_index (mc_tty_color__by_index, cp) = NULL;
+        mc_tty_color__lowest_free = MIN (mc_tty_color__lowest_free, cp);
+    }
 
-    return mc_color_pair->is_temp && mc_color_pair->pair_index == GPOINTER_TO_SIZE (user_data);
+    g_free (mc_color_pair);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static gboolean
-tty_color_get_next_cpn_cb (gpointer key, gpointer value, gpointer user_data)
-{
-    tty_color_lib_pair_t *mc_color_pair = (tty_color_lib_pair_t *) value;
-    size_t cp = GPOINTER_TO_SIZE (user_data);
-
-    (void) key;
-
-    return (cp == mc_color_pair->pair_index);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
+/* The lowest free number. */
 static size_t
 tty_color_get_next__color_pair_number (void)
 {
-    size_t cp_count, cp;
+    size_t cp = mc_tty_color__lowest_free;
 
-    cp_count = g_hash_table_size (mc_tty_color__hashtable);
-    for (cp = 0; cp < cp_count; cp++)
-        if (g_hash_table_find (mc_tty_color__hashtable, tty_color_get_next_cpn_cb,
-                               GSIZE_TO_POINTER (cp))
-            == NULL)
-            break;
+    while (cp < mc_tty_color__by_index->len
+           && g_ptr_array_index (mc_tty_color__by_index, cp) != NULL)
+        cp++;
 
+    mc_tty_color__lowest_free = cp;
     return cp;
 }
 
@@ -139,11 +135,11 @@ tty_color_get_next__color_pair_number (void)
 static tty_color_lib_pair_t *
 tty_color_pair_by_index (int pair_index)
 {
-    if (mc_tty_color__hashtable == NULL || pair_index < 0)
+    if (mc_tty_color__by_index == NULL || pair_index < 0
+        || (size_t) pair_index >= mc_tty_color__by_index->len)
         return NULL;
 
-    return (tty_color_lib_pair_t *) g_hash_table_find (
-        mc_tty_color__hashtable, tty_color_get_next_cpn_cb, GSIZE_TO_POINTER ((size_t) pair_index));
+    return (tty_color_lib_pair_t *) g_ptr_array_index (mc_tty_color__by_index, pair_index);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -192,8 +188,14 @@ tty_alloc_color_pair_ints (int ifg, int ibg, int attr, gboolean is_temp)
     mc_color_pair->bg = ibg;
     mc_color_pair->attr = attr;
     mc_color_pair->pair_index = tty_color_get_next__color_pair_number ();
+    mc_color_pair->key = color_pair;
 
     tty_color_try_alloc_lib_pair (mc_color_pair);
+
+    if (mc_color_pair->pair_index >= mc_tty_color__by_index->len)
+        g_ptr_array_set_size (mc_tty_color__by_index, mc_color_pair->pair_index + 1);
+    g_ptr_array_index (mc_tty_color__by_index, mc_color_pair->pair_index) = mc_color_pair;
+    mc_tty_color__lowest_free = mc_color_pair->pair_index + 1;
 
     g_hash_table_insert (mc_tty_color__hashtable, (gpointer) color_pair, (gpointer) mc_color_pair);
 
@@ -208,7 +210,10 @@ void
 tty_init_colors (gboolean disable, gboolean force)
 {
     tty_color_init_lib (disable, force);
-    mc_tty_color__hashtable = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+    mc_tty_color__by_index = g_ptr_array_new ();
+    mc_tty_color__lowest_free = 0;
+    mc_tty_color__hashtable =
+        g_hash_table_new_full (g_str_hash, g_str_equal, g_free, tty_color_pair_free);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -219,6 +224,9 @@ tty_colors_done (void)
     tty_color_deinit_lib ();
     mc_color__deinit (&tty_color_defaults);
     g_hash_table_destroy (mc_tty_color__hashtable);
+    mc_tty_color__hashtable = NULL;
+    g_ptr_array_free (mc_tty_color__by_index, TRUE);
+    mc_tty_color__by_index = NULL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -368,10 +376,8 @@ tty_color_release_temp (int pair_index)
     }
 
     /* The hash key is built from the color indices before the 256->truecolor
-       conversion, so it cannot be reconstructed from the stored pair; drop the
-       entry by its pair index instead. */
-    g_hash_table_foreach_remove (mc_tty_color__hashtable, tty_color_release_temp_cb,
-                                 GSIZE_TO_POINTER (mc_color_pair->pair_index));
+       conversion, so it cannot be rebuilt from the stored pair: the pair keeps it. */
+    g_hash_table_remove (mc_tty_color__hashtable, mc_color_pair->key);
 }
 
 /* --------------------------------------------------------------------------------------------- */
