@@ -44,6 +44,23 @@ get_unpacker() {
     echo ${unpacker}
 }
 
+# $1 - macro package; $2 - the file, standard input without it
+# With preconv and a UTF-8 capable nroff the text is read in the charset of
+# the locale and written as UTF-8, converted back by iconv for an 8-bit
+# locale.  Otherwise nroff passes the bytes of the text through.
+do_nroff() {
+    macros=$1
+    shift
+    charset=`locale charmap 2>/dev/null`
+    if [ -n "@NROFF_UTF8@" ] && [ "${charset}" = "UTF-8" ]; then
+        preconv "$@" 2>/dev/null | nroff @MAN_FLAGS@ @NROFF_UTF8@ ${macros} 2>/dev/null
+    elif [ -n "@NROFF_UTF8@" ] && [ -n "${charset}" ] && command -v iconv >/dev/null 2>&1; then
+        preconv "$@" 2>/dev/null | nroff @MAN_FLAGS@ @NROFF_UTF8@ ${macros} 2>/dev/null \
+            | iconv -f UTF-8 -t "${charset}//TRANSLIT" 2>/dev/null
+    else
+        nroff @MAN_FLAGS@ @NROFF_8BIT@ ${macros} "$@" 2>/dev/null
+    fi
+}
 
 do_view_action() {
     filetype=$1
@@ -62,13 +79,13 @@ do_view_action() {
         esac
         ;;
     pod)
-        pod2man "${MC_EXT_FILENAME}" 2>/dev/null | nroff @MAN_FLAGS@ @MANDOC@ 2>/dev/null
+        pod2man "${MC_EXT_FILENAME}" 2>/dev/null | do_nroff @MANDOC@
         ;;
     nroff.me)
-        nroff @MAN_FLAGS@ -me "${MC_EXT_FILENAME}" 2>/dev/null
+        do_nroff -me "${MC_EXT_FILENAME}"
         ;;
     nroff.ms)
-        nroff @MAN_FLAGS@ -ms "${MC_EXT_FILENAME}" 2>/dev/null
+        do_nroff -ms "${MC_EXT_FILENAME}"
         ;;
     man.gz|man.bz|man.bz2|man.lz|man.lz4|man.lzma|man.lzo|man.xz|man.zst)
         case "${MC_EXT_FILENAME}" in
@@ -104,18 +121,18 @@ do_open_action() {
             ;;
         *)
             { zsoelim "${MC_EXT_FILENAME}" 2>/dev/null || cat "${MC_EXT_FILENAME}"; } | \
-                nroff @MAN_FLAGS@ @MANDOC@ 2>/dev/null
+                do_nroff @MANDOC@
             ;;
         esac | ${pager}
         ;;
     pod)
-        pod2man "${MC_EXT_FILENAME}" 2>/dev/null | nroff @MAN_FLAGS@ @MANDOC@ 2>/dev/null | ${pager}
+        pod2man "${MC_EXT_FILENAME}" 2>/dev/null | do_nroff @MANDOC@ | ${pager}
         ;;
     nroff.me)
-        nroff @MAN_FLAGS@ -me "${MC_EXT_FILENAME}" 2>/dev/null | ${pager}
+        do_nroff -me "${MC_EXT_FILENAME}" | ${pager}
         ;;
     nroff.ms)
-        nroff @MAN_FLAGS@ -ms "${MC_EXT_FILENAME}" 2>/dev/null | ${pager}
+        do_nroff -ms "${MC_EXT_FILENAME}" | ${pager}
         ;;
     man.gz|man.bz|man.bz2|man.lz|man.lz4|man.lzma|man.lzo|man.xz|man.zst)
         case "${MC_EXT_FILENAME}" in
@@ -123,7 +140,7 @@ do_open_action() {
             ${unpacker} "${MC_EXT_FILENAME}"
             ;;
         *)
-            ${unpacker} "${MC_EXT_FILENAME}" | nroff @MAN_FLAGS@ @MANDOC@ 2>/dev/null
+            ${unpacker} "${MC_EXT_FILENAME}" | do_nroff @MANDOC@
             ;;
         esac | ${pager}
         ;;

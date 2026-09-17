@@ -87,6 +87,8 @@ AC_CHECK_PROG(HAVE_nroff, nroff, true, false)
 dnl Default values
 MANDOC=-man
 MAN_FLAGS=
+NROFF_UTF8=
+NROFF_8BIT=
 if $HAVE_nroff; then
     AC_MSG_CHECKING([for manual formatting macros])
     AC_CACHE_VAL(mc_cv_mandoc, [
@@ -112,25 +114,38 @@ if $HAVE_nroff; then
     MAN_FLAGS=$mc_cv_man_nocolor
     AC_MSG_RESULT([${MAN_NOCOLOR-none}])
 
+    AC_MSG_CHECKING([if preconv and nroff -Tutf8 work])
+    AC_CACHE_VAL(mc_cv_nroff_utf8, [
+    mc_cv_nroff_utf8=
+    echo x | preconv 2>/dev/null | nroff -Tutf8 > /dev/null 2>&1
+    if test $? = 0; then
+        mc_cv_nroff_utf8=-Tutf8
+    fi
+    ])
+    NROFF_UTF8=$mc_cv_nroff_utf8
+    AC_MSG_RESULT([${mc_cv_nroff_utf8:-no}])
+
     AC_MSG_CHECKING([if nroff accepts -Tlatin1 or -Tascii])
     AC_CACHE_VAL(mc_cv_nroff_tascii, [
     mc_cv_nroff_tascii=
-    nroff -Tlatin1 < /dev/null > /dev/null 2>&1 /dev/null
+    nroff -Tlatin1 < /dev/null > /dev/null 2>&1
     if test $? = 0; then
         mc_cv_nroff_tascii=-Tlatin1
     else
-        nroff -Tascii < /dev/null > /dev/null 2>&1 /dev/null
+        nroff -Tascii < /dev/null > /dev/null 2>&1
         if test $? = 0; then
             mc_cv_nroff_tascii=-Tascii
         fi
     fi
     ])
-    AC_MSG_RESULT([${mc_cv_nroff_tascii-no}])
-    MAN_FLAGS="$MAN_FLAGS $mc_cv_nroff_tascii"
+    NROFF_8BIT=$mc_cv_nroff_tascii
+    AC_MSG_RESULT([${mc_cv_nroff_tascii:-no}])
 fi
 
 AC_SUBST(MANDOC)
 AC_SUBST(MAN_FLAGS)
+AC_SUBST(NROFF_UTF8)
+AC_SUBST(NROFF_8BIT)
 
 dnl Check for -z, -b, -L, and -S options to file
 AC_CHECK_PROG(HAVE_FILECMD, file, true, false)
