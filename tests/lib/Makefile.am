@@ -42,6 +42,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/links.md.out \
 	lua_markdown/lists.md \
 	lua_markdown/lists.md.out \
+	lua_markdown/lists_nested.md \
+	lua_markdown/lists_nested.md.out \
 	lua_markdown/mixed.md \
 	lua_markdown/mixed.md.out \
 	lua_markdown/sgr.md \

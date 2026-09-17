@@ -38,7 +38,12 @@ end
 local BOX_H = "\u{2500}"
 local BOX_V = "\u{2502}"
 local BOX_X = "\u{253C}"
-local BULLET = "\u{2022}"
+-- one bullet per nesting level, cycled after the last
+local BULLETS = { "\u{2022}", "\u{25E6}", "\u{25AA}" }
+local LIST_INDENT = 2  -- columns a nesting level adds
+
+-- a tab in a code block moves to the next stop
+local TAB_WIDTH = 8
 
 ------------------------------------------------------------------------
 -- Text helpers.  Lengths count characters, not bytes; a stray byte that is
@@ -919,6 +924,29 @@ local function sgr_of_color(color)
     return "\27[" .. table.concat(codes, ";") .. "m"
 end
 
+-- Tabs in code move to the next stop; the viewer draws a tab by its own
+-- rules, and the block is indented, so the stops would not line up.
+local function expand_tabs(line)
+    if not line:find("\t", 1, true) then
+        return line
+    end
+    local out = {}
+    local column = 0
+
+    for _, ch in ipairs(chars(line)) do
+        if ch == "\t" then
+            local fill = TAB_WIDTH - column % TAB_WIDTH
+
+            out[#out + 1] = (" "):rep(fill)
+            column = column + fill
+        else
+            out[#out + 1] = ch
+            column = column + char_width(ch)
+        end
+    end
+    return table.concat(out)
+end
+
 -- The scan of a code block, or nil when there are no rules for it or no mc
 -- to ask (the renderer also runs outside it).  The language of the fence is
 -- given as the name of a file, the way the rules are chosen for a real one;
@@ -946,7 +974,7 @@ local function code_lines(code, language, out)
 
     if scan == nil then
         for line in (code .. "\n"):gmatch("(.-)\n") do
-            out[#out + 1] = "    " .. line
+            out[#out + 1] = "    " .. expand_tabs(line)
         end
         if code:sub(-1) == "\n" then
             out[#out] = nil
@@ -974,7 +1002,7 @@ local function code_lines(code, language, out)
     end
 
     for line in (table.concat(colored) .. "\n"):gmatch("(.-)\n") do
-        out[#out + 1] = "    " .. line
+        out[#out + 1] = "    " .. expand_tabs(line)
     end
     if code:sub(-1) == "\n" then
         out[#out] = nil
@@ -1517,6 +1545,8 @@ function M.render(text, opts)
     local i = 1
     local prev_blank = true
     local prev_list = false
+    local list_levels = {}  -- the indents of the lists that are open
+    local list_hanging = ""  -- what a continuation line of the last item is indented by
 
     while i <= #lines do
         local line = lines[i]
@@ -1525,6 +1555,9 @@ function M.render(text, opts)
         local blank = is_blank(line)
         local was_list = prev_list
         prev_list = blank and was_list
+        if not blank and not was_list then
+            list_levels = {}
+        end
 
         if fence ~= nil then
             local fence_char = fence:sub(1, 1)
@@ -1555,7 +1588,7 @@ function M.render(text, opts)
                 if is_blank(lines[i]) and not (lines[i + 1] and (lines[i + 1]:match("^    ") or lines[i + 1]:match("^\t"))) then
                     break
                 end
-                out[#out + 1] = lines[i]
+                out[#out + 1] = expand_tabs(lines[i])
                 i = i + 1
             end
         elseif math_block_of(line) ~= nil then
@@ -1597,15 +1630,28 @@ function M.render(text, opts)
             local prefix = (BOX_V .. " "):rep(quotes)
             local indent, marker, item = list_item(rest)
             if indent ~= nil then
-                if marker:match("^%d") then
-                    prefix = prefix .. indent .. marker .. " "
-                else
-                    prefix = prefix .. indent .. BULLET .. " "
+                local depth = #indent
+                local level
+
+                -- the indent of the source says how deep the item is; the
+                -- output indents every level by the same amount
+                while #list_levels > 0 and list_levels[#list_levels] > depth do
+                    list_levels[#list_levels] = nil
                 end
+                if #list_levels == 0 or list_levels[#list_levels] < depth then
+                    list_levels[#list_levels + 1] = depth
+                end
+                level = #list_levels
+
+                local bullet = marker:match("^%d") and marker
+                    or BULLETS[(level - 1) % #BULLETS + 1]
+
+                prefix = prefix .. (" "):rep((level - 1) * LIST_INDENT) .. bullet .. " "
+                list_hanging = (" "):rep(width(prefix) - quotes * 2)
                 rest = item
                 prev_list = true
             elseif was_list and rest:match("^%s") then
-                prefix = prefix .. rest:match("^(%s*)")
+                prefix = prefix .. list_hanging
                 rest = rest:gsub("^%s+", "")
                 prev_list = true
             end
