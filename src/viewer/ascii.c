@@ -662,8 +662,9 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
     const char *fg_name;
     const char *bg_name;
     gboolean has_attrs;
+    const gboolean underline = ansi->underline || ansi->link;
 
-    has_attrs = ansi->bold || ansi->italic || ansi->underline || ansi->blink || ansi->reverse;
+    has_attrs = ansi->bold || ansi->italic || underline || ansi->blink || ansi->reverse;
 
     // all defaults -> use the skin's normal color
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
@@ -675,11 +676,11 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
         && !ansi->italic && !ansi->blink && !ansi->reverse)
     {
-        if (ansi->bold && ansi->underline && colors->bold_underline >= 0)
+        if (ansi->bold && underline && colors->bold_underline >= 0)
             return colors->bold_underline;
-        if (ansi->bold && !ansi->underline && colors->bold >= 0)
+        if (ansi->bold && !underline && colors->bold >= 0)
             return colors->bold;
-        if (ansi->underline && !ansi->bold && colors->underline >= 0)
+        if (underline && !ansi->bold && colors->underline >= 0)
             return colors->underline;
     }
 
@@ -718,7 +719,7 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
             g_strlcat (attr_buf, "bold+", sizeof (attr_buf));
         if (ansi->italic)
             g_strlcat (attr_buf, "italic+", sizeof (attr_buf));
-        if (ansi->underline)
+        if (underline)
             g_strlcat (attr_buf, "underline+", sizeof (attr_buf));
         if (ansi->blink)
             g_strlcat (attr_buf, "blink+", sizeof (attr_buf));
@@ -850,7 +851,8 @@ mcview_nroff_color (const mcview_ansi_state_t *ansi, nroff_type_t type)
     {
     case NROFF_TYPE_HEADING:
         if (attrs.fg == MCVIEW_ANSI_COLOR_DEFAULT && attrs.bg == MCVIEW_ANSI_COLOR_DEFAULT
-            && !attrs.bold && !attrs.italic && !attrs.underline && !attrs.blink && !attrs.reverse)
+            && !attrs.bold && !attrs.italic && !attrs.underline && !attrs.link && !attrs.blink
+            && !attrs.reverse)
             return VIEWER_HEADING_COLOR;
         attrs.bold = TRUE;
         break;

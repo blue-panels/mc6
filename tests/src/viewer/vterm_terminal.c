@@ -1579,6 +1579,33 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_sgr_after_osc_and_dcs)
+{
+    mcview_vterm_t *vt = mcview_vterm_new ();
+    const mcview_vterm_cell_t *cell;
+
+    mcview_vterm_set_size (vt, 5, 40);
+    mcview_vterm_reset (vt);
+
+    /* the terminal takes OSC and DCS itself; the SGR parser must not wait for their end */
+    FEED (vt, "\033]7;file:///tmp\007\033[32mg\033P+q544e\033\\\033[1mb");
+
+    cell = cell_at (vt, 0, 0);
+    ck_assert_ptr_nonnull (cell);
+    ck_assert_uint_eq (cell->ch, 'g');
+    ck_assert_int_eq (cell->attr.fg, 2);
+
+    cell = cell_at (vt, 0, 1);
+    ck_assert_ptr_nonnull (cell);
+    ck_assert_uint_eq (cell->ch, 'b');
+    ck_assert (cell->attr.bold);
+
+    mcview_vterm_free (vt);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -1638,6 +1665,7 @@ main (void)
     tcase_add_test (tc_core, test_dec_graphics_letters_draw_lines);
     tcase_add_test (tc_core, test_shift_out_prints_from_g1);
     tcase_add_test (tc_core, test_fish_startup_leaves_the_prompt_plain);
+    tcase_add_test (tc_core, test_sgr_after_osc_and_dcs);
 
     return mctest_run_all (tc_core);
 }

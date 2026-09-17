@@ -1,23 +1,24 @@
 /*
-   lib/viewer - ANSI SGR escape sequence parser
+   Internal file viewer for the M-Commander
+   ANSI escape sequence parser
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   This file is part of the Midnight Commander.
+   This file is part of M-Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 /** \file ansi.c
@@ -29,7 +30,12 @@
  *  State machine:  NORMAL --ESC--> ESCAPE --[--> CSI --digit/;--> CSI
  *                                                    --m--> apply SGR, back to NORMAL
  *                                                    --letter--> consume, back to NORMAL
- *                  ESCAPE --non-[--> consume, back to NORMAL
+ *                  ESCAPE --] P _ ^ X--> STRING --BEL or ESC \--> back to NORMAL
+ *                  ESCAPE --other--> consume, back to NORMAL
+ *
+ *  A string (OSC, DCS, APC, PM, SOS) is consumed whole; of them only OSC 8 means anything here,
+ *  it turns the link attribute on and off.  A newline ends an unterminated string and is shown,
+ *  so that a stray ESC ] does not hide the rest of the file.
  */
 
 #include <config.h>
@@ -278,6 +284,49 @@ mcview_ansi_apply_sgr (mcview_ansi_state_t *state)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/**
+ * Take one byte of an OSC: the number, then for OSC 8 the params and the URI.
+ */
+static void
+mcview_ansi_osc_byte (mcview_ansi_state_t *state, int ch)
+{
+    switch (state->osc_field)
+    {
+    case 0:
+        if (ch == ';')
+            state->osc_field = 1;
+        else if (ch >= '0' && ch <= '9' && state->osc_code >= 0 && state->osc_code <= 65535)
+            state->osc_code = state->osc_code * 10 + (ch - '0');
+        else
+            state->osc_code = -1;
+        break;
+    case 1:
+        if (ch == ';')
+            state->osc_field = 2;
+        break;
+    default:
+        state->osc_uri = TRUE;
+        break;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The string ended with ST or BEL: an OSC 8 with a URI starts a link, one without ends it.
+ */
+static void
+mcview_ansi_finish_string (mcview_ansi_state_t *state)
+{
+    state->in_string = FALSE;
+    state->string_esc = FALSE;
+
+    if (state->in_osc && state->osc_code == 8 && state->osc_field > 0)
+        state->link = state->osc_uri;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /*** public functions ****************************************************************************/
 
 /* --------------------------------------------------------------------------------------------- */
@@ -292,8 +341,11 @@ mcview_ansi_state_init (mcview_ansi_state_t *state)
     state->underline = FALSE;
     state->blink = FALSE;
     state->reverse = FALSE;
+    state->link = FALSE;
     state->in_escape = FALSE;
     state->in_csi = FALSE;
+    state->in_string = FALSE;
+    state->string_esc = FALSE;
     state->csi_private = FALSE;
     state->param_count = 0;
     state->current_param = 0;
@@ -306,6 +358,41 @@ mcview_ansi_state_init (mcview_ansi_state_t *state)
 mcview_ansi_result_t
 mcview_ansi_parse_char (mcview_ansi_state_t *state, int ch)
 {
+    // State: inside a string, up to BEL or ST (ESC \)
+    if (state->in_string)
+    {
+        if (ch == '\n')
+        {
+            state->in_string = FALSE;
+            return ANSI_RESULT_CHAR;
+        }
+
+        if (state->string_esc)
+        {
+            state->string_esc = FALSE;
+            if (ch == '\\')
+            {
+                mcview_ansi_finish_string (state);
+                return ANSI_RESULT_CONSUMED;
+            }
+            // any other escape cancels the string and starts on its own
+            state->in_string = FALSE;
+            state->in_escape = TRUE;
+            return mcview_ansi_parse_char (state, ch);
+        }
+
+        if (ch == 0x07)
+            mcview_ansi_finish_string (state);
+        else if (ch == ESC_CHAR)
+            state->string_esc = TRUE;
+        else if (ch == 0x18 || ch == 0x1A)
+            state->in_string = FALSE;  // CAN and SUB cancel the string
+        else if (state->in_osc)
+            mcview_ansi_osc_byte (state, ch);
+
+        return ANSI_RESULT_CONSUMED;
+    }
+
     // State: just saw ESC, waiting for '['
     if (state->in_escape)
     {
@@ -322,7 +409,19 @@ mcview_ansi_parse_char (mcview_ansi_state_t *state, int ch)
             return ANSI_RESULT_CONSUMED;
         }
 
-        // ESC followed by non-'[': consume the char (e.g., ESC c = RIS)
+        if (ch == ']' || ch == 'P' || ch == '_' || ch == '^' || ch == 'X')
+        {
+            // OSC, DCS, APC, PM, SOS
+            state->in_string = TRUE;
+            state->string_esc = FALSE;
+            state->in_osc = ch == ']';
+            state->osc_code = 0;
+            state->osc_field = 0;
+            state->osc_uri = FALSE;
+            return ANSI_RESULT_CONSUMED;
+        }
+
+        // ESC followed by anything else: consume the char (e.g., ESC c = RIS)
         return ANSI_RESULT_CONSUMED;
     }
 

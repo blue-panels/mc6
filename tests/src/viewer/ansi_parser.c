@@ -2,22 +2,22 @@
    src/viewer - ANSI SGR parser tests
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   This file is part of the Midnight Commander.
+   This file is part of M-Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #define TEST_SUITE_NAME "/src/viewer"
@@ -736,6 +736,111 @@ START_TEST (test_ansi_state_persists_across_newline)
 END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_osc8_link)
+{
+    // given
+    mcview_ansi_state_t state;
+    GString *result;
+
+    mcview_ansi_state_init (&state);
+
+    // when - the start of a link
+    result = parse_and_collect (&state, "\033]8;;https://x.org/a\033\\link");
+
+    // then - the URI is not shown
+    mctest_assert_str_eq (result->str, "link");
+    mctest_assert_true (state.link);
+    g_string_free (result, TRUE);
+
+    // when - the end of the link
+    result = parse_and_collect (&state, "\033]8;;\033\\ end");
+
+    // then
+    mctest_assert_str_eq (result->str, " end");
+    mctest_assert_false (state.link);
+    g_string_free (result, TRUE);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_osc8_link_with_params_and_bel)
+{
+    // given
+    mcview_ansi_state_t state;
+    GString *result;
+
+    mcview_ansi_state_init (&state);
+
+    // when - params before the URI, BEL as the terminator
+    result = parse_and_collect (&state, "\033]8;id=1;file:///etc\007x");
+
+    // then
+    mctest_assert_str_eq (result->str, "x");
+    mctest_assert_true (state.link);
+    g_string_free (result, TRUE);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_other_strings_consumed)
+{
+    // given
+    mcview_ansi_state_t state;
+    GString *result;
+
+    mcview_ansi_state_init (&state);
+
+    // when - a title OSC, DCS, APC, PM and SOS
+    result = parse_and_collect (
+        &state, "a\033]0;title\007b\033P1$r\033\\c\033_apc\033\\d\033^pm\033\\e\033Xsos\033\\f");
+
+    // then
+    mctest_assert_str_eq (result->str, "abcdef");
+    mctest_assert_false (state.link);
+    g_string_free (result, TRUE);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_unterminated_string_ends_at_newline)
+{
+    // given
+    mcview_ansi_state_t state;
+    GString *result;
+
+    mcview_ansi_state_init (&state);
+
+    // when
+    result = parse_and_collect (&state, "a\033]8;;http://x\nb\033]0;t\033\nc");
+
+    // then - the next line is shown and no link was started
+    mctest_assert_str_eq (result->str, "a\nb\nc");
+    mctest_assert_false (state.link);
+    mctest_assert_false (state.in_string);
+    g_string_free (result, TRUE);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+START_TEST (test_ansi_escape_cancels_string)
+{
+    // given
+    mcview_ansi_state_t state;
+    GString *result;
+
+    mcview_ansi_state_init (&state);
+
+    // when - a CSI starts before the OSC is terminated
+    result = parse_and_collect (&state, "\033]0;t\033[1mb");
+
+    // then
+    mctest_assert_str_eq (result->str, "b");
+    mctest_assert_true (state.bold);
+    g_string_free (result, TRUE);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
 
 int
 main (void)
@@ -781,6 +886,11 @@ main (void)
     tcase_add_test (tc_core, test_ansi_colon_truecolor_with_colorspace);
     tcase_add_test (tc_core, test_ansi_reset_clears_all_attrs);
     tcase_add_test (tc_core, test_ansi_state_persists_across_newline);
+    tcase_add_test (tc_core, test_ansi_osc8_link);
+    tcase_add_test (tc_core, test_ansi_osc8_link_with_params_and_bel);
+    tcase_add_test (tc_core, test_ansi_other_strings_consumed);
+    tcase_add_test (tc_core, test_ansi_unterminated_string_ends_at_newline);
+    tcase_add_test (tc_core, test_ansi_escape_cancels_string);
     // ***********************************
 
     return mctest_run_all (tc_core);
