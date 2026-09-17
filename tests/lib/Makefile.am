@@ -24,6 +24,8 @@ endif
 EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/code.md \
 	lua_markdown/code.md.out \
+	lua_markdown/footnotes.md \
+	lua_markdown/footnotes.md.out \
 	lua_markdown/headings.md \
 	lua_markdown/headings.md.out \
 	lua_markdown/inline.md \

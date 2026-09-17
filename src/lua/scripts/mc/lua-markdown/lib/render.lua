@@ -271,6 +271,29 @@ end
 local tokenize
 local pair_emphasis
 
+-- What the document defines for the inline pass: link reference definitions
+-- by label, footnotes by label and the numbers footnotes get in the order
+-- they are first referenced.  Set by M.render for one document.
+local doc = { refs = {}, notes = {}, note_defs = {}, note_order = {}, note_number = {} }
+
+local function normalize_label(label)
+    return (trim(label):gsub("%s+", " "):lower())
+end
+
+-- The number of the footnote label refers to, given on its first reference,
+-- or nil if the document has no such footnote.
+local function footnote_number(label)
+    local key = normalize_label(label)
+    if doc.notes[key] == nil then
+        return nil
+    end
+    if doc.note_number[key] == nil then
+        doc.note_order[#doc.note_order + 1] = key
+        doc.note_number[key] = #doc.note_order
+    end
+    return doc.note_number[key]
+end
+
 -- The tokens of s.  Each is { kind, text } for plain text, { "code", text },
 -- { "link", tokens, url }, or { "delim", ch, count, can_open, can_close }.
 tokenize = function(s)
@@ -372,29 +395,40 @@ tokenize = function(s)
                 i = i + 1
             end
         elseif ch == "[" then
-            local label, e = s:match("^%[([^%[%]]*)%]()", i)
-            local url
-            if label ~= nil then
-                local target, e2 = s:match("^%(([^%s)]*)[^)]*%)()", e)
-                if target ~= nil then
-                    url = target
-                    e = e2
-                else
-                    local ref_end = s:match("^%[[^%]]*%]()", e)
-                    if ref_end ~= nil then
-                        e = ref_end
+            local note_label, note_end = s:match("^%[%^([^%]%s]+)%]()", i)
+            local number = note_label ~= nil and footnote_number(note_label) or nil
+            if number ~= nil then
+                text[#text + 1] = "[" .. number .. "]"
+                i = note_end
+            else
+                local label, e = s:match("^%[([^%[%]]*)%]()", i)
+                local url
+                if label ~= nil then
+                    local target, e2 = s:match("^%(([^%s)]*)[^)]*%)()", e)
+                    if target ~= nil then
+                        url = target
+                        e = e2
+                    else
+                        -- [text][ref], [text][] or a bare [ref]
+                        local ref, ref_end = s:match("^%[([^%]]*)%]()", e)
+                        if ref ~= nil then
+                            e = ref_end
+                            url = doc.refs[normalize_label(ref ~= "" and ref or label)]
+                        else
+                            url = doc.refs[normalize_label(label)]
+                        end
                     end
                 end
-            end
-            if label ~= nil and label ~= "" and (url ~= nil or e > i + #label + 2) then
-                flush()
-                local label_tokens = tokenize(label)
-                pair_emphasis(label_tokens)
-                tokens[#tokens + 1] = { "link", label_tokens, url }
-                i = e
-            else
-                text[#text + 1] = ch
-                i = i + 1
+                if label ~= nil and label ~= "" and (url ~= nil or e > i + #label + 2) then
+                    flush()
+                    local label_tokens = tokenize(label)
+                    pair_emphasis(label_tokens)
+                    tokens[#tokens + 1] = { "link", label_tokens, url }
+                    i = e
+                else
+                    text[#text + 1] = ch
+                    i = i + 1
+                end
             end
         elseif ch == "*" or ch == "_" then
             local _, e = s:find("^" .. (ch == "*" and "%*+" or "_+"), i)
@@ -859,9 +893,89 @@ local function flow(pieces, prefix, width_limit, out)
     end
 end
 
+-- Take the link reference definitions and the footnotes out of the lines,
+-- into doc; code blocks are left alone.  A footnote goes on over the lines
+-- indented under it.
+local function collect_definitions(lines)
+    local kept = {}
+    local fence
+    local note
+    local dropped = false -- a definition was taken out since the last text
+    doc = { refs = {}, notes = {}, note_defs = {}, note_order = {}, note_number = {} }
+
+    -- a blank line left over where a definition was taken out is not kept
+    local function keep(line)
+        if not is_blank(line) then
+            dropped = false
+        elseif dropped and (#kept == 0 or is_blank(kept[#kept])) then
+            return
+        end
+        kept[#kept + 1] = line
+    end
+
+    for _, line in ipairs(lines) do
+        local label, rest
+        if fence == nil then
+            label, rest = line:match("^ ? ? ?%[%^([^%]%s]+)%]:%s*(.*)$")
+        end
+        if fence ~= nil then
+            local close = line:match("^ ? ? ?([`~]+)%s*$")
+            if close ~= nil and close:sub(1, 1) == fence:sub(1, 1) and #close >= #fence then
+                fence = nil
+            end
+            keep(line)
+        elseif label ~= nil then
+            local key = normalize_label(label)
+            note = { rest }
+            dropped = true
+            if doc.notes[key] == nil then
+                doc.notes[key] = note
+                doc.note_defs[#doc.note_defs + 1] = key
+            end
+        elseif note ~= nil and not is_blank(line) and (line:match("^    ") or line:match("^\t")) then
+            note[#note + 1] = trim(line)
+        else
+            note = nil
+            local ref, url = line:match("^ ? ? ?%[([^%]^][^%]]*)%]:%s*<?([^%s>]+)>?")
+            if ref ~= nil then
+                local key = normalize_label(ref)
+                dropped = true
+                if doc.refs[key] == nil then
+                    doc.refs[key] = url
+                end
+            else
+                fence = fence_of(line)
+                keep(line)
+            end
+        end
+    end
+    return kept
+end
+
+-- The footnotes at the end, numbered as they were referenced; those never
+-- referenced follow in the order they were written.
+local function render_footnotes(width_limit, out)
+    if #doc.note_defs == 0 then
+        return
+    end
+    for _, key in ipairs(doc.note_defs) do
+        footnote_number(key)
+    end
+    while out[#out] == "" do
+        out[#out] = nil
+    end
+    out[#out + 1] = ""
+    out[#out + 1] = BOX_H:rep(math.min(20, width_limit))
+    local k = 1
+    while k <= #doc.note_order do
+        flow(doc.notes[doc.note_order[k]], "[" .. k .. "] ", width_limit, out)
+        k = k + 1
+    end
+end
+
 function M.render(text, opts)
     local width_limit = opts and opts.width or M.DEFAULT_WIDTH
-    local lines = join_display_math(split_lines(text))
+    local lines = collect_definitions(join_display_math(split_lines(text)))
     local out = {}
     local i = 1
     local prev_blank = true
@@ -923,8 +1037,6 @@ function M.render(text, opts)
             and (next_line:match("^ ? ? ?=+%s*$") or next_line:match("^ ? ? ?%-+%s*$")) then
             out[#out + 1] = inline(trim(line), { heading = true })
             i = i + 2
-        elseif line:match("^ ? ? ?%[[^%]]+%]:%s+%S") then
-            i = i + 1
         else
             local quotes = 0
             local rest = line
@@ -968,6 +1080,7 @@ function M.render(text, opts)
         end
         prev_blank = blank
     end
+    render_footnotes(width_limit, out)
     return table.concat(out, "\n") .. "\n"
 end
 
