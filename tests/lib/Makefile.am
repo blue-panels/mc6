@@ -30,6 +30,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/footnotes.md.out \
 	lua_markdown/headings.md \
 	lua_markdown/headings.md.out \
+	lua_markdown/html.md \
+	lua_markdown/html.md.out \
 	lua_markdown/images.md \
 	lua_markdown/images.md.out \
 	lua_markdown/inline.md \

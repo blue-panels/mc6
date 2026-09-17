@@ -672,6 +672,25 @@ tokenize = function(s)
                 text[#text + 1] = ch
                 i = i + 1
             end
+        elseif ch == "<" and s:match("^<[iI][mM][gG][%s>]", i) then
+            -- a picture of html: named, not drawn, like a markdown one
+            local tag, e = s:match("^(<[^<>]*>)()", i)
+
+            if tag == nil then
+                text[#text + 1] = ch
+                i = i + 1
+            else
+                local src = tag:match("[sS][rR][cC]%s*=%s*\"([^\"]*)\"")
+                    or tag:match("[sS][rR][cC]%s*=%s*'([^']*)'")
+                local alt = tag:match("[aA][lL][tT]%s*=%s*\"([^\"]*)\"")
+                    or tag:match("[aA][lL][tT]%s*=%s*'([^']*)'")
+
+                text[#text + 1] = "[" .. (alt or "") .. "]"
+                if src ~= nil and src ~= "" then
+                    text[#text + 1] = " <" .. src .. ">"
+                end
+                i = e
+            end
         elseif ch == "<" then
             local url, e = s:match("^<(%a[%w+.-]*:[^%s<>]*)>()", i)
             if url == nil then
@@ -1473,6 +1492,48 @@ local function flow(pieces, prefix, width_limit, out)
     end
 end
 
+-- The html a document written for the web carries, turned into the markdown
+-- that says the same: a heading, a list item, a rule, a row of cells.  What
+-- is left of a tag the inline pass drops.
+local function html_line(line)
+    local body = trim(line)
+    local tag, text
+
+    tag, text = body:match("^<[hH](%d)[^<>]*>(.*)$")
+    if tag ~= nil then
+        return ("#"):rep(math.min(tonumber(tag), 6)) .. " " .. text:gsub("</[hH]%d>%s*$", "")
+    end
+    if body:match("^<[hH][rR]%s*/?>$") then
+        return "---"
+    end
+    text = body:match("^<[lL][iI][^<>]*>(.*)$")
+    if text ~= nil then
+        return "- " .. text:gsub("</[lL][iI]>%s*$", "")
+    end
+    text = body:match("^<[sS][uU][mM][mM][aA][rR][yY][^<>]*>(.*)$")
+    if text ~= nil then
+        return "**" .. text:gsub("</[sS][uU][mM][mM][aA][rR][yY]>%s*$", "") .. "**"
+    end
+    if body:match("^<[tT][rR][^<>]*>") then
+        -- the cells of a row become the cells of a markdown table
+        local cells = {}
+
+        for cell in body:gmatch("<[tTdDhH]+[^<>]*>([^<]*)") do
+            if trim(cell) ~= "" then
+                cells[#cells + 1] = trim(cell)
+            end
+        end
+        if #cells > 0 then
+            return "|" .. table.concat(cells, "|") .. "|", #cells
+        end
+    end
+    -- a line of tags alone says nothing
+    if body ~= "" and body:gsub("<[^<>]*>", ""):match("^%s*$") then
+        return nil
+    end
+    return line
+end
+
 -- Take the link reference definitions and the footnotes out of the lines,
 -- into doc, and drop the lines that hold only an HTML comment; code blocks
 -- are left alone.  A footnote goes on over the lines
@@ -1482,6 +1543,7 @@ local function collect_definitions(lines)
     local fence
     local note
     local dropped = false -- a definition was taken out since the last text
+    local html_table = false
     doc = { refs = {}, notes = {}, note_defs = {}, note_order = {}, note_number = {} }
 
     -- a blank line left over where a definition was taken out is not kept
@@ -1496,6 +1558,25 @@ local function collect_definitions(lines)
 
     for _, line in ipairs(lines) do
         local label, rest
+
+        if fence == nil and line:find("<", 1, true) ~= nil then
+            local converted, cells = html_line(line)
+
+            if converted == nil then
+                dropped = true
+                goto continue
+            end
+            line = converted
+            if cells ~= nil and not html_table then
+                -- the first row of a table is its header; the line that says
+                -- so is what the markdown table needs next
+                html_table = true
+                keep(line)
+                line = ("|---"):rep(cells) .. "|"
+            end
+        elseif html_table and trim(line) == "" then
+            html_table = false
+        end
         if fence == nil then
             label, rest = line:match("^ ? ? ?%[%^([^%]%s]+)%]:%s*(.*)$")
         end
@@ -1532,6 +1613,7 @@ local function collect_definitions(lines)
                 keep(line)
             end
         end
+        ::continue::
     end
     return kept
 end
