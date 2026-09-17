@@ -59,7 +59,7 @@ end
 
 local function ensure_node(chart, id)
     if chart.nodes[id] == nil then
-        chart.nodes[id] = { id = id, text = "[" .. id .. "]" }
+        chart.nodes[id] = { id = id, label = id, shape = "[", text = "[" .. id .. "]" }
         chart.order[#chart.order + 1] = id
     end
     return chart.nodes[id]
@@ -80,7 +80,10 @@ local function read_node(chart, s)
     end
 
     local node = ensure_node(chart, id)
-    node.text = node_text(trim(label:gsub('^"(.*)"$', "%1")), shape)
+
+    node.label = trim(label:gsub('^"(.*)"$', "%1"))
+    node.shape = shape
+    node.text = node_text(node.label, shape)
     return node
 end
 
@@ -196,6 +199,271 @@ local function draw_flowchart(chart)
         end
     end
     return out
+end
+
+-- Boxes on a canvas: every node is drawn once, in the layer its longest
+-- path from a root puts it in, and the edges are drawn between the layers.
+
+local BOX_TL, BOX_TR, BOX_BL, BOX_BR = "\u{250C}", "\u{2510}", "\u{2514}", "\u{2518}"
+local BOX_H, BOX_V = "\u{2500}", "\u{2502}"
+
+local function canvas_new()
+    return { rows = {}, mask = {}, width = 0 }
+end
+
+local function canvas_put(canvas, y, x, text)
+    local row = canvas.rows[y] or {}
+    local i = x
+
+    for _, ch in ipairs(chars(text)) do
+        row[i] = ch
+        i = i + 1
+    end
+    canvas.rows[y] = row
+    canvas.width = math.max(canvas.width, i - 1)
+end
+
+-- Lines are kept as the directions they leave a cell in, and the character
+-- is chosen once all of them are known.
+local UP, DOWN, LEFT, RIGHT = 1, 2, 4, 8
+
+local LINE_GLYPH = {
+    [LEFT + RIGHT] = "\u{2500}", [LEFT] = "\u{2500}", [RIGHT] = "\u{2500}",
+    [UP + DOWN] = "\u{2502}", [UP] = "\u{2502}", [DOWN] = "\u{2502}",
+    [DOWN + RIGHT] = "\u{250C}", [DOWN + LEFT] = "\u{2510}",
+    [UP + RIGHT] = "\u{2514}", [UP + LEFT] = "\u{2518}",
+    [UP + DOWN + RIGHT] = "\u{251C}", [UP + DOWN + LEFT] = "\u{2524}",
+    [DOWN + LEFT + RIGHT] = "\u{252C}", [UP + LEFT + RIGHT] = "\u{2534}",
+    [UP + DOWN + LEFT + RIGHT] = "\u{253C}",
+}
+
+local function canvas_line(canvas, y, x, dirs)
+    canvas.mask[y] = canvas.mask[y] or {}
+    canvas.mask[y][x] = (canvas.mask[y][x] or 0) | dirs
+    canvas.width = math.max(canvas.width, x)
+end
+
+local function canvas_draw_lines(canvas)
+    for y, row in pairs(canvas.mask) do
+        for x, dirs in pairs(row) do
+            local cell = canvas.rows[y] ~= nil and canvas.rows[y][x] or nil
+
+            if cell == nil or cell == " " then
+                canvas_put(canvas, y, x, LINE_GLYPH[dirs] or "\u{253C}")
+            end
+        end
+    end
+end
+
+local function canvas_lines(canvas)
+    local out = {}
+    local last = 0
+
+    for y in pairs(canvas.rows) do
+        last = math.max(last, y)
+    end
+    for y = 1, last do
+        local row = canvas.rows[y] or {}
+        local line = {}
+
+        for x = 1, canvas.width do
+            line[x] = row[x] or " "
+        end
+        out[y] = (table.concat(line):gsub("%s+$", ""))
+    end
+    return out
+end
+
+-- The layer of every node: one past the deepest layer of what comes into it.
+local function layer_nodes(chart, children, incoming)
+    local layer = {}
+    local queue = {}
+
+    for _, id in ipairs(chart.order) do
+        if (incoming[id] or 0) == 0 then
+            layer[id] = 1
+            queue[#queue + 1] = id
+        end
+    end
+    if #queue == 0 then
+        -- every node is in a cycle: start where the text starts
+        layer[chart.order[1]] = 1
+        queue[1] = chart.order[1]
+    end
+
+    local guard = 0
+    while #queue > 0 and guard < 10000 do
+        local id = table.remove(queue, 1)
+
+        guard = guard + 1
+        for _, edge in ipairs(children[id] or {}) do
+            local want = layer[id] + 1
+
+            -- an edge that goes back would push its target on for ever: no
+            -- node sits deeper than the number of nodes
+            if want <= #chart.order and (layer[edge.to] == nil or layer[edge.to] < want) then
+                layer[edge.to] = want
+                queue[#queue + 1] = edge.to
+            end
+        end
+    end
+    for _, id in ipairs(chart.order) do
+        layer[id] = layer[id] or 1
+    end
+    return layer
+end
+
+local function draw_flowchart_boxes(chart, width_limit)
+    local children = {}
+    local incoming = {}
+
+    for _, edge in ipairs(chart.edges) do
+        children[edge.from] = children[edge.from] or {}
+        table.insert(children[edge.from], edge)
+        incoming[edge.to] = (incoming[edge.to] or 0) + 1
+    end
+
+    local layer = layer_nodes(chart, children, incoming)
+    local columns = {}
+    local depth = 0
+
+    for _, id in ipairs(chart.order) do
+        local n = layer[id]
+
+        columns[n] = columns[n] or {}
+        table.insert(columns[n], id)
+        depth = math.max(depth, n)
+    end
+
+    -- the widest label of a layer sets the width of its column, and the
+    -- longest label of an edge the room between two layers
+    local col_width = {}
+    local gap = {}
+
+    for n = 1, depth do
+        col_width[n] = 0
+        for _, id in ipairs(columns[n] or {}) do
+            col_width[n] = math.max(col_width[n], width(chart.nodes[id].label) + 4)
+        end
+        gap[n] = 6
+    end
+    for _, edge in ipairs(chart.edges) do
+        local n = layer[edge.from]
+
+        if edge.label ~= nil and n < depth then
+            -- the label sits in the half of the room next to the box it
+            -- points at
+            gap[n] = math.max(gap[n], 2 * width(edge.label) + 6)
+        end
+    end
+
+    -- a line that jumps over a layer would run through the boxes standing
+    -- in it; such a graph is drawn as a tree instead
+    for _, edge in ipairs(chart.edges) do
+        if layer[edge.to] - layer[edge.from] > 1 then
+            return nil
+        end
+    end
+
+    local col_x = {}
+    local x = 1
+
+    for n = 1, depth do
+        col_x[n] = x
+        x = x + col_width[n] + gap[n]
+    end
+    local total_width = x - gap[depth] - 1
+
+    if width_limit ~= nil and total_width > width_limit then
+        return nil
+    end
+
+    -- three rows per box and one between them
+    local row_y = {}
+    local y = {}
+
+    for n = 1, depth do
+        y[n] = 1
+        for i, id in ipairs(columns[n] or {}) do
+            row_y[id] = 1 + (i - 1) * 4
+        end
+    end
+
+    local canvas = canvas_new()
+
+    for n = 1, depth do
+        for _, id in ipairs(columns[n] or {}) do
+            local node = chart.nodes[id]
+            local w = col_width[n]
+            local top = row_y[id]
+            local pad = math.max(w - 2 - width(node.label), 0)
+            local left = pad // 2
+            local right = pad - left
+
+            canvas_put(canvas, top, col_x[n], BOX_TL .. BOX_H:rep(w - 2) .. BOX_TR)
+            canvas_put(canvas, top + 1, col_x[n],
+                       BOX_V .. (" "):rep(left) .. node.label .. (" "):rep(right) .. BOX_V)
+            canvas_put(canvas, top + 2, col_x[n], BOX_BL .. BOX_H:rep(w - 2) .. BOX_BR)
+        end
+    end
+
+    -- every edge leaves the right side of its box and enters the left side
+    -- of the other one, turning in the room between the layers
+    local turn = {}
+
+    for _, edge in ipairs(chart.edges) do
+        local from_layer = layer[edge.from]
+        local to_layer = layer[edge.to]
+        local y1 = row_y[edge.from] + 1
+        local y2 = row_y[edge.to] + 1
+        local x1 = col_x[from_layer] + col_width[from_layer]
+        local x2 = col_x[to_layer] - 1
+
+        if to_layer > from_layer and x2 >= x1 then
+            local mid = x1 + (x2 - x1) // 2
+
+            turn[from_layer] = (turn[from_layer] or 0) + 1
+            for i = x1, mid - 1 do
+                canvas_line(canvas, y1, i, LEFT | RIGHT)
+            end
+            if y1 == y2 then
+                canvas_line(canvas, y1, mid, LEFT | RIGHT)
+            else
+                local step = y1 < y2 and 1 or -1
+
+                canvas_line(canvas, y1, mid, LEFT | (y1 < y2 and DOWN or UP))
+                for i = y1 + step, y2 - step, step do
+                    canvas_line(canvas, i, mid, UP | DOWN)
+                end
+                canvas_line(canvas, y2, mid, RIGHT | (y1 < y2 and UP or DOWN))
+            end
+            for i = mid + 1, x2 - 1 do
+                canvas_line(canvas, y2, i, LEFT | RIGHT)
+            end
+            canvas_put(canvas, y2, x2, ARROW_DOWN)
+            if edge.label ~= nil then
+                -- over the line that runs into the box, where every edge has
+                -- a row of its own
+                local room = x2 - mid - 2
+
+                if width(edge.label) <= room then
+                    canvas_put(canvas, y2 - 1, x2 - width(edge.label) - 1, edge.label)
+                else
+                    canvas_put(canvas, y2 - 1, mid + 1,
+                               table.concat(chars(edge.label), "", 1, math.max(room, 1)))
+                end
+            end
+        else
+            -- an edge that goes back or stays in its layer is named, not drawn
+            local note = chart.nodes[edge.from].text .. " " .. ARROW_DOWN .. " "
+                .. chart.nodes[edge.to].text .. (edge.label ~= nil and ("  " .. edge.label) or "")
+
+            canvas_put(canvas, 1 + math.max(#(columns[1] or {}), 1) * 4 + #turn, 1, note)
+        end
+    end
+
+    canvas_draw_lines(canvas)
+    return canvas_lines(canvas)
 end
 
 ------------------------------------------------------------------------
@@ -376,7 +644,7 @@ end
 ------------------------------------------------------------------------
 
 -- The lines of a mermaid diagram, or nil when it is not one this draws.
-function M.render(code)
+function M.render(code, width_limit)
     local lines = {}
 
     for line in (code .. "\n"):gmatch("(.-)\n") do
@@ -401,6 +669,15 @@ function M.render(code)
     end
     if first:match("^graph%s") or first:match("^flowchart%s") then
         local chart = parse_flowchart(lines)
+
+        if chart ~= nil then
+            -- boxes when they fit on the screen, a tree when they do not
+            local boxes = draw_flowchart_boxes(chart, width_limit)
+
+            if boxes ~= nil then
+                return boxes
+            end
+        end
 
         return chart ~= nil and draw_flowchart(chart) or nil
     end

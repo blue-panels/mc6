@@ -20,3 +20,21 @@ sequenceDiagram
 pie title Доли
     "a" : 40
 ```
+```mermaid
+flowchart LR
+    P[arcmc panel] -->|list| H[extfs helper]
+    P -->|view or copy| C[copyout]
+    P -->|add| I[copyin]
+    P -->|delete| R[rm]
+    H --> T[External archive tool]
+    C --> T
+    I --> T
+    R --> T
+```
+```mermaid
+flowchart LR
+  A[Старт] --> B[Работа]
+  B --> C[Проверка]
+  C --> B
+  C --> D[Конец]
+```

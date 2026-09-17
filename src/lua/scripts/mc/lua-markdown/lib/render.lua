@@ -1219,11 +1219,11 @@ end
 
 -- A mermaid diagram is drawn, not shown as code, when it is one the drawing
 -- knows; anything else stays a code block.
-local function mermaid_lines(code, language, out)
+local function mermaid_lines(code, language, out, width_limit)
     if language == nil or language:lower() ~= "mermaid" then
         return false
     end
-    local drawn = mermaid.render(code)
+    local drawn = mermaid.render(code, width_limit ~= nil and width_limit - 4 or nil)
 
     if drawn == nil then
         return false
@@ -1237,8 +1237,8 @@ end
 -- The lines of a code block, colored where the rules say so.  Each line
 -- opens the color it starts in and closes it at its end, because the viewer
 -- may start reading at any line.
-local function code_lines(code, language, out)
-    if mermaid_lines(code, language, out) then
+local function code_lines(code, language, out, width_limit)
+    if mermaid_lines(code, language, out, width_limit) then
         return
     end
     local scan = scan_code(code, language)
@@ -1927,7 +1927,7 @@ function M.render(text, opts)
                 code[#code + 1] = lines[i]
                 i = i + 1
             end
-            code_lines(table.concat(code, "\n"), language, out)
+            code_lines(table.concat(code, "\n"), language, out, width_limit)
             i = i + 1
         elseif line:find("<!--", 1, true) and not line:find("-->", 1, true) then
             while i <= #lines and not lines[i]:find("-->", 1, true) do
