@@ -14,6 +14,9 @@ M.MAX_WIDTH = 120    -- text is never flowed wider than this, whatever the scree
 -- first level keeps the heading color of the skin
 M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 
+-- a space no line is broken at; written out as a plain space
+local NBSP = "\u{00A0}"
+
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
@@ -139,6 +142,28 @@ local latex = {
     sqrt = "\u{221A}", lim = "lim",
     cdots = "\u{22EF}", vdots = "\u{22EE}", ddots = "\u{22F1}", ldots = "\u{2026}", dots = "\u{2026}",
     quad = "  ", qquad = "    ",
+    -- geometry
+    angle = "\u{2220}", measuredangle = "\u{2221}", circ = "\u{2218}", degree = "\u{00B0}",
+    parallel = "\u{2225}", nparallel = "\u{2226}", perp = "\u{22A5}", triangle = "\u{25B3}",
+    square = "\u{25A1}", cong = "\u{2245}", sim = "\u{223C}", simeq = "\u{2243}",
+    -- relations and operators
+    ne = "\u{2260}", le = "\u{2264}", ge = "\u{2265}", ll = "\u{226A}", gg = "\u{226B}",
+    propto = "\u{221D}", mp = "\u{2213}", ast = "\u{2217}", star = "\u{22C6}", bullet = "\u{2022}",
+    oplus = "\u{2295}", otimes = "\u{2297}", mid = "\u{2223}", prime = "\u{2032}",
+    -- sets and logic
+    notin = "\u{2209}", ni = "\u{220B}", subseteq = "\u{2286}", supseteq = "\u{2287}",
+    cup = "\u{222A}", cap = "\u{2229}", setminus = "\u{2216}", emptyset = "\u{2205}",
+    varnothing = "\u{2205}", neg = "\u{00AC}", land = "\u{2227}", lor = "\u{2228}",
+    wedge = "\u{2227}", vee = "\u{2228}", implies = "\u{21D2}", iff = "\u{21D4}",
+    Leftrightarrow = "\u{21D4}", leftrightarrow = "\u{2194}", mapsto = "\u{21A6}",
+    uparrow = "\u{2191}", downarrow = "\u{2193}", therefore = "\u{2234}", because = "\u{2235}",
+    -- letters
+    varepsilon = "\u{03B5}", vartheta = "\u{03D1}", varphi = "\u{03C6}", varrho = "\u{03F1}",
+    varsigma = "\u{03C2}", Upsilon = "\u{03A5}", Xi = "\u{039E}", hbar = "\u{210F}",
+    ell = "\u{2113}", aleph = "\u{2135}",
+    -- functions keep their names
+    sin = "sin", cos = "cos", tan = "tan", cot = "cot", log = "log", ln = "ln", exp = "exp",
+    min = "min", max = "max",
     -- commands that only change the look of what follows
     left = "", right = "", text = "", mathrm = "", mathbf = "", mathit = "", operatorname = "",
 }
@@ -223,13 +248,25 @@ local function latex_replace_sqrt(s)
     return table.concat(out)
 end
 
+-- symbols written before what they apply to: the space that ends the
+-- command name is not shown, \angle ABC is one word
+local latex_prefix = {
+    angle = true, measuredangle = true, triangle = true, square = true,
+    neg = true, partial = true, nabla = true,
+}
+
 local function latex_replace_commands(s)
-    return (s:gsub("\\(%a+)", function(cmd)
-        return latex[cmd] or ("\\" .. cmd)
+    return (s:gsub("\\(%a+)( ?)", function(cmd, space)
+        if latex[cmd] == nil then
+            return "\\" .. cmd .. space
+        end
+        return latex[cmd] .. (latex_prefix[cmd] and "" or space)
     end))
 end
 
 local function latex_replace_scripts(s)
+    -- a raised \circ is the degree sign
+    s = s:gsub("%^{\u{2218}}", "\u{00B0}"):gsub("%^\u{2218}", "\u{00B0}")
     for d = 0, 9 do
         s = s:gsub("_{" .. d .. "}", sub_digits[d + 1])
         s = s:gsub("%^{" .. d .. "}", sup_digits[d + 1])
@@ -535,7 +572,8 @@ tokenize = function(s)
                 text[#text + 1] = ch
                 i = i + 1
             else
-                text[#text + 1] = render_math(s:sub(i + #delim, a - 1))
+                -- a formula is not broken across lines
+                text[#text + 1] = (render_math(s:sub(i + #delim, a - 1)):gsub(" ", NBSP))
                 i = b + 1
             end
         elseif ch == "&" then
@@ -1356,7 +1394,7 @@ function M.render(text, opts)
         prev_blank = blank
     end
     render_footnotes(width_limit, out)
-    return table.concat(out, "\n") .. "\n"
+    return (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
 end
 
 return M
