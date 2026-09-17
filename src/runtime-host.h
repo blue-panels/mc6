@@ -35,4 +35,10 @@ gboolean runtime_host_editor_replace_selection (const mc_runtime_handle_t *handl
                                                 mc_runtime_editor_edit_result_t *result,
                                                 const char **error);
 
+/* Exposed for the unit tests: colors text with the syntax rules of the editor. */
+gboolean runtime_host_syntax_scan (const char *text, gsize text_length, const char *type,
+                                   const char *filename, mc_runtime_syntax_result_t *result,
+                                   const char **error);
+void runtime_host_syntax_result_free (mc_runtime_syntax_result_t *result);
+
 #endif

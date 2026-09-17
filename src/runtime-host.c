@@ -37,6 +37,8 @@
 #include "lib/glibcompat.h"
 
 #include "lib/extension-runtime.h"
+#include "lib/fileloc.h"
+#include "src/syntax/syntax.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
 #include "lib/tty/key.h"
@@ -1747,6 +1749,214 @@ runtime_host_ui_text_width (const char *text, gsize text_length, guint *width, c
 
 /* --------------------------------------------------------------------------------------------- */
 
+typedef struct
+{
+    const char *text;
+    gsize length;
+} runtime_host_syntax_source_t;
+
+/* A first line longer than this says nothing more about the rule set, and the
+   regexes of the Syntax file would be run over all of it. */
+#define RUNTIME_HOST_SYNTAX_FIRST_LINE_MAX 256
+/* What the viewer calls a large file; past it the rules are not worth running. */
+#define RUNTIME_HOST_SYNTAX_MAX_SIZE (4 * 1024 * 1024)
+
+static int
+runtime_host_syntax_get_byte (void *data, off_t byte_index)
+{
+    const runtime_host_syntax_source_t *src = (const runtime_host_syntax_source_t *) data;
+
+    // the automaton reads one byte back and past the end; there the world ends
+    if (byte_index < 0 || (gsize) byte_index >= src->length)
+        return '\n';
+    return (unsigned char) src->text[byte_index];
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Add a run of @length bytes of @color, or make the last run longer. */
+static void
+runtime_host_syntax_add_run (GArray *runs, guint color, gsize length)
+{
+    if (length == 0)
+        return;
+    if (runs->len > 0)
+    {
+        mc_runtime_syntax_run_t *last =
+            &g_array_index (runs, mc_runtime_syntax_run_t, runs->len - 1);
+
+        if (last->color == color)
+        {
+            last->length += length;
+            return;
+        }
+    }
+    {
+        mc_runtime_syntax_run_t run;
+
+        run.offset = runs->len > 0
+            ? g_array_index (runs, mc_runtime_syntax_run_t, runs->len - 1).offset
+                + g_array_index (runs, mc_runtime_syntax_run_t, runs->len - 1).length
+            : 0;
+        run.length = length;
+        run.color = color;
+        g_array_append_val (runs, run);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Line-local rules keep nothing between lines: walk the text byte by byte. */
+static void
+runtime_host_syntax_runs_line_local (const syntax_rules_t *rules,
+                                     runtime_host_syntax_source_t *source, GArray *runs)
+{
+    syntax_line_local_state_t st;
+    off_t bol = 0;
+    off_t i;
+
+    syntax_line_local_reset (&st, 0);
+    for (i = 0; (gsize) i < source->length; i++)
+    {
+        guint color;
+
+        if (i > 0 && source->text[i - 1] == '\n')
+        {
+            bol = i;
+            syntax_line_local_reset (&st, bol);
+        }
+        color = syntax_line_local_color (rules, &st, runtime_host_syntax_get_byte, source, i);
+        runtime_host_syntax_add_run (runs, color, 1);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Color text with the syntax rules of the editor.  The rule set is the one
+ * @type names, else the one @filename matches, else the one the first line of
+ * the text asks for.
+ */
+gboolean
+runtime_host_syntax_scan (const char *text, gsize text_length, const char *type,
+                          const char *filename, mc_runtime_syntax_result_t *result,
+                          const char **error)
+{
+    syntax_select_t sel;
+    syntax_rules_t *rules = NULL;
+    GArray *runs;
+    char *syntax_file;
+    char *error_file = NULL;
+    char *first_line;
+    const char *eol;
+    gsize first_line_length;
+    runtime_host_syntax_source_t source;
+    guint colors;
+    guint i;
+
+    if ((text == NULL && text_length != 0) || result == NULL)
+        return runtime_host_set_error (error, "invalid_argument");
+    if (text == NULL)
+        text = "";
+    if (text_length > RUNTIME_HOST_SYNTAX_MAX_SIZE)
+        return runtime_host_set_error (error, "too_large");
+
+    memset (result, 0, sizeof (*result));
+    result->struct_size = sizeof (*result);
+
+    first_line_length = MIN (text_length, (gsize) RUNTIME_HOST_SYNTAX_FIRST_LINE_MAX);
+    eol = memchr (text, '\n', first_line_length);
+    first_line = g_strndup (text, eol != NULL ? (gsize) (eol - text) : first_line_length);
+
+    sel.type = type;
+    /* The rule sets are matched by name first, and the first line is only looked
+       at for a file that has one: an empty name matches no rule and lets the
+       first line decide. */
+    sel.filename = filename != NULL ? filename : "";
+    sel.first_line = first_line;
+
+    syntax_file = mc_config_get_full_path (EDIT_SYNTAX_FILE);
+    if (syntax_rules_load (syntax_file, &sel, &rules, &error_file) != 0)
+    {
+        g_free (error_file);
+        g_free (syntax_file);
+        g_free (first_line);
+        return runtime_host_set_error (error, "not_supported");
+    }
+    g_free (error_file);
+    g_free (syntax_file);
+    g_free (first_line);
+
+    source.text = text;
+    source.length = text_length;
+    runs = g_array_new (FALSE, FALSE, sizeof (mc_runtime_syntax_run_t));
+
+    if (syntax_rules_is_line_local (rules))
+        runtime_host_syntax_runs_line_local (rules, &source, runs);
+    else
+    {
+        syntax_scanner_t *scanner;
+        GArray *raw;
+
+        scanner =
+            syntax_scanner_new (rules, runtime_host_syntax_get_byte, &source, (off_t) text_length);
+        raw = g_array_new (FALSE, FALSE, sizeof (syntax_run_t));
+        syntax_runs_for_range (scanner, 0, (off_t) text_length, raw);
+        for (i = 0; i < raw->len; i++)
+        {
+            const syntax_run_t *run = &g_array_index (raw, syntax_run_t, i);
+
+            runtime_host_syntax_add_run (runs, run->color, run->len);
+        }
+        g_array_free (raw, TRUE);
+        syntax_scanner_free (scanner);
+    }
+
+    colors = syntax_rules_color_count (rules);
+    result->type = g_strdup (syntax_rules_type (rules));
+    result->colors_count = colors;
+    result->colors = g_new0 (mc_runtime_syntax_color_t, colors + 1);
+    for (i = 0; i < colors; i++)
+    {
+        const char *fg = NULL;
+        const char *bg = NULL;
+        const char *attrs = NULL;
+
+        syntax_rules_color_spec (rules, i, &fg, &bg, &attrs);
+        result->colors[i].fg = g_strdup (fg);
+        result->colors[i].bg = g_strdup (bg);
+        result->colors[i].attrs = g_strdup (attrs);
+    }
+
+    result->runs_count = runs->len;
+    result->runs = (mc_runtime_syntax_run_t *) g_array_free (runs, FALSE);
+    syntax_rules_unref (rules);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+runtime_host_syntax_result_free (mc_runtime_syntax_result_t *result)
+{
+    gsize i;
+
+    if (result == NULL)
+        return;
+    for (i = 0; i < result->colors_count; i++)
+    {
+        g_free ((char *) result->colors[i].fg);
+        g_free ((char *) result->colors[i].bg);
+        g_free ((char *) result->colors[i].attrs);
+    }
+    g_free (result->colors);
+    g_free (result->runs);
+    g_free ((char *) result->type);
+    memset (result, 0, sizeof (*result));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 runtime_host_dialog_field_free (runtime_host_dialog_field_t *field)
 {
@@ -2327,6 +2537,8 @@ runtime_host_services_init (void)
         .screen_run = runtime_screen_run,
         .screen_update = runtime_screen_update,
         .screen_close = runtime_screen_close,
+        .syntax_scan = runtime_host_syntax_scan,
+        .syntax_result_free = runtime_host_syntax_result_free,
     };
 
     /* Capabilities describe what this invocation can actually open, rather

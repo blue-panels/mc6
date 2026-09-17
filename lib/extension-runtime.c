@@ -102,6 +102,9 @@
 #define MC_RUNTIME_HOST_SERVICES_UI_TEXT_WIDTH_SIZE                                                \
     (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, ui_text_width)                                \
      + sizeof (((mc_runtime_host_services_v1_t *) NULL)->ui_text_width))
+#define MC_RUNTIME_HOST_SERVICES_SYNTAX_SIZE                                                       \
+    (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, syntax_result_free)                           \
+     + sizeof (((mc_runtime_host_services_v1_t *) NULL)->syntax_result_free))
 #define MC_RUNTIME_HOST_SERVICES_PANEL_PROVIDER_SIZE                                               \
     (G_STRUCT_OFFSET (mc_runtime_host_services_v1_t, panel_provider_unregister)                    \
      + sizeof (((mc_runtime_host_services_v1_t *) NULL)->panel_provider_unregister))
@@ -1033,6 +1036,42 @@ mc_runtime_host_ui_text_width (mc_runtime_plugin_context_t *context, const char 
 /* --------------------------------------------------------------------------------------------- */
 
 static gboolean
+mc_runtime_host_syntax_scan (mc_runtime_plugin_context_t *context, const char *text,
+                             gsize text_length, const char *type, const char *filename,
+                             mc_runtime_syntax_result_t *result, const char **error)
+{
+    if (!mc_runtime_plugin_context_is_known (context) || mc_runtime_host_services == NULL)
+    {
+        if (error != NULL)
+            *error = "invalid_context";
+        return FALSE;
+    }
+    if (mc_runtime_host_services->struct_size < MC_RUNTIME_HOST_SERVICES_SYNTAX_SIZE
+        || mc_runtime_host_services->syntax_scan == NULL)
+    {
+        if (error != NULL)
+            *error = "not_supported";
+        return FALSE;
+    }
+    return mc_runtime_host_services->syntax_scan (text, text_length, type, filename, result, error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mc_runtime_host_syntax_result_free (mc_runtime_plugin_context_t *context,
+                                    mc_runtime_syntax_result_t *result)
+{
+    if (!mc_runtime_plugin_context_is_known (context) || mc_runtime_host_services == NULL
+        || mc_runtime_host_services->struct_size < MC_RUNTIME_HOST_SERVICES_SYNTAX_SIZE
+        || mc_runtime_host_services->syntax_result_free == NULL)
+        return;
+    mc_runtime_host_services->syntax_result_free (result);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
 mc_runtime_host_panel_provider_register (mc_runtime_plugin_context_t *context,
                                          const mc_runtime_panel_provider_t *provider,
                                          mc_runtime_handle_t *registration, const char **error)
@@ -1586,6 +1625,8 @@ static mc_runtime_host_api_v1_t mc_runtime_host_api = {
     .screen_close = mc_runtime_host_screen_close,
     .editor_overwrite = mc_runtime_host_editor_overwrite,
     .editor_set_overwrite = mc_runtime_host_editor_set_overwrite,
+    .syntax_scan = mc_runtime_host_syntax_scan,
+    .syntax_result_free = mc_runtime_host_syntax_result_free,
 };
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2357,6 +2398,9 @@ mc_runtime_plugins_set_host_services (const mc_runtime_host_services_v1_t *servi
         mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_PROCESS;
     if (mc_runtime_host_has_panel_provider_services ())
         mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_PANEL_PROVIDER;
+    if (services != NULL && services->struct_size >= MC_RUNTIME_HOST_SERVICES_SYNTAX_SIZE
+        && services->syntax_scan != NULL && services->syntax_result_free != NULL)
+        mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_SYNTAX;
     if (mc_runtime_host_has_viewer_source_services ())
         mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_VIEWER_SOURCE;
 }

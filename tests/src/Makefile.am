@@ -35,6 +35,7 @@ TESTS = \
 	execute__execute_get_external_cmd_opts_from_config \
 	file_history \
 	keymap_reload \
+	runtime_host__syntax \
 	learn_modifiers \
 	mctree_model \
 	mctree_resolver \
@@ -77,6 +78,9 @@ file_history_SOURCES = \
 
 keymap_reload_SOURCES = \
 	keymap_reload.c
+
+runtime_host__syntax_SOURCES = \
+	runtime_host__syntax.c
 
 learn_modifiers_SOURCES = \
 	learn_modifiers.c

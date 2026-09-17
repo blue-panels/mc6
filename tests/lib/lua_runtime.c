@@ -1140,6 +1140,12 @@ create_object_script (void)
         "    }, cursor = { offset = 2 } })\n"
         "    assert(transaction.revision == 11 and transaction.cursor.offset == 2)\n"
         "    assert(mc.ui.text_width(\"漢\") == 2)\n"
+        "    local scan = assert(mc.syntax.scan(\"int x;\", { type = \"C Program\" }))\n"
+        "    assert(scan.type == \"C Program\" and #scan.runs == 2 and #scan.colors == 2)\n"
+        "    assert(scan.runs[1].offset == 1 and scan.runs[1].length == 3)\n"
+        "    assert(scan.colors[scan.runs[1].color].fg == \"yellow\")\n"
+        "    assert(scan.colors[scan.runs[1].color].attrs == \"bold\")\n"
+        "    assert(scan.runs[2].offset == 4 and scan.colors[scan.runs[2].color].fg == \"white\")\n"
         "    assert(editor:selected_text() == \"U2V0\")\n"
         "    assert(editor:set_cursor(3, 4))\n"
         "    assert(editor:insert(\"!\"))\n"
@@ -1788,6 +1794,56 @@ test_object_editor_replace_selection_v2 (const mc_runtime_handle_t *editor, guin
 }
 
 static gboolean
+test_syntax_scan (const char *text, gsize text_length, const char *type, const char *filename,
+                  mc_runtime_syntax_result_t *result, const char **object_error)
+{
+    (void) object_error;
+    (void) filename;
+    ck_assert_int_eq ((int) text_length, 6);
+    ck_assert_int_eq (memcmp (text, "int x;", 6), 0);
+    ck_assert_str_eq (type, "C Program");
+
+    memset (result, 0, sizeof (*result));
+    result->struct_size = sizeof (*result);
+    result->type = g_strdup ("C Program");
+    result->colors_count = 2;
+    result->colors = g_new0 (mc_runtime_syntax_color_t, 2);
+    result->colors[0].fg = g_strdup ("white");
+    result->colors[1].fg = g_strdup ("yellow");
+    result->colors[1].attrs = g_strdup ("bold");
+    result->runs_count = 2;
+    result->runs = g_new0 (mc_runtime_syntax_run_t, 2);
+    result->runs[0].offset = 0;
+    result->runs[0].length = 3;
+    result->runs[0].color = 1;
+    result->runs[1].offset = 3;
+    result->runs[1].length = 3;
+    result->runs[1].color = 0;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+test_syntax_result_free (mc_runtime_syntax_result_t *result)
+{
+    gsize i;
+
+    for (i = 0; i < result->colors_count; i++)
+    {
+        g_free ((char *) result->colors[i].fg);
+        g_free ((char *) result->colors[i].bg);
+        g_free ((char *) result->colors[i].attrs);
+    }
+    g_free (result->colors);
+    g_free (result->runs);
+    g_free ((char *) result->type);
+    memset (result, 0, sizeof (*result));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
 test_ui_text_width (const char *text, gsize text_length, guint *width, const char **object_error)
 {
     (void) object_error;
@@ -2057,6 +2113,8 @@ setup (void)
         .editor_edit = test_object_editor_edit,
         .editor_replace_selection_v2 = test_object_editor_replace_selection_v2,
         .ui_text_width = test_ui_text_width,
+        .syntax_scan = test_syntax_scan,
+        .syntax_result_free = test_syntax_result_free,
         .panel_provider_register = test_panel_provider_register,
         .panel_provider_unregister = test_panel_provider_unregister,
         .viewer_controller_open = test_viewer_controller_open,

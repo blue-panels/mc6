@@ -466,6 +466,14 @@
       "summary": "Show a native informational message box."
     },
     {
+      "signature": "mc.syntax.scan(text, options?) -> table|nil, error?",
+      "workspace": "any",
+      "capability": "syntax",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Color text with the syntax rules of the editor.  options.type names the rule set the way the Syntax file does (\"C Program\"), options.filename picks it by name; without both, the first line of the text decides.  Returns { type = \"C Program\", colors = { { fg = \"yellow\", bg = nil, attrs = \"bold\" } }, runs = { { offset = 1, length = 6, color = 1 } } }, offsets counting bytes from one and color indexing colors."
+    },
+    {
       "signature": "mc.ui.text_width(text) -> integer|nil, error?",
       "workspace": "any",
       "capability": "ui",
