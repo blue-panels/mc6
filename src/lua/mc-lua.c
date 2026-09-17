@@ -127,6 +127,9 @@
 #define MC_LUA_HOST_API_UI_TEXT_WIDTH_SIZE                                                         \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, ui_text_width)                                     \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->ui_text_width))
+#define MC_LUA_HOST_API_SYNTAX_SIZE                                                                \
+    (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, syntax_result_free)                                \
+     + sizeof (((mc_runtime_host_api_v1_t *) NULL)->syntax_result_free))
 #define MC_LUA_HOST_API_PANEL_PROVIDER_SIZE                                                        \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, panel_provider_unregister)                         \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->panel_provider_unregister))
@@ -6418,6 +6421,119 @@ mc_lua_ui_message (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** The string option @name of the options table at index 2, or NULL. */
+static const char *
+mc_lua_syntax_option (lua_State *lua, const char *name)
+{
+    const char *value = NULL;
+
+    lua_getfield (lua, 2, name);
+    if (!lua_isnil (lua, -1))
+    {
+        if (lua_type (lua, -1) != LUA_TSTRING)
+            luaL_error (lua, "options.%s must be a string", name);
+        // the options table keeps the string alive
+        value = lua_tostring (lua, -1);
+    }
+    lua_pop (lua, 1);
+    return value;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** @lua mc.syntax.scan(text, options?) -> table|nil, error? @capability syntax @mutation no
+ * @summary Color text with the syntax rules of the editor.  options.type names the rule set the
+ * way the Syntax file does ("C Program"), options.filename picks it by name; without both, the
+ * first line of the text decides.  Returns { type = "C Program", colors = { { fg = "yellow",
+ * bg = nil, attrs = "bold" } }, runs = { { offset = 1, length = 6, color = 1 } } }, offsets
+ * counting bytes from one and color indexing colors. */
+static int
+mc_lua_syntax_scan (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_runtime_syntax_result_t result;
+    const char *text;
+    size_t text_length = 0;
+    const char *type = NULL;
+    const char *filename = NULL;
+    const char *error = NULL;
+    gsize i;
+
+    if (!mc_lua_require_active_context (lua, package))
+        return 2;
+    text = luaL_checklstring (lua, 1, &text_length);
+    if (!lua_isnoneornil (lua, 2))
+    {
+        luaL_checktype (lua, 2, LUA_TTABLE);
+        type = mc_lua_syntax_option (lua, "type");
+        filename = mc_lua_syntax_option (lua, "filename");
+    }
+
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_SYNTAX,
+                                     MC_LUA_HOST_API_SYNTAX_SIZE)
+        || package->runtime->host->syntax_scan == NULL)
+        return mc_lua_not_ready (lua);
+
+    memset (&result, 0, sizeof (result));
+    if (!package->runtime->host->syntax_scan (package->runtime->context, text, (gsize) text_length,
+                                              type, filename, &result, &error))
+    {
+        lua_pushnil (lua);
+        lua_pushstring (lua, error != NULL ? error : "syntax_scan_failed");
+        return 2;
+    }
+
+    lua_createtable (lua, 0, 3);
+    if (result.type != NULL)
+    {
+        lua_pushstring (lua, result.type);
+        lua_setfield (lua, -2, "type");
+    }
+
+    lua_createtable (lua, (int) result.colors_count, 0);
+    for (i = 0; i < result.colors_count; i++)
+    {
+        lua_createtable (lua, 0, 3);
+        if (result.colors[i].fg != NULL)
+        {
+            lua_pushstring (lua, result.colors[i].fg);
+            lua_setfield (lua, -2, "fg");
+        }
+        if (result.colors[i].bg != NULL)
+        {
+            lua_pushstring (lua, result.colors[i].bg);
+            lua_setfield (lua, -2, "bg");
+        }
+        if (result.colors[i].attrs != NULL)
+        {
+            lua_pushstring (lua, result.colors[i].attrs);
+            lua_setfield (lua, -2, "attrs");
+        }
+        lua_rawseti (lua, -2, (int) i + 1);
+    }
+    lua_setfield (lua, -2, "colors");
+
+    lua_createtable (lua, (int) result.runs_count, 0);
+    for (i = 0; i < result.runs_count; i++)
+    {
+        lua_createtable (lua, 0, 3);
+        lua_pushinteger (lua, (lua_Integer) result.runs[i].offset + 1);
+        lua_setfield (lua, -2, "offset");
+        lua_pushinteger (lua, (lua_Integer) result.runs[i].length);
+        lua_setfield (lua, -2, "length");
+        lua_pushinteger (lua, (lua_Integer) result.runs[i].color + 1);
+        lua_setfield (lua, -2, "color");
+        lua_rawseti (lua, -2, (int) i + 1);
+    }
+    lua_setfield (lua, -2, "runs");
+
+    if (package->runtime->host->syntax_result_free != NULL)
+        package->runtime->host->syntax_result_free (package->runtime->context, &result);
+    return 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** @lua mc.ui.text_width(text) -> integer|nil, error? @capability ui @mutation no @summary Measure
  * UTF-8 text using terminal display columns. */
 static int
@@ -6659,6 +6775,11 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_pushcfunction (lua, mc_lua_ui_open_diff);
     lua_setfield (lua, -2, "open_diff");
     lua_setfield (lua, -2, "ui");
+
+    lua_createtable (lua, 0, 1);
+    lua_pushcfunction (lua, mc_lua_syntax_scan);
+    lua_setfield (lua, -2, "scan");
+    lua_setfield (lua, -2, "syntax");
 
     lua_createtable (lua, 0, 1);
     lua_pushcfunction (lua, mc_lua_process_run);

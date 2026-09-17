@@ -23,6 +23,7 @@
 #define MC_RUNTIME_HOST_CAP_PROCESS           (G_GUINT64_CONSTANT (1) << 7)
 #define MC_RUNTIME_HOST_CAP_PANEL_PROVIDER    (G_GUINT64_CONSTANT (1) << 8)
 #define MC_RUNTIME_HOST_CAP_VIEWER_SOURCE     (G_GUINT64_CONSTANT (1) << 9)
+#define MC_RUNTIME_HOST_CAP_SYNTAX            (G_GUINT64_CONSTANT (1) << 10)
 
 #define MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS (G_GUINT64_CONSTANT (1) << 0)
 
@@ -762,6 +763,33 @@ typedef struct
     gsize length;
 } mc_runtime_string_t;
 
+/** One color of a rule set, by the names the syntax file uses. */
+typedef struct
+{
+    const char *fg;     // NULL where the rule names none
+    const char *bg;     //
+    const char *attrs;  // "bold", "underline" and the like, plus separated
+} mc_runtime_syntax_color_t;
+
+/** A stretch of text of one color; offsets count bytes, color indexes colors. */
+typedef struct
+{
+    gsize offset;
+    gsize length;
+    guint color;
+} mc_runtime_syntax_run_t;
+
+/** What a syntax scan found; freed with syntax_result_free. */
+typedef struct
+{
+    gsize struct_size;
+    const char *type;  // the rule set that was used, e.g. "C Program"
+    mc_runtime_syntax_color_t *colors;
+    gsize colors_count;
+    mc_runtime_syntax_run_t *runs;
+    gsize runs_count;
+} mc_runtime_syntax_result_t;
+
 typedef struct
 {
     mc_runtime_string_t out;
@@ -913,6 +941,14 @@ typedef struct
                                   const char **error);
     gboolean (*editor_set_overwrite) (const mc_runtime_handle_t *editor, gboolean overwrite,
                                       const char **error);
+
+    /* Optional v1 extension. Colors text with the syntax rules of the editor:
+     * the rule set is chosen by type, else by filename, else by the first line
+     * of the text. */
+    gboolean (*syntax_scan) (const char *text, gsize text_length, const char *type,
+                             const char *filename, mc_runtime_syntax_result_t *result,
+                             const char **error);
+    void (*syntax_result_free) (mc_runtime_syntax_result_t *result);
 } mc_runtime_host_services_v1_t;
 
 typedef struct
@@ -1093,6 +1129,13 @@ typedef struct
     gboolean (*editor_set_overwrite) (mc_runtime_plugin_context_t *context,
                                       const mc_runtime_handle_t *editor, gboolean overwrite,
                                       const char **error);
+
+    /* Optional v1 extension: the syntax rules of the editor, as text runs. */
+    gboolean (*syntax_scan) (mc_runtime_plugin_context_t *context, const char *text,
+                             gsize text_length, const char *type, const char *filename,
+                             mc_runtime_syntax_result_t *result, const char **error);
+    void (*syntax_result_free) (mc_runtime_plugin_context_t *context,
+                                mc_runtime_syntax_result_t *result);
 } mc_runtime_host_api_v1_t;
 
 typedef struct
