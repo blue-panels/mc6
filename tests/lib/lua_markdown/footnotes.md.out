@@ -1,0 +1,14 @@
+Text with a note[1] and another one[2], then the first again[1].
+
+A missing note[^none] stays as written, and so does [^with space].
+
+    [^code]: not a footnote inside code
+    [x]: not a definition either
+
+Reference links: _f_u_l_l <https://one.example>, _c_o_l_l_a_p_s_e_d <https://two.example>, _s_h_o_r_t_c_u_t
+<https://three.example> and _u_n_k_n_o_w_n.
+
+────────────────────
+[1] The first note, with bboolldd and a _l_i_n_k <https://x.org>.
+[2] The second note goes on over an indented line.
+[3] Never referenced, still shown.
