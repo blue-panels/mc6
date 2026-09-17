@@ -820,7 +820,8 @@ mcview_get_next_maybe_ansi_char (WView *view, mcview_state_machine_t *state, int
 /* --------------------------------------------------------------------------------------------- */
 /**
  * The next character of an nroff text, past the escape sequences before it. They go to the SGR
- * parser, so that groff output can style a character with backspaces and SGR at once.
+ * parser, so that groff output can style a character with backspaces and SGR at once. A form
+ * feed, which grotty -f writes between pages, is skipped too.
  *
  * Normally: stores c, updates state, returns TRUE.
  * At EOF: returns FALSE.
@@ -832,7 +833,7 @@ mcview_get_next_sgr_char (WView *view, mcview_state_machine_t *state, int *c)
     {
         if (!mcview_get_next_char (view, state, c))
             return FALSE;
-        if (mcview_ansi_parse_char (&state->ansi, *c) == ANSI_RESULT_CHAR)
+        if (mcview_ansi_parse_char (&state->ansi, *c) == ANSI_RESULT_CHAR && *c != '\f')
             return TRUE;
     }
 }

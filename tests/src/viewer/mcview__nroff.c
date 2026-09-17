@@ -205,6 +205,22 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_form_feed_is_skipped)
+{
+    int cs[1 + MAX_COMBINING_CHARS];
+
+    load ("1\n\f2\f");
+
+    ck_assert_int_eq (next (NULL), '1');
+    ck_assert_int_eq (next (NULL), '\n');
+    ck_assert_int_eq (next (NULL), '2');
+    ck_assert_int_eq (
+        mcview_next_combining_char_sequence (&view, &state, cs, G_N_ELEMENTS (cs), NULL), 0);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -217,6 +233,7 @@ main (void)
     tcase_add_test (tc_core, test_sgr_inside_a_backspace_sequence);
     tcase_add_test (tc_core, test_styled_heading_is_bold);
     tcase_add_test (tc_core, test_overstrike_glyphs);
+    tcase_add_test (tc_core, test_form_feed_is_skipped);
 
     return mctest_run_all (tc_core);
 }
