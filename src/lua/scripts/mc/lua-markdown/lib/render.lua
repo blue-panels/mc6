@@ -821,6 +821,120 @@ end
 M.inline = inline
 
 ------------------------------------------------------------------------
+-- Code blocks: the language of the fence, colored by the syntax rules of
+-- the editor through mc.syntax.scan.
+
+-- What a fence writes, turned into the name of a file: the rules of the
+-- editor are chosen by name, and the name of a language is usually its
+-- extension.  Only the ones that differ are listed.
+M.CODE_LANGUAGES = {
+    bash = "sh", zsh = "sh", shell = "sh", console = "sh",
+    ["c++"] = "cpp", cxx = "cpp", cc = "cpp", hpp = "h",
+    javascript = "js", node = "js", typescript = "ts",
+    python = "py", ruby = "rb", rust = "rs", kotlin = "kt", perl = "pl",
+    markdown = "md", yml = "yaml", patch = "diff", conf = "ini",
+}
+
+-- Languages whose rules are chosen by a whole name, not by an extension.
+M.CODE_FILENAMES = {
+    make = "Makefile", makefile = "Makefile", cmake = "CMakeLists.txt",
+    dockerfile = "Dockerfile",
+}
+
+local SGR_COLORS = {
+    black = 30, red = 31, green = 32, brown = 33, yellow = 33, blue = 34,
+    magenta = 35, cyan = 36, lightgray = 37, gray = 90, brightred = 91,
+    brightgreen = 92, brightbrown = 93, brightblue = 94, brightmagenta = 95,
+    brightcyan = 96, white = 97,
+}
+
+local SGR_ATTRS = { bold = "1", italic = "3", underline = "4", reverse = "7" }
+
+-- The SGR sequence of one color of a rule set, "" for the plain one.
+local function sgr_of_color(color)
+    local codes = {}
+
+    if color ~= nil then
+        if color.attrs ~= nil then
+            for attr in color.attrs:gmatch("[^+]+") do
+                if SGR_ATTRS[attr] ~= nil then
+                    codes[#codes + 1] = SGR_ATTRS[attr]
+                end
+            end
+        end
+        if color.fg ~= nil and SGR_COLORS[color.fg] ~= nil then
+            codes[#codes + 1] = tostring(SGR_COLORS[color.fg])
+        end
+    end
+    if #codes == 0 then
+        return ""
+    end
+    return "\27[" .. table.concat(codes, ";") .. "m"
+end
+
+-- The scan of a code block, or nil when there are no rules for it or no mc
+-- to ask (the renderer also runs outside it).  The language of the fence is
+-- given as the name of a file, the way the rules are chosen for a real one;
+-- a fence without a language leaves the choice to the first line of the code,
+-- which is how a shebang is recognized.
+local function scan_code(code, language)
+    if mc == nil or mc.syntax == nil or mc.syntax.scan == nil then
+        return nil
+    end
+    if language == nil or language == "" then
+        return mc.syntax.scan(code)
+    end
+    local key = language:lower()
+    local filename = M.CODE_FILENAMES[key] or ("code." .. (M.CODE_LANGUAGES[key] or key))
+    return mc.syntax.scan(code, { filename = filename })
+end
+
+-- The lines of a code block, colored where the rules say so.  Each line
+-- opens the color it starts in and closes it at its end, because the viewer
+-- may start reading at any line.
+local function code_lines(code, language, out)
+    local scan = scan_code(code, language)
+    local colored = {}
+    local pos = 1
+
+    if scan == nil then
+        for line in (code .. "\n"):gmatch("(.-)\n") do
+            out[#out + 1] = "    " .. line
+        end
+        if code:sub(-1) == "\n" then
+            out[#out] = nil
+        end
+        return
+    end
+
+    for _, run in ipairs(scan.runs) do
+        local sgr = sgr_of_color(scan.colors[run.color])
+        local text = code:sub(run.offset, run.offset + run.length - 1)
+
+        for piece, eol in (text .. "\0"):gmatch("([^\n]*)(\n?)") do
+            if piece ~= "" then
+                colored[#colored + 1] = sgr ~= "" and (sgr .. piece:gsub("%z", "") .. "\27[0m")
+                    or piece:gsub("%z", "")
+            end
+            if eol == "\n" then
+                colored[#colored + 1] = "\n"
+            end
+        end
+        pos = run.offset + run.length
+    end
+    if pos <= #code then
+        colored[#colored + 1] = code:sub(pos)
+    end
+
+    for line in (table.concat(colored) .. "\n"):gmatch("(.-)\n") do
+        out[#out + 1] = "    " .. line
+    end
+    if code:sub(-1) == "\n" then
+        out[#out] = nil
+    end
+end
+
+------------------------------------------------------------------------
 -- Tables.
 
 local function split_row(line)
@@ -1335,15 +1449,19 @@ function M.render(text, opts)
 
         if fence ~= nil then
             local fence_char = fence:sub(1, 1)
+            local language = trim(line:match("^ ? ? ?[`~]+(.*)$") or ""):match("^([%w+#._-]*)")
+            local code = {}
+
             i = i + 1
             while i <= #lines do
                 local close = lines[i]:match("^ ? ? ?(" .. (fence_char == "`" and "```+" or "~~~+") .. ")%s*$")
                 if close ~= nil and #close >= #fence then
                     break
                 end
-                out[#out + 1] = "    " .. lines[i]
+                code[#code + 1] = lines[i]
                 i = i + 1
             end
+            code_lines(table.concat(code, "\n"), language, out)
             i = i + 1
         elseif line:find("<!--", 1, true) and not line:find("-->", 1, true) then
             while i <= #lines and not lines[i]:find("-->", 1, true) do

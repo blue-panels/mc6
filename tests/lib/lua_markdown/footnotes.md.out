@@ -2,7 +2,7 @@ Text with a note[1] and another one[2], then the first again[1].
 
 A missing note[^none] stays as written, and so does [^with space].
 
-    [^code]: not a footnote inside code
+    [1;33m[^code]: not a footnote inside code[0m
     [x]: not a definition either
 
 Reference links: ]8;;https://one.example\full]8;;\ <https://one.example>, ]8;;https://two.example\collapsed]8;;\ <https://two.example>, ]8;;https://three.example\shortcut]8;;\

@@ -1,10 +1,10 @@
-    -- # not a heading
+    [1;33m-- # not a heading[0m
     local x = a_b * c_d
 
     indented code # not heading
     snake_case_here
 
-    tilde fence
+    [1;33mtilde fence[0m
 
-    ``` inside a longer fence
+    [1;33m``` inside a longer fence[0m
 end
