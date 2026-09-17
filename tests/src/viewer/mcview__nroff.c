@@ -179,6 +179,32 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_overstrike_glyphs)
+{
+    int color;
+
+    load ("+\bo '\be \"\bU ,\bc |\b^ -\bL a\bb");
+
+    ck_assert_int_eq (next (&color), 0x2022);
+    ck_assert_int_eq (color, NORMAL);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 0x00E9);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 0x00DC);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 0x00E7);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 0x2191);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 0x00A3);
+    ck_assert_int_eq (next (NULL), ' ');
+    ck_assert_int_eq (next (NULL), 'b');
+    ck_assert_int_eq (state.offset, 27);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -190,6 +216,7 @@ main (void)
     tcase_add_test (tc_core, test_sgr_and_backspaces_style_one_character);
     tcase_add_test (tc_core, test_sgr_inside_a_backspace_sequence);
     tcase_add_test (tc_core, test_styled_heading_is_bold);
+    tcase_add_test (tc_core, test_overstrike_glyphs);
 
     return mctest_run_all (tc_core);
 }

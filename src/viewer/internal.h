@@ -62,7 +62,8 @@ typedef enum
     NROFF_TYPE_BOLD,
     NROFF_TYPE_UNDERLINE,
     NROFF_TYPE_BOLD_UNDERLINE,
-    NROFF_TYPE_HEADING
+    NROFF_TYPE_HEADING,
+    NROFF_TYPE_OVERSTRIKE  // two different characters in one cell
 } nroff_type_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -658,10 +659,7 @@ mcview_is_nroff_sequence (WView *view, off_t offset)
     if (!mcview_get_byte_indexed (view, offset, 0, &c0) || !g_ascii_isprint (c0))
         return FALSE;
 
-    if (!mcview_get_byte_indexed (view, offset, 2, &c2) || !g_ascii_isprint (c2))
-        return FALSE;
-
-    return (c0 == c2 || c0 == '_' || (c0 == '+' && c2 == 'o'));
+    return mcview_get_byte_indexed (view, offset, 2, &c2) && g_ascii_isprint (c2);
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -875,6 +875,62 @@ mcview_nroff_color (const mcview_ansi_state_t *ansi, nroff_type_t type)
 
 /* --------------------------------------------------------------------------------------------- */
 /**
+ * The character groff means by printing first and second in one cell, as grotty -Tascii writes
+ * the glyphs it has no character for: an accent over a letter, a bullet, arrows, currency signs.
+ * An unknown pair is its second character.
+ */
+static int
+mcview_nroff_overstrike (int first, int second)
+{
+    static const struct
+    {
+        char first;
+        char second;
+        gunichar ch;
+    } glyphs[] = {
+        { '+', 'o', 0x2022 },   // bullet
+        { '|', '^', 0x2191 },   // up arrow
+        { '|', 'v', 0x2193 },   // down arrow
+        { '=', '^', 0x21D1 },   // double up arrow
+        { '=', 'v', 0x21D3 },   // double down arrow
+        { 'O', 'x', 0x2297 },   // circled times
+        { 'O', '+', 0x2295 },   // circled plus
+        { '/', 'c', 0x00A2 },   // cent
+        { '-', 'L', 0x00A3 },   // pound
+        { 'o', 'x', 0x00A4 },   // currency
+        { '=', 'Y', 0x00A5 },   // yen
+        { ',', 'f', 0x0192 },   // florin
+        { '\'', '`', 0x02D8 },  // breve
+        { '/', 'L', 0x0141 },  { '/', 'l', 0x0142 }, { '/', 'O', 0x00D8 }, { '/', 'o', 0x00F8 },
+    };
+    static const struct
+    {
+        char accent;
+        gunichar mark;
+    } accents[] = {
+        { '`', 0x0300 }, { '\'', 0x0301 }, { '^', 0x0302 }, { '~', 0x0303 },
+        { '"', 0x0308 }, { 'o', 0x030A },  { ',', 0x0327 },
+    };
+    size_t i;
+
+    for (i = 0; i < G_N_ELEMENTS (glyphs); i++)
+        if (glyphs[i].first == first && glyphs[i].second == second)
+            return (int) glyphs[i].ch;
+
+    if (g_ascii_isalpha (second))
+        for (i = 0; i < G_N_ELEMENTS (accents); i++)
+        {
+            gunichar ch;
+
+            if (accents[i].accent == first && g_unichar_compose (second, accents[i].mark, &ch))
+                return (int) ch;
+        }
+
+    return second;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
  * The backspace trick at the next nroff character: stores the character, updates state past the
  * whole sequence and returns its style.
  *
@@ -948,6 +1004,13 @@ mcview_nroff_sequence (WView *view, mcview_state_machine_t *state, int *c)
         *state = state_after_three_chars;
         state->nroff_underscore_is_underlined = TRUE;
         return NROFF_TYPE_UNDERLINE;
+    }
+
+    if (*c < 0x80 && c3 < 0x80)
+    {
+        *c = view->utf8 ? mcview_nroff_overstrike (*c, c3) : c3;
+        *state = state_after_three_chars;
+        return NROFF_TYPE_OVERSTRIKE;
     }
 
     return NROFF_TYPE_NONE;

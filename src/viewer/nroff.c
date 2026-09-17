@@ -1,9 +1,11 @@
 /*
-   Internal file viewer for the Midnight Commander
+   Internal file viewer for the M-Commander
    Functions for searching in nroff-like view
 
    Copyright (C) 1994-2025
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1998
@@ -16,15 +18,17 @@
    Slava Zanko <slavazanko@google.com>, 2009
    Andrew Borodin <aborodin@vmail.ru>, 2009
    Ilia Maslakov <il.smind@gmail.com>, 2009
+   Ilia Maslakov <il.smind@gmail.com>, 2026
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -108,7 +112,8 @@ mcview__get_nroff_real_len (WView *view, off_t start, off_t length)
             ret += nroff->char_length + 1;  // letter + '\b'
             break;
         case NROFF_TYPE_UNDERLINE:
-            ret += 2;  // '_' + '\b'
+        case NROFF_TYPE_OVERSTRIKE:
+            ret += 2;  // '_' or the first character + '\b'
             break;
         case NROFF_TYPE_BOLD_UNDERLINE:
             ret += 2 + nroff->char_length + 1;  // '_' + '\b' + letter + '\b'
@@ -212,6 +217,12 @@ mcview_nroff_seq_info (mcview_nroff_t *nroff)
         nroff->current_char = next2;
         nroff->type = NROFF_TYPE_UNDERLINE;
     }
+    else if (nroff->current_char < 0x80 && next2 < 0x80)
+    {
+        // the search matches the second character, what an overstrike is without a glyph of its own
+        nroff->current_char = next2;
+        nroff->type = NROFF_TYPE_OVERSTRIKE;
+    }
     return nroff->type;
 }
 
@@ -231,7 +242,8 @@ mcview_nroff_seq_next (mcview_nroff_t *nroff)
         nroff->index += nroff->char_length + 1;  // letter + '\b'
         break;
     case NROFF_TYPE_UNDERLINE:
-        nroff->index += 2;  // '_' + '\b'
+    case NROFF_TYPE_OVERSTRIKE:
+        nroff->index += 2;  // '_' or the first character + '\b'
         break;
     case NROFF_TYPE_BOLD_UNDERLINE:
         nroff->index += 2 + nroff->char_length + 1;  // '_' + '\b' + letter + '\b'
