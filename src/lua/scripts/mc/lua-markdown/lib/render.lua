@@ -364,10 +364,82 @@ local function latex_replace_scripts(s)
     return s
 end
 
+-- \vec{v} and its kin: the mark goes over every character of the group
+local latex_accents = {
+    vec = "\u{20D7}", overline = "\u{0305}", bar = "\u{0304}", hat = "\u{0302}",
+    tilde = "\u{0303}", dot = "\u{0307}", ddot = "\u{0308}", check = "\u{030C}",
+    breve = "\u{0306}", acute = "\u{0301}", grave = "\u{0300}", underline = "\u{0332}",
+}
+
+local function latex_replace_accents(s)
+    local out = {}
+
+    while true do
+        local a, b, cmd = s:find("\\(%a+){")
+        if a == nil or latex_accents[cmd] == nil then
+            break
+        end
+        local body, after = extract_brace(s, b)
+
+        out[#out + 1] = s:sub(1, a - 1)
+        for _, ch in ipairs(chars(body)) do
+            out[#out + 1] = ch .. latex_accents[cmd]
+        end
+        s = s:sub(after)
+    end
+    out[#out + 1] = s
+    return table.concat(out)
+end
+
+-- The limits of a big operator go after it in brackets: the terminal has no
+-- room above and below the sign.
+local latex_big = {
+    ["\u{2211}"] = true, ["\u{220F}"] = true, ["\u{222B}"] = true,
+    ["\u{22C3}"] = true, ["\u{22C2}"] = true, ["lim"] = true,
+}
+
+local function latex_replace_limits(s)
+    local out = {}
+    local i = 1
+
+    while i <= #s do
+        local matched = false
+
+        for sign, _ in pairs(latex_big) do
+            if s:sub(i, i + #sign - 1) == sign then
+                local rest = s:sub(i + #sign)
+                local from, after = nil, nil
+
+                if rest:sub(1, 2) == "_{" then
+                    from, after = extract_brace(rest, 2)
+                end
+                if from ~= nil then
+                    local to = nil
+
+                    if rest:sub(after, after + 1) == "^{" then
+                        to, after = extract_brace(rest, after + 1)
+                    end
+                    out[#out + 1] = sign .. "(" .. from .. (to ~= nil and (".." .. to) or "") .. ")"
+                    i = i + #sign + after - 1
+                    matched = true
+                    break
+                end
+            end
+        end
+        if not matched then
+            out[#out + 1] = s:sub(i, i)
+            i = i + 1
+        end
+    end
+    return table.concat(out)
+end
+
 local function render_math(math)
     math = latex_replace_frac(math)
     math = latex_replace_sqrt(math)
+    math = latex_replace_accents(math)
     math = latex_replace_commands(math)
+    math = latex_replace_limits(math)
     math = latex_replace_scripts(math)
     return (math:gsub("[{}]", ""))
 end
@@ -424,10 +496,10 @@ local function bracket_piece(name, k, n)
     return b[3]
 end
 
--- The lines of display math that holds an environment, or nil if it holds
--- none this knows.  Text before and after the environment goes on its
--- middle row.
-local function render_math_block(formula)
+-- What an environment holds: the text before and after it, its rows of
+-- rendered cells and how its columns line up.  nil when this is not an
+-- environment it knows.
+local function parse_math_env(formula)
     local before, name, rest = formula:match("^(.-)\\begin{([%a*]+)}(.*)$")
     local env = name and environments[name]
     if env == nil then
@@ -440,6 +512,7 @@ local function render_math_block(formula)
     local body = rest:sub(1, close - 1)
     local after = rest:sub(close + #"\\end{" + #name + 1)
     local align = env[3]
+
     if name == "array" then
         local spec, tail = body:match("^%s*{([^}]*)}(.*)$")
         if spec ~= nil then
@@ -447,8 +520,6 @@ local function render_math_block(formula)
             body = tail
         end
     end
-    -- aligned environments put the alignment point between the cells
-    local gap = align == "rl" and " " or "  "
 
     local rows = {}
     local ncols = 0
@@ -465,30 +536,80 @@ local function render_math_block(formula)
     if #rows == 0 then
         return nil
     end
+    return {
+        env = env,
+        rows = rows,
+        ncols = ncols,
+        align = align,
+        lead = render_math(trim(before)),
+        tail = render_math(trim(after)),
+    }
+end
 
+-- An environment inside a formula in the text: one line, rows told apart by
+-- a semicolon, because the line it sits on has one row of its own.
+local function render_math_inline(formula)
+    local m = parse_math_env(formula)
+    if m == nil then
+        return nil
+    end
+    local rows = {}
+
+    for _, cells in ipairs(m.rows) do
+        rows[#rows + 1] = table.concat(cells, " ")
+    end
+    local body = table.concat(rows, "; ")
+    local open = m.env[1] ~= nil and brackets[m.env[1]][1] or ""
+    local close = m.env[2] ~= nil and brackets[m.env[2]][1] or ""
+
+    return trim(m.lead .. " " .. open .. body .. close .. " " .. m.tail)
+end
+
+-- The lines of display math that holds an environment, or nil if it holds
+-- none this knows.  Text before and after the environment goes on its
+-- middle row.
+local function render_math_block(formula, width_limit)
+    local m = parse_math_env(formula)
+    if m == nil then
+        return nil
+    end
     local colw = {}
-    for c = 1, ncols do
+    for c = 1, m.ncols do
         colw[c] = 0
-        for _, cells in ipairs(rows) do
+        for _, cells in ipairs(m.rows) do
             colw[c] = math.max(colw[c], width(cells[c] or ""))
         end
     end
 
-    local lead = render_math(trim(before))
-    local tail = render_math(trim(after))
-    local n = #rows
+    -- the columns of a wide block are set closer together before anything
+    -- else is given up
+    local gap = m.align == "rl" and " " or "  "
+    if width_limit ~= nil then
+        local total = 4 + (m.ncols - 1) * #gap + width(m.lead) + width(m.tail) + 4
+        for c = 1, m.ncols do
+            total = total + colw[c]
+        end
+        if total > width_limit and m.align ~= "rl" then
+            gap = " "
+        end
+    end
+
+    local n = #m.rows
     local middle = (n + 1) // 2
     local lines = {}
-    for k, cells in ipairs(rows) do
+
+    for k, cells in ipairs(m.rows) do
         local parts = {}
-        for c = 1, ncols do
+
+        for c = 1, m.ncols do
             local cell = cells[c] or ""
             local pad = colw[c] - width(cell)
-            local a = align:sub(c, c)
+            local a = m.align:sub(c, c)
+
             if a == "" then
-                a = align:sub(-1)
+                a = m.align:sub(-1)
             end
-            if align == "rl" then
+            if m.align == "rl" then
                 a = c % 2 == 1 and "r" or "l"
             end
             if a == "r" then
@@ -499,18 +620,20 @@ local function render_math_block(formula)
                 parts[c] = cell .. (" "):rep(pad)
             end
         end
+
         local line = table.concat(parts, gap)
-        if env[1] ~= nil then
-            line = bracket_piece(env[1], k, n) .. " " .. line
+
+        if m.env[1] ~= nil then
+            line = bracket_piece(m.env[1], k, n) .. " " .. line
         end
-        if env[2] ~= nil then
-            line = line .. " " .. bracket_piece(env[2], k, n)
+        if m.env[2] ~= nil then
+            line = line .. " " .. bracket_piece(m.env[2], k, n)
         end
-        if lead ~= "" then
-            line = (k == middle and lead .. " " or (" "):rep(width(lead) + 1)) .. line
+        if m.lead ~= "" then
+            line = (k == middle and m.lead .. " " or (" "):rep(width(m.lead) + 1)) .. line
         end
-        if tail ~= "" and k == middle then
-            line = line .. " " .. tail
+        if m.tail ~= "" and k == middle then
+            line = line .. " " .. m.tail
         end
         lines[#lines + 1] = ("    " .. line):gsub("%s+$", "")
     end
@@ -518,9 +641,10 @@ local function render_math_block(formula)
 end
 
 -- The block lines of a line that is display math with an environment.
-local function math_block_of(line)
+local function math_block_of(line, width_limit)
     local formula = trim(line):match("^%$%$(.*)%$%$$")
-    return formula ~= nil and formula:find("\\begin{", 1) and render_math_block(formula) or nil
+    return formula ~= nil and formula:find("\\begin{", 1) and render_math_block(formula, width_limit)
+        or nil
 end
 
 -- The closing $ of the formula that opens at pos (the position after the
@@ -650,7 +774,11 @@ tokenize = function(s)
                 i = i + 1
             else
                 -- a formula is not broken across lines
-                text[#text + 1] = (render_math(s:sub(i + #delim, a - 1)):gsub(" ", NBSP))
+                local formula = s:sub(i + #delim, a - 1)
+                local rendered = formula:find("\\begin{", 1, true) and render_math_inline(formula)
+                    or render_math(formula)
+
+                text[#text + 1] = (rendered:gsub(" ", NBSP))
                 i = b + 1
             end
         elseif ch == "&" then
@@ -1710,8 +1838,8 @@ function M.render(text, opts)
                 out[#out + 1] = expand_tabs(lines[i])
                 i = i + 1
             end
-        elseif math_block_of(line) ~= nil then
-            for _, l in ipairs(math_block_of(line)) do
+        elseif math_block_of(line, width_limit) ~= nil then
+            for _, l in ipairs(math_block_of(line, width_limit)) do
                 out[#out + 1] = l
             end
             i = i + 1
