@@ -38,6 +38,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/lists.md.out \
 	lua_markdown/mixed.md \
 	lua_markdown/mixed.md.out \
+	lua_markdown/sgr.md \
+	lua_markdown/sgr.md.out \
 	lua_markdown/table.md \
 	lua_markdown/table.md.out
 

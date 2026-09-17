@@ -1,14 +1,14 @@
 This is bboolldd text.
 
-This is _i_t_a_l_i_c text.
+This is [3mitalic[23m text.
 
 This is _c_o_d_e text.
 
-This is _bb_oo_ll_dd _ii_tt_aa_ll_ii_cc text.
+This is [3mbboolldd iittaalliicc[23m text.
 
 Plain text with no formatting.
 
-Intraword _e_mphasis, ssttrroonngg and _e_m.
+Intraword [3mem[23mphasis, ssttrroonngg and [3mem[23m.
 
 snake_case_name and a_b_c stay, file_name.c too.
 

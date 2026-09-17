@@ -1,5 +1,6 @@
 -- Markdown to the nroff-style text the viewer paints: overstruck letters
--- for headings and bold, underscore overstrikes for italic, code and links.
+-- for headings and bold, underscore overstrikes for code and links, SGR for
+-- italic and for the colors of the heading levels.
 -- One pass over the lines for the blocks, one tokenizing pass per line for
 -- the inline markup; nothing is scanned twice.
 
@@ -8,6 +9,14 @@ local M = {}
 M.MIN_COLUMN = 8     -- a table column is never squeezed narrower than this
 M.DEFAULT_WIDTH = 80 -- the screen width when the caller names none
 M.MAX_WIDTH = 120    -- text is never flowed wider than this, whatever the screen
+
+-- SGR colors of the heading levels; a level without one is bold, and the
+-- first level keeps the heading color of the skin
+M.HEADING_COLORS = { [2] = "96", [3] = "92" }
+
+local SGR_ITALIC = "\27[3m"
+local SGR_ITALIC_OFF = "\27[23m"
+local SGR_COLOR_OFF = "\27[39m"
 
 local BOX_H = "\u{2500}"
 local BOX_V = "\u{2502}"
@@ -55,24 +64,46 @@ local function trim(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
--- style: { bold = b, under = u, heading = h }; a space is never overstruck
+-- style: { bold = b, under = u, italic = i, heading = level }.  A space is
+-- never overstruck, and the SGR sequences go around the visible characters
+-- only, so that a line never starts or ends inside them with a space.
 local function styled(s, style)
-    if not (style.bold or style.under or style.heading) then
+    local open, close = "", ""
+    if style.italic then
+        open, close = SGR_ITALIC, SGR_ITALIC_OFF
+    end
+    local color = style.heading and M.HEADING_COLORS[style.heading]
+    if color ~= nil then
+        open = open .. "\27[" .. color .. "m"
+        close = SGR_COLOR_OFF .. close
+    end
+    if not (style.bold or style.under or style.heading or open ~= "") then
         return s
     end
     local out = {}
+    local first, last
     for _, ch in ipairs(chars(s)) do
         if ch == " " then
             out[#out + 1] = ch
-        elseif style.heading then
-            out[#out + 1] = ch .. "\b" .. ch .. "\b" .. ch
-        elseif style.bold and style.under then
-            out[#out + 1] = "_\b" .. ch .. "\b" .. ch
-        elseif style.bold then
-            out[#out + 1] = ch .. "\b" .. ch
         else
-            out[#out + 1] = "_\b" .. ch
+            if style.heading == 1 then
+                out[#out + 1] = ch .. "\b" .. ch .. "\b" .. ch
+            elseif (style.bold or style.heading) and style.under then
+                out[#out + 1] = "_\b" .. ch .. "\b" .. ch
+            elseif style.bold or style.heading then
+                out[#out + 1] = ch .. "\b" .. ch
+            elseif style.under then
+                out[#out + 1] = "_\b" .. ch
+            else
+                out[#out + 1] = ch
+            end
+            first = first or #out
+            last = #out
         end
+    end
+    if first ~= nil and open ~= "" then
+        out[first] = open .. out[first]
+        out[last] = out[last] .. close
     end
     return table.concat(out)
 end
@@ -487,11 +518,12 @@ end
 local render_tokens
 
 render_tokens = function(tokens, style, out)
-    local bold, under = 0, 0
+    local bold, italic = 0, 0
     local function current()
         return {
             bold = style.bold or bold > 0,
-            under = style.under or under > 0,
+            under = style.under,
+            italic = style.italic or italic > 0,
             heading = style.heading,
         }
     end
@@ -517,7 +549,7 @@ render_tokens = function(tokens, style, out)
                     if use == 2 then
                         bold = bold - 1
                     else
-                        under = under - 1
+                        italic = italic - 1
                     end
                 end
             end
@@ -529,7 +561,7 @@ render_tokens = function(tokens, style, out)
                     if use == 2 then
                         bold = bold + 1
                     else
-                        under = under + 1
+                        italic = italic + 1
                     end
                 end
             end
@@ -588,20 +620,64 @@ end
 
 -- The visible characters of rendered text, each with the overstrikes that
 -- style it (c, c\bc, _\bc, _\bc\bc), so that #units is the width on screen.
+-- An SGR sequence takes no room: one that ends a style goes with the
+-- character before it, any other with the character after it.
 local function units_of(rendered)
     local cs = chars(rendered)
     local units = {}
+    local prefix = ""
     local i = 1
     while i <= #cs do
-        local unit = cs[i]
-        i = i + 1
-        while cs[i] == "\b" and cs[i + 1] ~= nil do
-            unit = unit .. "\b" .. cs[i + 1]
-            i = i + 2
+        if cs[i] == "\27" then
+            local j = i + 1
+            while cs[j] ~= nil and not (j > i + 1 and cs[j]:match("^[@-~]$")) do
+                j = j + 1
+            end
+            local seq = table.concat(cs, "", i, math.min(j, #cs))
+            if #units > 0 and (seq == SGR_ITALIC_OFF or seq == SGR_COLOR_OFF) then
+                units[#units] = units[#units] .. seq
+            else
+                prefix = prefix .. seq
+            end
+            i = j + 1
+        else
+            local unit = prefix .. cs[i]
+            prefix = ""
+            i = i + 1
+            while cs[i] == "\b" and cs[i + 1] ~= nil do
+                unit = unit .. "\b" .. cs[i + 1]
+                i = i + 2
+            end
+            units[#units + 1] = unit
         end
-        units[#units + 1] = unit
+    end
+    if prefix ~= "" and #units > 0 then
+        units[#units] = units[#units] .. prefix
     end
     return units
+end
+
+-- One line out of wrapped units, with the SGR styles open at its start
+-- opened again and those still open at its end closed, so that each line
+-- stands on its own: the viewer may start reading at any of them.  state
+-- carries what is open from one line to the next.
+local function sgr_line(units, state)
+    local before = (state.italic and SGR_ITALIC or "") .. (state.color and "\27[" .. state.color .. "m" or "")
+    for _, u in ipairs(units) do
+        for code in u:gmatch("\27%[(%d*)m") do
+            if code == "3" then
+                state.italic = true
+            elseif code == "23" then
+                state.italic = false
+            elseif code == "39" then
+                state.color = nil
+            else
+                state.color = code
+            end
+        end
+    end
+    local after = (state.color and SGR_COLOR_OFF or "") .. (state.italic and SGR_ITALIC_OFF or "")
+    return before .. table.concat(units) .. after
 end
 
 -- The words of rendered text, packed into lines no wider than w units; a
@@ -726,11 +802,14 @@ local function render_table(lines, out, width_limit)
     end
 
     local cells = {}
+    local cell_sgr = {}
     for r = 1, #rows do
         cells[r] = {}
+        cell_sgr[r] = {}
         for c = 1, maxc do
             local u = units[r][c]
             cells[r][c] = #u > colw[c] and wrap_units(u, colw[c]) or { u }
+            cell_sgr[r][c] = {}
         end
     end
 
@@ -759,7 +838,7 @@ local function render_table(lines, out, width_limit)
                     left = pad // 2
                     right = pad - left
                 end
-                parts[c] = (" "):rep(left) .. table.concat(cell) .. (" "):rep(right)
+                parts[c] = (" "):rep(left) .. sgr_line(cell, cell_sgr[r][c]) .. (" "):rep(right)
             end
             out[#out + 1] = table.concat(parts, " " .. BOX_V .. " ")
         end
@@ -883,10 +962,11 @@ local function flow(pieces, prefix, width_limit, out)
     if #cur > 0 then
         logical[#logical + 1] = table.concat(cur, " ")
     end
+    local sgr = {}
     for _, s in ipairs(logical) do
         for rendered in (inline(s, {}) .. "\n"):gmatch("(.-)\n") do
             for _, seg in ipairs(wrap_units(units_of(rendered), room)) do
-                out[#out + 1] = prefix .. table.concat(seg)
+                out[#out + 1] = prefix .. sgr_line(seg, sgr)
                 prefix = hanging
             end
         end
@@ -1029,13 +1109,13 @@ function M.render(text, opts)
             out[#out + 1] = BOX_H:rep(width_limit)
             i = i + 1
         elseif is_atx_heading(line) then
-            local rest = line:match("^ ? ? ?#+%s*(.-)%s*$")
+            local hashes, rest = line:match("^ ? ? ?(#+)%s*(.-)%s*$")
             rest = rest:gsub("%s+#+$", ""):gsub("^#+$", "")
-            out[#out + 1] = inline(rest, { heading = true })
+            out[#out + 1] = inline(rest, { heading = math.min(#hashes, 6) })
             i = i + 1
         elseif next_line ~= nil and not was_list and list_item(line) == nil
             and (next_line:match("^ ? ? ?=+%s*$") or next_line:match("^ ? ? ?%-+%s*$")) then
-            out[#out + 1] = inline(trim(line), { heading = true })
+            out[#out + 1] = inline(trim(line), { heading = next_line:match("=") and 1 or 2 })
             i = i + 2
         else
             local quotes = 0

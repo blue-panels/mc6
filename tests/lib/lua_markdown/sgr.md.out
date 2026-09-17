@@ -1,0 +1,17 @@
+A paragraph with [3man italic phrase long enough to be wrapped by the renderer at the width of[23m
+[3mninety one columns[23m and plain text after it.
+
+[3mBBoolldd iittaalliicc[23m and [3munderscore italic[23m with _c_o_d_e inside [3mitalic[23m _c_o_d_e [3mhere[23m.
+
+[3miittaalliicc hheeaaddeerr[23m                                                                       │ ppllaaiinn
+────────────────────────────────────────────────────────────────────────────────────┼──────
+[3ma cell long enough to be wrapped when the table is squeezed into the width of the[23m   │     [3mx[23m
+[3mscreen[23m                                                                              │      
+────────────────────────────────────────────────────────────────────────────────────┼──────
+
+LLLeeevvveeelll ooonnneee [3miiitttaaallliiiccc[23m
+[96mLLeevveell ttwwoo[39m
+[92mLLeevveell tthhrreeee[39m
+LLeevveell ffoouurr
+
+[96mSSeetteexxtt ttwwoo[39m
