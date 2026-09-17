@@ -764,7 +764,8 @@ create_sixel_handler_script (void)
 static void
 create_markdown_handler_script (void)
 {
-    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua" };
+    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua",
+                                         "lib/mermaid.lua" };
     char *root = g_build_filename (user_mc_scripts_dir, "lua-markdown", (char *) NULL);
     char *lib = g_build_filename (root, "lib", (char *) NULL);
     size_t i;

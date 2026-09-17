@@ -4,6 +4,8 @@
 -- One pass over the lines for the blocks, one tokenizing pass per line for
 -- the inline markup; nothing is scanned twice.
 
+local mermaid = require("mermaid")
+
 local M = {}
 
 M.MIN_COLUMN = 8     -- a table column is never squeezed narrower than this
@@ -1215,10 +1217,30 @@ local function scan_code(code, language)
     return mc.syntax.scan(code, { filename = filename })
 end
 
+-- A mermaid diagram is drawn, not shown as code, when it is one the drawing
+-- knows; anything else stays a code block.
+local function mermaid_lines(code, language, out)
+    if language == nil or language:lower() ~= "mermaid" then
+        return false
+    end
+    local drawn = mermaid.render(code)
+
+    if drawn == nil then
+        return false
+    end
+    for _, line in ipairs(drawn) do
+        out[#out + 1] = line == "" and "" or ("    " .. line)
+    end
+    return true
+end
+
 -- The lines of a code block, colored where the rules say so.  Each line
 -- opens the color it starts in and closes it at its end, because the viewer
 -- may start reading at any line.
 local function code_lines(code, language, out)
+    if mermaid_lines(code, language, out) then
+        return
+    end
     local scan = scan_code(code, language)
     local colored = {}
     local pos = 1

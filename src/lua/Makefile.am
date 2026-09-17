@@ -46,7 +46,8 @@ dist_lua_markdown_DATA = \
 	scripts/mc/lua-markdown/init.lua
 lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
 dist_lua_markdown_lib_DATA = \
-	scripts/mc/lua-markdown/lib/render.lua
+	scripts/mc/lua-markdown/lib/render.lua \
+	scripts/mc/lua-markdown/lib/mermaid.lua
 
 lua_pdfdir = $(lua_scripts_dir)/mc/lua-pdf
 dist_lua_pdf_DATA = \
