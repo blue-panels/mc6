@@ -65,6 +65,7 @@ gboolean mcterm_osc7_capable (const WMcTerm *t);
 int mcterm_cursor_col (const WMcTerm *t);
 /* At a prompt the widget leaves the shell's row to the host: draw it with this. */
 void mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color);
+void mcterm_preload_prompt_colors (const char *skin_section, int color);
 gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
 /* Hand one key to the shell, for its own line editor to act on. */
 gboolean mcterm_send_key (WMcTerm *t, int key);
@@ -249,6 +250,12 @@ mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section
 {
     (void) t;
     (void) screen_y;
+    (void) skin_section;
+    (void) color;
+}
+static inline void
+mcterm_preload_prompt_colors (const char *skin_section, int color)
+{
     (void) skin_section;
     (void) color;
 }

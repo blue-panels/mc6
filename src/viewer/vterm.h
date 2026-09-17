@@ -143,6 +143,8 @@ void mcview_vterm_restore_sync_snapshot (mcview_vterm_t *vt, mcview_terminal_buf
 void mcview_render_terminal_canvas (const mcview_terminal_buffer_t *buf, int top_row, int screen_y,
                                     int screen_x, int rows, int cols,
                                     const mcview_canvas_colors_t *colors);
+/* Allocate the 16 text colors a canvas may be drawn in, before it is drawn. */
+void mcview_preload_canvas_colors (const mcview_canvas_colors_t *colors);
 /* The section of the viewer itself, which is what mcview draws with. */
 void mcview_canvas_colors_viewer (mcview_canvas_colors_t *colors);
 
