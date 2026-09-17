@@ -164,8 +164,9 @@ mcterm_overlay_prompt_text (void)
     if (mcterm_pause_pending)
         return _ ("Press any key to continue...");
 
+    // A shell still on its way to the first prompt runs nothing: mc's own text stays.
     if (!mcterm_overlay_live () || !mcterm_osc7_capable (mcterm_panel)
-        || mcterm_shell_at_prompt (mcterm_panel))
+        || mcterm_shell_at_prompt (mcterm_panel) || mcterm_initial_sync_pending)
         return NULL;
 
     cwd = (current_panel != NULL) ? vfs_path_as_str (current_panel->cwd_vpath) : "";

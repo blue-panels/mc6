@@ -3280,6 +3280,16 @@ mcterm_send_tab_complete (WMcTerm *t, const char *text)
 /* --------------------------------------------------------------------------------------------- */
 
 void
+mcterm_preload_prompt_colors (const char *skin_section, int color)
+{
+    const mcview_canvas_colors_t colors = { skin_section, color, -1, -1, -1 };
+
+    mcview_preload_canvas_colors (&colors);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 mcterm_draw_prompt_row (const WMcTerm *t, int screen_y, const char *skin_section, int color)
 {
     const WRect *r;

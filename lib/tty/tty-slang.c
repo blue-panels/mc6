@@ -686,7 +686,16 @@ tty_tigetstr (const char *terminfo_cap, const char *termcap_cap)
 void
 tty_refresh (void)
 {
+    /* Synchronized output: a terminal that knows the mode shows the update as one frame, so a
+       full redraw does not blink; others ignore it. */
+    if (mc_global.tty.xterm_flag)
+        SLtt_write_string ((SLFUTURE_CONST char *) ESC_STR "[?2026h");
     SLsmg_refresh ();
+    if (mc_global.tty.xterm_flag)
+    {
+        SLtt_write_string ((SLFUTURE_CONST char *) ESC_STR "[?2026l");
+        SLtt_flush_output ();
+    }
     tty_run_painters ();
 }
 

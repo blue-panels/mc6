@@ -154,8 +154,12 @@ wprompt_set_text (WPrompt *p, const char *text)
 void
 wprompt_set_terminal (WPrompt *p, WMcTerm *term)
 {
-    if (p != NULL)
-        p->term = term;
+    if (p == NULL)
+        return;
+
+    p->term = term;
+    if (term != NULL)
+        mcterm_preload_prompt_colors ("mcterm", MCTERM_NORMAL_COLOR);
 }
 
 /* --------------------------------------------------------------------------------------------- */
