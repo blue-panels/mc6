@@ -415,20 +415,21 @@ mcview_preload_canvas_colors (const mcview_canvas_colors_t *colors)
 {
 #ifdef HAVE_SLANG
     /* S-Lang clears and redraws the whole screen at the next refresh after any new color pair.
-       Before the first draw that costs nothing; later it blinks the screen. Only the text colors
-       on the default background: a pair is slow to allocate, and prompts rarely set one. */
+       Before the first draw that costs nothing; later it blinks the screen. */
     mcview_ansi_state_t ansi;
-    int fg, bold;
+    int fg, bg, bold;
 
     mcview_ansi_state_init (&ansi);
 
     for (bold = 0; bold <= 1; bold++)
         for (fg = MCVIEW_ANSI_COLOR_DEFAULT; fg < 16; fg++)
-        {
-            ansi.fg = fg;
-            ansi.bold = bold != 0;
-            (void) mcview_ansi_color_of (&ansi, colors);
-        }
+            for (bg = MCVIEW_ANSI_COLOR_DEFAULT; bg < 16; bg++)
+            {
+                ansi.fg = fg;
+                ansi.bg = bg;
+                ansi.bold = bold != 0;
+                (void) mcview_ansi_color_of (&ansi, colors);
+            }
 #else
     (void) colors;
 #endif
