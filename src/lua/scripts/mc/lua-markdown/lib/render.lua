@@ -42,6 +42,10 @@ local BOX_X = "\u{253C}"
 local BULLETS = { "\u{2022}", "\u{25E6}", "\u{25AA}" }
 local LIST_INDENT = 2  -- columns a nesting level adds
 
+-- the boxes of a task list
+local BOX_EMPTY = "\u{2610}"
+local BOX_DONE = "\u{2611}"
+
 -- a tab in a code block moves to the next stop
 local TAB_WIDTH = 8
 
@@ -1645,6 +1649,13 @@ function M.render(text, opts)
 
                 local bullet = marker:match("^%d") and marker
                     or BULLETS[(level - 1) % #BULLETS + 1]
+                local task, task_text = item:match("^%[([ xX])%]%s+(.*)$")
+
+                -- a task list: the box takes the place of the bullet
+                if task ~= nil and not marker:match("^%d") then
+                    bullet = task == " " and BOX_EMPTY or BOX_DONE
+                    item = task_text
+                end
 
                 prefix = prefix .. (" "):rep((level - 1) * LIST_INDENT) .. bullet .. " "
                 list_hanging = (" "):rep(width(prefix) - quotes * 2)

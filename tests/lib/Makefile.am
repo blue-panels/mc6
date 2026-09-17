@@ -50,6 +50,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/sgr.md.out \
 	lua_markdown/strike.md \
 	lua_markdown/strike.md.out \
+	lua_markdown/task_list.md \
+	lua_markdown/task_list.md.out \
 	lua_markdown/table.md \
 	lua_markdown/wide.md \
 	lua_markdown/wide.md.out \
