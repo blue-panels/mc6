@@ -299,15 +299,16 @@ end
 -- lines, the columns lined up, the brackets built from Unicode pieces.
 
 -- Bracket pieces: one row, top, middle (the extension), bottom and, for a
--- brace, the piece that points at the middle row and the two pieces of a
--- brace two rows high.
+-- brace, the piece that points at the middle row.
 local brackets = {
     ["("] = { "(", "\u{239B}", "\u{239C}", "\u{239D}" },
     [")"] = { ")", "\u{239E}", "\u{239F}", "\u{23A0}" },
     ["["] = { "[", "\u{23A1}", "\u{23A2}", "\u{23A3}" },
     ["]"] = { "]", "\u{23A4}", "\u{23A5}", "\u{23A6}" },
-    ["{"] = { "{", "\u{23A7}", "\u{23AA}", "\u{23A9}", "\u{23A8}", "\u{23B0}", "\u{23B1}" },
-    ["}"] = { "}", "\u{23AB}", "\u{23AA}", "\u{23AD}", "\u{23AC}", "\u{23B1}", "\u{23B0}" },
+    -- a brace is drawn with rounded box corners: the pieces of the real brace
+    -- do not line up in most terminal fonts
+    ["{"] = { "{", "\u{256D}", "\u{2502}", "\u{2570}", "\u{2524}" },
+    ["}"] = { "}", "\u{256E}", "\u{2502}", "\u{256F}", "\u{251C}" },
     ["|"] = { "\u{2502}", "\u{2502}", "\u{2502}", "\u{2502}" },
     ["||"] = { "\u{2016}", "\u{2016}", "\u{2016}", "\u{2016}" },
 }
@@ -335,8 +336,6 @@ local function bracket_piece(name, k, n)
     local b = brackets[name]
     if n == 1 then
         return b[1]
-    elseif n == 2 and b[6] ~= nil then
-        return b[5 + k]
     elseif k == 1 then
         return b[2]
     elseif k == n then
