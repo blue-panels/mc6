@@ -137,6 +137,10 @@ local latex = {
     to = "\u{2192}", leftarrow = "\u{2190}", rightarrow = "\u{2192}",
     Rightarrow = "\u{21D2}", Leftarrow = "\u{21D0}",
     sqrt = "\u{221A}", lim = "lim",
+    cdots = "\u{22EF}", vdots = "\u{22EE}", ddots = "\u{22F1}", ldots = "\u{2026}", dots = "\u{2026}",
+    quad = "  ", qquad = "    ",
+    -- commands that only change the look of what follows
+    left = "", right = "", text = "", mathrm = "", mathbf = "", mathit = "", operatorname = "",
 }
 
 local sub_digits = {
@@ -251,6 +255,158 @@ local function render_math(math)
     math = latex_replace_commands(math)
     math = latex_replace_scripts(math)
     return (math:gsub("[{}]", ""))
+end
+
+------------------------------------------------------------------------
+-- Environments in display math: matrices and the like become a block of
+-- lines, the columns lined up, the brackets built from Unicode pieces.
+
+-- Bracket pieces: one row, top, middle (the extension), bottom and, for a
+-- brace, the piece that points at the middle row and the two pieces of a
+-- brace two rows high.
+local brackets = {
+    ["("] = { "(", "\u{239B}", "\u{239C}", "\u{239D}" },
+    [")"] = { ")", "\u{239E}", "\u{239F}", "\u{23A0}" },
+    ["["] = { "[", "\u{23A1}", "\u{23A2}", "\u{23A3}" },
+    ["]"] = { "]", "\u{23A4}", "\u{23A5}", "\u{23A6}" },
+    ["{"] = { "{", "\u{23A7}", "\u{23AA}", "\u{23A9}", "\u{23A8}", "\u{23B0}", "\u{23B1}" },
+    ["}"] = { "}", "\u{23AB}", "\u{23AA}", "\u{23AD}", "\u{23AC}", "\u{23B1}", "\u{23B0}" },
+    ["|"] = { "\u{2502}", "\u{2502}", "\u{2502}", "\u{2502}" },
+    ["||"] = { "\u{2016}", "\u{2016}", "\u{2016}", "\u{2016}" },
+}
+
+-- environment: left bracket, right bracket, column alignment
+local environments = {
+    matrix = { nil, nil, "c" },
+    smallmatrix = { nil, nil, "c" },
+    pmatrix = { "(", ")", "c" },
+    bmatrix = { "[", "]", "c" },
+    Bmatrix = { "{", "}", "c" },
+    vmatrix = { "|", "|", "c" },
+    Vmatrix = { "||", "||", "c" },
+    cases = { "{", nil, "l" },
+    array = { nil, nil, "c" },
+    aligned = { nil, nil, "rl" },
+    align = { nil, nil, "rl" },
+    ["align*"] = { nil, nil, "rl" },
+    gathered = { nil, nil, "c" },
+    split = { nil, nil, "rl" },
+}
+
+-- The piece of a bracket for row k of n.
+local function bracket_piece(name, k, n)
+    local b = brackets[name]
+    if n == 1 then
+        return b[1]
+    elseif n == 2 and b[6] ~= nil then
+        return b[5 + k]
+    elseif k == 1 then
+        return b[2]
+    elseif k == n then
+        return b[4]
+    elseif b[5] ~= nil and k == (n + 1) // 2 then
+        return b[5]
+    end
+    return b[3]
+end
+
+-- The lines of display math that holds an environment, or nil if it holds
+-- none this knows.  Text before and after the environment goes on its
+-- middle row.
+local function render_math_block(formula)
+    local before, name, rest = formula:match("^(.-)\\begin{([%a*]+)}(.*)$")
+    local env = name and environments[name]
+    if env == nil then
+        return nil
+    end
+    local close = rest:find("\\end{" .. name:gsub("%*", "%%*") .. "}")
+    if close == nil then
+        return nil
+    end
+    local body = rest:sub(1, close - 1)
+    local after = rest:sub(close + #"\\end{" + #name + 1)
+    local align = env[3]
+    if name == "array" then
+        local spec, tail = body:match("^%s*{([^}]*)}(.*)$")
+        if spec ~= nil then
+            align = spec:gsub("[^lcr]", "")
+            body = tail
+        end
+    end
+    -- aligned environments put the alignment point between the cells
+    local gap = align == "rl" and " " or "  "
+
+    local rows = {}
+    local ncols = 0
+    for row in (body .. "\\\\"):gmatch("(.-)\\\\") do
+        if trim(row) ~= "" then
+            local cells = {}
+            for cell in (row .. "&"):gmatch("(.-)&") do
+                cells[#cells + 1] = render_math(trim(cell))
+            end
+            rows[#rows + 1] = cells
+            ncols = math.max(ncols, #cells)
+        end
+    end
+    if #rows == 0 then
+        return nil
+    end
+
+    local colw = {}
+    for c = 1, ncols do
+        colw[c] = 0
+        for _, cells in ipairs(rows) do
+            colw[c] = math.max(colw[c], width(cells[c] or ""))
+        end
+    end
+
+    local lead = render_math(trim(before))
+    local tail = render_math(trim(after))
+    local n = #rows
+    local middle = (n + 1) // 2
+    local lines = {}
+    for k, cells in ipairs(rows) do
+        local parts = {}
+        for c = 1, ncols do
+            local cell = cells[c] or ""
+            local pad = colw[c] - width(cell)
+            local a = align:sub(c, c)
+            if a == "" then
+                a = align:sub(-1)
+            end
+            if align == "rl" then
+                a = c % 2 == 1 and "r" or "l"
+            end
+            if a == "r" then
+                parts[c] = (" "):rep(pad) .. cell
+            elseif a == "c" then
+                parts[c] = (" "):rep(pad // 2) .. cell .. (" "):rep(pad - pad // 2)
+            else
+                parts[c] = cell .. (" "):rep(pad)
+            end
+        end
+        local line = table.concat(parts, gap)
+        if env[1] ~= nil then
+            line = bracket_piece(env[1], k, n) .. " " .. line
+        end
+        if env[2] ~= nil then
+            line = line .. " " .. bracket_piece(env[2], k, n)
+        end
+        if lead ~= "" then
+            line = (k == middle and lead .. " " or (" "):rep(width(lead) + 1)) .. line
+        end
+        if tail ~= "" and k == middle then
+            line = line .. " " .. tail
+        end
+        lines[#lines + 1] = ("    " .. line):gsub("%s+$", "")
+    end
+    return lines
+end
+
+-- The block lines of a line that is display math with an environment.
+local function math_block_of(line)
+    local formula = trim(line):match("^%$%$(.*)%$%$$")
+    return formula ~= nil and formula:find("\\begin{", 1) and render_math_block(formula) or nil
 end
 
 -- The closing $ of the formula that opens at pos (the position after the
@@ -957,6 +1113,7 @@ local function starts_block(line, next_line)
     return is_blank(line) or fence_of(line) ~= nil or is_hr(line) or is_atx_heading(line)
         or list_item(line) ~= nil or line:match("^%s*>") ~= nil
         or (line:find("|", 1, true) ~= nil and next_line ~= nil and is_table_sep(next_line))
+        or line:match("^%s*%$%$.*\\begin{") ~= nil
 end
 
 -- The lines of a paragraph, list item or quote joined into one flow and
@@ -1003,7 +1160,8 @@ local function flow(pieces, prefix, width_limit, out)
 end
 
 -- Take the link reference definitions and the footnotes out of the lines,
--- into doc; code blocks are left alone.  A footnote goes on over the lines
+-- into doc, and drop the lines that hold only an HTML comment; code blocks
+-- are left alone.  A footnote goes on over the lines
 -- indented under it.
 local function collect_definitions(lines)
     local kept = {}
@@ -1027,7 +1185,10 @@ local function collect_definitions(lines)
         if fence == nil then
             label, rest = line:match("^ ? ? ?%[%^([^%]%s]+)%]:%s*(.*)$")
         end
-        if fence ~= nil then
+        if fence == nil and label == nil and line:match("^%s*<!%-%-.-%-%->%s*$") then
+            note = nil
+            dropped = true
+        elseif fence ~= nil then
             local close = line:match("^ ? ? ?([`~]+)%s*$")
             if close ~= nil and close:sub(1, 1) == fence:sub(1, 1) and #close >= #fence then
                 fence = nil
@@ -1126,6 +1287,11 @@ function M.render(text, opts)
                 out[#out + 1] = lines[i]
                 i = i + 1
             end
+        elseif math_block_of(line) ~= nil then
+            for _, l in ipairs(math_block_of(line)) do
+                out[#out + 1] = l
+            end
+            i = i + 1
         elseif line:find("|", 1, true) and next_line ~= nil and is_table_sep(next_line) then
             local rows = { line, next_line }
             i = i + 2

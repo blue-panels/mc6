@@ -32,6 +32,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/inline.md.out \
 	lua_markdown/latex.md \
 	lua_markdown/latex.md.out \
+	lua_markdown/latex_matrix.md \
+	lua_markdown/latex_matrix.md.out \
 	lua_markdown/links.md \
 	lua_markdown/links.md.out \
 	lua_markdown/lists.md \
