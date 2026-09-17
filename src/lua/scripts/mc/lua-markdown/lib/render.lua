@@ -21,6 +21,9 @@ local NBSP = "\u{00A0}"
 -- has no attribute for it
 local STRIKE = "\u{0336}"
 
+-- marks a unit that takes two columns
+local WIDE = "\1"
+
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
@@ -77,14 +80,58 @@ local function is_combining(ch)
     end
     local code = utf8.codepoint(ch)
     return (code >= 0x0300 and code <= 0x036F) or (code >= 0x20D0 and code <= 0x20F0)
+        or (code >= 0xFE00 and code <= 0xFE0F) or code == 0x200B or code == 0x200D
 end
+
+-- Characters two columns wide: the East Asian Wide and Fullwidth blocks and
+-- the emoji, as the terminal draws them.
+local wide_ranges = {
+    { 0x1100, 0x115F }, { 0x2E80, 0x303E }, { 0x3041, 0x33FF }, { 0x3400, 0x4DBF },
+    { 0x4E00, 0x9FFF }, { 0xA000, 0xA4CF }, { 0xA960, 0xA97F }, { 0xAC00, 0xD7A3 },
+    { 0xF900, 0xFAFF }, { 0xFE10, 0xFE19 }, { 0xFE30, 0xFE6F }, { 0xFF00, 0xFF60 },
+    { 0xFFE0, 0xFFE6 }, { 0x17000, 0x18AFF }, { 0x1F300, 0x1F64F }, { 0x1F680, 0x1F6FF },
+    { 0x1F900, 0x1F9FF }, { 0x20000, 0x2FFFD }, { 0x30000, 0x3FFFD },
+}
+
+-- The columns ch takes on screen.  ASCII is the common case and skips the
+-- table; a combining mark takes none.
+local function char_width(ch)
+    local byte = ch:byte(1)
+
+    if byte == nil or byte < 0x80 then
+        return 1
+    end
+    if is_combining(ch) then
+        return 0
+    end
+
+    local code = utf8.codepoint(ch)
+    local lo, hi = 1, #wide_ranges
+
+    if code < wide_ranges[1][1] then
+        return 1
+    end
+    while lo <= hi do
+        local mid = (lo + hi) // 2
+        local range = wide_ranges[mid]
+
+        if code < range[1] then
+            hi = mid - 1
+        elseif code > range[2] then
+            lo = mid + 1
+        else
+            return 2
+        end
+    end
+    return 1
+end
+
+M.char_width = char_width
 
 local function width(s)
     local n = 0
     for _, ch in ipairs(chars(s)) do
-        if not is_combining(ch) then
-            n = n + 1
-        end
+        n = n + char_width(ch)
     end
     return n
 end
@@ -974,7 +1021,9 @@ local function is_table_sep(line)
 end
 
 -- The visible characters of rendered text, each with the overstrikes that
--- style it (c, c\bc, _\bc, _\bc\bc), so that #units is the width on screen.
+-- style it (c, c\bc, _\bc, _\bc\bc).  A unit two columns wide is marked with
+-- WIDE in front; the mark is dropped when the line is written out, and
+-- nothing else in the text can hold that byte.
 -- An SGR sequence takes no room: one that ends a style goes with the
 -- character before it, any other with the character after it.
 local function units_of(rendered)
@@ -1004,6 +1053,10 @@ local function units_of(rendered)
             i = j + 1
         else
             local unit = prefix .. cs[i]
+
+            if char_width(cs[i]) == 2 then
+                unit = WIDE .. unit
+            end
             prefix = ""
             i = i + 1
             while cs[i] == "\b" and cs[i + 1] ~= nil do
@@ -1023,6 +1076,19 @@ local function units_of(rendered)
     return units
 end
 
+-- The columns one unit takes, and the columns a run of them takes.
+local function unit_width(u)
+    return u:byte(1) == 1 and 2 or 1
+end
+
+local function units_width(units)
+    local n = 0
+    for _, u in ipairs(units) do
+        n = n + (u:byte(1) == 1 and 2 or 1)
+    end
+    return n
+end
+
 -- One line out of wrapped units, with the SGR styles and the link open at its start
 -- opened again and those still open at its end closed, so that each line
 -- stands on its own: the viewer may start reading at any of them.  state
@@ -1031,7 +1097,10 @@ local function sgr_line(units, state)
     local before = (state.italic and SGR_ITALIC or "")
         .. (state.color and "\27[" .. state.color .. "m" or "")
         .. (state.link and link_start(state.link) or "")
+    local text = {}
+
     for _, u in ipairs(units) do
+        text[#text + 1] = u
         for url in u:gmatch("\27%]8;;(.-)\27\\") do
             state.link = url ~= "" and url or nil
         end
@@ -1050,40 +1119,49 @@ local function sgr_line(units, state)
     local after = (state.link and LINK_END or "")
         .. (state.color and SGR_COLOR_OFF or "")
         .. (state.italic and SGR_ITALIC_OFF or "")
-    return before .. table.concat(units) .. after
+    return (before .. table.concat(text) .. after):gsub(WIDE, "")
 end
 
--- The words of rendered text, packed into lines no wider than w units; a
+-- The words of rendered text, packed into lines no wider than w columns; a
 -- space is never overstruck, so it is always a unit of its own.
 local function wrap_units(units, w)
     local segs = {}
     local cur = {}
     local word = {}
+    local cur_w, word_w = 0, 0
 
     local function push_word()
         if #word == 0 then
             return
         end
-        while #word > w do
+        while word_w > w do
+            -- a word wider than the line is cut where the line ends
+            local head, head_w = {}, 0
+
             if #cur > 0 then
                 segs[#segs + 1] = cur
-                cur = {}
+                cur, cur_w = {}, 0
             end
-            segs[#segs + 1] = { table.unpack(word, 1, w) }
-            word = { table.unpack(word, w + 1) }
+            while #word > 0 and head_w + unit_width(word[1]) <= w do
+                head_w = head_w + unit_width(word[1])
+                head[#head + 1] = table.remove(word, 1)
+            end
+            segs[#segs + 1] = head
+            word_w = word_w - head_w
         end
         if #cur == 0 then
-            cur = word
-        elseif #cur + 1 + #word <= w then
+            cur, cur_w = word, word_w
+        elseif cur_w + 1 + word_w <= w then
             cur[#cur + 1] = " "
             for _, u in ipairs(word) do
                 cur[#cur + 1] = u
             end
+            cur_w = cur_w + 1 + word_w
         else
             segs[#segs + 1] = cur
-            cur = word
+            cur, cur_w = word, word_w
         end
-        word = {}
+        word, word_w = {}, 0
     end
 
     for _, u in ipairs(units) do
@@ -1091,6 +1169,7 @@ local function wrap_units(units, w)
             push_word()
         else
             word[#word + 1] = u
+            word_w = word_w + unit_width(u)
         end
     end
     push_word()
@@ -1140,8 +1219,8 @@ local function render_table(lines, out, width_limit)
         units[r] = {}
         for c = 1, maxc do
             units[r][c] = units_of(inline(row[c] or "", { bold = r == 1 }))
-            if #units[r][c] > colw[c] then
-                colw[c] = #units[r][c]
+            if units_width(units[r][c]) > colw[c] then
+                colw[c] = units_width(units[r][c])
             end
         end
     end
@@ -1181,7 +1260,7 @@ local function render_table(lines, out, width_limit)
         cell_sgr[r] = {}
         for c = 1, maxc do
             local u = units[r][c]
-            cells[r][c] = #u > colw[c] and wrap_units(u, colw[c]) or { u }
+            cells[r][c] = units_width(u) > colw[c] and wrap_units(u, colw[c]) or { u }
             cell_sgr[r][c] = {}
         end
     end
@@ -1203,7 +1282,7 @@ local function render_table(lines, out, width_limit)
             local parts = {}
             for c = 1, maxc do
                 local cell = cells[r][c][k] or {}
-                local pad = colw[c] - #cell
+                local pad = colw[c] - units_width(cell)
                 local left, right = 0, pad
                 if align[c] == "right" then
                     left, right = pad, 0
