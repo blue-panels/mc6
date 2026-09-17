@@ -38,3 +38,19 @@ flowchart LR
   C --> B
   C --> D[Конец]
 ```
+```mermaid
+sequenceDiagram
+    actor User
+    participant FP as File panel
+    participant MI as magic.ini
+    participant PR as Plugin registry
+    User->>FP: Enter or Ctrl+PgDn
+    alt Enter
+        FP->>MI: Find Open rule
+        MI-->>FP: arcmc:open
+    else Ctrl+PgDn
+        FP->>MI: Find explicit rule
+        FP->>PR: Try Open operations by filename
+        PR-->>FP: arcmc:open
+    end
+```

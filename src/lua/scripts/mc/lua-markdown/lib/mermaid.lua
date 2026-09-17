@@ -486,15 +486,28 @@ local function parse_sequence(lines)
 
     for _, raw in ipairs(lines) do
         local line = trim(raw:gsub("%%%%.*$", ""))
-        local id, label = line:match("^participants?%s+([%w_]+)%s+as%s+(.+)$")
+        local id, label = line:match("^[%a]+%s+([%w_]+)%s+as%s+(.+)$")
+
+        if not line:match("^participants?%s") and not line:match("^actors?%s") then
+            id, label = nil, nil
+        end
 
         if line == "" or line == "sequenceDiagram" then
             -- the header
         elseif id ~= nil then
             participant(trim(label))
             seq.names[id] = trim(label)
-        elseif line:match("^participants?%s+") then
-            participant(line:match("^participants?%s+(.+)$"))
+        elseif line:match("^participants?%s+") or line:match("^actors?%s+") then
+            participant(line:match("^%a+%s+(.+)$"))
+        elseif line:match("^alt%s") or line:match("^else%s") or line:match("^opt%s")
+            or line:match("^loop%s") or line:match("^par%s") then
+            -- the branches of a diagram: what they say, without their frame
+            seq.steps[#seq.steps + 1] = {
+                kind = "note",
+                text = "[" .. trim(line:match("^%a+%s+(.*)$")) .. "]",
+            }
+        elseif line == "end" or line == "alt" or line == "else" then
+            -- the frame itself is not drawn
         elseif line:match("^[Nn]ote%s") then
             local over, text = line:match("^[Nn]ote%s+%a+%s+([^:]+):%s*(.*)$")
 
@@ -540,19 +553,58 @@ end
 local function draw_sequence(seq)
     local out = {}
     local names = seq.order
-    local gap = 4
     local widths = {}
+    local gaps = {}
     local positions = {}
     local column = {}
-    local pos = 0
 
     for i, name in ipairs(names) do
         widths[i] = width(name)
-        positions[i] = pos + widths[i] // 2 + 1
         column[name] = i
-        pos = pos + widths[i] + gap
+        gaps[i] = 4
     end
-    local total = math.max(pos - gap, 1)
+
+    local function place()
+        local pos = 0
+
+        for i = 1, #names do
+            positions[i] = pos + widths[i] // 2 + 1
+            pos = pos + widths[i] + gaps[i]
+        end
+        return math.max(pos - gaps[#names], 1)
+    end
+
+    local total = place()
+
+    -- the room between two lifelines holds the text of every message that
+    -- runs between them
+    for _ = 1, 8 do
+        local grew = false
+
+        for _, step in ipairs(seq.steps) do
+            if step.kind ~= "note" and step.text ~= "" then
+                local a = column[step.from]
+                local b = column[step.to]
+                local lo = math.min(a, b)
+                local hi = math.max(a, b)
+                local room = math.abs(positions[b] - positions[a]) - 1
+                local want = width(step.text) + 2
+
+                if hi > lo and room < want then
+                    local add = (want - room + (hi - lo) - 1) // (hi - lo)
+
+                    for k = lo, hi - 1 do
+                        gaps[k] = gaps[k] + add
+                    end
+                    grew = true
+                end
+            end
+        end
+        if not grew then
+            break
+        end
+        total = place()
+    end
 
     local function blank()
         local row = {}
@@ -583,10 +635,10 @@ local function draw_sequence(seq)
     end
 
     local head = blank()
-    local at = 1
+
     for i = 1, #names do
-        put(head, at, names[i])
-        at = at + widths[i] + gap
+        -- the name stands over the lifeline it belongs to
+        put(head, math.max(positions[i] - widths[i] // 2, 1), names[i])
     end
     out[#out + 1] = table.concat(head)
 
@@ -610,6 +662,7 @@ local function draw_sequence(seq)
             local line = blank()
 
             lifelines(label)
+            lifelines(line)
             if step.text ~= "" then
                 local room = math.max(right - left - 1, 1)
                 local text = step.text
