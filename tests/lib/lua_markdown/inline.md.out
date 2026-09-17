@@ -17,8 +17,8 @@ Escapes: *not em*, _not_, # not heading, 5 * 3.
 Entities: & <tag> © A B &unknown; A & B.
 
 HTML: a bold tag, line
-break, a < b and c > d, https://example.com.
+break, a < b and c > d, ]8;;https://example.com\https://example.com]8;;\.
 
 Code spans: _a _` _b and _s_p_a_c_e_d and `unclosed.
 
-Comment gone, mail me@example.org kept.
+Comment gone, mail ]8;;mailto:me@example.org\me@example.org]8;;\ kept.
