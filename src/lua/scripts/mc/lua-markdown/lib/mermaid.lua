@@ -499,15 +499,21 @@ local function parse_sequence(lines)
             seq.names[id] = trim(label)
         elseif line:match("^participants?%s+") or line:match("^actors?%s+") then
             participant(line:match("^%a+%s+(.+)$"))
-        elseif line:match("^alt%s") or line:match("^else%s") or line:match("^opt%s")
-            or line:match("^loop%s") or line:match("^par%s") then
-            -- the branches of a diagram: what they say, without their frame
+        elseif line:match("^alt%s") or line:match("^opt%s") or line:match("^loop%s")
+            or line:match("^par%s") or line == "alt" or line == "opt" or line == "loop" then
             seq.steps[#seq.steps + 1] = {
-                kind = "note",
-                text = "[" .. trim(line:match("^%a+%s+(.*)$")) .. "]",
+                kind = "block",
+                keyword = line:match("^(%a+)"),
+                text = trim(line:match("^%a+%s+(.*)$") or ""),
             }
-        elseif line == "end" or line == "alt" or line == "else" then
-            -- the frame itself is not drawn
+        elseif line:match("^else%s?") then
+            seq.steps[#seq.steps + 1] = {
+                kind = "branch",
+                keyword = "else",
+                text = trim(line:match("^%a+%s+(.*)$") or ""),
+            }
+        elseif line == "end" then
+            seq.steps[#seq.steps + 1] = { kind = "block_end" }
         elseif line:match("^[Nn]ote%s") then
             local over, text = line:match("^[Nn]ote%s+%a+%s+([^:]+):%s*(.*)$")
 
@@ -548,10 +554,10 @@ local function parse_sequence(lines)
 end
 
 -- The lifelines of the participants, with a row per message: the text of a
--- message sits over the arrow, and the head of the arrow is at the one it
--- goes to.
+-- message sits over the arrow, the head of the arrow is at the one it goes
+-- to, and a branch of the diagram is framed.  The names are written again
+-- under the last row, the way mermaid writes them.
 local function draw_sequence(seq)
-    local out = {}
     local names = seq.order
     local widths = {}
     local gaps = {}
@@ -582,7 +588,7 @@ local function draw_sequence(seq)
         local grew = false
 
         for _, step in ipairs(seq.steps) do
-            if step.kind ~= "note" and step.text ~= "" then
+            if step.kind == "message" and step.text ~= "" then
                 local a = column[step.from]
                 local b = column[step.to]
                 local lo = math.min(a, b)
@@ -606,10 +612,26 @@ local function draw_sequence(seq)
         total = place()
     end
 
+    -- a frame stands to the left of the lifelines and closes to the right
+    local max_depth, depth = 0, 0
+
+    for _, step in ipairs(seq.steps) do
+        if step.kind == "block" then
+            depth = depth + 1
+            max_depth = math.max(max_depth, depth)
+        elseif step.kind == "block_end" then
+            depth = math.max(depth - 1, 0)
+        end
+    end
+
+    local margin = max_depth * 2
+    local line_width = margin + total + margin
+    local rows = {}
+
     local function blank()
         local row = {}
 
-        for i = 1, total do
+        for i = 1, line_width do
             row[i] = " "
         end
         return row
@@ -619,43 +641,91 @@ local function draw_sequence(seq)
         local i = at
 
         for _, ch in ipairs(chars(text)) do
-            if i >= 1 and i <= total then
+            if i >= 1 and i <= line_width then
                 row[i] = ch
             end
             i = i + 1
         end
     end
 
+    local function lifeline_x(i)
+        return margin + positions[i]
+    end
+
     local function lifelines(row)
         for i = 1, #names do
-            if row[positions[i]] == " " then
-                row[positions[i]] = BAR
+            if row[lifeline_x(i)] == " " then
+                row[lifeline_x(i)] = BAR
             end
         end
     end
 
-    local head = blank()
-
-    for i = 1, #names do
-        -- the name stands over the lifeline it belongs to
-        put(head, math.max(positions[i] - widths[i] // 2, 1), names[i])
+    local function add(row)
+        rows[#rows + 1] = row
+        return #rows
     end
-    out[#out + 1] = table.concat(head)
+
+    local function names_row()
+        local row = blank()
+
+        for i = 1, #names do
+            put(row, math.max(lifeline_x(i) - widths[i] // 2, 1), names[i])
+        end
+        return row
+    end
+
+    add(names_row())
 
     local spacer = blank()
+
     lifelines(spacer)
-    out[#out + 1] = table.concat(spacer)
+    add(spacer)
+
+    local stack = {}
+    local frames = {}
 
     for _, step in ipairs(seq.steps) do
-        if step.kind == "note" then
-            local note = blank()
+        if step.kind == "block" then
+            local row = blank()
 
-            lifelines(note)
-            put(note, 1, step.text)
-            out[#out + 1] = table.concat(note)
+            lifelines(row)
+            stack[#stack + 1] = {
+                depth = #stack + 1,
+                top = add(row),
+                label = trim(step.keyword .. " " .. step.text),
+                dividers = {},
+            }
+        elseif step.kind == "branch" then
+            local frame = stack[#stack]
+
+            if frame ~= nil then
+                local row = blank()
+
+                lifelines(row)
+                frame.dividers[#frame.dividers + 1] = {
+                    row = add(row),
+                    label = trim(step.keyword .. " " .. step.text),
+                }
+            end
+        elseif step.kind == "block_end" then
+            local frame = table.remove(stack)
+
+            if frame ~= nil then
+                local row = blank()
+
+                lifelines(row)
+                frame.bottom = add(row)
+                frames[#frames + 1] = frame
+            end
+        elseif step.kind == "note" then
+            local row = blank()
+
+            lifelines(row)
+            put(row, margin + 1, step.text)
+            add(row)
         else
-            local a_pos = positions[column[step.from]]
-            local b_pos = positions[column[step.to]]
+            local a_pos = lifeline_x(column[step.from])
+            local b_pos = lifeline_x(column[step.to])
             local left = math.min(a_pos, b_pos)
             local right = math.max(a_pos, b_pos)
             local label = blank()
@@ -665,31 +735,64 @@ local function draw_sequence(seq)
             lifelines(line)
             if step.text ~= "" then
                 local room = math.max(right - left - 1, 1)
-                local text = step.text
 
-                if width(text) > room then
-                    text = table.concat(chars(text), "", 1, room)
-                end
-                put(label, left + 1 + math.max((room - width(text)) // 2, 0), text)
+                put(label, left + 1 + math.max((room - width(step.text)) // 2, 0), step.text)
             end
-
             for i = left, right do
                 line[i] = (not step.dashed or i % 2 == 0) and DASH or " "
             end
             line[b_pos] = b_pos == right and ARROW_DOWN or ARROW_LEFT
             line[a_pos] = BAR
-
-            out[#out + 1] = table.concat(label)
-            out[#out + 1] = table.concat(line)
+            add(label)
+            add(line)
         end
-        local spacer2 = blank()
+        local gap_row = blank()
 
-        lifelines(spacer2)
-        out[#out + 1] = table.concat(spacer2)
+        lifelines(gap_row)
+        add(gap_row)
     end
 
-    for i, line in ipairs(out) do
-        out[i] = (line:gsub("%s+$", ""))
+    add(names_row())
+
+    -- the frames are drawn last: they run over the rows they hold
+    for _, frame in ipairs(frames) do
+        local x1 = margin - frame.depth * 2 + 1
+        local x2 = line_width - (frame.depth - 1) * 2
+
+        local function edge(row_index, left_ch, right_ch, label)
+            local row = rows[row_index]
+
+            for i = x1, x2 do
+                row[i] = DASH
+            end
+            row[x1] = left_ch
+            row[x2] = right_ch
+            if label ~= nil and label ~= "" then
+                put(row, x1 + 2, " " .. label .. " ")
+            end
+        end
+
+        edge(frame.top, "\u{250C}", "\u{2510}", frame.label)
+        for _, divider in ipairs(frame.dividers) do
+            edge(divider.row, "\u{251C}", "\u{2524}", divider.label)
+        end
+        edge(frame.bottom, "\u{2514}", "\u{2518}")
+        for i = frame.top + 1, frame.bottom - 1 do
+            local row = rows[i]
+
+            if row[x1] == " " then
+                row[x1] = BAR
+            end
+            if row[x2] == " " then
+                row[x2] = BAR
+            end
+        end
+    end
+
+    local out = {}
+
+    for i, row in ipairs(rows) do
+        out[i] = (table.concat(row):gsub("%s+$", ""))
     end
     return out
 end
