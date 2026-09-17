@@ -662,8 +662,9 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
     const char *fg_name;
     const char *bg_name;
     gboolean has_attrs;
+    const gboolean underline = ansi->underline || ansi->link;
 
-    has_attrs = ansi->bold || ansi->italic || ansi->underline || ansi->blink || ansi->reverse;
+    has_attrs = ansi->bold || ansi->italic || underline || ansi->blink || ansi->reverse;
 
     // all defaults -> use the skin's normal color
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
@@ -675,11 +676,11 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
     if (ansi->fg == MCVIEW_ANSI_COLOR_DEFAULT && ansi->bg == MCVIEW_ANSI_COLOR_DEFAULT
         && !ansi->italic && !ansi->blink && !ansi->reverse)
     {
-        if (ansi->bold && ansi->underline && colors->bold_underline >= 0)
+        if (ansi->bold && underline && colors->bold_underline >= 0)
             return colors->bold_underline;
-        if (ansi->bold && !ansi->underline && colors->bold >= 0)
+        if (ansi->bold && !underline && colors->bold >= 0)
             return colors->bold;
-        if (ansi->underline && !ansi->bold && colors->underline >= 0)
+        if (underline && !ansi->bold && colors->underline >= 0)
             return colors->underline;
     }
 
@@ -718,7 +719,7 @@ mcview_ansi_color_of (const mcview_ansi_state_t *ansi, const mcview_canvas_color
             g_strlcat (attr_buf, "bold+", sizeof (attr_buf));
         if (ansi->italic)
             g_strlcat (attr_buf, "italic+", sizeof (attr_buf));
-        if (ansi->underline)
+        if (underline)
             g_strlcat (attr_buf, "underline+", sizeof (attr_buf));
         if (ansi->blink)
             g_strlcat (attr_buf, "blink+", sizeof (attr_buf));
@@ -818,8 +819,121 @@ mcview_get_next_maybe_ansi_char (WView *view, mcview_state_machine_t *state, int
 
 /* --------------------------------------------------------------------------------------------- */
 /**
- * This function parses the next nroff character and gives it to you along with its desired color,
- * so you never have to care about nroff again.
+ * The next character of an nroff text, past the escape sequences before it. They go to the SGR
+ * parser, so that groff output can style a character with backspaces and SGR at once. A form
+ * feed, which grotty -f writes between pages, is skipped too.
+ *
+ * Normally: stores c, updates state, returns TRUE.
+ * At EOF: returns FALSE.
+ */
+static gboolean
+mcview_get_next_sgr_char (WView *view, mcview_state_machine_t *state, int *c)
+{
+    while (TRUE)
+    {
+        if (!mcview_get_next_char (view, state, c))
+            return FALSE;
+        if (mcview_ansi_parse_char (&state->ansi, *c) == ANSI_RESULT_CHAR && *c != '\f')
+            return TRUE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The color of an nroff character: its backspace style added to the SGR attributes in effect.
+ * A heading keeps the skin color of its own unless SGR styles it too.
+ */
+static int
+mcview_nroff_color (const mcview_ansi_state_t *ansi, nroff_type_t type)
+{
+    mcview_ansi_state_t attrs = *ansi;
+
+    switch (type)
+    {
+    case NROFF_TYPE_HEADING:
+        if (attrs.fg == MCVIEW_ANSI_COLOR_DEFAULT && attrs.bg == MCVIEW_ANSI_COLOR_DEFAULT
+            && !attrs.bold && !attrs.italic && !attrs.underline && !attrs.link && !attrs.blink
+            && !attrs.reverse)
+            return VIEWER_HEADING_COLOR;
+        attrs.bold = TRUE;
+        break;
+    case NROFF_TYPE_BOLD:
+        attrs.bold = TRUE;
+        break;
+    case NROFF_TYPE_UNDERLINE:
+        attrs.underline = TRUE;
+        break;
+    case NROFF_TYPE_BOLD_UNDERLINE:
+        attrs.bold = TRUE;
+        attrs.underline = TRUE;
+        break;
+    default:
+        break;
+    }
+
+    return mcview_ansi_get_color (&attrs);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The character groff means by printing first and second in one cell, as grotty -Tascii writes
+ * the glyphs it has no character for: an accent over a letter, a bullet, arrows, currency signs.
+ * An unknown pair is its second character.
+ */
+static int
+mcview_nroff_overstrike (int first, int second)
+{
+    static const struct
+    {
+        char first;
+        char second;
+        gunichar ch;
+    } glyphs[] = {
+        { '+', 'o', 0x2022 },   // bullet
+        { '|', '^', 0x2191 },   // up arrow
+        { '|', 'v', 0x2193 },   // down arrow
+        { '=', '^', 0x21D1 },   // double up arrow
+        { '=', 'v', 0x21D3 },   // double down arrow
+        { 'O', 'x', 0x2297 },   // circled times
+        { 'O', '+', 0x2295 },   // circled plus
+        { '/', 'c', 0x00A2 },   // cent
+        { '-', 'L', 0x00A3 },   // pound
+        { 'o', 'x', 0x00A4 },   // currency
+        { '=', 'Y', 0x00A5 },   // yen
+        { ',', 'f', 0x0192 },   // florin
+        { '\'', '`', 0x02D8 },  // breve
+        { '/', 'L', 0x0141 },  { '/', 'l', 0x0142 }, { '/', 'O', 0x00D8 }, { '/', 'o', 0x00F8 },
+    };
+    static const struct
+    {
+        char accent;
+        gunichar mark;
+    } accents[] = {
+        { '`', 0x0300 }, { '\'', 0x0301 }, { '^', 0x0302 }, { '~', 0x0303 },
+        { '"', 0x0308 }, { 'o', 0x030A },  { ',', 0x0327 },
+    };
+    size_t i;
+
+    for (i = 0; i < G_N_ELEMENTS (glyphs); i++)
+        if (glyphs[i].first == first && glyphs[i].second == second)
+            return (int) glyphs[i].ch;
+
+    if (g_ascii_isalpha (second))
+        for (i = 0; i < G_N_ELEMENTS (accents); i++)
+        {
+            gunichar ch;
+
+            if (accents[i].accent == first && g_unichar_compose (second, accents[i].mark, &ch))
+                return (int) ch;
+        }
+
+    return second;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * The backspace trick at the next nroff character: stores the character, updates state past the
+ * whole sequence and returns its style.
  *
  * The nroff mode does the backspace trick for every single character (Unicode codepoint). At least
  * that's what the GNU groff 1.22 package produces, and that's what less 458 expects. For
@@ -829,6 +943,84 @@ mcview_get_next_maybe_ansi_char (WView *view, mcview_state_machine_t *state, int
  *
  * So, the right place for this layer is after the bytes are interpreted in UTF-8, but before
  * joining a base character with its combining accents.
+ */
+static nroff_type_t
+mcview_nroff_sequence (WView *view, mcview_state_machine_t *state, int *c)
+{
+    mcview_state_machine_t state_after_three_chars;
+    mcview_state_machine_t state_after_five_chars;
+    int c2, c3, c4, c5;
+
+    // Don't allow nroff formatting around CR, LF, TAB or other special chars
+    if (!mcview_isprint (view, *c))
+        return NROFF_TYPE_NONE;
+
+    state_after_three_chars = *state;
+
+    if (!mcview_get_next_sgr_char (view, &state_after_three_chars, &c2) || c2 != '\b')
+        return NROFF_TYPE_NONE;
+
+    if (!mcview_get_next_sgr_char (view, &state_after_three_chars, &c3)
+        || !mcview_isprint (view, c3))
+        return NROFF_TYPE_NONE;
+
+    state_after_five_chars = state_after_three_chars;
+
+    /* Bold and underlined letter x is denoted by: _ \b x \b x */
+    if (*c == '_' && mcview_get_next_sgr_char (view, &state_after_five_chars, &c4) && c4 == '\b'
+        && mcview_get_next_sgr_char (view, &state_after_five_chars, &c5) && c3 == c5)
+    {
+        *c = c3;
+        *state = state_after_five_chars;
+        return NROFF_TYPE_BOLD_UNDERLINE;
+    }
+
+    if (*c == '_' && c3 == '_')
+    {
+        *state = state_after_three_chars;
+        return state->nroff_underscore_is_underlined ? NROFF_TYPE_UNDERLINE : NROFF_TYPE_BOLD;
+    }
+
+    if (*c == c3)
+    {
+        /* ch\bch -- bold; check for ch\bch\bch -- heading */
+        mcview_state_machine_t state_after_heading = state_after_three_chars;
+        int c_h1, c_h2;
+        nroff_type_t type = NROFF_TYPE_BOLD;
+
+        *state = state_after_three_chars;
+        if (mcview_get_next_sgr_char (view, &state_after_heading, &c_h1) && c_h1 == '\b'
+            && mcview_get_next_sgr_char (view, &state_after_heading, &c_h2) && c_h2 == *c)
+        {
+            *state = state_after_heading;
+            type = NROFF_TYPE_HEADING;
+        }
+        state->nroff_underscore_is_underlined = FALSE;
+        return type;
+    }
+
+    if (*c == '_')
+    {
+        *c = c3;
+        *state = state_after_three_chars;
+        state->nroff_underscore_is_underlined = TRUE;
+        return NROFF_TYPE_UNDERLINE;
+    }
+
+    if (*c < 0x80 && c3 < 0x80)
+    {
+        *c = view->utf8 ? mcview_nroff_overstrike (*c, c3) : c3;
+        *state = state_after_three_chars;
+        return NROFF_TYPE_OVERSTRIKE;
+    }
+
+    return NROFF_TYPE_NONE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * This function parses the next nroff character and gives it to you along with its desired color,
+ * so you never have to care about nroff again.
  *
  * Normally: stores c and color, updates state, returns TRUE.
  * At EOF: state is unchanged, c and color are undefined, returns FALSE.
@@ -838,81 +1030,28 @@ mcview_get_next_maybe_ansi_char (WView *view, mcview_state_machine_t *state, int
 static gboolean
 mcview_get_next_maybe_nroff_char (WView *view, mcview_state_machine_t *state, int *c, int *color)
 {
-    mcview_state_machine_t state_after_three_chars;
-    mcview_state_machine_t state_after_five_chars;
-    int c2, c3, c4, c5;
-
-    if (color != NULL)
-        *color = VIEWER_NORMAL_COLOR;
+    mcview_state_machine_t state_saved;
+    mcview_ansi_state_t ansi;
+    nroff_type_t type;
 
     if (!view->mode_flags.nroff)
+    {
+        if (color != NULL)
+            *color = VIEWER_NORMAL_COLOR;
         return mcview_get_next_maybe_ansi_char (view, state, c, color);
+    }
 
-    if (!mcview_get_next_char (view, state, c))
+    state_saved = *state;
+    if (!mcview_get_next_sgr_char (view, state, c))
+    {
+        *state = state_saved;
         return FALSE;
-    // Don't allow nroff formatting around CR, LF, TAB or other special chars
-    if (!mcview_isprint (view, *c))
-        return TRUE;
-
-    state_after_three_chars = *state;
-
-    if (!mcview_get_next_char (view, &state_after_three_chars, &c2))
-        return TRUE;
-    if (c2 != '\b')
-        return TRUE;
-
-    if (!mcview_get_next_char (view, &state_after_three_chars, &c3))
-        return TRUE;
-    if (!mcview_isprint (view, c3))
-        return TRUE;
-
-    state_after_five_chars = state_after_three_chars;
-
-    /* Bold and underlined letter x is denoted by: _ \b x \b x */
-    if (*c == '_' && mcview_get_next_char (view, &state_after_five_chars, &c4) && c4 == '\b'
-        && mcview_get_next_char (view, &state_after_five_chars, &c5) && c3 == c5)
-    {
-        *c = c3;
-        *state = state_after_five_chars;
-        if (color != NULL)
-            *color = VIEWER_BOLD_UNDERLINED_COLOR;
     }
-    else if (*c == '_' && c3 == '_')
-    {
-        *state = state_after_three_chars;
-        if (color != NULL)
-            *color =
-                state->nroff_underscore_is_underlined ? VIEWER_UNDERLINED_COLOR : VIEWER_BOLD_COLOR;
-    }
-    else if (*c == c3)
-    {
-        /* ch\bch -- bold; check for ch\bch\bch -- heading */
-        mcview_state_machine_t state_after_heading = state_after_three_chars;
-        int c_h1, c_h2;
 
-        if (mcview_get_next_char (view, &state_after_heading, &c_h1) && c_h1 == '\b'
-            && mcview_get_next_char (view, &state_after_heading, &c_h2) && c_h2 == *c)
-        {
-            *state = state_after_heading;
-            if (color != NULL)
-                *color = VIEWER_HEADING_COLOR;
-        }
-        else
-        {
-            *state = state_after_three_chars;
-            if (color != NULL)
-                *color = VIEWER_BOLD_COLOR;
-        }
-        state->nroff_underscore_is_underlined = FALSE;
-    }
-    else if (*c == '_')
-    {
-        *c = c3;
-        *state = state_after_three_chars;
-        state->nroff_underscore_is_underlined = TRUE;
-        if (color != NULL)
-            *color = VIEWER_UNDERLINED_COLOR;
-    }
+    ansi = state->ansi;
+    type = mcview_nroff_sequence (view, state, c);
+    if (color != NULL)
+        *color = mcview_nroff_color (&ansi, type);
 
     return TRUE;
 }

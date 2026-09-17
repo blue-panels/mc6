@@ -47,10 +47,17 @@ typedef struct
     gboolean underline;
     gboolean blink;
     gboolean reverse;
+    gboolean link; /**< inside the text of an OSC 8 hyperlink */
 
     /* --- internal parser state --- */
     gboolean in_escape;   /**< seen ESC, waiting for '[' */
     gboolean in_csi;      /**< inside CSI sequence (ESC[...) */
+    gboolean in_string;   /**< inside OSC, DCS, APC, PM or SOS, up to ST or BEL */
+    gboolean string_esc;  /**< seen ESC inside the string, ST if a backslash follows */
+    gboolean in_osc;      /**< the string is an OSC */
+    int osc_code;         /**< the OSC number, -1 if it is not a number */
+    int osc_field;        /**< fields of the OSC begun: 0 the number, 1 params, 2 URI */
+    gboolean osc_uri;     /**< the URI of an OSC 8 is not empty */
     gboolean csi_private; /**< CSI carries a private marker or intermediate; not an SGR */
     int params[MCVIEW_ANSI_MAX_PARAMS];
     gboolean is_colon_sep[MCVIEW_ANSI_MAX_PARAMS]; /**< TRUE if preceded by ':' */

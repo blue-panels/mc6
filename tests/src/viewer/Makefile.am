@@ -21,6 +21,7 @@ TESTS = \
 	mcview__filter \
 	mcview__lcache \
 	mcview__selection \
+	mcview__nroff \
 	ansi_parser \
 	vterm_terminal
 
@@ -40,6 +41,9 @@ mcview__lcache_SOURCES = \
 
 mcview__selection_SOURCES = \
 	mcview__selection.c
+
+mcview__nroff_SOURCES = \
+	mcview__nroff.c
 
 ansi_parser_SOURCES = \
 	ansi_parser.c
