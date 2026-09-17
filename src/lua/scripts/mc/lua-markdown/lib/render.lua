@@ -496,6 +496,56 @@ local function bracket_piece(name, k, n)
     return b[3]
 end
 
+local render_math_inline
+
+-- The rows and cells of the body of an environment.  A nested environment
+-- keeps its own separators: only those outside every \begin ... \end count.
+local function split_env_body(body)
+    local rows = {}
+    local cells = {}
+    local piece = {}
+    local depth = 0
+    local i = 1
+
+    local function end_cell()
+        cells[#cells + 1] = trim(table.concat(piece))
+        piece = {}
+    end
+
+    local function end_row()
+        end_cell()
+        if #cells > 1 or cells[1] ~= "" then
+            rows[#rows + 1] = cells
+        end
+        cells = {}
+    end
+
+    while i <= #body do
+        local two = body:sub(i, i + 1)
+
+        if body:find("^\\begin{", i) then
+            depth = depth + 1
+            piece[#piece + 1] = body:sub(i, i + 6)
+            i = i + 7
+        elseif body:find("^\\end{", i) then
+            depth = depth - 1
+            piece[#piece + 1] = body:sub(i, i + 4)
+            i = i + 5
+        elseif depth == 0 and two == "\\\\" then
+            end_row()
+            i = i + 2
+        elseif depth == 0 and body:sub(i, i) == "&" then
+            end_cell()
+            i = i + 1
+        else
+            piece[#piece + 1] = body:sub(i, i)
+            i = i + 1
+        end
+    end
+    end_row()
+    return rows
+end
+
 -- What an environment holds: the text before and after it, its rows of
 -- rendered cells and how its columns line up.  nil when this is not an
 -- environment it knows.
@@ -505,12 +555,37 @@ local function parse_math_env(formula)
     if env == nil then
         return nil
     end
-    local close = rest:find("\\end{" .. name:gsub("%*", "%%*") .. "}")
+    -- an environment of the same name inside this one has its own end
+    local open_tag = "\\begin{" .. name .. "}"
+    local close_tag = "\\end{" .. name .. "}"
+    local depth = 1
+    local at = 1
+    local close = nil
+
+    while true do
+        local next_open = rest:find(open_tag, at, true)
+        local next_close = rest:find(close_tag, at, true)
+
+        if next_close == nil then
+            break
+        end
+        if next_open ~= nil and next_open < next_close then
+            depth = depth + 1
+            at = next_open + #open_tag
+        else
+            depth = depth - 1
+            if depth == 0 then
+                close = next_close
+                break
+            end
+            at = next_close + #close_tag
+        end
+    end
     if close == nil then
         return nil
     end
     local body = rest:sub(1, close - 1)
-    local after = rest:sub(close + #"\\end{" + #name + 1)
+    local after = rest:sub(close + #close_tag)
     local align = env[3]
 
     if name == "array" then
@@ -523,15 +598,18 @@ local function parse_math_env(formula)
 
     local rows = {}
     local ncols = 0
-    for row in (body .. "\\\\"):gmatch("(.-)\\\\") do
-        if trim(row) ~= "" then
-            local cells = {}
-            for cell in (row .. "&"):gmatch("(.-)&") do
-                cells[#cells + 1] = render_math(trim(cell))
-            end
-            rows[#rows + 1] = cells
-            ncols = math.max(ncols, #cells)
+
+    for _, raw in ipairs(split_env_body(body)) do
+        local cells = {}
+
+        for _, cell in ipairs(raw) do
+            -- an environment inside a cell is drawn on one line
+            local inner = cell:find("\\begin{", 1, true) and render_math_inline(cell) or nil
+
+            cells[#cells + 1] = inner or render_math(cell)
         end
+        rows[#rows + 1] = cells
+        ncols = math.max(ncols, #cells)
     end
     if #rows == 0 then
         return nil
@@ -548,7 +626,7 @@ end
 
 -- An environment inside a formula in the text: one line, rows told apart by
 -- a semicolon, because the line it sits on has one row of its own.
-local function render_math_inline(formula)
+function render_math_inline(formula)
     local m = parse_math_env(formula)
     if m == nil then
         return nil
@@ -559,8 +637,15 @@ local function render_math_inline(formula)
         rows[#rows + 1] = table.concat(cells, " ")
     end
     local body = table.concat(rows, "; ")
+    -- on one line a bracket is closed even where the block leaves it open,
+    -- as cases does
+    local mirror = { ["("] = ")", ["["] = "]", ["{"] = "}", ["|"] = "|", ["||"] = "||" }
     local open = m.env[1] ~= nil and brackets[m.env[1]][1] or ""
     local close = m.env[2] ~= nil and brackets[m.env[2]][1] or ""
+
+    if close == "" and m.env[1] ~= nil then
+        close = brackets[mirror[m.env[1]]][1]
+    end
 
     return trim(m.lead .. " " .. open .. body .. close .. " " .. m.tail)
 end

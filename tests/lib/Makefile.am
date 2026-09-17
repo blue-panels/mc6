@@ -44,6 +44,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/latex_geometry.md.out \
 	lua_markdown/latex_matrix.md \
 	lua_markdown/latex_more.md \
+	lua_markdown/latex_nested.md \
+	lua_markdown/latex_nested.md.out \
 	lua_markdown/latex_more.md.out \
 	lua_markdown/latex_matrix.md.out \
 	lua_markdown/links.md \
