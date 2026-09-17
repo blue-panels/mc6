@@ -1201,8 +1201,10 @@ local function wrap_units(units, w)
             return
         end
         while word_w > w do
-            -- a word wider than the line is cut where the line ends
+            -- a word wider than the line is broken after the last separator
+            -- that fits, as an address breaks after a slash
             local head, head_w = {}, 0
+            local cut = 0
 
             if #cur > 0 then
                 segs[#segs + 1] = cur
@@ -1211,6 +1213,17 @@ local function wrap_units(units, w)
             while #word > 0 and head_w + unit_width(word[1]) <= w do
                 head_w = head_w + unit_width(word[1])
                 head[#head + 1] = table.remove(word, 1)
+                if head[#head]:match("[/\\%-?&=.,;:_]$") and #head < w then
+                    cut = #head
+                end
+            end
+            -- nothing worth breaking at in the first half: cut where it ends
+            if cut > w // 2 then
+                for k = #head, cut + 1, -1 do
+                    table.insert(word, 1, head[k])
+                    head_w = head_w - unit_width(head[k])
+                    head[k] = nil
+                end
             end
             segs[#segs + 1] = head
             word_w = word_w - head_w
@@ -1436,6 +1449,11 @@ local function list_item(line)
     return indent, marker, rest
 end
 
+-- "term" on one line and ": what it means" under it
+local function definition_item(line)
+    return line:match("^ ? ? ?:%s+(.*)$")
+end
+
 local function is_atx_heading(line)
     return line:match("^ ? ? ?#+$") ~= nil or line:match("^ ? ? ?#+%s") ~= nil
 end
@@ -1444,7 +1462,7 @@ end
 -- before it.
 local function starts_block(line, next_line)
     return is_blank(line) or fence_of(line) ~= nil or is_hr(line) or is_atx_heading(line)
-        or list_item(line) ~= nil or line:match("^%s*>") ~= nil
+        or list_item(line) ~= nil or definition_item(line) ~= nil or line:match("^%s*>") ~= nil
         or (line:find("|", 1, true) ~= nil and next_line ~= nil and is_table_sep(next_line))
         or line:match("^%s*%$%$.*\\begin{") ~= nil
 end
@@ -1705,6 +1723,16 @@ function M.render(text, opts)
                 i = i + 1
             end
             render_table(rows, out, width_limit)
+        elseif definition_item(line) ~= nil then
+            -- the meaning is indented under the term it belongs to
+            local pieces = { definition_item(line) }
+
+            i = i + 1
+            while i <= #lines and not starts_block(lines[i], lines[i + 1]) do
+                pieces[#pieces + 1] = trim(lines[i])
+                i = i + 1
+            end
+            flow(pieces, "    ", width_limit, out)
         elseif is_hr(line) then
             out[#out + 1] = BOX_H:rep(width_limit)
             i = i + 1
