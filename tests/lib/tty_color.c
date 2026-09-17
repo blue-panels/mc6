@@ -48,7 +48,7 @@ teardown (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-alloc_pair (int fg, int bg, gboolean is_temp)
+test_pair (int fg, int bg, gboolean is_temp)
 {
     char fg_name[16], bg_name[16];
     tty_color_pair_t color = { .fg = fg_name, .bg = bg_name, .attrs = NULL, .pair_index = 0 };
@@ -64,13 +64,13 @@ alloc_pair (int fg, int bg, gboolean is_temp)
 
 START_TEST (test_numbers_in_order_and_shared)
 {
-    ck_assert_int_eq (alloc_pair (1, 2, FALSE), 0);
-    ck_assert_int_eq (alloc_pair (3, 4, FALSE), 1);
-    ck_assert_int_eq (alloc_pair (5, 6, TRUE), 2);
+    ck_assert_int_eq (test_pair (1, 2, FALSE), 0);
+    ck_assert_int_eq (test_pair (3, 4, FALSE), 1);
+    ck_assert_int_eq (test_pair (5, 6, TRUE), 2);
 
     // the same colors are the same pair
-    ck_assert_int_eq (alloc_pair (3, 4, FALSE), 1);
-    ck_assert_int_eq (alloc_pair (5, 6, TRUE), 2);
+    ck_assert_int_eq (test_pair (3, 4, FALSE), 1);
+    ck_assert_int_eq (test_pair (5, 6, TRUE), 2);
 
     ck_assert_str_eq (tty_color_pair_foreground (1), "color19");
     ck_assert_str_eq (tty_color_pair_background (1), "color20");
@@ -84,10 +84,10 @@ END_TEST
 /* A released number is the first one given out again. */
 START_TEST (test_released_number_is_reused)
 {
-    ck_assert_int_eq (alloc_pair (1, 2, TRUE), 0);
-    ck_assert_int_eq (alloc_pair (3, 4, TRUE), 1);
-    ck_assert_int_eq (alloc_pair (5, 6, TRUE), 2);
-    ck_assert_int_eq (alloc_pair (7, 8, TRUE), 3);
+    ck_assert_int_eq (test_pair (1, 2, TRUE), 0);
+    ck_assert_int_eq (test_pair (3, 4, TRUE), 1);
+    ck_assert_int_eq (test_pair (5, 6, TRUE), 2);
+    ck_assert_int_eq (test_pair (7, 8, TRUE), 3);
 
     tty_color_release_temp (2);
     tty_color_release_temp (1);
@@ -95,12 +95,12 @@ START_TEST (test_released_number_is_reused)
     ck_assert_ptr_null (tty_color_pair_foreground (2));
     ck_assert_str_eq (tty_color_pair_foreground (3), "color23");
 
-    ck_assert_int_eq (alloc_pair (9, 10, TRUE), 1);
-    ck_assert_int_eq (alloc_pair (11, 12, TRUE), 2);
-    ck_assert_int_eq (alloc_pair (13, 14, TRUE), 4);
+    ck_assert_int_eq (test_pair (9, 10, TRUE), 1);
+    ck_assert_int_eq (test_pair (11, 12, TRUE), 2);
+    ck_assert_int_eq (test_pair (13, 14, TRUE), 4);
 
     // the old colors are gone with the old numbers
-    ck_assert_int_eq (alloc_pair (3, 4, TRUE), 5);
+    ck_assert_int_eq (test_pair (3, 4, TRUE), 5);
 }
 END_TEST
 
@@ -109,8 +109,8 @@ END_TEST
 /* A pair taken twice goes away with its last owner only. */
 START_TEST (test_shared_temp_pair_needs_every_release)
 {
-    ck_assert_int_eq (alloc_pair (1, 2, TRUE), 0);
-    ck_assert_int_eq (alloc_pair (1, 2, TRUE), 0);
+    ck_assert_int_eq (test_pair (1, 2, TRUE), 0);
+    ck_assert_int_eq (test_pair (1, 2, TRUE), 0);
 
     tty_color_release_temp (0);
     ck_assert_str_eq (tty_color_pair_foreground (0), "color17");
@@ -119,7 +119,7 @@ START_TEST (test_shared_temp_pair_needs_every_release)
     ck_assert_ptr_null (tty_color_pair_foreground (0));
 
     // a permanent pair is not released
-    ck_assert_int_eq (alloc_pair (3, 4, FALSE), 0);
+    ck_assert_int_eq (test_pair (3, 4, FALSE), 0);
     tty_color_release_temp (0);
     ck_assert_str_eq (tty_color_pair_foreground (0), "color19");
 }
@@ -129,22 +129,22 @@ END_TEST
 
 START_TEST (test_free_temp_keeps_permanent)
 {
-    ck_assert_int_eq (alloc_pair (1, 2, TRUE), 0);
-    ck_assert_int_eq (alloc_pair (3, 4, FALSE), 1);
-    ck_assert_int_eq (alloc_pair (5, 6, TRUE), 2);
+    ck_assert_int_eq (test_pair (1, 2, TRUE), 0);
+    ck_assert_int_eq (test_pair (3, 4, FALSE), 1);
+    ck_assert_int_eq (test_pair (5, 6, TRUE), 2);
 
     tty_color_free_temp ();
     ck_assert_ptr_null (tty_color_pair_foreground (0));
     ck_assert_str_eq (tty_color_pair_foreground (1), "color19");
     ck_assert_ptr_null (tty_color_pair_foreground (2));
 
-    ck_assert_int_eq (alloc_pair (7, 8, TRUE), 0);
-    ck_assert_int_eq (alloc_pair (9, 10, TRUE), 2);
-    ck_assert_int_eq (alloc_pair (11, 12, TRUE), 3);
+    ck_assert_int_eq (test_pair (7, 8, TRUE), 0);
+    ck_assert_int_eq (test_pair (9, 10, TRUE), 2);
+    ck_assert_int_eq (test_pair (11, 12, TRUE), 3);
 
     tty_color_free_all ();
     ck_assert_ptr_null (tty_color_pair_foreground (1));
-    ck_assert_int_eq (alloc_pair (3, 4, FALSE), 0);
+    ck_assert_int_eq (test_pair (3, 4, FALSE), 0);
 }
 END_TEST
 
@@ -156,7 +156,7 @@ START_TEST (test_many_pairs)
 
     for (fg = 0; fg < 240; fg++)
         for (bg = 0; bg < 16; bg++)
-            ck_assert_int_eq (alloc_pair (fg, bg, TRUE), n++);
+            ck_assert_int_eq (test_pair (fg, bg, TRUE), n++);
 
     for (fg = 0; fg < 240; fg += 17)
     {
