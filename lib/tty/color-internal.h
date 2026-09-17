@@ -32,6 +32,7 @@ typedef struct
     int bg;
     int attr;
     size_t pair_index;
+    const char *key;  // the key of the pair in the table of pairs, owned by the table
     gboolean is_temp;
     /* Temporary pairs are shared between independent owners (syntax rule sets, the
        viewer's ANSI colors, the skin editor).  Each allocation of an existing pair
