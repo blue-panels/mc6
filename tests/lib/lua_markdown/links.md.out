@@ -1,6 +1,6 @@
-Links: ]8;;https://x.org\text]8;;\ <https://x.org>, ]8;;same\same]8;;\, ]8;;https://ref.example\ref]8;;\ <https://ref.example>, [bare], [pic].
+Links: ]8;;https://x.org\text]8;;\ <https://x.org>, ]8;;same\same]8;;\, ]8;;https://ref.example\ref]8;;\ <https://ref.example>, [bare], [pic] <a.png>.
 
-A ]8;;http://b\bboolldd link]8;;\ <http://b> and an [image].
+A ]8;;http://b\bboolldd link]8;;\ <http://b> and an [image] <pic.png>.
 
 Autolinks ]8;;https://auto.example/a\https://auto.example/a]8;;\ and ]8;;mailto:me@example.org\me@example.org]8;;\, and ]8;;https://wrap.example/path\a link whose label is long enough]8;;\
 ]8;;https://wrap.example/path\that the renderer has to wrap it onto the next line]8;;\ <https://wrap.example/path>.

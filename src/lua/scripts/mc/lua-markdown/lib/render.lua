@@ -694,12 +694,27 @@ tokenize = function(s)
                 i = i + 1
             end
         elseif ch == "!" and s:sub(i + 1, i + 1) == "[" then
-            local alt, e = s:match("^!%[([^%]]*)%]%b()()", i)
+            -- a picture is not drawn: its text and where it comes from are
+            local alt, target, e = s:match("^!%[([^%]]*)%]%(([^%s)]*)[^)]*%)()", i)
+            local ref
+
             if alt == nil then
-                alt, e = s:match("^!%[([^%]]*)%]%b[]()", i)
+                alt, ref, e = s:match("^!%[([^%]]*)%]%[([^%]]*)%]()", i)
+                if alt ~= nil then
+                    target = doc.refs[normalize_label(ref ~= "" and ref or alt)]
+                end
+            end
+            if alt == nil then
+                alt, e = s:match("^!%[([^%]]*)%]()", i)
+                if alt ~= nil then
+                    target = doc.refs[normalize_label(alt)]
+                end
             end
             if alt ~= nil then
                 text[#text + 1] = "[" .. alt .. "]"
+                if target ~= nil and target ~= "" and target ~= alt then
+                    text[#text + 1] = " <" .. target .. ">"
+                end
                 i = e
             else
                 text[#text + 1] = ch
