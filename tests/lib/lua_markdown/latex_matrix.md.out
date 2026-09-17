@@ -15,17 +15,17 @@
     │ a  b │ = ad - bc
     │ c  d │
 
-    ⎰ x + y = 1
-    ⎱ 2x - y = 0
+    ╭ x + y = 1
+    ╰ 2x - y = 0
 
     ⎡ 1  0  ⋯  0 ⎤
     ⎢ 0  1  ⋯  0 ⎥
     ⎢ ⋮  ⋮  ⋱  ⋮ ⎥
     ⎣ 0  0  ⋯  1 ⎦
 
-           ⎧ 1/x   x > 0
-    f(x) = ⎨ 0     x = 0
-           ⎩ -1/x  x < 0
+           ╭ 1/x   x > 0
+    f(x) = ┤ 0     x = 0
+           ╰ -1/x  x < 0
 
     left  center  right
     a       bb      ccc
