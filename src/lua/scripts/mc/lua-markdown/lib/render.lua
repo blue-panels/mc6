@@ -17,6 +17,10 @@ M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
+-- the combining long stroke that strikes a character through; the terminal
+-- has no attribute for it
+local STRIKE = "\u{0336}"
+
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
@@ -66,15 +70,30 @@ local function chars(s)
     return out
 end
 
+-- whether ch is a combining mark, which takes no room of its own
+local function is_combining(ch)
+    if #ch < 2 then
+        return false
+    end
+    local code = utf8.codepoint(ch)
+    return (code >= 0x0300 and code <= 0x036F) or (code >= 0x20D0 and code <= 0x20F0)
+end
+
 local function width(s)
-    return #chars(s)
+    local n = 0
+    for _, ch in ipairs(chars(s)) do
+        if not is_combining(ch) then
+            n = n + 1
+        end
+    end
+    return n
 end
 
 local function trim(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
--- style: { bold = b, under = u, italic = i, heading = level }.  A space is
+-- style: { bold = b, under = u, italic = i, strike = s, heading = level }.  A space is
 -- never overstruck, and the SGR sequences go around the visible characters
 -- only, so that a line never starts or ends inside them with a space.
 local function styled(s, style)
@@ -87,14 +106,14 @@ local function styled(s, style)
         open = open .. "\27[" .. color .. "m"
         close = SGR_COLOR_OFF .. close
     end
-    if not (style.bold or style.under or style.heading or open ~= "") then
+    if not (style.bold or style.under or style.heading or style.strike or open ~= "") then
         return s
     end
     local out = {}
     local first, last
     for _, ch in ipairs(chars(s)) do
         if ch == " " then
-            out[#out + 1] = ch
+            out[#out + 1] = style.strike and (ch .. STRIKE) or ch
         else
             if style.heading == 1 then
                 out[#out + 1] = ch .. "\b" .. ch .. "\b" .. ch
@@ -106,6 +125,9 @@ local function styled(s, style)
                 out[#out + 1] = "_\b" .. ch
             else
                 out[#out + 1] = ch
+            end
+            if style.strike then
+                out[#out] = out[#out] .. STRIKE
             end
             first = first or #out
             last = #out
@@ -663,8 +685,8 @@ tokenize = function(s)
                     i = i + 1
                 end
             end
-        elseif ch == "*" or ch == "_" then
-            local _, e = s:find("^" .. (ch == "*" and "%*+" or "_+"), i)
+        elseif ch == "*" or ch == "_" or ch == "~" then
+            local _, e = s:find("^" .. (ch == "*" and "%*+" or ch == "_" and "_+" or "~+"), i)
             local before = s:sub(i - 1, i - 1)
             local after = s:sub(e + 1, e + 1)
             local can_open, can_close = flanking(before, after, ch)
@@ -706,7 +728,13 @@ pair_emphasis = function(tokens)
             if opener == nil then
                 break
             end
-            local use = (opener[3] >= 2 and closer[3] >= 2) and 2 or 1
+            local use
+            if closer[2] == "~" then
+                use = 3  -- strike: one or two tildes, all of the run at once
+                opener[3], closer[3] = 1, 1
+            else
+                use = (opener[3] >= 2 and closer[3] >= 2) and 2 or 1
+            end
             opener[3] = opener[3] - use
             closer[3] = closer[3] - use
             opener.opens = opener.opens or {}
@@ -720,12 +748,13 @@ end
 local render_tokens
 
 render_tokens = function(tokens, style, out)
-    local bold, italic = 0, 0
+    local bold, italic, strike = 0, 0, 0
     local function current()
         return {
             bold = style.bold or bold > 0,
             under = style.under,
             italic = style.italic or italic > 0,
+            strike = style.strike or strike > 0,
             heading = style.heading,
         }
     end
@@ -754,7 +783,9 @@ render_tokens = function(tokens, style, out)
         else
             if t.closes then
                 for _, use in ipairs(t.closes) do
-                    if use == 2 then
+                    if use == 3 then
+                        strike = strike - 1
+                    elseif use == 2 then
                         bold = bold - 1
                     else
                         italic = italic - 1
@@ -766,7 +797,9 @@ render_tokens = function(tokens, style, out)
             end
             if t.opens then
                 for _, use in ipairs(t.opens) do
-                    if use == 2 then
+                    if use == 3 then
+                        strike = strike + 1
+                    elseif use == 2 then
                         bold = bold + 1
                     else
                         italic = italic + 1
@@ -862,6 +895,10 @@ local function units_of(rendered)
             while cs[i] == "\b" and cs[i + 1] ~= nil do
                 unit = unit .. "\b" .. cs[i + 1]
                 i = i + 2
+            end
+            while cs[i] ~= nil and is_combining(cs[i]) do
+                unit = unit .. cs[i]
+                i = i + 1
             end
             units[#units + 1] = unit
         end
