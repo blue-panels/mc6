@@ -465,14 +465,45 @@ local function draw_flowchart_boxes(chart, width_limit)
         return nil
     end
 
-    -- three rows per box and one between them
+    -- a box is three rows tall, a decision four; one row between them
     local row_y = {}
-    local y = {}
+    local attach_y = {}
+
+    local function node_height(id)
+        return chart.nodes[id].shape == "{" and 4 or 3
+    end
 
     for n = 1, depth do
-        y[n] = 1
-        for i, id in ipairs(columns[n] or {}) do
-            row_y[id] = 1 + (i - 1) * 4
+        local y = 1
+
+        for _, id in ipairs(columns[n] or {}) do
+            row_y[id] = y
+            attach_y[id] = y + (chart.nodes[id].shape == "{" and 2 or 1)
+            y = y + node_height(id) + 1
+        end
+    end
+
+    -- the first node of every layer is put on the same row as the others, so
+    -- that a line between two of them runs straight
+    local first_row = 0
+
+    for n = 1, depth do
+        local first = (columns[n] or {})[1]
+
+        if first ~= nil then
+            first_row = math.max(first_row, attach_y[first])
+        end
+    end
+    for n = 1, depth do
+        local first = (columns[n] or {})[1]
+
+        if first ~= nil then
+            local shift = first_row - attach_y[first]
+
+            for _, id in ipairs(columns[n]) do
+                row_y[id] = row_y[id] + shift
+                attach_y[id] = attach_y[id] + shift
+            end
         end
     end
 
@@ -492,11 +523,12 @@ local function draw_flowchart_boxes(chart, width_limit)
             -- the shape the node was written with: a box, a rounded box, a
             -- circle or the diamond of a decision
             if node.shape == "{" then
-                canvas_put(canvas, top, col_x[n],
-                           " " .. DIAMOND_TL .. (BOX_H):rep(w - 4) .. DIAMOND_TR)
-                canvas_put(canvas, top + 1, col_x[n], DIAMOND .. body .. DIAMOND)
-                canvas_put(canvas, top + 2, col_x[n],
-                           " " .. DIAMOND_BL .. (BOX_H):rep(w - 4) .. DIAMOND_BR)
+                canvas_put(canvas, top, col_x[n] + 2, ("_"):rep(w - 4))
+                canvas_put(canvas, top + 1, col_x[n] + 1,
+                           DIAMOND_TL .. (" "):rep(w - 4) .. DIAMOND_TR)
+                canvas_put(canvas, top + 2, col_x[n], DIAMOND .. body .. DIAMOND)
+                canvas_put(canvas, top + 3, col_x[n] + 1,
+                           DIAMOND_BL .. ("_"):rep(w - 4) .. DIAMOND_BR)
             elseif node.shape == "((" then
                 canvas_put(canvas, top, col_x[n], " " .. BOX_H:rep(w - 2) .. " ")
                 canvas_put(canvas, top + 1, col_x[n], "(" .. body .. ")")
@@ -550,8 +582,8 @@ local function draw_flowchart_boxes(chart, width_limit)
     for edge_index, edge in ipairs(chart.edges) do
         local from_layer = layer[edge.from]
         local to_layer = layer[edge.to]
-        local y1 = row_y[edge.from] + 1
-        local y2 = row_y[edge.to] + 1
+        local y1 = attach_y[edge.from]
+        local y2 = attach_y[edge.to]
         local x1 = col_x[from_layer] + col_width[from_layer]
         local x2 = col_x[to_layer] - 1
 
