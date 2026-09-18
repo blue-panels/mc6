@@ -49,7 +49,8 @@
 
 #include "src/setup.h"  // panels_options
 
-#include "layout.h"  // get_panel_type(), get_panel_widget()
+#include "filemanager.h"  // current_panel
+#include "layout.h"       // get_panel_type(), get_panel_widget()
 
 /*** global variables ****************************************************************************/
 
@@ -503,6 +504,7 @@ void
 dir_watch_reload_pending (void)
 {
     guint i;
+    gboolean reloaded = FALSE;
 
     if (dir_watch_fd < 0)
         return;
@@ -512,8 +514,18 @@ dir_watch_reload_pending (void)
         dir_watch_t *w = &g_array_index (dir_watches, dir_watch_t, i);
 
         if (w->stale && dir_watch_panel_ready (w->panel))
+        {
             dir_watch_reload_one (w);
+            reloaded = TRUE;
+        }
     }
+
+    /* A reread leaves the process in the directory of the panel it reread.
+       Commands that name a file without its directory, F4 among them, would
+       then work in the other panel's directory. */
+    if (reloaded && get_current_type () == view_listing && current_panel != NULL
+        && !current_panel->is_panelized)
+        (void) mc_chdir (current_panel->cwd_vpath);
 }
 
 /* --------------------------------------------------------------------------------------------- */
