@@ -477,7 +477,10 @@ local function draw_flowchart_boxes(chart, width_limit)
     for n = 1, depth do
         col_width[n] = 0
         for _, id in ipairs(columns[n] or {}) do
-            col_width[n] = math.max(col_width[n], width(chart.nodes[id].label) + 4)
+            local extra =
+                (chart.nodes[id].shape == "{" and M.DECISION_STYLE == "braille") and 6 or 4
+
+            col_width[n] = math.max(col_width[n], width(chart.nodes[id].label) + extra)
         end
         gap[n] = 6
     end
@@ -583,11 +586,11 @@ local function draw_flowchart_boxes(chart, width_limit)
             -- the shape the node was written with: a box, a rounded box, a
             -- circle or the diamond of a decision
             if node.shape == "{" and M.DECISION_STYLE == "braille" then
-                local edge_top, edge_bottom = decision_edges(w)
+                local edge_top, edge_bottom = decision_edges(w - 2)
 
-                canvas_put(canvas, top, col_x[n], edge_top)
+                canvas_put(canvas, top, col_x[n] + 1, edge_top)
                 canvas_put(canvas, top + 1, col_x[n], DIAMOND .. body .. DIAMOND)
-                canvas_put(canvas, top + 2, col_x[n], edge_bottom)
+                canvas_put(canvas, top + 2, col_x[n] + 1, edge_bottom)
             elseif node.shape == "{" then
                 canvas_put(canvas, top, col_x[n] + 2, ("_"):rep(w - 4))
                 canvas_put(canvas, top + 1, col_x[n] + 1,
