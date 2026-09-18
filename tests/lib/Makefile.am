@@ -58,6 +58,8 @@ EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/mermaid.md.out \
 	lua_markdown/mermaid_class.md \
 	lua_markdown/mermaid_class.md.out \
+	lua_markdown/mermaid_class_many.md \
+	lua_markdown/mermaid_class_many.md.out \
 	lua_markdown/mixed.md \
 	lua_markdown/mixed.md.out \
 	lua_markdown/sgr.md \

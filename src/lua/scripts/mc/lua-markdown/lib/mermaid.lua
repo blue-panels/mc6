@@ -552,6 +552,123 @@ local function parse_class(lines)
     return model
 end
 
+-- The box of one class, drawn at a place on the canvas.
+local function draw_class_box(canvas, cls, name, top, left, w)
+    local at = top
+
+    local function put_row(text, centered)
+        local pad = math.max(w - 2 - width(text), 0)
+        local before = centered and pad // 2 or 1
+
+        canvas_put(canvas, at, left,
+                   BOX_V .. (" "):rep(before) .. text
+                       .. (" "):rep(math.max(pad - before, 0)) .. BOX_V)
+        at = at + 1
+    end
+
+    local function rule(left_ch, right_ch)
+        canvas_put(canvas, at, left, left_ch .. BOX_H:rep(w - 2) .. right_ch)
+        at = at + 1
+    end
+
+    rule(BOX_TL, BOX_TR)
+    put_row(name, true)
+    if #cls.attrs > 0 then
+        rule("\u{251C}", "\u{2524}")
+        for _, text in ipairs(cls.attrs) do
+            put_row(text, false)
+        end
+    end
+    if #cls.methods > 0 then
+        rule("\u{251C}", "\u{2524}")
+        for _, text in ipairs(cls.methods) do
+            put_row(text, false)
+        end
+    end
+    rule(BOX_BL, BOX_BR)
+end
+
+-- When a row of boxes does not fit the screen, the classes are stacked one
+-- under another and the lines run down the left margin.
+local function draw_class_column(model, parents, children, width_limit)
+    local canvas = canvas_new()
+    local indent = 5
+    local y = 1
+    local drawn = {}
+    local marks = {}
+
+    local function box_size(name)
+        local cls = model.classes[name]
+        local w = width(name)
+
+        for _, list in ipairs({ cls.attrs, cls.methods }) do
+            for _, text in ipairs(list) do
+                w = math.max(w, width(text))
+            end
+        end
+        return w + 4, 3 + #cls.attrs + #cls.methods
+            + (#cls.attrs > 0 and 1 or 0) + (#cls.methods > 0 and 1 or 0)
+    end
+
+    local function draw(name, left)
+        local w, h = box_size(name)
+
+        if width_limit ~= nil and left + w - 1 > width_limit then
+            return false
+        end
+        draw_class_box(canvas, model.classes[name], name, y, left, w)
+        drawn[name] = { top = y, height = h, left = left }
+        y = y + h + 1
+        return true
+    end
+
+    for _, name in ipairs(model.order) do
+        if parents[name] == nil and not drawn[name] then
+            if not draw(name, 1) then
+                return nil
+            end
+            local kids = children[name] or {}
+
+            for n, child in ipairs(kids) do
+                local top = y
+
+                if not draw(child, indent + 1) then
+                    return nil
+                end
+                marks[#marks + 1] = { parent = name, child = child, top = top, last = n == #kids }
+            end
+        end
+    end
+    for _, name in ipairs(model.order) do
+        if not drawn[name] then
+            if not draw(name, 1) then
+                return nil
+            end
+        end
+    end
+
+    -- one line down the margin, with a branch to every class that comes from
+    -- the one above
+    for _, mark in ipairs(marks) do
+        local parent = drawn[mark.parent]
+        local x = parent.left + 2
+        local from = parent.top + parent.height
+        local to = mark.top + 1
+
+        canvas_put(canvas, from, x, TRIANGLE)
+        for i = from + 1, to - 1 do
+            canvas_line(canvas, i, x, UP | DOWN)
+        end
+        canvas_line(canvas, to, x, UP | RIGHT | (mark.last and 0 or DOWN))
+        for i = x + 1, indent do
+            canvas_line(canvas, to, i, LEFT | RIGHT)
+        end
+    end
+
+    canvas_draw_lines(canvas)
+    return canvas_lines(canvas)
+end
+
 -- Boxes of three parts, the children under the class they come from.
 local function draw_class(model, width_limit)
     local parents = {}
@@ -629,7 +746,7 @@ local function draw_class(model, width_limit)
             tallest = math.max(tallest, box_h[name])
         end
         if width_limit ~= nil and x - gap - 1 > width_limit then
-            return nil
+            return draw_class_column(model, parents, children, width_limit)
         end
 
         -- every line gets a row of its own to turn in, so that the lines do
@@ -643,46 +760,9 @@ local function draw_class(model, width_limit)
     end
 
     for _, name in ipairs(model.order) do
-        local cls = model.classes[name]
-        local w = box_w[name]
-        local top = y_of[name]
-        local left = x_of[name]
-        local at = top
-
-        local function put_row(text, centered)
-            local pad = math.max(w - 2 - width(text), 0)
-            local before = centered and pad // 2 or 1
-
-            canvas_put(canvas, at, left,
-                       BOX_V .. (" "):rep(before) .. text
-                           .. (" "):rep(math.max(pad - before, 0)) .. BOX_V)
-            at = at + 1
-        end
-
-        local function rule(left_ch, right_ch)
-            canvas_put(canvas, at, left, left_ch .. BOX_H:rep(w - 2) .. right_ch)
-            at = at + 1
-        end
-
-        rule(BOX_TL, BOX_TR)
-        put_row(name, true)
-        if #cls.attrs > 0 then
-            rule("\u{251C}", "\u{2524}")
-            for _, text in ipairs(cls.attrs) do
-                put_row(text, false)
-            end
-        end
-        if #cls.methods > 0 then
-            rule("\u{251C}", "\u{2524}")
-            for _, text in ipairs(cls.methods) do
-                put_row(text, false)
-            end
-        end
-        rule(BOX_BL, BOX_BR)
+        draw_class_box(canvas, model.classes[name], name, y_of[name], x_of[name], box_w[name])
     end
 
-    -- an inheritance arrow leaves the top of the child and enters the bottom
-    -- of the class it comes from
     for parent, kids in pairs(children) do
         local py = y_of[parent] + box_h[parent] - 1
         local left = x_of[parent]
