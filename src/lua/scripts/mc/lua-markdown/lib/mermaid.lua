@@ -208,7 +208,19 @@ local BOX_TL, BOX_TR, BOX_BL, BOX_BR = "\u{250C}", "\u{2510}", "\u{2514}", "\u{2
 local BOX_H, BOX_V = "\u{2500}", "\u{2502}"
 
 local function canvas_new()
-    return { rows = {}, mask = {}, width = 0 }
+    return { rows = {}, mask = {}, color = {}, width = 0, pen = nil }
+end
+
+-- What the lines drawn from now on are colored with; nil paints nothing.
+local function canvas_pen(canvas, color)
+    canvas.pen = color
+end
+
+local function canvas_paint(canvas, y, x)
+    if canvas.pen ~= nil then
+        canvas.color[y] = canvas.color[y] or {}
+        canvas.color[y][x] = canvas.pen
+    end
 end
 
 local function canvas_put(canvas, y, x, text)
@@ -217,6 +229,10 @@ local function canvas_put(canvas, y, x, text)
 
     for _, ch in ipairs(chars(text)) do
         row[i] = ch
+        if canvas.pen ~= nil then
+            canvas.color[y] = canvas.color[y] or {}
+            canvas.color[y][i] = canvas.pen
+        end
         i = i + 1
     end
     canvas.rows[y] = row
@@ -238,22 +254,58 @@ local LINE_GLYPH = {
     [UP + DOWN + LEFT + RIGHT] = "\u{253C}",
 }
 
-local function canvas_line(canvas, y, x, dirs)
-    canvas.mask[y] = canvas.mask[y] or {}
-    canvas.mask[y][x] = (canvas.mask[y][x] or 0) | dirs
+-- One cell of a line.  Cells of the same line are joined, so that a turn
+-- reads as a turn; where two lines cross, the one going down is drawn over
+-- the one going across, which is left broken there.
+local function canvas_line(canvas, y, x, dirs, owner)
+    local row = canvas.mask[y] or {}
+    local cell = row[x]
+
+    canvas.mask[y] = row
     canvas.width = math.max(canvas.width, x)
+
+    if cell == nil then
+        row[x] = { dirs = dirs, owner = owner }
+        canvas_paint(canvas, y, x)
+        return
+    end
+    if cell.owner == owner then
+        cell.dirs = cell.dirs | dirs
+        canvas_paint(canvas, y, x)
+        return
+    end
+
+    local down = UP | DOWN
+    local across = LEFT | RIGHT
+    local crossing = (dirs == down and cell.dirs == across)
+        or (dirs == across and cell.dirs == down)
+
+    if not crossing then
+        -- the lines meet rather than cross: one of them branches here
+        cell.dirs = cell.dirs | dirs
+        canvas_paint(canvas, y, x)
+    elseif dirs == down then
+        -- the line going down is drawn over the one going across
+        row[x] = { dirs = dirs, owner = owner }
+        canvas_paint(canvas, y, x)
+    end
+    -- a line going across keeps the break where another line crosses it
 end
 
 local function canvas_draw_lines(canvas)
-    for y, row in pairs(canvas.mask) do
-        for x, dirs in pairs(row) do
-            local cell = canvas.rows[y] ~= nil and canvas.rows[y][x] or nil
+    local pen = canvas.pen
 
-            if cell == nil or cell == " " then
-                canvas_put(canvas, y, x, LINE_GLYPH[dirs] or "\u{253C}")
+    canvas_pen(canvas, nil)
+    for y, row in pairs(canvas.mask) do
+        for x, cell in pairs(row) do
+            local was = canvas.rows[y] ~= nil and canvas.rows[y][x] or nil
+
+            if was == nil or was == " " then
+                canvas_put(canvas, y, x, LINE_GLYPH[cell.dirs] or "\u{253C}")
             end
         end
     end
+    canvas_pen(canvas, pen)
 end
 
 local function canvas_lines(canvas)
@@ -265,12 +317,30 @@ local function canvas_lines(canvas)
     end
     for y = 1, last do
         local row = canvas.rows[y] or {}
+        local colors = canvas.color[y] or {}
         local line = {}
+        local pen = nil
 
         for x = 1, canvas.width do
-            line[x] = row[x] or " "
+            local color = colors[x]
+
+            -- a color is opened where it starts and closed where it ends, so
+            -- that a line can be read from any row
+            if color ~= pen then
+                if pen ~= nil then
+                    line[#line + 1] = "\27[39m"
+                end
+                if color ~= nil then
+                    line[#line + 1] = "\27[" .. color .. "m"
+                end
+                pen = color
+            end
+            line[#line + 1] = row[x] or " "
         end
-        out[y] = (table.concat(line):gsub("%s+$", ""))
+        if pen ~= nil then
+            line[#line + 1] = "\27[39m"
+        end
+        out[y] = (table.concat(line):gsub("%s+(\27%[39m)$", "%1"):gsub("%s+$", ""))
     end
     return out
 end
@@ -348,13 +418,25 @@ local function draw_flowchart_boxes(chart, width_limit)
         end
         gap[n] = 6
     end
+    -- the room between two layers holds the label of an edge and a column
+    -- for every line that turns there
+    local fan = {}
+
+    for _, edge in ipairs(chart.edges) do
+        local n = layer[edge.from]
+
+        if layer[edge.to] > n then
+            fan[edge.from] = (fan[edge.from] or 0) + 1
+            fan[n] = math.max(fan[n] or 1, fan[edge.from])
+        end
+    end
     for _, edge in ipairs(chart.edges) do
         local n = layer[edge.from]
 
         if edge.label ~= nil and n < depth then
             -- the label sits in the half of the room next to the box it
             -- points at
-            gap[n] = math.max(gap[n], 2 * width(edge.label) + 6)
+            gap[n] = math.max(gap[n], 2 * width(edge.label) + 6 + (fan[n] or 1) - 1)
         end
     end
 
@@ -412,7 +494,37 @@ local function draw_flowchart_boxes(chart, width_limit)
     -- of the other one, turning in the room between the layers
     local turn = {}
 
-    for _, edge in ipairs(chart.edges) do
+    -- the line that has to travel farthest turns first, that is leftmost, so
+    -- that a line never crosses one that turned before it
+    local turn_order = {}
+
+    do
+        local leaving = {}
+
+        for index, edge in ipairs(chart.edges) do
+            if layer[edge.to] > layer[edge.from] then
+                leaving[edge.from] = leaving[edge.from] or {}
+                table.insert(leaving[edge.from], index)
+            end
+        end
+        for _, list in pairs(leaving) do
+            table.sort(list, function(a, b)
+                local ea, eb = chart.edges[a], chart.edges[b]
+                local da = math.abs(row_y[ea.to] - row_y[ea.from])
+                local db = math.abs(row_y[eb.to] - row_y[eb.from])
+
+                if da ~= db then
+                    return da > db
+                end
+                return a < b
+            end)
+            for place, index in ipairs(list) do
+                turn_order[index] = place
+            end
+        end
+    end
+
+    for edge_index, edge in ipairs(chart.edges) do
         local from_layer = layer[edge.from]
         local to_layer = layer[edge.to]
         local y1 = row_y[edge.from] + 1
@@ -421,25 +533,27 @@ local function draw_flowchart_boxes(chart, width_limit)
         local x2 = col_x[to_layer] - 1
 
         if to_layer > from_layer and x2 >= x1 then
-            local mid = x1 + (x2 - x1) // 2
+            -- every line leaving a box turns in a column of its own, so that
+            -- two lines never share a corner
+            local mid = math.min(x1 + (x2 - x1) // 2 + (turn_order[edge_index] or 1) - 1, x2 - 2)
 
             turn[from_layer] = (turn[from_layer] or 0) + 1
             for i = x1, mid - 1 do
-                canvas_line(canvas, y1, i, LEFT | RIGHT)
+                canvas_line(canvas, y1, i, LEFT | RIGHT, edge_index)
             end
             if y1 == y2 then
-                canvas_line(canvas, y1, mid, LEFT | RIGHT)
+                canvas_line(canvas, y1, mid, LEFT | RIGHT, edge_index)
             else
                 local step = y1 < y2 and 1 or -1
 
-                canvas_line(canvas, y1, mid, LEFT | (y1 < y2 and DOWN or UP))
+                canvas_line(canvas, y1, mid, LEFT | (y1 < y2 and DOWN or UP), edge_index)
                 for i = y1 + step, y2 - step, step do
-                    canvas_line(canvas, i, mid, UP | DOWN)
+                    canvas_line(canvas, i, mid, UP | DOWN, edge_index)
                 end
-                canvas_line(canvas, y2, mid, RIGHT | (y1 < y2 and UP or DOWN))
+                canvas_line(canvas, y2, mid, RIGHT | (y1 < y2 and UP or DOWN), edge_index)
             end
             for i = mid + 1, x2 - 1 do
-                canvas_line(canvas, y2, i, LEFT | RIGHT)
+                canvas_line(canvas, y2, i, LEFT | RIGHT, edge_index)
             end
             canvas_put(canvas, y2, x2, ARROW_DOWN)
             if edge.label ~= nil then
@@ -471,6 +585,12 @@ end
 -- Class diagram.
 
 local TRIANGLE = "\u{25B3}"  -- the head of an inheritance arrow
+
+-- Every class has a color of its own, cycled after the last one: its box is
+-- drawn in it and so is the line that ties it to the class it comes from,
+-- which is how the line is followed back to its box.  An empty list draws
+-- everything in the color of the text.
+local EDGE_COLORS = { "36", "33", "32", "35", "34", "31", "96", "93" }
 
 local function class_of(model, name)
     name = trim(name)
@@ -555,14 +675,18 @@ end
 -- The box of one class, drawn at a place on the canvas.
 local function draw_class_box(canvas, cls, name, top, left, w)
     local at = top
+    local pen = canvas.pen
 
     local function put_row(text, centered)
         local pad = math.max(w - 2 - width(text), 0)
         local before = centered and pad // 2 or 1
 
-        canvas_put(canvas, at, left,
-                   BOX_V .. (" "):rep(before) .. text
-                       .. (" "):rep(math.max(pad - before, 0)) .. BOX_V)
+        canvas_put(canvas, at, left, BOX_V)
+        canvas_pen(canvas, nil)
+        canvas_put(canvas, at, left + 1,
+                   (" "):rep(before) .. text .. (" "):rep(math.max(pad - before, 0)))
+        canvas_pen(canvas, pen)
+        canvas_put(canvas, at, left + w - 1, BOX_V)
         at = at + 1
     end
 
@@ -610,13 +734,21 @@ local function draw_class_column(model, parents, children, width_limit)
             + (#cls.attrs > 0 and 1 or 0) + (#cls.methods > 0 and 1 or 0)
     end
 
+    local color_of = {}
+
+    for n, name in ipairs(model.order) do
+        color_of[name] = #EDGE_COLORS > 0 and EDGE_COLORS[(n - 1) % #EDGE_COLORS + 1] or nil
+    end
+
     local function draw(name, left)
         local w, h = box_size(name)
 
         if width_limit ~= nil and left + w - 1 > width_limit then
             return false
         end
+        canvas_pen(canvas, color_of[name])
         draw_class_box(canvas, model.classes[name], name, y, left, w)
+        canvas_pen(canvas, nil)
         drawn[name] = { top = y, height = h, left = left }
         y = y + h + 1
         return true
@@ -655,16 +787,22 @@ local function draw_class_column(model, parents, children, width_limit)
         local from = parent.top + parent.height
         local to = mark.top + 1
 
+        -- the trunk belongs to the class every branch comes from, the branch
+        -- itself to the class it runs to
+        canvas_pen(canvas, color_of[mark.parent])
         canvas_put(canvas, from, x, TRIANGLE)
+        canvas_paint(canvas, from, x)
         for i = from + 1, to - 1 do
-            canvas_line(canvas, i, x, UP | DOWN)
+            canvas_line(canvas, i, x, UP | DOWN, mark.parent)
         end
-        canvas_line(canvas, to, x, UP | RIGHT | (mark.last and 0 or DOWN))
+        canvas_pen(canvas, color_of[mark.child])
+        canvas_line(canvas, to, x, UP | RIGHT | (mark.last and 0 or DOWN), mark.parent)
         for i = x + 1, indent do
-            canvas_line(canvas, to, i, LEFT | RIGHT)
+            canvas_line(canvas, to, i, LEFT | RIGHT, mark.child)
         end
     end
 
+    canvas_pen(canvas, nil)
     canvas_draw_lines(canvas)
     return canvas_lines(canvas)
 end
@@ -759,11 +897,22 @@ local function draw_class(model, width_limit)
         y = y + tallest + turns + 2
     end
 
-    for _, name in ipairs(model.order) do
-        draw_class_box(canvas, model.classes[name], name, y_of[name], x_of[name], box_w[name])
+    local color_of = {}
+
+    for n, name in ipairs(model.order) do
+        color_of[name] = #EDGE_COLORS > 0 and EDGE_COLORS[(n - 1) % #EDGE_COLORS + 1] or nil
     end
 
-    for parent, kids in pairs(children) do
+    for _, name in ipairs(model.order) do
+        canvas_pen(canvas, color_of[name])
+        draw_class_box(canvas, model.classes[name], name, y_of[name], x_of[name], box_w[name])
+    end
+    canvas_pen(canvas, nil)
+
+    for _, parent in ipairs(model.order) do
+      local kids = children[parent]
+
+      if kids ~= nil then
         local py = y_of[parent] + box_h[parent] - 1
         local left = x_of[parent]
         local w = box_w[parent]
@@ -792,32 +941,39 @@ local function draw_class(model, width_limit)
             -- its own arrow, the way UML draws generalization
             local ex = left + math.max(w * n // (#kids + 1), 1)
             local cx = x_of[child] + box_w[child] // 2
+            local owner = parent .. ">" .. child
+
+            -- the line belongs to the class it runs to
+            canvas_pen(canvas, color_of[child])
             local cy = y_of[child]
             local bus = py + 1 + row_of[n]
             local lo = math.min(cx, ex)
             local hi = math.max(cx, ex)
 
             canvas_put(canvas, py + 1, ex, TRIANGLE)
+            canvas_paint(canvas, py + 1, ex)
             if cx == ex then
                 for i = py + 2, cy - 1 do
-                    canvas_line(canvas, i, cx, UP | DOWN)
+                    canvas_line(canvas, i, cx, UP | DOWN, owner)
                 end
             else
                 for i = py + 2, bus - 1 do
-                    canvas_line(canvas, i, ex, UP | DOWN)
+                    canvas_line(canvas, i, ex, UP | DOWN, owner)
                 end
-                canvas_line(canvas, bus, ex, UP | (cx < ex and LEFT or RIGHT))
+                canvas_line(canvas, bus, ex, UP | (cx < ex and LEFT or RIGHT), owner)
                 for i = lo + 1, hi - 1 do
-                    canvas_line(canvas, bus, i, LEFT | RIGHT)
+                    canvas_line(canvas, bus, i, LEFT | RIGHT, owner)
                 end
-                canvas_line(canvas, bus, cx, DOWN | (cx < ex and RIGHT or LEFT))
+                canvas_line(canvas, bus, cx, DOWN | (cx < ex and RIGHT or LEFT), owner)
                 for i = bus + 1, cy - 1 do
-                    canvas_line(canvas, i, cx, UP | DOWN)
+                    canvas_line(canvas, i, cx, UP | DOWN, owner)
                 end
             end
         end
+      end
     end
 
+    canvas_pen(canvas, nil)
     canvas_draw_lines(canvas)
 
     local out = canvas_lines(canvas)
