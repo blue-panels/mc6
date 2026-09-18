@@ -230,8 +230,9 @@ local UP, DOWN, LEFT, RIGHT = 1, 2, 4, 8
 local LINE_GLYPH = {
     [LEFT + RIGHT] = "\u{2500}", [LEFT] = "\u{2500}", [RIGHT] = "\u{2500}",
     [UP + DOWN] = "\u{2502}", [UP] = "\u{2502}", [DOWN] = "\u{2502}",
-    [DOWN + RIGHT] = "\u{250C}", [DOWN + LEFT] = "\u{2510}",
-    [UP + RIGHT] = "\u{2514}", [UP + LEFT] = "\u{2518}",
+    -- a line turns with a rounded corner; the boxes keep the square ones
+    [DOWN + RIGHT] = "\u{256D}", [DOWN + LEFT] = "\u{256E}",
+    [UP + RIGHT] = "\u{2570}", [UP + LEFT] = "\u{256F}",
     [UP + DOWN + RIGHT] = "\u{251C}", [UP + DOWN + LEFT] = "\u{2524}",
     [DOWN + LEFT + RIGHT] = "\u{252C}", [UP + LEFT + RIGHT] = "\u{2534}",
     [UP + DOWN + LEFT + RIGHT] = "\u{253C}",
@@ -630,7 +631,15 @@ local function draw_class(model, width_limit)
         if width_limit ~= nil and x - gap - 1 > width_limit then
             return nil
         end
-        y = y + tallest + 3
+
+        -- every line gets a row of its own to turn in, so that the lines do
+        -- not run into one another
+        local turns = 1
+
+        for _, name in ipairs(rows[level] or {}) do
+            turns = math.max(turns, #(children[name] or {}))
+        end
+        y = y + tallest + turns + 2
     end
 
     for _, name in ipairs(model.order) do
@@ -675,30 +684,58 @@ local function draw_class(model, width_limit)
     -- an inheritance arrow leaves the top of the child and enters the bottom
     -- of the class it comes from
     for parent, kids in pairs(children) do
-        local bus = y_of[kids[1]] - 2
-        local px = x_of[parent] + box_w[parent] // 2
         local py = y_of[parent] + box_h[parent] - 1
+        local left = x_of[parent]
+        local w = box_w[parent]
 
-        for _, child in ipairs(kids) do
+        -- the line that travels farthest turns first, so that a line that
+        -- goes down later never crosses one that already turned
+        local order = {}
+
+        for n = 1, #kids do
+            order[n] = n
+        end
+        table.sort(order, function(a, b)
+            local ax = x_of[kids[a]] + box_w[kids[a]] // 2
+            local bx = x_of[kids[b]] + box_w[kids[b]] // 2
+
+            return math.abs(ax - left - w // 2) > math.abs(bx - left - w // 2)
+        end)
+        local row_of = {}
+
+        for place, n in ipairs(order) do
+            row_of[n] = place
+        end
+
+        for n, child in ipairs(kids) do
+            -- every line leaves the parent at a place of its own and carries
+            -- its own arrow, the way UML draws generalization
+            local ex = left + math.max(w * n // (#kids + 1), 1)
             local cx = x_of[child] + box_w[child] // 2
             local cy = y_of[child]
+            local bus = py + 1 + row_of[n]
+            local lo = math.min(cx, ex)
+            local hi = math.max(cx, ex)
 
-            for i = bus + 1, cy - 1 do
-                canvas_line(canvas, i, cx, UP | DOWN)
-            end
-            canvas_line(canvas, bus, cx, DOWN | (cx < px and RIGHT or LEFT))
-            local lo = math.min(cx, px)
-            local hi = math.max(cx, px)
-
-            for i = lo + 1, hi - 1 do
-                canvas_line(canvas, bus, i, LEFT | RIGHT)
+            canvas_put(canvas, py + 1, ex, TRIANGLE)
+            if cx == ex then
+                for i = py + 2, cy - 1 do
+                    canvas_line(canvas, i, cx, UP | DOWN)
+                end
+            else
+                for i = py + 2, bus - 1 do
+                    canvas_line(canvas, i, ex, UP | DOWN)
+                end
+                canvas_line(canvas, bus, ex, UP | (cx < ex and LEFT or RIGHT))
+                for i = lo + 1, hi - 1 do
+                    canvas_line(canvas, bus, i, LEFT | RIGHT)
+                end
+                canvas_line(canvas, bus, cx, DOWN | (cx < ex and RIGHT or LEFT))
+                for i = bus + 1, cy - 1 do
+                    canvas_line(canvas, i, cx, UP | DOWN)
+                end
             end
         end
-        canvas_line(canvas, bus, px, UP | LEFT | RIGHT)
-        for i = py + 1, bus - 1 do
-            canvas_line(canvas, i, px, UP | DOWN)
-        end
-        canvas_put(canvas, py + 1, px, TRIANGLE)
     end
 
     canvas_draw_lines(canvas)
