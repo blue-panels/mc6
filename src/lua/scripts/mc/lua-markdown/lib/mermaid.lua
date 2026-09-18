@@ -209,6 +209,65 @@ local ROUND_TL, ROUND_TR, ROUND_BL, ROUND_BR = "\u{256D}", "\u{256E}", "\u{2570}
 local DIAMOND_TL, DIAMOND_TR = "\u{2571}", "\u{2572}"
 local DIAMOND_BL, DIAMOND_BR = "\u{2572}", "\u{2571}"
 local DIAMOND = "\u{25C7}"
+
+-- How a decision is drawn: "braille" slopes its sides with the dots of the
+-- braille block, "box" keeps to the box drawing characters, for a font that
+-- has no braille.
+M.DECISION_STYLE = "braille"
+
+local BRAILLE_BASE = 0x2800
+local BRAILLE_BITS = {
+    [0] = { 0x01, 0x02, 0x04, 0x40 },  -- left column of dots, top one first
+    [1] = { 0x08, 0x10, 0x20, 0x80 },  -- right column
+}
+
+-- One row of cells built from the dots set in it.
+local function braille_row(dots, width)
+    local out = {}
+
+    for cx = 0, width - 1 do
+        local bits = 0
+
+        for dx = 0, 1 do
+            for dy = 0, 3 do
+                if dots[dy][cx * 2 + dx] then
+                    bits = bits | BRAILLE_BITS[dx][dy + 1]
+                end
+            end
+        end
+        out[#out + 1] = bits == 0 and " " or utf8.char(BRAILLE_BASE + bits)
+    end
+    return table.concat(out)
+end
+
+-- The top and the bottom edge of a decision: a slope up from the left point,
+-- a straight run between the slopes, and the same mirrored underneath.
+local function decision_edges(width)
+    local top = { [0] = {}, [1] = {}, [2] = {}, [3] = {} }
+    local bottom = { [0] = {}, [1] = {}, [2] = {}, [3] = {} }
+    local last = width * 2 - 1
+    local slope = math.min(3, last // 2)
+
+    local function put(dots, x, y)
+        if x >= 0 and x <= last and y >= 0 and y <= 3 then
+            dots[y][x] = true
+        end
+    end
+
+    for i = 0, slope do
+        local y = 3 - (i * 3) // math.max(slope, 1)
+
+        put(top, i, y)
+        put(top, last - i, y)
+        put(bottom, i, 3 - y)
+        put(bottom, last - i, 3 - y)
+    end
+    for x = slope, last - slope do
+        put(top, x, 0)
+        put(bottom, x, 3)
+    end
+    return braille_row(top, width), braille_row(bottom, width)
+end
 local BOX_H, BOX_V = "\u{2500}", "\u{2502}"
 
 local function canvas_new()
@@ -470,7 +529,7 @@ local function draw_flowchart_boxes(chart, width_limit)
     local attach_y = {}
 
     local function node_height(id)
-        return chart.nodes[id].shape == "{" and 4 or 3
+        return (chart.nodes[id].shape == "{" and M.DECISION_STYLE ~= "braille") and 4 or 3
     end
 
     for n = 1, depth do
@@ -478,7 +537,8 @@ local function draw_flowchart_boxes(chart, width_limit)
 
         for _, id in ipairs(columns[n] or {}) do
             row_y[id] = y
-            attach_y[id] = y + (chart.nodes[id].shape == "{" and 2 or 1)
+            attach_y[id] = y
+                + ((chart.nodes[id].shape == "{" and M.DECISION_STYLE ~= "braille") and 2 or 1)
             y = y + node_height(id) + 1
         end
     end
@@ -522,7 +582,13 @@ local function draw_flowchart_boxes(chart, width_limit)
 
             -- the shape the node was written with: a box, a rounded box, a
             -- circle or the diamond of a decision
-            if node.shape == "{" then
+            if node.shape == "{" and M.DECISION_STYLE == "braille" then
+                local edge_top, edge_bottom = decision_edges(w)
+
+                canvas_put(canvas, top, col_x[n], edge_top)
+                canvas_put(canvas, top + 1, col_x[n], DIAMOND .. body .. DIAMOND)
+                canvas_put(canvas, top + 2, col_x[n], edge_bottom)
+            elseif node.shape == "{" then
                 canvas_put(canvas, top, col_x[n] + 2, ("_"):rep(w - 4))
                 canvas_put(canvas, top + 1, col_x[n] + 1,
                            DIAMOND_TL .. (" "):rep(w - 4) .. DIAMOND_TR)
