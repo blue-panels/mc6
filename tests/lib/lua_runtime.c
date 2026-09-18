@@ -764,7 +764,8 @@ create_sixel_handler_script (void)
 static void
 create_markdown_handler_script (void)
 {
-    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua" };
+    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua",
+                                         "lib/mermaid.lua" };
     char *root = g_build_filename (user_mc_scripts_dir, "lua-markdown", (char *) NULL);
     char *lib = g_build_filename (root, "lib", (char *) NULL);
     size_t i;
@@ -1141,11 +1142,10 @@ create_object_script (void)
         "    assert(transaction.revision == 11 and transaction.cursor.offset == 2)\n"
         "    assert(mc.ui.text_width(\"漢\") == 2)\n"
         "    local scan = assert(mc.syntax.scan(\"int x;\", { type = \"C Program\" }))\n"
-        "    assert(scan.type == \"C Program\" and #scan.runs == 2 and #scan.colors == 2)\n"
-        "    assert(scan.runs[1].offset == 1 and scan.runs[1].length == 3)\n"
+        "    assert(scan.type == \"Tested\" and #scan.runs == 1 and #scan.colors == 2)\n"
+        "    assert(scan.runs[1].offset == 1 and scan.runs[1].length == 6)\n"
         "    assert(scan.colors[scan.runs[1].color].fg == \"yellow\")\n"
         "    assert(scan.colors[scan.runs[1].color].attrs == \"bold\")\n"
-        "    assert(scan.runs[2].offset == 4 and scan.colors[scan.runs[2].color].fg == \"white\")\n"
         "    assert(editor:selected_text() == \"U2V0\")\n"
         "    assert(editor:set_cursor(3, 4))\n"
         "    assert(editor:insert(\"!\"))\n"
@@ -1797,28 +1797,44 @@ static gboolean
 test_syntax_scan (const char *text, gsize text_length, const char *type, const char *filename,
                   mc_runtime_syntax_result_t *result, const char **object_error)
 {
+    const char *eol;
+    gsize first;
+
     (void) object_error;
     (void) filename;
-    ck_assert_int_eq ((int) text_length, 6);
-    ck_assert_int_eq (memcmp (text, "int x;", 6), 0);
-    ck_assert_str_eq (type, "C Program");
 
     memset (result, 0, sizeof (*result));
     result->struct_size = sizeof (*result);
-    result->type = g_strdup ("C Program");
+
+    if (type != NULL)
+    {
+        // what the script asks for by name
+        ck_assert_int_eq ((int) text_length, 6);
+        ck_assert_int_eq (memcmp (text, "int x;", 6), 0);
+        ck_assert_str_eq (type, "C Program");
+    }
+
+    /* Enough of a rule set to see in the output: the first line is colored,
+       the rest is not. */
+    result->type = g_strdup ("Tested");
     result->colors_count = 2;
     result->colors = g_new0 (mc_runtime_syntax_color_t, 2);
-    result->colors[0].fg = g_strdup ("white");
     result->colors[1].fg = g_strdup ("yellow");
     result->colors[1].attrs = g_strdup ("bold");
-    result->runs_count = 2;
+
+    eol = memchr (text, '\n', text_length);
+    first = eol != NULL ? (gsize) (eol - text) : text_length;
+    result->runs_count = first < text_length ? 2 : 1;
     result->runs = g_new0 (mc_runtime_syntax_run_t, 2);
     result->runs[0].offset = 0;
-    result->runs[0].length = 3;
+    result->runs[0].length = first;
     result->runs[0].color = 1;
-    result->runs[1].offset = 3;
-    result->runs[1].length = 3;
-    result->runs[1].color = 0;
+    if (result->runs_count == 2)
+    {
+        result->runs[1].offset = first;
+        result->runs[1].length = text_length - first;
+        result->runs[1].color = 0;
+    }
     return TRUE;
 }
 

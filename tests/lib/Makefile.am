@@ -24,19 +24,53 @@ endif
 EXTRA_DIST = utilunix__my_system-common.c \
 	lua_markdown/code.md \
 	lua_markdown/code.md.out \
+	lua_markdown/code_syntax.md \
+	lua_markdown/code_syntax.md.out \
+	lua_markdown/definitions.md \
+	lua_markdown/definitions.md.out \
+	lua_markdown/footnotes.md \
+	lua_markdown/footnotes.md.out \
 	lua_markdown/headings.md \
 	lua_markdown/headings.md.out \
+	lua_markdown/html.md \
+	lua_markdown/html.md.out \
+	lua_markdown/images.md \
+	lua_markdown/images.md.out \
 	lua_markdown/inline.md \
 	lua_markdown/inline.md.out \
 	lua_markdown/latex.md \
 	lua_markdown/latex.md.out \
+	lua_markdown/latex_geometry.md \
+	lua_markdown/latex_geometry.md.out \
+	lua_markdown/latex_matrix.md \
+	lua_markdown/latex_more.md \
+	lua_markdown/latex_nested.md \
+	lua_markdown/latex_nested.md.out \
+	lua_markdown/latex_more.md.out \
+	lua_markdown/latex_matrix.md.out \
 	lua_markdown/links.md \
 	lua_markdown/links.md.out \
 	lua_markdown/lists.md \
 	lua_markdown/lists.md.out \
+	lua_markdown/lists_nested.md \
+	lua_markdown/lists_nested.md.out \
+	lua_markdown/mermaid.md \
+	lua_markdown/mermaid.md.out \
+	lua_markdown/mermaid_class.md \
+	lua_markdown/mermaid_class.md.out \
+	lua_markdown/mermaid_class_many.md \
+	lua_markdown/mermaid_class_many.md.out \
 	lua_markdown/mixed.md \
 	lua_markdown/mixed.md.out \
+	lua_markdown/sgr.md \
+	lua_markdown/sgr.md.out \
+	lua_markdown/strike.md \
+	lua_markdown/strike.md.out \
+	lua_markdown/task_list.md \
+	lua_markdown/task_list.md.out \
 	lua_markdown/table.md \
+	lua_markdown/wide.md \
+	lua_markdown/wide.md.out \
 	lua_markdown/table.md.out
 
 TESTS = \
