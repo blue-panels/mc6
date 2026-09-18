@@ -205,6 +205,10 @@ end
 -- path from a root puts it in, and the edges are drawn between the layers.
 
 local BOX_TL, BOX_TR, BOX_BL, BOX_BR = "\u{250C}", "\u{2510}", "\u{2514}", "\u{2518}"
+local ROUND_TL, ROUND_TR, ROUND_BL, ROUND_BR = "\u{256D}", "\u{256E}", "\u{2570}", "\u{256F}"
+local DIAMOND_TL, DIAMOND_TR = "\u{2571}", "\u{2572}"
+local DIAMOND_BL, DIAMOND_BR = "\u{2572}", "\u{2571}"
+local DIAMOND = "\u{25C7}"
 local BOX_H, BOX_V = "\u{2500}", "\u{2502}"
 
 local function canvas_new()
@@ -483,10 +487,29 @@ local function draw_flowchart_boxes(chart, width_limit)
             local left = pad // 2
             local right = pad - left
 
-            canvas_put(canvas, top, col_x[n], BOX_TL .. BOX_H:rep(w - 2) .. BOX_TR)
-            canvas_put(canvas, top + 1, col_x[n],
-                       BOX_V .. (" "):rep(left) .. node.label .. (" "):rep(right) .. BOX_V)
-            canvas_put(canvas, top + 2, col_x[n], BOX_BL .. BOX_H:rep(w - 2) .. BOX_BR)
+            local body = (" "):rep(left) .. node.label .. (" "):rep(right)
+
+            -- the shape the node was written with: a box, a rounded box, a
+            -- circle or the diamond of a decision
+            if node.shape == "{" then
+                canvas_put(canvas, top, col_x[n],
+                           " " .. DIAMOND_TL .. (BOX_H):rep(w - 4) .. DIAMOND_TR)
+                canvas_put(canvas, top + 1, col_x[n], DIAMOND .. body .. DIAMOND)
+                canvas_put(canvas, top + 2, col_x[n],
+                           " " .. DIAMOND_BL .. (BOX_H):rep(w - 4) .. DIAMOND_BR)
+            elseif node.shape == "((" then
+                canvas_put(canvas, top, col_x[n], " " .. BOX_H:rep(w - 2) .. " ")
+                canvas_put(canvas, top + 1, col_x[n], "(" .. body .. ")")
+                canvas_put(canvas, top + 2, col_x[n], " " .. BOX_H:rep(w - 2) .. " ")
+            elseif node.shape == "(" then
+                canvas_put(canvas, top, col_x[n], ROUND_TL .. BOX_H:rep(w - 2) .. ROUND_TR)
+                canvas_put(canvas, top + 1, col_x[n], BOX_V .. body .. BOX_V)
+                canvas_put(canvas, top + 2, col_x[n], ROUND_BL .. BOX_H:rep(w - 2) .. ROUND_BR)
+            else
+                canvas_put(canvas, top, col_x[n], BOX_TL .. BOX_H:rep(w - 2) .. BOX_TR)
+                canvas_put(canvas, top + 1, col_x[n], BOX_V .. body .. BOX_V)
+                canvas_put(canvas, top + 2, col_x[n], BOX_BL .. BOX_H:rep(w - 2) .. BOX_BR)
+            end
         end
     end
 
