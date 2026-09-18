@@ -467,6 +467,255 @@ local function draw_flowchart_boxes(chart, width_limit)
 end
 
 ------------------------------------------------------------------------
+-- Class diagram.
+
+local TRIANGLE = "\u{25B3}"  -- the head of an inheritance arrow
+
+local function class_of(model, name)
+    name = trim(name)
+    if model.classes[name] == nil then
+        model.classes[name] = { name = name, attrs = {}, methods = {} }
+        model.order[#model.order + 1] = name
+    end
+    return model.classes[name]
+end
+
+-- "+int age" is a field, "+mate()" a method
+local function class_member(cls, text)
+    text = trim(text)
+    if text == "" then
+        return
+    end
+    if text:find("%(") then
+        cls.methods[#cls.methods + 1] = text
+    else
+        cls.attrs[#cls.attrs + 1] = text
+    end
+end
+
+local function parse_class(lines)
+    local model = { classes = {}, order = {}, relations = {} }
+    local open = nil
+
+    for _, raw in ipairs(lines) do
+        local line = trim(raw:gsub("%%%%.*$", ""))
+        local name, body = line:match("^class%s+([%w_]+)%s*{(.*)$")
+
+        if line == "" or line == "classDiagram" or line:match("^classDiagram%-") then
+            -- the header
+        elseif open ~= nil then
+            if line == "}" then
+                open = nil
+            else
+                class_member(open, line)
+            end
+        elseif name ~= nil then
+            open = class_of(model, name)
+            class_member(open, body)
+        elseif line:match("^class%s+[%w_]+$") then
+            class_of(model, line:match("^class%s+([%w_]+)$"))
+        elseif line:match("^<<") then
+            -- a stereotype is not drawn
+        else
+            local from, arrow, to, label =
+                line:match("^([%w_]+)%s*([<>|o*%.%-]+)%s*([%w_]+)%s*:%s*(.*)$")
+
+            if from == nil then
+                from, arrow, to = line:match("^([%w_]+)%s*([<>|o*%.%-]+)%s*([%w_]+)%s*$")
+            end
+            if from ~= nil then
+                class_of(model, from)
+                class_of(model, to)
+                model.relations[#model.relations + 1] = {
+                    from = from,
+                    to = to,
+                    label = label ~= nil and trim(label) ~= "" and trim(label) or nil,
+                    -- "Animal <|-- Duck": the one on the right inherits the
+                    -- one on the left
+                    inherits = arrow:find("<|", 1, true) ~= nil or arrow:find("|>", 1, true) ~= nil,
+                    reversed = arrow:find("|>", 1, true) ~= nil,
+                }
+            else
+                local owner, member = line:match("^([%w_]+)%s*:%s*(.+)$")
+
+                if owner == nil then
+                    return nil
+                end
+                class_member(class_of(model, owner), member)
+            end
+        end
+    end
+    if #model.order == 0 then
+        return nil
+    end
+    return model
+end
+
+-- Boxes of three parts, the children under the class they come from.
+local function draw_class(model, width_limit)
+    local parents = {}
+    local children = {}
+
+    for _, rel in ipairs(model.relations) do
+        if rel.inherits then
+            local parent = rel.reversed and rel.to or rel.from
+            local child = rel.reversed and rel.from or rel.to
+
+            parents[child] = parent
+            children[parent] = children[parent] or {}
+            table.insert(children[parent], child)
+        end
+    end
+
+    -- the depth of a class is one past the depth of the class it comes from
+    local depth = {}
+
+    local function class_depth(name, guard)
+        if depth[name] ~= nil then
+            return depth[name]
+        end
+        if parents[name] == nil or guard > #model.order then
+            depth[name] = 1
+        else
+            depth[name] = class_depth(parents[name], guard + 1) + 1
+        end
+        return depth[name]
+    end
+
+    local rows = {}
+    local levels = 0
+
+    for _, name in ipairs(model.order) do
+        local d = class_depth(name, 0)
+
+        rows[d] = rows[d] or {}
+        table.insert(rows[d], name)
+        levels = math.max(levels, d)
+    end
+
+    -- the size of every box
+    local box_w = {}
+    local box_h = {}
+
+    for _, name in ipairs(model.order) do
+        local cls = model.classes[name]
+        local w = width(name)
+
+        for _, list in ipairs({ cls.attrs, cls.methods }) do
+            for _, text in ipairs(list) do
+                w = math.max(w, width(text))
+            end
+        end
+        box_w[name] = w + 4
+        box_h[name] = 3 + #cls.attrs + #cls.methods
+            + (#cls.attrs > 0 and 1 or 0) + (#cls.methods > 0 and 1 or 0)
+    end
+
+    local gap = 3
+    local canvas = canvas_new()
+    local x_of = {}
+    local y_of = {}
+    local y = 1
+
+    for level = 1, levels do
+        local x = 1
+        local tallest = 0
+
+        for _, name in ipairs(rows[level] or {}) do
+            x_of[name] = x
+            y_of[name] = y
+            x = x + box_w[name] + gap
+            tallest = math.max(tallest, box_h[name])
+        end
+        if width_limit ~= nil and x - gap - 1 > width_limit then
+            return nil
+        end
+        y = y + tallest + 3
+    end
+
+    for _, name in ipairs(model.order) do
+        local cls = model.classes[name]
+        local w = box_w[name]
+        local top = y_of[name]
+        local left = x_of[name]
+        local at = top
+
+        local function put_row(text, centered)
+            local pad = math.max(w - 2 - width(text), 0)
+            local before = centered and pad // 2 or 1
+
+            canvas_put(canvas, at, left,
+                       BOX_V .. (" "):rep(before) .. text
+                           .. (" "):rep(math.max(pad - before, 0)) .. BOX_V)
+            at = at + 1
+        end
+
+        local function rule(left_ch, right_ch)
+            canvas_put(canvas, at, left, left_ch .. BOX_H:rep(w - 2) .. right_ch)
+            at = at + 1
+        end
+
+        rule(BOX_TL, BOX_TR)
+        put_row(name, true)
+        if #cls.attrs > 0 then
+            rule("\u{251C}", "\u{2524}")
+            for _, text in ipairs(cls.attrs) do
+                put_row(text, false)
+            end
+        end
+        if #cls.methods > 0 then
+            rule("\u{251C}", "\u{2524}")
+            for _, text in ipairs(cls.methods) do
+                put_row(text, false)
+            end
+        end
+        rule(BOX_BL, BOX_BR)
+    end
+
+    -- an inheritance arrow leaves the top of the child and enters the bottom
+    -- of the class it comes from
+    for parent, kids in pairs(children) do
+        local bus = y_of[kids[1]] - 2
+        local px = x_of[parent] + box_w[parent] // 2
+        local py = y_of[parent] + box_h[parent] - 1
+
+        for _, child in ipairs(kids) do
+            local cx = x_of[child] + box_w[child] // 2
+            local cy = y_of[child]
+
+            for i = bus + 1, cy - 1 do
+                canvas_line(canvas, i, cx, UP | DOWN)
+            end
+            canvas_line(canvas, bus, cx, DOWN | (cx < px and RIGHT or LEFT))
+            local lo = math.min(cx, px)
+            local hi = math.max(cx, px)
+
+            for i = lo + 1, hi - 1 do
+                canvas_line(canvas, bus, i, LEFT | RIGHT)
+            end
+        end
+        canvas_line(canvas, bus, px, UP | LEFT | RIGHT)
+        for i = py + 1, bus - 1 do
+            canvas_line(canvas, i, px, UP | DOWN)
+        end
+        canvas_put(canvas, py + 1, px, TRIANGLE)
+    end
+
+    canvas_draw_lines(canvas)
+
+    local out = canvas_lines(canvas)
+
+    -- what is not inheritance is named under the diagram
+    for _, rel in ipairs(model.relations) do
+        if not rel.inherits then
+            out[#out + 1] = rel.from .. " " .. ARROW_DOWN .. " " .. rel.to
+                .. (rel.label ~= nil and ("  " .. rel.label) or "")
+        end
+    end
+    return out
+end
+
+------------------------------------------------------------------------
 -- Sequence diagram.
 
 local function parse_sequence(lines)
@@ -822,6 +1071,11 @@ function M.render(code, width_limit)
         local seq = parse_sequence(lines)
 
         return seq ~= nil and draw_sequence(seq) or nil
+    end
+    if first:match("^classDiagram") then
+        local model = parse_class(lines)
+
+        return model ~= nil and draw_class(model, width_limit) or nil
     end
     if first:match("^graph%s") or first:match("^flowchart%s") then
         local chart = parse_flowchart(lines)
