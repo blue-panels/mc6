@@ -72,6 +72,29 @@ mcview_growbuf_init (WView *view)
     view->growbuf_finished = FALSE;
 }
 
+/* Append already produced bytes without asking the source for more. */
+void
+mcview_growbuf_append (WView *view, const char *data, gsize length)
+{
+    while (length != 0)
+    {
+        byte *page;
+        gsize count;
+
+        if (view->growbuf_lastindex == VIEW_PAGE_SIZE)
+        {
+            g_ptr_array_add (view->growbuf_blockptr, g_malloc (VIEW_PAGE_SIZE));
+            view->growbuf_lastindex = 0;
+        }
+        page = g_ptr_array_index (view->growbuf_blockptr, view->growbuf_blockptr->len - 1);
+        count = MIN (length, VIEW_PAGE_SIZE - view->growbuf_lastindex);
+        memcpy (page + view->growbuf_lastindex, data, count);
+        view->growbuf_lastindex += count;
+        data += count;
+        length -= count;
+    }
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 static int
@@ -211,7 +234,7 @@ mcview_growbuf_read_until (WView *view, off_t ofs)
     g_assert (view->growbuf_in_use);
 
     /* streaming mode: data arrives via select channel callback, never block here */
-    if (view->streaming)
+    if (view->streaming || view->datasource == DS_GENERATOR)
         return;
 
     if (view->growbuf_finished)
