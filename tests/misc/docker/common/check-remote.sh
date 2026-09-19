@@ -33,7 +33,7 @@ report smb $?
 
 if [ -x /work/opt/mc/bin/mc ]; then
     report mc 0
-    echo "  plugins:     $(ls /work/opt/mc/lib/mc/panel-plugins/ | tr '\n' ' ')"
+    echo "  plugins:     $(ls /work/opt/mc/lib/mcommander/panel-plugins/ | tr '\n' ' ')"
 else
     echo "  mc           not built yet -- run: sandbox.sh build"
     rc=1

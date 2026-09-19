@@ -1090,11 +1090,11 @@ przemieszczanie.
 Ta komenda wywoła twój edytor na plik
 .IR ~/.config/mc6/mc.ext.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
 .I ~/.config/mc6/mc.ext.ini
 or system\-wide
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 The format of this file is described in detail in it.
 PP
 .\"NODE "    Background Jobs"
@@ -2183,7 +2183,7 @@ Inną możliwością jest ustawienie opcji
 w oknie konfiguracyjnym wirtualnego systemu plików. Skonfiguruje
 to program tak, aby zawsze
 używał serwera proxy. Jeśli ta zmienna jest ustawiona, program będzie robił
-dwie rzeczy: konsultował plik %sysconfdir%/mc/mc.no_proxy w celu znalezienia linii
+dwie rzeczy: konsultował plik %sysconfdir%/mcommander/mc.no_proxy w celu znalezienia linii
 zawierających nazwy serwerów, które są lokalne (jeśli nazwa hosta zaczyna
 się od kropki, uznaje się, że jest to domena) i sprawdza czy jakieś hosty
 bez kropek w nazwie są widoczne bezpośrednio.

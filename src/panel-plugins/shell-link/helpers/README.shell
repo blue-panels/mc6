@@ -17,7 +17,7 @@ set installed with the plugin is used; failing that the copy compiled into
 the plugin. The places searched, in the order they are tried:
 
     ~/.local/share/mc6/shell/<hostname>/
-    /usr/lib/mc/panel-plugins/shell-link/helpers/
+    /usr/lib/mcommander/panel-plugins/shell-link/helpers/
 
 Which one is actually in effect can be asked for, rather than guessed at:
 

@@ -310,7 +310,7 @@
     cp ~/.local/lib/mc6/panel-plugins/k8s/klog.sh ~/.local/bin/klog
     chmod +x ~/.local/bin/klog
 
-  (Or use the system path /usr/lib/mc/panel-plugins/k8s/klog.sh.)
+  (Or use the system path /usr/lib/mcommander/panel-plugins/k8s/klog.sh.)
   Output:  14:30:45.123 [Error] db connection lost
 
   2) Only the message field, drop everything else.

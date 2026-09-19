@@ -970,11 +970,11 @@ load_setup_get_keymap_profile_config (gboolean load_from_file)
 
     // load and merge global keymaps
 
-    // 1) /usr/share/mc (mc_global.share_data_dir)
+    // 1) /usr/share/mcommander (mc_global.share_data_dir)
     share_keymap = g_build_filename (mc_global.share_data_dir, GLOBAL_KEYMAP_FILE, (char *) NULL);
     load_setup_init_config_from_file (&keymap_config, share_keymap, TRUE);
 
-    // 2) /etc/mc (mc_global.sysconfig_dir)
+    // 2) /etc/mcommander (mc_global.sysconfig_dir)
     sysconfig_keymap =
         g_build_filename (mc_global.sysconfig_dir, GLOBAL_KEYMAP_FILE, (char *) NULL);
     load_setup_init_config_from_file (&keymap_config, sysconfig_keymap, TRUE);

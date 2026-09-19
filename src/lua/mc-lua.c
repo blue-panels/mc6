@@ -51,11 +51,11 @@
 /*** file scope macro definitions ****************************************************************/
 
 #ifndef MC_LUA_SYSTEM_SCRIPTS_DIR
-#define MC_LUA_SYSTEM_SCRIPTS_DIR "/usr/share/mc/lua/scripts"
+#define MC_LUA_SYSTEM_SCRIPTS_DIR "/usr/share/mcommander/lua/scripts"
 #endif
 
 #ifndef MC_LUA_SYSTEM_MODULES_DIR
-#define MC_LUA_SYSTEM_MODULES_DIR "/usr/share/mc/lua/lib"
+#define MC_LUA_SYSTEM_MODULES_DIR "/usr/share/mcommander/lua/lib"
 #endif
 
 #define MC_LUA_API_VERSION    1

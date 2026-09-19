@@ -188,7 +188,7 @@ regex/\.(zip|ZIP)$
 
 Add an entry like this to the .mc.ext file in a user's home directory, If you
 want others to have it, add it to the mc.ext file in the mc system directory,
-often /etc/mc/mc.ext.  Notice this file is not prepended with a dot.
+often /etc/mcommander/mc.ext.  Notice this file is not prepended with a dot.
 
 Once all this is done, and things are in their proper places, exit mc if you
 were using it, and restart it so it picks up the new information.

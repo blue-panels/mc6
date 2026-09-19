@@ -386,7 +386,7 @@ extfs_skip_leading_dotslash (char *s)
      * $ zip file.zip ./-file2.txt file1.txt
      *   adding: -file2.txt (stored 0%)
      *   adding: file1.txt (stored 0%)
-     * $ /usr/lib/mc/extfs.d/uzip copyout file.zip ./-file2.txt ./tmp-file2.txt
+     * $ /usr/lib/mcommander/extfs.d/uzip copyout file.zip ./-file2.txt ./tmp-file2.txt
      * caution: filename not matched:  ./-file2.txt
      */
     if (s[0] == '.' && s[1] == PATH_SEP)

@@ -127,7 +127,7 @@ if as_build /work/build-distrib "../configure >/tmp/cf-dist.log 2>&1 && make dis
 else
     bad "distribution archive"; tail -5 /tmp/mk-dist.log; exit 1
 fi
-tarball=$(ls /work/build-distrib/mc-*.tar.bz2)
+tarball=$(ls /work/build-distrib/*.tar.bz2)
 
 configuration() {
     name=$1; shift

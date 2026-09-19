@@ -60,7 +60,7 @@
                             ~/.local/bin/dlog
                          chmod +x ~/.local/bin/dlog
 
-                     (Or use /usr/lib/mc/panel-plugins/docker/dlog.sh.)
+                     (Or use /usr/lib/mcommander/panel-plugins/docker/dlog.sh.)
                      Chain it, e.g.  dlog | grep -v Diagnostics
       mounts/        Browse container bind mounts (local profiles only).
       inspect.json   Full container inspect output (read-only).

@@ -339,7 +339,7 @@ según el mapa definido en el código fuente. Posteriormente se cargan siempre
 los archivos
 .B %pkgdatadir%/mc.keymap
 y
-.BR %sysconfdir%/mc/mc.keymap ,
+.BR %sysconfdir%/mcommander/mc.keymap ,
 reasignando en el orden marcado las definiciones anteriores. Se cargan después
 posibles mapas de teclado creados por el usuario atendiendo por orden de prioridad
 a:
@@ -373,7 +373,7 @@ se procede a realizar una búsqueda por directorios hasta encontrarlo en:
 .B ~/.config/mc6
 .br
 2)
-.B %sysconfdir%/mc/
+.B %sysconfdir%/mcommander/
 .br
 3)
 .B %pkgdatadir%/
@@ -1501,11 +1501,11 @@ Abre el archivo
 .I ~/.config/mc6/mc.ext.ini
 en nuestro editor.
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
 .I ~/.config/mc6/mc.ext.ini
 or system\-wide
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Trabajos en Segundo Plano"
@@ -2031,7 +2031,7 @@ color indicado con la clave
 Si se habilita el resaltado de tipo de archivo, los nombres de archivo
 se mostrarán coloreados según las reglas contenidas en el archivo de
 configuración
-.IR %sysconfdir%/mc/filehighlight.ini .
+.IR %sysconfdir%/mcommander/filehighlight.ini .
 Véase
 .\"LINK2"
 Resaltado de nombres\&.
@@ -2150,7 +2150,7 @@ Si la opción
 .I Usar siempre proxy
 está puesta, el programa asume que cualquier nombre de máquina
 sin puntos es accesible directamente y también consulta el archivo
-%sysconfdir%/mc/mc.no_proxy en busca de nombres de máquinas locales (o
+%sysconfdir%/mcommander/mc.no_proxy en busca de nombres de máquinas locales (o
 dominios completos si el nombre empieza con un punto).  En todos los
 demás casos se usará siempre el proxy de FTP indicado arriba.
 .PP
@@ -3312,7 +3312,7 @@ en la sección
 del archivo de configuración.
 .br
 4) El archivo
-.BR %sysconfdir%/mc/skins/default.ini .
+.BR %sysconfdir%/mcommander/skins/default.ini .
 .br
 5) El archivo
 .BR %pkgdatadir%/skins/default.ini .
@@ -3327,7 +3327,7 @@ en orden, en:
 .BR ~/.local/share/mc6/skins/ .
 .br
 2)
-.BR %sysconfdir%/mc/skins/ .
+.BR %sysconfdir%/mcommander/skins/ .
 .br
 3)
 .BR %pkgdatadir%/skins/ .

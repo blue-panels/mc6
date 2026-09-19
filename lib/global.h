@@ -117,7 +117,7 @@ typedef struct
     gboolean midnight_shutdown;
 
     /* sysconfig_dir: Area for default settings from maintainers of distributuves
-       default is /etc/mc or may be defined by MC_DATADIR */
+       default is /etc/mcommander or may be defined by MC_DATADIR */
     char *sysconfig_dir;
     // share_data_dir: Area for default settings from developers
     char *share_data_dir;

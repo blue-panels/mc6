@@ -72,7 +72,7 @@ jobs:
 
       - name: Build full configuration
         run: |
-          tar -xjf $(ls build-distrib/mc-*.tar.bz2) --one-top-level=build-full
+          tar -xjf $(ls build-distrib/*.tar.bz2) --one-top-level=build-full
           cd build-full
 
           ../configure \
@@ -86,7 +86,7 @@ jobs:
 
       - name: Build ncurses configuration
         run: |
-          tar -xjf $(ls build-distrib/mc-*.tar.bz2) --one-top-level=build-ncurses
+          tar -xjf $(ls build-distrib/*.tar.bz2) --one-top-level=build-ncurses
           cd build-ncurses
 
           ../configure \
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build minimal configuration
         run: |
-          tar -xjf $(ls build-distrib/mc-*.tar.bz2) --one-top-level=build-minimal
+          tar -xjf $(ls build-distrib/*.tar.bz2) --one-top-level=build-minimal
           cd build-minimal
 
           ../configure \

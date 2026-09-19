@@ -325,7 +325,7 @@ S\-<символ> означает, что нужно держать в нажа
 Клавиатурные команды могут быть прочитаны из внешнего файла.
 Сначала M\-Commander создаёт карту клавиатурных команд из списка,
 определённого в исходном коде. Затем всегда загружаются два файла
-.B %sysconfdir%/mc/mc.keymap
+.B %sysconfdir%/mcommander/mc.keymap
 и
 .BR %pkgdatadir%/mc.keymap ,
 последовательно переопределяя ранее загруженные команды.
@@ -361,7 +361,7 @@ S\-<символ> означает, что нужно держать в нажа
 .B ~/.config/mc6/
 .br
 2)
-.B %sysconfdir%/mc/
+.B %sysconfdir%/mcommander/
 .br
 3)
 .B %pkgdatadir%/
@@ -1680,11 +1680,11 @@ CDPATH (смотрите описание
 файла
 .BR ~/.config/mc6/mc.ext.ini .
 Если этот файл не существует и вы не root, этот файл будет скопирован с
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 Если вы root, вы можете выбрать, какой из файлов редактировать: пользовательский
 .I ~/.config/mc6/mc.ext.ini
 или системный
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 Формат этого файла подробно описан в нём самом.
 .\"NODE "    Background Jobs"
 .SH "    Фоновые задания"
@@ -2297,7 +2297,7 @@ M\-Commander'а текущие настройки панелей сохраня�
 M\-Commander, выделены цветом, определённым ключевым словом
 .IR selected .
 Если разрешено, подсветка имён файлов производится на основании
-правил из файла %sysconfdir%/mc/filehighlight.ini. Смотрите
+правил из файла %sysconfdir%/mcommander/filehighlight.ini. Смотрите
 .\"LINK2"
 Подсветка имён файлов
 .\"Filenames Highlight"
@@ -3696,7 +3696,7 @@ anonymous или имя из файла ~/.netrc. Необязательный �
 меню "Настройки". В таком случае программа всегда будет использовать
 указанный прокси\-сервер. При этом (если опция установлена) программа
 делает следующее: считывает из файла
-.B %sysconfdir%/mc/mc.no_proxy
+.B %sysconfdir%/mcommander/mc.no_proxy
 имена локальных машин (если имя начинается с точки, оно считается именем
 домена), и, если заданное при установлении FTP\-соединения имя машины
 совпадает с одним из имен, указанных в файле
@@ -3982,7 +3982,7 @@ color_terminals=terminal\-name1,terminal\-name2...
 конфигурационного файла.
 .br
 4) файл
-.B %sysconfdir%/mc/skins/default.ini
+.B %sysconfdir%/mcommander/skins/default.ini
 .br
 5) файл
 .B %pkgdatadir%/skins/default.ini
@@ -3997,7 +3997,7 @@ color_terminals=terminal\-name1,terminal\-name2...
 .B ~/.local/share/mc6/skins/
 .br
 2)
-.B %sysconfdir%/mc/skins/
+.B %sysconfdir%/mcommander/skins/
 .br
 3)
 .B %pkgdatadir%/skins/
@@ -4301,7 +4301,7 @@ color_terminals=terminal\-name1,terminal\-name2...
 Внешний вид
 .\"Skins"
 .PP
-Правила подсветки находятся в файле %sysconfdir%/mc/filehighlight.ini
+Правила подсветки находятся в файле %sysconfdir%/mcommander/filehighlight.ini
 (~/.config/mc6/filehighlight.ini).
 Названия групп должны совпадать с названиями параметров в секции
 [filehighlight] в текущем скин\-файле.
@@ -4589,14 +4589,14 @@ insert=\ee[Op
 Файл расширений пользователя. Если этот файл существует, он используется
 вместо общесистемного файла расширений.
 .PP
-.I %sysconfdir%/mc/mc.ini
+.I %sysconfdir%/mcommander/mc.ini
 .RE
 .I %pkgdatadir%/mc.ini
 .IP
 Общесистемные файлы установок для M\-Commander; используются только
 в тех случаях, когда пользователь не имеет своего файла
 .BR ~/.config/mc6/ini .
-Если файл %sysconfdir%/mc/mc.ini существует, то %pkgdatadir%/mc.ini
+Если файл %sysconfdir%/mcommander/mc.ini существует, то %pkgdatadir%/mc.ini
 не используется.
 .PP
 .I %pkgdatadir%/mc.lib

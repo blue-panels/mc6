@@ -402,7 +402,7 @@ may be combined.  For example:
 script ID.
 
 Teaching examples (`notify-editor-save`, `demo-panel`) are installed under
-`PREFIX/share/mc/lua/examples`; MC never loads scripts from there.  Copy an
+`PREFIX/share/mcommander/lua/examples`; MC never loads scripts from there.  Copy an
 example into the corresponding user workspace directory to try it, and copy
 an installed script before adapting it, so system updates do not overwrite
 local changes.

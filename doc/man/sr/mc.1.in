@@ -276,7 +276,7 @@ Shift.
 Затим, увек се учитавају две датотеке:
 .B %pkgdatadir%/mc.keymap
 и
-.B %sysconfdir%/mc/mc.keymap,
+.B %sysconfdir%/mcommander/mc.keymap,
 претходно задате измењене пречице. Кориснички задата датотека са пречицама се
 претражује следећим алгоритмом (до прве пронађене):
 .IP
@@ -309,7 +309,7 @@ Shift.
 .B ~/.config/mc6
 .br
 2)
-.B %sysconfdir%/mc/
+.B %sysconfdir%/mcommander/
 .br
 3)
 .B %pkgdatadir%/
@@ -1436,11 +1436,11 @@ awk '$9 ~! /incoming/ { print $9 }' < /var/log/xferlog
 Ово ће покренути ваш уређивач над датотеком
 .IR ~/.config/mc6/mc.ext.ini .
 Ако ова датотека не постоји и нисте root, она ће бити копирана из
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 Ако сте root, можете одабрати датотеку која ће се уређивати: корисничка
 .I ~/.config/mc6/mc.ext.ini
 или системска
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 Формат ове датотеке је детаљно описан у њој самој.
 .\"NODE "    Background jobs"
 .SH "    Позадински послови"
@@ -1957,7 +1957,7 @@ FreeBSD конзолу, или xterm, моћи ћете да видите изл
 .IR selected .
 Ако је укључено истицање врста датотека, датотеке ће бити обојене у складу
 са правилима описаним у датотеци
-%sysconfdir%/mc/filehighlight.ini
+%sysconfdir%/mcommander/filehighlight.ini
 Видети
 .\"LINK2"
 Истицање назива датотека
@@ -2085,7 +2085,7 @@ ftpfs чува листинг директоријума који добавља
 за примере.
 .PP
 Ако је ова опција активирана, програм ће или: гледати датотеку
-%sysconfdir%/mc/mc.no_proxy и у њој тражити линије који садрже називе
+%sysconfdir%/mcommander/mc.no_proxy и у њој тражити линије који садрже називе
 хостова који су локални (ако назив хоста почиње тачком, претпоставља се да се
 ради о домену) и претпоставиће да су називи хостова без тачака непосредно
 приступачни. Свим другим хостовима ће се приступати кроз задати прокси за FTP.
@@ -2105,7 +2105,7 @@ netrc(5) за опис формата датотеке .netrc.
 При покретању, Поноћни наредник ће покушати да учита податке о
 иницијализацији из датотеке ~/.config/mc6/ini. Ако ова датотека не постоји,
 учитаће се системска датотека
-.BR %sysconfdir%/mc/mc.ini .
+.BR %sysconfdir%/mcommander/mc.ini .
 Ако ова датотека не постоји, користиће се системска датотека
 .BR %pkgdatadir%/mc.ini .
 Ако ни она не постоји, ПН ће користити подразумеване поставке.
@@ -3389,7 +3389,7 @@ color_terminals=terminal\-name1,terminal\-name2...
 у конфигурационој датотеци.
 .br
 4) Датотека
-.B %sysconfdir%/mc/skins/default.ini
+.B %sysconfdir%/mcommander/skins/default.ini
 .br
 5) Датотека
 .B %pkgdatadir%/skins/default.ini
@@ -3403,7 +3403,7 @@ color_terminals=terminal\-name1,terminal\-name2...
 .B ~/.local/share/mc6/skins/
 .br
 2)
-.B %sysconfdir%/mc/skins/
+.B %sysconfdir%/mcommander/skins/
 .br
 3)
 .B %pkgdatadir%/skins/
@@ -3974,7 +3974,7 @@ insert=\ee[Op
 Корисничке датотеке екстензија, подешавања прегледача и уређивача. Уколико
 постоје, оне намећу вредности уместо садржаја системских датотека.
 .PP
-.I %sysconfdir%/mc/mc.ini
+.I %sysconfdir%/mcommander/mc.ini
 .RE
 .I %pkgdatadir%/mc.ini
 .IP

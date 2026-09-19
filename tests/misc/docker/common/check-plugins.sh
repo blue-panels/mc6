@@ -26,7 +26,7 @@ names () { awk '{print $NF}' | sed 's/@.*//' | sort -u; }
 
 rc=0
 n=0
-for so in "$(dirname "$MC")"/../lib/mc/*/*/*.so "$(dirname "$MC")"/../lib/mc/*/*.so; do
+for so in "$(dirname "$MC")"/../lib/mcommander/*/*/*.so "$(dirname "$MC")"/../lib/mcommander/*/*.so; do
     [ -f "$so" ] || continue
     n=$((n + 1))
     {

@@ -48,7 +48,7 @@
 /*** file scope macro definitions ****************************************************************/
 
 #ifndef MC_RUNTIME_PLUGINS_DIR
-#define MC_RUNTIME_PLUGINS_DIR "/usr/lib/mc/runtime-plugins"
+#define MC_RUNTIME_PLUGINS_DIR "/usr/lib/mcommander/runtime-plugins"
 #endif
 
 #define MC_RUNTIME_HOST_SERVICES_OBJECTS_SIZE                                                      \
