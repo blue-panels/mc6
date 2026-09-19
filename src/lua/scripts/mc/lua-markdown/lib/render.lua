@@ -1892,11 +1892,12 @@ local function render_footnotes(width_limit, out)
     end
 end
 
-function M.render(text, opts)
+local function render_document(text, opts, emit)
     local width_limit = opts and opts.width or M.DEFAULT_WIDTH
     local lines = collect_definitions(join_display_math(split_lines(text)))
     local out = {}
     local i = 1
+    local emitted = false
     local prev_blank = true
     local prev_list = false
     local list_levels = {}  -- the indents of the lists that are open
@@ -2042,9 +2043,62 @@ function M.render(text, opts)
             flow(pieces, prefix, width_limit, out)
         end
         prev_blank = blank
+        if emit ~= nil then
+            -- Footnotes remove trailing blank lines, so hold those until the next block.
+            local last = #out
+            while last > 0 and out[last] == "" do
+                last = last - 1
+            end
+            if last > 0 then
+                local chunk = (table.concat(out, "\n", 1, last):gsub(NBSP, " ")) .. "\n"
+                local pending = {}
+                for k = last + 1, #out do
+                    pending[#pending + 1] = out[k]
+                end
+                out = pending
+                emitted = true
+                emit(chunk)
+            end
+        end
     end
     render_footnotes(width_limit, out)
-    return (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+    local tail = (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+    if emit == nil then
+        return tail
+    end
+    if #out > 0 or not emitted then
+        emit(tail)
+    end
+end
+
+function M.render(text, opts)
+    return render_document(text, opts)
+end
+
+-- One complete Markdown block per call, nil at EOF. The preliminary pass collects
+-- forward references before any output is emitted. Each iterator owns its document
+-- state, so a resize or another viewer can render between two calls.
+function M.blocks(text, opts)
+    local state
+    local co = coroutine.create(function()
+        render_document(text, opts, coroutine.yield)
+    end)
+    return function()
+        if coroutine.status(co) == "dead" then
+            return nil
+        end
+        local previous = doc
+        if state ~= nil then
+            doc = state
+        end
+        local ok, chunk = coroutine.resume(co)
+        state = doc
+        doc = previous
+        if not ok then
+            error(chunk, 0)
+        end
+        return chunk
+    end
 end
 
 return M

@@ -23,11 +23,49 @@ local viewer = mc.viewer_source.define {
     end,
     prepare = function(session, _, viewport)
         local width = math.min(viewport.columns, md.MAX_WIDTH)
-        if session.rendered[width] == nil then
+        local source
+        if session.rendered[width] ~= nil then
+            source = mc.source.bytes(session.rendered[width])
+        elseif mc.source.generator == nil then
             session.rendered[width] = md.render(session.text, { width = width })
+            source = mc.source.bytes(session.rendered[width])
+        else
+            local next_block = md.blocks(session.text, { width = width })
+            local pieces = {}
+            local lines = 0
+            local done = false
+            -- Fill the first screen before handing the rest to the event loop.
+            repeat
+                local chunk = next_block()
+                if chunk == nil then
+                    done = true
+                else
+                    pieces[#pieces + 1] = chunk
+                    lines = lines + select(2, chunk:gsub("\n", ""))
+                end
+            until done or lines >= viewport.lines
+            local initial = table.concat(pieces)
+            if done then
+                session.rendered[width] = initial
+                source = mc.source.bytes(initial)
+            else
+                source = mc.source.generator {
+                    initial = initial,
+                    next = function()
+                        local chunk = next_block()
+                        if chunk ~= nil then
+                            pieces[#pieces + 1] = chunk
+                        else
+                            session.rendered[width] = table.concat(pieces)
+                            pieces = nil
+                        end
+                        return chunk
+                    end,
+                }
+            end
         end
         return {
-            source = mc.source.bytes(session.rendered[width]),
+            source = source,
             title = session.title,
             raw_path = session.raw_path,
             initial_display = "nroff",
