@@ -1878,6 +1878,13 @@ command pops up a dialog from which you specify options of file manager panels.
 .PP
 The
 .\"LINK2"
+Viewer options
+.\"Viewer options"
+command pops up a dialog from which you specify options of the internal
+viewer.
+.PP
+The
+.\"LINK2"
 Confirmation
 .\"Confirmation"
 command pops up a dialog from which you specify which actions you want to
@@ -2271,6 +2278,44 @@ Quick search
 .\"Quick search"
 and Quick filter modes should work: case insensitively, case sensitively or be matched
 to the panel sort order: case sensitive or not.
+.\"NODE "    Viewer options"
+.SH "    Viewer options"
+The options of the
+.\"LINK2"
+internal viewer
+.\"Internal File Viewer"
+that hold for every file it opens.
+.PP
+.I Wrap long lines.
+If enabled, a line wider than the screen is continued on the next screen
+line; otherwise it is cut and the view scrolls sideways. Enabled by default.
+.PP
+.I Syntax highlighting.
+If enabled, the viewer colors the text by the syntax rules of the editor.
+A file opened in a mode that brings its own colors, such as a man page or
+rendered Markdown, keeps those colors. Disabled by default.
+.PP
+.I Mouse page scrolling.
+If enabled, the mouse wheel scrolls by a page; otherwise it scrolls by a
+few lines. Enabled by default.
+.PP
+.I Remember file position.
+If enabled, the viewer opens a file at the place it was left the last time.
+Disabled by default.
+.PP
+.I Tree view of JSON, YAML and XML.
+If enabled, a file of one of these formats opens as a tree that can be
+folded, instead of plain text. The same view is always available with the
+key that switches the display mode. Disabled by default.
+.PP
+.I End of file marker.
+The text printed after the last line of the file. Empty by default, which
+prints nothing.
+.PP
+.I Redraws to skip at most.
+While a file is still being read, the viewer skips redraws to keep up with
+the data. This is how many it may skip in a row before it draws anyway. The
+default is 10.
 .\"NODE "    Confirmation"
 .SH "    Confirmation"
 In this dialog you configure the confirmation options for file deletion,

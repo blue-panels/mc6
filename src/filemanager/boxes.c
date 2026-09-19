@@ -62,6 +62,7 @@
 #include "src/background.h"  // task_list
 #endif
 #include "src/selcodepage.h"
+#include "src/viewer/mcviewer.h"  // viewer options
 
 #include "command.h"  // For cmdline
 #include "dir.h"
@@ -831,6 +832,69 @@ panel_options_box (void)
     }
 
     update_panels (UP_RELOAD, UP_KEEPSEL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+viewer_options_box (void)
+{
+    char dirt_limit[BUF_TINY];
+    char *new_eof = NULL;
+    char *new_dirt_limit = NULL;
+
+    g_snprintf (dirt_limit, sizeof (dirt_limit), "%d", mcview_max_dirt_limit);
+
+    {
+        quick_widget_t quick_widgets[] = {
+            // clang-format off
+            QUICK_START_GROUPBOX (_ ("Main options")),
+                QUICK_CHECKBOX (_ ("&Wrap long lines"), &mcview_global_flags.wrap, NULL),
+                QUICK_CHECKBOX (_ ("&Syntax highlighting"), &mcview_global_flags.highlight, NULL),
+                QUICK_CHECKBOX (_ ("&Mouse page scrolling"), &mcview_mouse_move_pages, NULL),
+                QUICK_CHECKBOX (_ ("Remember file &position"), &mcview_remember_file_position,
+                                NULL),
+                QUICK_CHECKBOX (_ ("&Tree view of JSON, YAML and XML"), &mcview_structured_auto,
+                                NULL),
+            QUICK_STOP_GROUPBOX,
+            QUICK_LABELED_INPUT (_ ("End of file marker:"), input_label_left,
+                                 mcview_show_eof != NULL ? mcview_show_eof : "", "viewer-eof",
+                                 &new_eof, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE),
+            QUICK_LABELED_INPUT (_ ("Redraws to skip at most:"), input_label_left, dirt_limit,
+                                 "viewer-dirt-limit", &new_dirt_limit, NULL, FALSE, FALSE,
+                                 INPUT_COMPLETE_NONE),
+            QUICK_BUTTONS_OK_CANCEL,
+            QUICK_END,
+            // clang-format on
+        };
+
+        WRect r = { -1, -1, 0, 54 };
+
+        quick_dialog_t qdlg = {
+            .rect = r,
+            .title = _ ("Viewer options"),
+            .help = "[Viewer options]",
+            .widgets = quick_widgets,
+            .callback = NULL,
+            .mouse_callback = NULL,
+        };
+
+        if (quick_dialog (&qdlg) != B_ENTER)
+            return;
+    }
+
+    g_free (mcview_show_eof);
+    mcview_show_eof = new_eof;
+
+    if (new_dirt_limit != NULL)
+    {
+        const int limit = atoi (new_dirt_limit);
+
+        // a limit of zero would redraw on every byte read; keep the built-in one
+        if (limit > 0)
+            mcview_max_dirt_limit = limit;
+        g_free (new_dirt_limit);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

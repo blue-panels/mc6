@@ -196,6 +196,7 @@ static name_keymap_t command_names[] = {
     ADD_KEYMAP_NAME_DESC (PanelModesManage, N_ ("Manage panel modes")),
     ADD_KEYMAP_NAME_DESC (PanelListing, N_ ("Panel listing mode")),
     ADD_KEYMAP_NAME_DESC (OptionsPanel, N_ ("Panel options")),
+    ADD_KEYMAP_NAME_DESC (OptionsViewer, N_ ("Viewer options")),
     ADD_KEYMAP_NAME_DESC (CdQuick, N_ ("Quick cd")),
     ADD_KEYMAP_NAME_DESC (PanelQuickView, N_ ("Quick view panel")),
     ADD_KEYMAP_NAME_DESC (LinkSymbolicRelative, N_ ("Create relative symlink")),

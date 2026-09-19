@@ -325,6 +325,7 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Configuration..."), CK_Options));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Layout..."), CK_OptionsLayout));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Panel options..."), CK_OptionsPanel));
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Vie&wer options..."), CK_OptionsViewer));
     entries =
         g_list_prepend (entries, menu_entry_new (_ ("File panel m&odes..."), CK_PanelModesManage));
     entries = g_list_prepend (entries, menu_entry_new (_ ("C&onfirmation..."), CK_OptionsConfirm));
@@ -1459,6 +1460,9 @@ midnight_execute_cmd (Widget *sender, long command)
         break;
     case CK_OptionsPanel:
         panel_options_box ();
+        break;
+    case CK_OptionsViewer:
+        viewer_options_box ();
         break;
     case CK_SelectCodepage:
         encoding_cmd ();

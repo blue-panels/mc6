@@ -190,6 +190,7 @@ enum
     CK_SplitLess,
     CK_CompareFiles,
     CK_OptionsPanel,
+    CK_OptionsViewer,
     CK_LinkSymbolicRelative,
     CK_PutCurrentPath,
     CK_PutOtherPath,
