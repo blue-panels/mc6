@@ -460,6 +460,7 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
     vfs_path_t *file_name_vpath;
     gboolean run_view = FALSE;
     char *cmd;
+    mcview_mode_flags_t saved_flags;
 
     // Skip menu entry title line
     commands = strchr (commands, '\n');
@@ -477,6 +478,9 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
     cmd_file = fdopen (cmd_file_fd, "w");
     fputs ("#! /bin/sh\nrm -f \"$0\"\n", cmd_file);
     commands++;
+
+    // the %view{...} keywords below set the global viewer flags for this command only
+    mcview_global_flags_save (&saved_flags);
 
     for (col = 0; *commands != '\0'; commands++)
     {
@@ -607,6 +611,8 @@ execute_menu_command (const Widget *edit_widget, const char *commands, gboolean 
     }
 
     g_free (cmd);
+
+    mcview_global_flags_restore (&saved_flags);
 
     vfs_path_free (file_name_vpath, TRUE);
 }

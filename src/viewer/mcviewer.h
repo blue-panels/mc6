@@ -155,6 +155,10 @@ extern void mcview_source_controller_detach (WView *view);
 
 extern void mcview_clear_mode_flags (mcview_mode_flags_t *flags);
 
+/* the %view{...} flags of one file: saved before they are read, put back after */
+extern void mcview_global_flags_save (mcview_mode_flags_t *saved);
+extern void mcview_global_flags_restore (const mcview_mode_flags_t *saved);
+
 /* Show @text in place of content; in a panel it replaces the Quick View body. */
 extern void mcview_load_text (WView *view, const char *text);
 /* A viewer embedded as a cell of a screen: no frame, no status line. */

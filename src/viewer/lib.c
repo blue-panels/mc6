@@ -288,6 +288,7 @@ mcview_init (WView *view)
     view->workdir_vpath = NULL;
     view->command = NULL;
     view->search_nroff_seq = NULL;
+    view->source_display_mode = FALSE;
 
     mcview_set_datasource_none (view);
 
@@ -386,8 +387,7 @@ mcview_done (WView *view)
             mcview_global_flags.highlight = hl;
         /* A source's display format (for example rendered Markdown) belongs to
            that source. Keeping nroff on would bypass syntax colors in the next file. */
-        if (view->source_spec != NULL
-            && (view->source_spec->initial_nroff || view->source_spec->initial_terminal))
+        if (view->source_display_mode)
             mcview_global_flags.nroff = nroff;
     }
     mcview_global_flags.structured = FALSE;
@@ -634,6 +634,34 @@ void
 mcview_clear_mode_flags (mcview_mode_flags_t *flags)
 {
     memset (flags, 0, sizeof (*flags));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_global_flags_save (mcview_mode_flags_t *saved)
+{
+    *saved = mcview_global_flags;
+
+    mcview_altered_flags.hex = FALSE;
+    mcview_altered_flags.nroff = FALSE;
+    mcview_altered_flags.ansi = FALSE;
+    mcview_altered_flags.highlight = FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_global_flags_restore (const mcview_mode_flags_t *saved)
+{
+    if (!mcview_altered_flags.hex)
+        mcview_global_flags.hex = saved->hex;
+    if (!mcview_altered_flags.nroff)
+        mcview_global_flags.nroff = saved->nroff;
+    if (!mcview_altered_flags.ansi)
+        mcview_global_flags.ansi = saved->ansi;
+    if (!mcview_altered_flags.highlight)
+        mcview_global_flags.highlight = saved->highlight;
 }
 
 /* --------------------------------------------------------------------------------------------- */

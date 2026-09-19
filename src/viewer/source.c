@@ -149,6 +149,8 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
 
     if (spec->raw_file != NULL)
         view->mode_flags.magic = TRUE;
+    if (spec->initial_nroff || spec->initial_terminal)
+        view->source_display_mode = TRUE;
     if (spec->initial_nroff)
     {
         view->mode_flags.hex = FALSE;
