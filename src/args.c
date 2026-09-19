@@ -78,6 +78,14 @@ char *mc_run_param1 = NULL;
 
 /*** file scope type declarations ****************************************************************/
 
+/* A name the program can be called by, and what that name selects */
+typedef struct
+{
+    const char *name;
+    mc_run_mode_t mode;
+    gboolean *flag;
+} mc_run_name_t;
+
 /*** forward declarations (file scope functions) *************************************************/
 
 static gboolean parse_mc_e_argument (const gchar *option_name, const gchar *value, gpointer data,
@@ -86,6 +94,23 @@ static gboolean parse_mc_v_argument (const gchar *option_name, const gchar *valu
                                      GError **mcerror);
 
 /*** file scope variables ************************************************************************/
+
+/* The names mc is installed under, as symbolic links to the one binary */
+static const mc_run_name_t mc_run_names[] = {
+    { "mc", MC_RUN_FULL, NULL },
+    { "mcview", MC_RUN_VIEWER, NULL },
+    { "view", MC_RUN_VIEWER, NULL },
+#ifdef USE_INTERNAL_EDIT
+    { "mcedit", MC_RUN_EDITOR, NULL },
+    { "vi", MC_RUN_EDITOR, NULL },
+#endif
+#ifdef USE_DIFF_VIEW
+    { "mcdiff", MC_RUN_DIFFVIEWER, NULL },
+    { "diff", MC_RUN_DIFFVIEWER, NULL },
+#endif
+    { "mctree", MC_RUN_FULL, &mc_args__mctree },
+    { "mcstruct", MC_RUN_FULL, &mc_args__mcstruct },
+};
 
 /* If true, show version info and exit */
 static gboolean mc_args__show_version = FALSE;
@@ -566,29 +591,16 @@ mc_setup_run_mode (char **argv)
 
     base = x_basename (argv[0]);
 
-    if (strncmp (base, "mcv", 3) == 0 || strcmp (base, "view") == 0)
-    {
-        // mcv* or view is link to mc
-        mc_global.mc_run_mode = MC_RUN_VIEWER;
-    }
-#ifdef USE_INTERNAL_EDIT
-    else if (strncmp (base, "mce", 3) == 0 || strcmp (base, "vi") == 0)
-    {
-        // mce* or vi is link to mc
-        mc_global.mc_run_mode = MC_RUN_EDITOR;
-    }
-#endif
-#ifdef USE_DIFF_VIEW
-    else if (strncmp (base, "mcd", 3) == 0 || strcmp (base, "diff") == 0)
-    {
-        // mcd* or diff is link to mc
-        mc_global.mc_run_mode = MC_RUN_DIFFVIEWER;
-    }
-#endif
-    else if (strcmp (base, "mctree") == 0)
-        mc_args__mctree = TRUE;
-    else if (strcmp (base, "mcstruct") == 0)
-        mc_args__mcstruct = TRUE;
+    for (size_t i = 0; i < G_N_ELEMENTS (mc_run_names); i++)
+        if (strcmp (base, mc_run_names[i].name) == 0)
+        {
+            mc_global.mc_run_mode = mc_run_names[i].mode;
+
+            if (mc_run_names[i].flag != NULL)
+                *mc_run_names[i].flag = TRUE;
+
+            break;
+        }
 }
 
 /* --------------------------------------------------------------------------------------------- */
