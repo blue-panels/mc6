@@ -1317,7 +1317,7 @@ edit_dialog_command_execute (WDialog *h, long command)
         group_select_prev_widget (g);
         break;
     case CK_Options:
-        edit_options_dialog (h);
+        edit_options_dialog ();
         break;
     case CK_EditPluginsInfo:
         edit_plugins_info (h);

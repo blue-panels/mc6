@@ -78,6 +78,28 @@ i18n_translate_array (const char *array[])
 #endif
 
 /* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Apply a per-widget function to every screen. The editors the user left open
+ * are on that list, and the functions below skip whatever is not an editor.
+ */
+
+static void
+edit_screen_foreach (void *data, void *user_data)
+{
+    g_list_foreach (GROUP (data)->widgets, *(GFunc *) user_data, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+edit_editors_foreach (GFunc fn)
+{
+    dialog_switch_foreach (edit_screen_foreach, &fn);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /**
  * Callback for the iteration of objects in the 'editors' array.
  * Tear down 'over_col' property in all editors.
@@ -125,7 +147,7 @@ edit_reload_syntax (void *data, void *user_data)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_options_dialog (WDialog *h)
+edit_options_dialog (void)
 {
     char wrap_length[16], tab_spacing[16];
     char *p, *q;
@@ -144,6 +166,7 @@ edit_options_dialog (WDialog *h)
 #endif
 
     old_show_control_chars = edit_options.show_control_chars;
+    old_syntax_hl = edit_options.syntax_highlighting;
 
     g_snprintf (wrap_length, sizeof (wrap_length), "%d", edit_options.word_wrap_line_length);
     g_snprintf (tab_spacing, sizeof (tab_spacing), "%d", TAB_SIZE);
@@ -218,10 +241,8 @@ edit_options_dialog (WDialog *h)
             return;
     }
 
-    old_syntax_hl = edit_options.syntax_highlighting;
-
     if (!edit_options.cursor_beyond_eol)
-        g_list_foreach (GROUP (h)->widgets, edit_reset_over_col, NULL);
+        edit_editors_foreach (edit_reset_over_col);
 
     if (*p != '\0')
     {
@@ -257,11 +278,21 @@ edit_options_dialog (WDialog *h)
 
     // Load or unload syntax rules if the option has changed
     if (edit_options.syntax_highlighting != old_syntax_hl)
-        g_list_foreach (GROUP (h)->widgets, edit_reload_syntax, NULL);
+        edit_editors_foreach (edit_reload_syntax);
 
     // the cached column layout depends on the width of control characters
     if (edit_options.show_control_chars != old_show_control_chars)
-        g_list_foreach (GROUP (h)->widgets, edit_layout_reset_cb, NULL);
+        edit_editors_foreach (edit_layout_reset_cb);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** The same dialog, from the Options menu of the file manager. */
+
+void
+edit_options_box (void)
+{
+    edit_options_dialog ();
 }
 
 /* --------------------------------------------------------------------------------------------- */

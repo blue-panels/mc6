@@ -2794,6 +2794,41 @@ dview_select_encoding (WDiff *dview)
 /* --------------------------------------------------------------------------------------------- */
 
 static void
+diff_options_load (diff_options_t *opt)
+{
+    opt->quality = mc_config_get_int (mc_global.main_config, "DiffView", "diff_quality", 0);
+    opt->strip_trailing_cr =
+        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_tws", FALSE);
+    opt->ignore_all_space =
+        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_all_space", FALSE);
+    opt->ignore_space_change =
+        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_space_change", FALSE);
+    opt->ignore_tab_expansion =
+        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_tab_expansion", FALSE);
+    opt->ignore_case =
+        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_case", FALSE);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+diff_options_save (const diff_options_t *opt)
+{
+    mc_config_set_int (mc_global.main_config, "DiffView", "diff_quality", opt->quality);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_tws",
+                        opt->strip_trailing_cr);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_all_space",
+                        opt->ignore_all_space);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_space_change",
+                        opt->ignore_space_change);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_tab_expansion",
+                        opt->ignore_tab_expansion);
+    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_case", opt->ignore_case);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
 dview_load_options (WDiff *dview)
 {
     gboolean show_numbers;
@@ -2811,18 +2846,8 @@ dview_load_options (WDiff *dview)
     else
         dview->tab_size = 8;
 
-    dview->opt.quality = mc_config_get_int (mc_global.main_config, "DiffView", "diff_quality", 0);
-
-    dview->opt.strip_trailing_cr =
-        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_tws", FALSE);
-    dview->opt.ignore_all_space =
-        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_all_space", FALSE);
-    dview->opt.ignore_space_change =
-        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_space_change", FALSE);
-    dview->opt.ignore_tab_expansion =
-        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_tab_expansion", FALSE);
-    dview->opt.ignore_case =
-        mc_config_get_bool (mc_global.main_config, "DiffView", "diff_ignore_case", FALSE);
+    diff_options_load (&dview->opt);
+    dview->opt_changed = FALSE;
 
     dview->new_frame = TRUE;
 }
@@ -2838,24 +2863,16 @@ dview_save_options (WDiff *dview)
                         dview->display_numbers != 0);
     mc_config_set_int (mc_global.main_config, "DiffView", "tab_size", dview->tab_size);
 
-    mc_config_set_int (mc_global.main_config, "DiffView", "diff_quality", dview->opt.quality);
-
-    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_tws",
-                        dview->opt.strip_trailing_cr);
-    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_all_space",
-                        dview->opt.ignore_all_space);
-    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_space_change",
-                        dview->opt.ignore_space_change);
-    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_tab_expansion",
-                        dview->opt.ignore_tab_expansion);
-    mc_config_set_bool (mc_global.main_config, "DiffView", "diff_ignore_case",
-                        dview->opt.ignore_case);
+    /* Only a view the user changed the options in writes them back: a view left
+       on the screen must not undo what the Options menu set meanwhile. */
+    if (dview->opt_changed)
+        diff_options_save (&dview->opt);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-dview_diff_options (WDiff *dview)
+static gboolean
+diff_options_dialog (diff_options_t *opt)
 {
     const char *quality_str[] = {
         _ ("No&rmal"),
@@ -2866,14 +2883,14 @@ dview_diff_options (WDiff *dview)
     quick_widget_t quick_widgets[] = {
         // clang-format off
         QUICK_START_GROUPBOX (_ ("Diff algorithm")),
-            QUICK_RADIO (3, (const char **) quality_str, (int *) &dview->opt.quality, NULL),
+            QUICK_RADIO (3, (const char **) quality_str, &opt->quality, NULL),
         QUICK_STOP_GROUPBOX,
         QUICK_START_GROUPBOX (_ ("Diff extra options")),
-            QUICK_CHECKBOX (_ ("&Ignore case"), &dview->opt.ignore_case, NULL),
-            QUICK_CHECKBOX (_ ("Ignore tab &expansion"), &dview->opt.ignore_tab_expansion, NULL),
-            QUICK_CHECKBOX (_ ("Ignore &space change"), &dview->opt.ignore_space_change, NULL),
-            QUICK_CHECKBOX (_ ("Ignore all &whitespace"), &dview->opt.ignore_all_space, NULL),
-            QUICK_CHECKBOX (_ ("Strip &trailing carriage return"), &dview->opt.strip_trailing_cr,
+            QUICK_CHECKBOX (_ ("&Ignore case"), &opt->ignore_case, NULL),
+            QUICK_CHECKBOX (_ ("Ignore tab &expansion"), &opt->ignore_tab_expansion, NULL),
+            QUICK_CHECKBOX (_ ("Ignore &space change"), &opt->ignore_space_change, NULL),
+            QUICK_CHECKBOX (_ ("Ignore all &whitespace"), &opt->ignore_all_space, NULL),
+            QUICK_CHECKBOX (_ ("Strip &trailing carriage return"), &opt->strip_trailing_cr,
                             NULL),
         QUICK_STOP_GROUPBOX,
         QUICK_BUTTONS_OK_CANCEL,
@@ -2892,8 +2909,19 @@ dview_diff_options (WDiff *dview)
         .mouse_callback = NULL,
     };
 
-    if (quick_dialog (&qdlg) != B_CANCEL)
+    return quick_dialog (&qdlg) != B_CANCEL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+dview_diff_options (WDiff *dview)
+{
+    if (diff_options_dialog (&dview->opt))
+    {
+        dview->opt_changed = TRUE;
         dview_reread (dview);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -4010,6 +4038,22 @@ diff_view (const char *file1, const char *file2, const char *label1, const char 
 
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
+
+/**
+ * The options of the comparison, shown from the Options menu of the file
+ * manager. They are the ones a new diff view starts with; a view already on
+ * screen keeps the options it was opened with.
+ */
+
+void
+dview_options_box (void)
+{
+    diff_options_t opt;
+
+    diff_options_load (&opt);
+    if (diff_options_dialog (&opt))
+        diff_options_save (&opt);
+}
 
 #define GET_FILE_AND_STAMP(n)                                                                      \
     do                                                                                             \

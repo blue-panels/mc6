@@ -337,6 +337,15 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Virtual FS..."), CK_OptionsVfs));
 #endif
     entries = g_list_prepend (entries, menu_separator_new ());
+#ifdef USE_DIFF_VIEW
+    entries = g_list_prepend (entries,
+                              menu_entry_new (_ ("&Diff viewer options..."), CK_OptionsDiffViewer));
+#endif
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Vie&wer options..."), CK_OptionsViewer));
+#ifdef USE_INTERNAL_EDIT
+    entries = g_list_prepend (entries, menu_entry_new (_ ("&Editor options..."), CK_OptionsEditor));
+#endif
+    entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Save setup"), CK_SaveSetup));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("A&bout..."), CK_About));
@@ -1460,6 +1469,19 @@ midnight_execute_cmd (Widget *sender, long command)
     case CK_OptionsPanel:
         panel_options_box ();
         break;
+    case CK_OptionsViewer:
+        viewer_options_box ();
+        break;
+#ifdef USE_DIFF_VIEW
+    case CK_OptionsDiffViewer:
+        dview_options_box ();
+        break;
+#endif
+#ifdef USE_INTERNAL_EDIT
+    case CK_OptionsEditor:
+        edit_options_box ();
+        break;
+#endif
     case CK_SelectCodepage:
         encoding_cmd ();
         break;

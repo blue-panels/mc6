@@ -42,6 +42,17 @@ typedef enum
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
+/* How the files are compared; kept in the [DiffView] section. */
+typedef struct
+{
+    int quality;
+    gboolean strip_trailing_cr;
+    gboolean ignore_tab_expansion;
+    gboolean ignore_space_change;
+    gboolean ignore_all_space;
+    gboolean ignore_case;
+} diff_options_t;
+
 typedef struct
 {
     int fd;
@@ -134,15 +145,8 @@ typedef struct WDiff
     // converter for translation of text
     GIConv converter;
 
-    struct
-    {
-        int quality;
-        gboolean strip_trailing_cr;
-        gboolean ignore_tab_expansion;
-        gboolean ignore_space_change;
-        gboolean ignore_all_space;
-        gboolean ignore_case;
-    } opt;
+    diff_options_t opt;
+    gboolean opt_changed;  // the user changed the options in this view
 
     // Search variables
     struct

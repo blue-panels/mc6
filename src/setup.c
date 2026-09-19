@@ -304,12 +304,8 @@ static const struct
     { "confirm_view_dir", &confirm_view_dir },
     { "safe_delete", &safe_delete },
     { "safe_overwrite", &safe_overwrite },
-    { "mouse_move_pages_viewer", &mcview_mouse_move_pages },
-    { "mcview_structured_auto", &mcview_structured_auto },
     { "mouse_close_dialog", &mouse_close_dialog },
     { "drop_menus", &drop_menus },
-    { "wrap_mode", &mcview_global_flags.wrap },
-    { "viewer_syntax_highlighting", &mcview_global_flags.highlight },
     { "old_esc_mode", &old_esc_mode },
     { "cd_symlinks", &mc_global.vfs.cd_symlinks },
     { "show_all_if_ambiguous", &mc_global.widget.show_all_if_ambiguous },
@@ -351,7 +347,6 @@ static const struct
     { "editor_ask_filename_before_edit", &editor_ask_filename_before_edit },
     { "nice_rotating_dash", &nice_rotating_dash },
     { "shadows", &mc_global.tty.shadows },
-    { "mcview_remember_file_position", &mcview_remember_file_position },
     { "auto_fill_mkdir_name", &auto_fill_mkdir_name },
     { "copymove_persistent_attr", &copymove_persistent_attr },
 #ifdef ENABLE_EXT2FS_ATTR
@@ -372,7 +367,6 @@ static const struct
     { "mouse_repeat_rate", &mou_auto_repeat },
     { "double_click_speed", &double_click_speed },
     { "old_esc_mode_timeout", &old_esc_mode_timeout },
-    { "max_dirt_limit", &mcview_max_dirt_limit },
     { "num_history_items_recorded", &num_history_items_recorded },
 
 #ifdef ENABLE_VFS
@@ -402,7 +396,6 @@ static const struct
     { "editor_filesize_threshold", &edit_options.filesize_threshold, "64M" },
     { "editor_stop_format_chars", &edit_options.stop_format_chars, "-+*\\,.;:&>" },
 #endif
-    { "mcview_eof", &mcview_show_eof, "" },
     { NULL, NULL, NULL },
 };
 
@@ -507,6 +500,8 @@ load_config (void)
 {
     size_t i;
     const char *kt;
+
+    mcview_load_options ();
 
     // Load boolean options
     for (i = 0; bool_options[i].opt_name != NULL; i++)
@@ -745,6 +740,8 @@ static void
 save_config (void)
 {
     size_t i;
+
+    mcview_save_options ();
 
     // Save boolean options
     for (i = 0; bool_options[i].opt_name != NULL; i++)
@@ -1046,6 +1043,8 @@ done_setup (void)
 
     for (i = 0; str_options[i].opt_name != NULL; i++)
         g_free (*str_options[i].opt_addr);
+
+    mcview_done_options ();
 
     done_hotlist ();
     //    directory_history_free ();

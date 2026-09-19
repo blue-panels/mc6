@@ -123,6 +123,7 @@ mcview_toggle_wrap_mode (WView *view)
 
     mcview_selection_clear (view);
     view->mode_flags.wrap = !view->mode_flags.wrap;
+    mcview_altered_flags.wrap = TRUE;
     view->dpy_wrap_dirty = TRUE;
     view->dpy_bbar_dirty = TRUE;
     view->dirty++;
@@ -375,21 +376,21 @@ mcview_done (WView *view)
         view->saved_bookmarks = NULL;
     }
 
-    // Write back the global viewer mode; structured mode is per-file, never sticky
-    {
-        /* A view built before the settings were read has this off; letting it
-           write that back would lose the user's choice. */
-        const gboolean hl = mcview_global_flags.highlight;
-        const gboolean nroff = mcview_global_flags.nroff;
-
-        mcview_global_flags = view->mode_flags;
-        if (!mcview_altered_flags.highlight)
-            mcview_global_flags.highlight = hl;
-        /* A source's display format (for example rendered Markdown) belongs to
-           that source. Keeping nroff on would bypass syntax colors in the next file. */
-        if (view->source_display_mode)
-            mcview_global_flags.nroff = nroff;
-    }
+    /* A mode the user switched by hand becomes the one the next file opens in;
+       the rest stay as the settings have them. A mode that came with the source,
+       such as nroff for rendered Markdown, belongs to that source alone. */
+    if (mcview_altered_flags.wrap)
+        mcview_global_flags.wrap = view->mode_flags.wrap;
+    if (mcview_altered_flags.hex)
+        mcview_global_flags.hex = view->mode_flags.hex;
+    if (mcview_altered_flags.magic)
+        mcview_global_flags.magic = view->mode_flags.magic;
+    if (mcview_altered_flags.ansi)
+        mcview_global_flags.ansi = view->mode_flags.ansi;
+    if (mcview_altered_flags.highlight)
+        mcview_global_flags.highlight = view->mode_flags.highlight;
+    if (mcview_altered_flags.nroff && !view->source_display_mode)
+        mcview_global_flags.nroff = view->mode_flags.nroff;
     mcview_global_flags.structured = FALSE;
 
     mcview_structured_reset (view);

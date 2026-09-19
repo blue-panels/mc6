@@ -188,6 +188,14 @@ dialog_switch_num (void)
 /* --------------------------------------------------------------------------------------------- */
 
 void
+dialog_switch_foreach (GFunc fn, gpointer user_data)
+{
+    g_list_foreach (mc_dialogs, fn, user_data);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
 dialog_switch_next (void)
 {
     GList *next;
