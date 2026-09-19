@@ -4,7 +4,15 @@
 -- symbols, tables aligned in columns with box-drawing rules.  F8 shows the
 -- file itself.
 
-local MAX_FILE_SIZE = 16 * 1024 * 1024
+-- The first screen costs the same whatever the size, so the limit is the
+-- 64 MB the host keeps for one source, not the time to render.  A file over
+-- it is shown as it is; the handler of mc.ext.ini is slower still, so it
+-- must not pick the file up instead.
+local MAX_FILE_SIZE = 64 * 1024 * 1024
+
+-- Overstrike makes the text longer than the file: stop below the host's limit
+-- with a line that says so, rather than let the source fail on it.
+local MAX_RENDERED = 60 * 1024 * 1024
 
 local md = require("render")
 
@@ -22,6 +30,14 @@ local viewer = mc.viewer_source.define {
         return request
     end,
     prepare = function(session, _, viewport)
+        if session.text == nil then
+            return {
+                source = mc.source.file { path = session.raw_path },
+                title = session.title .. "  (too large to render)",
+                initial_display = "text",
+                auto_scroll = "top",
+            }
+        end
         local width = math.min(viewport.columns, md.MAX_WIDTH)
         local source
         if session.rendered[width] ~= nil then
@@ -49,16 +65,26 @@ local viewer = mc.viewer_source.define {
                 session.rendered[width] = initial
                 source = mc.source.bytes(initial)
             else
+                local produced = #initial
                 source = mc.source.generator {
                     initial = initial,
                     next = function()
+                        if pieces == nil then
+                            return nil
+                        end
                         local chunk = next_block()
-                        if chunk ~= nil then
-                            pieces[#pieces + 1] = chunk
-                        else
+                        if chunk == nil then
                             session.rendered[width] = table.concat(pieces)
                             pieces = nil
+                            return nil
                         end
+                        produced = produced + #chunk
+                        if produced > MAX_RENDERED then
+                            pieces = nil
+                            return "\nThe document is longer than the viewer keeps."
+                                .. "  The rest is not rendered.\n"
+                        end
+                        pieces[#pieces + 1] = chunk
                         return chunk
                     end,
                 }
@@ -101,7 +127,11 @@ local function view_file(request)
     local text, err = read_file(request.local_path)
     if text == nil then
         mc.log.info(request.display_name .. ": " .. err)
-        return nil, "not_supported"
+        -- A file too large to render still belongs here: handing it back
+        -- would start the much slower handler of mc.ext.ini on it.
+        if err ~= "too large" then
+            return nil, "not_supported"
+        end
     end
     local controller, create_err = viewer:create {
         text = text,
