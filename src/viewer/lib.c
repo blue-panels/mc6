@@ -290,6 +290,8 @@ mcview_init (WView *view)
     view->command = NULL;
     view->search_nroff_seq = NULL;
     view->source_display_mode = FALSE;
+    view->generator = NULL;
+    view->generator_wakeup[0] = view->generator_wakeup[1] = -1;
 
     mcview_set_datasource_none (view);
 

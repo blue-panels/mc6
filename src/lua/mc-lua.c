@@ -3596,6 +3596,80 @@ mc_lua_source_pipeline (lua_State *lua)
     return mc_lua_source_tag (lua, "pipeline");
 }
 
+/** @lua mc.source.generator(spec) -> Source @workspace any @mutation no
+ * @summary Produce viewer bytes cooperatively. spec.initial is an optional first chunk;
+ * spec.next() returns the next string, or nil at EOF. Each call should finish one bounded
+ * unit of work; MC yields to input between batches. Closing or replacing the source stops
+ * further calls. Switching to raw pauses it; switching back replays its bytes and resumes.
+ */
+static int
+mc_lua_source_generator (lua_State *lua)
+{
+    return mc_lua_source_tag (lua, "generator");
+}
+
+typedef struct
+{
+    guint refs;
+    mc_lua_package_t *package;
+    int next_ref;
+} mc_lua_generator_t;
+
+static void
+mc_lua_generator_ref (void *data)
+{
+    mc_lua_generator_t *generator = data;
+
+    generator->refs++;
+}
+
+static void
+mc_lua_generator_unref (void *data)
+{
+    mc_lua_generator_t *generator = data;
+
+    if (--generator->refs != 0)
+        return;
+    if (generator->package->lua != NULL)
+        luaL_unref (generator->package->lua, LUA_REGISTRYINDEX, generator->next_ref);
+    g_free (generator);
+}
+
+static gboolean
+mc_lua_generator_next (void *data, GString *chunk, gboolean *done)
+{
+    mc_lua_generator_t *generator = data;
+    mc_lua_package_t *package = generator->package;
+    lua_State *lua = package->lua;
+    gboolean valid;
+
+    if (package->closed || lua == NULL)
+        return FALSE;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, generator->next_ref);
+    package->callback_depth++;
+    if (lua_pcall (lua, 0, 1, 0) != LUA_OK)
+    {
+        mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT, "Lua viewer generator failed");
+        package->callback_depth--;
+        return FALSE;
+    }
+    package->callback_depth--;
+    *done = lua_isnil (lua, -1);
+    valid = *done || lua_type (lua, -1) == LUA_TSTRING;
+    if (valid && !*done)
+    {
+        size_t length;
+        const char *bytes = lua_tolstring (lua, -1, &length);
+
+        if (length > 64U * 1024U * 1024U)
+            valid = FALSE;
+        else
+            g_string_append_len (chunk, bytes, length);
+    }
+    lua_pop (lua, 1);
+    return valid;
+}
+
 static void
 mc_lua_viewer_source_clear (mc_runtime_viewer_source_t *source)
 {
@@ -3603,6 +3677,8 @@ mc_lua_viewer_source_clear (mc_runtime_viewer_source_t *source)
 
     if (source == NULL)
         return;
+    if (source->generator_unref != NULL)
+        source->generator_unref (source->generator_data);
     g_free ((char *) source->bytes);
     g_free ((char *) source->path);
     for (i = 0; i < source->process.argc; i++)
@@ -3681,6 +3757,41 @@ mc_lua_parse_viewer_source (lua_State *lua, int table, mc_runtime_viewer_source_
         }
         source->bytes_length = length;
         lua_pop (lua, 1);
+    }
+    else if (g_strcmp0 (kind, "generator") == 0)
+    {
+        mc_lua_generator_t *generator;
+        size_t length = 0;
+        const char *initial;
+
+        source->kind = MC_RUNTIME_VIEWER_SOURCE_GENERATOR;
+        lua_getfield (lua, table, "initial");
+        initial = lua_tolstring (lua, -1, &length);
+        if ((!lua_isnil (lua, -1) && lua_type (lua, -1) != LUA_TSTRING)
+            || length > 64U * 1024U * 1024U)
+        {
+            lua_pop (lua, 1);
+            g_free (kind);
+            return FALSE;
+        }
+        source->bytes = g_memdup2 (initial, length);
+        source->bytes_length = length;
+        lua_pop (lua, 1);
+        lua_getfield (lua, table, "next");
+        if (!lua_isfunction (lua, -1))
+        {
+            lua_pop (lua, 1);
+            g_free (kind);
+            return FALSE;
+        }
+        generator = g_new0 (mc_lua_generator_t, 1);
+        generator->refs = 1;
+        generator->package = mc_lua_package_from_state (lua);
+        generator->next_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+        source->generator_data = generator;
+        source->generator_ref = mc_lua_generator_ref;
+        source->generator_unref = mc_lua_generator_unref;
+        source->generator_next = mc_lua_generator_next;
     }
     else if (g_strcmp0 (kind, "file") == 0)
     {
@@ -6822,6 +6933,12 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_setfield (lua, -2, "process");
     lua_pushcfunction (lua, mc_lua_source_pipeline);
     lua_setfield (lua, -2, "pipeline");
+    if (mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_VIEWER_GENERATOR,
+                                    MC_LUA_HOST_API_VIEWER_SOURCE_SIZE))
+    {
+        lua_pushcfunction (lua, mc_lua_source_generator);
+        lua_setfield (lua, -2, "generator");
+    }
     lua_setfield (lua, -2, "source");
 
     lua_createtable (lua, 0, 1);

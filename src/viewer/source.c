@@ -29,6 +29,7 @@
 
 #include <fcntl.h>  // O_RDONLY, O_NONBLOCK
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "lib/global.h"
 #include "lib/util.h"  // mc_pipe_t, mc_popen, mc_pclose
@@ -44,11 +45,13 @@ typedef struct
     enum
     {
         SRC_PIPE,
-        SRC_FILE
+        SRC_FILE,
+        SRC_GENERATOR
     } kind;
     mc_pipe_t *pipe;  // SRC_PIPE
     int fd;           // SRC_FILE
     struct stat st;   // SRC_FILE
+    int wakeup[2];    // SRC_GENERATOR
 } mcview_source_handle_t;
 
 /*** file scope functions ************************************************************************/
@@ -62,7 +65,8 @@ mcview_try_open_source (const mcview_source_spec_t *spec, char **err_out)
         *err_out = NULL;
 
     if (spec == NULL
-        || (spec->command == NULL && spec->file == NULL && (spec->argv == NULL || spec->argc == 0)))
+        || (spec->generator == NULL && spec->command == NULL && spec->file == NULL
+            && (spec->argv == NULL || spec->argc == 0)))
     {
         if (err_out != NULL)
             *err_out = g_strdup (_ ("Source spec must set either command or file."));
@@ -70,6 +74,32 @@ mcview_try_open_source (const mcview_source_spec_t *spec, char **err_out)
     }
 
     h = g_new0 (mcview_source_handle_t, 1);
+
+    if (spec->generator != NULL)
+    {
+        if (pipe (h->wakeup) != 0)
+        {
+            if (err_out != NULL)
+                *err_out = g_strdup (_ ("Cannot open source pipe."));
+            g_free (h);
+            return NULL;
+        }
+        for (guint i = 0; i < 2; i++)
+        {
+            if (fcntl (h->wakeup[i], F_SETFD, FD_CLOEXEC) == -1
+                || fcntl (h->wakeup[i], F_SETFL, O_NONBLOCK) == -1)
+            {
+                close (h->wakeup[0]);
+                close (h->wakeup[1]);
+                if (err_out != NULL)
+                    *err_out = g_strdup (_ ("Cannot open source pipe."));
+                g_free (h);
+                return NULL;
+            }
+        }
+        h->kind = SRC_GENERATOR;
+        return h;
+    }
 
     if (spec->argv != NULL && spec->argc != 0)
     {
@@ -171,7 +201,19 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
         mcview_vterm_set_dpy_top_row (
             view->vterm, spec->auto_scroll_bottom ? MCVIEW_VTERM_FOLLOW_END : (int) spec->top_row);
     }
-    if (handle->kind == SRC_PIPE)
+    if (handle->kind == SRC_GENERATOR)
+    {
+        view->source_generation++;
+        if (view->source_generation == 0)
+            view->source_generation++;
+        mcview_set_datasource_generator (view, spec->generator, handle->wakeup);
+        g_clear_pointer (&view->command, g_free);
+        vfs_path_free (view->filename_vpath, TRUE);
+        view->filename_vpath = NULL;
+        vfs_path_free (view->workdir_vpath, TRUE);
+        view->workdir_vpath = NULL;
+    }
+    else if (handle->kind == SRC_PIPE)
     {
         view->source_generation++;
         if (view->source_generation == 0)
@@ -212,7 +254,7 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
     mcview_update_bytes_per_line (view);
 
     g_free (handle); /* handle struct itself is transient; datasource owns the fd/pipe */
-    if (process_source)
+    if (process_source || (spec->generator != NULL && !view->growbuf_finished))
         mcview_source_state_notify (view, MCVIEW_SOURCE_STARTED, -1, 0);
 }
 
@@ -337,6 +379,7 @@ mcview_source_spec_clone (const mcview_source_spec_t *src)
     dst->initial_terminal = src->initial_terminal;
     dst->initial_nroff = src->initial_nroff;
     dst->raw_file = g_strdup (src->raw_file);
+    dst->generator = mcview_generator_ref (src->generator);
     return dst;
 }
 
@@ -347,6 +390,7 @@ mcview_source_spec_free (mcview_source_spec_t *s)
 {
     if (s == NULL)
         return;
+    mcview_generator_unref (s->generator);
     g_free (s->command);
     g_strfreev (s->argv);
     g_free (s->cwd);
@@ -392,6 +436,8 @@ mcview_source_set_raw (WView *view, gboolean raw)
     mcview_reset_for_source_swap (view);
     mcview_install_source (view, handle, draft);
     mcview_source_spec_free (draft);
+    if (!raw)
+        mcview_source_rebuild_viewport (view);
     view->dirty++;
     return TRUE;
 }
@@ -408,6 +454,17 @@ mcview_source_controller_detach (WView *view)
     if (view == NULL)
         return;
 
+    /* close() may enter a dialog. Stop production before releasing the runtime
+       controller so a nested event loop cannot call the old producer. */
+    if (view->datasource == DS_GENERATOR)
+    {
+        mcview_generator_stop (view);
+        if (!view->growbuf_finished)
+        {
+            view->growbuf_finished = TRUE;
+            mcview_source_state_notify (view, MCVIEW_SOURCE_CANCELLED, -1, 0);
+        }
+    }
     controller = view->source_controller;
     spec = view->source_spec;
     ctx = view->source_ctx;

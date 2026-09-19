@@ -16,6 +16,13 @@
 
 struct WView;
 typedef struct WView WView;
+typedef struct mcview_generator mcview_generator_t;
+
+mcview_generator_t *mcview_generator_new (const char *initial, gsize length,
+                                          gboolean (*next) (void *, GString *, gboolean *),
+                                          void *data, GDestroyNotify destroy);
+mcview_generator_t *mcview_generator_ref (mcview_generator_t *generator);
+void mcview_generator_unref (mcview_generator_t *generator);
 
 typedef struct
 {
@@ -29,7 +36,7 @@ typedef struct
     gboolean structured;  // Structured (tree) view of JSON/YAML/XML content
 } mcview_mode_flags_t;
 
-/* Exactly one of command, argv or file identifies the generated source. */
+/* Exactly one of command, argv, file or generator identifies the source. */
 typedef struct
 {
     char *command; /* shell pipeline -> mc_popen + stream */
@@ -47,6 +54,7 @@ typedef struct
     gboolean initial_terminal;
     gboolean initial_nroff;
     char *raw_file;
+    mcview_generator_t *generator;
 } mcview_source_spec_t;
 
 typedef enum

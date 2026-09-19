@@ -360,7 +360,10 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
         ck_assert_int_eq (controller->viewport_policy, MC_RUNTIME_VIEWER_VIEWPORT_REBUILD);
         if (markdown_expected != NULL)
         {
-            /* lua-markdown: the text rendered for a 91 column viewer */
+            GString *rendered;
+
+            /* Force several portions even for the small reference fixtures. */
+            viewport.lines = 3;
             ck_assert_ptr_nonnull (controller->dispatch_v2);
             mctest_assert_true (controller->dispatch_v2 (
                 context, controller->controller_id, MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
@@ -368,15 +371,42 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
             mctest_assert_true (handled);
             ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_NROFF);
             ck_assert_str_eq (draft.raw_path, markdown_fixture_path);
-            ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
-            if (draft.source->bytes_length != markdown_expected_length
-                || memcmp (draft.source->bytes, markdown_expected, draft.source->bytes_length) != 0)
+            rendered = g_string_new_len (draft.source->bytes, draft.source->bytes_length);
+            if (draft.source->kind == MC_RUNTIME_VIEWER_SOURCE_GENERATOR)
             {
-                char *got = g_strndup (draft.source->bytes, draft.source->bytes_length);
+                mc_runtime_viewer_source_t source = *draft.source;
+                gboolean done = FALSE;
+                guint steps = 0;
 
-                ck_abort_msg ("%s: rendered\n%s\nexpected\n%s", markdown_fixture_path, got,
-                              markdown_expected);
+                /* The native source retains the producer after releasing the draft. */
+                source.generator_ref (source.generator_data);
+                controller->spec_free (context, &draft);
+                while (!done)
+                {
+                    ck_assert_uint_lt (steps++, 10000);
+                    mctest_assert_true (
+                        source.generator_next (source.generator_data, rendered, &done));
+                }
+                source.generator_unref (source.generator_data);
             }
+            else
+            {
+                ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
+                controller->spec_free (context, &draft);
+            }
+            ck_assert_msg (rendered->len == markdown_expected_length
+                               && memcmp (rendered->str, markdown_expected, rendered->len) == 0,
+                           "%s: rendered\n%s\nexpected\n%s", markdown_fixture_path, rendered->str,
+                           markdown_expected);
+            g_string_free (rendered, TRUE);
+            /* A completed width is served from the session without restarting the producer. */
+            mctest_assert_true (controller->dispatch_v2 (
+                context, controller->controller_id, MC_RUNTIME_VIEWER_CONTROLLER_PREPARE_VIEWPORT,
+                &viewport, 0, &draft, &handled, viewer_error));
+            ck_assert_int_eq (draft.source->kind, MC_RUNTIME_VIEWER_SOURCE_BYTES);
+            ck_assert_uint_eq (draft.source->bytes_length, markdown_expected_length);
+            ck_assert_int_eq (
+                memcmp (draft.source->bytes, markdown_expected, markdown_expected_length), 0);
             controller->spec_free (context, &draft);
             viewer_controller_open_count++;
             mctest_assert_true (controller->dispatch (context, controller->controller_id,
@@ -2643,6 +2673,41 @@ START_TEST (test_lua_readelf_handler_uses_direct_argv)
 }
 END_TEST
 
+START_TEST (test_lua_markdown_blocks_are_lazy_and_isolated)
+{
+    char *entry;
+    char *contents = NULL;
+    char *script;
+
+    create_markdown_handler_script ();
+    entry = g_build_filename (user_mc_scripts_dir, "lua-markdown", "init.lua", (char *) NULL);
+    mctest_assert_true (g_file_get_contents (entry, &contents, NULL, &error));
+    script = g_strconcat (contents,
+                          "\nlocal r=require('render')\n"
+                          "local one='[a][ref]\\n\\n[^n]\\n\\n[ref]: /a\\n[^n]: note a\\n'\n"
+                          "local two='[b][ref]\\n\\n[^n]\\n\\n[ref]: /b\\n[^n]: note b\\n'\n"
+                          "local a,b=r.blocks(one,{width=30}),r.blocks(two,{width=60})\n"
+                          "local aa,bb={},{}\n"
+                          "for i=1,20 do local x,y=a(),b(); if x then aa[#aa+1]=x end "
+                          "if y then bb[#bb+1]=y end; r.render('[x][ref]\\n\\n[ref]: /x') end\n"
+                          "assert(table.concat(aa)==r.render(one,{width=30}))\n"
+                          "assert(table.concat(bb)==r.render(two,{width=60}))\n"
+                          "local scan=mc.syntax.scan; local calls=0\n"
+                          "mc.syntax.scan=function(...) calls=calls+1;return scan(...) end\n"
+                          "local next=r.blocks('# first\\n\\n```c\\nint x;\\n```\\n')\n"
+                          "assert(next()~=nil and calls==0)\n"
+                          "assert(next()~=nil and calls==1)\n"
+                          "mc.syntax.scan=scan\n",
+                          (char *) NULL);
+    write_file (entry, script);
+    mctest_assert_true (mc_runtime_plugins_load (&error));
+    ck_assert_uint_eq (runtime_error_count, 0);
+    g_free (script);
+    g_free (contents);
+    g_free (entry);
+}
+END_TEST
+
 START_TEST (test_lua_markdown_handler_renders_nroff_bytes)
 {
     mc_runtime_file_operation_request_t request = {
@@ -3176,6 +3241,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_runtime_file_handler_registration_and_dispatch);
     tcase_add_test (tc_core, test_lua_java_class_handler_uses_pty_process);
     tcase_add_test (tc_core, test_lua_readelf_handler_uses_direct_argv);
+    tcase_add_test (tc_core, test_lua_markdown_blocks_are_lazy_and_isolated);
     tcase_add_test (tc_core, test_lua_markdown_handler_renders_nroff_bytes);
     tcase_add_test (tc_core, test_lua_sixel_handler_sizes_the_picture_in_pixels);
     tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);

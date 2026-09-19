@@ -24,6 +24,7 @@
 #define MC_RUNTIME_HOST_CAP_PANEL_PROVIDER    (G_GUINT64_CONSTANT (1) << 8)
 #define MC_RUNTIME_HOST_CAP_VIEWER_SOURCE     (G_GUINT64_CONSTANT (1) << 9)
 #define MC_RUNTIME_HOST_CAP_SYNTAX            (G_GUINT64_CONSTANT (1) << 10)
+#define MC_RUNTIME_HOST_CAP_VIEWER_GENERATOR  (G_GUINT64_CONSTANT (1) << 11)
 
 #define MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS (G_GUINT64_CONSTANT (1) << 0)
 
@@ -366,7 +367,8 @@ typedef enum
     MC_RUNTIME_VIEWER_SOURCE_BYTES,
     MC_RUNTIME_VIEWER_SOURCE_FILE,
     MC_RUNTIME_VIEWER_SOURCE_PROCESS,
-    MC_RUNTIME_VIEWER_SOURCE_PIPELINE
+    MC_RUNTIME_VIEWER_SOURCE_PIPELINE,
+    MC_RUNTIME_VIEWER_SOURCE_GENERATOR
 } mc_runtime_viewer_source_kind_t;
 
 typedef struct
@@ -395,6 +397,12 @@ struct mc_runtime_viewer_source_t
     const mc_runtime_viewer_source_t *stages;
     guint stages_count;
     gboolean process_stderr_separate;
+    /* Cooperative byte producer. The host retains data independently of the spec.
+       next appends a bounded portion to chunk; done marks EOF. FALSE marks failure. */
+    void *generator_data;
+    void (*generator_ref) (void *data);
+    void (*generator_unref) (void *data);
+    gboolean (*generator_next) (void *data, GString *chunk, gboolean *done);
 };
 
 typedef struct

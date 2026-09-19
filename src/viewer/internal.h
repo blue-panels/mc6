@@ -47,7 +47,8 @@ enum view_ds
     DS_VFS_PIPE,    // Data comes from a piped-in VFS file
     DS_RAW_PIPE,    // Data comes from a raw (non-VFS) pipe fd
     DS_FILE,        // Data comes from a VFS file
-    DS_STRING       // Data comes from a string in memory
+    DS_STRING,      // Data comes from a string in memory
+    DS_GENERATOR    // Data is produced cooperatively between input events
 };
 
 enum ccache_type
@@ -141,6 +142,9 @@ struct WView
     gboolean streaming;             // TRUE = non-blocking DS_STDIO_PIPE
     gboolean stream_active;         // TRUE while select channel is registered
     gboolean stream_redraw_queued;  // TRUE while idle redraw hook is pending
+    mcview_generator_t *generator;
+    int generator_wakeup[2];
+    gint64 generator_redraw_at;
 
     // vfs pipe data source
     int ds_vfs_pipe;  // Non-seekable vfs file descriptor
@@ -392,6 +396,7 @@ void mcview_display_ruler (WView *view);
 
 /* growbuf.c: */
 void mcview_growbuf_init (WView *view);
+void mcview_growbuf_append (WView *view, const char *data, gsize length);
 void mcview_growbuf_done (WView *view, mcview_source_state_t state);
 void mcview_growbuf_free (WView *view);
 off_t mcview_growbuf_filesize (WView *view);
@@ -403,6 +408,9 @@ char *mcview_get_ptr_growing_buffer (WView *view, off_t byte_index);
 /* datasource.c: streaming mode */
 void mcview_stream_start (WView *view);
 void mcview_stream_stop (WView *view);
+void mcview_set_datasource_generator (WView *view, mcview_generator_t *generator, int wakeup[2]);
+void mcview_generator_stop (WView *view);
+void mcview_generator_step (WView *view);
 void mcview_source_state_notify (WView *view, mcview_source_state_t state, int exit_code,
                                  int term_signal);
 
@@ -606,6 +614,7 @@ mcview_get_byte (WView *view, off_t offset, int *retval)
     case DS_STDIO_PIPE:
     case DS_VFS_PIPE:
     case DS_RAW_PIPE:
+    case DS_GENERATOR:
         return mcview_get_byte_growing_buffer (view, offset, retval);
     case DS_FILE:
         return mcview_get_byte_file (view, offset, retval);

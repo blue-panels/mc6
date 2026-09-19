@@ -404,6 +404,7 @@ mcview_do_search (WView *view, off_t want_search_start)
     off_t search_start = 0;
     off_t orig_search_start = view->search_start;
     gboolean found = FALSE;
+    gboolean incomplete = FALSE;
 
     size_t match_len;
 
@@ -483,6 +484,14 @@ mcview_do_search (WView *view, off_t want_search_start)
             break;
 
         search_start = growbufsize - view->search->original.str->len;
+        /* A cooperative source advances through input events, not reads. Do not
+           busy-loop over the same snapshot while waiting for its next portion. */
+        if (view->datasource == DS_GENERATOR && mcview_may_still_grow (view)
+            && mcview_get_filesize (view) == growbufsize)
+        {
+            incomplete = TRUE;
+            break;
+        }
     }
     while (search_start > 0 && mcview_may_still_grow (view));
 
@@ -536,7 +545,9 @@ mcview_do_search (WView *view, off_t want_search_start)
         mcview_update (view);
 
         if (view->search->error == MC_SEARCH_E_NOTFOUND)
-            message (D_NORMAL, _ ("Search"), "%s", _ (STR_E_NOTFOUND));
+            message (D_NORMAL, _ ("Search"), "%s",
+                     incomplete ? _ ("Not found in the text rendered so far.")
+                                : _ (STR_E_NOTFOUND));
         else if (view->search->error_str != NULL)
             message (D_NORMAL, _ ("Search"), "%s", view->search->error_str);
     }

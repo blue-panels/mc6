@@ -2402,7 +2402,8 @@ mc_runtime_plugins_set_host_services (const mc_runtime_host_services_v1_t *servi
         && services->syntax_scan != NULL && services->syntax_result_free != NULL)
         mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_SYNTAX;
     if (mc_runtime_host_has_viewer_source_services ())
-        mc_runtime_host_api.capability_flags |= MC_RUNTIME_HOST_CAP_VIEWER_SOURCE;
+        mc_runtime_host_api.capability_flags |=
+            MC_RUNTIME_HOST_CAP_VIEWER_SOURCE | MC_RUNTIME_HOST_CAP_VIEWER_GENERATOR;
 }
 
 /* --------------------------------------------------------------------------------------------- */

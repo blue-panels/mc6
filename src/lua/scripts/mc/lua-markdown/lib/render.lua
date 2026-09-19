@@ -147,8 +147,21 @@ local function width(s)
     return n
 end
 
+-- Every line of the document is trimmed, so walk the ends instead of
+-- rewriting the string twice.
 local function trim(s)
-    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+    local first = s:find("%S")
+
+    if first == nil then
+        return ""
+    end
+    local last = #s
+    local c = s:byte(last)
+    while c == 32 or (c >= 9 and c <= 13) do
+        last = last - 1
+        c = s:byte(last)
+    end
+    return s:sub(first, last)
 end
 
 -- style: { bold = b, under = u, italic = i, strike = s, heading = level }.  A space is
@@ -1003,8 +1016,10 @@ tokenize = function(s)
             end
             i = e + 1
         else
-            text[#text + 1] = ch
-            i = i + 1
+            -- Keep ordinary text together, including all bytes of UTF-8 characters.
+            local e = s:find("[\\`$&<!%[*_~]", i + 1) or (n + 1)
+            text[#text + 1] = s:sub(i, e - 1)
+            i = e
         end
     end
     flush()
@@ -1398,29 +1413,30 @@ local function sgr_line(units, state)
     local before = (state.italic and SGR_ITALIC or "")
         .. (state.color and "\27[" .. state.color .. "m" or "")
         .. (state.link and link_start(state.link) or "")
-    local text = {}
 
     for _, u in ipairs(units) do
-        text[#text + 1] = u
-        for url in u:gmatch("\27%]8;;(.-)\27\\") do
-            state.link = url ~= "" and url or nil
-        end
-        for code in u:gmatch("\27%[(%d*)m") do
-            if code == "3" then
-                state.italic = true
-            elseif code == "23" then
-                state.italic = false
-            elseif code == "39" then
-                state.color = nil
-            else
-                state.color = code
+        -- Most units contain only text; avoid allocating pattern iterators for them.
+        if u:find("\27", 1, true) ~= nil then
+            for url in u:gmatch("\27%]8;;(.-)\27\\") do
+                state.link = url ~= "" and url or nil
+            end
+            for code in u:gmatch("\27%[(%d*)m") do
+                if code == "3" then
+                    state.italic = true
+                elseif code == "23" then
+                    state.italic = false
+                elseif code == "39" then
+                    state.color = nil
+                else
+                    state.color = code
+                end
             end
         end
     end
     local after = (state.link and LINK_END or "")
         .. (state.color and SGR_COLOR_OFF or "")
         .. (state.italic and SGR_ITALIC_OFF or "")
-    return (before .. table.concat(text) .. after):gsub(WIDE, "")
+    return (before .. table.concat(units) .. after):gsub(WIDE, "")
 end
 
 -- The words of rendered text, packed into lines no wider than w columns; a
@@ -1617,11 +1633,21 @@ end
 
 local function split_lines(text)
     local lines = {}
-    for line in (text .. "\n"):gmatch("(.-)\r?\n") do
-        lines[#lines + 1] = line
-    end
-    if #lines > 0 and lines[#lines] == "" and text:sub(-1) == "\n" then
-        lines[#lines] = nil
+    local pos = 1
+    local size = #text
+
+    while pos <= size do
+        local nl = text:find("\n", pos, true)
+        local last = (nl or size + 1) - 1
+
+        if last >= pos and text:byte(last) == 13 then
+            last = last - 1
+        end
+        lines[#lines + 1] = text:sub(pos, last)
+        if nl == nil then
+            break
+        end
+        pos = nl + 1
     end
     return lines
 end
@@ -1633,19 +1659,27 @@ local function join_display_math(lines)
     local buf = nil
     local delim
     for _, line in ipairs(lines) do
-        local t = trim(line)
         if buf ~= nil then
+            local t = trim(line)
+
             if t == delim then
                 out[#out + 1] = delim .. table.concat(buf, " ") .. delim
                 buf = nil
             else
                 buf[#buf + 1] = t
             end
-        elseif t == "$" or t == "$$" then
-            buf = {}
-            delim = t
-        else
+        elseif line:find("$", 1, true) == nil then
+            -- Only a line holding nothing but the delimiter opens display math.
             out[#out + 1] = line
+        else
+            local t = trim(line)
+
+            if t == "$" or t == "$$" then
+                buf = {}
+                delim = t
+            else
+                out[#out + 1] = line
+            end
         end
     end
     if buf ~= nil then
@@ -1892,11 +1926,12 @@ local function render_footnotes(width_limit, out)
     end
 end
 
-function M.render(text, opts)
+local function render_document(text, opts, emit)
     local width_limit = opts and opts.width or M.DEFAULT_WIDTH
     local lines = collect_definitions(join_display_math(split_lines(text)))
     local out = {}
     local i = 1
+    local emitted = false
     local prev_blank = true
     local prev_list = false
     local list_levels = {}  -- the indents of the lists that are open
@@ -2042,9 +2077,62 @@ function M.render(text, opts)
             flow(pieces, prefix, width_limit, out)
         end
         prev_blank = blank
+        if emit ~= nil then
+            -- Footnotes remove trailing blank lines, so hold those until the next block.
+            local last = #out
+            while last > 0 and out[last] == "" do
+                last = last - 1
+            end
+            if last > 0 then
+                local chunk = (table.concat(out, "\n", 1, last):gsub(NBSP, " ")) .. "\n"
+                local pending = {}
+                for k = last + 1, #out do
+                    pending[#pending + 1] = out[k]
+                end
+                out = pending
+                emitted = true
+                emit(chunk)
+            end
+        end
     end
     render_footnotes(width_limit, out)
-    return (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+    local tail = (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+    if emit == nil then
+        return tail
+    end
+    if #out > 0 or not emitted then
+        emit(tail)
+    end
+end
+
+function M.render(text, opts)
+    return render_document(text, opts)
+end
+
+-- One complete Markdown block per call, nil at EOF. The preliminary pass collects
+-- forward references before any output is emitted. Each iterator owns its document
+-- state, so a resize or another viewer can render between two calls.
+function M.blocks(text, opts)
+    local state
+    local co = coroutine.create(function()
+        render_document(text, opts, coroutine.yield)
+    end)
+    return function()
+        if coroutine.status(co) == "dead" then
+            return nil
+        end
+        local previous = doc
+        if state ~= nil then
+            doc = state
+        end
+        local ok, chunk = coroutine.resume(co)
+        state = doc
+        doc = previous
+        if not ok then
+            error(chunk, 0)
+        end
+        return chunk
+    end
 end
 
 return M

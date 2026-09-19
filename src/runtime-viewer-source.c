@@ -228,6 +228,7 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
     g_free (target->help_file);
     g_free (target->help_node);
     g_free (target->raw_file);
+    mcview_generator_unref (target->generator);
     memset (target, 0, sizeof (*target));
     target->title = g_strdup (source->title);
     target->help_file = g_strdup (help_file);
@@ -256,6 +257,18 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
     }
     switch (input->kind)
     {
+    case MC_RUNTIME_VIEWER_SOURCE_GENERATOR:
+        if (input->struct_size < G_STRUCT_OFFSET (mc_runtime_viewer_source_t, generator_next)
+                    + sizeof (input->generator_next)
+            || input->generator_ref == NULL || input->generator_unref == NULL
+            || input->generator_next == NULL || input->bytes_length > 64U * 1024U * 1024U
+            || (input->bytes_length != 0 && input->bytes == NULL))
+            return runtime_viewer_error (error, "invalid_source");
+        input->generator_ref (input->generator_data);
+        target->generator =
+            mcview_generator_new (input->bytes, input->bytes_length, input->generator_next,
+                                  input->generator_data, input->generator_unref);
+        return TRUE;
     case MC_RUNTIME_VIEWER_SOURCE_BYTES:
         if (input->bytes_length > 64U * 1024U * 1024U
             || (input->bytes_length != 0 && input->bytes == NULL)

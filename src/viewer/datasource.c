@@ -113,6 +113,7 @@ mcview_get_filesize (WView *view)
     case DS_STDIO_PIPE:
     case DS_VFS_PIPE:
     case DS_RAW_PIPE:
+    case DS_GENERATOR:
         return mcview_growbuf_filesize (view);
     case DS_FILE:
         return view->ds_file_filesize;
@@ -169,6 +170,7 @@ mcview_get_utf (WView *view, off_t byte_index, int *ch, int *ch_len)
     case DS_STDIO_PIPE:
     case DS_VFS_PIPE:
     case DS_RAW_PIPE:
+    case DS_GENERATOR:
         str = mcview_get_ptr_growing_buffer (view, byte_index);
         break;
     case DS_FILE:
@@ -347,6 +349,14 @@ mcview_close_datasource (WView *view)
     {
     case DS_NONE:
         break;
+    case DS_GENERATOR:
+        mcview_generator_stop (view);
+        if (!view->growbuf_finished)
+            mcview_source_state_notify (view, MCVIEW_SOURCE_CANCELLED, -1, 0);
+        mcview_generator_unref (view->generator);
+        view->generator = NULL;
+        mcview_growbuf_free (view);
+        break;
     case DS_STDIO_PIPE:
         if (view->ds_stdio_pipe != NULL)
         {
@@ -467,13 +477,35 @@ mcview_set_datasource_string (WView *view, const char *s)
  * Runs from frontend_dlg_run() idle path, safe to call mcview_update().
  */
 
+static void mcview_stream_redraw_hook (void *v);
+
+/* Each view owns its queued redraw: cancelling one must not remove another's. */
+static void
+mcview_stream_remove_redraw (WView *view)
+{
+    hook_t **hook = &idle_hook;
+
+    while (*hook != NULL)
+    {
+        hook_t *current = *hook;
+
+        if (current->hook_fn == mcview_stream_redraw_hook && current->hook_data == view)
+        {
+            *hook = current->next;
+            g_free (current);
+        }
+        else
+            hook = &current->next;
+    }
+    view->stream_redraw_queued = FALSE;
+}
+
 static void
 mcview_stream_redraw_hook (void *v)
 {
     WView *view = (WView *) v;
 
-    view->stream_redraw_queued = FALSE;
-    delete_hook (&idle_hook, mcview_stream_redraw_hook);
+    mcview_stream_remove_redraw (view);
 
     if (view->dirty > 0)
     {
@@ -581,9 +613,161 @@ mcview_stream_stop (WView *view)
 
     if (view->stream_redraw_queued)
     {
-        delete_hook (&idle_hook, mcview_stream_redraw_hook);
-        view->stream_redraw_queued = FALSE;
+        mcview_stream_remove_redraw (view);
     }
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* A source keeps its produced bytes across raw/cooked switches. Cloned specs
+   share this state; only the installed source is scheduled. */
+struct mcview_generator
+{
+    guint refs;
+    GString *bytes;
+    gboolean (*next) (void *, GString *, gboolean *);
+    void *data;
+    GDestroyNotify destroy;
+    gboolean done;
+    gboolean failed;
+};
+
+mcview_generator_t *
+mcview_generator_new (const char *initial, gsize length,
+                      gboolean (*next) (void *, GString *, gboolean *), void *data,
+                      GDestroyNotify destroy)
+{
+    mcview_generator_t *generator = g_new0 (mcview_generator_t, 1);
+
+    generator->refs = 1;
+    generator->bytes = g_string_new_len (initial, length);
+    generator->next = next;
+    generator->data = data;
+    generator->destroy = destroy;
+    return generator;
+}
+
+mcview_generator_t *
+mcview_generator_ref (mcview_generator_t *generator)
+{
+    if (generator != NULL)
+        generator->refs++;
+    return generator;
+}
+
+void
+mcview_generator_unref (mcview_generator_t *generator)
+{
+    if (generator == NULL || --generator->refs != 0)
+        return;
+    generator->destroy (generator->data);
+    g_string_free (generator->bytes, TRUE);
+    g_free (generator);
+}
+
+void
+mcview_generator_stop (WView *view)
+{
+    if (view->generator_wakeup[0] >= 0)
+    {
+        delete_select_channel (view->generator_wakeup[0]);
+        close (view->generator_wakeup[0]);
+        close (view->generator_wakeup[1]);
+        view->generator_wakeup[0] = view->generator_wakeup[1] = -1;
+    }
+    if (view->stream_redraw_queued)
+    {
+        mcview_stream_remove_redraw (view);
+    }
+}
+
+static void
+mcview_generator_wake (WView *view)
+{
+    ssize_t written;
+
+    do
+        written = write (view->generator_wakeup[1], "x", 1);
+    while (written < 0 && errno == EINTR);
+}
+
+void
+mcview_generator_step (WView *view)
+{
+    mcview_generator_t *generator = view->generator;
+    const gint64 deadline = g_get_monotonic_time () + 4000;
+    GString *chunk;
+    char wake;
+    ssize_t count;
+    guint steps = 0;
+
+    if (view->datasource != DS_GENERATOR || view->growbuf_finished || view->generator_wakeup[0] < 0)
+        return;
+    chunk = g_string_new (NULL);
+    do
+        count = read (view->generator_wakeup[0], &wake, 1);
+    while (count < 0 && errno == EINTR);
+    do
+    {
+        g_string_truncate (chunk, 0);
+        if (!generator->next (generator->data, chunk, &generator->done)
+            || chunk->len > 64U * 1024U * 1024U - generator->bytes->len)
+        {
+            generator->failed = generator->done = TRUE;
+            break;
+        }
+        g_string_append_len (generator->bytes, chunk->str, chunk->len);
+        mcview_growbuf_append (view, chunk->str, chunk->len);
+    }
+    while (!generator->done && ++steps < 64 && g_get_monotonic_time () < deadline);
+    g_string_free (chunk, TRUE);
+    if (generator->done)
+    {
+        view->growbuf_finished = TRUE;
+        mcview_generator_stop (view);
+        mcview_source_state_notify (
+            view, generator->failed ? MCVIEW_SOURCE_FAILED : MCVIEW_SOURCE_FINISHED,
+            generator->failed ? -1 : 0, 0);
+    }
+    else
+        mcview_generator_wake (view);
+    /* Rendering can produce many small blocks; cap progress redraws at 30 Hz.
+       Keys still redraw immediately through the normal viewer callback. */
+    if (!generator->done && g_get_monotonic_time () < view->generator_redraw_at)
+        return;
+    view->generator_redraw_at = g_get_monotonic_time () + 33000;
+    view->dirty++;
+    if (!view->stream_redraw_queued)
+    {
+        add_hook (&idle_hook, mcview_stream_redraw_hook, view);
+        view->stream_redraw_queued = TRUE;
+    }
+}
+
+static int
+mcview_generator_ready (int fd, void *data)
+{
+    (void) fd;
+    mcview_generator_step (data);
+    return 1;
+}
+
+void
+mcview_set_datasource_generator (WView *view, mcview_generator_t *generator, int wakeup[2])
+{
+    view->datasource = DS_GENERATOR;
+    view->generator = mcview_generator_ref (generator);
+    view->generator_wakeup[0] = wakeup[0];
+    view->generator_wakeup[1] = wakeup[1];
+    view->generator_redraw_at = g_get_monotonic_time () + 33000;
+    mcview_growbuf_init (view);
+    mcview_growbuf_append (view, generator->bytes->str, generator->bytes->len);
+    view->growbuf_finished = generator->done;
+    if (generator->done)
+        mcview_generator_stop (view);
+    else
+    {
+        add_select_channel (wakeup[0], mcview_generator_ready, view);
+        mcview_generator_wake (view);
+    }
+}

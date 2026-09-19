@@ -450,6 +450,156 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+typedef struct
+{
+    guint calls;
+    guint destroyed;
+    gboolean fail;
+} test_generator_t;
+
+static gboolean
+produce_bytes (void *data, GString *chunk, gboolean *done)
+{
+    test_generator_t *generator = data;
+
+    generator->calls++;
+    if (generator->fail)
+        return FALSE;
+    /* Empty chunks are allowed; the host must cap batches even for cheap producers. */
+    if (generator->calls == 130)
+        g_string_append_len (chunk, "last\0byte", 9);
+    *done = generator->calls >= 130;
+    return TRUE;
+}
+
+static void
+release_generator (void *data)
+{
+    test_generator_t *generator = data;
+
+    generator->destroyed++;
+}
+
+static void
+install_generator (mcview_generator_t *generator)
+{
+    int wakeup[2];
+
+    ck_assert_int_eq (pipe (wakeup), 0);
+    ck_assert_int_ne (fcntl (wakeup[0], F_SETFL, O_NONBLOCK), -1);
+    ck_assert_int_ne (fcntl (wakeup[1], F_SETFL, O_NONBLOCK), -1);
+    mcview_set_datasource_generator (&test_view, generator, wakeup);
+}
+
+START_TEST (test_generator_is_incremental_and_replays_after_pause)
+{
+    test_generator_t state = { 0 };
+    mcview_generator_t *generator =
+        mcview_generator_new ("first\n", 6, produce_bytes, &state, release_generator);
+    int ch;
+    guint calls;
+
+    install_generator (generator);
+    ck_assert_int_eq (mcview_get_filesize (&test_view), 6);
+    mctest_assert_false (mcview_get_byte (&test_view, 6, &ch));
+    mcview_growbuf_read_all_data (&test_view);
+    ck_assert_uint_eq (state.calls, 0); /* Display/search must never pull the producer. */
+    mcview_generator_step (&test_view);
+    ck_assert_uint_gt (state.calls, 0);
+    ck_assert_uint_le (state.calls, 64);
+    mctest_assert_true (mcview_may_still_grow (&test_view));
+    calls = state.calls;
+    mcview_close_datasource (&test_view);
+    mcview_generator_step (&test_view);
+    ck_assert_uint_eq (state.calls, calls);
+    ck_assert_uint_eq (state.destroyed, 0);
+
+    install_generator (generator);
+    for (guint i = 0; i < 130 && mcview_may_still_grow (&test_view); i++)
+        mcview_generator_step (&test_view);
+    ck_assert_uint_eq (state.calls, 130);
+    mctest_assert_false (mcview_may_still_grow (&test_view));
+    ck_assert_int_eq (mcview_get_filesize (&test_view), 15);
+    mctest_assert_true (mcview_get_byte (&test_view, 10, &ch));
+    ck_assert_int_eq (ch, 0);
+    mcview_close_datasource (&test_view);
+
+    install_generator (generator);
+    ck_assert_int_eq (mcview_get_filesize (&test_view), 15);
+    mctest_assert_false (mcview_may_still_grow (&test_view));
+    mcview_generator_step (&test_view);
+    ck_assert_uint_eq (state.calls, 130);
+    mcview_generator_unref (generator);
+    mcview_close_datasource (&test_view);
+    ck_assert_uint_eq (state.destroyed, 1);
+}
+END_TEST
+
+START_TEST (test_generator_failure_and_cancel_release_source)
+{
+    test_generator_t state = { .fail = TRUE };
+    mcview_generator_t *generator =
+        mcview_generator_new ("first\n", 6, produce_bytes, &state, release_generator);
+
+    test_view.source_controller = &test_source_controller;
+    test_view.source_generation = 1;
+    install_generator (generator);
+    mcview_generator_unref (generator);
+    mcview_generator_step (&test_view);
+    ck_assert_uint_eq (state.calls, 1);
+    mctest_assert_false (mcview_may_still_grow (&test_view));
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_FAILED);
+    ck_assert_int_eq (mcview_get_filesize (&test_view), 6);
+    mcview_close_datasource (&test_view);
+    ck_assert_uint_eq (state.destroyed, 1);
+
+    state = (test_generator_t) { 0 };
+    generator = mcview_generator_new ("", 0, produce_bytes, &state, release_generator);
+    install_generator (generator);
+    mcview_generator_unref (generator);
+    mcview_close_datasource (&test_view);
+    ck_assert_uint_eq (state.calls, 0);
+    ck_assert_uint_eq (state.destroyed, 1);
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_CANCELLED);
+}
+END_TEST
+
+static void
+close_generator_controller (void *data)
+{
+    test_generator_t *state = data;
+    const guint calls = state->calls;
+
+    /* Model a close callback that pumps a nested dialog's input loop. */
+    mcview_generator_step (&test_view);
+    ck_assert_uint_eq (state->calls, calls);
+    ck_assert_int_eq (test_view.generator_wakeup[0], -1);
+}
+
+START_TEST (test_generator_stops_before_controller_close)
+{
+    static const mcview_source_controller_t controller = {
+        .free = close_generator_controller,
+        .source_state = test_source_state,
+    };
+    test_generator_t state = { 0 };
+    mcview_generator_t *generator =
+        mcview_generator_new ("first\n", 6, produce_bytes, &state, release_generator);
+
+    test_view.source_controller = &controller;
+    test_view.source_ctx = &state;
+    test_view.source_generation = 1;
+    test_view.source_spec = g_new0 (mcview_source_spec_t, 1);
+    test_view.source_spec->generator = generator;
+    install_generator (generator);
+    mcview_source_controller_detach (&test_view);
+    ck_assert_uint_eq (state.calls, 0);
+    ck_assert_int_eq (last_source_state.state, MCVIEW_SOURCE_CANCELLED);
+    mcview_close_datasource (&test_view);
+    ck_assert_uint_eq (state.destroyed, 1);
+}
+END_TEST
+
 int
 main (void)
 {
@@ -460,6 +610,9 @@ main (void)
 
     tcase_add_checked_fixture (tc, setup, teardown);
 
+    tcase_add_test (tc, test_generator_stops_before_controller_close);
+    tcase_add_test (tc, test_generator_is_incremental_and_replays_after_pause);
+    tcase_add_test (tc, test_generator_failure_and_cancel_release_source);
     tcase_add_test (tc, test_growbuf_read_available_reads_pipe_data);
     tcase_add_test (tc, test_growbuf_read_available_eagain);
     tcase_add_test (tc, test_growbuf_read_available_eof);
