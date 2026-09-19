@@ -277,7 +277,7 @@ Initially, M\-Commander creates key bindings using keymap defined
 in the source code. Then, two files
 .B %pkgdatadir%/mc.keymap
 and
-.B %sysconfdir%/mc/mc.keymap
+.B %sysconfdir%/mcommander/mc.keymap
 are loaded always, sequentially reassigned key bindings defined earlier.
 User\-defined keymap\-file is searched on the following algorithm (to the first one found):
 .IP
@@ -309,7 +309,7 @@ or without it). Search of keymap\-file will occur in (to the first one found):
 .B ~/.config/mc6
 .br
 2)
-.B %sysconfdir%/mc/
+.B %sysconfdir%/mcommander/
 .br
 3)
 .B %pkgdatadir%/
@@ -1618,11 +1618,11 @@ description.
 This will invoke your editor on the file
 .IR ~/.config/mc6/mc.ext.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
 .I ~/.config/mc6/mc.ext.ini
 or system\-wide
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Background Jobs"
@@ -2269,7 +2269,7 @@ triplet that applies to the user then keeps the
 .I marked
 color.  If the file type highlighting is enabled, file names are colored
 according to rules described in
-%sysconfdir%/mc/filehighlight.ini
+%sysconfdir%/mcommander/filehighlight.ini
 file. See
 .\"LINK2"
 Filenames Highlight
@@ -2430,7 +2430,7 @@ FTP File System
 for examples.
 .PP
 If this option is set, the program will do two things: consult the
-%sysconfdir%/mc/mc.no_proxy file for lines containing host names that
+%sysconfdir%/mcommander/mc.no_proxy file for lines containing host names that
 are local (if the host name starts with a dot, it is assumed to be a
 domain) and to assume that any hostnames without dots in their names are
 directly accessible.  All other hosts will be accessed through the
@@ -2452,7 +2452,7 @@ firewalls.
 At startup, M\-Commander tries to load initialization information
 from the ~/.config/mc6/ini file.
 If this file doesn't exist, the system\-wide file
-.B %sysconfdir%/mc/mc.ini
+.B %sysconfdir%/mcommander/mc.ini
 is used. If this file doesn't exist, the system\-wide file
 .B %pkgdatadir%/mc.ini
 is used. If this file doesn't exist, M\-Commander uses the default settings.
@@ -4144,7 +4144,7 @@ in section
 in config file.
 .br
 4) File
-.B %sysconfdir%/mc/skins/default.ini
+.B %sysconfdir%/mcommander/skins/default.ini
 .br
 5) File
 .B %pkgdatadir%/skins/default.ini
@@ -4158,7 +4158,7 @@ or without it). Search of skin\-file will occur in (to the first one found):
 .B ~/.local/share/mc6/skins/
 .br
 2)
-.B %sysconfdir%/mc/skins/
+.B %sysconfdir%/mcommander/skins/
 .br
 3)
 .B %pkgdatadir%/skins/
@@ -4468,14 +4468,14 @@ The default system\-wide extensions file.
 User's own extension, view configuration and edit configuration
 file.  They override the contents of the system wide files if present.
 .PP
-.I %sysconfdir%/mc/mc.ini
+.I %sysconfdir%/mcommander/mc.ini
 .RE
 .I %pkgdatadir%/mc.ini
 .IP
 System\-wide setup files for M\-Commander, used only if the user
 doesn't have his own
 .B ~/.config/mc6/ini
-file. If %sysconfdir%/mc/mc.ini exists, %pkgdatadir%/mc.ini isn't used.
+file. If %sysconfdir%/mcommander/mc.ini exists, %pkgdatadir%/mc.ini isn't used.
 .PP
 .I %pkgdatadir%/mc.lib
 .IP

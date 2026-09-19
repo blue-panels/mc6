@@ -306,7 +306,7 @@ Frequently Asked Questions
    What you change there is written to ~/.config/mc6/mc.keymap.
 
    The same file can be written by hand, and so can the system-wide
-   /etc/mc/mc.keymap; the mc(1) man page describes the format.
+   /etc/mcommander/mc.keymap; the mc(1) man page describes the format.
 
 2.9 What does my terminal really send for this key?
 
@@ -508,7 +508,7 @@ anymore!
    that are installed and applies one at once; the choice is kept in
    ~/.config/mc6/ini.
 
-   System skins live in /usr/share/mc/skins, your own in
+   System skins live in /usr/share/mcommander/skins, your own in
    ~/.local/share/mc6/skins.  A skin is a plain ini file, so copying one
    of the system skins into your own directory and editing it is the
    usual way to make your own.  The skineditor plugin does the same job
@@ -745,7 +745,7 @@ file?
    navigator.
 
    Lua scripts are smaller and need no compiler.  They live in
-   /usr/share/mc/lua/scripts and in ~/.local/share/mc6/lua/scripts, and
+   /usr/share/mcommander/lua/scripts and in ~/.local/share/mc6/lua/scripts, and
    a script with the same name in your own directory shadows the system
    one.  doc/LUA_PLUGINS.md and doc/LUA_API_REFERENCE.md describe what
    they can do.
@@ -761,7 +761,7 @@ increases with each line!
 
 8.2 How do I add syntax highlighting for my language?
 
-   The rules are in /usr/share/mc/syntax, one file per language, and the
+   The rules are in /usr/share/mcommander/syntax, one file per language, and the
    file Syntax there says which of them a file name gets.  To add or
    change a rule, copy the syntax directory to
    ~/.local/share/mc6/syntax, edit your copy, and the editor takes it

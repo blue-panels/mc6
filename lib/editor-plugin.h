@@ -15,7 +15,7 @@
 #define MC_EDITOR_PLUGIN_ACTION_BASE 31000L /* per-action menu commands           */
 #define MC_EDITOR_PLUGIN_ACTIONS_MAX 256    /* max named actions per plugin        */
 #ifndef MC_EDITOR_PLUGINS_DIR
-#define MC_EDITOR_PLUGINS_DIR "/usr/lib/mc/editor-plugins"
+#define MC_EDITOR_PLUGINS_DIR "/usr/lib/mcommander/editor-plugins"
 #endif
 
 /* Well-known target menu names for mc_ep_cmd_menu_entry_t.menu_name */

@@ -1296,11 +1296,11 @@ Ez az
 .I ~/.config/mc6/mc.ext.ini
 szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
 .I ~/.config/mc6/mc.ext.ini
 or system\-wide
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Háttérmunkák"
@@ -1318,7 +1318,7 @@ nem talál ilyen fájlt, az
 keresése a következő lépés, egyébként pedig az mc az alapértelmezett
 rendszerszintű menüt használja, pl.:
 .IR %pkgdatadir%/mc.menu ,
-esetleg %sysconfdir%/mc/mc.menu.
+esetleg %sysconfdir%/mcommander/mc.menu.
 .PP
 A menü fájl formátuma nagyon egyszerű. A sorok, amelyek bármivel
 kezdődhetnek, de a space, vagy a tab megkülönböztetett menübejegyzések
@@ -2549,7 +2549,7 @@ dialógus ablak másik beállítandó opciója az
 .I ftp proxy\-n keresztül
 opció. Ez beállítja a program számára azt, hogy mindig használja a proxy
 host\-ot. Ha ez a változó be van állítva, akkor a program két dolgot
-csinál: konzultál a %sysconfdir%/mc/mc.no_proxy fájl soraival, hogy azok
+csinál: konzultál a %sysconfdir%/mcommander/mc.no_proxy fájl soraival, hogy azok
 tartalmazzák\-e a host nevet, mint helyi eszközt (ha a host neve ponttal
 kezdődik, akkor ezt domainként tartja számon), és feltételezi azt, hogy
 a pont nélküli hostnevek közvetlenül felodhatók.

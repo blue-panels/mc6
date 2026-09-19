@@ -1306,11 +1306,11 @@ comando cd interno\&.
 Questo comando invocherà l'editor sul file 
 .IR ~/.config/mc6/mc.ext.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 If you are root, you can choose the file to edit: user's
 .I ~/.config/mc6/mc.ext.ini
 or system\-wide
-.IR %sysconfdir%/mc/mc.ext.ini .
+.IR %sysconfdir%/mcommander/mc.ext.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Processi in background"
@@ -1824,7 +1824,7 @@ file system FTP
 per gli esempi.
 .PP
 Se quest'opzione è impostata, il programma farà due cose: consulterà 
-il file %sysconfdir%/mc/mc.no_proxy per le righe contenenti nomi host
+il file %sysconfdir%/mcommander/mc.no_proxy per le righe contenenti nomi host
 locali (se il nome host comincia con un punto, è considerato un 
 dominio) e assumendo che ogni nome host senza punti nel nome sia
 direttamente accessibile. Tutti gli altri host verranno contattati

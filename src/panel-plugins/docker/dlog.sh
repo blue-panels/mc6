@@ -13,7 +13,7 @@
 # Installation (copy or symlink to a directory on your PATH):
 #   cp ~/.local/lib/mc6/panel-plugins/docker/dlog.sh ~/.local/bin/dlog
 #   chmod +x ~/.local/bin/dlog
-# (Or use the system path /usr/lib/mc/panel-plugins/docker/dlog.sh.)
+# (Or use the system path /usr/lib/mcommander/panel-plugins/docker/dlog.sh.)
 
 # sed -u keeps it line-buffered so it works with a live "Follow" stream.
 exec sed -u -E 's/[[:space:]]*<s:[^>]*>[[:space:]]*$//'

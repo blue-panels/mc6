@@ -39,7 +39,7 @@
 /*** file scope macro definitions ****************************************************************/
 
 #ifndef MC_PLUGIN_DIR
-#define MC_PLUGIN_DIR "/usr/lib/mc/panel-plugins/mcstruct"
+#define MC_PLUGIN_DIR "/usr/lib/mcommander/panel-plugins/mcstruct"
 #endif
 
 #define ALIAS_FILE "stl.als"

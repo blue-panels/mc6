@@ -91,7 +91,7 @@ this order:
 1. The user's MC data directory, normally
    `${XDG_DATA_HOME:-$HOME/.local/share}/mc6/extfs.d/`.
 2. The system `extfs.d` directory below MC's configured library-executable
-   directory, for example `/usr/libexec/mc/extfs.d/`.
+   directory, for example `/usr/libexec/mcommander/extfs.d/`.
 
 The helper commands used by `arcmc` are:
 

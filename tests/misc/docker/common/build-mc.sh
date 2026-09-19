@@ -116,4 +116,4 @@ done
 
 echo
 echo "mc installed:      $PREFIX/bin/mc  (features: $features)"
-echo "panel plugins in:  $(ls -d "$PREFIX"/lib/mc/panel-plugins/* 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"
+echo "panel plugins in:  $(ls -d "$PREFIX"/lib/mcommander/panel-plugins/* 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"

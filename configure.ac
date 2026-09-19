@@ -8,10 +8,11 @@ AC_PREREQ([2.64])
 dnl The name is what PACKAGE_NAME becomes, and that lands in the middle of
 dnl sentences such as "Type 'exit' to return to the %s", so it stays a short
 dnl noun phrase.
-dnl The fourth argument is PACKAGE and must remain mc: the gettext domain and
-dnl the data paths are built from it.
+dnl The fourth argument is PACKAGE. The gettext domain, the data paths and the
+dnl tarball name are built from it, so it is the name of the package, not of
+dnl the program.
 AC_INIT([M-Commander], m4_esyscmd_s([./version.sh .]),
-        [https://github.com/blue-panels/mc6/issues], [mc],
+        [https://github.com/blue-panels/mc6/issues], [mcommander],
         [https://github.com/blue-panels/mc6/wiki])
 
 m4_pattern_forbid(MC_)
@@ -21,9 +22,9 @@ AC_CONFIG_SRCDIR(src/main.c)
 AC_CONFIG_HEADERS(config.h)
 
 dnl Apply "no-define" to avoid defining the VERSION macro in config.h
-AM_INIT_AUTOMAKE([no-define subdir-objects])
+AM_INIT_AUTOMAKE([no-define subdir-objects tar-ustar])
 dnl PACKAGE macro isn't defined if "no-define" is applied
-AC_DEFINE([PACKAGE], ["mc"], [Name of package])
+AC_DEFINE([PACKAGE], ["mcommander"], [Name of package])
 
 dnl Enable silent rules by default (if yes)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -497,23 +498,23 @@ mc_VFS_CHECKS
 
 AC_ARG_WITH([panel-plugins-dir],
     AS_HELP_STRING([--with-panel-plugins-dir=DIR],
-        [Directory for dynamic panel plugins [LIBDIR/mc/panel-plugins]]),
+        [Directory for dynamic panel plugins [LIBDIR/mcommander/panel-plugins]]),
     [panel_plugins_dir="$withval"],
-    [panel_plugins_dir='${libdir}/mc/panel-plugins'])
+    [panel_plugins_dir='${libdir}/mcommander/panel-plugins'])
 AC_SUBST([panel_plugins_dir])
 
 AC_ARG_WITH([editor-plugins-dir],
     AS_HELP_STRING([--with-editor-plugins-dir=DIR],
-        [Directory for dynamic editor plugins [LIBDIR/mc/editor-plugins]]),
+        [Directory for dynamic editor plugins [LIBDIR/mcommander/editor-plugins]]),
     [editor_plugins_dir="$withval"],
-    [editor_plugins_dir='${libdir}/mc/editor-plugins'])
+    [editor_plugins_dir='${libdir}/mcommander/editor-plugins'])
 AC_SUBST([editor_plugins_dir])
 
 AC_ARG_WITH([runtime-plugins-dir],
     AS_HELP_STRING([--with-runtime-plugins-dir=DIR],
-        [Directory for dynamic runtime plugins [LIBDIR/mc/runtime-plugins]]),
+        [Directory for dynamic runtime plugins [LIBDIR/mcommander/runtime-plugins]]),
     [runtime_plugins_dir="$withval"],
-    [runtime_plugins_dir='${libdir}/mc/runtime-plugins'])
+    [runtime_plugins_dir='${libdir}/mcommander/runtime-plugins'])
 AC_SUBST([runtime_plugins_dir])
 
 AC_ARG_ENABLE([lua-plugin],
@@ -539,16 +540,16 @@ esac
 
 AC_ARG_WITH([lua-scripts-dir],
     AS_HELP_STRING([--with-lua-scripts-dir=DIR],
-        [Directory for system Lua scripts [DATADIR/mc/lua/scripts]]),
+        [Directory for system Lua scripts [DATADIR/mcommander/lua/scripts]]),
     [lua_scripts_dir="$withval"],
-    [lua_scripts_dir='${datadir}/mc/lua/scripts'])
+    [lua_scripts_dir='${datadir}/mcommander/lua/scripts'])
 AC_SUBST([lua_scripts_dir])
 
 AC_ARG_WITH([lua-modules-dir],
     AS_HELP_STRING([--with-lua-modules-dir=DIR],
-        [Directory for system shared Lua modules [DATADIR/mc/lua/lib]]),
+        [Directory for system shared Lua modules [DATADIR/mcommander/lua/lib]]),
     [lua_modules_dir="$withval"],
-    [lua_modules_dir='${datadir}/mc/lua/lib'])
+    [lua_modules_dir='${datadir}/mcommander/lua/lib'])
 AC_SUBST([lua_modules_dir])
 
 have_lua_plugin=no

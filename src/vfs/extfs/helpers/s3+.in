@@ -30,7 +30,7 @@
 #  Make sure that boto <https://github.com/boto/boto> (python-boto in Debian) is installed.
 #  Preferably pytz (package python-tz in Debian) should be installed as well.
 #
-#  Save as executable file /usr/libexec/mc/extfs/s3 (or wherever your mc expects to find extfs modules)
+#  Save as executable file /usr/libexec/mcommander/extfs/s3 (or wherever your mc expects to find extfs modules)
 #
 # Settings: (should be set via environment)
 #  Required:
