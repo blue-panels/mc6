@@ -282,6 +282,14 @@
       "summary": "Compose process sources into one pipeline."
     },
     {
+      "signature": "mc.source.generator(spec) -> Source",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "no",
+      "errors": [],
+      "summary": "Produce viewer bytes cooperatively. spec.initial is an optional first chunk; spec.next() returns the next string, or nil at EOF. Each call should finish one bounded unit of work; MC yields to input between batches. Closing or replacing the source stops further calls. Switching to raw pauses it; switching back replays its bytes and resumes."
+    },
+    {
       "signature": "definition:create(argument, params?) -> controller",
       "workspace": "any",
       "capability": "viewer_source",

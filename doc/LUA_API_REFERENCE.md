@@ -65,6 +65,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.process.run(spec) -> ProcessResult\|nil, error?` | Run a shell command and capture its bounded output. | `process` | yes |
 | `mc.source.bytes(data) -> Source` | Describe an in-memory byte source: the string is its whole content. | `—` | no |
 | `mc.source.file(spec) -> Source` | Describe a local-file source and its ownership. | `—` | no |
+| `mc.source.generator(spec) -> Source` | Produce viewer bytes cooperatively. spec.initial is an optional first chunk; spec.next() returns the next string, or nil at EOF. Each call should finish one bounded unit of work; MC yields to input between batches. Closing or replacing the source stops further calls. Switching to raw pauses it; switching back replays its bytes and resumes. | `—` | no |
 | `mc.source.pipeline(stages) -> Source` | Compose process sources into one pipeline. | `—` | no |
 | `mc.source.process(spec) -> Source` | Describe a process source using direct argv, an optional working directory, and stderr policy. | `—` | no |
 | `mc.syntax.scan(text, options?) -> table\|nil, error?` | Color text with the syntax rules of the editor.  options.type names the rule set the way the Syntax file does ("C Program"), options.filename picks it by name; without both, the first line of the text decides.  Returns { type = "C Program", colors = { { fg = "yellow", bg = nil, attrs = "bold" } }, runs = { { offset = 1, length = 6, color = 1 } } }, offsets counting bytes from one and color indexing colors. | `syntax` | no |
