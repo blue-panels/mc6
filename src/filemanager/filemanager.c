@@ -325,7 +325,6 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Configuration..."), CK_Options));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Layout..."), CK_OptionsLayout));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Panel options..."), CK_OptionsPanel));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Vie&wer options..."), CK_OptionsViewer));
     entries =
         g_list_prepend (entries, menu_entry_new (_ ("File panel m&odes..."), CK_PanelModesManage));
     entries = g_list_prepend (entries, menu_entry_new (_ ("C&onfirmation..."), CK_OptionsConfirm));
@@ -336,6 +335,15 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Manage plugins..."), CK_ManagePlugins));
 #ifdef ENABLE_VFS
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Virtual FS..."), CK_OptionsVfs));
+#endif
+    entries = g_list_prepend (entries, menu_separator_new ());
+#ifdef USE_DIFF_VIEW
+    entries = g_list_prepend (entries,
+                              menu_entry_new (_ ("&Diff viewer options..."), CK_OptionsDiffViewer));
+#endif
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Vie&wer options..."), CK_OptionsViewer));
+#ifdef USE_INTERNAL_EDIT
+    entries = g_list_prepend (entries, menu_entry_new (_ ("&Editor options..."), CK_OptionsEditor));
 #endif
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Save setup"), CK_SaveSetup));
@@ -1464,6 +1472,16 @@ midnight_execute_cmd (Widget *sender, long command)
     case CK_OptionsViewer:
         viewer_options_box ();
         break;
+#ifdef USE_DIFF_VIEW
+    case CK_OptionsDiffViewer:
+        dview_options_box ();
+        break;
+#endif
+#ifdef USE_INTERNAL_EDIT
+    case CK_OptionsEditor:
+        edit_options_box ();
+        break;
+#endif
     case CK_SelectCodepage:
         encoding_cmd ();
         break;

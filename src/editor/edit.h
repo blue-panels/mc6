@@ -81,6 +81,9 @@ extern edit_options_t edit_options;
 void edit_stack_init (void);
 void edit_stack_free (void);
 
+/* The editor settings; also reachable from the Options menu of the file manager. */
+void edit_options_box (void);
+
 gboolean edit_file (const edit_arg_t *arg);
 gboolean edit_files (const GList *files);
 

@@ -276,7 +276,7 @@ void edit_filter_word (WEdit *edit);
 
 gboolean edit_line_is_blank (WEdit *edit, long line);
 gboolean is_break_char (char c);
-void edit_options_dialog (WDialog *h);
+void edit_options_dialog (void);
 void edit_mail_dialog (WEdit *edit);
 void edit_undo_history_cmd (WEdit *edit);
 void edit_undo_one_group (WEdit *edit);

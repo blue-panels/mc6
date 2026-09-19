@@ -191,6 +191,8 @@ enum
     CK_CompareFiles,
     CK_OptionsPanel,
     CK_OptionsViewer,
+    CK_OptionsDiffViewer,
+    CK_OptionsEditor,
     CK_LinkSymbolicRelative,
     CK_PutCurrentPath,
     CK_PutOtherPath,

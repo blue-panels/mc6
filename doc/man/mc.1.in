@@ -1878,17 +1878,23 @@ command pops up a dialog from which you specify options of file manager panels.
 .PP
 The
 .\"LINK2"
-Viewer options
-.\"Viewer options"
-command pops up a dialog from which you specify options of the internal
-viewer.
-.PP
-The
-.\"LINK2"
 Confirmation
 .\"Confirmation"
 command pops up a dialog from which you specify which actions you want to
 confirm.
+.PP
+The
+.BR "Diff viewer options" ,
+.\"LINK2"
+Viewer options
+.\"Viewer options"
+and
+.B "Editor options"
+commands pop up the dialogs of the three programs that show a file: the
+compare view, the viewer and the editor. The same dialogs are in the Options
+menu of each of them; here they are reachable without opening a file first.
+The compare view takes its options when it starts, so a view already on the
+screen keeps the ones it was opened with.
 .PP
 The
 .\"LINK2"
