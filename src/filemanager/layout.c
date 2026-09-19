@@ -1239,9 +1239,14 @@ swap_panels (void)
         && !mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION, "simple_swap", FALSE))
     {
         WPanel panel;
+        gboolean plugin_moves;
 
         send_message (panel1, NULL, MSG_ACTION, CK_SearchStop, NULL);
         send_message (panel2, NULL, MSG_ACTION, CK_SearchStop, NULL);
+
+        /* A plugin panel is sorted the way its plugin asks for, so that sort
+           belongs to the listing and travels with it. */
+        plugin_moves = panel1->is_plugin_panel || panel2->is_plugin_panel;
 
 #define panelswap(x)                                                                               \
     panel.x = panel1->x;                                                                           \
@@ -1263,7 +1268,15 @@ swap_panels (void)
         panelswap (plugin_data);
         panelswap (plugin_host);
         panelswap (plugin_pre_cwd_vpath);
+        panelswap (plugin_pre_sort_field);
+        panelswap (plugin_pre_sort_info);
         panelswap (dir_stat);
+
+        if (plugin_moves)
+        {
+            panelswap (sort_field);
+            panelswap (sort_info);
+        }
 #undef panelswap
 
         if (current_panel == panel1)
