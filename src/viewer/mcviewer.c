@@ -40,6 +40,7 @@
 #include <config.h>
 
 #include "lib/global.h"
+#include "lib/mcconfig.h"
 #include "lib/tty/tty.h"
 #include "lib/vfs/vfs.h"
 #include "lib/strutil.h"
@@ -91,6 +92,23 @@ char *mcview_show_eof = NULL;
 /*** forward declarations (file scope functions) *************************************************/
 
 /*** file scope variables ************************************************************************/
+
+/* The settings of the viewer, and the names they had while they lived in the
+ * main section of the configuration file. A file written by an older version is
+ * read under the old names once, and written back under the new ones. */
+static const struct
+{
+    const char *name;
+    const char *old_name;
+    gboolean *value;
+} viewer_bool_options[] = {
+    { "wrap", "wrap_mode", &mcview_global_flags.wrap },
+    { "syntax", "viewer_syntax_highlighting", &mcview_global_flags.highlight },
+    { "mouse_move_pages", "mouse_move_pages_viewer", &mcview_mouse_move_pages },
+    { "remember_file_position", "mcview_remember_file_position", &mcview_remember_file_position },
+    { "structured_auto", "mcview_structured_auto", &mcview_structured_auto },
+    { NULL, NULL, NULL },
+};
 
 /* --------------------------------------------------------------------------------------------- */
 /*** file scope functions ************************************************************************/
@@ -319,6 +337,67 @@ mcview_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/** Read the viewer settings from the [Viewer] section of the configuration file. */
+
+void
+mcview_load_options (void)
+{
+    /* No section of its own means a file written before the viewer got one:
+       read the settings where they used to be, under their old names. */
+    const gboolean old = !mc_config_has_group (mc_global.main_config, CONFIG_VIEWER_SECTION);
+    const char *group = old ? CONFIG_APP_SECTION : CONFIG_VIEWER_SECTION;
+    size_t i;
+
+    for (i = 0; viewer_bool_options[i].name != NULL; i++)
+        *viewer_bool_options[i].value =
+            mc_config_get_bool (mc_global.main_config, group,
+                                old ? viewer_bool_options[i].old_name : viewer_bool_options[i].name,
+                                *viewer_bool_options[i].value);
+
+    mcview_max_dirt_limit = mc_config_get_int (
+        mc_global.main_config, group, old ? "max_dirt_limit" : "dirt_limit", mcview_max_dirt_limit);
+
+    g_free (mcview_show_eof);
+    mcview_show_eof =
+        mc_config_get_string (mc_global.main_config, group, old ? "mcview_eof" : "eof", "");
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Write the viewer settings, and drop the copies left in the main section. */
+
+void
+mcview_save_options (void)
+{
+    size_t i;
+
+    for (i = 0; viewer_bool_options[i].name != NULL; i++)
+    {
+        mc_config_set_bool (mc_global.main_config, CONFIG_VIEWER_SECTION,
+                            viewer_bool_options[i].name, *viewer_bool_options[i].value);
+        mc_config_del_key (mc_global.main_config, CONFIG_APP_SECTION,
+                           viewer_bool_options[i].old_name);
+    }
+
+    mc_config_set_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "dirt_limit",
+                       mcview_max_dirt_limit);
+    mc_config_del_key (mc_global.main_config, CONFIG_APP_SECTION, "max_dirt_limit");
+
+    mc_config_set_string (mc_global.main_config, CONFIG_VIEWER_SECTION, "eof",
+                          mcview_show_eof != NULL ? mcview_show_eof : "");
+    mc_config_del_key (mc_global.main_config, CONFIG_APP_SECTION, "mcview_eof");
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_done_options (void)
+{
+    MC_PTR_FREE (mcview_show_eof);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 
 WView *

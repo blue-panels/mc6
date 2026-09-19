@@ -155,6 +155,11 @@ extern void mcview_source_controller_detach (WView *view);
 
 extern void mcview_clear_mode_flags (mcview_mode_flags_t *flags);
 
+// the viewer settings, read from and written to the [Viewer] section of the ini file
+extern void mcview_load_options (void);
+extern void mcview_save_options (void);
+extern void mcview_done_options (void);
+
 /* the %view{...} flags of one file: saved before they are read, put back after */
 extern void mcview_global_flags_save (mcview_mode_flags_t *saved);
 extern void mcview_global_flags_restore (const mcview_mode_flags_t *saved);

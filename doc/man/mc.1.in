@@ -3257,10 +3257,8 @@ to spaces, and in filter mode only the visible lines are copied.
 .PP
 Since the left button selects text, scrolling by clicking in the upper
 or lower third of the view (see
-.I mouse_move_pages_viewer
-in the
-.B "Other options"
-section) is done with the right or middle mouse button in ASCII mode.
+.I mouse_move_pages
+in the [Viewer] section) is done with the right or middle mouse button in ASCII mode.
 The mouse wheel scrolls in every mode.
 .PP
 When in hex mode, the search function accepts text in quotes and
@@ -3293,8 +3291,9 @@ path of the current node (for example
 .BR .spec.containers[0].image ).
 The mode also works in the quick view panel (C\-x q), where the tree
 follows the panel cursor.  With the
-.I mcview_structured_auto
-option enabled supported files open in the tree right away.  Keys
+.I structured_auto
+option of the [Viewer] section enabled supported files open in the tree
+right away.  Keys
 available inside the tree:
 .PP
 .nf
@@ -4231,28 +4230,6 @@ This value is the number of seconds M\-Commander will wait
 before attempting to reconnect to an FTP server that has denied the
 login.  If the value is zero, the login will no be retried.
 .TP
-.I max_dirt_limit
-Specifies how many screen updates can be skipped at most in the internal
-file viewer.  Normally this value is not significant, because the code
-automatically adjusts the number of updates to skip according to the
-rate of incoming keystrokes.  However, on very slow machines or
-terminals with a fast keyboard auto repeat, a big value can make screen
-updates too jumpy.
-.IP
-It seems that setting max_dirt_limit to 10 causes the best behavior,
-and that is the default value.
-.TP
-.I mouse_move_pages_viewer
-Controls if scrolling with the mouse is done by pages or line by line
-on the internal file viewer.  In ASCII mode the left button selects
-text, so this scrolling uses the right or middle button there.
-.TP
-.I mcview_structured_auto
-If enabled, the internal file viewer opens supported files (json, yaml,
-yml, xml, html, htm) in the structured (tree) mode right away.  When a
-file fails to parse, the plain text view is used silently.  Disabled by
-default.
-.TP
 .I only_leading_plus_minus
 Allow special treatment for '+', '\-', '*' in the command line (select,
 unselect, reverse selection) only if the command line is empty.  You
@@ -4326,6 +4303,49 @@ For example:
 .nf
 autodetect_codeset=russian
 .fi
+.PP
+The settings of the internal file viewer are in the [Viewer] section of the
+same file. They are all in the
+.\"LINK2"
+Viewer options
+.\"Viewer options"
+dialog as well; the names here are what that dialog writes.
+.TP
+.I wrap
+Wrap a line wider than the screen onto the next screen line. True by default.
+.TP
+.I syntax
+Color the text by the syntax rules of the editor. False by default.
+.TP
+.I mouse_move_pages
+Scroll with the mouse by pages rather than line by line. In ASCII mode the
+left button selects text, so this scrolling uses the right or middle button
+there. True by default.
+.TP
+.I remember_file_position
+Open a file at the place it was left the last time. False by default.
+.TP
+.I structured_auto
+Open supported files (json, yaml, yml, xml, html, htm) in the structured
+(tree) mode right away. When a file fails to parse, the plain text view is
+used silently. False by default.
+.TP
+.I eof
+The text printed after the last line of the file. Empty by default.
+.TP
+.I dirt_limit
+How many screen updates may be skipped at most while a file is being read.
+Normally this value is not significant, because the code adjusts the number
+of updates to skip according to the rate of incoming keystrokes. However, on
+very slow machines, or terminals with a fast keyboard auto repeat, a big
+value can make screen updates too jumpy. The default is 10, which behaves
+best.
+.PP
+Older versions kept these settings in the main section under longer names
+(wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
+mcview_remember_file_position, mcview_structured_auto, mcview_eof and
+max_dirt_limit). They are read from there once and written back to the
+[Viewer] section.
 .\"NODE "Parameters for external editor or viewer"
 .SH "Parameters for external editor or viewer"
 M\-Commander provides a way for specify an options for external editors
