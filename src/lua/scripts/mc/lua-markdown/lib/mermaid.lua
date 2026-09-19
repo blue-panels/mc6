@@ -599,9 +599,7 @@ local function draw_flowchart_boxes(chart, width_limit)
                 canvas_put(canvas, top + 3, col_x[n] + 1,
                            DIAMOND_BL .. ("_"):rep(w - 4) .. DIAMOND_BR)
             elseif node.shape == "((" then
-                canvas_put(canvas, top, col_x[n], " " .. BOX_H:rep(w - 2) .. " ")
                 canvas_put(canvas, top + 1, col_x[n], "(" .. body .. ")")
-                canvas_put(canvas, top + 2, col_x[n], " " .. BOX_H:rep(w - 2) .. " ")
             elseif node.shape == "(" then
                 canvas_put(canvas, top, col_x[n], ROUND_TL .. BOX_H:rep(w - 2) .. ROUND_TR)
                 canvas_put(canvas, top + 1, col_x[n], BOX_V .. body .. BOX_V)
