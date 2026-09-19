@@ -347,17 +347,23 @@ mcview_new (const WRect *r, gboolean is_panel)
     mcview_init (view);
     tty_painter_add (mcview_paint_pictures, view);
 
-    if (mcview_global_flags.hex)
-        mcview_toggle_hex_mode (view);
-    if (mcview_global_flags.nroff)
-        mcview_toggle_nroff_mode (view);
-    if (mcview_global_flags.wrap)
-        mcview_toggle_wrap_mode (view);
-    if (mcview_global_flags.magic)
-        mcview_toggle_magic_mode (view);
-    if (mcview_global_flags.ansi)
-        mcview_toggle_ansi_mode (view);
-    view->mode_flags.highlight = mcview_global_flags.highlight;
+    {
+        const mcview_mode_flags_t altered = mcview_altered_flags;
+
+        if (mcview_global_flags.hex)
+            mcview_toggle_hex_mode (view);
+        if (mcview_global_flags.nroff)
+            mcview_toggle_nroff_mode (view);
+        if (mcview_global_flags.wrap)
+            mcview_toggle_wrap_mode (view);
+        if (mcview_global_flags.magic)
+            mcview_toggle_magic_mode (view);
+        if (mcview_global_flags.ansi)
+            mcview_toggle_ansi_mode (view);
+        view->mode_flags.highlight = mcview_global_flags.highlight;
+
+        mcview_altered_flags = altered;
+    }
 
     return view;
 }

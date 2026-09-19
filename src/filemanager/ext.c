@@ -371,32 +371,10 @@ exec_make_shell_string (const char *lc_data, const vfs_path_t *filename_vpath, G
 static void
 exec_extension_view (void *target, char *cmd, const vfs_path_t *filename_vpath, int start_line)
 {
-    mcview_mode_flags_t def_flags = {
-        .wrap = FALSE,
-        .hex = mcview_global_flags.hex,
-        .magic = FALSE,
-        .nroff = mcview_global_flags.nroff,
-    };
-
-    mcview_mode_flags_t changed_flags;
-
-    mcview_clear_mode_flags (&changed_flags);
-    mcview_altered_flags.hex = FALSE;
-    mcview_altered_flags.nroff = FALSE;
-    if (def_flags.hex != mcview_global_flags.hex)
-        changed_flags.hex = TRUE;
-    if (def_flags.nroff != mcview_global_flags.nroff)
-        changed_flags.nroff = TRUE;
-
     if (target == NULL)
         mcview_viewer (cmd, filename_vpath, start_line, 0, 0);
     else
         mcview_load ((WView *) target, cmd, vfs_path_as_str (filename_vpath), start_line, 0, 0);
-
-    if (changed_flags.hex && !mcview_altered_flags.hex)
-        mcview_global_flags.hex = def_flags.hex;
-    if (changed_flags.nroff && !mcview_altered_flags.nroff)
-        mcview_global_flags.nroff = def_flags.nroff;
 
     dialog_switch_process_pending ();
 }
@@ -432,6 +410,7 @@ exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath, c
     int cmd_file_fd;
     FILE *cmd_file;
     char *cmd = NULL;
+    mcview_mode_flags_t saved_flags;
 
     localmtime = 0;
     quote_func = name_quote;
@@ -441,6 +420,9 @@ exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath, c
 
     // Avoid making a local copy if we are doing a cd
     do_local_copy = !vfs_file_is_local (filename_vpath);
+
+    // the %view{...} keywords below set the global viewer flags for this file only
+    mcview_global_flags_save (&saved_flags);
 
     shell_string = exec_make_shell_string (lc_data, filename_vpath, &cd_path);
     if (shell_string == NULL)
@@ -534,6 +516,8 @@ exec_extension (WPanel *panel, void *target, const vfs_path_t *filename_vpath, c
 
     exec_cleanup_file_name (filename_vpath, TRUE);
 ret:
+    mcview_global_flags_restore (&saved_flags);
+
     return script_vpath;
 }
 

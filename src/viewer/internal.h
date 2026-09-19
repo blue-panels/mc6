@@ -267,6 +267,9 @@ struct WView
     gboolean filter_follow;         // Auto-scroll to new tail matches (like tail -f)
     gboolean filter_prev_wrap;      // Saved wrap state restored on deactivation
 
+    // the display mode came from the source, not the user: never make it global
+    gboolean source_display_mode;
+
     // Plugin source controller (NULL when viewer was opened by other means)
     mcview_source_spec_t *source_spec;                    // current spec, owned
     const mcview_source_controller_t *source_controller;  // not owned
