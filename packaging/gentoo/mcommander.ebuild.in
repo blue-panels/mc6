@@ -3,7 +3,7 @@
 
 EAPI=8
 
-DESCRIPTION="M-Commander, based on GNU Midnight Commander"
+DESCRIPTION="Modular TUI file manager with a tiny core, based on GNU Midnight Commander"
 HOMEPAGE="https://github.com/blue-panels/mcommander/wiki"
 SRC_URI="https://github.com/blue-panels/mcommander/releases/download/v${PV}/mcommander-${PV}.tar.gz"
 S="${WORKDIR}/mcommander-${PV}"

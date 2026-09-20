@@ -1,7 +1,7 @@
 Name:           mcommander
 Version:         @VERSION@
 Release:         1%{?dist}
-Summary:         M-Commander
+Summary:         Modular TUI file manager with a tiny core, based on GNU Midnight Commander
 License:         GPL-3.0-or-later
 URL:             https://github.com/blue-panels/mcommander/wiki
 Source0:         https://github.com/blue-panels/mcommander/releases/download/v%{version}/mcommander-%{version}.tar.gz

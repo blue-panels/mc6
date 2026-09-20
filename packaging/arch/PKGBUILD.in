@@ -3,7 +3,7 @@
 pkgname=(mcommander mcommander-plugins)
 pkgver=@VERSION@
 pkgrel=1
-pkgdesc='M-Commander'
+pkgdesc='Modular TUI file manager with a tiny core, based on GNU Midnight Commander'
 arch=('x86_64' 'aarch64')
 url='https://github.com/blue-panels/mcommander/wiki'
 license=('GPL-3.0-or-later')
@@ -41,7 +41,7 @@ build() {
 }
 
 package_mcommander() {
-  pkgdesc='M-Commander'
+  pkgdesc='Modular TUI file manager with a tiny core, based on GNU Midnight Commander'
   # libe2p comes in through --enable-ext2fs-attr, which defaults to auto and
   # always finds the library here; libmagic through --enable-mctree-magic.
   depends=('glib2' 'slang' 'gpm' 'e2fsprogs' 'file')

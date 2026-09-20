@@ -31,7 +31,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends},
 Recommends: mailcap, perl, sensible-utils, unzip
 Suggests: mcommander-plugins, aspell, hunspell
 Conflicts: mc6
-Description: M-Commander
+Description: Modular TUI file manager with a tiny core, based on GNU Midnight Commander
  Based on GNU Midnight Commander, with dynamically loaded panel plugins.  It
  installs /usr/bin/mcommander and the mc6, mcedit6, mview, mdiff and mctree
  symlinks, and can be installed beside the mc package.
