@@ -14,9 +14,9 @@ Hint: Selecting directories: add a slash to the end of the matching pattern.
 
 Hint: If your terminal lacks functions keys, use the ESC+number sequence.
 
-Συμβουλή: Η ιστοσελίδα του M-Commander: https://github.com/blue-panels/mc6
+Συμβουλή: Η ιστοσελίδα του M-Commander: https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Hint: Tab changes your current panel.
 

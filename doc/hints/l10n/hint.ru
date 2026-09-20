@@ -14,9 +14,9 @@
 
 Совет: Если ваш терминал без функц. клавиш, вам поможет ESC+цифра.
 
-Совет: Домашняя страница M-Commander: https://github.com/blue-panels/mc6
+Совет: Домашняя страница M-Commander: https://github.com/blue-panels/mcommander
 
-Совет: Направляйте все сообщения об ошибках по адресу https://github.com/blue-panels/mc6/issues
+Совет: Направляйте все сообщения об ошибках по адресу https://github.com/blue-panels/mcommander/issues
 
 Совет: Tab меняет текущую панель.
 

@@ -14,9 +14,9 @@ Tip: Složky vyberete přidáním lomítka na konec vzoru pro hledání shody v 
 
 Tip: Pokud váš terminál nezná nebo nemá funkční (F1-12) klávesy, použijte Esc+číslo.
 
-Tip: Domovská stránka M-Commander je: https://github.com/blue-panels/mc6
+Tip: Domovská stránka M-Commander je: https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Tip: Pomocí klávesy Tab přejdete na další panel.
 

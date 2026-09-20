@@ -14,9 +14,9 @@ Hint: For å velge mapper kan du legge til en skråstrek til slutt i søkemønst
 
 Hint: Hvis terminalen mangler funksjonstaster så kan du bruke ESC + tallet.
 
-Hint: Hjemmesiden til M-Commander er https://github.com/blue-panels/mc6
+Hint: Hjemmesiden til M-Commander er https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Hint: Tabulatoren endrer det aktive panelet.
 

@@ -14,9 +14,9 @@ Porada: zaznaczanie katalogów: należy dodać ukośnik na końcu wzorca dopasow
 
 Porada: jeśli w terminalu nie ma klawiszy funkcyjnych, można użyć Esc+numer.
 
-Porada: witryna programu M-Commander: https://github.com/blue-panels/mc6
+Porada: witryna programu M-Commander: https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Porada: klawisz Tab zmienia bieżący panel.
 
