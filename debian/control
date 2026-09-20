@@ -1,4 +1,4 @@
-Source: mc6
+Source: mcommander
 Section: utils
 Priority: optional
 Maintainer: Ilia Maslakov <il.smind@gmail.com>
@@ -18,40 +18,40 @@ Build-Depends: debhelper-compat (= 13),
                libcurl4-openssl-dev,
                libarchive-dev,
                libmongoc-dev,
+               liblua5.4-dev,
                libbson-dev
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
-Homepage: https://github.com/blue-panels/mc6/wiki
+Homepage: https://github.com/blue-panels/mcommander/wiki
 
-Package: mc6
+Package: mcommander
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends},
-         python3:any,
-         mc6-data (= ${source:Version})
+         python3:any
 Recommends: mailcap, perl, sensible-utils, unzip
-Suggests: mc6-plugins, aspell, hunspell
-Provides: mc (= ${binary:Version})
-Conflicts: mc
-Replaces: mc
-Description: M-Commander
+Suggests: mcommander-plugins, aspell, hunspell
+Conflicts: mc6, mc6-data
+Description: Modular TUI file manager with a tiny core, based on GNU Midnight Commander
  Based on GNU Midnight Commander, with dynamically loaded panel plugins.  It
- installs /usr/bin/mc and the mcedit, mcview, mcdiff and mctree symlinks.
+ installs /usr/bin/mcommander and the mc6, mcedit6, mview, mdiff and mctree
+ symlinks, and can be installed beside the mc package.
 
-Package: mc6-data
-Architecture: all
-Multi-Arch: foreign
-Depends: ${misc:Depends}
-Provides: mc-data (= ${binary:Version})
-Conflicts: mc-data
-Replaces: mc-data
-Description: M-Commander -- data files
- Architecture-independent data, manuals and translations for mc6.
-
-Package: mc6-plugins
+Package: mcommander-plugins
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         mc6 (= ${binary:Version})
-Enhances: mc6
+         mcommander (= ${binary:Version})
+Enhances: mcommander
+Conflicts: mc6-plugins
 Description: M-Commander -- panel plugins
  Dynamic panel plugins for Git, Docker, Kubernetes, MongoDB, S3, FTP,
  SFTP, Samba, systemd, shell links, panelize and archive management.
+
+Package: mcommander-lua
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         mcommander (= ${binary:Version})
+Enhances: mcommander
+Description: M-Commander -- Lua runtime extension
+ The Lua runtime plugin and the scripts that come with it, including the
+ sixel and markdown viewers.  Without this package M-Commander runs, and
+ the features written in Lua are absent.

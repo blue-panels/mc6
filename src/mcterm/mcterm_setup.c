@@ -178,7 +178,7 @@ mcterm_rc_env (mcterm_shell_rc_t *rc, const char *name, const char *value)
 static char *
 mcterm_rc_zsh_early (const char *name)
 {
-    return g_strconcat ("# Midnight Commander: the terminal starts the shell here.\n"
+    return g_strconcat ("# M-Commander: the terminal starts the shell here.\n"
                         "__mc_zdotdir=$ZDOTDIR\n" MC_ZSH_RESTORE "if [ -r \"${ZDOTDIR:-$HOME}/",
                         name,
                         "\" ]; then\n"
@@ -210,13 +210,12 @@ mcterm_rc_zsh (mcterm_shell_rc_t *rc, const char *dir)
 
     /* The integration goes in last, after everything the user's own .zshrc does, so that a
        prompt or a hook set there is the one it wraps. */
-    zshrc =
-        g_strconcat ("# Midnight Commander: the terminal starts the shell here.\n" MC_ZSH_RESTORE
-                     "unset MC_ZDOTDIR\n"
-                     "if [ -r \"${ZDOTDIR:-$HOME}/.zshrc\" ]; then\n"
-                     " . \"${ZDOTDIR:-$HOME}/.zshrc\"\n"
-                     "fi\n",
-                     mcterm_zsh_integration (), (char *) NULL);
+    zshrc = g_strconcat ("# M-Commander: the terminal starts the shell here.\n" MC_ZSH_RESTORE
+                         "unset MC_ZDOTDIR\n"
+                         "if [ -r \"${ZDOTDIR:-$HOME}/.zshrc\" ]; then\n"
+                         " . \"${ZDOTDIR:-$HOME}/.zshrc\"\n"
+                         "fi\n",
+                         mcterm_zsh_integration (), (char *) NULL);
 
     ok = (mcterm_rc_install (dir, ".zshenv", zshenv)
           && mcterm_rc_install (dir, ".zprofile", zprofile)

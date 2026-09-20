@@ -1,21 +1,23 @@
 # M-Commander
 
-`mc6` -- M-Commander, based on [GNU Midnight Commander](https://midnight-commander.org)
+M-Commander, based on [GNU Midnight Commander](https://midnight-commander.org)
 version 4.8.33.
 
-Midnight Commander (MC) is a text-mode, full-screen file manager: two panels,
-a built-in editor and viewer, and a virtual filesystem for browsing archives
-and remote hosts. It runs on the OS console, in xterm, and over ssh.
+M-Commander is a text-mode, full-screen file manager: two panels, a built-in
+editor and viewer, and an embedded terminal. The viewer has a structured tree
+mode, and mcstruct is a structured binary viewer and editor. The core is small:
+everything beyond it is optional and comes as a plugin loaded at run time,
+from archives and git to docker, Kubernetes, S3, FTP, SFTP and Samba.
+It runs in any terminal, from the Linux console to tmux and a remote session over ssh.
 
 This fork is not an official GNU package. Report issues here, not upstream.
+Its version numbering starts at `v6.0.1` and is independent of upstream.
 
-Own version numbering starts at `v6.0.1`, independent of upstream.
-
-![Git panel with inline diff](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/git-panel.gif)
+![Git panel with inline diff](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/git-panel.gif)
 
 ## What this fork adds
 
-Full notes: **[Releases wiki](https://github.com/blue-panels/mc6/wiki/Releases)**.
+Full notes: **[Releases wiki](https://github.com/blue-panels/mcommander/wiki/Releases)**.
 
 - **Panel plugins.** Panel contents can come from a dynamically loaded plugin.
   Shipped: git, docker, Kubernetes, MongoDB, S3, FTP/FTPS, SFTP, Samba, systemd,
@@ -27,31 +29,31 @@ Full notes: **[Releases wiki](https://github.com/blue-panels/mc6/wiki/Releases)*
   [arcmc documentation](src/panel-plugins/arcmc/README.md) for external archive
   formats and helpers.
 
-  ![arcmc](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/arcmc.gif)
+  ![arcmc](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/arcmc.gif)
 - **mcstruct**: a structured binary viewer and editor, a text def-file (STL5,
   compatible with the DOS Struct Look) turns a firmware image, a header or a
   table file into a tree of named fields, synced with a hex dump; fields are
   edited in place. Shipped def-files for ELF, PE, ZIP, DBF, MBR, FAT, uImage,
   DTB, PNG, BMP and WAV. Start it with `mcstruct FILE`, Shift-F4 in the viewer,
   or F3 through `magic.ini`. See the
-  [mcstruct guide](https://github.com/blue-panels/mc6/wiki/Mcstruct).
+  [mcstruct guide](https://github.com/blue-panels/mcommander/wiki/Mcstruct).
 
-  ![mcstruct](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/mcstruct.gif)
+  ![mcstruct](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/mcstruct.gif)
 - **Editor** - code folding, an undo history browser, a macro explorer, and an
   editor plugin framework.
 - **Viewer** - a structured tree mode for JSON, YAML, XML and HTML, a grep-style
   live filter, ANSI colour and terminal replay, and streaming of never-ending
   command output.
 
-  ![Structured tree viewer](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-tree.gif)
+  ![Structured tree viewer](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/viewer-tree.gif)
 
-  ![Grep-style live filter](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/viewer-filter.gif)
+  ![Grep-style live filter](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/viewer-filter.gif)
 - **Embedded terminal** - run a shell inside the file manager, panels stay in
   sync with its directory.
 - **Panels** - user-editable view modes, dialogs for managing key bindings and
   learning terminal keys, and the classic hide-a-panel / run-a-command flow.
 
-  ![Hide a panel, run a command](https://raw.githubusercontent.com/wiki/blue-panels/mc6/assets/panel-hide.gif)
+  ![Hide a panel, run a command](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/panel-hide.gif)
 
 ## Building
 
@@ -81,12 +83,12 @@ whose distribution suffix matches your system.  The recipes carry no version
 of their own: `packaging/prepare.sh <version>` generates the version-bearing
 files from the release tag, and every build starts with it.
 
-- Debian Trixie: `sudo apt install ./mc6_*~debian13*.deb ./mc6-data_*~debian13*.deb ./mc6-plugins_*~debian13*.deb`
-- Ubuntu 26.04: `sudo apt install ./mc6_*~ubuntu26*.deb ./mc6-data_*~ubuntu26*.deb ./mc6-plugins_*~ubuntu26*.deb`
-- RHEL/Fedora: `sudo dnf swap mc mc6`, then `sudo dnf install ./mc6-plugins-*.rpm`
-- Arch: `sudo pacman -U ./mc6-*.pkg.tar.zst ./mc6-plugins-*.pkg.tar.zst`
-- Gentoo: copy `packaging/gentoo` into a local overlay as `app-misc/mc6`,
-  then `emerge app-misc/mc6`
+- Debian Trixie: `sudo apt install ./mcommander_*~debian13*.deb ./mcommander-plugins_*~debian13*.deb ./mcommander-lua_*~debian13*.deb`
+- Ubuntu 26.04: `sudo apt install ./mcommander_*~ubuntu26*.deb ./mcommander-plugins_*~ubuntu26*.deb ./mcommander-lua_*~ubuntu26*.deb`
+- RHEL/Fedora: `sudo dnf install ./mcommander-*.rpm ./mcommander-plugins-*.rpm ./mcommander-lua-*.rpm`
+- Arch: `sudo pacman -U ./mcommander-*.pkg.tar.zst ./mcommander-plugins-*.pkg.tar.zst ./mcommander-lua-*.pkg.tar.zst`
+- Gentoo: copy `packaging/gentoo` into a local overlay as `app-misc/mcommander`,
+  then `emerge app-misc/mcommander`
 
 Install downloaded packages through the package manager -- `apt install
 ./file.deb` and `dnf install ./file.rpm` -- never `dpkg -i` or `rpm -i`, which
@@ -94,7 +96,7 @@ skip the dependency and replacement handling.
 
 ## Documentation
 
-- [Wiki](https://github.com/blue-panels/mc6/wiki)
+- [Wiki](https://github.com/blue-panels/mcommander/wiki)
 - Built-in help: press `F1` inside mcommander
 - Manual pages: `mcommander(1)`, `mcedit6(1)`, `mview(1)`
 
@@ -111,11 +113,11 @@ do not open pull requests that edit `po/*.po` by hand.
 
 ## Reporting problems
 
-Open an issue: <https://github.com/blue-panels/mc6/issues>
+Open an issue: <https://github.com/blue-panels/mcommander/issues>
 
 Include `mcommander --version`, your OS and distribution, and the compiler and
 configure flags if you know them. For a crash, attach a `gdb` backtrace
-(`gdb mc core`, then `where`).
+(`gdb mcommander core`, then `where`).
 
 ## License
 

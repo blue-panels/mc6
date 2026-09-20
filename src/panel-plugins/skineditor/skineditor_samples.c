@@ -324,7 +324,7 @@ draw_help (WSkinSample *s, const WRect *r)
     F (0, 0, r->lines, r->cols, "help", "_default_");
     B (0, 0, r->lines, r->cols, "help", "helpframe", FALSE);
     T (0, (r->cols - 6) / 2, "help", "helptitle", " Help ");
-    T (2, 2, "help", "_default_", "The Midnight Commander is a");
+    T (2, 2, "help", "_default_", "M-Commander is a");
     T (3, 2, "help", "helpbold", "directory browser");
     T (3, 20, "help", "_default_", "with an");
     T (4, 2, "help", "helpitalic", "emphasized");

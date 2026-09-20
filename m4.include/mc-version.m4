@@ -1,6 +1,6 @@
 dnl @synopsis mc_VERSION
 dnl
-dnl Get current version of Midnight Commander from git tags
+dnl Get current version of M-Commander from git tags
 dnl
 dnl @author Slava Zanko <slavazanko@gmail.com>
 dnl @version 2021-04-04

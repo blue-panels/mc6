@@ -15,7 +15,7 @@ set -eu
 
 version=${1:?usage: packaging/release-source.sh VERSION [TAG [OUTPUT]]}
 tag=${2:-v${version}}
-output=${3:-dist/mc6-${version}.tar.gz}
+output=${3:-dist/mcommander-${version}.tar.gz}
 
 case "$version" in
     *[!0-9A-Za-z.+~:-]* | '')
@@ -35,7 +35,7 @@ if [ -e "$output" ]; then
 fi
 
 mkdir -p "$output_dir"
-stage=$(mktemp -d "${TMPDIR:-/tmp}/mc6-release.XXXXXX")
+stage=$(mktemp -d "${TMPDIR:-/tmp}/mcommander-release.XXXXXX")
 trap 'rm -rf "$stage"' EXIT HUP INT TERM
 
 for tool in autoreconf autopoint xgettext; do
@@ -44,21 +44,21 @@ for tool in autoreconf autopoint xgettext; do
           exit 2; }
 done
 
-git -C "$root" archive --format=tar --prefix="mc6-${version}/" "$tag" |
+git -C "$root" archive --format=tar --prefix="mcommander-${version}/" "$tag" |
     tar -xf - -C "$stage"
 
 # Before autogen.sh: its version.sh step keeps an existing mc-version.h, and
 # outside a Git checkout it has nothing else to go by.
 printf '%s\n' '#ifndef MC_CURRENT_VERSION' \
     "#define MC_CURRENT_VERSION \"v${version}\"" '#endif' \
-    > "$stage/mc6-${version}/mc-version.h"
+    > "$stage/mcommander-${version}/mc-version.h"
 
-(cd "$stage/mc6-${version}" && ./autogen.sh >/dev/null)
-rm -rf "$stage/mc6-${version}/autom4te.cache"
+(cd "$stage/mcommander-${version}" && ./autogen.sh >/dev/null)
+rm -rf "$stage/mcommander-${version}/autom4te.cache"
 
 # One timestamp for everything. Make rebuilds only on a strictly newer
 # prerequisite, so equal times leave the generated files alone instead of
 # asking for autotools at build time.
 tar --sort=name --mtime="@${commit_time}" --owner=0 --group=0 --numeric-owner \
-    -C "$stage" -cf - "mc6-${version}" | gzip -n > "$output"
+    -C "$stage" -cf - "mcommander-${version}" | gzip -n > "$output"
 printf '%s\n' "created $output"

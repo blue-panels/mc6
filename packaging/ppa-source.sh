@@ -2,7 +2,7 @@
 # Build the source packages a Launchpad PPA takes, one per Ubuntu series.
 #
 # usage: packaging/ppa-source.sh VERSION ARCHIVE SERIES:UBUNTU_VERSION...
-#   packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04 jammy:22.04
+#   packaging/ppa-source.sh 6.0.3 dist/mcommander-6.0.3.tar.gz noble:24.04 jammy:22.04
 #
 # A PPA builds the binaries itself, so what is uploaded is a signed source
 # package per series. Every series shares one orig tarball: the series lives in
@@ -15,7 +15,7 @@
 # series is an upgrade. Codenames cannot do that, having wrapped the alphabet.
 #
 # Environment:
-#   PPA          dput target (default: ppa:il-smind/mc6)
+#   PPA          dput target (default: ppa:bluepanels/mcommander)
 #   PPA_REVISION number after the series in the version, 1 by default. A PPA
 #                keeps every version it has ever accepted, so a rejected or
 #                broken upload comes back as 2, never as 1 again.
@@ -35,7 +35,7 @@ archive=${2:?an archive from packaging/release-source.sh is required}
 shift 2
 test $# -gt 0 || die "name at least one series, for example noble:24.04"
 
-ppa=${PPA:-ppa:il-smind/mc6}
+ppa=${PPA:-ppa:bluepanels/mcommander}
 revision=${PPA_REVISION:-1}
 outdir=${OUTDIR:-dist/ppa}
 
@@ -53,14 +53,14 @@ fi
 mkdir -p "$outdir"
 outdir=$(CDPATH= cd -- "$outdir" && pwd)
 
-stage=$(mktemp -d "${TMPDIR:-/tmp}/mc6-ppa.XXXXXX")
+stage=$(mktemp -d "${TMPDIR:-/tmp}/mcommander-ppa.XXXXXX")
 trap 'rm -rf "$stage"' EXIT HUP INT TERM
 
 # One shared orig tarball, and one unpacked tree per series next to it. The
 # copy in the output directory is made here rather than at the end: dput reads
 # the tarball named in the .changes from beside it, and dput runs per series.
-cp "$archive" "$stage/mc6_$version.orig.tar.gz"
-cp "$archive" "$outdir/mc6_$version.orig.tar.gz"
+cp "$archive" "$stage/mcommander_$version.orig.tar.gz"
+cp "$archive" "$outdir/mcommander_$version.orig.tar.gz"
 
 first=yes
 for pair in "$@"; do
@@ -72,9 +72,9 @@ for pair in "$@"; do
     DEB_DISTRIBUTION="$series" DEB_VERSION_SUFFIX="~ubuntu$ubuntu_version.$revision" \
         "$root/packaging/prepare.sh" "$version" "$archive" >/dev/null
 
-    rm -rf "$stage/mc6-$version"
+    rm -rf "$stage/mcommander-$version"
     tar -xf "$archive" -C "$stage"
-    cp -r debian "$stage/mc6-$version/"
+    cp -r debian "$stage/mcommander-$version/"
 
     # -sa carries the tarball, -sd refers to the one uploaded before it.
     if test "$first" = yes; then
@@ -94,10 +94,10 @@ for pair in "$@"; do
         set -- "$@" "-k${SIGN_KEY}"
     fi
 
-    (cd "$stage/mc6-$version" && dpkg-buildpackage "$@")
+    (cd "$stage/mcommander-$version" && dpkg-buildpackage "$@")
 
-    changes=$(ls "$stage"/mc6_*~ubuntu"$ubuntu_version"."$revision"_source.changes)
-    cp "$stage"/mc6_*~ubuntu"$ubuntu_version"."$revision"* "$outdir/"
+    changes=$(ls "$stage"/mcommander_*~ubuntu"$ubuntu_version"."$revision"_source.changes)
+    cp "$stage"/mcommander_*~ubuntu"$ubuntu_version"."$revision"* "$outdir/"
 
     echo "built $series: $(basename "$changes")"
 

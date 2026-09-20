@@ -1,0 +1,127 @@
+Name:           mcommander
+Version:         @VERSION@
+Release:         1%{?dist}
+Summary:         Modular TUI file manager with a tiny core, based on GNU Midnight Commander
+License:         GPL-3.0-or-later
+URL:             https://github.com/blue-panels/mcommander/wiki
+Source0:         https://github.com/blue-panels/mcommander/releases/download/v%{version}/mcommander-%{version}.tar.gz
+
+BuildRequires:   check-devel
+BuildRequires:   perl
+BuildRequires:   python3
+BuildRequires:   gcc
+BuildRequires:   gettext
+BuildRequires:   glib2-devel
+BuildRequires:   gpm-devel
+BuildRequires:   libarchive-devel
+BuildRequires:   libcurl-devel
+BuildRequires:   libssh2-devel
+BuildRequires:   make
+BuildRequires:   mongo-c-driver-devel
+BuildRequires:   e2fsprogs-devel
+BuildRequires:   file-devel
+BuildRequires:   pkgconf-pkg-config
+BuildRequires:   libsmbclient-devel
+BuildRequires:   slang-devel
+BuildRequires:   lua-devel
+
+# mc6 carried epoch 2, so the bound has to name it; this package has no epoch.
+Obsoletes:       mc6 < 2:%{version}-%{release}
+Obsoletes:       mc6-plugins < 2:%{version}-%{release}
+
+%description
+M-Commander is based on GNU Midnight Commander, with dynamically loaded
+panel plugins.  Its files carry its own name, so it installs beside the
+distribution mc.
+
+%package plugins
+Summary:         Panel plugins for M-Commander
+Requires:        %{name}%{?_isa} = %{version}-%{release}
+
+%description plugins
+Dynamic panel plugins for M-Commander: Git, Docker, Kubernetes, MongoDB, S3, FTP,
+SFTP, Samba, systemd, shell links, panelize and archive management.
+
+%package lua
+Summary:         Lua runtime extension for M-Commander
+Requires:        %{name}%{?_isa} = %{version}-%{release}
+
+%description lua
+The Lua runtime plugin and the scripts that come with it, including the
+sixel and markdown viewers.  Without this package M-Commander runs, and
+the features written in Lua are absent.
+
+%prep
+%autosetup -n %{name}-%{version}
+
+%build
+# The archive is bootstrapped: it carries configure and mc-version.h.
+%configure \
+    PERL=%{__perl} \
+    PYTHON=%{__python3} \
+    --disable-static \
+    --with-screen=slang \
+    --with-panel-plugins-dir=%{_libdir}/mcommander/panel-plugins \
+    --with-editor-plugins-dir=%{_libdir}/mcommander/editor-plugins \
+    --enable-mcterm=yes \
+    --enable-lua-plugin=yes \
+    --enable-mctree-magic=yes \
+    --enable-panel-plugin-samba=yes \
+    --enable-panel-plugin-ftp=yes \
+    --enable-panel-plugin-arcmc=yes \
+    --enable-panel-plugin-s3=yes \
+    --enable-panel-plugin-mongo=yes \
+    --enable-vfs-sftp=yes \
+    --enable-panel-plugin-shell-link=yes \
+    --enable-shell-ssh2=yes
+%make_build
+
+%install
+%make_install
+find %{buildroot} -name '*.la' -delete
+%find_lang %{name}
+# The Lua documentation is listed as %%doc below, which puts it in place
+# itself; what make install left behind would be packaged twice.
+rm -rf %{buildroot}%{_docdir}/%{name}
+
+%check
+%make_build check
+
+%files -f %{name}.lang
+%license COPYING
+%doc README.md CHANGELOG.md
+%doc doc/LUA_API_REFERENCE.md doc/LUA_PLUGINS.md doc/lua-api.json
+%{_bindir}/mcommander
+%{_bindir}/mc6
+%{_bindir}/mcedit6
+%{_bindir}/mview
+%{_bindir}/mdiff
+%{_bindir}/mctree
+%{_libexecdir}/mcommander/
+# Owned here so that the directory does not depend on the lua subpackage.
+%dir %{_datadir}/mcommander/
+%{_datadir}/mcommander/charsets
+%{_datadir}/mcommander/defaults.ini
+%{_datadir}/mcommander/examples/
+%{_datadir}/mcommander/help/
+%{_datadir}/mcommander/hints/
+%{_datadir}/mcommander/skins/
+%{_datadir}/mcommander/syntax/
+%config(noreplace) %{_sysconfdir}/mcommander/*
+%{_mandir}/man1/*
+# Translated manuals: mcommander.1 in six languages, mcedit6.1 and mdiff.1 in Serbian.
+%{_mandir}/*/man1/
+# Owned here so that the directory does not depend on the plugins subpackage.
+%dir %{_libdir}/mcommander/
+
+%files plugins
+# A symbolic link to mcommander, which opens the mcstruct plugin.
+%{_bindir}/mcstruct
+%{_libdir}/mcommander/panel-plugins/
+
+%files lua
+%{_libdir}/mcommander/runtime-plugins/
+%{_datadir}/mcommander/lua/
+
+%changelog
+@CHANGELOG@

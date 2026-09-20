@@ -3,24 +3,23 @@
 
 EAPI=8
 
-DESCRIPTION="M-Commander, based on GNU Midnight Commander"
-HOMEPAGE="https://github.com/blue-panels/mc6/wiki"
-SRC_URI="https://github.com/blue-panels/mc6/releases/download/v${PV}/mc6-${PV}.tar.gz"
-S="${WORKDIR}/mc6-${PV}"
+DESCRIPTION="Modular TUI file manager with a tiny core, based on GNU Midnight Commander"
+HOMEPAGE="https://github.com/blue-panels/mcommander/wiki"
+SRC_URI="https://github.com/blue-panels/mcommander/releases/download/v${PV}/mcommander-${PV}.tar.gz"
+S="${WORKDIR}/mcommander-${PV}"
 
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+arcmc +ftp +gpm +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
+IUSE="+arcmc +ftp +gpm +lua +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
 REQUIRED_USE="shell-ssh2? ( shell-link )"
 
-# A strong blocker deliberately requires an explicit migration from the
-# distribution package; the two packages own the same executable and data.
 COMMON_DEPEND="
 	dev-libs/glib:2
 	slang? ( sys-libs/slang )
 	!slang? ( sys-libs/ncurses:0= )
 	gpm? ( sys-libs/gpm )
+	lua? ( dev-lang/lua:0= )
 	magic? ( sys-apps/file )
 	samba? ( net-fs/samba )
 	ftp? ( net-misc/curl )
@@ -30,8 +29,10 @@ COMMON_DEPEND="
 	sftp? ( net-libs/libssh2 )
 	shell-ssh2? ( net-libs/libssh2 )
 "
+# The files carry their own name, so the distribution mc is not in the way.
+# The predecessor under the old name owned the same paths as mc and is not.
 RDEPEND="
-	!!app-misc/mc
+	!!app-misc/mc6
 	${COMMON_DEPEND}
 "
 DEPEND="${COMMON_DEPEND}"
@@ -44,10 +45,11 @@ src_configure() {
 	local myconf=(
 		--disable-static
 		--with-screen="$(usex slang slang ncurses)"
-		--with-panel-plugins-dir="/usr/$(get_libdir)/mc/panel-plugins"
-		--with-editor-plugins-dir="/usr/$(get_libdir)/mc/editor-plugins"
+		--with-panel-plugins-dir="/usr/$(get_libdir)/mcommander/panel-plugins"
+		--with-editor-plugins-dir="/usr/$(get_libdir)/mcommander/editor-plugins"
 		--enable-mcterm=yes
 		$(use_with gpm gpm-mouse)
+		$(use_enable lua lua-plugin)
 		$(use_enable magic mctree-magic)
 		$(use_enable samba panel-plugin-samba)
 		$(use_enable ftp panel-plugin-ftp)
@@ -70,6 +72,6 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "mc6 deliberately blocks app-misc/mc because both packages install /usr/bin/mc."
-	elog "Install mc6 explicitly after removing the distribution package."
+	elog "The program is /usr/bin/mcommander, with mc6 as a short symbolic link."
+	elog "app-misc/mc can stay installed: no file is shared with it."
 }

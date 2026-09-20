@@ -1,11 +1,14 @@
-# Packaging mc6
+# Packaging mcommander
 
-`mc6` is the package name for this fork.  It still installs `mc`, `mcedit`,
-`mcview`, `mcdiff`, and `mctree`; it cannot coexist with the distribution
-package that owns the same paths.
+`mcommander` is the package name for this fork.  It installs `mcommander` and
+the `mc6`, `mcedit6`, `mview`, `mdiff`, `mctree` and `mcstruct` symbolic links,
+under paths of its own, so it can be installed beside the distribution `mc`.
 
-The recipes use an explicit migration.  A routine system update never changes
-the installed `mc` to this fork.
+Three packages come out of it: `mcommander`, `mcommander-plugins` with the panel
+plugins, and `mcommander-lua` with the Lua runtime plugin and its scripts.
+Gentoo builds one package and puts Lua behind the `lua` USE flag.
+
+The recipes replace `mc6`, the name this fork was packaged under before.
 
 ## Nothing to edit for a release
 
@@ -15,9 +18,9 @@ No recipe here names a version.  The version comes from the release tag, and
 | Generated | From |
 | --- | --- |
 | `debian/changelog` | the `v*` tags |
-| `packaging/rpm/mc6.spec` | `mc6.spec.in` and the `v*` tags |
+| `packaging/rpm/mcommander.spec` | `mcommander.spec.in` and the `v*` tags |
 | `packaging/arch/PKGBUILD` | `PKGBUILD.in` |
-| `packaging/gentoo/mc6-<version>.ebuild` | `mc6.ebuild.in` |
+| `packaging/gentoo/mcommander-<version>.ebuild` | `mcommander.ebuild.in` |
 
 All four are in `.gitignore`.  Making a release is therefore: tag, and let the
 `release` workflow build.  Nothing is committed afterwards.
@@ -54,7 +57,7 @@ is not stable.
 ## Release source
 
 `packaging/release-source.sh` creates the archive that every recipe consumes,
-and that is uploaded as the GitHub release asset `mc6-<version>.tar.gz`:
+and that is uploaded as the GitHub release asset `mcommander-<version>.tar.gz`:
 
 ```sh
 packaging/release-source.sh 6.0.3 v6.0.3
@@ -83,8 +86,8 @@ orig tarball must not carry a `debian` directory of its own.
 Debian, Ubuntu and Fedora are built for `amd64` and `arm64`, each on a runner of
 its own architecture.  The containers are multi-architecture, so both run the
 same recipe; emulation is far too slow for a full build.  The two produce the
-same source package, source RPM and `mc6-data` package, and only one copy of
-each is attached to the release.
+same source package and source RPM, and only one copy of each is attached to the
+release.
 
 Arch stays `x86_64`.  Arch Linux has no aarch64 port, and the `archlinux` image
 is published for `x86_64` alone; the `PKGBUILD` still names `aarch64` for Arch
@@ -108,22 +111,23 @@ substitute for an Ubuntu-built one.
 
 ```sh
 packaging/release-source.sh 6.0.3 v6.0.3
-packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
-tar -xf dist/mc6-6.0.3.tar.gz -C /tmp
-cp dist/mc6-6.0.3.tar.gz /tmp/mc6_6.0.3.orig.tar.gz
-cp -r debian /tmp/mc6-6.0.3/
-cd /tmp/mc6-6.0.3 && dpkg-buildpackage -us -uc
+packaging/prepare.sh 6.1.0 dist/mcommander-6.1.0.tar.gz
+tar -xf dist/mcommander-6.1.0.tar.gz -C /tmp
+cp dist/mcommander-6.1.0.tar.gz /tmp/mcommander_6.1.0.orig.tar.gz
+cp -r debian /tmp/mcommander-6.1.0/
+cd /tmp/mcommander-6.1.0 && dpkg-buildpackage -us -uc
 ```
 
-`sudo apt install ../mc6_*.deb ../mc6-data_*.deb ../mc6-plugins_*.deb` installs
-the result; use `apt install ./file.deb`, never `dpkg -i`.  For a repository or
-PPA users install `mc6` and `mc6-plugins` with apt; the transition removes `mc`
-and `mc-data`, and `sudo apt purge mc mc-data` later clears old conffile
+`sudo apt install ../mcommander_*.deb ../mcommander-plugins_*.deb
+../mcommander-lua_*.deb` installs the result; use `apt install ./file.deb`,
+never `dpkg -i`.  For a repository or PPA users install `mcommander`,
+`mcommander-plugins` and `mcommander-lua` with apt; the transition removes
+`mc6` and `mc-data`, and `sudo apt purge mc mc-data` later clears old conffile
 records.  For a PPA, set the target series and a series suffix:
 
 ```sh
 DEB_DISTRIBUTION=noble DEB_VERSION_SUFFIX='~ubuntu24.04.1' \
-    packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
+    packaging/prepare.sh 6.1.0 dist/mcommander-6.1.0.tar.gz
 ```
 
 ## Launchpad PPA
@@ -133,12 +137,12 @@ package per Ubuntu series.  `packaging/ppa-source.sh` builds them:
 
 ```sh
 packaging/release-source.sh 6.0.3 v6.0.3
-packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz resolute:26.04 noble:24.04 jammy:22.04
-UPLOAD=yes packaging/ppa-source.sh 6.0.3 dist/mc6-6.0.3.tar.gz noble:24.04
+packaging/ppa-source.sh 6.0.3 dist/mcommander-6.1.0.tar.gz resolute:26.04 noble:24.04 jammy:22.04
+UPLOAD=yes packaging/ppa-source.sh 6.0.3 dist/mcommander-6.1.0.tar.gz noble:24.04
 ```
 
 `NOSIGN=yes` builds unsigned packages for a dry run, `SIGN_KEY` picks the key,
-`PPA` the target (default `ppa:il-smind/mc6`).
+`PPA` the target (default `ppa:bluepanels/mcommander`).
 
 `PPA_REVISION` is the number after the series, `1` by default.  A PPA keeps
 every version it has ever accepted, so an upload that was rejected or turned out
@@ -150,7 +154,7 @@ a newer series is an upgrade.  Codenames cannot do that, having wrapped the
 alphabet in 2017.
 
 The series lives in the Debian revision, not in the upstream version, so all
-series of a release share one `mc6_<version>.orig.tar.gz`.  Only the first
+series of a release share one `mcommander_<version>.orig.tar.gz`.  Only the first
 upload carries it; the rest refer to the one already in the PPA.  Use one
 archive for every series of a release, the published one: Launchpad compares
 what a later upload refers to against the copy it already has.
@@ -162,35 +166,35 @@ through the encrypted mail it sends, then create the PPA.  `debhelper-compat
 RPM.  Put the archive in the RPM source directory:
 
 ```sh
-packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
-cp dist/mc6-6.0.3.tar.gz ~/rpmbuild/SOURCES/
-rpmbuild -ba packaging/rpm/mc6.spec
+packaging/prepare.sh 6.1.0 dist/mcommander-6.1.0.tar.gz
+cp dist/mcommander-6.1.0.tar.gz ~/rpmbuild/SOURCES/
+rpmbuild -ba packaging/rpm/mcommander.spec
 ```
 
 `Conflicts` is deliberately used instead of `Obsoletes`, so `dnf upgrade` does
 not silently replace a distribution package.  The repository instruction is
-`sudo dnf swap mc mc6` followed by `sudo dnf install mc6-plugins`; for a
-downloaded RPM use `dnf install ./mc6-*.rpm`, never `rpm -i`.
+`sudo dnf install mcommander mcommander-plugins mcommander-lua`; for a downloaded RPM use
+`dnf install ./mcommander-*.rpm`, never `rpm -i`.
 
 Arch.  `makepkg` finds the archive next to the `PKGBUILD` instead of
 downloading it:
 
 ```sh
-packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
-cp dist/mc6-6.0.3.tar.gz packaging/arch/
+packaging/prepare.sh 6.1.0 dist/mcommander-6.1.0.tar.gz
+cp dist/mcommander-6.1.0.tar.gz packaging/arch/
 cd packaging/arch && makepkg -si
 ```
 
 From a repository or the AUR the same two names are installed with
-`sudo pacman -S mc6 mc6-plugins`.
+`sudo pacman -S mcommander mcommander-plugins mcommander-lua`.
 
-Gentoo.  Copy `packaging/gentoo` into a personal overlay as `app-misc/mc6`,
+Gentoo.  Copy `packaging/gentoo` into a personal overlay as `app-misc/mcommander`,
 together with the generated ebuild, and run `ebuild ... manifest`.  It is a
 single package; panel plugins are controlled by USE flags, and the strong
 blocker requires an explicit migration from `app-misc/mc`:
 
 ```sh
-emerge app-misc/mc6
+emerge app-misc/mcommander
 ```
 
 Gentoo is the one distribution the workflow does not build: that needs a full

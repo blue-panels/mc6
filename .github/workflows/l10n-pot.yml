@@ -41,7 +41,7 @@ jobs:
             --copyright-holder='Free Software Foundation, Inc.' \
             --package-name='mcommander' \
             --package-version="$(./version.sh .)" \
-            --msgid-bugs-address='https://github.com/blue-panels/mc6/issues' \
+            --msgid-bugs-address='https://github.com/blue-panels/mcommander/issues' \
             --output=po/mcommander.pot.new
 
           # Neither the creation date nor the version string is a change:
