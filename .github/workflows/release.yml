@@ -55,7 +55,7 @@ jobs:
         id: build
         run: |
           version="${TAG#v}"
-          packaging/release-source.sh "$version" "$TAG" "dist/mc6-$version.tar.gz"
+          packaging/release-source.sh "$version" "$TAG" "dist/mcommander-$version.tar.gz"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
@@ -71,7 +71,7 @@ jobs:
           # A draft: the notes are written by hand. The archive is attached now
           # so that its download link, and its checksum, are settled.
           version="${{ steps.build.outputs.version }}"
-          archive="dist/mc6-$version.tar.gz"
+          archive="dist/mcommander-$version.tar.gz"
           notes="Release notes pending. b2: $(b2sum "$archive" | cut -d' ' -f1)"
 
           # A rerun, after a failure in one of the builds, must not stop here.
@@ -152,17 +152,17 @@ jobs:
       - name: Build the source and binary packages
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
+          packaging/prepare.sh "$VERSION" "dist/mcommander-$VERSION.tar.gz"
 
           # Built from the release archive with debian/ copied in, not from the
           # checkout: that keeps the source package free of patches, since the
           # archive carries mc-version.h and no debian directory of its own.
           build=$(mktemp -d)
-          cp "dist/mc6-$VERSION.tar.gz" "$build/mc6_$VERSION.orig.tar.gz"
-          tar -xf "dist/mc6-$VERSION.tar.gz" -C "$build"
-          cp -r debian "$build/mc6-$VERSION/"
+          cp "dist/mcommander-$VERSION.tar.gz" "$build/mcommander_$VERSION.orig.tar.gz"
+          tar -xf "dist/mcommander-$VERSION.tar.gz" -C "$build"
+          cp -r debian "$build/mcommander-$VERSION/"
 
-          cd "$build/mc6-$VERSION"
+          cd "$build/mcommander-$VERSION"
           # build-dep reads debian/control directly and names a dependency it
           # cannot satisfy. mk-build-deps went through equivs, where apt simply
           # removed its stub package again and said nothing about the cause.
@@ -173,7 +173,7 @@ jobs:
           # not uid 0. Rules-Requires-Root is no, so nothing here wants root.
           useradd -m build
           chown -R build "$build"
-          su build -c "cd '$build/mc6-$VERSION' && dpkg-buildpackage -us -uc"
+          su build -c "cd '$build/mcommander-$VERSION' && dpkg-buildpackage -us -uc"
 
           cd ..
           # The series of the changes file is known to the vendor data of its
@@ -229,17 +229,17 @@ jobs:
       - name: Build the RPMs
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
-          dnf builddep -y packaging/rpm/mc6.spec
+          packaging/prepare.sh "$VERSION" "dist/mcommander-$VERSION.tar.gz"
+          dnf builddep -y packaging/rpm/mcommander.spec
 
           # Not as root: the extfs helper tests print <<uid>> for a file owned
           # by the current user, and half their expected outputs assume that is
           # not uid 0. rpmbuild as root is discouraged in any case.
           useradd -m build
           su build -c 'mkdir -p ~/rpmbuild/SOURCES'
-          install -o build -g build "dist/mc6-$VERSION.tar.gz" /home/build/rpmbuild/SOURCES/
-          install -o build -g build packaging/rpm/mc6.spec /home/build/mc6.spec
-          su build -c 'rpmbuild -ba ~/mc6.spec'
+          install -o build -g build "dist/mcommander-$VERSION.tar.gz" /home/build/rpmbuild/SOURCES/
+          install -o build -g build packaging/rpm/mcommander.spec /home/build/mcommander.spec
+          su build -c 'rpmbuild -ba ~/mcommander.spec'
 
           rpmlint /home/build/rpmbuild/RPMS/*/*.rpm || true
           mkdir -p out
@@ -278,12 +278,12 @@ jobs:
       - name: Build the packages
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          packaging/prepare.sh "$VERSION" "dist/mc6-$VERSION.tar.gz"
+          packaging/prepare.sh "$VERSION" "dist/mcommander-$VERSION.tar.gz"
 
           # makepkg refuses to run as root, and finds the archive next to the
           # PKGBUILD instead of downloading it. Its -s installs the dependencies
           # through sudo, so that user needs to use it without a password.
-          cp "dist/mc6-$VERSION.tar.gz" packaging/arch/
+          cp "dist/mcommander-$VERSION.tar.gz" packaging/arch/
           useradd -m build
           echo 'build ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/build
           chown -R build packaging/arch
@@ -321,13 +321,13 @@ jobs:
         run: |
           pacman -Syu --noconfirm >/dev/null
           pacman -U --noconfirm \
-            "out/mc6-${VERSION}-"*.pkg.tar.zst \
-            "out/mc6-plugins-${VERSION}-"*.pkg.tar.zst
+            "out/mcommander-${VERSION}-"*.pkg.tar.zst \
+            "out/mcommander-plugins-${VERSION}-"*.pkg.tar.zst
           # Grep rather than run and hope: without a usable TERM mc says so and
           # still exits 0, which would pass on nothing at all.
-          mc --version | grep -q "v${VERSION}"
-          mcedit --version | grep -q "v${VERSION}"
-          test -d /usr/lib/mc/panel-plugins
+          mcommander --version | grep -q "v${VERSION}"
+          mcedit6 --version | grep -q "v${VERSION}"
+          test -d /usr/lib/mcommander/panel-plugins
 
   fedora-install:
     needs: [archive, fedora]
@@ -362,12 +362,12 @@ jobs:
           # The interpreters the extfs helpers are written with are required by
           # path, and a build that answered /usr/sbin/perl fails right here.
           dnf install -y \
-            "out/mc6-${VERSION}-"*.rpm \
-            "out/mc6-plugins-${VERSION}-"*.rpm
+            "out/mcommander-${VERSION}-"*.rpm \
+            "out/mcommander-plugins-${VERSION}-"*.rpm
           # Grep rather than run and hope: without a usable TERM mc says so and
           # still exits 0, which would pass on nothing at all.
-          mc --version | grep -q "v${VERSION}"
-          mcedit --version | grep -q "v${VERSION}"
+          mcommander --version | grep -q "v${VERSION}"
+          mcedit6 --version | grep -q "v${VERSION}"
           test -d /usr/lib64/mc/panel-plugins
 
   debian-install:
@@ -419,12 +419,12 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            "./out/mc6_${VERSION}-"*_"${DEB_ARCH}.deb" \
-            "./out/mc6-data_${VERSION}-"*_all.deb \
-            "./out/mc6-plugins_${VERSION}-"*_"${DEB_ARCH}.deb"
-          mc --version | grep -q "v${VERSION}"
-          mcedit --version | grep -q "v${VERSION}"
-          test -d /usr/lib/mc/panel-plugins
+            "./out/mcommander_${VERSION}-"*_"${DEB_ARCH}.deb" \
+            "./out/mcommander-data_${VERSION}-"*_all.deb \
+            "./out/mcommander-plugins_${VERSION}-"*_"${DEB_ARCH}.deb"
+          mcommander --version | grep -q "v${VERSION}"
+          mcedit6 --version | grep -q "v${VERSION}"
+          test -d /usr/lib/mcommander/panel-plugins
 
   macos:
     needs: archive
@@ -458,8 +458,8 @@ jobs:
           export LDFLAGS="-L$brew_prefix/lib -L$gettext_prefix/lib"
           export PKG_CONFIG_PATH="$brew_prefix/lib/pkgconfig:$(brew --prefix libarchive)/lib/pkgconfig"
 
-          tar -xf "dist/mc6-$VERSION.tar.gz"
-          cd "mc6-$VERSION"
+          tar -xf "dist/mcommander-$VERSION.tar.gz"
+          cd "mcommander-$VERSION"
           ./configure --prefix="$brew_prefix" --disable-static \
               --with-screen=slang --enable-mcterm=yes
           make -j"$(sysctl -n hw.ncpu)"
@@ -473,7 +473,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-config-log
-          path: mc6-*/config.log
+          path: mcommander-*/config.log
           if-no-files-found: warn
           overwrite: true
 
@@ -529,33 +529,33 @@ jobs:
           export LDFLAGS="-L$brew_prefix/lib -L$gettext_prefix/lib"
           export PKG_CONFIG_PATH="$brew_prefix/lib/pkgconfig:$(brew --prefix libarchive)/lib/pkgconfig"
 
-          tar -xf "dist/mc6-$VERSION.tar.gz"
-          cd "mc6-$VERSION"
+          tar -xf "dist/mcommander-$VERSION.tar.gz"
+          cd "mcommander-$VERSION"
           # Keep the package out of Homebrew's prefixes on both architectures.
-          # DESTDIR stages the tree; pkgbuild puts stage/opt/mc6 at /opt/mc6.
-          ./configure --prefix=/opt/mc6 --disable-static \
+          # DESTDIR stages the tree; pkgbuild puts stage/opt/mcommander at /opt/mcommander.
+          ./configure --prefix=/opt/mcommander --disable-static \
               --with-screen=slang --enable-mcterm=yes \
               --enable-mctree-magic=yes \
               --enable-panel-plugin-samba=yes \
               --enable-panel-plugin-mongo=yes \
-              --with-magic-file=/opt/mc6/share/misc/magic.mgc
+              --with-magic-file=/opt/mcommander/share/misc/magic.mgc
           make -j"$(sysctl -n hw.ncpu)"
           make install DESTDIR="$(pwd)/stage"
 
           # libmagic's compiled database is a runtime dependency too.
-          install -d stage/opt/mc6/share/misc
+          install -d stage/opt/mcommander/share/misc
           install -m 0644 "$(brew --prefix libmagic)/share/misc/magic.mgc" \
-              stage/opt/mc6/share/misc/magic.mgc
+              stage/opt/mcommander/share/misc/magic.mgc
 
           # These are required package contents, not best-effort plugins.
-          test -f stage/opt/mc6/lib/mc/panel-plugins/samba/mc-panel-samba.so
-          test -f stage/opt/mc6/lib/mc/panel-plugins/mongo/mc-panel-mongo.so
+          test -f stage/opt/mcommander/lib/mcommander/panel-plugins/samba/mc-panel-samba.so
+          test -f stage/opt/mcommander/lib/mcommander/panel-plugins/mongo/mc-panel-mongo.so
 
       - name: Bundle and verify runtime dependencies
         run: |
-          source_dir="mc6-$VERSION"
+          source_dir="mcommander-$VERSION"
           cd "$source_dir"
-          stage_prefix="stage/opt/mc6"
+          stage_prefix="stage/opt/mcommander"
           bundled_libs="$stage_prefix/lib"
 
           # Use one install name for every dependency. LC_RPATH is relative to
@@ -567,11 +567,11 @@ jobs:
             -p '@rpath/'
             -i /usr/lib
             -i /System/Library
-            -x "$stage_prefix/bin/mc"
+            -x "$stage_prefix/bin/mcommander"
           )
           while IFS= read -r -d '' plugin; do
               bundle_args+=(-x "$plugin")
-          done < <(find "$stage_prefix/lib/mc/panel-plugins" -name '*.so' -type f -print0)
+          done < <(find "$stage_prefix/lib/mcommander/panel-plugins" -name '*.so' -type f -print0)
           if ! dylibbundler "${bundle_args[@]}" > dylibbundler.log 2>&1; then
               tail -n 200 dylibbundler.log
               exit 1
@@ -605,10 +605,10 @@ jobs:
               done
           done < <(find "$stage_prefix" -type f -print0)
 
-          add_rpath "$stage_prefix/bin/mc" '@loader_path/../lib'
+          add_rpath "$stage_prefix/bin/mcommander" '@loader_path/../lib'
           while IFS= read -r -d '' plugin; do
               add_rpath "$plugin" '@loader_path/../../..'
-          done < <(find "$stage_prefix/lib/mc/panel-plugins" -name '*.so' -type f -print0)
+          done < <(find "$stage_prefix/lib/mcommander/panel-plugins" -name '*.so' -type f -print0)
           while IFS= read -r -d '' library; do
               add_rpath "$library" '@loader_path'
           done < <(find "$bundled_libs" -maxdepth 1 -name '*.dylib' -type f -print0)
@@ -644,7 +644,7 @@ jobs:
 
           # Prove that dyld does not fall back to the runner's Homebrew tree.
           brew_prefix=$(brew --prefix)
-          brew_off="${brew_prefix}.mc6-off"
+          brew_off="${brew_prefix}.mcommander-off"
           test ! -e "$brew_off"
           restore_brew() {
               if test -e "$brew_off" && test ! -e "$brew_prefix"; then
@@ -653,7 +653,7 @@ jobs:
           }
           trap restore_brew EXIT HUP INT TERM
           sudo /bin/mv "$brew_prefix" "$brew_off"
-          TERM=xterm "$stage_prefix/bin/mc" --version
+          TERM=xterm "$stage_prefix/bin/mcommander" --version
           restore_brew
           trap - EXIT HUP INT TERM
 
@@ -664,35 +664,35 @@ jobs:
           # The installer is not Developer ID signed or notarized. The bundled
           # Mach-O files carry ad-hoc signatures so arm64 can execute them.
           pkgbuild \
-            --root "mc6-$VERSION/stage" \
-            --identifier "com.mcdev.mc6" \
+            --root "mcommander-$VERSION/stage" \
+            --identifier "com.mcdev.mcommander" \
             --version "$VERSION" \
-            "out/mc6-$VERSION-macos-$SUFFIX.pkg"
+            "out/mcommander-$VERSION-macos-$SUFFIX.pkg"
 
-          cp "out/mc6-$VERSION-macos-$SUFFIX.pkg" dmg/
+          cp "out/mcommander-$VERSION-macos-$SUFFIX.pkg" dmg/
           printf '%s\n' \
-            "mc6 $VERSION - $NAME" \
+            "M-Commander $VERSION - $NAME" \
             '' \
             'Double-click the .pkg and follow the installer.' \
-            'It installs mc, mcedit, mcview and mcdiff under /opt/mc6.' \
-            'Run /opt/mc6/bin/mc, or add /opt/mc6/bin to your PATH.' \
+            'It installs mcommander, mc6, mcedit6, mview and mdiff under /opt/mcommander.' \
+            'Run /opt/mcommander/bin/mcommander, or add /opt/mcommander/bin to your PATH.' \
             'The package includes its runtime libraries; Homebrew is not required.' \
             '' \
             'This package is not Developer ID signed or notarized.' \
             'macOS may block it until you allow it in Privacy & Security.' \
             > dmg/README.txt
           hdiutil create \
-            -volname "mc6-$VERSION-macos-$SUFFIX" \
+            -volname "mcommander-$VERSION-macos-$SUFFIX" \
             -srcfolder dmg \
             -ov -format UDZO \
-            "out/mc6-$VERSION-macos-$SUFFIX.dmg"
+            "out/mcommander-$VERSION-macos-$SUFFIX.dmg"
 
       - name: Keep the configure log of a failed build
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.suffix }}-config-log
-          path: mc6-*/config.log
+          path: mcommander-*/config.log
           if-no-files-found: warn
           overwrite: true
 
@@ -759,7 +759,7 @@ jobs:
           fi
 
           UPLOAD="$upload" packaging/ppa-source.sh \
-              "$VERSION" "dist/mc6-$VERSION.tar.gz" $SERIES
+              "$VERSION" "dist/mcommander-$VERSION.tar.gz" $SERIES
 
       - uses: actions/upload-artifact@v4
         with:

@@ -1,11 +1,10 @@
-Name:           mc6
-Epoch:          2
+Name:           mcommander
 Version:         @VERSION@
 Release:         1%{?dist}
 Summary:         M-Commander
 License:         GPL-3.0-or-later
 URL:             https://github.com/blue-panels/mc6/wiki
-Source0:         https://github.com/blue-panels/mc6/releases/download/v%{version}/mc6-%{version}.tar.gz
+Source0:         https://github.com/blue-panels/mc6/releases/download/v%{version}/mcommander-%{version}.tar.gz
 
 BuildRequires:   check-devel
 BuildRequires:   perl
@@ -25,24 +24,21 @@ BuildRequires:   pkgconf-pkg-config
 BuildRequires:   libsmbclient-devel
 BuildRequires:   slang-devel
 
-# The distribution mc has epoch 1.  Keep the bound at 2:0: it remains valid
-# across all future distro rebuilds and does not conflict with our Provides.
-Provides:        mc = %{epoch}:%{version}-%{release}
-Provides:        mc%{?_isa} = %{epoch}:%{version}-%{release}
-Conflicts:        mc < 2:0
-Conflicts:        mc-python < 2:0
+# mc6 carried epoch 2, so the bound has to name it; this package has no epoch.
+Obsoletes:       mc6 < 2:%{version}-%{release}
+Obsoletes:       mc6-plugins < 2:%{version}-%{release}
 
 %description
-mc6 is M-Commander, based on GNU Midnight Commander, with dynamically
-loaded panel plugins.  It replaces the distribution mc only when
-explicitly selected.
+M-Commander is based on GNU Midnight Commander, with dynamically loaded
+panel plugins.  Its files carry its own name, so it installs beside the
+distribution mc.
 
 %package plugins
-Summary:         Panel plugins for mc6
-Requires:        %{name}%{?_isa} = %{epoch}:%{version}-%{release}
+Summary:         Panel plugins for M-Commander
+Requires:        %{name}%{?_isa} = %{version}-%{release}
 
 %description plugins
-Dynamic panel plugins for mc6: Git, Docker, Kubernetes, MongoDB, S3, FTP,
+Dynamic panel plugins for M-Commander: Git, Docker, Kubernetes, MongoDB, S3, FTP,
 SFTP, Samba, systemd, shell links, panelize and archive management.
 
 %prep
@@ -55,8 +51,8 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
     PYTHON=%{__python3} \
     --disable-static \
     --with-screen=slang \
-    --with-panel-plugins-dir=%{_libdir}/mc/panel-plugins \
-    --with-editor-plugins-dir=%{_libdir}/mc/editor-plugins \
+    --with-panel-plugins-dir=%{_libdir}/mcommander/panel-plugins \
+    --with-editor-plugins-dir=%{_libdir}/mcommander/editor-plugins \
     --enable-mcterm=yes \
     --enable-mctree-magic=yes \
     --enable-panel-plugin-samba=yes \
@@ -72,38 +68,37 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
 %install
 %make_install
 find %{buildroot} -name '*.la' -delete
-# The gettext domain is mc, not mc6.
-%find_lang mc
-# doc/Makefile.am installs the Lua documentation into %{_docdir}/mc, which is
-# the documentation directory of the distribution mc.  It is listed as %%doc
-# below instead, so that it lands in the directory of this package.
-rm -rf %{buildroot}%{_docdir}/mc
+%find_lang %{name}
+# The Lua documentation is listed as %%doc below, which puts it in place
+# itself; what make install left behind would be packaged twice.
+rm -rf %{buildroot}%{_docdir}/%{name}
 
 %check
 %make_build check
 
-%files -f mc.lang
+%files -f %{name}.lang
 %license COPYING
 %doc README.md CHANGELOG.md
 %doc doc/LUA_API_REFERENCE.md doc/LUA_PLUGINS.md doc/lua-api.json
-%{_bindir}/mc
-%{_bindir}/mcedit
-%{_bindir}/mcview
-%{_bindir}/mcdiff
+%{_bindir}/mcommander
+%{_bindir}/mc6
+%{_bindir}/mcedit6
+%{_bindir}/mview
+%{_bindir}/mdiff
 %{_bindir}/mctree
-%{_libexecdir}/mc/
-%{_datadir}/mc/
-%config(noreplace) %{_sysconfdir}/mc/*
+%{_libexecdir}/mcommander/
+%{_datadir}/mcommander/
+%config(noreplace) %{_sysconfdir}/mcommander/*
 %{_mandir}/man1/*
-# Translated manuals: mc.1 in six languages, mcedit.1 and mcdiff.1 in Serbian.
+# Translated manuals: mcommander.1 in six languages, mcedit6.1 and mdiff.1 in Serbian.
 %{_mandir}/*/man1/
 # Owned here so that the directory does not depend on the plugins subpackage.
-%dir %{_libdir}/mc/
+%dir %{_libdir}/mcommander/
 
 %files plugins
-# A symbolic link to mc, which opens the mcstruct plugin.
+# A symbolic link to mcommander, which opens the mcstruct plugin.
 %{_bindir}/mcstruct
-%{_libdir}/mc/panel-plugins/
+%{_libdir}/mcommander/panel-plugins/
 
 %changelog
 @CHANGELOG@

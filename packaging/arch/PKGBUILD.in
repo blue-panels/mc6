@@ -1,6 +1,6 @@
 # Maintainer: Ilia Maslakov <il.smind@gmail.com>
 
-pkgname=(mc6 mc6-plugins)
+pkgname=(mcommander mcommander-plugins)
 pkgver=@VERSION@
 pkgrel=1
 pkgdesc='M-Commander'
@@ -11,13 +11,13 @@ makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'e2fsprogs' 'libssh2' 'curl' 'samba'
              'libarchive' 'file' 'mongo-c-driver')
 options=('!emptydirs')
-source=("mc6-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mc6-${pkgver}.tar.gz")
+source=("mcommander-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mcommander-${pkgver}.tar.gz")
 # Filled in by packaging/prepare.sh from the release archive; SKIP when no
 # archive was given to it.
 b2sums=('@B2SUMS@')
 
 build() {
-  cd "${srcdir}/mc6-${pkgver}"
+  cd "${srcdir}/mcommander-${pkgver}"
   ./configure \
     --prefix=/usr \
     --sysconfdir=/etc \
@@ -25,8 +25,8 @@ build() {
     --libdir=/usr/lib \
     --disable-static \
     --with-screen=slang \
-    --with-panel-plugins-dir=/usr/lib/mc/panel-plugins \
-    --with-editor-plugins-dir=/usr/lib/mc/editor-plugins \
+    --with-panel-plugins-dir=/usr/lib/mcommander/panel-plugins \
+    --with-editor-plugins-dir=/usr/lib/mcommander/editor-plugins \
     --enable-mcterm=yes \
     --enable-mctree-magic=yes \
     --enable-panel-plugin-samba=yes \
@@ -40,51 +40,51 @@ build() {
   make
 }
 
-package_mc6() {
+package_mcommander() {
   pkgdesc='M-Commander'
   # libe2p comes in through --enable-ext2fs-attr, which defaults to auto and
   # always finds the library here; libmagic through --enable-mctree-magic.
   depends=('glib2' 'slang' 'gpm' 'e2fsprogs' 'file')
-  optdepends=('mc6-plugins: panel plugins for FTP, SFTP, S3, Samba, Docker, k8s, MongoDB'
+  optdepends=('mcommander-plugins: panel plugins for FTP, SFTP, S3, Samba, Docker, k8s, MongoDB'
               'aspell: spell checking in the editor'
               'hunspell: spell checking in the editor')
-  provides=('mc')
-  conflicts=('mc')
-  replaces=('mc')
-  backup=('etc/mc/ctags.keymap' 'etc/mc/edit.indent.rc'
-          'etc/mc/filehighlight.ini' 'etc/mc/mc.default.keymap'
-          'etc/mc/mc.emacs.keymap' 'etc/mc/mc.ext.ini' 'etc/mc/mc.keymap'
-          'etc/mc/mc.vim.keymap' 'etc/mc/mcedit.menu'
-          'etc/mc/panels.ftp.ini' 'etc/mc/panels.git.ini' 'etc/mc/sfs.ini'
-          'etc/mc/spell.keymap')
+  conflicts=('mc6')
+  replaces=('mc6')
+  backup=('etc/mcommander/ctags.keymap' 'etc/mcommander/edit.indent.rc'
+          'etc/mcommander/extensions.ini' 'etc/mcommander/filehighlight.ini'
+          'etc/mcommander/keymap.default.ini' 'etc/mcommander/keymap.emacs.ini'
+          'etc/mcommander/keymap.ini' 'etc/mcommander/keymap.vim.ini'
+          'etc/mcommander/mcedit.menu' 'etc/mcommander/panels.ftp.ini'
+          'etc/mcommander/panels.git.ini' 'etc/mcommander/sfs.ini'
+          'etc/mcommander/spell.keymap')
 
-  cd "${srcdir}/mc6-${pkgver}"
+  cd "${srcdir}/mcommander-${pkgver}"
   make DESTDIR="${pkgdir}" install
-  rm -rf "${pkgdir}/usr/lib/mc/panel-plugins"
+  rm -rf "${pkgdir}/usr/lib/mcommander/panel-plugins"
   find "${pkgdir}" -name '*.la' -delete
 
-  # mc.keymap is installed as a symlink to mc.default.keymap, and pacman cannot
-  # keep a symlink through the backup mechanism: the user's edits would be lost
-  # on upgrade. Ship it as a file. (Arch FS#50889)
-  rm "${pkgdir}/etc/mc/mc.keymap"
-  cp "${pkgdir}"/etc/mc/mc{.default,}.keymap
-  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6/COPYING"
-  install -Dm644 CHANGELOG.md "${pkgdir}/usr/share/doc/mc6/CHANGELOG.md"
+  # keymap.ini is installed as a symlink to keymap.default.ini, and pacman
+  # cannot keep a symlink through the backup mechanism: the user's edits would
+  # be lost on upgrade. Ship it as a file. (Arch FS#50889)
+  rm "${pkgdir}/etc/mcommander/keymap.ini"
+  cp "${pkgdir}"/etc/mcommander/keymap{.default,}.ini
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mcommander/COPYING"
+  install -Dm644 CHANGELOG.md "${pkgdir}/usr/share/doc/mcommander/CHANGELOG.md"
 }
 
-package_mc6-plugins() {
-  pkgdesc='Panel plugins for mc6'
-  depends=("mc6=${pkgver}-${pkgrel}" 'glib2' 'libssh2' 'curl' 'samba'
+package_mcommander-plugins() {
+  pkgdesc='Panel plugins for M-Commander'
+  depends=("mcommander=${pkgver}-${pkgrel}" 'glib2' 'libssh2' 'curl' 'samba'
            'libarchive' 'file' 'mongo-c-driver')
 
-  cd "${srcdir}/mc6-${pkgver}"
+  cd "${srcdir}/mcommander-${pkgver}"
   make DESTDIR="${pkgdir}" install
   rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin" "${pkgdir}/usr/share"
   # Keep the plugin modules and nothing else: naming what to drop instead left
   # cons.saver and the shell wrappers in both packages, and pacman refuses to
   # install two packages that own the same file.
-  find "${pkgdir}/usr/lib/mc" -mindepth 1 -maxdepth 1 ! -name panel-plugins \
+  find "${pkgdir}/usr/lib/mcommander" -mindepth 1 -maxdepth 1 ! -name panel-plugins \
     -exec rm -rf {} +
   find "${pkgdir}" -name '*.la' -delete
-  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mc6-plugins/COPYING"
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mcommander-plugins/COPYING"
 }

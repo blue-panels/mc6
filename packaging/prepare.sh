@@ -3,16 +3,16 @@
 #
 # usage: packaging/prepare.sh VERSION [ARCHIVE]
 #   packaging/prepare.sh 6.0.3
-#   packaging/prepare.sh 6.0.3 dist/mc6-6.0.3.tar.gz
+#   packaging/prepare.sh 6.1.0 dist/mcommander-6.1.0.tar.gz
 #
 # The recipes in this repository carry no version of their own: it comes from
 # the release tag, so nothing has to be edited after tagging. This script
 # writes the files that name a version, from the committed templates:
 #
 #   debian/changelog                    from the v* tags
-#   packaging/rpm/mc6.spec              from mc6.spec.in
+#   packaging/rpm/mcommander.spec        from mcommander.spec.in
 #   packaging/arch/PKGBUILD             from PKGBUILD.in
-#   packaging/gentoo/mc6-VERSION.ebuild from mc6.ebuild.in
+#   packaging/gentoo/mcommander-VERSION.ebuild from mcommander.ebuild.in
 #
 # Both changelogs are meant for a real upload, so their entries come from the
 # annotated tag messages and their dates from the tags themselves: the same
@@ -58,9 +58,6 @@ cd "$root"
 maintainer=$(sed -n 's/^Maintainer: *//p' debian/control)
 test -n "$maintainer" || die "cannot read Maintainer from debian/control"
 
-deb_epoch=3
-rpm_epoch=$(sed -n 's/^Epoch: *\([0-9][0-9]*\).*/\1/p' packaging/rpm/mc6.spec.in)
-test -n "$rpm_epoch" || die "cannot read Epoch from packaging/rpm/mc6.spec.in"
 
 if test -n "$archive"; then
     test -f "$archive" || die "no such archive: $archive"
@@ -148,9 +145,9 @@ entry_body() {
 
 deb_entry() {
     # The suffix belongs to the Debian revision, not to the upstream version:
-    # 3:6.0.3-1~ubuntu24.04.1 keeps the orig tarball named mc6_6.0.3.orig.tar.gz,
-    # so every series of a release shares one archive.
-    printf 'mc6 (%s:%s-1%s) %s; urgency=medium\n\n' "$deb_epoch" "$1" "$4" "$3"
+    # 6.1.0-1~ubuntu24.04.1 keeps the orig tarball named
+    # mcommander_6.1.0.orig.tar.gz, so every series of a release shares one.
+    printf 'mcommander (%s-1%s) %s; urgency=medium\n\n' "$1" "$4" "$3"
     if test -n "$5"; then
         printf '%s\n' "$5" | wrap_entries '  * ' '    '
     else
@@ -160,8 +157,8 @@ deb_entry() {
 }
 
 rpm_entry() {
-    printf '* %s %s - %s:%s-1\n' \
-        "$(LC_ALL=C date -d "$2" '+%a %b %d %Y')" "$maintainer" "$rpm_epoch" "$1"
+    printf '* %s %s - %s-1\n' \
+        "$(LC_ALL=C date -d "$2" '+%a %b %d %Y')" "$maintainer" "$1"
     if test -n "$3"; then
         printf '%s\n' "$3" | wrap_entries '- ' '  '
     else
@@ -170,7 +167,7 @@ rpm_entry() {
     printf '\n'
 }
 
-tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/mc6-prepare.XXXXXX")
+tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/mcommander-prepare.XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 untagged=yes
@@ -209,18 +206,18 @@ test -s debian/changelog || die "generated an empty debian/changelog"
     done
 } > "$tmpdir/rpm-changelog"
 
-sed -e "s/@VERSION@/$version/g" packaging/rpm/mc6.spec.in |
+sed -e "s/@VERSION@/$version/g" packaging/rpm/mcommander.spec.in |
     sed -e "/^@CHANGELOG@\$/r $tmpdir/rpm-changelog" -e "/^@CHANGELOG@\$/d" \
-        > packaging/rpm/mc6.spec
+        > packaging/rpm/mcommander.spec
 
 sed -e "s/@VERSION@/$version/g" -e "s/@B2SUMS@/$checksum/g" \
     packaging/arch/PKGBUILD.in > packaging/arch/PKGBUILD
 
-rm -f packaging/gentoo/mc6-*.ebuild
-cp packaging/gentoo/mc6.ebuild.in "packaging/gentoo/mc6-$version.ebuild"
+rm -f packaging/gentoo/mcommander-*.ebuild
+cp packaging/gentoo/mcommander.ebuild.in "packaging/gentoo/mcommander-$version.ebuild"
 
 echo "prepared $version"
 echo "  debian/changelog ($distribution)"
-echo "  packaging/rpm/mc6.spec"
+echo "  packaging/rpm/mcommander.spec"
 echo "  packaging/arch/PKGBUILD (b2sums: $checksum)"
-echo "  packaging/gentoo/mc6-$version.ebuild"
+echo "  packaging/gentoo/mcommander-$version.ebuild"
