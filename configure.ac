@@ -1,5 +1,5 @@
 dnl
-dnl Configure.in file for the Midnight Commander
+dnl configure.ac for M-Commander
 dnl
 
 dnl 2.64 is required at least for m4_esyscmd_s()
