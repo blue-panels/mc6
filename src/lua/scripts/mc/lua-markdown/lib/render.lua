@@ -1312,6 +1312,13 @@ local function emit_code(lines, out, width_limit, language)
     local bg = M.CODE_BG ~= nil and M.CODE_BG ~= "" and ("\27[" .. M.CODE_BG .. "m") or ""
     local off = bg ~= "" and SGR_BG_OFF or ""
 
+    if M.CODE_FRAME and language ~= nil and language ~= "" then
+        -- a language longer than the code widens the block, so that both
+        -- edges and the lines between them keep the same width
+        local edge = width(FRAME_TL) + width(" " .. language) + CODE_MARGIN + width(FRAME_TR)
+
+        box = math.max(box, edge - 2 * CODE_MARGIN)
+    end
     if M.CODE_FRAME then
         out[#out + 1] = CODE_INDENT .. bg .. code_edge(FRAME_TL, FRAME_TR, language, box) .. off
     end
