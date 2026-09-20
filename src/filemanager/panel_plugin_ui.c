@@ -403,6 +403,53 @@ panel_plugin_dispose_stream_sources (WPanel *panel)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Remember the sort the panel itself uses, so it survives the plugin's own
+   default sort order.  A plugin opened from inside another plugin panel must
+   not overwrite what the first activation saved. */
+static void
+panel_plugin_save_sort (WPanel *panel)
+{
+    if (!panel->is_plugin_panel)
+    {
+        panel->plugin_pre_sort_field = panel->sort_field;
+        panel->plugin_pre_sort_info = panel->sort_info;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+panel_plugin_restore_sort (WPanel *panel)
+{
+    if (panel->plugin_pre_sort_field != NULL)
+    {
+        panel->sort_field = panel->plugin_pre_sort_field;
+        panel->sort_info = panel->plugin_pre_sort_info;
+        panel->plugin_pre_sort_field = NULL;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Close the active plugin to put another one in its place.  What belongs to the
+   panel rather than to the plugin -- the pre-plugin cwd and sort -- is kept for
+   the replacement, which the user closes in the same way. */
+static void
+panel_plugin_close_for_replace (WPanel *panel)
+{
+    vfs_path_t *keep_cwd = panel->plugin_pre_cwd_vpath;
+    const panel_field_t *keep_sort_field = panel->plugin_pre_sort_field;
+    dir_sort_options_t keep_sort_info = panel->plugin_pre_sort_info;
+
+    panel->plugin_pre_cwd_vpath = NULL;
+    panel_plugin_close (panel);
+    panel->plugin_pre_cwd_vpath = keep_cwd;
+    panel->plugin_pre_sort_field = keep_sort_field;
+    panel->plugin_pre_sort_info = keep_sort_info;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 panel_plugin_suspend_current (WPanel *panel)
 {
@@ -445,11 +492,7 @@ panel_plugin_activate_finish (WPanel *panel, const mc_panel_plugin_t *plugin, mc
         }
         else
         {
-            /* Keep pre-plugin cwd while replacing the plugin instance. */
-            vfs_path_t *keep = panel->plugin_pre_cwd_vpath;
-            panel->plugin_pre_cwd_vpath = NULL;
-            panel_plugin_close (panel);
-            panel->plugin_pre_cwd_vpath = keep;
+            panel_plugin_close_for_replace (panel);
         }
     }
 
@@ -520,6 +563,7 @@ panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, const cha
         gboolean was_plugin = panel->is_plugin_panel;
         panel->plugin_pre_cwd_vpath =
             was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+        panel_plugin_save_sort (panel);
 
         new_data = plugin->open_with_plugin != NULL
             ? plugin->open_with_plugin (plugin, host, open_path)
@@ -531,6 +575,7 @@ panel_plugin_activate (WPanel *panel, const mc_panel_plugin_t *plugin, const cha
             {
                 vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
                 panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+                panel->plugin_pre_sort_field = NULL;
             }
             g_free (host);
             return;
@@ -561,6 +606,7 @@ panel_plugin_activate_input_stream (WPanel *panel, const mc_panel_plugin_t *plug
         gboolean was_plugin = panel->is_plugin_panel;
         panel->plugin_pre_cwd_vpath =
             was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+        panel_plugin_save_sort (panel);
 
         new_data = plugin->open_input_stream (host, display_name, stream);
         if (new_data == NULL)
@@ -569,6 +615,7 @@ panel_plugin_activate_input_stream (WPanel *panel, const mc_panel_plugin_t *plug
             {
                 vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
                 panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+                panel->plugin_pre_sort_field = NULL;
             }
             g_free (host);
             return FALSE;
@@ -604,6 +651,7 @@ panel_plugin_activate_file_operation (WPanel *panel, const mc_panel_plugin_t *pl
         gboolean was_plugin = panel->is_plugin_panel;
         panel->plugin_pre_cwd_vpath =
             was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+        panel_plugin_save_sort (panel);
 
         new_data = operation->open_input_stream (host, display_name, stream);
         if (new_data == NULL)
@@ -612,6 +660,7 @@ panel_plugin_activate_file_operation (WPanel *panel, const mc_panel_plugin_t *pl
             {
                 vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
                 panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+                panel->plugin_pre_sort_field = NULL;
             }
             g_free (host);
             return FALSE;
@@ -1058,6 +1107,8 @@ panel_plugin_dispose (WPanel *panel)
             g_free (panel->plugin_host->focus_after);
         g_free (panel->plugin_host);
         panel->plugin_host = NULL;
+
+        panel_plugin_restore_sort (panel);
     }
 
     panel_plugin_dispose_stream_sources (panel);
@@ -1087,6 +1138,9 @@ panel_plugin_close (WPanel *panel)
     panel->plugin_host = NULL;
 
     panel_plugin_dispose_stream_sources (panel);
+
+    /* The plugin's default sort order dies with it. */
+    panel_plugin_restore_sort (panel);
 
     panel->is_panelized = FALSE;
 
@@ -1241,6 +1295,7 @@ panel_plugin_open_file_list_one (WPanel *panel, const mc_panel_plugin_t *plugin,
         gboolean was_plugin = panel->is_plugin_panel;
         panel->plugin_pre_cwd_vpath =
             was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+        panel_plugin_save_sort (panel);
 
         new_data = plugin->open_file_list (host, paths, count, label);
         if (new_data == NULL)
@@ -1249,6 +1304,7 @@ panel_plugin_open_file_list_one (WPanel *panel, const mc_panel_plugin_t *plugin,
             {
                 vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
                 panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+                panel->plugin_pre_sort_field = NULL;
             }
             g_free (host);
             return FALSE;
@@ -1257,13 +1313,7 @@ panel_plugin_open_file_list_one (WPanel *panel, const mc_panel_plugin_t *plugin,
     }
 
     if (panel->is_plugin_panel)
-    {
-        /* Keep pre-plugin cwd while replacing the plugin instance. */
-        vfs_path_t *keep = panel->plugin_pre_cwd_vpath;
-        panel->plugin_pre_cwd_vpath = NULL;
-        panel_plugin_close (panel);
-        panel->plugin_pre_cwd_vpath = keep;
-    }
+        panel_plugin_close_for_replace (panel);
 
     panel->plugin_data = new_data;
     panel->plugin = plugin;
@@ -1386,6 +1436,7 @@ panel_plugin_run_action (WPanel *panel, const mc_panel_plugin_t *plugin, int act
         gboolean was_plugin = panel->is_plugin_panel;
         panel->plugin_pre_cwd_vpath =
             was_plugin ? saved_pre_cwd : vfs_path_clone (panel->cwd_vpath);
+        panel_plugin_save_sort (panel);
 
         path = vfs_path_as_str (panel->cwd_vpath);
         pdata = plugin->run_action_with_plugin != NULL
@@ -1400,6 +1451,7 @@ panel_plugin_run_action (WPanel *panel, const mc_panel_plugin_t *plugin, int act
             {
                 vfs_path_free (panel->plugin_pre_cwd_vpath, TRUE);
                 panel->plugin_pre_cwd_vpath = saved_pre_cwd;
+                panel->plugin_pre_sort_field = NULL;
             }
             if (host->focus_after != NULL)
             {
@@ -1418,13 +1470,7 @@ panel_plugin_run_action (WPanel *panel, const mc_panel_plugin_t *plugin, int act
     }
 
     if (panel->is_plugin_panel)
-    {
-        /* Keep pre-plugin cwd while replacing the plugin instance. */
-        vfs_path_t *keep = panel->plugin_pre_cwd_vpath;
-        panel->plugin_pre_cwd_vpath = NULL;
-        panel_plugin_close (panel);
-        panel->plugin_pre_cwd_vpath = keep;
-    }
+        panel_plugin_close_for_replace (panel);
 
     panel->plugin_data = pdata;
     panel->plugin = plugin;

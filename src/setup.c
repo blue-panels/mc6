@@ -1353,14 +1353,23 @@ panel_save_setup (WPanel *panel, const char *section)
 {
     char buffer[BUF_TINY];
     size_t i;
+    const dir_sort_options_t *sort_info = &panel->sort_info;
+    const panel_field_t *sort_field = panel->sort_field;
 
-    mc_config_set_bool (mc_global.panels_config, section, "reverse", panel->sort_info.reverse);
+    /* A plugin panel shows the plugin's sort order; the panel's own one is the
+       one to keep for the next run. */
+    if (panel->is_plugin_panel && panel->plugin_pre_sort_field != NULL)
+    {
+        sort_info = &panel->plugin_pre_sort_info;
+        sort_field = panel->plugin_pre_sort_field;
+    }
+
+    mc_config_set_bool (mc_global.panels_config, section, "reverse", sort_info->reverse);
     mc_config_set_bool (mc_global.panels_config, section, "case_sensitive",
-                        panel->sort_info.case_sensitive);
-    mc_config_set_bool (mc_global.panels_config, section, "exec_first",
-                        panel->sort_info.exec_first);
+                        sort_info->case_sensitive);
+    mc_config_set_bool (mc_global.panels_config, section, "exec_first", sort_info->exec_first);
 
-    mc_config_set_string (mc_global.panels_config, section, "sort_order", panel->sort_field->id);
+    mc_config_set_string (mc_global.panels_config, section, "sort_order", sort_field->id);
 
     for (i = 0; list_formats[i].key != NULL; i++)
         if (list_formats[i].list_format == (int) panel->list_format)
