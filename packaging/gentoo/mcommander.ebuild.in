@@ -4,8 +4,8 @@
 EAPI=8
 
 DESCRIPTION="M-Commander, based on GNU Midnight Commander"
-HOMEPAGE="https://github.com/blue-panels/mc6/wiki"
-SRC_URI="https://github.com/blue-panels/mc6/releases/download/v${PV}/mcommander-${PV}.tar.gz"
+HOMEPAGE="https://github.com/blue-panels/mcommander/wiki"
+SRC_URI="https://github.com/blue-panels/mcommander/releases/download/v${PV}/mcommander-${PV}.tar.gz"
 S="${WORKDIR}/mcommander-${PV}"
 
 LICENSE="GPL-3+"

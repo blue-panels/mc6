@@ -12,8 +12,8 @@ dnl The fourth argument is PACKAGE. The gettext domain, the data paths and the
 dnl tarball name are built from it, so it is the name of the package, not of
 dnl the program.
 AC_INIT([M-Commander], m4_esyscmd_s([./version.sh .]),
-        [https://github.com/blue-panels/mc6/issues], [mcommander],
-        [https://github.com/blue-panels/mc6/wiki])
+        [https://github.com/blue-panels/mcommander/issues], [mcommander],
+        [https://github.com/blue-panels/mcommander/wiki])
 
 m4_pattern_forbid(MC_)
 AC_CONFIG_MACRO_DIR([m4])

@@ -30,7 +30,7 @@ jobs:
   archive:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.repository == 'blue-panels/mc6'
+    if: github.repository == 'blue-panels/mcommander'
     outputs:
       version: ${{ steps.build.outputs.version }}
 
@@ -740,7 +740,7 @@ jobs:
 
       - name: Build and upload the source packages
         env:
-          PPA: ${{ vars.PPA_TARGET || 'ppa:il-smind/mc6' }}
+          PPA: ${{ vars.PPA_TARGET || 'ppa:bluepanels/mcommander' }}
           SERIES: ${{ vars.PPA_SERIES }}
           # A tag push publishes. A manual run is a rehearsal unless it asks to
           # publish: a PPA keeps every version it has ever accepted, so an

@@ -183,11 +183,11 @@ Frequently Asked Questions
 
    The source and the packages of every release are at
 
-     https://github.com/blue-panels/mc6/releases
+     https://github.com/blue-panels/mcommander/releases
 
    and the development version is in the master branch of
 
-     https://github.com/blue-panels/mc6
+     https://github.com/blue-panels/mcommander
 
 1.8 I cannot compile it.  What should I do?
 
@@ -856,7 +856,7 @@ increases with each line!
 
    Yes, of course.  The master branch of
 
-     https://github.com/blue-panels/mc6
+     https://github.com/blue-panels/mcommander
 
    is where the work happens; check it out and build it as the INSTALL
    file describes.
@@ -872,7 +872,7 @@ increases with each line!
 
    If this is not the case, open a ticket at
 
-     https://github.com/blue-panels/mc6/issues
+     https://github.com/blue-panels/mcommander/issues
 
    Bugs of this fork do not belong to the upstream project, and bugs of
    the upstream program do not belong here.
@@ -926,19 +926,19 @@ for an answer?
    Press F1: the built-in help is the manual page, and it covers nearly
    everything.  The wiki has the longer guides:
 
-     https://github.com/blue-panels/mc6/wiki
+     https://github.com/blue-panels/mcommander/wiki
 
    Upgrade to a newer version.  Many problems are fixed in the new
    versions.
 
    If you still can't find an answer, ask in a ticket at
-   https://github.com/blue-panels/mc6/issues .
+   https://github.com/blue-panels/mcommander/issues .
 
 12.2 Where should I look on the World Wide Web?
 
    The project lives at
 
-     https://github.com/blue-panels/mc6
+     https://github.com/blue-panels/mcommander
 
    The program it comes from is at https://midnight-commander.org .
 
@@ -956,7 +956,7 @@ for an answer?
 13.2 Feedback is invited
 
    Send your comments about this document and about the program to
-   https://github.com/blue-panels/mc6/issues .
+   https://github.com/blue-panels/mcommander/issues .
 
 13.3 Disclaimer and copyright
 

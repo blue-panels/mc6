@@ -137,7 +137,7 @@ UPLOAD=yes packaging/ppa-source.sh 6.0.3 dist/mcommander-6.1.0.tar.gz noble:24.0
 ```
 
 `NOSIGN=yes` builds unsigned packages for a dry run, `SIGN_KEY` picks the key,
-`PPA` the target (default `ppa:il-smind/mc6`).
+`PPA` the target (default `ppa:bluepanels/mcommander`).
 
 `PPA_REVISION` is the number after the series, `1` by default.  A PPA keeps
 every version it has ever accepted, so an upload that was rejected or turned out

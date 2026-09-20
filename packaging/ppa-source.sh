@@ -15,7 +15,7 @@
 # series is an upgrade. Codenames cannot do that, having wrapped the alphabet.
 #
 # Environment:
-#   PPA          dput target (default: ppa:il-smind/mc6)
+#   PPA          dput target (default: ppa:bluepanels/mcommander)
 #   PPA_REVISION number after the series in the version, 1 by default. A PPA
 #                keeps every version it has ever accepted, so a rejected or
 #                broken upload comes back as 2, never as 1 again.
@@ -35,7 +35,7 @@ archive=${2:?an archive from packaging/release-source.sh is required}
 shift 2
 test $# -gt 0 || die "name at least one series, for example noble:24.04"
 
-ppa=${PPA:-ppa:il-smind/mc6}
+ppa=${PPA:-ppa:bluepanels/mcommander}
 revision=${PPA_REVISION:-1}
 outdir=${OUTDIR:-dist/ppa}
 
