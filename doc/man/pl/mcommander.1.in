@@ -2633,7 +2633,7 @@ definiowania ogólnosystemowych ustawień terminali.
 Własny setup użytkownika. Jeśli ten plik jest dostępny, jest ładowany
 zamiast pliku globalnego.
 .PP
-%pkgdatadir%/hints/mc.hint
+%pkgdatadir%/hints/hint
 .IP
 Plik zawierający podpowiedzi (hints) wyświetlane przez program.
 .PP

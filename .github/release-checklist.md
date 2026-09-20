@@ -1,5 +1,5 @@
 - [ ] Actions -> **l10n-pot** -> **Run workflow**, a week before the tag so that
-      translators have time. It rebuilds `po/mc.pot` and, if the strings
+      translators have time. It rebuilds `po/mcommander.pot` and, if the strings
       changed, pushes the `l10n/pot` branch and prints a link in the job
       summary. Open that pull request and merge it: Weblate reads the template
       from master and puts the new strings into the po files by itself.
