@@ -1,6 +1,6 @@
 # Maintainer: Ilia Maslakov <il.smind@gmail.com>
 
-pkgname=(mcommander mcommander-plugins)
+pkgname=(mcommander mcommander-plugins mcommander-lua)
 pkgver=@VERSION@
 pkgrel=1
 pkgdesc='Modular TUI file manager with a tiny core, based on GNU Midnight Commander'
@@ -9,7 +9,7 @@ url='https://github.com/blue-panels/mcommander/wiki'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'e2fsprogs' 'libssh2' 'curl' 'samba'
-             'libarchive' 'file' 'mongo-c-driver')
+             'libarchive' 'file' 'mongo-c-driver' 'lua')
 options=('!emptydirs')
 source=("mcommander-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mcommander-${pkgver}.tar.gz")
 # Filled in by packaging/prepare.sh from the release archive; SKIP when no
@@ -28,6 +28,7 @@ build() {
     --with-panel-plugins-dir=/usr/lib/mcommander/panel-plugins \
     --with-editor-plugins-dir=/usr/lib/mcommander/editor-plugins \
     --enable-mcterm=yes \
+    --enable-lua-plugin=yes \
     --enable-mctree-magic=yes \
     --enable-panel-plugin-samba=yes \
     --enable-panel-plugin-ftp=yes \
@@ -46,6 +47,7 @@ package_mcommander() {
   # always finds the library here; libmagic through --enable-mctree-magic.
   depends=('glib2' 'slang' 'gpm' 'e2fsprogs' 'file')
   optdepends=('mcommander-plugins: panel plugins for FTP, SFTP, S3, Samba, Docker, k8s, MongoDB'
+              'mcommander-lua: Lua runtime extension and the scripts that use it'
               'aspell: spell checking in the editor'
               'hunspell: spell checking in the editor')
   conflicts=('mc6')
@@ -61,6 +63,8 @@ package_mcommander() {
   cd "${srcdir}/mcommander-${pkgver}"
   make DESTDIR="${pkgdir}" install
   rm -rf "${pkgdir}/usr/lib/mcommander/panel-plugins"
+  rm -rf "${pkgdir}/usr/lib/mcommander/runtime-plugins"
+  rm -rf "${pkgdir}/usr/share/mcommander/lua"
   find "${pkgdir}" -name '*.la' -delete
 
   # keymap.ini is installed as a symlink to keymap.default.ini, and pacman
@@ -87,4 +91,21 @@ package_mcommander-plugins() {
     -exec rm -rf {} +
   find "${pkgdir}" -name '*.la' -delete
   install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mcommander-plugins/COPYING"
+}
+
+package_mcommander-lua() {
+  pkgdesc='Lua runtime extension for M-Commander'
+  depends=("mcommander=${pkgver}-${pkgrel}" 'glib2' 'lua')
+
+  cd "${srcdir}/mcommander-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin"
+  # Keep the runtime plugin and the Lua scripts, drop everything else the
+  # install put here: pacman refuses two packages that own the same file.
+  find "${pkgdir}/usr/lib/mcommander" -mindepth 1 -maxdepth 1 ! -name runtime-plugins \
+    -exec rm -rf {} +
+  find "${pkgdir}/usr/share" -mindepth 1 -maxdepth 1 ! -name mcommander -exec rm -rf {} +
+  find "${pkgdir}/usr/share/mcommander" -mindepth 1 -maxdepth 1 ! -name lua -exec rm -rf {} +
+  find "${pkgdir}" -name '*.la' -delete
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/mcommander-lua/COPYING"
 }

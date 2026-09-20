@@ -11,7 +11,7 @@ S="${WORKDIR}/mcommander-${PV}"
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+arcmc +ftp +gpm +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
+IUSE="+arcmc +ftp +gpm +lua +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
 REQUIRED_USE="shell-ssh2? ( shell-link )"
 
 COMMON_DEPEND="
@@ -19,6 +19,7 @@ COMMON_DEPEND="
 	slang? ( sys-libs/slang )
 	!slang? ( sys-libs/ncurses:0= )
 	gpm? ( sys-libs/gpm )
+	lua? ( dev-lang/lua:0= )
 	magic? ( sys-apps/file )
 	samba? ( net-fs/samba )
 	ftp? ( net-misc/curl )
@@ -48,6 +49,7 @@ src_configure() {
 		--with-editor-plugins-dir="/usr/$(get_libdir)/mcommander/editor-plugins"
 		--enable-mcterm=yes
 		$(use_with gpm gpm-mouse)
+		$(use_enable lua lua-plugin)
 		$(use_enable magic mctree-magic)
 		$(use_enable samba panel-plugin-samba)
 		$(use_enable ftp panel-plugin-ftp)

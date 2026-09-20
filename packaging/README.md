@@ -4,6 +4,10 @@
 the `mc6`, `mcedit6`, `mview`, `mdiff`, `mctree` and `mcstruct` symbolic links,
 under paths of its own, so it can be installed beside the distribution `mc`.
 
+Three packages come out of it: `mcommander`, `mcommander-plugins` with the panel
+plugins, and `mcommander-lua` with the Lua runtime plugin and its scripts.
+Gentoo builds one package and puts Lua behind the `lua` USE flag.
+
 The recipes replace `mc6`, the name this fork was packaged under before.
 
 ## Nothing to edit for a release
@@ -82,8 +86,8 @@ orig tarball must not carry a `debian` directory of its own.
 Debian, Ubuntu and Fedora are built for `amd64` and `arm64`, each on a runner of
 its own architecture.  The containers are multi-architecture, so both run the
 same recipe; emulation is far too slow for a full build.  The two produce the
-same source package, source RPM and `mcommander-data` package, and only one copy of
-each is attached to the release.
+same source package and source RPM, and only one copy of each is attached to the
+release.
 
 Arch stays `x86_64`.  Arch Linux has no aarch64 port, and the `archlinux` image
 is published for `x86_64` alone; the `PKGBUILD` still names `aarch64` for Arch
@@ -114,10 +118,11 @@ cp -r debian /tmp/mcommander-6.1.0/
 cd /tmp/mcommander-6.1.0 && dpkg-buildpackage -us -uc
 ```
 
-`sudo apt install ../mcommander_*.deb ../mcommander-data_*.deb ../mcommander-plugins_*.deb` installs
-the result; use `apt install ./file.deb`, never `dpkg -i`.  For a repository or
-PPA users install `mcommander` and `mcommander-plugins` with apt; the transition removes `mc6`
-and `mc-data`, and `sudo apt purge mc mc-data` later clears old conffile
+`sudo apt install ../mcommander_*.deb ../mcommander-plugins_*.deb
+../mcommander-lua_*.deb` installs the result; use `apt install ./file.deb`,
+never `dpkg -i`.  For a repository or PPA users install `mcommander`,
+`mcommander-plugins` and `mcommander-lua` with apt; the transition removes
+`mc6` and `mc-data`, and `sudo apt purge mc mc-data` later clears old conffile
 records.  For a PPA, set the target series and a series suffix:
 
 ```sh
@@ -168,7 +173,7 @@ rpmbuild -ba packaging/rpm/mcommander.spec
 
 `Conflicts` is deliberately used instead of `Obsoletes`, so `dnf upgrade` does
 not silently replace a distribution package.  The repository instruction is
-`sudo dnf install mcommander mcommander-plugins`; for a downloaded RPM use
+`sudo dnf install mcommander mcommander-plugins mcommander-lua`; for a downloaded RPM use
 `dnf install ./mcommander-*.rpm`, never `rpm -i`.
 
 Arch.  `makepkg` finds the archive next to the `PKGBUILD` instead of
@@ -181,7 +186,7 @@ cd packaging/arch && makepkg -si
 ```
 
 From a repository or the AUR the same two names are installed with
-`sudo pacman -S mcommander mcommander-plugins`.
+`sudo pacman -S mcommander mcommander-plugins mcommander-lua`.
 
 Gentoo.  Copy `packaging/gentoo` into a personal overlay as `app-misc/mcommander`,
 together with the generated ebuild, and run `ebuild ... manifest`.  It is a

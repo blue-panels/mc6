@@ -23,6 +23,7 @@ BuildRequires:   file-devel
 BuildRequires:   pkgconf-pkg-config
 BuildRequires:   libsmbclient-devel
 BuildRequires:   slang-devel
+BuildRequires:   lua-devel
 
 # mc6 carried epoch 2, so the bound has to name it; this package has no epoch.
 Obsoletes:       mc6 < 2:%{version}-%{release}
@@ -41,6 +42,15 @@ Requires:        %{name}%{?_isa} = %{version}-%{release}
 Dynamic panel plugins for M-Commander: Git, Docker, Kubernetes, MongoDB, S3, FTP,
 SFTP, Samba, systemd, shell links, panelize and archive management.
 
+%package lua
+Summary:         Lua runtime extension for M-Commander
+Requires:        %{name}%{?_isa} = %{version}-%{release}
+
+%description lua
+The Lua runtime plugin and the scripts that come with it, including the
+sixel and markdown viewers.  Without this package M-Commander runs, and
+the features written in Lua are absent.
+
 %prep
 %autosetup -n %{name}-%{version}
 
@@ -54,6 +64,7 @@ SFTP, Samba, systemd, shell links, panelize and archive management.
     --with-panel-plugins-dir=%{_libdir}/mcommander/panel-plugins \
     --with-editor-plugins-dir=%{_libdir}/mcommander/editor-plugins \
     --enable-mcterm=yes \
+    --enable-lua-plugin=yes \
     --enable-mctree-magic=yes \
     --enable-panel-plugin-samba=yes \
     --enable-panel-plugin-ftp=yes \
@@ -87,7 +98,15 @@ rm -rf %{buildroot}%{_docdir}/%{name}
 %{_bindir}/mdiff
 %{_bindir}/mctree
 %{_libexecdir}/mcommander/
-%{_datadir}/mcommander/
+# Owned here so that the directory does not depend on the lua subpackage.
+%dir %{_datadir}/mcommander/
+%{_datadir}/mcommander/charsets
+%{_datadir}/mcommander/defaults.ini
+%{_datadir}/mcommander/examples/
+%{_datadir}/mcommander/help/
+%{_datadir}/mcommander/hints/
+%{_datadir}/mcommander/skins/
+%{_datadir}/mcommander/syntax/
 %config(noreplace) %{_sysconfdir}/mcommander/*
 %{_mandir}/man1/*
 # Translated manuals: mcommander.1 in six languages, mcedit6.1 and mdiff.1 in Serbian.
@@ -99,6 +118,10 @@ rm -rf %{buildroot}%{_docdir}/%{name}
 # A symbolic link to mcommander, which opens the mcstruct plugin.
 %{_bindir}/mcstruct
 %{_libdir}/mcommander/panel-plugins/
+
+%files lua
+%{_libdir}/mcommander/runtime-plugins/
+%{_datadir}/mcommander/lua/
 
 %changelog
 @CHANGELOG@

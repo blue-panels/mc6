@@ -420,8 +420,8 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             "./out/mcommander_${VERSION}-"*_"${DEB_ARCH}.deb" \
-            "./out/mcommander-data_${VERSION}-"*_all.deb \
-            "./out/mcommander-plugins_${VERSION}-"*_"${DEB_ARCH}.deb"
+            "./out/mcommander-plugins_${VERSION}-"*_"${DEB_ARCH}.deb" \
+            "./out/mcommander-lua_${VERSION}-"*_"${DEB_ARCH}.deb"
           mcommander --version | grep -q "v${VERSION}"
           mcedit6 --version | grep -q "v${VERSION}"
           test -d /usr/lib/mcommander/panel-plugins

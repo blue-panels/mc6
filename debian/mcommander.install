@@ -17,3 +17,12 @@ etc/mcommander/
 usr/share/doc/mcommander/LUA_API_REFERENCE.md
 usr/share/doc/mcommander/LUA_PLUGINS.md
 usr/share/doc/mcommander/lua-api.json
+usr/share/mcommander/charsets
+usr/share/mcommander/defaults.ini
+usr/share/mcommander/examples/
+usr/share/mcommander/help/
+usr/share/mcommander/hints/
+usr/share/mcommander/skins/
+usr/share/mcommander/syntax/
+usr/share/man/
+usr/share/locale/
