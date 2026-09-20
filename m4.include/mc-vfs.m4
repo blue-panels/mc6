@@ -55,7 +55,7 @@ AC_DEFUN([mc_VFS_CHECKS],
 	[enable_vfs=yes])
 
     if test x"$enable_vfs" = x"yes" ; then
-	vfs_type="Midnight Commander Virtual Filesystem"
+	vfs_type="M-Commander Virtual Filesystem"
 	AC_MSG_NOTICE([Enabling VFS code])
 	AC_DEFINE(ENABLE_VFS, [1], [Define to enable VFS support])
     fi
