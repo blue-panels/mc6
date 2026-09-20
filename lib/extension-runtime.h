@@ -25,6 +25,7 @@
 #define MC_RUNTIME_HOST_CAP_VIEWER_SOURCE     (G_GUINT64_CONSTANT (1) << 9)
 #define MC_RUNTIME_HOST_CAP_SYNTAX            (G_GUINT64_CONSTANT (1) << 10)
 #define MC_RUNTIME_HOST_CAP_VIEWER_GENERATOR  (G_GUINT64_CONSTANT (1) << 11)
+#define MC_RUNTIME_HOST_CAP_TTY               (G_GUINT64_CONSTANT (1) << 12)
 
 #define MC_RUNTIME_PLUGIN_CAP_FILE_OPERATIONS (G_GUINT64_CONSTANT (1) << 0)
 
@@ -818,6 +819,18 @@ typedef struct
     gboolean truncated;
 } mc_runtime_file_list_t;
 
+/* What the terminal can show and what the skin paints a section with.  The
+   colors are the names the skin uses ("black", "#1c1c1c", "default"); they
+   belong to the skin and stay valid until it is reloaded. */
+typedef struct
+{
+    gsize struct_size;
+    /* 8, 16, 256, or 1 << 24 when the terminal takes true color */
+    int colors;
+    const char *fg;
+    const char *bg;
+} mc_runtime_tty_info_t;
+
 typedef struct
 {
     guint abi_version;
@@ -957,6 +970,10 @@ typedef struct
                              const char *filename, mc_runtime_syntax_result_t *result,
                              const char **error);
     void (*syntax_result_free) (mc_runtime_syntax_result_t *result);
+
+    /* Optional v1 extension. The colors of the terminal, and the ones the
+     * skin paints the named section with ("Viewer", "Editor", ...). */
+    gboolean (*tty_info) (const char *section, mc_runtime_tty_info_t *info, const char **error);
 } mc_runtime_host_services_v1_t;
 
 typedef struct
@@ -1144,6 +1161,11 @@ typedef struct
                              mc_runtime_syntax_result_t *result, const char **error);
     void (*syntax_result_free) (mc_runtime_plugin_context_t *context,
                                 mc_runtime_syntax_result_t *result);
+
+    /* Optional v1 extension: what the terminal shows and what the skin
+     * paints a section with. */
+    gboolean (*tty_info) (mc_runtime_plugin_context_t *context, const char *section,
+                          mc_runtime_tty_info_t *info, const char **error);
 } mc_runtime_host_api_v1_t;
 
 typedef struct

@@ -41,6 +41,8 @@
 #include "src/syntax/syntax.h"
 #include "lib/runtime-events.h"
 #include "lib/strutil.h"
+#include "lib/skin.h"
+#include "lib/tty/color.h"
 #include "lib/tty/key.h"
 #include "lib/tty/tty.h"
 #include "lib/util.h"
@@ -1833,6 +1835,42 @@ runtime_host_syntax_runs_line_local (const syntax_rules_t *rules,
 /* --------------------------------------------------------------------------------------------- */
 
 /**
+ * The colors of the terminal, and the ones the skin paints @section with.
+ * The section is named the way the skin names it ("Viewer", "Editor"); an
+ * unknown one falls back to the colors of the core.
+ */
+static gboolean
+runtime_host_tty_info (const char *section, mc_runtime_tty_info_t *info, const char **error)
+{
+    char key[BUF_TINY];
+    tty_color_pair_t *skin;
+
+    if (info == NULL || info->struct_size < sizeof (*info))
+    {
+        if (error != NULL)
+            *error = "invalid_argument";
+        return FALSE;
+    }
+
+    if (tty_use_truecolors (NULL))
+        info->colors = 1 << 24;
+    else if (tty_use_256colors (NULL))
+        info->colors = 256;
+    else
+        info->colors = 16;
+
+    g_snprintf (key, sizeof (key), "%s._default_", section != NULL ? section : "core");
+    skin = (tty_color_pair_t *) g_hash_table_lookup (mc_skin__default.colors, key);
+    if (skin == NULL)
+        skin = (tty_color_pair_t *) g_hash_table_lookup (mc_skin__default.colors, "core._default_");
+    info->fg = skin != NULL ? skin->fg : NULL;
+    info->bg = skin != NULL ? skin->bg : NULL;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
  * Color text with the syntax rules of the editor.  The rule set is the one
  * @type names, else the one @filename matches, else the one the first line of
  * the text asks for.
@@ -2539,6 +2577,7 @@ runtime_host_services_init (void)
         .screen_close = runtime_screen_close,
         .syntax_scan = runtime_host_syntax_scan,
         .syntax_result_free = runtime_host_syntax_result_free,
+        .tty_info = runtime_host_tty_info,
     };
 
     /* Capabilities describe what this invocation can actually open, rather

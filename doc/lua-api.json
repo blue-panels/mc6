@@ -474,6 +474,14 @@
       "summary": "Show a native informational message box."
     },
     {
+      "signature": "mc.tty.info(section?) -> table|nil, error?",
+      "workspace": "any",
+      "capability": "tty",
+      "mutation": "no",
+      "errors": [],
+      "summary": "What the terminal shows and what the skin paints a section with.  The section is named the way the skin names it (\"Viewer\", \"Editor\"); the default is the core.  Returns { colors = 256, fg = \"white\", bg = \"black\" }, colors being 16, 256 or 16777216 for true color, and fg and bg the color names of the skin, nil when it names none."
+    },
+    {
       "signature": "mc.syntax.scan(text, options?) -> table|nil, error?",
       "workspace": "any",
       "capability": "syntax",
