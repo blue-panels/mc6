@@ -1285,9 +1285,9 @@ local function mermaid_lines(code, language, out, width_limit)
     return true
 end
 
--- The columns a line takes on the screen, past the SGR sequences in it.
+-- The columns a line takes on the screen, past the sequences in it.
 local function code_width(line)
-    return width((line:gsub("\27%[[%d;]*m", "")))
+    return width((line:gsub("\27%[[%d;]*m", ""):gsub("\27%]8;;.-\27\\", "")))
 end
 
 -- The colors a skin names, as the terminal draws them.  A name it does not
@@ -2148,6 +2148,28 @@ local function render_footnotes(width_limit, out)
     end
 end
 
+-- The widest line of a chunk, kept in the options: the caller tells the
+-- viewer from it whether the text has to be broken or can be scrolled
+-- sideways.  A line no longer than the screen in bytes cannot be wider than
+-- it in columns, which keeps the walk off most of the text.
+local function note_width(chunk, opts, width_limit)
+    if opts == nil then
+        return
+    end
+    local most = opts.max_line or 0
+
+    for line in chunk:gmatch("([^\n]*)\n") do
+        if #line > width_limit then
+            local w = code_width(line)
+
+            if w > most then
+                most = w
+            end
+        end
+    end
+    opts.max_line = most
+end
+
 local function render_document(text, opts, emit)
     local width_limit = opts and opts.width or M.DEFAULT_WIDTH
     local lines = collect_definitions(join_display_math(split_lines(text)))
@@ -2318,12 +2340,15 @@ local function render_document(text, opts, emit)
                 end
                 out = pending
                 emitted = true
+                note_width(chunk, opts, width_limit)
                 emit(chunk)
             end
         end
     end
     render_footnotes(width_limit, out)
     local tail = (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+
+    note_width(tail, opts, width_limit)
     if emit == nil then
         return tail
     end

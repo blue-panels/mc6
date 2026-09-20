@@ -371,6 +371,16 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
             mctest_assert_true (handled);
             ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_NROFF);
             ck_assert_str_eq (draft.raw_path, markdown_fixture_path);
+            /* A document with a line wider than the 91 columns of the viewport
+               is scrolled sideways instead of being broken; one that fits is
+               left to the setting of the user. */
+            if (strstr (markdown_fixture_path, "sgr.md") != NULL)
+            {
+                ck_assert (draft.has_wrap);
+                ck_assert (!draft.wrap);
+            }
+            if (strstr (markdown_fixture_path, "task_list.md") != NULL)
+                ck_assert (!draft.has_wrap);
             rendered = g_string_new_len (draft.source->bytes, draft.source->bytes_length);
             if (draft.source->kind == MC_RUNTIME_VIEWER_SOURCE_GENERATOR)
             {

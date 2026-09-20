@@ -16,6 +16,11 @@ local MAX_RENDERED = 60 * 1024 * 1024
 
 local md = require("render")
 
+-- A diagram or a code block wider than the screen reads better scrolled
+-- sideways than broken in two, up to this width; past it the viewer keeps
+-- wrapping, because scrolling that far is worse than a break.
+local MAX_UNWRAPPED = 160
+
 ------------------------------------------------------------------------
 -- F3 on a .md file.
 
@@ -27,6 +32,7 @@ local viewer = mc.viewer_source.define {
     resize = "rebuild",
     open = function(request)
         request.rendered = {}
+        request.widest = {}
         return request
     end,
     prepare = function(session, _, viewport)
@@ -39,14 +45,17 @@ local viewer = mc.viewer_source.define {
             }
         end
         local width = math.min(viewport.columns, md.MAX_WIDTH)
+        local opts = { width = width }
         local source
         if session.rendered[width] ~= nil then
+            opts.max_line = session.widest[width]
             source = mc.source.bytes(session.rendered[width])
         elseif mc.source.generator == nil then
-            session.rendered[width] = md.render(session.text, { width = width })
+            session.rendered[width] = md.render(session.text, opts)
+            session.widest[width] = opts.max_line
             source = mc.source.bytes(session.rendered[width])
         else
-            local next_block = md.blocks(session.text, { width = width })
+            local next_block = md.blocks(session.text, opts)
             local pieces = {}
             local lines = 0
             local done = false
@@ -63,6 +72,7 @@ local viewer = mc.viewer_source.define {
             local initial = table.concat(pieces)
             if done then
                 session.rendered[width] = initial
+                session.widest[width] = opts.max_line
                 source = mc.source.bytes(initial)
             else
                 local produced = #initial
@@ -75,6 +85,7 @@ local viewer = mc.viewer_source.define {
                         local chunk = next_block()
                         if chunk == nil then
                             session.rendered[width] = table.concat(pieces)
+                            session.widest[width] = opts.max_line
                             pieces = nil
                             return nil
                         end
@@ -90,12 +101,20 @@ local viewer = mc.viewer_source.define {
                 }
             end
         end
+        -- What is wider than the screen but still narrow enough to reach by
+        -- scrolling is left whole; the rest of the text is wrapped already.
+        local wrap = nil
+        if opts.max_line ~= nil and opts.max_line > viewport.columns
+            and opts.max_line <= MAX_UNWRAPPED then
+            wrap = false
+        end
         return {
             source = source,
             title = session.title,
             raw_path = session.raw_path,
             initial_display = "nroff",
             auto_scroll = "top",
+            wrap = wrap,
         }
     end,
     close = function() end,
