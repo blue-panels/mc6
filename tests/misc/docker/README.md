@@ -36,7 +36,7 @@ leaves nothing in the working tree and reuses its object files between runs.
       debian-12/            docker-compose.yml, Dockerfile.mc, README.md, expect.tsv
     cases/
       archives/fixtures.sh  the files and the cases.tsv of one subject
-      editor/, terminal/    the same for mcedit and the embedded terminal
+      editor/, terminal/    the same for mcedit6 and the embedded terminal
       cmdline/              the same for copy and paste on the command line
       struct/               the same for the mcstruct plugin
       panel/                the same for the panel: the quick filter, quick cd
@@ -328,7 +328,7 @@ fails a case that would have passed.
 Or directly, if mc is already built:
 
     docker run --rm -it --network mc-sandbox-debian-12_default \
-        -v mc-sandbox-debian-12_work:/work mc-sandbox-debian-12-mc /work/opt/mc/bin/mc
+        -v mc-sandbox-debian-12_work:/work mc-sandbox-debian-12-mc /work/opt/mc/bin/mc6
 
 The `mc` container has `ssh`, `curl` and `smbclient`, so a transfer can be
 watched from outside mc as well.

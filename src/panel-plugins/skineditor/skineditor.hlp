@@ -71,7 +71,7 @@ original.  Save as asks for a name and a description.  A name is a file
 name without a directory part and without .ini; a name another skin in
 your directory already has is not written over without asking.
 
-Edit as file, in the button row, opens the skin file in mcedit, for the
+Edit as file, in the button row, opens the skin file in mcedit6, for the
 parts this dialog does not show, the aliases for one.  Unsaved changes
 are saved or dropped first, and the file is read again when the editor
 closes.

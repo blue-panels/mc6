@@ -1,12 +1,12 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"Przetłumaczone przez by Macieja Wojciechowskiego    wojciech@staszic.waw.pl
-.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
+.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH NAZWA
-mc \- wizualny interpetator poleceń dla systemów Unixopodobnych
+mc6 \- wizualny interpetator poleceń dla systemów Unixopodobnych
 .\"SKIP_SECTION"
 .SH UŻYTKOWANIE
-.B mc
+.B mc6
 [\-abcCdfPstuUVx] [\-l log] [kat1 [kat2]] [\-v plik]
 .\"NODE "DESCRIPTION"
 .SH OPIS
@@ -52,17 +52,17 @@ w tę funkcję oraz za kod źródłowy, który wprowadzili w życie).
 .nf
 użytkownicy basha i zsh:
 
-mc ()
+mc6 ()
 {
         MC=$HOME/tmp/mc$$\-"$RANDOM"
-        %bindir%/mc \-P "$@" > "$MC"
+        %bindir%/mc6 \-P "$@" > "$MC"
         cd "`cat $MC`"
         rm "$MC"
         unset MC;
 }
 
 użytkownicy tcsh:
-alias mc 'setenv MC `%bindir%/mc \-P !*`; cd $MC; unsetenv MC'
+alias mc6 'setenv MC `%bindir%/mc6 \-P !*`; cd $MC; unsetenv MC'
 .fi
 Wiem, że ta funkcja mogłaby być krótsza dla basha i zsh, ale małe cudzysłowy
 nie zaakceptowały by zawieszenia programu kombinacją
@@ -1845,7 +1845,7 @@ po włączeniu tej opcji kopiuje się katalog źródłowy do wnętrza tego katal
 Może przykład pomoże:
 .PP
 Chcesz przekopiować zawartość katalogu foo do /bla/foo, które
-już istnieje. Normalnie (Dive nie jest włączone), mc skopiuje to dokładnie
+już istnieje. Normalnie (Dive nie jest włączone), mc6 skopiuje to dokładnie
 do /bla/foo. Po włączeniu tej opcji zawartość zostanie skopiowana
 do /bla/foo/foo ponieważ ten katalog już istnieje.
 .PP
@@ -2035,13 +2035,13 @@ zobaczyć jakie są klawisze po prostu obejrzyj odpowiednie menu
 rozwijalne. Inne klawisze to: przemieszczanie z Shiftem zaznaczające tekst.
 .B Ctrl\-Ins
 kopiuje do pliku
-.B mcedit.clip
+.B mcedit6.clip
 a
 .B Shift\-Ins
-wkleja z pliku mcedit.clip.
+wkleja z pliku mcedit6.clip.
 .B Shift\-Del
 Wycina do
-.BR mcedit.clip ,
+.BR mcedit6.clip ,
 a
 .B Ctrl\-Del
 kasuje zaznaczony tekst. Klawisze dokończenia również dają Enter z
@@ -2061,20 +2061,20 @@ i przyporządkowany klawisz. Makro jest wykonywane również jeśli naciśniesz
 klawisz Meta, Ctrl, lub Esc i wybrany klawisz, jednak tylko jeśli ten
 klawisz nie jest używane przez inne funkcje. Raz zdefiniowane, makro
 wędruje sobie do pliku
-.B ~/.local/share/mc6/mcedit/mcedit.macros
+.B ~/.local/share/mc6/mcedit6/mcedit6.macros
 w twoim katalogu domowym. Możesz skasować makro kasując odpowiednią linię z
 tego pliku.
 .PP
 .B F19
 sformatuje format C jeśli jest podświetlony. Żeby to działało, stwórz
 wykonywalny plik
-.B ~/.local/share/mc6/mcedit/edit.indent.rc
+.B ~/.local/share/mc6/mcedit6/edit.indent.rc
 w twoim katalogu domowym zawierający poniższe:
 .PP
 .nf
 #!/bin/sh
-/usr/bin/indent \-kr \-pcs ~/.cache/mc6/mcedit/mcedit.block>& /dev/null
-cat /dev/null > ~/.cache/mc6/mcedit/cooledit.error
+/usr/bin/indent \-kr \-pcs ~/.cache/mc6/mcedit6/mcedit6.block>& /dev/null
+cat /dev/null > ~/.cache/mc6/mcedit6/cooledit.error
 .fi
 .PP
 .\"NODE "Completion"
@@ -2730,7 +2730,7 @@ zgłoś go [po angielsku] pod adresem
 \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Do zgłoszenia błędu dołącz opis problemu, versję programu, którego używasz
-(wyświetla ją mc \-V), system operacyjny, na którym pracujesz i jeśli program
+(wyświetla ją mc6 \-V), system operacyjny, na którym pracujesz i jeśli program
 się wykłada, chcielibyśmy dostać ślad stosu.
 .SH TŁUMACZENIE
 Maciej Wojciechowski    wojciech@staszic.waw.pl

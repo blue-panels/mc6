@@ -42,7 +42,7 @@ endif
 
 AM_CPPFLAGS += -I$(top_srcdir) $(GLIB_CFLAGS)
 
-bin_PROGRAMS = mc
+bin_PROGRAMS = mc6
 
 if USE_INTERNAL_EDIT
 EDITLIB = editor/libedit.la
@@ -67,24 +67,24 @@ libinternal_la_LIBADD = \
 	$(DIFFLIB) $(EDITLIB)
 
 if HAVE_GMODULE
-mc_LDFLAGS = -export-dynamic
+mc6_LDFLAGS = -export-dynamic
 endif
 
-mc_LDADD = \
+mc6_LDADD = \
 	libinternal.la
 
 if ENABLE_MCLIB
 libinternal_la_LIBADD += \
 	$(top_builddir)/lib/libmc.la
 else
-mc_LDADD += \
+mc6_LDADD += \
 	$(top_builddir)/lib/libmc.la
 endif
 
 SRC_mc_conssaver = \
 	cons.handler.c consaver/cons.saver.h
 
-mc_SOURCES = \
+mc6_SOURCES = \
 	main.c
 
 libinternal_la_SOURCES = \
@@ -121,41 +121,41 @@ EXTRA_DIST = $(SRC_maintainer) $(SRC_charset)
 # end of automated testing
 
 install-exec-hook:
-	$(MAKE) install_mcview
+	$(MAKE) install_mview
 	$(MAKE) install_mctree
 	$(MAKE) install_mcstruct
 if USE_INTERNAL_EDIT
-	$(MAKE) install_mcedit
+	$(MAKE) install_mcedit6
 endif
 if USE_DIFF
-	$(MAKE) install_mcdiff
+	$(MAKE) install_mdiff
 endif
 
 #
 # Make relative symlinks, but do the right thing if LN_S is `ln' or `cp'.
 #
-install_mcview:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcview && $(LN_S) mc mcview
+install_mview:
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mview && $(LN_S) mc6 mview
 
 install_mctree:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mctree && $(LN_S) mc mctree
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mctree && $(LN_S) mc6 mctree
 
 install_mcstruct:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcstruct && $(LN_S) mc mcstruct
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcstruct && $(LN_S) mc6 mcstruct
 
-install_mcedit:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit && $(LN_S) mc mcedit
+install_mcedit6:
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit6 && $(LN_S) mc6 mcedit6
 
-install_mcdiff:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcdiff && $(LN_S) mc mcdiff
+install_mdiff:
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mdiff && $(LN_S) mc6 mdiff
 
 uninstall-hook:
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcview
+	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mview
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mctree
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcstruct
 if USE_INTERNAL_EDIT
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcedit
+	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcedit6
 endif
 if USE_DIFF
-	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcdiff
+	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mdiff
 endif

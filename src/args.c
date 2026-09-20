@@ -95,17 +95,17 @@ static gboolean parse_mc_v_argument (const gchar *option_name, const gchar *valu
 
 /*** file scope variables ************************************************************************/
 
-/* The names mc is installed under, as symbolic links to the one binary */
+/* The names the program is installed under, as symbolic links to the one binary */
 static const mc_run_name_t mc_run_names[] = {
-    { "mc", MC_RUN_FULL, NULL },
-    { "mcview", MC_RUN_VIEWER, NULL },
+    { "mc6", MC_RUN_FULL, NULL },
+    { "mview", MC_RUN_VIEWER, NULL },
     { "view", MC_RUN_VIEWER, NULL },
 #ifdef USE_INTERNAL_EDIT
-    { "mcedit", MC_RUN_EDITOR, NULL },
+    { "mcedit6", MC_RUN_EDITOR, NULL },
     { "vi", MC_RUN_EDITOR, NULL },
 #endif
 #ifdef USE_DIFF_VIEW
-    { "mcdiff", MC_RUN_DIFFVIEWER, NULL },
+    { "mdiff", MC_RUN_DIFFVIEWER, NULL },
     { "diff", MC_RUN_DIFFVIEWER, NULL },
 #endif
     { "mctree", MC_RUN_FULL, &mc_args__mctree },

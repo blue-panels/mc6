@@ -1,13 +1,13 @@
-.TH MCDIFF 1 "%DATE_OF_MAN_PAGE%" "ПН верзија %MAN_VERSION%" "M\-Commander"
+.TH MDIFF 1 "%DATE_OF_MAN_PAGE%" "ПН верзија %MAN_VERSION%" "M\-Commander"
 .SH НАЗИВ
-mcdiff \- Уграђени diff прегледач ГНУ\-овог поноћног наредника..
+mdiff \- Уграђени diff прегледач ГНУ\-овог поноћног наредника..
 .SH УПОТРЕБА
-.B mcdiff
+.B mdiff
 [\-bcCdfhstVx?] дато1 дато2
 .SH ОПИС
 .LP
-mcdiff је веза ка
-.BR mc \-у,
+mdiff је веза ка
+.BR mc6 \-у,
 главној извршној датотеци ГНУ\-овог поноћног наредника. Извршавање ГНУ\-овог
 поноћног наредника под овим именом захтева покретање уграђеног diff прегледача,
 који пореди
@@ -22,7 +22,7 @@ mcdiff је веза ка
 .TP
 .I "\-c"
 Намеће колор режим на терминалима на којима је
-.B mcdiff
+.B mdiff
 подразумевано црно\-бео.
 .TP
 .I "\-d"
@@ -75,7 +75,7 @@ mcdiff је веза ка
 Најновија верзија овог програма се може наћи на
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH ВИДЕТИ И
-mc(1), mcedit(1), mcview(1)
+mc6(1), mcedit6(1), mview(1)
 .PP
 .SH ГРЕШКЕ
 Грешке пријавите на \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .

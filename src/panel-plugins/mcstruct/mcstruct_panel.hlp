@@ -55,13 +55,13 @@ Keys in the tree:
   F4               edit the current field
   F5               go to an offset (an expression; labels of the current
                    structure allowed)
-  F6, Shift-F6     choose a def-file; open the current one in mcedit at
+  F6, Shift-F6     choose a def-file; open the current one in mcedit6 at
                    the current line
   F7, Shift-F7     search a field name or value; next.  In the hex zone:
                    search bytes (hex) or text from the cursor, the hit
                    becomes the block
   F8               hide or show the hex zone
-  F9               parse errors of the def-file, Enter opens mcedit at
+  F9               parse errors of the def-file, Enter opens mcedit6 at
                    the line
   Alt-=            calculator with the labels of the current structure
   Alt-F9           zoom the focused zone
@@ -116,7 +116,7 @@ Editing:
   YYYY-MM-DD HH:MM:SS for dates.  The bytes are replaced in place, the
   structure is re-evaluated, F2 writes the file.  Only fixed-width edits:
   the file never changes size.  The first edit takes the file lock as
-  mcedit does.
+  mcedit6 does.
 
 STL5, the def-file language:
 

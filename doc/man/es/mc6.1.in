@@ -6,13 +6,13 @@
 .\"	David H. Martín Alonso <david.martin@telefonica.net>
 .\"
 .\"TOPICS "Índice de Contenidos:"
-.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Versión %MAN_VERSION%" "M\-Commander"
+.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Versión %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NOMBRE"
-mc \- entorno visual para sistemas tipo Unix.
+mc6 \- entorno visual para sistemas tipo Unix.
 .\"SKIP_SECTION"
 .SH "SINOPSIS"
-.B mc
+.B mc6
 .RB [ \-abcCdfFhPstuUVx "] [" \-l
 .IR reg "] [" dir1 " [" dir2 ]]
 .RB [ \-e
@@ -50,7 +50,7 @@ Deshabilita el soporte de ratón.
 .I \-e [arch], \-\-edit[=arch]
 Iniciar el editor interno. Si se indica un archivo, editarlo. Véase la
 página de manual de
-.BR "mcedit (1)" .
+.BR "mcedit6(1)" .
 .TP
 .I \-f, \-\-datadir
 Muestra las rutas de búsqueda compiladas para archivos de M\-Commander.
@@ -79,13 +79,13 @@ directorio de trabajo en el archivo indicado.  Esta opción no debe ser
 usada directamente, sino desde un guión de shell adecuado, para dejar
 como directorio activo el directorio que estaba en uso dentro de
 M\-Commander.  Consúltese en los archivos
-.B %pkglibexecdir%/mc.sh
+.B %pkglibexecdir%/mc6.sh
 (usuarios de bash y zsh),
-.B %pkglibexecdir%/mc.csh
+.B %pkglibexecdir%/mc6.csh
 (usuarios de tcsh) y
-.B %pkglibexecdir%/mc.fish
+.B %pkglibexecdir%/mc6.fish
 (usuarios de fish) la manera de definir
-.B mc
+.B mc6
 como un alias para el correspondiente guión de shell.
 .TP
 .I \-s, \-\-slow
@@ -160,7 +160,7 @@ M\-Commander fue construido con soporte de subshell opcional).
 .I \-v arch, \-\-view=arch
 Iniciar el visor interno para ver el archivo indicado. Véase la página
 de manual de
-.BR "mcview (1)" .
+.BR "mview(1)" .
 .TP
 .I \-V, \-\-version
 Muestra la versión del programa.
@@ -1520,7 +1520,7 @@ por el usuario. Cuando accedemos al menú de usuario se utiliza, si existe,
 el archivo .mc.menu del directorio actual, pero solo si es propiedad del
 usuario o del superusuario y no es modificable por todos.
 Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc6/menu,
-y si no, mc utiliza el menú por defecto para todo el sistema
+y si no, mc6 utiliza el menú por defecto para todo el sistema
 %pkgdatadir%/mc.menu.
 .PP
 El formato del menú de archivo es muy simple.  Todas las líneas, salvo
@@ -1674,7 +1674,7 @@ En
 .\"LINK2"
 Presentación
 .\"Layout"
-está un grupo de opciones que determinan la apariencia de mc en la
+está un grupo de opciones que determinan la apariencia de mc6 en la
 pantalla.
 .PP
 En
@@ -2539,7 +2539,7 @@ podemos copiar el directorio de origen dentro de ese directorio.
 Quizás un ejemplo pueda ayudar:
 .PP
 Queremos copiar el contenido de un directorio denominado coco a /blas
-donde ya existe un directorio /blas/coco. Por defecto, mc copiaría el
+donde ya existe un directorio /blas/coco. Por defecto, mc6 copiaría el
 contenido en /blas/coco, pero con esta opción se copiaría como
 /blas/coco/coco.
 .PP
@@ -2882,14 +2882,14 @@ aunque podemos recuperar su funcionamiento habitual en terminales (copiar
 y pegar) manteniendo pulsada la tecla mayúsculas.
 .B Ctrl\-Ins
 copia al archivo
-.B mcedit.clip
+.B mcedit6.clip
 y
 .B Mayús\-Ins
 pega desde
-.BR mcedit.clip .
+.BR mcedit6.clip .
 .B Mayús\-Supr
 corta y copia en
-.BR mcedit.clip ,
+.BR mcedit6.clip ,
 y
 .B Ctrl\-Supr
 elimina el texto resaltado. La tecla
@@ -2908,7 +2908,7 @@ seguido de la tecla asignada. También será ejecutada si
 pulsamos Meta (Alt), Ctrl, o Escape y la tecla asignada, siempre y cuando
 la tecla no sea usada por ninguna otra función. Una vez definida, los comandos de
 macro irán al archivo
-.B ~/.local/share/mc6/mcedit/mcedit.macros
+.B ~/.local/share/mc6/mcedit6/mcedit6.macros
 en nuestro directorio de inicio. Podemos eliminar una macro borrando
 la línea adecuada en este archivo.
 .PP
@@ -2920,7 +2920,7 @@ o
 u otro). Esto está controlado por el archivo
 .B %pkgdatadir%/edit.indent.rc
 que se copia la primera vez que se usa en
-.B ~/.local/share/mc6/mcedit/edit.indent.rc
+.B ~/.local/share/mc6/mcedit6/edit.indent.rc
 en el directorio personal.
 .PP
 El editor también visualiza caracteres no estadounidenses (160+). Al editar
@@ -3964,7 +3964,7 @@ La última versión de este programa se puede encontrar en
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "VÉASE TAMBIÉN"
-mcedit(1), sh(1), bash(1), tcsh(1), zsh(1), ed(1), view(1),
+mcedit6(1), sh(1), bash(1), tcsh(1), zsh(1), ed(1), view(1),
 terminfo(1), gpm(1).
 .PP
 .nf
@@ -3979,7 +3979,7 @@ versiones recientes consultar la página de manual en inglés que contiene
 información más completa y actualizada.  Para ver el susodicho manual
 original ejecutar en la línea de órdenes:
 .nf
-        LANG= LC_ALL= man mc
+        LANG= LC_ALL= man mc6
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTORES"
@@ -3994,7 +3994,7 @@ Para informar de problemas con el programa, introducir una nueva incidencia en
 .PP
 Se debe proporcionar una descripción detallada del problema, la
 versión del programa (que se obtiene con
-.RI ' "mc \-V" ')
+.RI ' "mc6 \-V" ')
 y el sistema operativo utilizados.  Si el programa «revienta», sería
 también útil disponer del estado de la pila.
 .\"NODE "TRANSLATION"

@@ -78,7 +78,7 @@ jobs:
           mkdir man
           cp maint/mandoc-1.14.6.css man/mandoc.css
 
-          MANPAGES="mc mcdiff mcedit mcview"
+          MANPAGES="mc6 mdiff mcedit6 mview"
 
           for MANPAGE in $MANPAGES ; do
             man.mandoc -K utf-8 -mandoc -T html -O style=mandoc.css \

@@ -1,0 +1,3 @@
+function mc6 --description 'Visual shell for Unix-like systems - fish wrapper'
+	source @pkglibexecdir@/mc6-wrapper.fish $argv
+end
