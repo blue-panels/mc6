@@ -16,6 +16,10 @@ M.MAX_WIDTH = 120    -- text is never flowed wider than this, whatever the scree
 -- first level keeps the heading color of the skin
 M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 
+-- SGR background of a code block, nil or "" for none.  "100" is the bright
+-- black of the terminal; a 256-color value such as "48;5;236" also works.
+M.CODE_BG = "100"
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -29,6 +33,10 @@ local WIDE = "\1"
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
+local SGR_BG_OFF = "\27[49m"
+-- closes what a rule of the syntax engine opened; a plain reset would close
+-- the background of the code block too
+local SGR_RUN_OFF = "\27[22;23;24;27;39m"
 local LINK_END = "\27]8;;\27\\"
 
 -- The OSC 8 sequence that starts a link to url; bytes that could end the
@@ -50,6 +58,11 @@ local BOX_DONE = "\u{2611}"
 
 -- a tab in a code block moves to the next stop
 local TAB_WIDTH = 8
+
+-- a code block is indented this far, and the background keeps a margin
+-- between its edge and the code
+local CODE_INDENT = "    "
+local CODE_MARGIN = 1
 
 ------------------------------------------------------------------------
 -- Text helpers.  Lengths count characters, not bytes; a stray byte that is
@@ -1249,6 +1262,51 @@ local function mermaid_lines(code, language, out, width_limit)
     return true
 end
 
+-- The columns a line takes on the screen, past the SGR sequences in it.
+local function code_width(line)
+    return width((line:gsub("\27%[[%d;]*m", "")))
+end
+
+-- The lines of a code block, padded to the widest one and laid on the
+-- background.  Each line opens the background and closes it at its end,
+-- because the viewer may start reading at any line.
+local function background_code(lines, out, width_limit)
+    local open = "\27[" .. M.CODE_BG .. "m"
+    local box = 0
+
+    for _, line in ipairs(lines) do
+        local w = code_width(line)
+
+        if w > box then
+            box = w
+        end
+    end
+    if width_limit ~= nil then
+        box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
+    end
+    for _, line in ipairs(lines) do
+        local fill = math.max(box - code_width(line), 0) + CODE_MARGIN
+
+        out[#out + 1] = CODE_INDENT
+            .. open
+            .. (" "):rep(CODE_MARGIN)
+            .. line
+            .. (" "):rep(fill)
+            .. SGR_BG_OFF
+    end
+end
+
+-- The lines of a code block, on the background when there is one.
+local function emit_code(lines, out, width_limit)
+    if M.CODE_BG == nil or M.CODE_BG == "" then
+        for _, line in ipairs(lines) do
+            out[#out + 1] = CODE_INDENT .. line
+        end
+        return
+    end
+    background_code(lines, out, width_limit)
+end
+
 -- The lines of a code block, colored where the rules say so.  Each line
 -- opens the color it starts in and closes it at its end, because the viewer
 -- may start reading at any line.
@@ -1258,15 +1316,17 @@ local function code_lines(code, language, out, width_limit)
     end
     local scan = scan_code(code, language)
     local colored = {}
+    local lines = {}
     local pos = 1
 
     if scan == nil then
         for line in (code .. "\n"):gmatch("(.-)\n") do
-            out[#out + 1] = "    " .. expand_tabs(line)
+            lines[#lines + 1] = expand_tabs(line)
         end
         if code:sub(-1) == "\n" then
-            out[#out] = nil
+            lines[#lines] = nil
         end
+        emit_code(lines, out, width_limit)
         return
     end
 
@@ -1276,7 +1336,7 @@ local function code_lines(code, language, out, width_limit)
 
         for piece, eol in (text .. "\0"):gmatch("([^\n]*)(\n?)") do
             if piece ~= "" then
-                colored[#colored + 1] = sgr ~= "" and (sgr .. piece:gsub("%z", "") .. "\27[0m")
+                colored[#colored + 1] = sgr ~= "" and (sgr .. piece:gsub("%z", "") .. SGR_RUN_OFF)
                     or piece:gsub("%z", "")
             end
             if eol == "\n" then
@@ -1290,11 +1350,12 @@ local function code_lines(code, language, out, width_limit)
     end
 
     for line in (table.concat(colored) .. "\n"):gmatch("(.-)\n") do
-        out[#out + 1] = "    " .. expand_tabs(line)
+        lines[#lines + 1] = expand_tabs(line)
     end
     if code:sub(-1) == "\n" then
-        out[#out] = nil
+        lines[#lines] = nil
     end
+    emit_code(lines, out, width_limit)
 end
 
 ------------------------------------------------------------------------
@@ -1973,13 +2034,18 @@ local function render_document(text, opts, emit)
             out[#out + 1] = ""
             i = i + 1
         elseif prev_blank and not was_list and (line:match("^    ") or line:match("^\t")) then
+            local block = {}
+
             while i <= #lines and (lines[i]:match("^    ") or lines[i]:match("^\t") or is_blank(lines[i])) do
                 if is_blank(lines[i]) and not (lines[i + 1] and (lines[i + 1]:match("^    ") or lines[i + 1]:match("^\t"))) then
                     break
                 end
-                out[#out + 1] = expand_tabs(lines[i])
+                -- the four columns the block is written with are the ones it
+                -- is drawn with, so they are taken off and put back by emit_code
+                block[#block + 1] = expand_tabs(lines[i]):gsub("^    ", "", 1)
                 i = i + 1
             end
+            emit_code(block, out, width_limit)
         elseif math_block_of(line, width_limit) ~= nil then
             for _, l in ipairs(math_block_of(line, width_limit)) do
                 out[#out + 1] = l

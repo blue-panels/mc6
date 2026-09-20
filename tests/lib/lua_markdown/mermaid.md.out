@@ -19,8 +19,8 @@
           │            │
     Пользователь    Сервер
 
-    [1;33mpie title Доли[0m
-        "a" : 40
+    [100m [1;33mpie title Доли[22;23;24;27;39m [49m
+    [100m     "a" : 40   [49m
     [arcmc panel]
       ├─▶ [extfs helper]  list
       │   └─▶ [External archive tool]
