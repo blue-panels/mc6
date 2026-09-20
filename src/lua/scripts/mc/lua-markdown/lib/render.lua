@@ -24,8 +24,8 @@ M.CODE_BG = "100"
 -- top edge
 M.CODE_FRAME = true
 
--- the block is this share of the screen wider than the code in it, so that
--- it does not sit tight around short lines
+-- the block is this share of its longest line wider than the code in it, so
+-- that a line does not end right at the frame
 M.CODE_AIR = 0.2
 
 -- a space no line is broken at; written out as a plain space
@@ -1293,10 +1293,9 @@ local function code_box(lines, width_limit)
             box = w
         end
     end
+    box = box + math.floor(box * M.CODE_AIR)
     if width_limit ~= nil then
-        local room = math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1)
-
-        box = math.min(box + math.floor(room * M.CODE_AIR), room)
+        box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
     end
     return box
 end
