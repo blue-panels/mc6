@@ -49,8 +49,8 @@ make.log
 make.clang
 make.gcc
 make.tcc
-misc/mc.ext.ini
-mc.charsets
+misc/extensions.ini
+charsets
 src/vfs/extfs/helpers/torrent
 src/vfs/extfs/helpers/uc1541
 tests/src/editor/test-data.txt

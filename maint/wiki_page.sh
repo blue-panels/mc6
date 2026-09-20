@@ -73,7 +73,7 @@ Open with the thing itself in bold, as a noun phrase, then a full stop:
 **Code folding.** or **Undo history browser** (Alt+Shift+U). Then two to five
 sentences: what it does, how it is reached, what it replaces, what it fixes.
 Where the reader types a key or sees an identifier, set it in backticks --
-`Alt+Shift+F`, `mc.macros`, `{`. Otherwise no markup, and no bullet: the list
+`Alt+Shift+F`, `macros`, `{`. Otherwise no markup, and no bullet: the list
 is added later.
 
 Work strictly from the description. Every sentence must be traceable to it;

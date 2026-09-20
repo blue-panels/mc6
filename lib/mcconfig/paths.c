@@ -40,6 +40,8 @@
 
 #include "lib/mcconfig.h"
 
+#include <glib/gstdio.h>  // g_rename()
+
 /*** global variables ****************************************************************************/
 
 /*** file scope macro definitions ****************************************************************/
@@ -257,6 +259,42 @@ mc_config_import_legacy (const char *path_base, const char *full_path)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Data files renamed in 6.1: take the old name over when the new one is not there yet. */
+static void
+mc_config_rename_legacy_files (void)
+{
+    static const struct
+    {
+        char **basedir;
+        const char *legacy;
+        const char *current;
+    } renamed[] = {
+        { &mc_config_str, "mc.keymap", GLOBAL_KEYMAP_FILE },
+        { &mc_config_str, "mc.ext.ini", MC_EXT_FILE },
+        { &mc_data_str, "mc.macros", MC_MACRO_FILE },
+    };
+
+    for (size_t i = 0; i < G_N_ELEMENTS (renamed); i++)
+    {
+        char *legacy, *current;
+
+        if (*renamed[i].basedir == NULL)
+            continue;
+
+        legacy = g_build_filename (*renamed[i].basedir, renamed[i].legacy, (char *) NULL);
+        current = g_build_filename (*renamed[i].basedir, renamed[i].current, (char *) NULL);
+
+        if (g_file_test (legacy, G_FILE_TEST_EXISTS) && !g_file_test (current, G_FILE_TEST_EXISTS)
+            && g_rename (legacy, current) == 0)
+            fprintf (stderr, _ ("Renamed %s to %s\n"), legacy, current);
+
+        g_free (legacy);
+        g_free (current);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static char *
 mc_config_init_one_config_path (const char *path_base, const char *subdir, GError **mcerror)
 {
@@ -333,6 +371,8 @@ mc_config_init_config_paths (GError **mcerror)
         mc_data_str =
             mc_config_init_one_config_path (g_get_user_data_dir (), MC_USERCONF_DIR, mcerror);
     }
+
+    mc_config_rename_legacy_files ();
 
     xdg_vars_initialized = TRUE;
 }

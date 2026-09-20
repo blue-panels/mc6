@@ -4,10 +4,10 @@ SUBDIRS = $(DOC_LINGUAS)
 endif
 
 hlpdir = $(pkgdatadir)/help
-hlp_DATA = mc.hlp
+hlp_DATA = mcommander.hlp
 
 EXTRA_DIST = xnc.hlp
 CLEANFILES = $(hlp_DATA)
 
-mc.hlp: $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp $(top_builddir)/src/man2hlp/man2hlp
-	- $(top_builddir)/src/man2hlp/man2hlp $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp mc.hlp
+mcommander.hlp: $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp $(top_builddir)/src/man2hlp/man2hlp
+	- $(top_builddir)/src/man2hlp/man2hlp $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp mcommander.hlp

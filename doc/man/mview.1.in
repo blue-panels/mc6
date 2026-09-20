@@ -49,7 +49,7 @@ Forces xterm mode.  Used when running on xterm\-capable terminals (two
 screen modes, and able to send mouse escape sequences).
 .PP
 .SH FILES
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 The help file for the program.
 .PP
@@ -58,7 +58,7 @@ The help file for the program.
 The default system\-wide setup for M\-Commander, used only if
 the user's own ~/.config/mc6/ini file is missing.
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.

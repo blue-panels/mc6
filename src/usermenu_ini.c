@@ -1099,6 +1099,9 @@ um_old_menu (gboolean *is_own)
     if (um_file_has_content (MC_LOCAL_MENU) && um_file_is_safe (MC_LOCAL_MENU))
         return g_strdup (MC_LOCAL_MENU);
 
+    if (um_file_has_content (MC_LOCAL_MENU_LEGACY) && um_file_is_safe (MC_LOCAL_MENU_LEGACY))
+        return g_strdup (MC_LOCAL_MENU_LEGACY);
+
     file = mc_config_get_full_path (MC_USERMENU_FILE);
     if (file != NULL && um_file_has_content (file))
         return file;

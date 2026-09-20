@@ -125,10 +125,10 @@ The macro is executed when you press the assigned key.
 The macro commands are stored in section
 .B [editor]
 it the file
-.BR ~/.local/share/mc6/mc.macros .
+.BR ~/.local/share/mc6/macros .
 .PP
 External scripts (filters) can be assigned into the any hotkey by edit
-.B mc.macros
+.B macros
 like following:
 .PP
 .nf
@@ -637,7 +637,7 @@ will be untouched. Default value is
 Show full path name in the status line. If disabled (default), only base name of the
 file is shown.
 .SH FILES
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 The help file for the program.
 .PP
@@ -646,7 +646,7 @@ The help file for the program.
 The default system\-wide setup for M\-Commander, used only if
 the user's own ~/.config/mc6/ini file is missing.
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.

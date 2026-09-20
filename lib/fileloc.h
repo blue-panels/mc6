@@ -20,18 +20,20 @@
 #endif
 
 // pre-6.x user directory name, imported on first run
-#define MC_USERCONF_LEGACY_DIR          "mc"
+#define MC_USERCONF_LEGACY_DIR "mc"
 
-#define TAGS_NAME                       "TAGS"
+#define TAGS_NAME              "TAGS"
 
-#define MC_GLOBAL_CONFIG_FILE           "mc.lib"
-#define MC_GLOBAL_MENU                  "mc.menu"
-#define MC_LOCAL_MENU                   ".mc.menu"
+#define MC_GLOBAL_CONFIG_FILE  "defaults.ini"
+#define MC_GLOBAL_MENU         "usermenu"
+#define MC_LOCAL_MENU          ".usermenu"
+// pre-6.1 name of the local menu, still read if the new one is absent
+#define MC_LOCAL_MENU_LEGACY            ".mc.menu"
 #define MC_HINT                         "hints" PATH_SEP_STR "mc.hint"
-#define MC_HELP                         "help" PATH_SEP_STR "mc.hlp"
-#define GLOBAL_KEYMAP_FILE              "mc.keymap"
-#define CHARSETS_LIST                   "mc.charsets"
-#define MC_MACRO_FILE                   "mc.macros"
+#define MC_HELP                         "help" PATH_SEP_STR "mcommander.hlp"
+#define GLOBAL_KEYMAP_FILE              "keymap.ini"
+#define CHARSETS_LIST                   "charsets"
+#define MC_MACRO_FILE                   "macros"
 
 #define VFS_SHELL_PREFIX                "shell"
 
@@ -70,7 +72,7 @@
 #define MC_INPUTRC_FILE                 "inputrc"
 
 #define MC_CONFIG_FILE                  "ini"
-#define MC_EXT_FILE                     "mc.ext.ini"
+#define MC_EXT_FILE                     "extensions.ini"
 #define MC_EXT_OLD_FILE                 "mc.ext"
 #define MC_MAGIC_FILE                   "magic.ini"
 #define MC_FILEPOS_FILE                 "filepos"

@@ -2,16 +2,16 @@
 
 SUBDIRS = ext.d macros.d skins syntax
 
-LIBFILES_OUT = mc.ext.ini magic.ini
+LIBFILES_OUT = extensions.ini magic.ini
 
 noinst_DATA = xterm.ad
 
-PKGDATA_IN = mc.charsets.in
+PKGDATA_IN = charsets.in
 
-PKGDATA_OUT = mc.charsets
+PKGDATA_OUT = charsets
 
 dist_pkgdata_DATA = \
-	mc.lib
+	defaults.ini
 
 pkgdata_DATA = \
 	$(PKGDATA_OUT)
@@ -26,9 +26,9 @@ LIBFILES_CONST = \
 	filehighlight.ini \
 	panels.ftp.ini \
 	panels.git.ini \
-	mc.default.keymap \
-	mc.emacs.keymap \
-	mc.vim.keymap \
+	keymap.default.ini \
+	keymap.emacs.ini \
+	keymap.vim.ini \
 	spell.keymap \
 	ctags.keymap
 
@@ -56,7 +56,7 @@ EXTRA_DIST = \
 	$(PKGDATA_IN)
 
 install-data-hook:
-	cd $(DESTDIR)$(cfgdir) && rm -f mc.keymap && $(LN_S) mc.default.keymap mc.keymap
+	cd $(DESTDIR)$(cfgdir) && rm -f keymap.ini && $(LN_S) keymap.default.ini keymap.ini
 
 uninstall-hook:
-	cd $(DESTDIR)$(cfgdir) && rm -f mc.keymap
+	cd $(DESTDIR)$(cfgdir) && rm -f keymap.ini

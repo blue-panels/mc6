@@ -1293,14 +1293,14 @@ leírásánál.
 .\"NODE "    Edit Extension File"
 .SH "    Társítások"
 Ez az
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 or system\-wide
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Háttérmunkák"
@@ -1311,14 +1311,14 @@ linuxban futó background processzekre hatástalan.
 .\"NODE "    Edit Menu File"
 .SH "    Menü szerkesztés"
 A felhasználói menüt a felhasználó testre szabhatja. Ez az aktulis
-könyvtár .mc.menu fájlja, ha az létezik, de csak, ha az a felhasználó
+könyvtár .usermenu fájlja, ha az létezik, de csak, ha az a felhasználó
 (illetve a root) a tulajdonosa, és nem lehet bárki számára írható. Ha
 nem talál ilyen fájlt, az
 .I ~/.config/mc6/menu
 keresése a következő lépés, egyébként pedig az mcommander az alapértelmezett
 rendszerszintű menüt használja, pl.:
-.IR %pkgdatadir%/mc.menu ,
-esetleg %sysconfdir%/mcommander/mc.menu.
+.IR %pkgdatadir%/usermenu ,
+esetleg %sysconfdir%/mcommander/usermenu.
 .PP
 A menü fájl formátuma nagyon egyszerű. A sorok, amelyek bármivel
 kezdődhetnek, de a space, vagy a tab megkülönböztetett menübejegyzések
@@ -1337,7 +1337,7 @@ Macro Helyettesítő
 .\"Macro Substitution"
 részt.
 .PP
-Egy példa az mc.menu fájlra:
+Egy példa az usermenu fájlra:
 .PP
 .nf
 A       A kiválasztott fájlok listázása oktális formában
@@ -2311,7 +2311,7 @@ A következő egyezőt keresi.
 .PP
 .B F8
 Vált a Nyers és Feldolgozott mód között: ez a fájlt, úgy mutatja meg,
-ahogy megtalálta, vagy, ha folyamatszűrő meg van adva az mc.ext.ini fájlban,
+ahogy megtalálta, vagy, ha folyamatszűrő meg van adva az extensions.ini fájlban,
 akkor a szűrő kimenetét. A Jelenlegi mód mindig a másik, mit amit a gomb
 felirata mutat.
 .PP
@@ -2850,7 +2850,7 @@ tartalommal.
 .SH "Terminál adatbázisok"
 A M\-Commander lehetőséget nyújt a terminál adatbázis root jogok
 használata nélküli módosítására. A M\-Commander a rendszer indító
-fájlban (az mc.lib fájlt a M\-Commander library könyvtárában
+fájlban (az defaults.ini fájlt a M\-Commander library könyvtárában
 találjuk), vagy az ~/.config/mc6/ini file "terminal:your\-terminal\-name" részében
 keres, és, a "terminal:general" rész minden sora tartalmazza azokat a
 billentyűzet szimbólumokat az egyenlőségjelet és a definiált szimbólumot
@@ -2896,15 +2896,15 @@ A progam minden ezzel kapcsolatos infomációt az
 környezeti változóban tárol. Ha ezt a változót nem állítottuk be, akkor
 ez vissza fog állítódni a /usr könyvtárra.
 .PP
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 A program súgó fájlja.
 .PP
-.I %pkgdatadir%/mc.ext.ini
+.I %pkgdatadir%/extensions.ini
 .IP
 Az alapértelmezett rendszerszintű kiterjesztés fájl.
 .PP
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 .IP
 A felhasználó saját kiterjesztései, nézet beállítások és szerkesztési
 beállítások. Ezek felülbírálják a rendszerszintű fájl bejegyzéseit, ha
@@ -2915,7 +2915,7 @@ van ilyen.
 Az alapértelmezett rendszerszintű M\-Commander beállítás, amelyet
 csak akkor használ, ha a felhasználónak nincs saját ~/.config/mc6/ini fájlja.
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 A M\-Commander globális beállításai. Az ebben a fájlban elvégzett
 beállítások minden felhasználó M\-Commander\-jére vonatkoznak, ez
@@ -2932,7 +2932,7 @@ helyett.
 Ez a fájl tartalmazza a program által megjelenített útmutattásokat
 (cookie\-kat).
 .PP
-.I %pkgdatadir%/mc.menu
+.I %pkgdatadir%/usermenu
 .IP
 Ez a fájl azonos a rendszerszintű alkalmazás menüvel.
 .PP
@@ -2953,7 +2953,7 @@ find / \-type d \-print | sort > ~/.cache/mc6/Tree"
 Normálisan nincs erre szükséged, mert a M\-Commander automatikusan
 frissíti ezt.
 .PP
-.I ./.mc.menu
+.I ./.usermenu
 .IP
 Helyi felhasználó által definiált menü. Ha ez a fájl létezik, ezt
 használja a home, vagy rendszerszintű alkalmazás menü helyett.

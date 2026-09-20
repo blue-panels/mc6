@@ -66,7 +66,7 @@ struct WDialog
     // Set by the user
     gboolean compact;       // Suppress spaces around the frame
     const char *help_ctx;   // Name of the help entry
-    const char *help_file;  // Path to help file (NULL = default mc.hlp)
+    const char *help_file;  // Path to help file (NULL = default mcommander.hlp)
     const int *colors;      // Color set. Unused in viewer and editor
 
     // Set and received by the user

@@ -275,9 +275,9 @@ the input lines in the query dialogs.
 Hotkey bindings may be read from external file (keymap\-file).
 Initially, M\-Commander creates key bindings using keymap defined
 in the source code. Then, two files
-.B %pkgdatadir%/mc.keymap
+.B %pkgdatadir%/keymap.ini
 and
-.B %sysconfdir%/mcommander/mc.keymap
+.B %sysconfdir%/mcommander/keymap.ini
 are loaded always, sequentially reassigned key bindings defined earlier.
 User\-defined keymap\-file is searched on the following algorithm (to the first one found):
 .IP
@@ -297,7 +297,7 @@ in section
 of config file.
 .br
 4) File
-.B ~/.config/mc6/mc.keymap
+.B ~/.config/mc6/keymap.ini
 .br
 .PP
 Command line option, environment variable and parameter in config file may
@@ -1616,13 +1616,13 @@ description.
 .\"NODE "    Edit Extension File"
 .SH "    Edit Extension File"
 This will invoke your editor on the file
-.IR ~/.config/mc6/mc.ext.ini .
+.IR ~/.config/mc6/extensions.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 or system\-wide
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Background Jobs"
@@ -1699,12 +1699,12 @@ it.
 .PP
 The installation no longer ships one; what is described here is read
 where somebody keeps a menu of his own in the older form:
-the file .mc.menu from the current directory is used if it exists, but
+the file .usermenu from the current directory is used if it exists, but
 only if it is owned by user or root and is not world\-writable. If no
 such file found, ~/.config/mc6/menu is tried in the same way.
 .PP
 Where the menu that edits itself has no file yet and another menu is
-found - his own written by hand, the mc.menu of an installed mcommander, or a
+found - his own written by hand, the usermenu of an installed mcommander, or a
 menu.ini an older mcommander installed - mcommander offers once in a session to import
 it; F5 in the menu, and the Import button of the empty menu, ask for it
 at any time, for that file or one named by hand. It then lists what the file holds: Space
@@ -1729,7 +1729,7 @@ takes place before executing the menu code. For more information, see
 macro substitution\&.
 .\"Macro Substitution"
 .PP
-Here is a sample mc.menu file:
+Here is a sample usermenu file:
 .PP
 .nf
 A	Dump the currently selected file
@@ -3363,7 +3363,7 @@ Toggle interpretation of ANSI color escape sequences found in the text.
 .TP
 .B F8
 Toggle Raw/Parsed mode: This will show the file as found on disk or if
-a processing filter has been specified in the mc.ext.ini file, then the
+a processing filter has been specified in the extensions.ini file, then the
 output from the filter. Current mode is always the other than written
 on the button label, since on the button is the mode which you enter
 by that key.
@@ -4268,7 +4268,7 @@ option is absent, default timeformat is used.
 If this variable is on (the default) it will spawn the file command to
 match the file types listed on the
 .\"LINK2"
-mc.ext.ini file\&.
+extensions.ini file\&.
 .\"Edit Extension File"
 .TP
 .I xtree_mode
@@ -4357,7 +4357,7 @@ max_dirt_limit). They are read from there once and written back to the
 M\-Commander provides a way for specify an options for external editors
 and viewers. M\-Commander tries to search the
 "[External editor or viewer parameters]" section in the system initialization file
-(the mc.lib file located in M\-Commander's library directory)
+(the defaults.ini file located in M\-Commander's library directory)
 and then in the ~/.config/mc6/ini file. The option name should be equal to the name
 (full pathname) of external editor or viewer. The option value can contain following
 variables:
@@ -4391,7 +4391,7 @@ to save and restore position in opened files.
 .SH "Terminal databases"
 M\-Commander provides a way to fix your system terminal
 database without requiring root privileges. M\-Commander
-searches in the system initialization file (the mc.lib file located in
+searches in the system initialization file (the defaults.ini file located in
 M\-Commander's library directory) and in the 
 ~/.config/mc6/ini file for the section 
 "terminal:your\-terminal\-name" and then for the section
@@ -4455,15 +4455,15 @@ by the
 environment variable. If it's set, its value is used instead of
 %pkgdatadir% in the paths below.
 .PP
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 The help file for the program.
 .PP
-.I %pkgdatadir%/mc.ext.ini
+.I %pkgdatadir%/extensions.ini
 .IP
 The default system\-wide extensions file.
 .PP
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 .IP
 User's own extension, view configuration and edit configuration
 file.  They override the contents of the system wide files if present.
@@ -4477,14 +4477,14 @@ doesn't have his own
 .B ~/.config/mc6/ini
 file. If %sysconfdir%/mcommander/mc.ini exists, %pkgdatadir%/mc.ini isn't used.
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.  Currently, only
 .\"LINK2"
 terminal settings
 .\"Terminal databases"
-are loaded from mc.lib.
+are loaded from defaults.ini.
 .PP
 .I ~/.config/mc6/ini
 .IP
@@ -4510,7 +4510,7 @@ is shown along with it.
 .IP
 The directory list for the directory tree and tree view features.
 .PP
-.I ./.mc.menu
+.I ./.usermenu
 .IP
 Local user\-defined menu. If this file is present in the current
 directory, it is used instead of the home or system\-wide applications

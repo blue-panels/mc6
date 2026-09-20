@@ -1088,13 +1088,13 @@ przemieszczanie.
 .\"NODE "    Edit Extension File"
 .SH "    Edycja rozszerzeń pliów (Edit Extension File)"
 Ta komenda wywoła twój edytor na plik
-.IR ~/.config/mc6/mc.ext.ini .
+.IR ~/.config/mc6/extensions.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 or system\-wide
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 The format of this file is described in detail in it.
 PP
 .\"NODE "    Background Jobs"
@@ -1109,11 +1109,11 @@ proces w tle.
 .SH "    Edycja menu użytkownika (Edit Menu File)"
 Menu użytkownika jest bardzo użytecznym menu, które może być tworzone
 w sposób dowolny, przez użytkownika. Kiedy tylko próbujesz coś zrobić
-przy użyciu tego menu, ładowany jest plik .mc.menu z aktualnego katalogu, ale
+przy użyciu tego menu, ładowany jest plik .usermenu z aktualnego katalogu, ale
 tylko wtedy kiedy jest on w posiadaniu użytkownika lub roota i mamy do niego
 prawa zapisu. Jeśli takiego nie ma próbuje się z plikiem ~/.config/mc6/menu z tymi
 samymi założeniami, jeśli jego też nie ma \- używa się standardowego pliku
-systemowego, który znajduje się w %pkgdatadir%/mc.menu.
+systemowego, który znajduje się w %pkgdatadir%/usermenu.
 .PP
 Format pliku z menu użytkownika jest bardzo prosty. Linie zaczynające się
 od czegokolwiek innego niż spacja lub tabulacja, są traktowane jako
@@ -1128,7 +1128,7 @@ potem plik jest wykonywany. Pozwala to użytkownikowi wkładać normalne
 konstrukcje powłoki do konstrukcji kodu wykonywanego. Po więcej
 informacji zobacz, używania makr.
 .PP
-To jest przykładowy plik mc.menu:
+To jest przykładowy plik usermenu:
 .PP
 .nf
 A	Wyrzuć aktualny plik.
@@ -1971,7 +1971,7 @@ Szuka następnego wystąpienia.
 .B F8
 Przełącza tryby Raw i Parsed. Pokaże to plik w postaci takiej w jakiej
 został znaleziony na dysku, lub jeśli został wybrany jakiś filtr, bądź
-też plik spełnia wymagania w pliku mc.ext.ini, wyświetlane jest to co
+też plik spełnia wymagania w pliku extensions.ini, wyświetlane jest to co
 przekazuje filtr. Aktualne ustawienie jest zawsze przeciwne niż to napisane
 na przycisku, przycisk wskazuje zawsze to co się stanie po jego
 naciśnięciu.
@@ -2545,7 +2545,7 @@ Podświetlenie uprawnień również pracuje w tym trybie.
 .I use_file_to_guess_type
 .IP
 Jeśli ta zmienna jest ustawiona (standardowo) próbuje się dostosować
-rozszerzenie pliku do tego wybranego w pliku mc.ext.ini.
+rozszerzenie pliku do tego wybranego w pliku extensions.ini.
 .PP
 .I xtree_mode
 .IP
@@ -2557,7 +2557,7 @@ zawartość wybranego katalogu.
 .SH Baza danych terminali (Terminal databases)
 M\-Commander pozwala ci na naprawienie bazy danych terminali bez
 posiadania uprawnień roota. M\-Commander szuka w pliku startowym
-(mc.lib położonego w katalogach z bibliotekami M\-Commandera) lub w
+(defaults.ini położonego w katalogach z bibliotekami M\-Commandera) lub w
 pliku ~/.config/mc6/ini sekcji "terminal:nazwa\-twojego\-terminala" i potem sekcji
 "terminal:general", każda linia sekcji zawiera symbol klawisza, który
 chcesz zdefiniować, zaczynające się do znaku równości i definicji klawisza.
@@ -2604,15 +2604,15 @@ Program będzie pobierał wszystkie swoje informacje ze zmiennej
 .BR MC_DATADIR ,
 jeśli jest ona nie ustawiona to znowu przetwarzany jest katalog /usr.
 .PP
-%pkgdatadir%/help/mc.hlp
+%pkgdatadir%/help/mcommander.hlp
 .IP
 Plik pomocy dla programu.
 .PP
-%pkgdatadir%/mc.ext.ini
+%pkgdatadir%/extensions.ini
 .IP
 Standardowy plik rozszerzeń plików.
 .PP
-~/.config/mc6/mc.ext.ini
+~/.config/mc6/extensions.ini
 .IP
 Własny plik użytkownika, konfiguruje podgląd i edycje plików. Ma wyższy
 priorytet niż plik systemowy.
@@ -2622,7 +2622,7 @@ priorytet niż plik systemowy.
 Standardowy plik setupu do M\-Commandera, używany tylko wówczas,
 kiedy użytkownik nie ma swojego własnego pliku ~/.config/mc6/ini.
 .PP
-%pkgdatadir%/mc.lib
+%pkgdatadir%/defaults.ini
 .IP
 Globalne ustawienia M\-Commandera. Ustawienia w tym pliku są
 uwzględniane przez wszystkie sesje M\-Commandera, użyteczne do
@@ -2637,7 +2637,7 @@ zamiast pliku globalnego.
 .IP
 Plik zawierający podpowiedzi (hints) wyświetlane przez program.
 .PP
-%pkgdatadir%/mc.menu
+%pkgdatadir%/usermenu
 .IP
 Ten plik zawiera informacje o ogólnosystemowych aplikacjach w menu.
 .PP
@@ -2655,7 +2655,7 @@ Jeśli chcesz możesz stworzyć plik używając komendy "find / \-type d
 \-print | sort > ~/.cache/mc6/tree". Normalnie nie ma sensu tego czynić, gdyż
 M\-Commander robi to sam za ciebie.
 .PP
-\&./.mc.menu
+\&./.usermenu
 .IP
 Lokalny plik zdefiniowany przez użytkownika. Jeśli ten plik jest dostępny,
 jest używany zamiast pliku w katalogu domowym i ogólnosystemowego.

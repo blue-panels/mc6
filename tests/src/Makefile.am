@@ -22,7 +22,7 @@ LIBS += $(GLIB_LIBS)
 endif
 
 EXTRA_DIST = \
-	fixtures/mc.charsets \
+	fixtures/charsets \
 	fixtures/hints/mc.hint \
 	fixtures/viewertest.txt \
 	execute__common.c
