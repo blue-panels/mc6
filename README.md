@@ -1,15 +1,17 @@
 # M-Commander
 
-`mc6` -- M-Commander, based on [GNU Midnight Commander](https://midnight-commander.org)
+M-Commander, based on [GNU Midnight Commander](https://midnight-commander.org)
 version 4.8.33.
 
-Midnight Commander (MC) is a text-mode, full-screen file manager: two panels,
-a built-in editor and viewer, and a virtual filesystem for browsing archives
-and remote hosts. It runs on the OS console, in xterm, and over ssh.
+M-Commander is a text-mode, full-screen file manager: two panels, a built-in
+editor and viewer, and an embedded terminal. The viewer has a structured tree
+mode, and mcstruct is a structured binary viewer and editor. The core is small:
+everything beyond it is optional and comes as a plugin loaded at run time,
+from archives and git to docker, Kubernetes, S3, FTP, SFTP and Samba.
+It runs in any terminal, from the Linux console to tmux and a remote session over ssh.
 
 This fork is not an official GNU package. Report issues here, not upstream.
-
-Own version numbering starts at `v6.0.1`, independent of upstream.
+Its version numbering starts at `v6.0.1` and is independent of upstream.
 
 ![Git panel with inline diff](https://raw.githubusercontent.com/wiki/blue-panels/mcommander/assets/git-panel.gif)
 
@@ -115,7 +117,7 @@ Open an issue: <https://github.com/blue-panels/mcommander/issues>
 
 Include `mcommander --version`, your OS and distribution, and the compiler and
 configure flags if you know them. For a crash, attach a `gdb` backtrace
-(`gdb mc core`, then `where`).
+(`gdb mcommander core`, then `where`).
 
 ## License
 
