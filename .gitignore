@@ -50,7 +50,8 @@ make.clang
 make.gcc
 make.tcc
 misc/extensions.ini
-charsets
+misc/charsets
+tests/lib/vfs/charsets
 src/vfs/extfs/helpers/torrent
 src/vfs/extfs/helpers/uc1541
 tests/src/editor/test-data.txt
