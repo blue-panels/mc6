@@ -1,9 +1,9 @@
 LANG=es
 mandir = @mandir@/$(LANG)
 
-EXTRA_DIST = mc.1.in
+EXTRA_DIST = mcommander.1.in
 
-man_MANS = mc.1
+man_MANS = mcommander.1
 
 CLEANFILES = $(man_MANS)
 

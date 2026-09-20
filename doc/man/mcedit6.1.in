@@ -1,16 +1,16 @@
-.TH MCEDIT 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
+.TH MCEDIT6 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .SH NAME
-mcedit \- Internal file editor of M\-Commander.
+mcedit6 \- Internal file editor of M\-Commander.
 .SH SYNOPSIS
-.B mcedit
+.B mcedit6
 [\-bcCdfhstVx?] [+lineno] [file1] [file2] ...
 .PP
-.B mcedit
+.B mcedit6
 [\-bcCdfhstVx?] file1:lineno[:] file2:lineno[:] ...
 .SH DESCRIPTION
 .LP
-mcedit is a link to
-.BR mc ,
+mcedit6 is a link to
+.BR mcommander ,
 the main M\-Commander executable. Executing M\-Commander
 under this name runs the internal editor and opens files
 specified on the command line. The editor is based on the terminal version of
@@ -41,7 +41,7 @@ files.
 .I \-S arg, \-\-skin=arg
 Specify a name of skin in the command line.  See the
 .B Skins
-section in mc(1) for more information.
+section in mcommander(1) for more information.
 .TP
 .I "\-t"
 Force using termcap database instead of terminfo.  This option is only
@@ -66,7 +66,7 @@ syntax highlighting for various file types; and an option to pipe text
 blocks through shell commands like indent and ispell.
 .PP
 Each file is opened in its own window in full\-screen mode. Window control
-in mcedit is similar to the window control in other multi\-window program:
+in mcedit6 is similar to the window control in other multi\-window program:
 double click on window title maximizes the window to full\-screen or restores
 window size and position; left\-click on window title and mouse drag moves
 the window in editor area; left\-click on low\-right frame corner and mouse drag
@@ -80,20 +80,20 @@ In addition to that, Shift combined with arrows does text highlighting
 (if supported by the terminal):
 .B Ctrl\-Ins
 copies to the file
-.BR ~/.cache/mc6/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit6/mcedit6.clip ,
 .B Shift\-Ins
 pastes from
-.BR ~/.cache/mc6/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit6/mcedit6.clip ,
 .B Shift\-Del
 cuts to
-.BR ~/.cache/mc6/mcedit/mcedit.clip ,
+.BR ~/.cache/mc6/mcedit6/mcedit6.clip ,
 and
 .B Ctrl\-Del
 deletes highlighted text.  Mouse highlighting also works on some
 terminals.  To use the standard mouse support provided by your terminal,
 hold the Shift key.  Please note that the mouse support in the terminal
 doesn't share the clipboard with
-.BR mcedit .
+.BR mcedit6 .
 .PP
 The completion key (usually
 .B "Meta\-Tab"
@@ -139,11 +139,11 @@ ctrl\-W=ExecuteScript:25;
 This means that ctrl\-W hotkey initiates the
 .I ExecuteScript(25)
 action, then editor handler translates this into execution of
-.B ~/.local/share/mc6/mcedit/macros.d/macro.25.sh
+.B ~/.local/share/mc6/mcedit6/macros.d/macro.25.sh
 shell script.
 .PP
 External scripts are stored in
-.B ~/.local/share/mc6/mcedit/macros.d/
+.B ~/.local/share/mc6/mcedit6/macros.d/
 directory and must be named as
 .B macro.XXXX.sh
 where
@@ -233,7 +233,7 @@ in the
 .B Options
 menu.
 .SH CODE NAVIGATION
-.B mcedit
+.B mcedit6
 can be used for navigation through code with tags files created by etags
 or ctags commands. If there is no TAGS file code navigation will not work.
 For example, in case of exuberant\-ctags for C language command will be:
@@ -253,7 +253,7 @@ where equal is symbol "=" goes to next function in navigation list
 (like browser's Forward button).
 .PP
 .SH SYNTAX HIGHLIGHTING
-.B mcedit
+.B mcedit6
 supports syntax highlighting.  This means that keywords and contexts
 (like C comments, string constants, etc) are highlighted in different
 colors.  The following section explains the format of the file
@@ -281,7 +281,7 @@ applies to the file.  The second argument is the description of the file
 type.  It is used in
 .BR cooledit ;
 future versions of
-.B mcedit
+.B mcedit6
 may use it as well.  The third optional argument is a regular expression
 to match the first line of text of the file.  The rules in the following
 section apply if either the file name or the first line of text matches.
@@ -356,7 +356,7 @@ The first context is an exception.  It must start with the command
 .RI [ attributes ]
 .PP
 otherwise
-.B mcedit
+.B mcedit6
 will report an error.  The
 .B linestart
 option specifies that
@@ -432,7 +432,7 @@ directive to continue across multiple lines.
 The possible colors are: black, gray, red, brightred, green,
 brightgreen, brown, yellow, blue, brightblue, magenta, brightmagenta,
 cyan, brightcyan, lightgray and white. The special keyword "default" means
-the terminal's default. Another special keyword "base" means mc's main
+the terminal's default. Another special keyword "base" means mcommander's main
 colors, it is useful as a placeholder if you want to specify attributes
 without modifying the background color. When 256 colors are available,
 they can be specified either as color16 to color255, or as rgb000 to rgb555
@@ -441,7 +441,7 @@ and gray0 to gray23.
 If the syntax file is shared with
 .BR cooledit ,
 it is possible to specify different colors for
-.B mcedit
+.B mcedit6
 and
 .B cooledit
 by separating them with a slash, e.g.
@@ -450,7 +450,7 @@ by separating them with a slash, e.g.
 keyword  #include  red/Orange
 .fi
 .PP
-.B mcedit
+.B mcedit6
 uses the color before the slash.  See cooledit(1) for supported
 .B cooledit
 colors.
@@ -507,7 +507,7 @@ sets the option to on, and a 0 sets it to off, as usual.
 .TP
 .I use_internal_edit
 This option is ignored when invoking
-.BR mcedit .
+.BR mcedit6 .
 .TP
 .I editor_tab_spacing
 Interpret the tab character as being of this length.
@@ -653,7 +653,7 @@ affect all users, whether they have ~/.config/mc6/ini or not.
 .PP
 .I %pkgdatadir%/syntax/*
 .IP
-The default system\-wide syntax files for mcedit, used only if
+The default system\-wide syntax files for mcedit6, used only if
 the corresponding user's own file in
 .B ~/.local/share/mc6/syntax/
 is missing.
@@ -663,7 +663,7 @@ is missing.
 User's own setup.  If this file is present then the setup is loaded
 from here instead of the system\-wide setup file.
 .PP
-.I ~/.local/share/mc6/mcedit/
+.I ~/.local/share/mc6/mcedit6/
 .IP
 User's own directory where block commands are processed and saved and
 user's own syntax files are located.
@@ -676,7 +676,7 @@ of warranty.
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH SEE ALSO
-cooledit(1), mc(1), gpm(1), terminfo(1), scanf(3).
+cooledit(1), mcommander(1), gpm(1), terminfo(1), scanf(3).
 .SH AUTHORS
 Paul Sheer (psheer@obsidian.co.za) is the original author of
 M\-Commander's internal editor.

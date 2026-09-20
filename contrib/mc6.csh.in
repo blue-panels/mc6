@@ -1,0 +1,1 @@
+alias mc6 'source @pkglibexecdir@/mc6-wrapper.csh'

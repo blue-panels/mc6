@@ -7,12 +7,16 @@ from pathlib import Path
 
 MC_SOURCE_ROOT = Path(__file__).parent.parent
 
-if not (MC_SOURCE_ROOT / "doc/man/mc.1.in").exists():
-    raise FileNotFoundError("cannot read doc/man/mc.1.in")
+if not (MC_SOURCE_ROOT / "doc/man/mcommander.1.in").exists():
+    raise FileNotFoundError("cannot read doc/man/mcommander.1.in")
 
 warnings = []
 
 for manpage in (MC_SOURCE_ROOT / "doc").glob("**/*.1.*"):
+    # a page that only redirects to another one has nothing to render
+    if manpage.read_text().strip().startswith(".so "):
+        continue
+
     print(manpage)
 
     for renderer in ("groff", "nroff"):
@@ -39,6 +43,9 @@ for manpage in (MC_SOURCE_ROOT / "doc").glob("**/*.1.*"):
 
 # Check that English manuals are in ASCII
 for manpage in (MC_SOURCE_ROOT / "doc/man").glob("*.1.in"):
+    if manpage.read_text().strip().startswith(".so "):
+        continue
+
     print(manpage)
     warnings.extend(
         subprocess.check_output(

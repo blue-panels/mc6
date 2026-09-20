@@ -338,7 +338,7 @@
 
   grep --line-buffered -vE 'health-check|heartbeat'
 
-  7) Plain-text logs -- pass through, filter inside mcview (F6).
+  7) Plain-text logs -- pass through, filter inside mview (F6).
 
   cat
 

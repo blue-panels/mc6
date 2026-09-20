@@ -107,7 +107,7 @@ up)
     ;;
 mc)
     $COMPOSE up -d remote
-    $COMPOSE run --rm mc /work/opt/mc/bin/mc "$@"
+    $COMPOSE run --rm mc /work/opt/mc/bin/mcommander "$@"
     ;;
 build)
     $COMPOSE run --rm mc /usr/local/bin/build-mc.sh "$@"

@@ -7,7 +7,7 @@ else
 endif
 
 set MC_STATUS=0
-@bindir@/mc -P "$MC_PWD_FILE" $* || set MC_STATUS=$?
+@bindir@/mcommander -P "$MC_PWD_FILE" $* || set MC_STATUS=$?
 
 if (-r "$MC_PWD_FILE") then
 	setenv MC_PWD "`cat '$MC_PWD_FILE'`"

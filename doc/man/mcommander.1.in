@@ -1,12 +1,12 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"TOPICS "Topics:"
-.TH MC 1 "%DATE_OF_MAN_PAGE%" "MC Version %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NAME"
-mc \- Visual shell for Unix\-like systems.
+mcommander, mc6 \- Visual shell for Unix\-like systems.
 .\"SKIP_SECTION"
 .SH "SYNOPSIS"
-.B mc
+.B mcommander
 [\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-e [file] ...] [\-v file]
 .\"NODE "DESCRIPTION"
 .SH "DESCRIPTION"
@@ -38,7 +38,7 @@ Disable mouse support.
 .I \-e [file], \-\-edit[=file]
 Start the internal editor.  If the file is specified, open it on
 startup.  See also
-.BR "mcedit (1)" .
+.BR "mcedit6(1)" .
 .TP
 .I \-f, \-\-datadir
 Display the compiled\-in search paths for M\-Commander files.
@@ -65,13 +65,13 @@ Print the last working directory to the specified file.  This option is
 not meant to be used directly.  Instead, it's used from a special shell
 script that automatically changes the current directory of the shell to
 the last directory M\-Commander was in. Source the file
-.B %pkglibexecdir%/mc.sh
+.B %pkglibexecdir%/mc6.sh
 (bash and zsh users),
-.B %pkglibexecdir%/mc.csh
+.B %pkglibexecdir%/mc6.csh
 (tcsh users), or
-.B %pkglibexecdir%/mc.fish
+.B %pkglibexecdir%/mc6.fish
 (fish users) respectively to define
-.B mc
+.B mcommander
 as an alias to the appropriate shell script.
 .TP
 .I \-s, \-\-slow
@@ -95,7 +95,7 @@ the system wide terminal database
 .TP
 .I \-v file, \-\-view=file
 Start the internal viewer to view the specified file.  See also
-.BR "mcview (1)" .
+.BR "mview(1)" .
 .TP
 .I \-V, \-\-version
 Display the version of the program.
@@ -1644,7 +1644,7 @@ The entries are kept in .mc6menu of the current directory and in
 ~/.config/mc6/menu.ini, and the two are shown together. A .mc6menu is read only where it
 belongs to this user or to root and nobody else can write it, because
 its entries run commands. Nothing else is
-read: the menu holds what its owner put there, and mc6 ships no entries
+read: the menu holds what its owner put there, and mcommander ships no entries
 at all, so the menu of a new user is empty and asks for its first one.
 Inside the menu:
 .PP
@@ -1704,8 +1704,8 @@ only if it is owned by user or root and is not world\-writable. If no
 such file found, ~/.config/mc6/menu is tried in the same way.
 .PP
 Where the menu that edits itself has no file yet and another menu is
-found - his own written by hand, the mc.menu of an installed mc, or a
-menu.ini an older mc6 installed - mc offers once in a session to import
+found - his own written by hand, the mc.menu of an installed mcommander, or a
+menu.ini an older mcommander installed - mcommander offers once in a session to import
 it; F5 in the menu, and the Import button of the empty menu, ask for it
 at any time, for that file or one named by hand. It then lists what the file holds: Space
 marks an entry, Ins marks it and steps down, '*' turns every mark over,
@@ -1867,7 +1867,7 @@ The
 .\"LINK2"
 Layout
 .\"Layout"
-command pops up a dialog from which you specify a bunch of options how mc
+command pops up a dialog from which you specify a bunch of options how mcommander
 looks like on the screen.
 .PP
 The
@@ -2342,7 +2342,7 @@ section for technical details about the skin definition files.
 If this option is enabled, all dialogs and drop down menus will have a shadow.
 .\"NODE "    Learn keys"
 .SH "    Learn keys"
-This dialog teaches mc the escape sequences your terminal sends
+This dialog teaches mcommander the escape sequences your terminal sends
 for function keys, arrows and navigation keys.
 .PP
 Select a modifier combination (Ctrl, Alt, Shift) using the
@@ -2569,7 +2569,7 @@ The current menu name.
 .TP
 .IR %f " and " %p
 In file manager user menu: the current file name in selected panel.
-In mcedit user menu: the name of opened file.
+In mcedit6 user menu: the name of opened file.
 .TP
 .I %x
 The extension of current file name.
@@ -2685,7 +2685,7 @@ or ~/.mkshrc).
 users may specify startup commands in ~/.local/share/mc6/.zshrc (fallback ~/.zshrc).
 .PP
 .B tcsh, fish
-users cannot specify mc\-specific startup commands at present. They have to rely on
+users cannot specify mcommander\-specific startup commands at present. They have to rely on
 shell\-specific startup files.
 .PP
 You can suspend applications at any
@@ -2736,7 +2736,7 @@ takes every key itself, those included.  All of them are listed in the
 section of the keymap file and can be redefined there.
 .PP
 If you type
-.B mc
+.B mcommander
 without arguments at the shell prompt behind the hidden panels, the running
 M\-Commander shows its panels again instead of starting a second copy.
 Pass an argument, a directory name for example, to start a nested
@@ -2752,7 +2752,7 @@ full screen mode (Ctrl\-o), not when the panels are visible.)
 .PP
 To set a specific shell different from your current SHELL variable or
 login shell defined in /etc/passwd, you may call M\-Commander like this:
-.B SHELL=/bin/myshell mc
+.B SHELL=/bin/myshell mcommander
 .\"NODE "Chmod"
 .SH "Chmod"
 The Chmod window is used to change the attribute bits in a group of
@@ -3005,7 +3005,7 @@ to
 .IR /bla/foo ,
 which is an already existing directory.  Normally (when
 .B Dive into subdirs
-is not set), mc would copy file
+is not set), mcommander would copy file
 .I /foo/bar
 into the file
 .IR /bla/foo/bar .
@@ -3126,7 +3126,7 @@ If
 is off, the case will be ignored.
 .\"NODE "Diff Viewer"
 .SH "Internal Diff Viewer"
-The mcdiff is a visual diff tool. You can compare two files and edit them
+The mdiff is a visual diff tool. You can compare two files and edit them
 in\-place (diffs are updated dynamically). You can browse and view a working
 copy from popular version control systems (GIT, Subversion, etc).
 .PP
@@ -3662,13 +3662,13 @@ keys do what, just consult the appropriate pull\-down menu. Other keys
 are: Shift movement keys do text highlighting.
 .B C\-Ins
 copies to the file
-.B mcedit.clip
+.B mcedit6.clip
 and
 .B S\-Ins
-pastes from mcedit.clip.
+pastes from mcedit6.clip.
 .B S\-Del
 cuts to
-.BR mcedit.clip ,
+.BR mcedit6.clip ,
 and
 .B C\-Del
 deletes highlighted text. Mouse highlighting also works, and you
@@ -3688,7 +3688,7 @@ and then the assigned key. The macro is also executed if
 you press Meta, Ctrl, or Esc and the assigned key, provided that the
 key is not used for any other function. Once defined, the macro
 commands go into the file
-.B ~/.local/share/mc6/mcedit/mcedit.macros
+.B ~/.local/share/mc6/mcedit6/mcedit6.macros
 You can delete a macro by deleting the
 appropriate line in this file.
 .PP
@@ -3718,7 +3718,7 @@ code or another). This is controlled by the
 file
 .B %pkgdatadir%/edit.indent.rc
 which is copied to
-.B ~/.local/share/mc6/mcedit/edit.indent.rc
+.B ~/.local/share/mc6/mcedit6/edit.indent.rc
 in your home directory the first time you use it.
 
 .\"NODE "Internal File Editor / options"
@@ -4553,6 +4553,6 @@ If you want to report a problem with the program, please create bugreport at
 .PP
 Provide a detailed description of the bug, the version of the program
 you are running
-.RI ( "mc \-V"
+.RI ( "mcommander \-V"
 displays this information), the operating system you are running the
 program on.  If the program crashes, we would appreciate a stack trace.

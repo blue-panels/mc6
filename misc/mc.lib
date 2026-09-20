@@ -8,6 +8,7 @@ joe=+%lineno %filename
 more=+%lineno %filename
 less=+%lineno %filename
 mcedit=%filename:%lineno
+mcedit6=%filename:%lineno
 
 [Special dirs]
 list=/afs;/coda;/:;/...;/net

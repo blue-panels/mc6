@@ -11,7 +11,7 @@
 # Runs inside the mc container, after build.
 set -u
 
-MC=${MC:-/work/opt/mc/bin/mc}
+MC=${MC:-/work/opt/mc/bin/mcommander}
 [ -x "$MC" ] || { echo "check-plugins.sh: no mc at $MC, run build first" >&2; exit 2; }
 
 names () { awk '{print $NF}' | sed 's/@.*//' | sort -u; }
