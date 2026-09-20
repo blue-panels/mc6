@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
-"Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2026-09-13 10:54+0000\n"
 "Last-Translator: baurzhanm <baurzhanm@noreply.codeberg.org>\n"
@@ -4860,7 +4860,8 @@ msgid "Cannot read directory contents"
 msgstr "Бума мазмұнын оқу мүмкін емес"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Пайдаланушы берген пішім жарамсыз сияқты, бастапқы нұсқаға қайтарылады."
+msgstr ""
+"Пайдаланушы берген пішім жарамсыз сияқты, бастапқы нұсқаға қайтарылады."
 
 msgid "Column types must not be empty."
 msgstr ""

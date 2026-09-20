@@ -16,9 +16,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
-"Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 19:48+0000\n"
+"PO-Revision-Date: 2026-09-17 22:13+0000\n"
 "Last-Translator: Betacart <betacart@noreply.codeberg.org>\n"
 "Language-Team: Czech <https://translate.codeberg.org/projects/mc6/mc6/cs/>\n"
 "Language: cs\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n "
 "<= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
-"X-Generator: Weblate 2026.8.1\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -335,209 +335,155 @@ msgstr "Nastavení potvrzování"
 msgid "Edit extensions file"
 msgstr "Upravit soubor s příponami"
 
-#, fuzzy
-#| msgid "Synta&x highlighting"
 msgid "Edit syntax highlighting"
-msgstr "Zvýraznění synta&xe"
+msgstr "Upravit zvýraznění syntaxe"
 
-#, fuzzy
-#| msgid "Edit symlink"
 msgid "Edit symbolic link"
 msgstr "Upravit symbolický odkaz"
 
 msgid "External panelize"
 msgstr "Externí panelizace"
 
-#, fuzzy
-#| msgid "Filtered view"
 msgid "Filter view"
-msgstr "Filtrovaný pohled"
+msgstr "Filtrované zobrazení"
 
-#, fuzzy
 msgid "Quick filter"
-msgstr "&Rychlé zobrazení "
+msgstr "Rychlý filtr"
 
 msgid "Info panel"
-msgstr ""
+msgstr "Informační panel"
 
 msgid "Background jobs"
 msgstr "Úlohy na pozadí"
 
 msgid "Layout settings"
-msgstr ""
+msgstr "Nastavení rozvržení"
 
-#, fuzzy
-#| msgid "Appearance"
 msgid "Appearance settings"
-msgstr "Vzhled"
+msgstr "Nastavení vzhledu"
 
-#, fuzzy
-#| msgid ""
-#| "Cannot create target hardlink\n"
-#| "%s"
 msgid "Create hard link"
-msgstr ""
-"Nebylo možné vytvořit cílový pevný odkaz\n"
-"%s"
+msgstr "Vytvořit pevný odkaz"
 
-#, fuzzy
-#| msgid "Listing format"
 msgid "Setup listing format"
-msgstr "Formát výpisu"
+msgstr "Nastavit formát výpisu"
 
-#, fuzzy
-#| msgid "Panel options"
 msgid "Panel modes"
-msgstr "Nastavení panelu"
+msgstr "Režimy panelu"
 
-#, fuzzy
-#| msgid "Use panel sort mo&de"
 msgid "Manage panel modes"
-msgstr "Použít režim, ve kterém je tříděno v panelu"
+msgstr "Spravovat režimy panelu"
 
-#, fuzzy
-#| msgid "Use panel sort mo&de"
 msgid "Panel listing mode"
-msgstr "Použít režim, ve kterém je tříděno v panelu"
+msgstr "Režim výpisu panelu"
 
 msgid "Panel options"
-msgstr "Nastavení panelu"
+msgstr "Volby panelu"
 
 msgid "Quick cd"
-msgstr "Rychlá změna složky"
+msgstr "Rychlé \"cd\""
 
-#, fuzzy
 msgid "Quick view panel"
-msgstr "&Rychlé zobrazení "
+msgstr "Panel rychlého zobrazení"
 
-#, fuzzy
-#| msgid "Relative symlin&k"
 msgid "Create relative symlink"
-msgstr "Relativní symbolic&ký odkaz"
+msgstr "Vytvořit relativní symbolický odkaz"
 
-#, fuzzy
-#| msgid "&Save setup"
 msgid "Save setup"
-msgstr "Uložit na&stavení"
+msgstr "Uložit nastavení"
 
-#, fuzzy
-#| msgid ""
-#| "Cannot create symbolic link\n"
-#| "%s"
 msgid "Create symbolic link"
-msgstr ""
-"Nebylo možné vytvořit symbolický odkaz\n"
-"%s"
+msgstr "Vytvořit symbolický odkaz"
 
-#, fuzzy
-#| msgid "Filtered view"
 msgid "Panel tree view"
-msgstr "Filtrovaný pohled"
+msgstr "Zobrazení stromu v panelu"
 
 msgid "Directory tree"
-msgstr "Strom složek"
+msgstr "Strom adresářů"
 
 msgid "Put current link to cmdline"
-msgstr ""
+msgstr "Vložit aktuální odkaz do příkazové řádky"
 
-#, fuzzy
-#| msgid "Shell link to machine"
 msgid "Put other link to cmdline"
-msgstr "Shellové spojení na počítač"
+msgstr "Vložit ostatní odkazy do příkazové řádky"
 
 msgid "Add to hotlist"
-msgstr "Přidat do seznamu pro rychlý přístup"
+msgstr "Přidat do horkého seznamu"
 
-#, fuzzy
-#| msgid "Show &hidden files"
 msgid "Toggle hidden files"
-msgstr "Ukázat s&kryté soubory"
+msgstr "Přepnout skryté soubory"
 
 msgid "Toggle horizontal/vertical split"
-msgstr ""
+msgstr "Přepnout vodorovné/svislé rozdělení"
 
-#, fuzzy
-#| msgid "&Equal split"
 msgid "Equal panel split"
-msgstr "Rozděl&ení na poloviny"
+msgstr "Rovnoměrné rozdělení panelů"
 
 msgid "Enlarge current panel"
-msgstr ""
+msgstr "Zvětšit aktuální panel"
 
 msgid "Shrink current panel"
-msgstr ""
+msgstr "Zmenšit aktuální panel"
 
 msgid "Put current path to cmdline"
-msgstr ""
+msgstr "Vložit aktuální cestu do příkazové řádky"
 
 msgid "Put other path to cmdline"
-msgstr ""
+msgstr "Vložit ostatní cesty do příkazové řádky"
 
 msgid "Put selected name to cmdline"
-msgstr ""
+msgstr "Vložit vybraný název do příkazové řádky"
 
 msgid "Put selected full path to cmdline"
-msgstr ""
+msgstr "Vložit vybranou plnou cestu do příkazové řádky"
 
 msgid "Put tagged names to cmdline"
-msgstr ""
+msgstr "Vložit označkované názvy do příkazové řádky"
 
 msgid "Put other tagged to cmdline"
-msgstr ""
+msgstr "Vložit ostatní označkované do příkazové řádky"
 
 msgid "Toggle left panel in terminal mode"
-msgstr ""
+msgstr "Přepnout levý panel v režimu terminálu"
 
-#, fuzzy
-#| msgid "Togg&le right margin"
 msgid "Toggle right panel in terminal mode"
-msgstr "Vyp/zap. přesah vpravo"
+msgstr "Přepnout pravý panel v režimu terminálu"
 
-#, fuzzy
-#| msgid "S&hell patterns"
 msgid "Select files by pattern"
-msgstr "Vzory jako v s&hellu"
+msgstr "Vybrat soubory podle vzoru"
 
-#, fuzzy
-#| msgid "&Using shell patterns"
 msgid "Unselect files by pattern"
-msgstr "Význam vzorů jako v shell&u"
+msgstr "Odznačit soubory podle vzoru"
 
 msgid "Select by extension"
-msgstr ""
+msgstr "Vybrat podle přípony"
 
 msgid "Scroll panel left"
-msgstr ""
+msgstr "Posunout panel vlevo"
 
 msgid "Scroll panel right"
-msgstr ""
+msgstr "Posunout panel vpravo"
 
 msgid "Scroll to left edge"
-msgstr ""
+msgstr "Posunout k levému okraji"
 
 msgid "Scroll to right edge"
-msgstr ""
+msgstr "Posunout k pravému okraji"
 
 msgid "Other panel cd here"
-msgstr ""
+msgstr "Ostatní panely pro \"cd\" zde"
 
 msgid "Other panel cd link target"
-msgstr ""
+msgstr "Cíl odkazu \"cd\" ostatního panelu"
 
-#, fuzzy
-#| msgid "Close file"
 msgid "Copy single file"
-msgstr "Zavřít soubor"
+msgstr "Kopírovat jednotlivý soubor"
 
-#, fuzzy
-#| msgid "Getting file"
 msgid "Move single file"
-msgstr "Získává se soubor"
+msgstr "Přesunout jednotlivý soubor"
 
-#, fuzzy
-#| msgid "Getting file"
 msgid "Delete single file"
-msgstr "Získává se soubor"
+msgstr "Smazat jednotlivý soubor"
 
 #, fuzzy
 #| msgid "Compare directories"

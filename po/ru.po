@@ -29,15 +29,16 @@
 # Yury V. Zaytsev <yury@shurup.com>, 2025
 # adem4ik <adem4ik@noreply.codeberg.org>, 2026.
 # smind <smind@noreply.codeberg.org>, 2026.
+# Andrei Stepanov <adem4ik@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
-"Report-Msgid-Bugs-To: https://github.com/blue-panels/mc6/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 22:08+0000\n"
-"Last-Translator: smind <smind@noreply.codeberg.org>\n"
-"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/>"
-"\n"
+"PO-Revision-Date: 2026-09-16 04:27+0000\n"
+"Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
+"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/"
+">\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -332,7 +333,7 @@ msgid "View command output"
 msgstr "Просмотр вывода команды"
 
 msgid "Find file"
-msgstr "Поиск файла"
+msgstr "Найти файл"
 
 msgid "Show directory size"
 msgstr "Показать размеры каталогов"
@@ -383,7 +384,7 @@ msgid "Create hard link"
 msgstr "Создать жёсткую ссылку"
 
 msgid "Setup listing format"
-msgstr "Настройка формата списка"
+msgstr "Настроить формат списка"
 
 msgid "Panel modes"
 msgstr "Режимы панели"
@@ -419,16 +420,16 @@ msgid "Directory tree"
 msgstr "Дерево каталогов"
 
 msgid "Put current link to cmdline"
-msgstr "Поместить текущую ссылку в командную строку"
+msgstr "Вставить текущую ссылку в командную строку"
 
 msgid "Put other link to cmdline"
-msgstr "Поместить другую ссылку в командную строку"
+msgstr "Вставить другую ссылку в командную строку"
 
 msgid "Add to hotlist"
 msgstr "Добавить быстрый доступ к каталогу"
 
 msgid "Toggle hidden files"
-msgstr "Переключить скрытые файлы"
+msgstr "Показать или скрыть файлы"
 
 msgid "Toggle horizontal/vertical split"
 msgstr "Переключить горизонтальное/вертикальное разделение"
@@ -443,22 +444,22 @@ msgid "Shrink current panel"
 msgstr "Уменьшить текущую панель"
 
 msgid "Put current path to cmdline"
-msgstr "Поместить текущий путь в командную строку"
+msgstr "Вставить текущий путь в командную строку"
 
 msgid "Put other path to cmdline"
-msgstr "Поместить другой путь в командную строку"
+msgstr "Вставить другой путь в командную строку"
 
 msgid "Put selected name to cmdline"
-msgstr "Поместить выбранное имя в командную строку"
+msgstr "Вставить выбранное имя в командную строку"
 
 msgid "Put selected full path to cmdline"
-msgstr "Поместить полный путь выбранного в командную строку"
+msgstr "Вставить полный путь выбранного в командную строку"
 
 msgid "Put tagged names to cmdline"
-msgstr "Поместить помеченные имена в командную строку"
+msgstr "Вставить помеченные имена в командную строку"
 
 msgid "Put other tagged to cmdline"
-msgstr "Поместить другие помеченные в командную строку"
+msgstr "Вставить другие помеченные в командную строку"
 
 msgid "Toggle left panel in terminal mode"
 msgstr "Переключить левую панель в режиме терминала"
@@ -548,7 +549,7 @@ msgid "Smart parent directory"
 msgstr "Умный родительский каталог"
 
 msgid "Cycle listing format"
-msgstr "Циклический формат списка"
+msgstr "Переключить формат списка"
 
 msgid "Yank (paste kill buffer)"
 msgstr "Вставить (из буфера удаления)"
@@ -1533,7 +1534,7 @@ msgid "DialogTitle|History cleanup"
 msgstr "Очистка истории"
 
 msgid "Do you want clean this history?"
-msgstr "Желаете очистить историю?"
+msgstr "Хотите очистить эту историю?"
 
 msgid "&OK"
 msgstr "&Хорошо"
@@ -1832,7 +1833,7 @@ msgid ""
 "Cannot stat\n"
 "%s"
 msgstr ""
-"Не удаётся запустить\n"
+"Не удаётся получить свойства\n"
 "%s"
 
 msgid "Diff viewer: invalid mode"
@@ -1925,7 +1926,7 @@ msgid "No files matching '%s'."
 msgstr "Нет файлов, соответствующих \"%s\"."
 
 msgid "Search File"
-msgstr "Поиск файла"
+msgstr "Найти файл"
 
 msgid "Complete Symbol"
 msgstr "Дополнение символа"
@@ -2000,7 +2001,7 @@ msgid "Search symbol"
 msgstr "Поиск символа"
 
 msgid "Search file"
-msgstr "Поиск файла"
+msgstr "Найти файл"
 
 msgid "Symbols in current file"
 msgstr "Символы в текущем файле"
@@ -3492,7 +3493,7 @@ msgid "Link %s to:"
 msgstr "Создать ссылку с %s на:"
 
 msgid "Link"
-msgstr "Жёсткая ссылка"
+msgstr "Ссылка"
 
 #, c-format
 msgid ""
@@ -4319,7 +4320,7 @@ msgid "&Directory tree"
 msgstr "&Дерево каталогов"
 
 msgid "&Find file"
-msgstr "Поиск &файла"
+msgstr "Н&айти файл"
 
 msgid "S&wap panels"
 msgstr "&Переставить панели"
@@ -4520,7 +4521,7 @@ msgid "Fir&st hit"
 msgstr "До первого вхо&ждения"
 
 msgid "Find File"
-msgstr "Поиск файла"
+msgstr "Найти файл"
 
 msgid "Start at:"
 msgstr "От каталога:"
@@ -7213,7 +7214,7 @@ msgstr ""
 "%s\n"
 "найден в списке известных хостов, но\n"
 "КЛЮЧИ НЕ СОВПАДАЮТ! ЭТО МОЖЕТ БЫТЬ MITM-АТАКОЙ!\n"
-"Вы уверены, что хотите добавить его в список известных хостов и продолжить "
+"Уверены, что хотите добавить его в список известных хостов и продолжить "
 "подключение?"
 
 #, c-format
@@ -7713,8 +7714,8 @@ msgid ""
 "Selected item of a list that does not have the focus, e.g. Find File results "
 "after Tab"
 msgstr ""
-"Выбранный элемент списка, не находящегося в фокусе, например результаты «"
-"Поиска файлов» после Tab"
+"Выбранный элемент списка, не находящегося в фокусе, например результаты "
+"«Поиска файлов» после Tab"
 
 msgid "Selected item, list focused"
 msgstr "Выбранный элемент, список в фокусе"
