@@ -20,6 +20,10 @@ M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 -- black of the terminal; a 256-color value such as "48;5;236" also works.
 M.CODE_BG = "100"
 
+-- draw the corners of a code block, with the language of the fence in the
+-- top edge
+M.CODE_FRAME = true
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -59,10 +63,16 @@ local BOX_DONE = "\u{2611}"
 -- a tab in a code block moves to the next stop
 local TAB_WIDTH = 8
 
--- a code block is indented this far, and the background keeps a margin
--- between its edge and the code
+-- a code block is indented this far, and the frame and the background keep
+-- a margin between their edge and the code
 local CODE_INDENT = "    "
 local CODE_MARGIN = 1
+
+-- the corners of a code block, each with the stub of an edge
+local FRAME_TL = "\u{250C}\u{2574}"
+local FRAME_TR = "\u{2576}\u{2510}"
+local FRAME_BL = "\u{2514}\u{2574}"
+local FRAME_BR = "\u{2576}\u{2518}"
 
 ------------------------------------------------------------------------
 -- Text helpers.  Lengths count characters, not bytes; a stray byte that is
@@ -1267,11 +1277,8 @@ local function code_width(line)
     return width((line:gsub("\27%[[%d;]*m", "")))
 end
 
--- The lines of a code block, padded to the widest one and laid on the
--- background.  Each line opens the background and closes it at its end,
--- because the viewer may start reading at any line.
-local function background_code(lines, out, width_limit)
-    local open = "\27[" .. M.CODE_BG .. "m"
+-- The columns the block takes: the widest line, never wider than the screen.
+local function code_box(lines, width_limit)
     local box = 0
 
     for _, line in ipairs(lines) do
@@ -1284,27 +1291,43 @@ local function background_code(lines, out, width_limit)
     if width_limit ~= nil then
         box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
     end
+    return box
+end
+
+-- One edge of the frame: the corners with their stubs, the language in the
+-- top one.  The edge is as wide as the lines between the corners, so that
+-- the background of the block is a rectangle.
+local function code_edge(left, right, label, box)
+    local text = label ~= nil and label ~= "" and (" " .. label) or ""
+    local fill = math.max(box + 2 * CODE_MARGIN - width(left) - width(right) - width(text), 0)
+
+    return left .. text .. (" "):rep(fill) .. right
+end
+
+-- The lines of a code block, padded to the widest one so that the background
+-- covers a rectangle.  Each line opens the background and closes it at its
+-- end, because the viewer may start reading at any line.
+local function emit_code(lines, out, width_limit, language)
+    local box = code_box(lines, width_limit)
+    local bg = M.CODE_BG ~= nil and M.CODE_BG ~= "" and ("\27[" .. M.CODE_BG .. "m") or ""
+    local off = bg ~= "" and SGR_BG_OFF or ""
+
+    if M.CODE_FRAME then
+        out[#out + 1] = CODE_INDENT .. bg .. code_edge(FRAME_TL, FRAME_TR, language, box) .. off
+    end
     for _, line in ipairs(lines) do
         local fill = math.max(box - code_width(line), 0) + CODE_MARGIN
 
         out[#out + 1] = CODE_INDENT
-            .. open
+            .. bg
             .. (" "):rep(CODE_MARGIN)
             .. line
-            .. (" "):rep(fill)
-            .. SGR_BG_OFF
+            .. (bg ~= "" and (" "):rep(fill) or "")
+            .. off
     end
-end
-
--- The lines of a code block, on the background when there is one.
-local function emit_code(lines, out, width_limit)
-    if M.CODE_BG == nil or M.CODE_BG == "" then
-        for _, line in ipairs(lines) do
-            out[#out + 1] = CODE_INDENT .. line
-        end
-        return
+    if M.CODE_FRAME then
+        out[#out + 1] = CODE_INDENT .. bg .. code_edge(FRAME_BL, FRAME_BR, nil, box) .. off
     end
-    background_code(lines, out, width_limit)
 end
 
 -- The lines of a code block, colored where the rules say so.  Each line
@@ -1326,7 +1349,7 @@ local function code_lines(code, language, out, width_limit)
         if code:sub(-1) == "\n" then
             lines[#lines] = nil
         end
-        emit_code(lines, out, width_limit)
+        emit_code(lines, out, width_limit, language)
         return
     end
 
@@ -1355,7 +1378,7 @@ local function code_lines(code, language, out, width_limit)
     if code:sub(-1) == "\n" then
         lines[#lines] = nil
     end
-    emit_code(lines, out, width_limit)
+    emit_code(lines, out, width_limit, language)
 end
 
 ------------------------------------------------------------------------
