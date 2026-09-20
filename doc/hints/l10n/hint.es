@@ -14,9 +14,9 @@ Consejo: Para seleccionar directorios añadir «/» tras el patrón a buscar.
 
 Consejo: Si no funcionan las teclas de función, ESC+número sirve.
 
-Consejo: El sitio oficial del M-Commander es https://github.com/blue-panels/mc6
+Consejo: El sitio oficial del M-Commander es https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Consejo: El tabulador cambia de panel.
 

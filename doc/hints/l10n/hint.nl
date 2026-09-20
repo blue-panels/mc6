@@ -14,9 +14,9 @@ Hint: Directories selecteren: zet een slash aan het eind van het zoekpatroon.
 
 Hint: Als je terminal geen functietoetsen ondersteunt, gebruik dan ESC+nummer.
 
-Hint: The homepage of M-Commander: https://github.com/blue-panels/mc6
+Hint: The homepage of M-Commander: https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Hint: Tab verandert focus huidig paneel (links/rechts).
 

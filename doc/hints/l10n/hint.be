@@ -14,9 +14,9 @@
 
 Падказка: калі ў тэрмінала няма функцыянальных клавіш, выкарыстоўвайце "ESC+лічба".
 
-Падказка: сайт M-Commander — https://github.com/blue-panels/mc6
+Падказка: сайт M-Commander — https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Падказка: клавішай "Tab" пераключаецца бягучая панэль.
 

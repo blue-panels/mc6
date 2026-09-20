@@ -14,9 +14,9 @@ Tips: Välja kataloger: Lägg till snedstreck i slutet av det matchande mönstre
 
 Tips: Om din terminal saknar funktionstangenter, använd ESC+siffersekvens.
 
-Tips: Webbsidan för M-Commander: https://github.com/blue-panels/mc6
+Tips: Webbsidan för M-Commander: https://github.com/blue-panels/mcommander
 
-Hint: Please file any bug reports at https://github.com/blue-panels/mc6/issues
+Hint: Please file any bug reports at https://github.com/blue-panels/mcommander/issues
 
 Tips: Tab ändrar din nuvarande panel.
 
