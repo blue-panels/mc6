@@ -2,9 +2,6 @@ name: ci-fedora
 
 on:
   workflow_call:
-    secrets:
-      SOURCE_DEPLOY_KEY:
-        required: true
 
 env:
   CLANG_FORMAT_VERSION: 20.1.3
@@ -73,37 +70,8 @@ jobs:
             make install \
           '
 
-      - name: Render manual pages to HTML
-        run: |
-          mkdir man
-          cp maint/mandoc-1.14.6.css man/mandoc.css
-
-          MANPAGES="mcommander mdiff mcedit6 mview"
-
-          for MANPAGE in $MANPAGES ; do
-            man.mandoc -K utf-8 -mandoc -T html -O style=mandoc.css \
-              $(pwd)/install-prefix/share/man/man1/$MANPAGE.1 > man/$MANPAGE.html
-          done
-
-          echo "<div align='right'>Manual pages: " > man/header.html
-          python3 -c "print(' &bullet; '.join(f'<a href="man/{p}.html">{p}</a>' for p in '$MANPAGES'.split()))" >> man/header.html
-          echo "</div>" >> man/header.html
-
-      - uses: actions/upload-artifact@v6
-        if: github.ref == 'refs/heads/master'
-        with:
-          name: man-pages-html-${{ github.sha }}
-          path: man
-
       - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: test-suite-logs-fedora
           path: ./**/test-suite.log
-
-  call-update-sources:
-    needs: [ build-fedora ]
-    if: github.ref == 'refs/heads/master' && github.repository == 'MidnightCommander/mc'
-    uses: ./.github/workflows/update-sources.yml
-    secrets:
-      SOURCE_DEPLOY_KEY: ${{ secrets.SOURCE_DEPLOY_KEY }}
