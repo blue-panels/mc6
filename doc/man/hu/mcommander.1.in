@@ -2977,7 +2977,7 @@ zsh(1).
 .nf
 A M\-Commander World Wide Web oldalának címe a
 következő:
-	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mcommander'https://github.com/blue\-panels/mcommander\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "Szerzők"
@@ -3015,7 +3015,7 @@ Nézd meg a disztribúció TODO fájlát, hogy megtudhasd, milyen teendők
 vannak még vissza.
 .PP
 Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
-címre: \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
+címre: \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 .PP
 Gondoskodj arról, hogy tartalmazza a hiba minél pontosabb
 meghatározását, a futtatott program verziószámát (az mcommander \-V parancs meg

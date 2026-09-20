@@ -4668,7 +4668,7 @@ insert=\ee[Op
 .\"NODE "AVAILABILITY"
 .SH "Обновление версий"
 Последние версии программы M\-Commander можно найти на сайте
-\X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "Другие источники"
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1), tcsh(1),
@@ -4676,7 +4676,7 @@ zsh(1), mcedit6(1).
 .PP
 .nf
 Страница, посвященная M\-Commander, в World Wide Web:
-	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mcommander'https://github.com/blue\-panels/mcommander\X'tty: link'
 .fi
 .PP
 Данная страница оперативного руководства содержит информацию, актуальную
@@ -4729,7 +4729,7 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 .PP
 Если вы обнаружили в программе какие\-то недостатки или недоработки,
 оформите, пожалуйста, ваши замечания по адресу
-\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 .PP
 Дайте подробное описание обнаруженных недостатков (и/или ваших
 предложений по усовершенствованию программы), сообщите версию программы

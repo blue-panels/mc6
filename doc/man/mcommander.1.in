@@ -4529,7 +4529,7 @@ help for details on the License and the lack of warranty.
 .\"NODE "AVAILABILITY"
 .SH "AVAILABILITY"
 The latest version of this program can be found at
-\X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
 .\"NODE "SEE ALSO"
 .SH "SEE ALSO"
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
@@ -4537,7 +4537,7 @@ tcsh(1), zsh(1).
 .PP
 .nf
 M\-Commander's page on the World Wide Web:
-	\X'tty: link https://github.com/blue\-panels/mc6'https://github.com/blue\-panels/mc6\X'tty: link'
+	\X'tty: link https://github.com/blue\-panels/mcommander'https://github.com/blue\-panels/mcommander\X'tty: link'
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTHORS"
@@ -4549,7 +4549,7 @@ See the file TODO in the distribution for information on what remains to
 be done.
 .PP
 If you want to report a problem with the program, please create bugreport at
-\X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 .PP
 Provide a detailed description of the bug, the version of the program
 you are running
