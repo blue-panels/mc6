@@ -2931,7 +2931,7 @@ da defaults.ini.
 La configurazione dell'utente. Se questo file è presente, la configurazione
 viene caricata da qui invece che dal file di sistema.
 .PP
-.I %pkgdatadir%/hints/mc.hint
+.I %pkgdatadir%/hints/hint
 .IP
 Questo file contiene i suggerimenti (dritte) mostrate dal programma.
 .PP

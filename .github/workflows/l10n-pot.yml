@@ -35,42 +35,42 @@ jobs:
 
           # The same call that po/Makefile makes, without needing a configured
           # build tree.
-          xgettext --default-domain=mc --directory=. \
+          xgettext --default-domain=mcommander --directory=. \
             --add-comments=TRANSLATORS: --keyword=_ --keyword=N_ --keyword=Q_ \
             --files-from=po/POTFILES.in \
             --copyright-holder='Free Software Foundation, Inc.' \
-            --package-name='mc' \
+            --package-name='mcommander' \
             --package-version="$(./version.sh .)" \
             --msgid-bugs-address='https://github.com/blue-panels/mc6/issues' \
-            --output=po/mc.pot.new
+            --output=po/mcommander.pot.new
 
           # Neither the creation date nor the version string is a change:
           # the version carries the commit count and moves on every push.
           strip() {
             grep -v -e '^"POT-Creation-Date:' -e '^"Project-Id-Version:' "$1"
           }
-          if strip po/mc.pot > old.pot && strip po/mc.pot.new > new.pot \
+          if strip po/mcommander.pot > old.pot && strip po/mcommander.pot.new > new.pot \
              && cmp -s old.pot new.pot; then
             echo "The template is up to date." >> "$GITHUB_STEP_SUMMARY"
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          mv po/mc.pot.new po/mc.pot
+          mv po/mcommander.pot.new po/mcommander.pot
           rm -f old.pot new.pot
           git switch -C l10n/pot
-          git add po/mc.pot
-          git commit -m "po: update mc.pot"
+          git add po/mcommander.pot
+          git commit -m "po: update mcommander.pot"
           git push --force origin l10n/pot
           echo "changed=true" >> "$GITHUB_OUTPUT"
           {
-            echo "Strings in the template: $(grep -c '^msgid ' po/mc.pot)"
+            echo "Strings in the template: $(grep -c '^msgid ' po/mcommander.pot)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Point at the branch
         if: steps.pot.outputs.changed == 'true'
         run: |
-          title='po: update mc.pot'
+          title='po: update mcommander.pot'
           body=$'The gettext template no longer matches the sources.\n\nOnce this lands in master, Weblate pulls the template over the webhook and spreads the new strings over the po files.'
           url="https://github.com/${GITHUB_REPOSITORY}/compare/master...l10n/pot"
           url="${url}?expand=1&labels=Chore,infra,Docs"

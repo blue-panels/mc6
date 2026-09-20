@@ -23,7 +23,7 @@ endif
 
 EXTRA_DIST = \
 	fixtures/charsets \
-	fixtures/hints/mc.hint \
+	fixtures/hints/hint \
 	fixtures/viewertest.txt \
 	execute__common.c
 

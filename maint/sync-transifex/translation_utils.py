@@ -19,7 +19,7 @@ def create_po4a_config(sync_dir: Path, script_dir: Path, source_dir: Path, resou
     config = get_config_file(script_dir, resource, "po4a.cfg").read_text()
 
     config = config.replace("@translations@", " ".join(f"{lang}:var.d/$master/{lang}.po" for lang in langs))
-    config = config.replace("@resources@", " ".join(f"{lang}:@srcdir@/doc/hints/l10n/mc.hint.{lang}" for lang in langs))
+    config = config.replace("@resources@", " ".join(f"{lang}:@srcdir@/doc/hints/l10n/hint.{lang}" for lang in langs))
 
     config = config.replace("@srcdir@", str(source_dir))
 

@@ -1,6 +1,6 @@
 hintdir = $(pkgdatadir)/hints
 
-HINTFILES_LANG = $(srcdir)/mc.hint.*
+HINTFILES_LANG = $(srcdir)/hint.*
 
 hint_DATA = $(HINTFILES_LANG)
 

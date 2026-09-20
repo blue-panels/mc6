@@ -3921,7 +3921,7 @@ Configuración personal del usuario. Si este archivo está presente entonces
 se cargará la configuración desde aquí en lugar de desde el archivo de
 configuración del sistema.
 .PP
-.I %pkgdatadir%/hints/mc.hint
+.I %pkgdatadir%/hints/hint
 .IP
 Este archivo contiene los mensajes cortos de ayuda mostrados por el
 programa.

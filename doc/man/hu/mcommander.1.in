@@ -2927,7 +2927,7 @@ A felhasználó saját beállításai. Ha ez a fájl elérhető, akkor a
 beállítások ebből a fájlból olvasódnak be a rendszerszintű indító fájl
 helyett.
 .PP
-.I %pkgdatadir%/hints/mc.hint
+.I %pkgdatadir%/hints/hint
 .IP
 Ez a fájl tartalmazza a program által megjelenített útmutattásokat
 (cookie\-kat).

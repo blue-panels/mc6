@@ -4491,7 +4491,7 @@ are loaded from defaults.ini.
 User's own setup. If this file is present then the setup is loaded
 from here instead of the system\-wide startup file.
 .PP
-.I %pkgdatadir%/hints/mc.hint
+.I %pkgdatadir%/hints/hint
 .IP
 This file contains the hints displayed by the program.
 .PP

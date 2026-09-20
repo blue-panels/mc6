@@ -6,7 +6,7 @@ from pathlib import Path
 
 from translation_utils import get_translations, init_sync_dir
 
-RESOURCE_NAME = "mc.pot"
+RESOURCE_NAME = "mcommander.pot"
 
 SCRIPT_DIR = Path(__file__).parent
 SOURCE_DIR = SCRIPT_DIR.parent.parent

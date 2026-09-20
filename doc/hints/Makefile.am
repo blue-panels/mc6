@@ -4,7 +4,7 @@ endif
 
 DIST_SUBDIRS = l10n
 
-HINTFILE = mc.hint
+HINTFILE = hint
 
 hintdir = $(pkgdatadir)/hints
 
