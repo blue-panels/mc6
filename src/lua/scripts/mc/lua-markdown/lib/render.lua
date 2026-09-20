@@ -28,6 +28,9 @@ M.CODE_FRAME = true
 -- that a line does not end right at the frame
 M.CODE_AIR = 0.2
 
+-- the narrowest a code block gets, margins counted, however short the code
+M.CODE_MIN = 30
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -1293,7 +1296,7 @@ local function code_box(lines, width_limit)
             box = w
         end
     end
-    box = box + math.floor(box * M.CODE_AIR)
+    box = math.max(box + math.floor(box * M.CODE_AIR), M.CODE_MIN - 2 * CODE_MARGIN)
     if width_limit ~= nil then
         box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
     end
