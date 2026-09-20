@@ -1196,14 +1196,14 @@ Makefile
 contrib/Makefile
 
 misc/Makefile
-misc/mc.charsets
+misc/charsets
 misc/mcedit.menu
 misc/skins/Makefile
 misc/ext.d/Makefile
 misc/ext.d/misc.sh
 misc/ext.d/text.sh
 misc/macros.d/Makefile
-misc/mc.ext.ini
+misc/extensions.ini
 misc/magic.ini
 
 src/Makefile
@@ -1334,7 +1334,7 @@ tests/lib/mcconfig/Makefile
 tests/lib/search/Makefile
 tests/lib/strutil/Makefile
 tests/lib/vfs/Makefile
-tests/lib/vfs/mc.charsets
+tests/lib/vfs/charsets
 tests/lib/widget/Makefile
 tests/src/Makefile
 tests/src/filemanager/Makefile

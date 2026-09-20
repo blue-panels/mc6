@@ -337,9 +337,9 @@ La función de ciertas teclas se puede alterar a partir de un mapa de teclado
 almacenado en un archivo externo. Inicialmente el programa asigna esas funciones
 según el mapa definido en el código fuente. Posteriormente se cargan siempre
 los archivos
-.B %pkgdatadir%/mc.keymap
+.B %pkgdatadir%/keymap.ini
 y
-.BR %sysconfdir%/mcommander/mc.keymap ,
+.BR %sysconfdir%/mcommander/keymap.ini ,
 reasignando en el orden marcado las definiciones anteriores. Se cargan después
 posibles mapas de teclado creados por el usuario atendiendo por orden de prioridad
 a:
@@ -360,7 +360,7 @@ en la sección
 del archivo de configuración.
 .br
 4) Archivo
-.B ~/.config/mc6/mc.keymap
+.B ~/.config/mc6/keymap.ini
 .br
 .PP
 La opción de línea de órdenes, la variable de entorno y el parámetro en el
@@ -1498,14 +1498,14 @@ comando cd interno\&.
 .\"NODE "    Edit Extension File"
 .SH "    Editar el Archivo de Extensiones"
 Abre el archivo
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 en nuestro editor.
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 or system\-wide
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Trabajos en Segundo Plano"
@@ -1517,11 +1517,11 @@ aquí.
 .SH "    Edición del Archivo de Menú"
 El menú de usuario es un menú de acciones útiles que puede ser personalizado
 por el usuario. Cuando accedemos al menú de usuario se utiliza, si existe,
-el archivo .mc.menu del directorio actual, pero solo si es propiedad del
+el archivo .usermenu del directorio actual, pero solo si es propiedad del
 usuario o del superusuario y no es modificable por todos.
 Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc6/menu,
 y si no, mcommander utiliza el menú por defecto para todo el sistema
-%pkgdatadir%/mc.menu.
+%pkgdatadir%/usermenu.
 .PP
 El formato del menú de archivo es muy simple.  Todas las líneas, salvo
 las que empiezan con espacio o tabulación, son consideradas entradas
@@ -1540,7 +1540,7 @@ el código del menú. Para mayor información, ver
 Sustitución de macro\&.
 .\"Macro Substitution"
 .PP
-He aquí un ejemplo de archivo mc.menu:
+He aquí un ejemplo de archivo usermenu:
 .PP
 .nf
 A	Vuelca el contenido del archivo seleccionado
@@ -2801,7 +2801,7 @@ Buscar la próxima coincidencia.
 .PP
 .B F8
 Intercambia entre el modo crudo y procesado: esto mostrará el archivo como se encuentra en disco
-o si se ha especificado un filtro de visualización en el archivo mc.ext.ini, entonces
+o si se ha especificado un filtro de visualización en el archivo extensions.ini, entonces
 la salida filtrada. El modo actual es siempre el contrario al mostrado
 en la etiqueta del botón, en tanto que el botón muestra el modo en el que entraremos
 con la pulsación de esa tecla.
@@ -3736,7 +3736,7 @@ emplear. Sin esta opción se emplea el formato por defecto.
 Si esta variable está activada (por defecto lo está) se recurrirá al
 comando «file» para reconocer los tipos de archivo referidos en el archivo
 .\"LINK2"
-mc.ext.ini\&.
+extensions.ini\&.
 .\"Edit Extension File"
 .TP
 .I xtree_mode
@@ -3785,7 +3785,7 @@ M\-Commander permite especificar opciones para editores y visores
 externos.  M\-Commander busca la sección
 .I [External editor or viewer parameters]
 en el archivo de inicialización del sistema
-.B %pkgdatadir%/mc.lib
+.B %pkgdatadir%/defaults.ini
 o en el del usuario
 .BR ~/.config/mc6/ini .
 El nombre de la opción debe coincidir con el nombre (ruta completa) del editor
@@ -3821,7 +3821,7 @@ externo pueda guardar y restaurar posiciones en los archivos abiertos.
 M\-Commander permite hacer ajustes a la base de datos de terminales
 del sistema sin necesidad de privilegios de superusuario. El programa
 busca definiciones de teclas en el archivo de inicialización del sistema
-.B %pkgdatadir%/mc.lib
+.B %pkgdatadir%/defaults.ini
 o en el del usuario
 .BR ~/.config/mc6/ini ,
 en la sección "terminal:nuestro\-terminal" y si no en "terminal:general".
@@ -3886,15 +3886,15 @@ entorno
 .BR MC_DATADIR ,
 que de estar definida se emplearía en vez de %pkgdatadir%.
 .PP
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 Archivo de ayuda.
 .PP
-.I %pkgdatadir%/mc.ext.ini
+.I %pkgdatadir%/extensions.ini
 .IP
 Archivo de extensiones por defecto del sistema.
 .PP
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 .IP
 Archivo de usuario de extensiones y configuración de visor y editor. Si
 está presente prevalece sobre el contenido de los archivos del sistema.
@@ -3905,7 +3905,7 @@ Archivo de configuración del sistema para M\-Commander, solo si
 el usuario no dispone de su propio
 .IR ~/.config/mc6/ini .
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 Opciones globales de M\-Commander. Se aplican siempre a todos los
 usuarios, tengan
@@ -3926,7 +3926,7 @@ configuración del sistema.
 Este archivo contiene los mensajes cortos de ayuda mostrados por el
 programa.
 .PP
-.I %pkgdatadir%/mc.menu
+.I %pkgdatadir%/usermenu
 .IP
 Este archivo contiene el menú de aplicaciones por defecto para el sistema.
 .PP
@@ -3939,7 +3939,7 @@ en lugar del menú por defecto del sistema.
 .IP
 La lista de directorios para el árbol de directorios y la vista en árbol.
 .PP
-.I ./.mc.menu
+.I ./.usermenu
 .IP
 Menú local definido por el usuario. Si este archivo
 está presente será usado en lugar del menú de aplicaciones

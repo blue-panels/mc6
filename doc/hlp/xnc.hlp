@@ -336,8 +336,8 @@ View and change keyboard shortcuts for mc actions.
   Enter    Replace shortcut (press the key to assign)
   F5       Add extra shortcut for this action
   F8/Del   Remove shortcut
-  Save     Write changes to ~/.config/mc6/mc.keymap
-  Edit keymap file   Open mc.keymap in editor
+  Save     Write changes to ~/.config/mc6/keymap.ini
+  Edit keymap file   Open keymap.ini in editor
   Edit term file     Open terminal key definitions
 
 Actions marked with * differ from defaults.

@@ -305,10 +305,10 @@ Frequently Asked Questions
 
    Options -> Key bindings lists every command of every part of the
    program with the keys it answers to, and rebinds them on the spot.
-   What you change there is written to ~/.config/mc6/mc.keymap.
+   What you change there is written to ~/.config/mc6/keymap.ini.
 
    The same file can be written by hand, and so can the system-wide
-   /etc/mcommander/mc.keymap; the mc(1) man page describes the format.
+   /etc/mcommander/keymap.ini; the mcommander(1) man page describes the format.
 
 2.9 What does my terminal really send for this key?
 
@@ -565,7 +565,7 @@ anymore!
    from, the menu edits itself: F2 opens it, and its entries are added
    and changed in the dialog, which keeps them in
    ~/.config/mc6/menu.ini.  A menu file written by hand still works; see
-   the mc(1) man page.
+   the mcommander(1) man page.
 
    Another way is a panel plugin: the panel can be filled by a program
    of your own.  See doc/PLUGINS in the source distribution.

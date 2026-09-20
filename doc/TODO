@@ -47,7 +47,7 @@ Allow calling the directory hotlist from Copy, Move and Find File
 dialogs.  Recent directories are the obvious candidates for copying and
 looking for files.
 
-Allow modifiers for keys in mc.lib, like "shift-up".  Right now,
+Allow modifiers for keys in defaults.ini, like "shift-up".  Right now,
 modifiers can be read from the terminal (if supported), but not from the
 config file.  This change would make it possible to use modifiers even
 if they can only be identified by the escape sequences.
@@ -73,7 +73,7 @@ same line.
 
 Report errors in shell operations and recover from them.
 
-Allow colors to be defined in the mc.lib file.  Make it possible to
+Allow colors to be defined in the defaults.ini file.  Make it possible to
 avoid using a super-long line to redefine all colors.
 
 Filters in the editor should operate on the open file - don't close and
@@ -91,7 +91,7 @@ Shift-F1 = F13).  mc should adjust the keys to the mapping.
 
 Make the internal editor reentrant.
 
-Consistent support for mc.lib.
+Consistent support for defaults.ini.
 
 Consistent support for terminal-specific settings.
 

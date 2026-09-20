@@ -1078,6 +1078,14 @@ user_menu_cmd (const Widget *edit_widget, const char *menu_file, int selected_en
                          : edit_widget != NULL ? EDIT_LOCAL_MENU
                                                : MC_LOCAL_MENU);
 
+    // the local menu under its pre-6.1 name
+    if (menu_file == NULL && edit_widget == NULL && !exist_file (menu)
+        && exist_file (MC_LOCAL_MENU_LEGACY))
+    {
+        g_free (menu);
+        menu = g_strdup (MC_LOCAL_MENU_LEGACY);
+    }
+
     if (!exist_file (menu) || !menu_file_own (menu))
     {
         if (menu_file != NULL)

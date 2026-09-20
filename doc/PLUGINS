@@ -501,7 +501,7 @@ each independently.
 
 3.12 File Operations (magic.ini and Ctrl-PgDn)
 
-Enter and F3 on a file consult magic.ini before mc.ext.ini.  A rule
+Enter and F3 on a file consult magic.ini before extensions.ini.  A rule
 there names a plugin operation and nothing else:
 
     [sqlite.database]
@@ -511,8 +511,8 @@ there names a plugin operation and nothing else:
 
 Rules live in $sysconfdir/mc/magic.ini and in ~/.config/mc6/magic.ini,
 which is consulted first.  Matching uses the same Regex / Shell / Type
-keys as mc.ext.ini.  A file with no rule follows the ordinary
-mc.ext.ini route.
+keys as extensions.ini.  A file with no rule follows the ordinary
+extensions.ini route.
 
 A plugin publishes the operations by name:
 

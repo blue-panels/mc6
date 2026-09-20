@@ -1304,13 +1304,13 @@ comando cd interno\&.
 .\"NODE "    Edit Extension File"
 .SH "    Modifica file estensioni"
 Questo comando invocherà l'editor sul file 
-.IR ~/.config/mc6/mc.ext.ini .
+.IR ~/.config/mc6/extensions.ini .
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 or system\-wide
-.IR %sysconfdir%/mcommander/mc.ext.ini .
+.IR %sysconfdir%/mcommander/extensions.ini .
 The format of this file is described in detail in it.
 .\"NODE "    Background jobs"
 .SH "    Processi in background"
@@ -1322,11 +1322,11 @@ far ripartire e uccidere un lavoro in background.
 .SH "    Modifica file menu"
 Il menu utente è un menu di comandi utili che possono essere 
 personalizzati dall'utente. Quando si accede al menu utente, viene 
-utilizzato, se esiste, il file .mc.menu dalla directory corrente,
+utilizzato, se esiste, il file .usermenu dalla directory corrente,
 ma solo se è di proprietà dell'utente o di root e se non è scrivibile
 a tutti. Se tale file non viene trovato, mcommander alla stessa maniera 
 prova con ~/.config/mc6/menu altrimenti usa il menu di sistema
-%pkgdatadir%/mc.menu.
+%pkgdatadir%/usermenu.
 .PP
 Il formato del file menu è molto semplice. Le righe che cominciano
 con qualsiasi cosa che non sia uno spazio o una tabulazione sono
@@ -1344,7 +1344,7 @@ ha luogo una semplice sostituzione di macro. Per ulteriori informazioni vedere
 sostituzione macro\&.
 .\"Macro Substitution"
 .PP
-Ecco un esempio di un file mc.menu:
+Ecco un esempio di un file usermenu:
 .PP
 .nf
 A	Mostra un dump del file correntemente selezionato
@@ -2347,7 +2347,7 @@ un'espressione di ricerca, altrimenti trova la prossima occorrenza.
 .PP
 .B F8
 Cambia tra modalità Normale/Filtrata: questo mostrerà il file come si
-trova su disco o se è stato specificato un filtro nel file mc.ext.ini, come
+trova su disco o se è stato specificato un filtro nel file extensions.ini, come
 esce dal filtro. La modalità corrente è sempre quella diversa da quella
 mostrata dall'etichetta del tasto, dato che il bottone rappresenta la
 modalità nella quale si entra premendolo.
@@ -2837,7 +2837,7 @@ premendo qualsiasi tasto si tornerà al M\-Commander.
 Se questa variabile è abilitata (valore predefinito) userà il comando
 file per trovare delle corrispondenze sui tipi di file elencati nel
 .\"LINK2"
-file mc.ext.ini\&.
+file extensions.ini\&.
 .\"Edit Extension File"
 .TP
 .I xtree_mode
@@ -2850,7 +2850,7 @@ selezionata.
 Il M\-Commander fornisce una maniera per correggere il database
 dei terminali si sistema senza richiedere i privilegi di 
 amministratore (root). Il M\-Commander ricerca nel file di
-inizializzazione di sistema (il file mc.lib collocato nella directory
+inizializzazione di sistema (il file defaults.ini collocato nella directory
 di libreria del M\-Commander) e nel file ~/.config/mc6/ini la sezione
 "terminal:nome\-del\-terminale\-in\-uso" e poi la sezione "terminal:general",
 ogni riga della sezione contiene il simbolo chiave che si vuol definire,
@@ -2897,15 +2897,15 @@ dalla variabile ambiente
 .BR MC_DATADIR ,
 e se la variabile non è impostata, passerà alla directory %pkgdatadir% .
 .PP
-.I %pkgdatadir%/help/mc.hlp
+.I %pkgdatadir%/help/mcommander.hlp
 .IP
 Il file di aiuto per il programma.
 .PP
-.I %pkgdatadir%/mc.ext.ini
+.I %pkgdatadir%/extensions.ini
 .IP
 Il file delle estensioni di sistema predefinito.
 .PP
-.I ~/.config/mc6/mc.ext.ini
+.I ~/.config/mc6/extensions.ini
 .IP
 Le estensioni dell'utente, la configurazione del visualizzatore e
 dell'editor di file. Se presenti, questi file si sovrappongono ai file di 
@@ -2916,7 +2916,7 @@ sistema.
 La configurazione di sistema predefinita per il M\-Commander, usata solo
 se l'utente non possiede il proprio file ~/.config/mc6/ini.
 .PP
-.I %pkgdatadir%/mc.lib
+.I %pkgdatadir%/defaults.ini
 .IP
 Le impostazioni globali per il M\-Commander. La modifica di questo
 file influisce su tutti gli utenti, che abbiano o no il file ~/.config/mc6/ini .
@@ -2924,7 +2924,7 @@ Attualmente vengono caricate solo le
 .\"LINK2"
 impostazioni del terminale
 .\"Terminal databases"
-da mc.lib.
+da defaults.ini.
 .PP
 .I ~/.config/mc6/ini
 .IP
@@ -2935,7 +2935,7 @@ viene caricata da qui invece che dal file di sistema.
 .IP
 Questo file contiene i suggerimenti (dritte) mostrate dal programma.
 .PP
-.I %pkgdatadir%/mc.menu
+.I %pkgdatadir%/usermenu
 .IP
 Questo file contiene il menu di sistema per le applicazioni.
 .PP
@@ -2948,7 +2948,7 @@ del menu delle applicazioni di sistema.
 .IP
 L'elenco di directory per l'albero directory e per la vista ad albero.
 .PP
-.I ./.mc.menu
+.I ./.usermenu
 .IP
 Menu locale definito dall'utente. Se questo file è presente viene usato
 al posto del menu delle applicazioni utente o di sistema.

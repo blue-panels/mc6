@@ -7,9 +7,9 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/vfs \
 	@CHECK_CFLAGS@
 
-EXTRA_DIST = mc.charsets.in
+EXTRA_DIST = charsets.in
 
-CLEANFILES = mc.charsets
+CLEANFILES = charsets
 
 LIBS = @CHECK_LIBS@ \
 	$(top_builddir)/lib/libmc.la
