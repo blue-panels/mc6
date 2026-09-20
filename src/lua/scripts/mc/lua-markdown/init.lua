@@ -33,6 +33,7 @@ local viewer = mc.viewer_source.define {
     open = function(request)
         request.rendered = {}
         request.widest = {}
+        request.unwrapped = {}
         return request
     end,
     prepare = function(session, _, viewport)
@@ -103,9 +104,14 @@ local viewer = mc.viewer_source.define {
         end
         -- What is wider than the screen but still narrow enough to reach by
         -- scrolling is left whole; the rest of the text is wrapped already.
+        -- The widest block is looked up before the first screen is rendered,
+        -- because a diagram halfway down the file counts as well.
+        if session.unwrapped[width] == nil then
+            session.unwrapped[width] = md.unwrapped_width(session.text, width)
+        end
+        local widest = math.max(session.unwrapped[width], opts.max_line or 0)
         local wrap = nil
-        if opts.max_line ~= nil and opts.max_line > viewport.columns
-            and opts.max_line <= MAX_UNWRAPPED then
+        if widest > viewport.columns and widest <= MAX_UNWRAPPED then
             wrap = false
         end
         return {

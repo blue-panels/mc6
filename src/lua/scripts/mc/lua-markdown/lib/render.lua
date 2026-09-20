@@ -37,6 +37,10 @@ M.CODE_AIR = 0.2
 -- the narrowest a code block gets, margins counted, however short the code
 M.CODE_MIN = 30
 
+-- how much of a document is looked through for blocks that cannot be
+-- wrapped, before the first screen of it is rendered
+M.UNWRAPPED_SCAN = 256 * 1024
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -2355,6 +2359,77 @@ local function render_document(text, opts, emit)
     if #out > 0 or not emitted then
         emit(tail)
     end
+end
+
+-- How wide the blocks that cannot be wrapped are: a fenced block, a diagram
+-- drawn in place of one, and an indented block of code.  The prose around
+-- them is flowed to the screen and never needs this.  Only the fences are
+-- rendered, and only those of the first M.UNWRAPPED_SCAN bytes, so that the
+-- walk stays cheap on a document the viewer renders block by block.
+function M.unwrapped_width(text, width_limit)
+    local lines = split_lines(#text > M.UNWRAPPED_SCAN and text:sub(1, M.UNWRAPPED_SCAN) or text)
+    local most = 0
+    local i = 1
+
+    local function widest(taken)
+        for _, line in ipairs(taken) do
+            local w = code_width(line)
+
+            if w > most then
+                most = w
+            end
+        end
+    end
+
+    local function measure(block, language)
+        local out = {}
+
+        emit_code(block, out, width_limit, language)
+        widest(out)
+    end
+
+    while i <= #lines do
+        local line = lines[i]
+        local fence = fence_of(line)
+
+        if fence ~= nil then
+            local fence_char = fence:sub(1, 1)
+            local language = trim(line:match("^ ? ? ?[`~]+(.*)$") or ""):match("^([%w+#._-]*)")
+            local code = {}
+
+            i = i + 1
+            while i <= #lines do
+                local close =
+                    lines[i]:match("^ ? ? ?(" .. (fence_char == "`" and "```+" or "~~~+") .. ")%s*$")
+
+                if close ~= nil and #close >= #fence then
+                    break
+                end
+                code[#code + 1] = lines[i]
+                i = i + 1
+            end
+            i = i + 1
+
+            local drawn = {}
+
+            if mermaid_lines(table.concat(code, "\n"), language, drawn, width_limit) then
+                widest(drawn)
+            else
+                measure(code, language)
+            end
+        elseif line:match("^    ") or line:match("^\t") then
+            local block = {}
+
+            while i <= #lines and (lines[i]:match("^    ") or lines[i]:match("^\t")) do
+                block[#block + 1] = expand_tabs(lines[i]):gsub("^    ", "", 1)
+                i = i + 1
+            end
+            measure(block, nil)
+        else
+            i = i + 1
+        end
+    end
+    return most
 end
 
 function M.render(text, opts)
