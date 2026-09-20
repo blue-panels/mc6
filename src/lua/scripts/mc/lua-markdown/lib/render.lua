@@ -24,6 +24,10 @@ M.CODE_BG = "100"
 -- top edge
 M.CODE_FRAME = true
 
+-- the block is this share of the screen wider than the code in it, so that
+-- it does not sit tight around short lines
+M.CODE_AIR = 0.2
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -1277,7 +1281,8 @@ local function code_width(line)
     return width((line:gsub("\27%[[%d;]*m", "")))
 end
 
--- The columns the block takes: the widest line, never wider than the screen.
+-- The columns the block takes: the widest line and the air after it, never
+-- wider than the screen.
 local function code_box(lines, width_limit)
     local box = 0
 
@@ -1289,7 +1294,9 @@ local function code_box(lines, width_limit)
         end
     end
     if width_limit ~= nil then
-        box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
+        local room = math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1)
+
+        box = math.min(box + math.floor(room * M.CODE_AIR), room)
     end
     return box
 end
