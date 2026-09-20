@@ -70,7 +70,7 @@ local TAB_WIDTH = 8
 -- a code block is indented this far, and the frame and the background keep
 -- a margin between their edge and the code
 local CODE_INDENT = "    "
-local CODE_MARGIN = 1
+local CODE_MARGIN = 2
 
 -- the corners of a code block, each with the stub of an edge
 local FRAME_TL = "\u{250C}\u{2574}"
