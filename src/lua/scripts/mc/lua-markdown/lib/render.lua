@@ -16,9 +16,15 @@ M.MAX_WIDTH = 120    -- text is never flowed wider than this, whatever the scree
 -- first level keeps the heading color of the skin
 M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 
--- SGR background of a code block, nil or "" for none.  "100" is the bright
--- black of the terminal; a 256-color value such as "48;5;236" also works.
-M.CODE_BG = "100"
+-- SGR background of a code block.  "auto" asks mc: a terminal of 256 colors
+-- or more gets a shade of the background the skin paints the viewer with, a
+-- poorer one keeps its background untouched.  A string such as "100" or
+-- "48;5;236" is used as it is, and nil or "" leaves the background alone.
+M.CODE_BG = "auto"
+
+-- how far the background of a code block is moved away from the one of the
+-- viewer, of 255 per channel
+M.CODE_BG_SHIFT = 24
 
 -- draw the corners of a code block, with the language of the fence in the
 -- top edge
@@ -1284,6 +1290,121 @@ local function code_width(line)
     return width((line:gsub("\27%[[%d;]*m", "")))
 end
 
+-- The colors a skin names, as the terminal draws them.  A name it does not
+-- know, and the "default" of the terminal itself, are taken for a dark
+-- background: that is what a terminal running mc almost always has.
+local SKIN_RGB = {
+    black = { 0, 0, 0 }, red = { 128, 0, 0 }, green = { 0, 128, 0 },
+    brown = { 128, 128, 0 }, blue = { 0, 0, 128 }, magenta = { 128, 0, 128 },
+    cyan = { 0, 128, 128 }, lightgray = { 192, 192, 192 }, gray = { 128, 128, 128 },
+    brightred = { 255, 0, 0 }, brightgreen = { 0, 255, 0 }, yellow = { 255, 255, 0 },
+    brightblue = { 0, 0, 255 }, brightmagenta = { 255, 0, 255 },
+    brightcyan = { 0, 255, 255 }, white = { 255, 255, 255 },
+}
+
+-- The steps of the 6x6x6 cube of a terminal of 256 colors.
+local CUBE_STEPS = { 0, 95, 135, 175, 215, 255 }
+
+-- What the skin means by a color name, as red, green and blue.
+local function skin_rgb(name)
+    if name == nil or name == "" or name == "default" then
+        return { 0, 0, 0 }
+    end
+    local hex = name:match("^#(%x%x%x%x%x%x)$")
+
+    if hex ~= nil then
+        return {
+            tonumber(hex:sub(1, 2), 16),
+            tonumber(hex:sub(3, 4), 16),
+            tonumber(hex:sub(5, 6), 16),
+        }
+    end
+    local index = tonumber(name:match("^color(%d+)$") or "")
+
+    if index ~= nil and index >= 232 and index <= 255 then
+        local gray = 8 + (index - 232) * 10
+
+        return { gray, gray, gray }
+    end
+    if index ~= nil and index >= 16 and index <= 231 then
+        local n = index - 16
+
+        return {
+            CUBE_STEPS[math.floor(n / 36) % 6 + 1],
+            CUBE_STEPS[math.floor(n / 6) % 6 + 1],
+            CUBE_STEPS[n % 6 + 1],
+        }
+    end
+    return SKIN_RGB[name] or { 0, 0, 0 }
+end
+
+-- The nearest color of a terminal of 256: the gray ramp for a gray, the cube
+-- for everything else.
+local function rgb_to_256(r, g, b)
+    if math.abs(r - g) < 10 and math.abs(g - b) < 10 then
+        local gray = math.floor((r + g + b) / 3)
+
+        if gray < 8 then
+            return 16
+        end
+        if gray > 238 then
+            return 231
+        end
+        return 232 + math.floor((gray - 8) / 10)
+    end
+    local function step(v)
+        local best, best_d = 0, 1e9
+
+        for i, s in ipairs(CUBE_STEPS) do
+            local d = math.abs(s - v)
+
+            if d < best_d then
+                best, best_d = i - 1, d
+            end
+        end
+        return best
+    end
+
+    return 16 + 36 * step(r) + 6 * step(g) + step(b)
+end
+
+-- The SGR background of a code block: a shade of the one the skin paints the
+-- viewer with, dark backgrounds lightened and light ones darkened.  A
+-- terminal of fewer than 256 colors keeps its background: the sixteen it has
+-- are too far apart for a shade.
+local function auto_bg()
+    if mc == nil or mc.tty == nil or mc.tty.info == nil then
+        return nil
+    end
+    local info = mc.tty.info("Viewer")
+
+    if info == nil or info.colors == nil or info.colors < 256 then
+        return nil
+    end
+    local rgb = skin_rgb(info.bg)
+    local shift = (rgb[1] + rgb[2] + rgb[3]) / 3 < 128 and M.CODE_BG_SHIFT or -M.CODE_BG_SHIFT
+    local out = {}
+
+    for i = 1, 3 do
+        out[i] = math.max(0, math.min(255, rgb[i] + shift))
+    end
+    if info.colors >= 1 << 24 then
+        return "48;2;" .. out[1] .. ";" .. out[2] .. ";" .. out[3]
+    end
+    return "48;5;" .. rgb_to_256(out[1], out[2], out[3])
+end
+
+-- The SGR background in force, nil when the block is drawn without one.
+local function code_bg()
+    if M.CODE_BG == "auto" then
+        return auto_bg()
+    end
+    if M.CODE_BG == nil or M.CODE_BG == "" then
+        return nil
+    end
+    return M.CODE_BG
+end
+
 -- The columns the block takes: the widest line and the air after it, never
 -- wider than the screen.
 local function code_box(lines, width_limit)
@@ -1318,7 +1439,8 @@ end
 -- end, because the viewer may start reading at any line.
 local function emit_code(lines, out, width_limit, language)
     local box = code_box(lines, width_limit)
-    local bg = M.CODE_BG ~= nil and M.CODE_BG ~= "" and ("\27[" .. M.CODE_BG .. "m") or ""
+    local color = code_bg()
+    local bg = color ~= nil and ("\27[" .. color .. "m") or ""
     local off = bg ~= "" and SGR_BG_OFF or ""
 
     if M.CODE_FRAME and language ~= nil and language ~= "" then
