@@ -6,13 +6,13 @@
 .\"	David H. Martín Alonso <david.martin@telefonica.net>
 .\"
 .\"TOPICS "Índice de Contenidos:"
-.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Versión %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Versión %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NOMBRE"
-mc6 \- entorno visual para sistemas tipo Unix.
+mcommander \- entorno visual para sistemas tipo Unix.
 .\"SKIP_SECTION"
 .SH "SINOPSIS"
-.B mc6
+.B mcommander
 .RB [ \-abcCdfFhPstuUVx "] [" \-l
 .IR reg "] [" dir1 " [" dir2 ]]
 .RB [ \-e
@@ -85,7 +85,7 @@ M\-Commander.  Consúltese en los archivos
 (usuarios de tcsh) y
 .B %pkglibexecdir%/mc6.fish
 (usuarios de fish) la manera de definir
-.B mc6
+.B mcommander
 como un alias para el correspondiente guión de shell.
 .TP
 .I \-s, \-\-slow
@@ -1520,7 +1520,7 @@ por el usuario. Cuando accedemos al menú de usuario se utiliza, si existe,
 el archivo .mc.menu del directorio actual, pero solo si es propiedad del
 usuario o del superusuario y no es modificable por todos.
 Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc6/menu,
-y si no, mc6 utiliza el menú por defecto para todo el sistema
+y si no, mcommander utiliza el menú por defecto para todo el sistema
 %pkgdatadir%/mc.menu.
 .PP
 El formato del menú de archivo es muy simple.  Todas las líneas, salvo
@@ -1674,7 +1674,7 @@ En
 .\"LINK2"
 Presentación
 .\"Layout"
-está un grupo de opciones que determinan la apariencia de mc6 en la
+está un grupo de opciones que determinan la apariencia de mcommander en la
 pantalla.
 .PP
 En
@@ -2539,7 +2539,7 @@ podemos copiar el directorio de origen dentro de ese directorio.
 Quizás un ejemplo pueda ayudar:
 .PP
 Queremos copiar el contenido de un directorio denominado coco a /blas
-donde ya existe un directorio /blas/coco. Por defecto, mc6 copiaría el
+donde ya existe un directorio /blas/coco. Por defecto, mcommander copiaría el
 contenido en /blas/coco, pero con esta opción se copiaría como
 /blas/coco/coco.
 .PP
@@ -3979,7 +3979,7 @@ versiones recientes consultar la página de manual en inglés que contiene
 información más completa y actualizada.  Para ver el susodicho manual
 original ejecutar en la línea de órdenes:
 .nf
-        LANG= LC_ALL= man mc6
+        LANG= LC_ALL= man mcommander
 .fi
 .\"NODE "AUTHORS"
 .SH "AUTORES"
@@ -3994,7 +3994,7 @@ Para informar de problemas con el programa, introducir una nueva incidencia en
 .PP
 Se debe proporcionar una descripción detallada del problema, la
 versión del programa (que se obtiene con
-.RI ' "mc6 \-V" ')
+.RI ' "mcommander \-V" ')
 y el sistema operativo utilizados.  Si el programa «revienta», sería
 también útil disponer del estado de la pila.
 .\"NODE "TRANSLATION"

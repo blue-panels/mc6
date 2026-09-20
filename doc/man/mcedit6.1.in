@@ -1,4 +1,4 @@
-.TH MCEDIT6 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
+.TH MCEDIT6 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
 .SH NAME
 mcedit6 \- Internal file editor of M\-Commander.
 .SH SYNOPSIS
@@ -10,7 +10,7 @@ mcedit6 \- Internal file editor of M\-Commander.
 .SH DESCRIPTION
 .LP
 mcedit6 is a link to
-.BR mc6 ,
+.BR mcommander ,
 the main M\-Commander executable. Executing M\-Commander
 under this name runs the internal editor and opens files
 specified on the command line. The editor is based on the terminal version of
@@ -41,7 +41,7 @@ files.
 .I \-S arg, \-\-skin=arg
 Specify a name of skin in the command line.  See the
 .B Skins
-section in mc6(1) for more information.
+section in mcommander(1) for more information.
 .TP
 .I "\-t"
 Force using termcap database instead of terminfo.  This option is only
@@ -432,7 +432,7 @@ directive to continue across multiple lines.
 The possible colors are: black, gray, red, brightred, green,
 brightgreen, brown, yellow, blue, brightblue, magenta, brightmagenta,
 cyan, brightcyan, lightgray and white. The special keyword "default" means
-the terminal's default. Another special keyword "base" means mc6's main
+the terminal's default. Another special keyword "base" means mcommander's main
 colors, it is useful as a placeholder if you want to specify attributes
 without modifying the background color. When 256 colors are available,
 they can be specified either as color16 to color255, or as rgb000 to rgb555
@@ -676,7 +676,7 @@ of warranty.
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH SEE ALSO
-cooledit(1), mc6(1), gpm(1), terminfo(1), scanf(3).
+cooledit(1), mcommander(1), gpm(1), terminfo(1), scanf(3).
 .SH AUTHORS
 Paul Sheer (psheer@obsidian.co.za) is the original author of
 M\-Commander's internal editor.

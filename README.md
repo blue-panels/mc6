@@ -64,12 +64,13 @@ make
 sudo make install
 ```
 
-`mc6 --version` identifies this fork.
+`mcommander --version` identifies this fork.
 
 ## Packages
 
-This fork is packaged as **`mcommander`**, and its commands are `mc6`,
-`mcedit6`, `mview`, `mdiff`, `mctree` and `mcstruct`.  It installs beside the
+This fork is packaged as **`mcommander`**, and its main command is `mcommander`,
+with `mc6` as a short alias for it.  The others are `mcedit6`, `mview`,
+`mdiff`, `mctree` and `mcstruct`.  It installs beside the
 distribution `mc` package instead of replacing it.
 
 There is no public package repository yet.  Each release builds `.deb`, `.rpm`
@@ -94,8 +95,8 @@ skip the dependency and replacement handling.
 ## Documentation
 
 - [Wiki](https://github.com/blue-panels/mc6/wiki)
-- Built-in help: press `F1` inside mc6
-- Manual pages: `mc6(1)`, `mcedit6(1)`, `mview(1)`
+- Built-in help: press `F1` inside mcommander
+- Manual pages: `mcommander(1)`, `mcedit6(1)`, `mview(1)`
 
 ## Translations
 
@@ -112,7 +113,7 @@ do not open pull requests that edit `po/*.po` by hand.
 
 Open an issue: <https://github.com/blue-panels/mc6/issues>
 
-Include `mc6 --version`, your OS and distribution, and the compiler and
+Include `mcommander --version`, your OS and distribution, and the compiler and
 configure flags if you know them. For a crash, attach a `gdb` backtrace
 (`gdb mc core`, then `where`).
 

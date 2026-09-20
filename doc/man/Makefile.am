@@ -3,7 +3,7 @@ if USE_NLS
 SUBDIRS = $(DOC_LINGUAS)
 endif
 
-man_MANS = mc6.1 mview.1
+man_MANS = mcommander.1 mc6.1 mview.1
 
 if USE_INTERNAL_EDIT
 man_MANS += mcedit6.1
@@ -17,6 +17,7 @@ CLEANFILES = $(man_MANS)
 
 EXTRA_DIST = \
 	date-of-man-include.am \
+	mcommander.1.in \
 	mc6.1.in \
 	mcedit6.1.in \
 	mview.1.in \

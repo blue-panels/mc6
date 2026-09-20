@@ -116,10 +116,11 @@ Frequently Asked Questions
    preserving the full power of the command prompt.  After some
    practice, you will wonder how you could ever live without it.
 
-   The command is called mc6.  The editor, the viewer and the diff
-   viewer are mcedit6, mview and mdiff, and the tree and structure
-   views keep the names mctree and mcstruct.  The package is called
-   mcommander, the repository and the configuration directories mc6.
+   The command is called mcommander, with mc6 as a short alias for it.
+   The editor, the viewer and the diff viewer are mcedit6, mview and
+   mdiff, and the tree and structure views keep the names mctree and
+   mcstruct.  The package is called mcommander, the repository and the
+   configuration directories mc6.
 
 1.2 How does it relate to GNU Midnight Commander?
 

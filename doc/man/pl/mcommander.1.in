@@ -1,12 +1,12 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"Przetłumaczone przez by Macieja Wojciechowskiego    wojciech@staszic.waw.pl
-.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH NAZWA
-mc6 \- wizualny interpetator poleceń dla systemów Unixopodobnych
+mcommander \- wizualny interpetator poleceń dla systemów Unixopodobnych
 .\"SKIP_SECTION"
 .SH UŻYTKOWANIE
-.B mc6
+.B mcommander
 [\-abcCdfPstuUVx] [\-l log] [kat1 [kat2]] [\-v plik]
 .\"NODE "DESCRIPTION"
 .SH OPIS
@@ -52,17 +52,17 @@ w tę funkcję oraz za kod źródłowy, który wprowadzili w życie).
 .nf
 użytkownicy basha i zsh:
 
-mc6 ()
+mcommander ()
 {
         MC=$HOME/tmp/mc$$\-"$RANDOM"
-        %bindir%/mc6 \-P "$@" > "$MC"
+        %bindir%/mcommander \-P "$@" > "$MC"
         cd "`cat $MC`"
         rm "$MC"
         unset MC;
 }
 
 użytkownicy tcsh:
-alias mc6 'setenv MC `%bindir%/mc6 \-P !*`; cd $MC; unsetenv MC'
+alias mcommander 'setenv MC `%bindir%/mcommander \-P !*`; cd $MC; unsetenv MC'
 .fi
 Wiem, że ta funkcja mogłaby być krótsza dla basha i zsh, ale małe cudzysłowy
 nie zaakceptowały by zawieszenia programu kombinacją
@@ -1845,7 +1845,7 @@ po włączeniu tej opcji kopiuje się katalog źródłowy do wnętrza tego katal
 Może przykład pomoże:
 .PP
 Chcesz przekopiować zawartość katalogu foo do /bla/foo, które
-już istnieje. Normalnie (Dive nie jest włączone), mc6 skopiuje to dokładnie
+już istnieje. Normalnie (Dive nie jest włączone), mcommander skopiuje to dokładnie
 do /bla/foo. Po włączeniu tej opcji zawartość zostanie skopiowana
 do /bla/foo/foo ponieważ ten katalog już istnieje.
 .PP
@@ -2730,7 +2730,7 @@ zgłoś go [po angielsku] pod adresem
 \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Do zgłoszenia błędu dołącz opis problemu, versję programu, którego używasz
-(wyświetla ją mc6 \-V), system operacyjny, na którym pracujesz i jeśli program
+(wyświetla ją mcommander \-V), system operacyjny, na którym pracujesz i jeśli program
 się wykłada, chcielibyśmy dostać ślad stosu.
 .SH TŁUMACZENIE
 Maciej Wojciechowski    wojciech@staszic.waw.pl

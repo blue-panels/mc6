@@ -7,7 +7,7 @@ mdiff \- Уграђени diff прегледач ГНУ\-овог поноћн�
 .SH ОПИС
 .LP
 mdiff је веза ка
-.BR mc6 \-у,
+.BR mcommander \-у,
 главној извршној датотеци ГНУ\-овог поноћног наредника. Извршавање ГНУ\-овог
 поноћног наредника под овим именом захтева покретање уграђеног diff прегледача,
 који пореди
@@ -75,7 +75,7 @@ mdiff је веза ка
 Најновија верзија овог програма се може наћи на
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH ВИДЕТИ И
-mc6(1), mcedit6(1), mview(1)
+mcommander(1), mcedit6(1), mview(1)
 .PP
 .SH ГРЕШКЕ
 Грешке пријавите на \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .

@@ -1,4 +1,4 @@
-.TH MVIEW 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
+.TH MVIEW 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
 .SH NAME
 mview \- Internal file viewer of M\-Commander.
 .SH SYNOPSIS
@@ -7,7 +7,7 @@ mview \- Internal file viewer of M\-Commander.
 .SH DESCRIPTION
 .LP
 mview is a link to
-.BR mc6 ,
+.BR mcommander ,
 the main M\-Commander executable.  Executing
 M\-Commander under this name requests staring the internal viewer and
 opening the
@@ -32,7 +32,7 @@ Display the compiled\-in search paths for M\-Commander files.
 .I \-S arg, \-\-skin=arg
 Specify a name of skin in the command line.  See the
 .B Skins
-section in mc6(1) for more information.
+section in mcommander(1) for more information.
 .TP
 .I "\-t"
 Used only if the code was compiled with S\-Lang and terminfo: it makes
@@ -77,7 +77,7 @@ of warranty.
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mc6/releases'https://github.com/blue\-panels/mc6/releases\X'tty: link' .
 .SH SEE ALSO
-mc6(1), mcedit6(1)
+mcommander(1), mcedit6(1)
 .PP
 .SH BUGS
 Bugs should be reported to

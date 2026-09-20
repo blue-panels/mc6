@@ -97,6 +97,7 @@ static gboolean parse_mc_v_argument (const gchar *option_name, const gchar *valu
 
 /* The names the program is installed under, as symbolic links to the one binary */
 static const mc_run_name_t mc_run_names[] = {
+    { "mcommander", MC_RUN_FULL, NULL },
     { "mc6", MC_RUN_FULL, NULL },
     { "mview", MC_RUN_VIEWER, NULL },
     { "view", MC_RUN_VIEWER, NULL },

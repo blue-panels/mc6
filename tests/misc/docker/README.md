@@ -328,7 +328,7 @@ fails a case that would have passed.
 Or directly, if mc is already built:
 
     docker run --rm -it --network mc-sandbox-debian-12_default \
-        -v mc-sandbox-debian-12_work:/work mc-sandbox-debian-12-mc /work/opt/mc/bin/mc6
+        -v mc-sandbox-debian-12_work:/work mc-sandbox-debian-12-mc /work/opt/mc/bin/mcommander
 
 The `mc` container has `ssh`, `curl` and `smbclient`, so a transfer can be
 watched from outside mc as well.

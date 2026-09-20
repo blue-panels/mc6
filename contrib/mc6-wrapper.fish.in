@@ -8,7 +8,7 @@ else
 end
 
 set --local MC_STATUS 0
-@bindir@/mc6 -P "$MC_PWD_FILE" $argv || set MC_STATUS $status
+@bindir@/mcommander -P "$MC_PWD_FILE" $argv || set MC_STATUS $status
 
 if test -r "$MC_PWD_FILE"
 	# This construct preserves internal and trailing '\n' characters.

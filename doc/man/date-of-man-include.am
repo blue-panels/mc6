@@ -11,8 +11,11 @@ MAN_DATE_CMD = \
 	    @fi=lstat("'$${MAN_FILE}'"); \
 	    print POSIX::strftime("$(DATE_FORMAT)", localtime($$fi[9]));' 2>/dev/null
 
+mcommander.1: $(srcdir)/mcommander.1.in
+	MAN_FILE='$(srcdir)/mcommander.1.in'; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/mcommander.1.in' > '$@'
+
 mc6.1: $(srcdir)/mc6.1.in
-	MAN_FILE='$(srcdir)/mc6.1.in'; MAN_DATE=$$($(MAN_DATE_CMD)); \
 	$(SED) $(SED_PARAMETERS) '$(srcdir)/mc6.1.in' > '$@'
 
 mview.1: $(srcdir)/mview.1.in

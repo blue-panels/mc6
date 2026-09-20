@@ -1,12 +1,12 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"TOPICS "Tartalomjegyzék"
-.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NÉV"
-mc6 \- Fájlkezelő Unix típusú rendszerekhez
+mcommander \- Fájlkezelő Unix típusú rendszerekhez
 .\"SKIP_SECTION"
 .SH "ALKALMAZÁSA"
-.B mc6
+.B mcommander
 [\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-v file]
 .\"NODE "DESCRIPTION"
 .SH "LEÍRÁS"
@@ -62,7 +62,7 @@ arról gondoskodj, hogy az M\-Commander\-t ne fordítsd eltérő beállításokk
 .PP
 A bash és zsh funkciók lehetnének rövidebbek is, de a bash környezete
 nem fogadja el a program C\-z háttérbe helyezését. A temp fájlok a $TMPDIR
-(alapértelmezés szerint /tmp) alatt egy csak általad írható mc6\-XXXXXX
+(alapértelmezés szerint /tmp) alatt egy csak általad írható mcommander\-XXXXXX
 könyvtárba kerülnek, mert ez biztonságosabb, mint a közös írható /tmp
 könyvtár.
 .TP
@@ -1315,7 +1315,7 @@ könyvtár .mc.menu fájlja, ha az létezik, de csak, ha az a felhasználó
 (illetve a root) a tulajdonosa, és nem lehet bárki számára írható. Ha
 nem talál ilyen fájlt, az
 .I ~/.config/mc6/menu
-keresése a következő lépés, egyébként pedig az mc6 az alapértelmezett
+keresése a következő lépés, egyébként pedig az mcommander az alapértelmezett
 rendszerszintű menüt használja, pl.:
 .IR %pkgdatadir%/mc.menu ,
 esetleg %sysconfdir%/mcommander/mc.menu.
@@ -1323,7 +1323,7 @@ esetleg %sysconfdir%/mcommander/mc.menu.
 A menü fájl formátuma nagyon egyszerű. A sorok, amelyek bármivel
 kezdődhetnek, de a space, vagy a tab megkülönböztetett menübejegyzések
 (gyorsbillentyűként definiálható az első karakter). Minden olyan sor ami
-szóközzel, tabulátorral kezdődik, parancs, amit lefuttat az mc6, ha
+szóközzel, tabulátorral kezdődik, parancs, amit lefuttat az mcommander, ha
 kiválasztottad a bejegyzést.
 .PP
 Ha az opciót kiválasztod, a parancssor bemásolódik egy ideiglenes fájlba
@@ -1479,7 +1479,7 @@ A
 .\"LINK2"
 Megjelenés
 .\"Layout"
-parancs dialógus ablakot jelenít meg, amelyben az mc6 képernyőn történő
+parancs dialógus ablakot jelenít meg, amelyben az mcommander képernyőn történő
 megjelenésének opcióit találod egy csokorban.
 .PP
 A
@@ -1603,13 +1603,13 @@ Ha ez az opciót bekapcsoltad, amikor kilépsz a M\-Commander\-ből,
 az M\-Commander opcióinak beállításait az ~/.config/mc6/ini fájlba menti.
 .PP
 .I Auto menük.
-Ha ez az opció engedélyezett, a felhasználói menü megjelenik az mc6
+Ha ez az opció engedélyezett, a felhasználói menü megjelenik az mcommander
 indításkor. Különösen azok számára ajánlott, akik nem szoktak hozzá a
 UNIX\-os környezethez.
 .PP
 .I Belső szövegszerkesztő
 Ha ez az opció engedélyezve van, a beépített fájlszerkesztőt használja a
-fájlok szerkesztésére. Ha az opciót nem engedélyezzük, az mc6 az
+fájlok szerkesztésére. Ha az opciót nem engedélyezzük, az mcommander az
 .B EDITOR
 környezeti változóban megadottat használja. Ha ez sincs megadva, a
 .BR vi \-t
@@ -2195,7 +2195,7 @@ egy példa segíteni fog:
 .PP
 Neked a foo könyvtár tartalmát át kell másolnod a /bla/foo könyvtárba,
 amely már létezik. Normálisan (amikor az Ugrás (Dive) nincs beállítva),
-az mc6 be fogja másolni ezt a /bla/foo könyvtárba. Az opció
+az mcommander be fogja másolni ezt a /bla/foo könyvtárba. Az opció
 engedélyezésekor a bejegyzéseket a /bla/foo/foo könyvtárba fogod
 másolni, mivel a könyvtár már létezik.
 .PP
@@ -3018,6 +3018,6 @@ Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
 címre: \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Gondoskodj arról, hogy tartalmazza a hiba minél pontosabb
-meghatározását, a futtatott program verziószámát (az mc6 \-V parancs meg
+meghatározását, a futtatott program verziószámát (az mcommander \-V parancs meg
 fogja jeleníttetni ezt), az operációs rendszert, amin futtatod a
 programot amikor az összeomlott, méltányolni fogjuk a részletes leírást.

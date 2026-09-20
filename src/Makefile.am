@@ -42,7 +42,7 @@ endif
 
 AM_CPPFLAGS += -I$(top_srcdir) $(GLIB_CFLAGS)
 
-bin_PROGRAMS = mc6
+bin_PROGRAMS = mcommander
 
 if USE_INTERNAL_EDIT
 EDITLIB = editor/libedit.la
@@ -67,24 +67,24 @@ libinternal_la_LIBADD = \
 	$(DIFFLIB) $(EDITLIB)
 
 if HAVE_GMODULE
-mc6_LDFLAGS = -export-dynamic
+mcommander_LDFLAGS = -export-dynamic
 endif
 
-mc6_LDADD = \
+mcommander_LDADD = \
 	libinternal.la
 
 if ENABLE_MCLIB
 libinternal_la_LIBADD += \
 	$(top_builddir)/lib/libmc.la
 else
-mc6_LDADD += \
+mcommander_LDADD += \
 	$(top_builddir)/lib/libmc.la
 endif
 
 SRC_mc_conssaver = \
 	cons.handler.c consaver/cons.saver.h
 
-mc6_SOURCES = \
+mcommander_SOURCES = \
 	main.c
 
 libinternal_la_SOURCES = \
@@ -121,6 +121,7 @@ EXTRA_DIST = $(SRC_maintainer) $(SRC_charset)
 # end of automated testing
 
 install-exec-hook:
+	$(MAKE) install_mc6
 	$(MAKE) install_mview
 	$(MAKE) install_mctree
 	$(MAKE) install_mcstruct
@@ -134,22 +135,26 @@ endif
 #
 # Make relative symlinks, but do the right thing if LN_S is `ln' or `cp'.
 #
+install_mc6:
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mc6 && $(LN_S) mcommander mc6
+
 install_mview:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mview && $(LN_S) mc6 mview
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mview && $(LN_S) mcommander mview
 
 install_mctree:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mctree && $(LN_S) mc6 mctree
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mctree && $(LN_S) mcommander mctree
 
 install_mcstruct:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcstruct && $(LN_S) mc6 mcstruct
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcstruct && $(LN_S) mcommander mcstruct
 
 install_mcedit6:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit6 && $(LN_S) mc6 mcedit6
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mcedit6 && $(LN_S) mcommander mcedit6
 
 install_mdiff:
-	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mdiff && $(LN_S) mc6 mdiff
+	cd $(DESTDIR)$(bindir)/$(binprefix) && rm -f mdiff && $(LN_S) mcommander mdiff
 
 uninstall-hook:
+	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mc6
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mview
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mctree
 	rm -f $(DESTDIR)$(bindir)/$(binprefix)/mcstruct

@@ -31,7 +31,7 @@ report ssh $?
 out=$(smbclient "//$host/cases" -U "$user%$pass" -c ls 2>/dev/null) && [ -n "$out" ]
 report smb $?
 
-if [ -x /work/opt/mc/bin/mc6 ]; then
+if [ -x /work/opt/mc/bin/mcommander ]; then
     report mc 0
     echo "  plugins:     $(ls /work/opt/mc/lib/mcommander/panel-plugins/ | tr '\n' ' ')"
 else

@@ -115,5 +115,5 @@ for f in /src/tests/misc/docker/cases/*/fixtures.sh; do
 done
 
 echo
-echo "mc installed:      $PREFIX/bin/mc6  (features: $features)"
+echo "mc installed:      $PREFIX/bin/mcommander  (features: $features)"
 echo "panel plugins in:  $(ls -d "$PREFIX"/lib/mcommander/panel-plugins/* 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"

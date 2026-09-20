@@ -1,12 +1,12 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"TOPICS "Теме:"
-.TH MC6 1 "%DATE_OF_MAN_PAGE%" "ПН верзија %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "ПН верзија %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "НАЗИВ"
-mc6 \- Визуелна љуска за Униксолике системе.
+mcommander \- Визуелна љуска за Униксолике системе.
 .\"SKIP_SECTION"
 .SH "УПОТРЕБА"
-.B mc6
+.B mcommander
 [\-abcCdfhPstuUVx] [\-l дневник] [дир1 [дир2]] [\-e [датотека]] [\-v датотека]
 .\"NODE "DESCRIPTION"
 .SH "ОПИС"
@@ -72,7 +72,7 @@ mc6 \- Визуелна љуска за Униксолике системе.
 (за кориснике љуске tcsh) или
 .B %pkglibexecdir%/mc6.fish
 (за кориснике љуске fish), тим редом, да бисте дефинисали
-.B mc6
+.B mcommander
 као алијас за одговарајући скрипт љуске.
 .TP
 .I \-s, \-\-slow
@@ -2358,7 +2358,7 @@ netrc(5) за опис формата датотеке .netrc.
 садржи више информација о томе како можете управљати кодом подљуски. (\-U/\-u).
 Штавише, да бисте поставили подљуску другачију од ваше текуће променљиве SHELL
 или пријавне љуске задате у /etc/passwd, можете позвати ПН на овај начин:
-.B SHELL=/bin/myshell mc6
+.B SHELL=/bin/myshell mcommander
 .\"NODE "Chmod"
 .SH "Промена дозвола"
 Прозор Промена дозвола се користи за промену битова атрибута групе датотека и
@@ -4054,6 +4054,6 @@ tcsh(1), zsh(1).
 \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Доставите детаљан опис грешке, верзију програма коју користите
-.RI ( "mc6 \-V"
+.RI ( "mcommander \-V"
 приказује овај податак) и оперативни систем под којим покрећете програм. Ако
 програм крахира, било би нам корисно да пошаљете траг стека (stack trace).

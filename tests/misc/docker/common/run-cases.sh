@@ -49,7 +49,7 @@
 # whatever the screen says.
 set -u
 
-MC=/work/opt/mc/bin/mc6
+MC=/work/opt/mc/bin/mcommander
 SRC=/src/tests/misc/docker
 env_name=${SANDBOX_ENV:-unknown}
 subject=archives

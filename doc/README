@@ -187,7 +187,7 @@ https://github.com/blue-panels/mc6/issues
 
 Do not report fork-specific problems to the upstream project.
 
-Include the output of "mc6 --version" (which identifies this fork), the
+Include the output of "mcommander --version" (which identifies this fork), the
 operating system and the distribution (if applicable) you are using, the
 compiler and the configure flags used to compile the program (if you
 know them).

@@ -8,7 +8,7 @@
 .\" Il più importante (e che mi provoca tuttora dei dubbi) è stato la
 .\" traduzione dei comandi Chmod, Chown e Advanced Chown con Permessi,
 .\" Proprietario e Proprietario avanzato rispettivamente. Lo spirito che
-.\" mi ha mosso in questa direzione è stato il desiderio di rendere mc6 più
+.\" mi ha mosso in questa direzione è stato il desiderio di rendere mcommander più
 .\" user frendly che coerente con altre traduzioni, visto il ruolo che si
 .\" è conquistato soprattutto nei nuovi utenti.
 .\" Altro esempio è l'uso (per questioni 'estetiche') indifferente di
@@ -21,13 +21,13 @@
 .\" Prego mantenere la linea di traduzione generale (per quanto possibile).
 .\"
 .\"TOPICS "Indice degli argomenti:"
-.TH MC6 1 "%DATE_OF_MAN_PAGE%" "MC6 Version %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NOME"
-mc6 \- interfaccia visuale per sistemi tipo Unix.
+mcommander \- interfaccia visuale per sistemi tipo Unix.
 .\"SKIP_SECTION"
 .SH "USO"
-.B mc6
+.B mcommander
 [\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-e [file]] [\-v file]
 .\"NODE "DESCRIPTION"
 .SH "DESCRIZIONE"
@@ -76,7 +76,7 @@ stava il M\-Commander. Prelevate i file
 (utenti tcsh) o rispettivamente
 .B %pkglibexecdir%/mc6.fish
 (utenti fish) per definire
-.B mc6
+.B mcommander
 come un alias allo script di shell appropriato.
 .TP
 .I "\-s"
@@ -1324,7 +1324,7 @@ Il menu utente è un menu di comandi utili che possono essere
 personalizzati dall'utente. Quando si accede al menu utente, viene 
 utilizzato, se esiste, il file .mc.menu dalla directory corrente,
 ma solo se è di proprietà dell'utente o di root e se non è scrivibile
-a tutti. Se tale file non viene trovato, mc6 alla stessa maniera 
+a tutti. Se tale file non viene trovato, mcommander alla stessa maniera 
 prova con ~/.config/mc6/menu altrimenti usa il menu di sistema
 %pkgdatadir%/mc.menu.
 .PP
@@ -1484,7 +1484,7 @@ Il comando
 aspetto
 .\"Layout"
 mostra una finestra di dialogo con la quale è possibile impostare molte
-opzioni relative a come mc6 appare sullo schermo.
+opzioni relative a come mcommander appare sullo schermo.
 .PP
 Il comando
 .\"LINK2"
@@ -2220,7 +2220,7 @@ Forse un esempio aiuterà:
 .PP
 Si vuole copiare il contenuto di una directory pallo su /pinco/pallo,
 che è una directory che esiste già. Normalmente (quando l'opzione
-non è impostata), mc6 farebbe la copia in /pinco/pallo. Abilitando 
+non è impostata), mcommander farebbe la copia in /pinco/pallo. Abilitando 
 quest'opzione verrà eseguita la copia in /pinco/pallo/pallo, perché
 la directory esiste già.
 .PP
@@ -3019,6 +3019,6 @@ aprire una segnalazione a questo indirizzo:
 \X'tty: link https://github.com/blue\-panels/mc6/issues'https://github.com/blue\-panels/mc6/issues\X'tty: link' .
 .PP
 Nel rapporto è necessario fornire una descrizione dettagliata del baco, 
-la versione del programma (mc6 \-v mostra quest'informazione), il sistema 
+la versione del programma (mcommander \-v mostra quest'informazione), il sistema 
 operativo su cui si sta facendo girare il programma e, se il programma 
 va in crash, è gradita una traccia dello stack.

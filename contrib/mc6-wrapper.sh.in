@@ -7,7 +7,7 @@ else
 fi
 
 MC_STATUS=0
-@bindir@/mc6 -P "$MC_PWD_FILE" "$@" || MC_STATUS=$?
+@bindir@/mcommander -P "$MC_PWD_FILE" "$@" || MC_STATUS=$?
 
 if test -r "$MC_PWD_FILE"; then
 	# Command substitution removes trailing '\n's, hence the added and later removed '_'.
