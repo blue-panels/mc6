@@ -1,7 +1,7 @@
 .\" -*- mode: troff; coding: UTF-8 -*-
 .\"TOPICS "Разделы помощи:"
 .\" TODO: Перевести раздел EXTernal File System
-.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "НАИМЕНОВАНИЕ"
 mcommander \- Визуальная оболочка для Unix\-подобных систем.

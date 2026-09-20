@@ -1,4 +1,4 @@
-.TH MDIFF 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
+.TH MDIFF 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .SH NAME
 mdiff \- Internal diff viewer of M\-Commander.
 .SH USAGE

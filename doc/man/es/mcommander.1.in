@@ -6,7 +6,7 @@
 .\"	David H. Martín Alonso <david.martin@telefonica.net>
 .\"
 .\"TOPICS "Índice de Contenidos:"
-.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander Versión %MAN_VERSION%" "M\-Commander"
+.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .\"SKIP_SECTION"
 .SH "NOMBRE"
 mcommander \- entorno visual para sistemas tipo Unix.

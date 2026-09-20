@@ -1,4 +1,4 @@
-.TH MVIEW 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
+.TH MVIEW 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .SH NAME
 mview \- Internal file viewer of M\-Commander.
 .SH SYNOPSIS

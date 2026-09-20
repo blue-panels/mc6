@@ -1,4 +1,4 @@
-.TH MCEDIT6 1 "%DATE_OF_MAN_PAGE%" "MCommander Version %MAN_VERSION%" "M\-Commander"
+.TH MCEDIT6 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
 .SH NAME
 mcedit6 \- Internal file editor of M\-Commander.
 .SH SYNOPSIS
