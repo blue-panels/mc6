@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
-# This file is distributed under the same license as the mc package.
+# This file is distributed under the same license as the mcommander package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: mcommander v6.0.4-105-ga25125da7\n"
+"Project-Id-Version: mcommander v6.0.4-git\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-20 20:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,8 +123,8 @@ msgid "Move/rename file(s)"
 msgstr ""
 
 #: lib/keybind.c:91 lib/tty/key.c:135 lib/tty/key.c:168
-#: src/editor/editmacros.c:865 src/filemanager/panel_plugin_ops.c:1184
-#: src/filemanager/panel_plugin_ops.c:1187
+#: src/editor/editmacros.c:865 src/filemanager/panel_plugin_ops.c:1186
+#: src/filemanager/panel_plugin_ops.c:1189
 msgid "Delete"
 msgstr ""
 
@@ -185,7 +185,7 @@ msgid "Terminal"
 msgstr ""
 
 #: lib/keybind.c:114 src/editor/editmacros.c:866 src/filemanager/cmd.c:1200
-#: src/filemanager/panel_plugin_ops.c:1273
+#: src/filemanager/panel_plugin_ops.c:1275
 msgid "Edit file"
 msgstr ""
 
@@ -452,7 +452,7 @@ msgstr ""
 msgid "Info panel"
 msgstr ""
 
-#: lib/keybind.c:189 src/filemanager/boxes.c:1194
+#: lib/keybind.c:189 src/filemanager/boxes.c:1300
 msgid "Background jobs"
 msgstr ""
 
@@ -484,687 +484,699 @@ msgstr ""
 msgid "Panel listing mode"
 msgstr ""
 
-#: lib/keybind.c:198 src/filemanager/boxes.c:768
+#: lib/keybind.c:198 src/filemanager/boxes.c:811
 msgid "Panel options"
 msgstr ""
 
-#: lib/keybind.c:199
-msgid "Quick cd"
+#: lib/keybind.c:199 src/filemanager/boxes.c:875
+msgid "Viewer options"
 msgstr ""
 
 #: lib/keybind.c:200
-msgid "Quick view panel"
+msgid "Diff viewer options"
 msgstr ""
 
-#: lib/keybind.c:201
-msgid "Create relative symlink"
+#: lib/keybind.c:201 src/editor/editoptions.c:233
+msgid "Editor options"
 msgstr ""
 
 #: lib/keybind.c:202
-msgid "Save setup"
+msgid "Quick cd"
 msgstr ""
 
 #: lib/keybind.c:203
-msgid "Create symbolic link"
+msgid "Quick view panel"
 msgstr ""
 
 #: lib/keybind.c:204
-msgid "Panel tree view"
+msgid "Create relative symlink"
 msgstr ""
 
-#: lib/keybind.c:205 src/filemanager/boxes.c:1015 src/filemanager/tree.c:1118
-msgid "Directory tree"
+#: lib/keybind.c:205
+msgid "Save setup"
 msgstr ""
 
 #: lib/keybind.c:206
-msgid "Put current link to cmdline"
+msgid "Create symbolic link"
 msgstr ""
 
 #: lib/keybind.c:207
-msgid "Put other link to cmdline"
+msgid "Panel tree view"
 msgstr ""
 
-#: lib/keybind.c:208 src/filemanager/hotlist.c:2110
-msgid "Add to hotlist"
+#: lib/keybind.c:208 src/filemanager/boxes.c:1121 src/filemanager/tree.c:1118
+msgid "Directory tree"
 msgstr ""
 
 #: lib/keybind.c:209
-msgid "Toggle hidden files"
+msgid "Put current link to cmdline"
 msgstr ""
 
 #: lib/keybind.c:210
-msgid "Toggle horizontal/vertical split"
+msgid "Put other link to cmdline"
 msgstr ""
 
-#: lib/keybind.c:211
-msgid "Equal panel split"
+#: lib/keybind.c:211 src/filemanager/hotlist.c:2110
+msgid "Add to hotlist"
 msgstr ""
 
 #: lib/keybind.c:212
-msgid "Enlarge current panel"
+msgid "Toggle hidden files"
 msgstr ""
 
 #: lib/keybind.c:213
-msgid "Shrink current panel"
+msgid "Toggle horizontal/vertical split"
 msgstr ""
 
 #: lib/keybind.c:214
-msgid "Put current path to cmdline"
+msgid "Equal panel split"
 msgstr ""
 
 #: lib/keybind.c:215
-msgid "Put other path to cmdline"
+msgid "Enlarge current panel"
 msgstr ""
 
 #: lib/keybind.c:216
-msgid "Put selected name to cmdline"
+msgid "Shrink current panel"
 msgstr ""
 
 #: lib/keybind.c:217
-msgid "Put selected full path to cmdline"
+msgid "Put current path to cmdline"
 msgstr ""
 
 #: lib/keybind.c:218
-msgid "Put tagged names to cmdline"
+msgid "Put other path to cmdline"
 msgstr ""
 
 #: lib/keybind.c:219
-msgid "Put other tagged to cmdline"
+msgid "Put selected name to cmdline"
+msgstr ""
+
+#: lib/keybind.c:220
+msgid "Put selected full path to cmdline"
 msgstr ""
 
 #: lib/keybind.c:221
-msgid "Toggle left panel in terminal mode"
+msgid "Put tagged names to cmdline"
 msgstr ""
 
 #: lib/keybind.c:222
-msgid "Toggle right panel in terminal mode"
+msgid "Put other tagged to cmdline"
 msgstr ""
 
 #: lib/keybind.c:224
-msgid "Select files by pattern"
+msgid "Toggle left panel in terminal mode"
 msgstr ""
 
 #: lib/keybind.c:225
-msgid "Unselect files by pattern"
+msgid "Toggle right panel in terminal mode"
+msgstr ""
+
+#: lib/keybind.c:227
+msgid "Select files by pattern"
 msgstr ""
 
 #: lib/keybind.c:228
-msgid "Select by extension"
-msgstr ""
-
-#: lib/keybind.c:229
-msgid "Scroll panel left"
-msgstr ""
-
-#: lib/keybind.c:230
-msgid "Scroll panel right"
+msgid "Unselect files by pattern"
 msgstr ""
 
 #: lib/keybind.c:231
-msgid "Scroll to left edge"
+msgid "Select by extension"
 msgstr ""
 
 #: lib/keybind.c:232
-msgid "Scroll to right edge"
+msgid "Scroll panel left"
 msgstr ""
 
 #: lib/keybind.c:233
-msgid "Other panel cd here"
+msgid "Scroll panel right"
 msgstr ""
 
 #: lib/keybind.c:234
-msgid "Other panel cd link target"
+msgid "Scroll to left edge"
 msgstr ""
 
 #: lib/keybind.c:235
-msgid "Copy single file"
+msgid "Scroll to right edge"
 msgstr ""
 
 #: lib/keybind.c:236
-msgid "Move single file"
+msgid "Other panel cd here"
 msgstr ""
 
 #: lib/keybind.c:237
-msgid "Delete single file"
+msgid "Other panel cd link target"
 msgstr ""
 
 #: lib/keybind.c:238
-msgid "Go to parent directory"
+msgid "Copy single file"
 msgstr ""
 
 #: lib/keybind.c:239
-msgid "Enter directory"
+msgid "Move single file"
 msgstr ""
 
 #: lib/keybind.c:240
-msgid "Panel plugin menu"
+msgid "Delete single file"
 msgstr ""
 
 #: lib/keybind.c:241
-msgid "Drive menu (left panel)"
+msgid "Go to parent directory"
 msgstr ""
 
 #: lib/keybind.c:242
-msgid "Drive menu (right panel)"
+msgid "Enter directory"
 msgstr ""
 
 #: lib/keybind.c:243
-msgid "Sync other panel"
+msgid "Panel plugin menu"
 msgstr ""
 
 #: lib/keybind.c:244
-msgid "Next sort mode"
+msgid "Drive menu (left panel)"
 msgstr ""
 
 #: lib/keybind.c:245
-msgid "Previous sort mode"
+msgid "Drive menu (right panel)"
 msgstr ""
 
 #: lib/keybind.c:246
-msgid "Reverse sort order"
+msgid "Sync other panel"
 msgstr ""
 
 #: lib/keybind.c:247
-msgid "Sort by name"
+msgid "Next sort mode"
 msgstr ""
 
 #: lib/keybind.c:248
-msgid "Sort by version"
+msgid "Previous sort mode"
 msgstr ""
 
 #: lib/keybind.c:249
-msgid "Sort by extension"
+msgid "Reverse sort order"
 msgstr ""
 
 #: lib/keybind.c:250
-msgid "Sort by size"
+msgid "Sort by name"
 msgstr ""
 
 #: lib/keybind.c:251
-msgid "Sort by modification time"
+msgid "Sort by version"
 msgstr ""
 
 #: lib/keybind.c:252
-msgid "Smart parent directory"
+msgid "Sort by extension"
 msgstr ""
 
 #: lib/keybind.c:253
+msgid "Sort by size"
+msgstr ""
+
+#: lib/keybind.c:254
+msgid "Sort by modification time"
+msgstr ""
+
+#: lib/keybind.c:255
+msgid "Smart parent directory"
+msgstr ""
+
+#: lib/keybind.c:256
 msgid "Cycle listing format"
 msgstr ""
 
-#: lib/keybind.c:261
+#: lib/keybind.c:264
 msgid "Yank (paste kill buffer)"
 msgstr ""
 
-#: lib/keybind.c:264
+#: lib/keybind.c:267
 msgid "Help index"
 msgstr ""
 
-#: lib/keybind.c:265 src/editor-plugins/ctags/ctags-plugin.c:1643
+#: lib/keybind.c:268 src/editor-plugins/ctags/ctags-plugin.c:1643
 msgid "Go back"
 msgstr ""
 
-#: lib/keybind.c:266
+#: lib/keybind.c:269
 msgid "Next link"
 msgstr ""
 
-#: lib/keybind.c:267
+#: lib/keybind.c:270
 msgid "Previous link"
 msgstr ""
 
-#: lib/keybind.c:268
+#: lib/keybind.c:271
 msgid "Next node"
 msgstr ""
 
-#: lib/keybind.c:269
+#: lib/keybind.c:272
 msgid "Previous node"
 msgstr ""
 
-#: lib/keybind.c:272
+#: lib/keybind.c:275
 msgid "Forget directory"
 msgstr ""
 
-#: lib/keybind.c:279
+#: lib/keybind.c:282
 msgid "Toggle attribute and move down"
 msgstr ""
 
-#: lib/keybind.c:282
+#: lib/keybind.c:285
 msgid "Scroll up"
 msgstr ""
 
-#: lib/keybind.c:283
+#: lib/keybind.c:286
 msgid "Scroll down"
 msgstr ""
 
-#: lib/keybind.c:284
+#: lib/keybind.c:287
 msgid "Deselect all"
 msgstr ""
 
-#: lib/keybind.c:285
+#: lib/keybind.c:288
 msgid "Select page up"
 msgstr ""
 
-#: lib/keybind.c:286
+#: lib/keybind.c:289
 msgid "Select page down"
 msgstr ""
 
-#: lib/keybind.c:289
+#: lib/keybind.c:292
 msgid "Close editor"
 msgstr ""
 
-#: lib/keybind.c:293
+#: lib/keybind.c:296
 msgid "Paragraph up"
 msgstr ""
 
-#: lib/keybind.c:294
+#: lib/keybind.c:297
 msgid "Paragraph down"
 msgstr ""
 
-#: lib/keybind.c:295
+#: lib/keybind.c:298
 msgid "Open file in editor"
 msgstr ""
 
-#: lib/keybind.c:296
+#: lib/keybind.c:299
 msgid "Select word"
 msgstr ""
 
-#: lib/keybind.c:297
+#: lib/keybind.c:300
 msgid "Select line"
 msgstr ""
 
-#: lib/keybind.c:298
+#: lib/keybind.c:301
 msgid "Select all"
 msgstr ""
 
-#: lib/keybind.c:299
+#: lib/keybind.c:302
 msgid "Column selection mode"
 msgstr ""
 
-#: lib/keybind.c:300
+#: lib/keybind.c:303
 msgid "Save selected block"
 msgstr ""
 
-#: lib/keybind.c:301 src/editor/editcmd.c:2175
+#: lib/keybind.c:304 src/editor/editcmd.c:2175
 msgid "Insert file"
 msgstr ""
 
-#: lib/keybind.c:302
+#: lib/keybind.c:305
 msgid "Toggle insert/overwrite"
 msgstr ""
 
-#: lib/keybind.c:303
+#: lib/keybind.c:306
 msgid "Insert date/time (Lua action)"
 msgstr ""
 
-#: lib/keybind.c:304
+#: lib/keybind.c:307
 msgid "Delete line"
 msgstr ""
 
-#: lib/keybind.c:305
+#: lib/keybind.c:308
 msgid "Mail file"
 msgstr ""
 
-#: lib/keybind.c:306
+#: lib/keybind.c:309
 msgid "Undo history"
 msgstr ""
 
-#: lib/keybind.c:307
+#: lib/keybind.c:310
 msgid "Format paragraph (Lua action)"
 msgstr ""
 
-#: lib/keybind.c:308
+#: lib/keybind.c:311
 msgid "Match bracket"
 msgstr ""
 
-#: lib/keybind.c:309
+#: lib/keybind.c:312
 msgid "Sort selection (Lua action)"
 msgstr ""
 
-#: lib/keybind.c:310
+#: lib/keybind.c:313
 msgid "Insert command output (Lua action)"
 msgstr ""
 
-#: lib/keybind.c:311
+#: lib/keybind.c:314
 msgid "Start macro recording"
 msgstr ""
 
-#: lib/keybind.c:312
+#: lib/keybind.c:315
 msgid "Stop macro recording"
 msgstr ""
 
-#: lib/keybind.c:313
+#: lib/keybind.c:316
 msgid "Toggle macro recording"
 msgstr ""
 
-#: lib/keybind.c:314
+#: lib/keybind.c:317
 msgid "Macro explorer"
 msgstr ""
 
-#: lib/keybind.c:315
+#: lib/keybind.c:318
 msgid "Repeat last macro"
 msgstr ""
 
-#: lib/keybind.c:316
+#: lib/keybind.c:319
 msgid "Spell check"
 msgstr ""
 
-#: lib/keybind.c:317
+#: lib/keybind.c:320
 msgid "Spell check current word"
 msgstr ""
 
-#: lib/keybind.c:318
+#: lib/keybind.c:321
 msgid "Select spell language"
 msgstr ""
 
-#: lib/keybind.c:319
+#: lib/keybind.c:322
 msgid "Clear all bookmarks"
 msgstr ""
 
-#: lib/keybind.c:320
+#: lib/keybind.c:323
 msgid "Next bookmark"
 msgstr ""
 
-#: lib/keybind.c:321
+#: lib/keybind.c:324
 msgid "Previous bookmark"
 msgstr ""
 
-#: lib/keybind.c:322
+#: lib/keybind.c:325
 msgid "Toggle code fold"
 msgstr ""
 
-#: lib/keybind.c:323
+#: lib/keybind.c:326
 msgid "Unfold all"
 msgstr ""
 
-#: lib/keybind.c:324
+#: lib/keybind.c:327
 msgid "Toggle line filter"
 msgstr ""
 
-#: lib/keybind.c:325
+#: lib/keybind.c:328
 msgid "Filter by selection or word"
 msgstr ""
 
-#: lib/keybind.c:326
+#: lib/keybind.c:329
 msgid "Select to file start"
 msgstr ""
 
-#: lib/keybind.c:327
+#: lib/keybind.c:330
 msgid "Select to file end"
 msgstr ""
 
-#: lib/keybind.c:328
+#: lib/keybind.c:331
 msgid "Select to page start"
 msgstr ""
 
-#: lib/keybind.c:329
+#: lib/keybind.c:332
 msgid "Select to page end"
 msgstr ""
 
-#: lib/keybind.c:330
+#: lib/keybind.c:333
 msgid "Select scroll up"
 msgstr ""
 
-#: lib/keybind.c:331
+#: lib/keybind.c:334
 msgid "Select scroll down"
 msgstr ""
 
-#: lib/keybind.c:332
+#: lib/keybind.c:335
 msgid "Select paragraph up"
 msgstr ""
 
-#: lib/keybind.c:333
+#: lib/keybind.c:336
 msgid "Select paragraph down"
 msgstr ""
 
-#: lib/keybind.c:334
+#: lib/keybind.c:337
 msgid "Column select page up"
 msgstr ""
 
-#: lib/keybind.c:335
+#: lib/keybind.c:338
 msgid "Column select page down"
 msgstr ""
 
-#: lib/keybind.c:336
+#: lib/keybind.c:339
 msgid "Column select left"
 msgstr ""
 
-#: lib/keybind.c:337
+#: lib/keybind.c:340
 msgid "Column select right"
 msgstr ""
 
-#: lib/keybind.c:338
+#: lib/keybind.c:341
 msgid "Column select up"
 msgstr ""
 
-#: lib/keybind.c:339
+#: lib/keybind.c:342
 msgid "Column select down"
 msgstr ""
 
-#: lib/keybind.c:340
+#: lib/keybind.c:343
 msgid "Column select scroll up"
 msgstr ""
 
-#: lib/keybind.c:341
+#: lib/keybind.c:344
 msgid "Column select scroll down"
 msgstr ""
 
-#: lib/keybind.c:342
+#: lib/keybind.c:345
 msgid "Column select paragraph up"
 msgstr ""
 
-#: lib/keybind.c:343
+#: lib/keybind.c:346
 msgid "Column select paragraph down"
 msgstr ""
 
-#: lib/keybind.c:344
+#: lib/keybind.c:347
 msgid "Shift block left"
 msgstr ""
 
-#: lib/keybind.c:345
+#: lib/keybind.c:348
 msgid "Shift block right"
 msgstr ""
 
-#: lib/keybind.c:346
+#: lib/keybind.c:349
 msgid "Insert literal character (Lua action)"
 msgstr ""
 
-#: lib/keybind.c:347
+#: lib/keybind.c:350
 msgid "Toggle visible tabs/spaces"
 msgstr ""
 
-#: lib/keybind.c:348
+#: lib/keybind.c:351
 msgid "Toggle control characters"
 msgstr ""
 
-#: lib/keybind.c:349
+#: lib/keybind.c:352
 msgid "Toggle syntax highlighting"
 msgstr ""
 
-#: lib/keybind.c:350 src/editor/syntax.c:139
+#: lib/keybind.c:353 src/editor/syntax.c:139
 msgid "Choose syntax highlighting"
 msgstr ""
 
-#: lib/keybind.c:351
+#: lib/keybind.c:354
 msgid "Toggle right margin"
 msgstr ""
 
-#: lib/keybind.c:352
+#: lib/keybind.c:355
 msgid "Save mode options"
 msgstr ""
 
-#: lib/keybind.c:353
+#: lib/keybind.c:356
 msgid "About editor"
 msgstr ""
 
-#: lib/keybind.c:355
+#: lib/keybind.c:358
 msgid "Execute script"
 msgstr ""
 
-#: lib/keybind.c:356
+#: lib/keybind.c:359
 msgid "Move window"
 msgstr ""
 
-#: lib/keybind.c:357
+#: lib/keybind.c:360
 msgid "Resize window"
 msgstr ""
 
-#: lib/keybind.c:358
+#: lib/keybind.c:361
 msgid "Toggle fullscreen"
 msgstr ""
 
-#: lib/keybind.c:359
+#: lib/keybind.c:362
 msgid "Window list"
 msgstr ""
 
-#: lib/keybind.c:360
+#: lib/keybind.c:363
 msgid "Next window"
 msgstr ""
 
-#: lib/keybind.c:361
+#: lib/keybind.c:364
 msgid "Previous window"
 msgstr ""
 
-#: lib/keybind.c:365
+#: lib/keybind.c:368
 msgid "Toggle line wrap"
 msgstr ""
 
-#: lib/keybind.c:366
+#: lib/keybind.c:369
 msgid "Hex edit mode"
 msgstr ""
 
-#: lib/keybind.c:367
+#: lib/keybind.c:370
 msgid "Toggle hex mode"
 msgstr ""
 
-#: lib/keybind.c:368
+#: lib/keybind.c:371
 msgid "Toggle magic mode"
 msgstr ""
 
-#: lib/keybind.c:369
+#: lib/keybind.c:372
 msgid "Toggle nroff mode"
 msgstr ""
 
-#: lib/keybind.c:370
+#: lib/keybind.c:373
 msgid "Toggle ANSI color mode"
 msgstr ""
 
-#: lib/keybind.c:371
+#: lib/keybind.c:374
 msgid "Cycle ESC render mode: None/SGR/Term"
 msgstr ""
 
-#: lib/keybind.c:372
+#: lib/keybind.c:375
 msgid "Go to bookmark"
 msgstr ""
 
-#: lib/keybind.c:373
+#: lib/keybind.c:376
 msgid "Toggle ruler"
 msgstr ""
 
-#: lib/keybind.c:374
+#: lib/keybind.c:377
 msgid "Search forward"
 msgstr ""
 
-#: lib/keybind.c:375
+#: lib/keybind.c:378
 msgid "Search backward"
 msgstr ""
 
-#: lib/keybind.c:376
+#: lib/keybind.c:379
 msgid "Search forward next"
 msgstr ""
 
-#: lib/keybind.c:377
+#: lib/keybind.c:380
 msgid "Search backward next"
 msgstr ""
 
-#: lib/keybind.c:378
+#: lib/keybind.c:381
 msgid "Search opposite direction"
 msgstr ""
 
-#: lib/keybind.c:379
+#: lib/keybind.c:382
 msgid "Set line filter"
 msgstr ""
 
-#: lib/keybind.c:380
+#: lib/keybind.c:383
 msgid "Toggle filter follow mode"
 msgstr ""
 
-#: lib/keybind.c:381
+#: lib/keybind.c:384
 msgid "Jump to next filter match"
 msgstr ""
 
-#: lib/keybind.c:382
+#: lib/keybind.c:385
 msgid "Jump to prev filter match"
 msgstr ""
 
-#: lib/keybind.c:383
+#: lib/keybind.c:386
 msgid "Toggle structured (tree) mode"
 msgstr ""
 
-#: lib/keybind.c:384
+#: lib/keybind.c:387
 msgid "Open in the structure viewer (mcstruct)"
 msgstr ""
 
-#: lib/keybind.c:385
+#: lib/keybind.c:388
 msgid "Expand/collapse tree node"
 msgstr ""
 
-#: lib/keybind.c:386
+#: lib/keybind.c:389
 msgid "Expand subtree"
 msgstr ""
 
-#: lib/keybind.c:387
+#: lib/keybind.c:390
 msgid "Expand all tree nodes"
 msgstr ""
 
-#: lib/keybind.c:388
+#: lib/keybind.c:391
 msgid "Collapse all tree nodes"
 msgstr ""
 
-#: lib/keybind.c:389
+#: lib/keybind.c:392
 msgid "Copy node path to clipboard"
 msgstr ""
 
-#: lib/keybind.c:393
+#: lib/keybind.c:396
 msgid "Toggle show symbols"
 msgstr ""
 
-#: lib/keybind.c:394
+#: lib/keybind.c:397
 msgid "Toggle full split"
 msgstr ""
 
-#: lib/keybind.c:395
+#: lib/keybind.c:398
 msgid "Tab size 2"
 msgstr ""
 
-#: lib/keybind.c:396
+#: lib/keybind.c:399
 msgid "Tab size 3"
 msgstr ""
 
-#: lib/keybind.c:397
+#: lib/keybind.c:400
 msgid "Tab size 4"
 msgstr ""
 
-#: lib/keybind.c:398
+#: lib/keybind.c:401
 msgid "Tab size 8"
 msgstr ""
 
-#: lib/keybind.c:399
+#: lib/keybind.c:402
 msgid "Next difference"
 msgstr ""
 
-#: lib/keybind.c:400
+#: lib/keybind.c:403
 msgid "Previous difference"
 msgstr ""
 
-#: lib/keybind.c:401
+#: lib/keybind.c:404
 msgid "Edit other file"
 msgstr ""
 
-#: lib/keybind.c:402
+#: lib/keybind.c:405
 msgid "Merge current hunk"
 msgstr ""
 
-#: lib/keybind.c:403
+#: lib/keybind.c:406
 msgid "Merge from other file"
 msgstr ""
 
@@ -1188,22 +1200,27 @@ msgstr ""
 msgid "&Ignore lock"
 msgstr ""
 
-#: lib/mcconfig/paths.c:119
+#: lib/mcconfig/paths.c:121
 #, c-format
 msgid "Cannot create %s directory"
 msgstr ""
 
-#: lib/mcconfig/paths.c:250
+#: lib/mcconfig/paths.c:252
 #, c-format
 msgid "Imported %s to %s\n"
 msgstr ""
 
-#: lib/mcconfig/paths.c:252
+#: lib/mcconfig/paths.c:254
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
 
-#: lib/mcconfig/paths.c:277
+#: lib/mcconfig/paths.c:289
+#, c-format
+msgid "Renamed %s to %s\n"
+msgstr ""
+
+#: lib/mcconfig/paths.c:315
 msgid "FATAL: not a directory:"
 msgstr ""
 
@@ -1245,11 +1262,11 @@ msgstr ""
 msgid "Invalid token number %d"
 msgstr ""
 
-#: lib/search/regex.c:340 lib/search/regex.c:817 src/filemanager/ext.c:765
+#: lib/search/regex.c:340 lib/search/regex.c:817 src/filemanager/ext.c:749
 msgid "Regular expression error"
 msgstr ""
 
-#: lib/search/search.c:53 src/diffviewer/ydiff.c:2861
+#: lib/search/search.c:53 src/diffviewer/ydiff.c:2878
 msgid "No&rmal"
 msgstr ""
 
@@ -1781,18 +1798,18 @@ msgstr ""
 msgid "Cannot create pipe streams"
 msgstr ""
 
-#: lib/utilunix.c:681
+#: lib/utilunix.c:691
 #, c-format
 msgid ""
 "Unexpected error in select() reading data from a child process:\n"
 "%s"
 msgstr ""
 
-#: lib/utilunix.c:759
+#: lib/utilunix.c:769
 msgid "Cannot close pipe descriptor (p == NULL)"
 msgstr ""
 
-#: lib/utilunix.c:775
+#: lib/utilunix.c:785
 #, c-format
 msgid ""
 "Unexpected error in waitpid():\n"
@@ -1834,7 +1851,7 @@ msgid ""
 msgstr ""
 
 #: lib/vfs/interface.c:803 src/execute.c:320
-#: src/filemanager/mcterm_overlay.c:164
+#: src/filemanager/mcterm_overlay.c:165
 msgid "Press any key to continue..."
 msgstr ""
 
@@ -1863,13 +1880,13 @@ msgid "Internal error:"
 msgstr ""
 
 #: lib/vfs/utilvfs.c:372 src/panel-plugins/arcmc/dialog-pack.c:461
-#: src/panel-plugins/ftp/ftp.c:1654 src/panel-plugins/samba/samba.c:820
-#: src/panel-plugins/sftp/sftp.c:1323
+#: src/panel-plugins/ftp/ftp.c:1674 src/panel-plugins/samba/samba.c:820
+#: src/panel-plugins/sftp/sftp.c:1366
 #: src/panel-plugins/shell-link/shell-link.c:689
 msgid "Password:"
 msgstr ""
 
-#: lib/widget/dialog-switch.c:239
+#: lib/widget/dialog-switch.c:247
 msgid "Screens"
 msgstr ""
 
@@ -1888,62 +1905,60 @@ msgid ""
 "Paste it?"
 msgstr ""
 
-#: lib/widget/input.c:1056 lib/widget/listbox.c:499 src/diffviewer/ydiff.c:3580
+#: lib/widget/input.c:1056 lib/widget/listbox.c:499 src/diffviewer/ydiff.c:3608
 #: src/editor/edit.c:392 src/editor/editcmd.c:401 src/editor/editcmd.c:424
 #: src/editor/editcmd.c:1843 src/editor/editcmd.c:1849
 #: src/editor/editmacros.c:711 src/filemanager/cmd.c:452
 #: src/filemanager/file.c:997 src/filemanager/file.c:2028
-#: src/filemanager/filegui.c:475 src/filemanager/filemanager.c:1053
-#: src/filemanager/filemanager.c:1059 src/filemanager/hotlist.c:1566
+#: src/filemanager/filegui.c:475 src/filemanager/filemanager.c:1062
+#: src/filemanager/filemanager.c:1068 src/filemanager/hotlist.c:1566
 #: src/filemanager/hotlist.c:1645 src/filemanager/hotlist.c:1663
-#: src/filemanager/panel.c:4178 src/filemanager/panel_modes.c:980
-#: src/filemanager/panel_plugin_ops.c:1185
-#: src/filemanager/panel_plugin_ops.c:1188
-#: src/filemanager/panel_plugin_ops.c:1342
-#: src/filemanager/panel_plugin_ops.c:1347 src/filemanager/tree.c:816
+#: src/filemanager/panel.c:4213 src/filemanager/panel_modes.c:980
+#: src/filemanager/panel_plugin_ops.c:1187
+#: src/filemanager/panel_plugin_ops.c:1190
+#: src/filemanager/panel_plugin_ops.c:1359 src/filemanager/tree.c:816
 #: src/key_learn.c:356 src/keybind_dialog.c:1040
 #: src/panel-plugins/arcmc/progress.c:100
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:260
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:291
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:826 src/panel-plugins/s3/s3.c:858
-#: src/panel-plugins/sftp/sftp.c:1914 src/panel-plugins/sftp/sftp.c:2239
+#: src/panel-plugins/sftp/sftp.c:1953 src/panel-plugins/sftp/sftp.c:2278
 #: src/panel-plugins/shell-link/shell-link.c:1381
 #: src/panel-plugins/shell-link/shell-link.c:1391
-#: src/panel-plugins/skineditor/skineditor_ui.c:774
-#: src/panel-plugins/skineditor/skineditor_ui.c:827
-#: src/panel-plugins/skineditor/skineditor_ui.c:874
-#: src/panel-plugins/skineditor/skineditor_ui.c:913 src/usermenu_ini.c:1793
-#: src/viewer/actions_cmd.c:804 src/viewer/actions_cmd.c:811
-#: src/viewer/search.c:309 src/viewer/search.c:503
+#: src/panel-plugins/skineditor/skineditor_ui.c:775
+#: src/panel-plugins/skineditor/skineditor_ui.c:828
+#: src/panel-plugins/skineditor/skineditor_ui.c:875
+#: src/panel-plugins/skineditor/skineditor_ui.c:914 src/usermenu_ini.c:1796
+#: src/viewer/actions_cmd.c:859 src/viewer/actions_cmd.c:866
+#: src/viewer/search.c:313 src/viewer/search.c:516
 msgid "&Yes"
 msgstr ""
 
-#: lib/widget/input.c:1056 lib/widget/listbox.c:500 src/diffviewer/ydiff.c:3580
+#: lib/widget/input.c:1056 lib/widget/listbox.c:500 src/diffviewer/ydiff.c:3608
 #: src/editor/edit.c:392 src/editor/editcmd.c:401 src/editor/editcmd.c:1843
 #: src/editor/editcmd.c:1849 src/editor/editmacros.c:711
 #: src/filemanager/cmd.c:452 src/filemanager/file.c:998
 #: src/filemanager/file.c:2028 src/filemanager/filegui.c:477
-#: src/filemanager/filemanager.c:1053 src/filemanager/filemanager.c:1060
+#: src/filemanager/filemanager.c:1062 src/filemanager/filemanager.c:1069
 #: src/filemanager/hotlist.c:1567 src/filemanager/hotlist.c:1646
-#: src/filemanager/hotlist.c:1663 src/filemanager/panel.c:4178
-#: src/filemanager/panel_modes.c:980 src/filemanager/panel_plugin_ops.c:1185
-#: src/filemanager/panel_plugin_ops.c:1188
-#: src/filemanager/panel_plugin_ops.c:1342
-#: src/filemanager/panel_plugin_ops.c:1347 src/filemanager/tree.c:816
+#: src/filemanager/hotlist.c:1663 src/filemanager/panel.c:4213
+#: src/filemanager/panel_modes.c:980 src/filemanager/panel_plugin_ops.c:1187
+#: src/filemanager/panel_plugin_ops.c:1190
+#: src/filemanager/panel_plugin_ops.c:1359 src/filemanager/tree.c:816
 #: src/key_learn.c:356 src/keybind_dialog.c:1040
 #: src/panel-plugins/arcmc/progress.c:101
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:260
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:291
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:826 src/panel-plugins/s3/s3.c:859
-#: src/panel-plugins/sftp/sftp.c:1915 src/panel-plugins/sftp/sftp.c:2239
+#: src/panel-plugins/sftp/sftp.c:1954 src/panel-plugins/sftp/sftp.c:2278
 #: src/panel-plugins/shell-link/shell-link.c:1381
 #: src/panel-plugins/shell-link/shell-link.c:1391
-#: src/panel-plugins/skineditor/skineditor_ui.c:774
-#: src/panel-plugins/skineditor/skineditor_ui.c:827
-#: src/panel-plugins/skineditor/skineditor_ui.c:875
-#: src/panel-plugins/skineditor/skineditor_ui.c:914 src/usermenu_ini.c:1793
-#: src/viewer/actions_cmd.c:804 src/viewer/actions_cmd.c:811
-#: src/viewer/search.c:309 src/viewer/search.c:503
+#: src/panel-plugins/skineditor/skineditor_ui.c:775
+#: src/panel-plugins/skineditor/skineditor_ui.c:828
+#: src/panel-plugins/skineditor/skineditor_ui.c:876
+#: src/panel-plugins/skineditor/skineditor_ui.c:915 src/usermenu_ini.c:1796
+#: src/viewer/actions_cmd.c:859 src/viewer/actions_cmd.c:866
+#: src/viewer/search.c:313 src/viewer/search.c:516
 msgid "&No"
 msgstr ""
 
@@ -1962,7 +1977,7 @@ msgstr ""
 #: src/editor-plugins/ctags/ctags-ui.c:754
 #: src/editor-plugins/ctags/ctags-ui.c:880 src/editor/editsearch.c:164
 #: src/editor/editsearch.c:1092 src/editor/editwidget.c:722
-#: src/filemanager/boxes.c:507 src/filemanager/boxes.c:1170
+#: src/filemanager/boxes.c:548 src/filemanager/boxes.c:1276
 #: src/filemanager/filegui.c:1405 src/filemanager/find.c:984
 #: src/filemanager/layout.c:503 src/keybind_dialog.c:722
 #: src/keybind_dialog.c:727 src/panel-plugins/arcmc/dialog-settings.c:835
@@ -1991,7 +2006,7 @@ msgstr ""
 #: src/filemanager/hotlist.c:1273 src/filemanager/hotlist.c:1353
 #: src/filemanager/layout.c:504 src/filemanager/panel_modes.c:1204
 #: src/keybind_dialog.c:723 src/keybind_dialog.c:729
-#: src/panel-plugins/git/git.c:1457
+#: src/panel-plugins/git/git.c:1545
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:409
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:826
 #: src/panel-plugins/mongo/mongo_filter.c:496
@@ -1999,9 +2014,9 @@ msgstr ""
 #: src/panel-plugins/panelize/panelize_dlg.c:118
 #: src/panel-plugins/skineditor/skineditor_color.c:584
 #: src/panel-plugins/skineditor/skineditor_color.c:669
-#: src/panel-plugins/skineditor/skineditor_ui.c:1193
-#: src/panel-plugins/skineditor/skineditor_ui.c:1456 src/usermenu_ini.c:551
-#: src/usermenu_ini.c:1590 src/usermenu_ini.c:1724 src/viewer/actions_cmd.c:804
+#: src/panel-plugins/skineditor/skineditor_ui.c:1194
+#: src/panel-plugins/skineditor/skineditor_ui.c:1457 src/usermenu_ini.c:551
+#: src/usermenu_ini.c:1593 src/usermenu_ini.c:1727 src/viewer/actions_cmd.c:859
 #: src/viewer/filter.c:656 src/viewer/hex.c:421
 msgid "&Cancel"
 msgstr ""
@@ -2030,121 +2045,121 @@ msgstr ""
 #: src/panel-plugins/arcmc/archive-io.c:2538
 #: src/panel-plugins/arcmc/progress.c:185
 #: src/panel-plugins/docker/container-files.c:424
-#: src/panel-plugins/ftp/ftp.c:1947 src/panel-plugins/s3/s3.c:813
+#: src/panel-plugins/ftp/ftp.c:1967 src/panel-plugins/s3/s3.c:813
 #: src/panel-plugins/s3/s3_connect_status.c:45
-#: src/panel-plugins/sftp/sftp.c:728 src/panel-plugins/sftp/sftp.c:1869
+#: src/panel-plugins/sftp/sftp.c:742 src/panel-plugins/sftp/sftp.c:1908
 msgid "&Abort"
 msgstr ""
 
-#: src/args.c:111
+#: src/args.c:137
 msgid "Displays the current version"
 msgstr ""
 
-#: src/args.c:122
+#: src/args.c:148
 msgid "Print data directory"
 msgstr ""
 
-#: src/args.c:133
+#: src/args.c:159
 msgid "Print extended info about used data directories"
 msgstr ""
 
-#: src/args.c:145
+#: src/args.c:171
 msgid "Print configure options"
 msgstr ""
 
-#: src/args.c:156
+#: src/args.c:182
 msgid "Print last working directory to specified file"
 msgstr ""
 
-#: src/args.c:157 src/args.c:180 src/args.c:273
+#: src/args.c:183 src/args.c:206 src/args.c:299
 msgid "<file>"
 msgstr ""
 
-#: src/args.c:166
+#: src/args.c:192
 msgid "Disables Lua support"
 msgstr ""
 
-#: src/args.c:179
+#: src/args.c:205
 msgid "Launches the file viewer on a file"
 msgstr ""
 
-#: src/args.c:190
+#: src/args.c:216
 msgid "Edit files"
 msgstr ""
 
-#: src/args.c:191
+#: src/args.c:217
 msgid "<file> ..."
 msgstr ""
 
-#: src/args.c:207
+#: src/args.c:233
 msgid "Forces xterm features"
 msgstr ""
 
-#: src/args.c:217
+#: src/args.c:243
 msgid "Disable X11 support"
 msgstr ""
 
-#: src/args.c:227
+#: src/args.c:253
 msgid "Tries to use an old highlight mouse tracking"
 msgstr ""
 
-#: src/args.c:237
+#: src/args.c:263
 msgid "Disable mouse support in text version"
 msgstr ""
 
-#: src/args.c:243
+#: src/args.c:269
 msgid "Tries to use termcap instead of terminfo"
 msgstr ""
 
-#: src/args.c:252
+#: src/args.c:278
 msgid "To run on slow terminals"
 msgstr ""
 
-#: src/args.c:262
+#: src/args.c:288
 msgid "Use stickchars to draw"
 msgstr ""
 
-#: src/args.c:272
+#: src/args.c:298
 msgid "Load definitions of key bindings from specified file"
 msgstr ""
 
-#: src/args.c:282
+#: src/args.c:308
 msgid "Don't load definitions of key bindings from file, use defaults"
 msgstr ""
 
-#: src/args.c:302
+#: src/args.c:328
 msgid "Requests to run in black and white"
 msgstr ""
 
-#: src/args.c:312
+#: src/args.c:338
 msgid "Request to run in color mode"
 msgstr ""
 
-#: src/args.c:322
+#: src/args.c:348
 msgid "Show mc with specified skin"
 msgstr ""
 
-#: src/args.c:323
+#: src/args.c:349
 msgid "<string>"
 msgstr ""
 
-#: src/args.c:360
+#: src/args.c:386
 msgid "[+lineno] file1[:lineno] [file2[:lineno]...]"
 msgstr ""
 
-#: src/args.c:364 src/filemanager/file.c:171
+#: src/args.c:390 src/filemanager/file.c:171
 msgid "file"
 msgstr ""
 
-#: src/args.c:368
+#: src/args.c:394
 msgid "file1 file2"
 msgstr ""
 
-#: src/args.c:373
+#: src/args.c:399
 msgid "[this_dir] [other_panel_dir]"
 msgstr ""
 
-#: src/args.c:387
+#: src/args.c:413
 #, c-format
 msgid ""
 "\n"
@@ -2152,39 +2167,39 @@ msgid ""
 "as tickets at %s\n"
 msgstr ""
 
-#: src/args.c:617 src/filemanager/boxes.c:721
+#: src/args.c:630 src/filemanager/boxes.c:762 src/filemanager/boxes.c:851
 msgid "Main options"
 msgstr ""
 
-#: src/args.c:624
+#: src/args.c:637
 msgid "Terminal options"
 msgstr ""
 
-#: src/args.c:631
+#: src/args.c:644
 msgid "Color options"
 msgstr ""
 
-#: src/args.c:640
+#: src/args.c:653
 msgid "Arguments parse error!"
 msgstr ""
 
-#: src/args.c:729
+#: src/args.c:742
 msgid "No arguments given to mcstruct."
 msgstr ""
 
-#: src/args.c:756
+#: src/args.c:769
 msgid "No arguments given to mctree."
 msgstr ""
 
-#: src/args.c:772
+#: src/args.c:785
 msgid "MC is built without builtin editor."
 msgstr ""
 
-#: src/args.c:779
+#: src/args.c:792
 msgid "No arguments given to the viewer."
 msgstr ""
 
-#: src/args.c:791
+#: src/args.c:804
 msgid "Two files are required to invoke the diffviewer."
 msgstr ""
 
@@ -2225,8 +2240,8 @@ msgid "Enter search string:"
 msgstr ""
 
 #: src/diffviewer/search.c:93 src/editor/editsearch.c:157
-#: src/editor/editsearch.c:781 src/filemanager/boxes.c:714
-#: src/filemanager/boxes.c:933 src/filemanager/find.c:970
+#: src/editor/editsearch.c:781 src/filemanager/boxes.c:755
+#: src/filemanager/boxes.c:1039 src/filemanager/find.c:970
 #: src/viewer/dialogs.c:87 src/viewer/filter.c:645
 msgid "Cas&e sensitive"
 msgstr ""
@@ -2255,9 +2270,9 @@ msgstr ""
 #: src/editor/editsearch.c:976 src/editor/editsearch.c:987
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:684
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:710 src/viewer/dialogs.c:101
-#: src/viewer/search.c:254 src/viewer/search.c:267 src/viewer/search.c:385
-#: src/viewer/search.c:387 src/viewer/search.c:455 src/viewer/search.c:515
-#: src/viewer/search.c:535 src/viewer/search.c:537 src/viewer/structured.c:163
+#: src/viewer/search.c:258 src/viewer/search.c:271 src/viewer/search.c:389
+#: src/viewer/search.c:391 src/viewer/search.c:460 src/viewer/search.c:528
+#: src/viewer/search.c:548 src/viewer/search.c:552 src/viewer/structured.c:163
 #: src/viewer/structured.c:177
 msgid "Search"
 msgstr ""
@@ -2281,154 +2296,154 @@ msgstr ""
 msgid "Cannot create temporary merge file"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2862
+#: src/diffviewer/ydiff.c:2879
 msgid "&Fastest (Assume large files)"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2863
+#: src/diffviewer/ydiff.c:2880
 msgid "&Minimal (Find a smaller set of change)"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2868
+#: src/diffviewer/ydiff.c:2885
 msgid "Diff algorithm"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2871
+#: src/diffviewer/ydiff.c:2888
 msgid "Diff extra options"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2872
+#: src/diffviewer/ydiff.c:2889
 msgid "&Ignore case"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2873
+#: src/diffviewer/ydiff.c:2890
 msgid "Ignore tab &expansion"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2874
+#: src/diffviewer/ydiff.c:2891
 msgid "Ignore &space change"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2875
+#: src/diffviewer/ydiff.c:2892
 msgid "Ignore all &whitespace"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2876
+#: src/diffviewer/ydiff.c:2893
 msgid "Strip &trailing carriage return"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:2888
+#: src/diffviewer/ydiff.c:2905
 msgid "Diff Options"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3444 src/panel-plugins/mcstruct/mcstruct_cmd.c:66
+#: src/diffviewer/ydiff.c:3472 src/panel-plugins/mcstruct/mcstruct_cmd.c:66
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:84
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:97
 #: src/panel-plugins/mcstruct/mcstruct_cmd.c:132
 msgid "Edit"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3444
+#: src/diffviewer/ydiff.c:3472
 msgid "Edit is disabled"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3477
+#: src/diffviewer/ydiff.c:3505
 msgid "Goto line (left)"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3478
+#: src/diffviewer/ydiff.c:3506
 msgid "Goto line (right)"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3484 src/editor/editcmd.c:2104
+#: src/diffviewer/ydiff.c:3512 src/editor/editcmd.c:2104
 msgid "Enter line:"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3523 src/editor/editwidget.c:1510
-#: src/filemanager/filemanager.c:1959 src/filemanager/mcterm_overlay.c:1091
-#: src/filemanager/tree.c:1168 src/help.c:1337
+#: src/diffviewer/ydiff.c:3551 src/editor/editwidget.c:1510
+#: src/filemanager/filemanager.c:1981 src/filemanager/mcterm_overlay.c:1095
+#: src/filemanager/tree.c:1168 src/help.c:1351
 #: src/panel-plugins/mcstruct/mcstruct_ui.c:1466 src/viewer/display.c:92
 msgid "ButtonBar|Help"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3524 src/editor/editwidget.c:1511
+#: src/diffviewer/ydiff.c:3552 src/editor/editwidget.c:1511
 #: src/panel-plugins/mcstruct/mcstruct_ui.c:1467 src/viewer/display.c:122
 msgid "ButtonBar|Save"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3525 src/filemanager/filemanager.c:1962
+#: src/diffviewer/ydiff.c:3553 src/filemanager/filemanager.c:1984
 #: src/panel-plugins/mcstruct/mcstruct_ui.c:1469 src/viewer/display.c:117
 msgid "ButtonBar|Edit"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3526
+#: src/diffviewer/ydiff.c:3554
 msgid "ButtonBar|Merge"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3527 src/editor/editwidget.c:1516
+#: src/diffviewer/ydiff.c:3555 src/editor/editwidget.c:1516
 #: src/panel-plugins/mcstruct/mcstruct_ui.c:1472 src/viewer/display.c:100
-#: src/viewer/display.c:132
+#: src/viewer/display.c:142
 msgid "ButtonBar|Search"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3528
+#: src/diffviewer/ydiff.c:3556
 msgid "ButtonBar|Options"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3529 src/editor/editwidget.c:1519
-#: src/filemanager/filemanager.c:1968 src/filemanager/mcterm_overlay.c:1100
-#: src/help.c:1346 src/panel-plugins/mcstruct/mcstruct_ui.c:1475
-#: src/viewer/display.c:105 src/viewer/display.c:107 src/viewer/display.c:141
-#: src/viewer/display.c:148
+#: src/diffviewer/ydiff.c:3557 src/editor/editwidget.c:1519
+#: src/filemanager/filemanager.c:1990 src/filemanager/mcterm_overlay.c:1104
+#: src/help.c:1360 src/panel-plugins/mcstruct/mcstruct_ui.c:1475
+#: src/viewer/display.c:105 src/viewer/display.c:107 src/viewer/display.c:151
+#: src/viewer/display.c:158
 msgid "ButtonBar|Quit"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3577
+#: src/diffviewer/ydiff.c:3605
 msgid "File(s) was modified. Save with exit?"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3578
+#: src/diffviewer/ydiff.c:3606
 #, c-format
 msgid ""
 "%s is being shut down.\n"
 "Save modified file(s)?"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3580 src/editor/editcmd.c:1849
-#: src/panel-plugins/mcstruct/mcstruct_cmd.c:825 src/viewer/actions_cmd.c:803
-#: src/viewer/actions_cmd.c:811
+#: src/diffviewer/ydiff.c:3608 src/editor/editcmd.c:1849
+#: src/panel-plugins/mcstruct/mcstruct_cmd.c:825 src/viewer/actions_cmd.c:858
+#: src/viewer/actions_cmd.c:866
 msgid "Quit"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:3936 src/diffviewer/ydiff.c:3946
+#: src/diffviewer/ydiff.c:3964 src/diffviewer/ydiff.c:3974
 msgid "Diff:"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:4072 src/diffviewer/ydiff.c:4087
+#: src/diffviewer/ydiff.c:4116 src/diffviewer/ydiff.c:4131
 msgid "File name is empty!"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:4080 src/diffviewer/ydiff.c:4094
-#: src/diffviewer/ydiff.c:4113 src/diffviewer/ydiff.c:4129
+#: src/diffviewer/ydiff.c:4124 src/diffviewer/ydiff.c:4138
+#: src/diffviewer/ydiff.c:4157 src/diffviewer/ydiff.c:4173
 #, c-format
 msgid ""
 "%s\n"
 "is a directory"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:4119 src/diffviewer/ydiff.c:4135
-#: src/editor/edit.c:357 src/filemanager/file.c:1837 src/viewer/mcviewer.c:668
+#: src/diffviewer/ydiff.c:4163 src/diffviewer/ydiff.c:4179
+#: src/editor/edit.c:357 src/filemanager/file.c:1837 src/viewer/mcviewer.c:753
 #, c-format
 msgid ""
 "Cannot stat\n"
 "%s"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:4143
+#: src/diffviewer/ydiff.c:4187
 msgid "Diff viewer: invalid mode"
 msgstr ""
 
-#: src/diffviewer/ydiff.c:4169
+#: src/diffviewer/ydiff.c:4213
 msgid "Two files are needed to compare"
 msgstr ""
 
@@ -2782,7 +2797,9 @@ msgstr ""
 #: src/editor-plugins/ctags/ctags-ui.c:483 src/editor/editmenu.c:232
 #: src/key_learn.c:648 src/key_learn.c:658 src/key_sniffer.c:242
 #: src/keybind_dialog.c:1216 src/keybind_dialog.c:1229 src/manage_plugins.c:461
-#: src/manage_plugins.c:955 src/panel-plugins/s3/s3_connect_status.c:154
+#: src/manage_plugins.c:955 src/panel-plugins/ftp/ftp.c:2116
+#: src/panel-plugins/s3/s3_connect_status.c:154
+#: src/panel-plugins/sftp/sftp.c:871
 msgid "&Close"
 msgstr ""
 
@@ -2797,10 +2814,10 @@ msgstr ""
 #: src/editor-plugins/etags/etags.c:367 src/editor/edit.c:392
 #: src/editor/editcmd.c:400 src/editor/editcmd.c:422 src/editor/editcmd.c:588
 #: src/editor/editcmd.c:767 src/editor/editcmd.c:1310 src/editor/editcmd.c:2277
-#: src/editor/editcmd.c:2306 src/filemanager/ext.c:782
-#: src/filemanager/file.c:2569 src/filemanager/panel.c:6305 src/help.c:438
+#: src/editor/editcmd.c:2306 src/filemanager/ext.c:766
+#: src/filemanager/file.c:2569 src/filemanager/panel.c:6345 src/help.c:441
 #: src/key_learn.c:422 src/keybind_dialog.c:1039
-#: src/panel-plugins/shell-link/shell-link.c:1391 src/viewer/actions_cmd.c:487
+#: src/panel-plugins/shell-link/shell-link.c:1391 src/viewer/actions_cmd.c:513
 msgid "Warning"
 msgstr ""
 
@@ -2827,7 +2844,7 @@ msgstr ""
 #: src/editor-plugins/spell/spell.c:845 src/editor-plugins/spell/spell.c:853
 #: src/editor/editsearch.c:855 src/filemanager/file.c:879
 #: src/filemanager/file.c:3376 src/filemanager/filegui.c:239
-#: src/filemanager/panel_plugin_ops.c:363 src/usermenu_ini.c:1536
+#: src/filemanager/panel_plugin_ops.c:365 src/usermenu_ini.c:1539
 msgid "&Skip"
 msgstr ""
 
@@ -2935,7 +2952,7 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: src/editor/edit.c:237 src/editor/edit.c:346 src/viewer/mcviewer.c:655
+#: src/editor/edit.c:237 src/editor/edit.c:346 src/viewer/mcviewer.c:740
 #, c-format
 msgid ""
 "Cannot open\n"
@@ -3050,7 +3067,7 @@ msgstr ""
 
 #: src/editor/editcmd.c:611 src/editor/editcmd.c:1414 src/editor/editcmd.c:2144
 #: src/editor/editcmd.c:2175 src/filemanager/cmd.c:1200
-#: src/filemanager/panel_plugin_ops.c:1273
+#: src/filemanager/panel_plugin_ops.c:1275
 msgid "Enter file name:"
 msgstr ""
 
@@ -3101,7 +3118,7 @@ msgstr ""
 msgid "A file already exists with this name"
 msgstr ""
 
-#: src/editor/editcmd.c:1311 src/filemanager/panel_plugin_ops.c:362
+#: src/editor/editcmd.c:1311 src/filemanager/panel_plugin_ops.c:364
 msgid "&Overwrite"
 msgstr ""
 
@@ -3120,8 +3137,8 @@ msgstr ""
 
 #: src/editor/editcmd.c:1392 src/editor/editmenu.c:235 src/key_learn.c:646
 #: src/key_learn.c:653 src/keybind_dialog.c:1213 src/keybind_dialog.c:1221
-#: src/panel-plugins/skineditor/skineditor_ui.c:1193
-#: src/panel-plugins/skineditor/skineditor_ui.c:1449
+#: src/panel-plugins/skineditor/skineditor_ui.c:1194
+#: src/panel-plugins/skineditor/skineditor_ui.c:1450
 msgid "&Save"
 msgstr ""
 
@@ -3315,7 +3332,7 @@ msgstr ""
 msgid "&History..."
 msgstr ""
 
-#: src/editor/editmenu.c:236 src/panel-plugins/skineditor/skineditor_ui.c:1451
+#: src/editor/editmenu.c:236 src/panel-plugins/skineditor/skineditor_ui.c:1452
 msgid "Save &as..."
 msgstr ""
 
@@ -3331,7 +3348,7 @@ msgstr ""
 msgid "&User menu..."
 msgstr ""
 
-#: src/editor/editmenu.c:243 src/filemanager/filemanager.c:342
+#: src/editor/editmenu.c:243 src/filemanager/filemanager.c:351
 msgid "A&bout..."
 msgstr ""
 
@@ -3548,7 +3565,7 @@ msgstr ""
 msgid "&Menu file"
 msgstr ""
 
-#: src/editor/editmenu.c:381 src/filemanager/filemanager.c:340
+#: src/editor/editmenu.c:381 src/filemanager/filemanager.c:349
 msgid "&Save setup"
 msgstr ""
 
@@ -3556,13 +3573,13 @@ msgstr ""
 msgid "(no plugins loaded)"
 msgstr ""
 
-#: src/editor/editmenu.c:519 src/filemanager/filemanager.c:354
+#: src/editor/editmenu.c:519 src/filemanager/filemanager.c:363
 msgid "&File"
 msgstr ""
 
 #: src/editor/editmenu.c:525 src/filemanager/filemanager.c:229
 #: src/panel-plugins/panelize/panelize_dlg.c:116
-#: src/panel-plugins/skineditor/skineditor_ui.c:1447
+#: src/panel-plugins/skineditor/skineditor_ui.c:1448
 msgid "&Edit"
 msgstr ""
 
@@ -3570,7 +3587,7 @@ msgstr ""
 msgid "&Search"
 msgstr ""
 
-#: src/editor/editmenu.c:538 src/filemanager/filemanager.c:356
+#: src/editor/editmenu.c:538 src/filemanager/filemanager.c:365
 msgid "&Command"
 msgstr ""
 
@@ -3586,7 +3603,7 @@ msgstr ""
 msgid "Pl&ugins"
 msgstr ""
 
-#: src/editor/editmenu.c:587 src/filemanager/filemanager.c:358
+#: src/editor/editmenu.c:587 src/filemanager/filemanager.c:367
 msgid "&Options"
 msgstr ""
 
@@ -3610,85 +3627,81 @@ msgstr ""
 msgid "Type &writer wrap"
 msgstr ""
 
-#: src/editor/editoptions.c:162
+#: src/editor/editoptions.c:185
 msgid "Wrap mode"
 msgstr ""
 
-#: src/editor/editoptions.c:167
+#: src/editor/editoptions.c:190
 msgid "Tabulation"
 msgstr ""
 
-#: src/editor/editoptions.c:168
+#: src/editor/editoptions.c:191
 msgid "&Fake half tabs"
 msgstr ""
 
-#: src/editor/editoptions.c:169
+#: src/editor/editoptions.c:192
 msgid "&Backspace through tabs"
 msgstr ""
 
-#: src/editor/editoptions.c:171
+#: src/editor/editoptions.c:194
 msgid "Fill tabs with &spaces"
 msgstr ""
 
-#: src/editor/editoptions.c:173
+#: src/editor/editoptions.c:196
 msgid "Tab spacing:"
 msgstr ""
 
-#: src/editor/editoptions.c:178 src/filemanager/boxes.c:572
+#: src/editor/editoptions.c:201 src/filemanager/boxes.c:613
 #: src/filemanager/layout.c:496
 msgid "Other options"
 msgstr ""
 
-#: src/editor/editoptions.c:179
+#: src/editor/editoptions.c:202
 msgid "&Return does autoindent"
 msgstr ""
 
-#: src/editor/editoptions.c:181
+#: src/editor/editoptions.c:204
 msgid "Confir&m before saving"
 msgstr ""
 
-#: src/editor/editoptions.c:182
+#: src/editor/editoptions.c:205
 msgid "Save file &position"
 msgstr ""
 
-#: src/editor/editoptions.c:183
+#: src/editor/editoptions.c:206
 msgid "&Visible trailing spaces"
 msgstr ""
 
-#: src/editor/editoptions.c:185
+#: src/editor/editoptions.c:208
 msgid "Visible &tabs"
 msgstr ""
 
-#: src/editor/editoptions.c:186
+#: src/editor/editoptions.c:209
 msgid "S&how control characters"
 msgstr ""
 
-#: src/editor/editoptions.c:188
+#: src/editor/editoptions.c:211
 msgid "Synta&x highlighting"
 msgstr ""
 
-#: src/editor/editoptions.c:190
+#: src/editor/editoptions.c:213
 msgid "C&ursor after inserted block"
 msgstr ""
 
-#: src/editor/editoptions.c:192
+#: src/editor/editoptions.c:215
 msgid "Pers&istent selection"
 msgstr ""
 
-#: src/editor/editoptions.c:194
+#: src/editor/editoptions.c:217
 msgid "Cursor be&yond end of line"
 msgstr ""
 
-#: src/editor/editoptions.c:196
+#: src/editor/editoptions.c:219
 msgid "&Group undo"
 msgstr ""
 
-#: src/editor/editoptions.c:197
+#: src/editor/editoptions.c:220
 msgid "Word wrap line length:"
-msgstr ""
-
-#: src/editor/editoptions.c:210
-msgid "Editor options"
 msgstr ""
 
 #: src/editor/editsearch.c:159 src/editor/editsearch.c:783
@@ -3703,13 +3716,13 @@ msgstr ""
 msgid "Fil&ter"
 msgstr ""
 
-#: src/editor/editsearch.c:697 src/viewer/search.c:93
+#: src/editor/editsearch.c:697 src/viewer/search.c:97
 #, c-format
 msgid "Searching %s: %3d%%"
 msgstr ""
 
 #: src/editor/editsearch.c:700 src/filemanager/find.c:1743
-#: src/viewer/search.c:96
+#: src/viewer/search.c:100
 #, c-format
 msgid "Searching %s"
 msgstr ""
@@ -3752,7 +3765,7 @@ msgid ""
 "written for the %s."
 msgstr ""
 
-#: src/editor/editwidget.c:730 src/filemanager/boxes.c:515
+#: src/editor/editwidget.c:730 src/filemanager/boxes.c:556
 msgid "About"
 msgstr ""
 
@@ -3781,7 +3794,7 @@ msgstr ""
 msgid "Edit: "
 msgstr ""
 
-#: src/editor/editwidget.c:1512 src/filemanager/mcterm_overlay.c:1093
+#: src/editor/editwidget.c:1512 src/filemanager/mcterm_overlay.c:1097
 msgid "ButtonBar|Mark"
 msgstr ""
 
@@ -3789,8 +3802,8 @@ msgstr ""
 msgid "ButtonBar|Replac"
 msgstr ""
 
-#: src/editor/editwidget.c:1514 src/filemanager/filemanager.c:1963
-#: src/filemanager/mcterm_overlay.c:1092 src/filemanager/tree.c:1174
+#: src/editor/editwidget.c:1514 src/filemanager/filemanager.c:1985
+#: src/filemanager/mcterm_overlay.c:1096 src/filemanager/tree.c:1174
 msgid "ButtonBar|Copy"
 msgstr ""
 
@@ -3798,12 +3811,12 @@ msgstr ""
 msgid "ButtonBar|Move"
 msgstr ""
 
-#: src/editor/editwidget.c:1517 src/filemanager/filemanager.c:1966
+#: src/editor/editwidget.c:1517 src/filemanager/filemanager.c:1988
 msgid "ButtonBar|Delete"
 msgstr ""
 
-#: src/editor/editwidget.c:1518 src/filemanager/filemanager.c:1967
-#: src/filemanager/mcterm_overlay.c:1099
+#: src/editor/editwidget.c:1518 src/filemanager/filemanager.c:1989
+#: src/filemanager/mcterm_overlay.c:1103
 msgid "ButtonBar|PullDn"
 msgstr ""
 
@@ -3812,7 +3825,7 @@ msgstr ""
 msgid "Filtering %s: %3d%%"
 msgstr ""
 
-#: src/editor/fold.c:521 src/editor/fold.c:596 src/filemanager/panel.c:3436
+#: src/editor/fold.c:521 src/editor/fold.c:596 src/filemanager/panel.c:3471
 #: src/viewer/filter.c:628
 msgid "Filter"
 msgstr ""
@@ -3829,8 +3842,8 @@ msgstr ""
 msgid "< Reload Current Syntax >"
 msgstr ""
 
-#: src/editor/syntax.c:283 src/help.c:1279 src/usermenu.c:1079
-#: src/usermenu.c:1109 src/usermenu_ini.c:1442
+#: src/editor/syntax.c:283 src/help.c:1293 src/usermenu.c:1093
+#: src/usermenu.c:1123 src/usermenu_ini.c:1445
 #, c-format
 msgid ""
 "Cannot open file\n"
@@ -3846,7 +3859,7 @@ msgstr ""
 msgid "Error in file %s on line %d"
 msgstr ""
 
-#: src/execute.c:196 src/filemanager/ext.c:677
+#: src/execute.c:196 src/filemanager/ext.c:661
 #, c-format
 msgid "Cannot fetch a local copy of %s"
 msgstr ""
@@ -3931,246 +3944,250 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/filemanager/boxes.c:190
+#: src/filemanager/boxes.c:193
 msgid "< Default >"
 msgstr ""
 
-#: src/filemanager/boxes.c:233
+#: src/filemanager/boxes.c:236
 msgid "Skins"
 msgstr ""
 
-#: src/filemanager/boxes.c:418
+#: src/filemanager/boxes.c:421
 msgid "Running"
 msgstr ""
 
-#: src/filemanager/boxes.c:419 src/filemanager/find.c:2234
+#: src/filemanager/boxes.c:422 src/filemanager/find.c:2234
 msgid "Stopped"
 msgstr ""
 
-#: src/filemanager/boxes.c:493
+#: src/filemanager/boxes.c:534
 #, c-format
 msgid "Detected display codepage: %s"
 msgstr ""
 
-#: src/filemanager/boxes.c:495
+#: src/filemanager/boxes.c:536
 #, c-format
 msgid "Selected source (file I/O) codepage: %s"
 msgstr ""
 
-#: src/filemanager/boxes.c:500
+#: src/filemanager/boxes.c:541
 msgid "Classic terminal file manager inspired by Norton Commander."
 msgstr ""
 
-#: src/filemanager/boxes.c:540
+#: src/filemanager/boxes.c:581
 msgid "&Never"
 msgstr ""
 
-#: src/filemanager/boxes.c:541
+#: src/filemanager/boxes.c:582
 msgid "On dum&b terminals"
 msgstr ""
 
-#: src/filemanager/boxes.c:542
+#: src/filemanager/boxes.c:583
 msgid "Alwa&ys"
 msgstr ""
 
-#: src/filemanager/boxes.c:553
+#: src/filemanager/boxes.c:594
 msgid "File operations"
 msgstr ""
 
-#: src/filemanager/boxes.c:554
+#: src/filemanager/boxes.c:595
 msgid "&Verbose operation"
 msgstr ""
 
-#: src/filemanager/boxes.c:555
+#: src/filemanager/boxes.c:596
 msgid "Compute tota&ls"
 msgstr ""
 
-#: src/filemanager/boxes.c:556
+#: src/filemanager/boxes.c:597
 msgid "Classic pro&gressbar"
 msgstr ""
 
-#: src/filemanager/boxes.c:557
+#: src/filemanager/boxes.c:598
 msgid "Mkdi&r autoname"
 msgstr ""
 
-#: src/filemanager/boxes.c:558
+#: src/filemanager/boxes.c:599
 msgid "&Preallocate space"
 msgstr ""
 
-#: src/filemanager/boxes.c:561
+#: src/filemanager/boxes.c:602
 msgid "Esc key mode"
 msgstr ""
 
-#: src/filemanager/boxes.c:562
+#: src/filemanager/boxes.c:603
 msgid "S&ingle press"
 msgstr ""
 
-#: src/filemanager/boxes.c:563
+#: src/filemanager/boxes.c:604
 msgid "Timeout:"
 msgstr ""
 
-#: src/filemanager/boxes.c:568
+#: src/filemanager/boxes.c:609
 msgid "Pause after run"
 msgstr ""
 
-#: src/filemanager/boxes.c:573
+#: src/filemanager/boxes.c:614
 msgid "Use internal edi&t"
 msgstr ""
 
-#: src/filemanager/boxes.c:574
+#: src/filemanager/boxes.c:615
 msgid "Use internal vie&w"
 msgstr ""
 
-#: src/filemanager/boxes.c:575
+#: src/filemanager/boxes.c:616
 msgid "A&sk new file name"
 msgstr ""
 
-#: src/filemanager/boxes.c:577
+#: src/filemanager/boxes.c:618
 msgid "Auto m&enus"
 msgstr ""
 
-#: src/filemanager/boxes.c:578
+#: src/filemanager/boxes.c:619
 msgid "&Drop down menus"
 msgstr ""
 
-#: src/filemanager/boxes.c:579
+#: src/filemanager/boxes.c:620
 msgid "S&hell patterns"
 msgstr ""
 
-#: src/filemanager/boxes.c:580
+#: src/filemanager/boxes.c:621
 msgid "Co&mplete: show all"
 msgstr ""
 
-#: src/filemanager/boxes.c:582
+#: src/filemanager/boxes.c:623
 msgid "Rotating d&ash"
 msgstr ""
 
-#: src/filemanager/boxes.c:583
+#: src/filemanager/boxes.c:624
 msgid "Cd follows lin&ks"
 msgstr ""
 
-#: src/filemanager/boxes.c:584
+#: src/filemanager/boxes.c:625
 msgid "Sa&fe delete"
 msgstr ""
 
-#: src/filemanager/boxes.c:585
+#: src/filemanager/boxes.c:626
 msgid "Safe overwrite"
 msgstr ""
 
-#: src/filemanager/boxes.c:586
+#: src/filemanager/boxes.c:627
 msgid "A&uto save setup"
 msgstr ""
 
-#: src/filemanager/boxes.c:600
+#: src/filemanager/boxes.c:641
 msgid "Configure options"
 msgstr ""
 
-#: src/filemanager/boxes.c:665
-#: src/panel-plugins/skineditor/skineditor_ui.c:1418
+#: src/filemanager/boxes.c:706
+#: src/panel-plugins/skineditor/skineditor_ui.c:1419
 msgid "Skin:"
 msgstr ""
 
-#: src/filemanager/boxes.c:671
+#: src/filemanager/boxes.c:712
 msgid "&Shadows"
 msgstr ""
 
-#: src/filemanager/boxes.c:681
+#: src/filemanager/boxes.c:722
 msgid "Appearance"
 msgstr ""
 
-#: src/filemanager/boxes.c:713
+#: src/filemanager/boxes.c:754
 msgid "Case &insensitive"
 msgstr ""
 
-#: src/filemanager/boxes.c:715
+#: src/filemanager/boxes.c:756
 msgid "Use panel sort mo&de"
 msgstr ""
 
-#: src/filemanager/boxes.c:722
+#: src/filemanager/boxes.c:763
 msgid "Show mi&ni-status"
 msgstr ""
 
-#: src/filemanager/boxes.c:723
+#: src/filemanager/boxes.c:764
 msgid "Use SI si&ze units"
 msgstr ""
 
-#: src/filemanager/boxes.c:724
+#: src/filemanager/boxes.c:765
 msgid "Mi&x all files"
 msgstr ""
 
-#: src/filemanager/boxes.c:725
+#: src/filemanager/boxes.c:766
 msgid "Show &backup files"
 msgstr ""
 
-#: src/filemanager/boxes.c:726
+#: src/filemanager/boxes.c:767
 msgid "Show &hidden files"
 msgstr ""
 
-#: src/filemanager/boxes.c:727
+#: src/filemanager/boxes.c:768
 msgid "&Fast dir reload"
 msgstr ""
 
-#: src/filemanager/boxes.c:728
+#: src/filemanager/boxes.c:770
 msgid "Ma&rk moves down"
 msgstr ""
 
-#: src/filemanager/boxes.c:729
+#: src/filemanager/boxes.c:771
 msgid "Re&verse files only"
 msgstr ""
 
-#: src/filemanager/boxes.c:731
+#: src/filemanager/boxes.c:773
 msgid "Simple s&wap"
 msgstr ""
 
-#: src/filemanager/boxes.c:732
+#: src/filemanager/boxes.c:774
 msgid "A&uto save panels setup"
 msgstr ""
 
-#: src/filemanager/boxes.c:740
+#: src/filemanager/boxes.c:776
+msgid "Watch &directories"
+msgstr ""
+
+#: src/filemanager/boxes.c:783
 msgid "Navigation"
 msgstr ""
 
-#: src/filemanager/boxes.c:741
+#: src/filemanager/boxes.c:784
 msgid "L&ynx-like motion"
 msgstr ""
 
-#: src/filemanager/boxes.c:743
+#: src/filemanager/boxes.c:786
 msgid "Pa&ge scrolling"
 msgstr ""
 
-#: src/filemanager/boxes.c:744
+#: src/filemanager/boxes.c:787
 msgid "Center &scrolling"
 msgstr ""
 
-#: src/filemanager/boxes.c:745
+#: src/filemanager/boxes.c:788 src/filemanager/boxes.c:854
 msgid "&Mouse page scrolling"
 msgstr ""
 
-#: src/filemanager/boxes.c:748
+#: src/filemanager/boxes.c:791
 msgid "File highlight"
 msgstr ""
 
-#: src/filemanager/boxes.c:749
+#: src/filemanager/boxes.c:792
 msgid "File &types"
 msgstr ""
 
-#: src/filemanager/boxes.c:750
+#: src/filemanager/boxes.c:793
 msgid "&Permissions"
 msgstr ""
 
-#: src/filemanager/boxes.c:751
+#: src/filemanager/boxes.c:794
 msgid "Permission c&olors"
 msgstr ""
 
-#: src/filemanager/boxes.c:754
+#: src/filemanager/boxes.c:797
 msgid "Quick search"
 msgstr ""
 
-#: src/filemanager/boxes.c:783 src/filemanager/info.c:86
+#: src/filemanager/boxes.c:826 src/filemanager/info.c:86
 msgid "Information"
 msgstr ""
 
-#: src/filemanager/boxes.c:784
+#: src/filemanager/boxes.c:827
 msgid ""
 "Using the fast reload option may not reflect the exact\n"
 "directory contents. In this case you'll need to do a\n"
@@ -4178,105 +4195,129 @@ msgid ""
 "the details."
 msgstr ""
 
-#: src/filemanager/boxes.c:819
+#: src/filemanager/boxes.c:852
+msgid "&Wrap long lines"
+msgstr ""
+
+#: src/filemanager/boxes.c:853
+msgid "&Syntax highlighting"
+msgstr ""
+
+#: src/filemanager/boxes.c:855
+msgid "Remember file &position"
+msgstr ""
+
+#: src/filemanager/boxes.c:857
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#: src/filemanager/boxes.c:860
+msgid "End of file marker:"
+msgstr ""
+
+#: src/filemanager/boxes.c:863
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#: src/filemanager/boxes.c:925
 msgid "&Full file list"
 msgstr ""
 
-#: src/filemanager/boxes.c:820
+#: src/filemanager/boxes.c:926
 msgid "&Brief file list:"
 msgstr ""
 
-#: src/filemanager/boxes.c:821
+#: src/filemanager/boxes.c:927
 msgid "&Long file list"
 msgstr ""
 
-#: src/filemanager/boxes.c:822
+#: src/filemanager/boxes.c:928
 msgid "&User defined:"
 msgstr ""
 
-#: src/filemanager/boxes.c:831
+#: src/filemanager/boxes.c:937
 msgid "columns"
 msgstr ""
 
-#: src/filemanager/boxes.c:838
+#: src/filemanager/boxes.c:944
 msgid "User &mini status"
 msgstr ""
 
-#: src/filemanager/boxes.c:850
+#: src/filemanager/boxes.c:956
 msgid "Listing format"
 msgstr ""
 
-#: src/filemanager/boxes.c:932
+#: src/filemanager/boxes.c:1038
 msgid "Executable &first"
 msgstr ""
 
-#: src/filemanager/boxes.c:934
+#: src/filemanager/boxes.c:1040
 msgid "&Reverse"
 msgstr ""
 
-#: src/filemanager/boxes.c:945
+#: src/filemanager/boxes.c:1051
 msgid "Sort order"
 msgstr ""
 
 #. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
-#: src/filemanager/boxes.c:971
+#: src/filemanager/boxes.c:1077
 msgid "Confirmation|&Delete"
 msgstr ""
 
-#: src/filemanager/boxes.c:972
+#: src/filemanager/boxes.c:1078
 msgid "Confirmation|O&verwrite"
 msgstr ""
 
-#: src/filemanager/boxes.c:973
+#: src/filemanager/boxes.c:1079
 msgid "Confirmation|&Execute"
 msgstr ""
 
-#: src/filemanager/boxes.c:974
+#: src/filemanager/boxes.c:1080
 msgid "Confirmation|E&xit"
 msgstr ""
 
-#: src/filemanager/boxes.c:975
+#: src/filemanager/boxes.c:1081
 msgid "Confirmation|Di&rectory hotlist delete"
 msgstr ""
 
-#: src/filemanager/boxes.c:977
+#: src/filemanager/boxes.c:1083
 msgid "Confirmation|&History cleanup"
 msgstr ""
 
-#: src/filemanager/boxes.c:987 src/filemanager/cmd.c:451
+#: src/filemanager/boxes.c:1093 src/filemanager/cmd.c:451
 msgid "Confirmation"
 msgstr ""
 
-#: src/filemanager/boxes.c:1055
+#: src/filemanager/boxes.c:1161
 msgid "Timeout for freeing VFSs (sec):"
 msgstr ""
 
-#: src/filemanager/boxes.c:1066
+#: src/filemanager/boxes.c:1172
 msgid "Virtual File System Setting"
 msgstr ""
 
-#: src/filemanager/boxes.c:1124
+#: src/filemanager/boxes.c:1230
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
 
-#: src/filemanager/boxes.c:1128
+#: src/filemanager/boxes.c:1234
 msgid "Symbolic link filename:"
 msgstr ""
 
-#: src/filemanager/boxes.c:1139
+#: src/filemanager/boxes.c:1245
 #: src/panel-plugins/skineditor/skinedit_table.c:86
 msgid "Symbolic link"
 msgstr ""
 
-#: src/filemanager/boxes.c:1167
+#: src/filemanager/boxes.c:1273
 msgid "&Stop"
 msgstr ""
 
-#: src/filemanager/boxes.c:1168 src/filemanager/panel_plugin_ops.c:364
+#: src/filemanager/boxes.c:1274 src/filemanager/panel_plugin_ops.c:366
 msgid "&Resume"
 msgstr ""
 
-#: src/filemanager/boxes.c:1169
+#: src/filemanager/boxes.c:1275
 msgid "&Kill"
 msgstr ""
 
@@ -4475,7 +4516,7 @@ msgstr ""
 #: src/filemanager/chmod.c:93 src/filemanager/panel_modes.c:808
 #: src/panel-plugins/mcstruct/mcstruct_bytes.c:404
 #: src/panel-plugins/samba/samba.c:808
-#: src/panel-plugins/skineditor/skineditor_ui.c:711
+#: src/panel-plugins/skineditor/skineditor_ui.c:712
 msgid "Name:"
 msgstr ""
 
@@ -4496,7 +4537,7 @@ msgid "Chmod command"
 msgstr ""
 
 #: src/filemanager/chmod.c:330 src/filemanager/chown.c:142
-#: src/filemanager/panel.c:243
+#: src/filemanager/panel.c:244
 msgid "Permission"
 msgstr ""
 
@@ -4549,12 +4590,12 @@ msgstr ""
 msgid "The magic.ini operation %s:%s cannot view %s"
 msgstr ""
 
-#: src/filemanager/cmd.c:160 src/filemanager/panel.c:3995
+#: src/filemanager/cmd.c:160 src/filemanager/panel.c:4030
 #, c-format
 msgid "Invalid magic.ini association for %s"
 msgstr ""
 
-#: src/filemanager/cmd.c:228 src/filemanager/panel.c:4020
+#: src/filemanager/cmd.c:228 src/filemanager/panel.c:4055
 msgid "The runtime file handler failed"
 msgstr ""
 
@@ -4614,7 +4655,7 @@ msgstr ""
 msgid "This plugin does not support file editing"
 msgstr ""
 
-#: src/filemanager/cmd.c:1122 src/filemanager/panel_plugin_ops.c:1320
+#: src/filemanager/cmd.c:1122 src/filemanager/panel_plugin_ops.c:1322
 #, c-format
 msgid "Cannot save %s back to plugin"
 msgstr ""
@@ -4717,23 +4758,23 @@ msgstr ""
 msgid "Unable to save setup to %s"
 msgstr ""
 
-#: src/filemanager/command.c:116 src/usermenu.c:1061
+#: src/filemanager/command.c:116 src/usermenu.c:1067
 msgid "Cannot execute commands on non-local filesystems"
 msgstr ""
 
-#: src/filemanager/ext.c:247 src/usermenu.c:501
+#: src/filemanager/ext.c:247 src/usermenu.c:505
 msgid "Parameter"
 msgstr ""
 
-#: src/filemanager/ext.c:468 src/usermenu.c:473
+#: src/filemanager/ext.c:450 src/usermenu.c:474
 msgid "Cannot create temporary command file"
 msgstr ""
 
-#: src/filemanager/ext.c:746
+#: src/filemanager/ext.c:730
 msgid "Pipe failed"
 msgstr ""
 
-#: src/filemanager/ext.c:783
+#: src/filemanager/ext.c:767
 #, c-format
 msgid ""
 "You have an outdated %s file.\n"
@@ -4741,7 +4782,7 @@ msgid ""
 "Please copy your modifications of the old file to the new one."
 msgstr ""
 
-#: src/filemanager/ext.c:834
+#: src/filemanager/ext.c:818
 #, c-format
 msgid ""
 "The format of the\n"
@@ -4751,7 +4792,7 @@ msgid ""
 "Please fetch a fresh copy from the %s package."
 msgstr ""
 
-#: src/filemanager/ext.c:850
+#: src/filemanager/ext.c:834
 #, c-format
 msgid ""
 "The format of the\n"
@@ -4902,7 +4943,7 @@ msgid ""
 msgstr ""
 
 #: src/filemanager/file.c:998 src/filemanager/filegui.c:492
-#: src/panel-plugins/ftp/ftp.c:1801
+#: src/panel-plugins/ftp/ftp.c:1821
 msgid "Non&e"
 msgstr ""
 
@@ -5240,7 +5281,7 @@ msgstr ""
 msgid "&Size differs"
 msgstr ""
 
-#: src/filemanager/filegui.c:523 src/filemanager/panel_plugin_ops.c:330
+#: src/filemanager/filegui.c:523 src/filemanager/panel_plugin_ops.c:332
 msgid "File exists"
 msgstr ""
 
@@ -5301,7 +5342,7 @@ msgid "Deleting"
 msgstr ""
 
 #: src/filemanager/filegui.c:1389 src/filemanager/find.c:968
-#: src/filemanager/panel.c:3299
+#: src/filemanager/panel.c:3326
 msgid "&Using shell patterns"
 msgstr ""
 
@@ -5571,68 +5612,80 @@ msgstr ""
 msgid "&Virtual FS..."
 msgstr ""
 
-#: src/filemanager/filemanager.c:441
+#: src/filemanager/filemanager.c:342
+msgid "&Diff viewer options..."
+msgstr ""
+
+#: src/filemanager/filemanager.c:344
+msgid "Vie&wer options..."
+msgstr ""
+
+#: src/filemanager/filemanager.c:346
+msgid "&Editor options..."
+msgstr ""
+
+#: src/filemanager/filemanager.c:450
 msgid "Panels:"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1049
+#: src/filemanager/filemanager.c:1058
 #, c-format
 msgid "You have %zu opened screen. Quit anyway?"
 msgid_plural "You have %zu opened screens. Quit anyway?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/filemanager/filemanager.c:1059
+#: src/filemanager/filemanager.c:1068
 msgid "Do you really want to quit?"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1210
+#: src/filemanager/filemanager.c:1219
 msgid "This operation is not supported for plugin panels"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1918
+#: src/filemanager/filemanager.c:1940
 msgid "No file given"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1925 src/viewer/actions_cmd.c:856
+#: src/filemanager/filemanager.c:1947 src/viewer/actions_cmd.c:911
 #, c-format
 msgid "Plugin %s is not available"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1935
+#: src/filemanager/filemanager.c:1957
 #, c-format
 msgid "Plugin %s has no show operation"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1946
+#: src/filemanager/filemanager.c:1968
 msgid "&Above"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1946
+#: src/filemanager/filemanager.c:1968
 msgid "&Left"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1947
+#: src/filemanager/filemanager.c:1969
 msgid "&Below"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1947
+#: src/filemanager/filemanager.c:1969
 msgid "&Right"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1960
+#: src/filemanager/filemanager.c:1982
 msgid "ButtonBar|Menu"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1961 src/viewer/display.c:115
+#: src/filemanager/filemanager.c:1983 src/viewer/display.c:115
 msgid "ButtonBar|View"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1964 src/filemanager/tree.c:1175
+#: src/filemanager/filemanager.c:1986 src/filemanager/tree.c:1175
 msgid "ButtonBar|RenMov"
 msgstr ""
 
-#: src/filemanager/filemanager.c:1965 src/filemanager/tree.c:1178
+#: src/filemanager/filemanager.c:1987 src/filemanager/tree.c:1178
 msgid "ButtonBar|Mkdir"
 msgstr ""
 
@@ -5671,11 +5724,11 @@ msgstr ""
 msgid "Press \"Left\" or click %s to show the matches"
 msgstr ""
 
-#: src/filemanager/find.c:597 src/filemanager/panel.c:619
+#: src/filemanager/find.c:597 src/filemanager/panel.c:642
 msgid "SUB-DIR"
 msgstr ""
 
-#: src/filemanager/find.c:600 src/filemanager/panel.c:615
+#: src/filemanager/find.c:600 src/filemanager/panel.c:638
 msgid "SYMLINK"
 msgstr ""
 
@@ -5687,7 +5740,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: src/filemanager/find.c:895 src/filemanager/find.c:906
-#: src/filemanager/panel.c:3341
+#: src/filemanager/panel.c:3368
 msgid "Malformed regular expression"
 msgstr ""
 
@@ -5778,7 +5831,7 @@ msgstr ""
 msgid "Parent group"
 msgstr ""
 
-#: src/filemanager/hotlist.c:232 src/filemanager/panel.c:253
+#: src/filemanager/hotlist.c:232 src/filemanager/panel.c:254
 msgid "Group"
 msgstr ""
 
@@ -6054,27 +6107,27 @@ msgstr ""
 msgid "Layout"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1094 src/viewer/display.c:131
+#: src/filemanager/mcterm_overlay.c:1098 src/viewer/display.c:141
 msgid "ButtonBar|Filter"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1095
+#: src/filemanager/mcterm_overlay.c:1099
 msgid "ButtonBar|UnFilt"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1096
+#: src/filemanager/mcterm_overlay.c:1100
 msgid "ButtonBar|ClrAll"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1097
+#: src/filemanager/mcterm_overlay.c:1101
 msgid "ButtonBar|Clear"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1426
+#: src/filemanager/mcterm_overlay.c:1434
 msgid "The terminal is already running a command"
 msgstr ""
 
-#: src/filemanager/mcterm_overlay.c:1561
+#: src/filemanager/mcterm_overlay.c:1569
 msgid "The shell did not take the whole text"
 msgstr ""
 
@@ -6084,192 +6137,192 @@ msgstr ""
 
 #. TRANSLATORS: one single character to represent 'unsorted' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:207
+#: src/filemanager/panel.c:208
 msgid "sort|u"
 msgstr ""
 
-#: src/filemanager/panel.c:207
+#: src/filemanager/panel.c:208
 msgid "&Unsorted"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'name' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:211
+#: src/filemanager/panel.c:212
 msgid "sort|n"
 msgstr ""
 
-#: src/filemanager/panel.c:211
+#: src/filemanager/panel.c:212
 msgid "&Name"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'version' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:215
+#: src/filemanager/panel.c:216
 msgid "sort|v"
 msgstr ""
 
-#: src/filemanager/panel.c:215
+#: src/filemanager/panel.c:216
 msgid "&Version"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'extension' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:219
+#: src/filemanager/panel.c:220
 msgid "sort|e"
 msgstr ""
 
-#: src/filemanager/panel.c:219
+#: src/filemanager/panel.c:220
 msgid "E&xtension"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'size' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:225
+#: src/filemanager/panel.c:226
 msgid "sort|s"
 msgstr ""
 
-#: src/filemanager/panel.c:225
+#: src/filemanager/panel.c:226
 msgid "&Size"
 msgstr ""
 
-#: src/filemanager/panel.c:226
+#: src/filemanager/panel.c:227
 msgid "Block Size"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'Modify time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:232
+#: src/filemanager/panel.c:233
 msgid "sort|m"
 msgstr ""
 
-#: src/filemanager/panel.c:232
+#: src/filemanager/panel.c:233
 msgid "&Modify time"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'Access time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:236
+#: src/filemanager/panel.c:237
 msgid "sort|a"
 msgstr ""
 
-#: src/filemanager/panel.c:236
+#: src/filemanager/panel.c:237
 msgid "&Access time"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'Change time' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:241
+#: src/filemanager/panel.c:242
 msgid "sort|h"
 msgstr ""
 
-#: src/filemanager/panel.c:241
+#: src/filemanager/panel.c:242
 msgid "C&hange time"
 msgstr ""
 
-#: src/filemanager/panel.c:244
+#: src/filemanager/panel.c:245
 msgid "Perm"
 msgstr ""
 
-#: src/filemanager/panel.c:245
+#: src/filemanager/panel.c:246
 msgid "Nl"
 msgstr ""
 
 #. TRANSLATORS: one single character to represent 'inode' sort mode
 #. TRANSLATORS: no need to translate 'sort', it's just a context prefix
-#: src/filemanager/panel.c:249
+#: src/filemanager/panel.c:250
 msgid "sort|i"
 msgstr ""
 
-#: src/filemanager/panel.c:249
+#: src/filemanager/panel.c:250
 msgid "&Inode"
 msgstr ""
 
-#: src/filemanager/panel.c:250
+#: src/filemanager/panel.c:251
 msgid "UID"
 msgstr ""
 
-#: src/filemanager/panel.c:251
+#: src/filemanager/panel.c:252
 msgid "GID"
 msgstr ""
 
-#: src/filemanager/panel.c:252
+#: src/filemanager/panel.c:253
 msgid "Owner"
 msgstr ""
 
-#: src/filemanager/panel.c:583
+#: src/filemanager/panel.c:606
 msgid "[dev]"
 msgstr ""
 
-#: src/filemanager/panel.c:596 src/filemanager/panel.c:1241
+#: src/filemanager/panel.c:619 src/filemanager/panel.c:1264
 msgid "UP--DIR"
 msgstr ""
 
-#: src/filemanager/panel.c:1188
+#: src/filemanager/panel.c:1211
 msgid "Filter: "
 msgstr ""
 
-#: src/filemanager/panel.c:1233
+#: src/filemanager/panel.c:1256
 msgid "<readlink failed>"
 msgstr ""
 
-#: src/filemanager/panel.c:1325
+#: src/filemanager/panel.c:1348
 #, c-format
 msgid "%d marked (+%d more)"
 msgstr ""
 
-#: src/filemanager/panel.c:1337
+#: src/filemanager/panel.c:1360
 #, c-format
 msgid "%s in %d file"
 msgid_plural "%s in %d files"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/filemanager/panel.c:1650 src/panel-plugins/panelize/panelize.c:90
+#: src/filemanager/panel.c:1673 src/panel-plugins/panelize/panelize.c:90
 #: src/panel-plugins/panelize/panelize.c:468
 #: src/panel-plugins/panelize/panelize.c:511
 #: src/panel-plugins/panelize/panelize.c:743
 msgid "Panelize"
 msgstr ""
 
-#: src/filemanager/panel.c:2264
+#: src/filemanager/panel.c:2287
 msgid "Plugin column metadata not found"
 msgstr ""
 
-#: src/filemanager/panel.c:2318
+#: src/filemanager/panel.c:2341
 msgid "Unknown tag on display format:"
 msgstr ""
 
-#: src/filemanager/panel.c:3298
+#: src/filemanager/panel.c:3325
 msgid "&Files only"
 msgstr ""
 
-#: src/filemanager/panel.c:3301
+#: src/filemanager/panel.c:3328
 msgid "&Case sensitive"
 msgstr ""
 
-#: src/filemanager/panel.c:3395
+#: src/filemanager/panel.c:3426
 msgid "Select"
 msgstr ""
 
-#: src/filemanager/panel.c:3404
+#: src/filemanager/panel.c:3435
 msgid "Unselect"
 msgstr ""
 
-#: src/filemanager/panel.c:3990
+#: src/filemanager/panel.c:4025
 #, c-format
 msgid "The magic.ini operation %s:%s cannot open %s"
 msgstr ""
 
-#: src/filemanager/panel.c:4177
+#: src/filemanager/panel.c:4212
 msgid "Do you really want to execute?"
 msgstr ""
 
-#: src/filemanager/panel.c:4891 src/filemanager/panel.c:6189
-#: src/filemanager/panel.c:6242 src/viewer/actions_cmd.c:289
+#: src/filemanager/panel.c:4926 src/filemanager/panel.c:6227
+#: src/filemanager/panel.c:6282 src/viewer/actions_cmd.c:289
 msgid "Cannot read directory contents"
 msgstr ""
 
-#: src/filemanager/panel.c:6306
+#: src/filemanager/panel.c:6346
 msgid "User supplied format looks invalid, reverting to default."
 msgstr ""
 
@@ -6340,37 +6393,37 @@ msgstr ""
 msgid "&Ok"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:216
-#: src/filemanager/panel_plugin_ops.c:248 src/viewer/filter.c:284
+#: src/filemanager/panel_plugin_ops.c:218
+#: src/filemanager/panel_plugin_ops.c:250 src/viewer/filter.c:284
 msgid "unknown"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:339
+#: src/filemanager/panel_plugin_ops.c:341
 msgid "New"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:341
+#: src/filemanager/panel_plugin_ops.c:343
 msgid "Existing"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:352
+#: src/filemanager/panel_plugin_ops.c:354
 msgid "Resume: check what is here and send the rest."
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:353
+#: src/filemanager/panel_plugin_ops.c:355
 msgid "Resume: nothing to finish here, this one is kept."
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:355
+#: src/filemanager/panel_plugin_ops.c:357
 msgid "&Remember this answer for the rest"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:365
+#: src/filemanager/panel_plugin_ops.c:367
 msgid "Ca&ncel"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:454
-#: src/filemanager/panel_plugin_ops.c:709
+#: src/filemanager/panel_plugin_ops.c:456
+#: src/filemanager/panel_plugin_ops.c:711
 #, c-format
 msgid ""
 "%s\n"
@@ -6378,144 +6431,156 @@ msgid ""
 "continue. It was left alone."
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:461
-#: src/filemanager/panel_plugin_ops.c:1106
-#: src/filemanager/panel_plugin_ops.c:1124
-#: src/filemanager/panel_plugin_ops.c:1138
-#: src/filemanager/panel_plugin_ops.c:1415
+#: src/filemanager/panel_plugin_ops.c:463
+#: src/filemanager/panel_plugin_ops.c:1108
+#: src/filemanager/panel_plugin_ops.c:1126
+#: src/filemanager/panel_plugin_ops.c:1140
+#: src/filemanager/panel_plugin_ops.c:1429
 #, c-format
 msgid "Cannot copy %s"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:717
-#: src/filemanager/panel_plugin_ops.c:721
-#: src/filemanager/panel_plugin_ops.c:1584
-#: src/filemanager/panel_plugin_ops.c:1592
-#: src/filemanager/panel_plugin_ops.c:1620
-#: src/filemanager/panel_plugin_ops.c:1628
+#: src/filemanager/panel_plugin_ops.c:719
+#: src/filemanager/panel_plugin_ops.c:723
+#: src/filemanager/panel_plugin_ops.c:1802
+#: src/filemanager/panel_plugin_ops.c:1814
+#: src/filemanager/panel_plugin_ops.c:1822
+#: src/filemanager/panel_plugin_ops.c:1851
+#: src/filemanager/panel_plugin_ops.c:1869
+#: src/filemanager/panel_plugin_ops.c:1877
 #, c-format
 msgid "Cannot copy %s to plugin"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1064
+#: src/filemanager/panel_plugin_ops.c:1066
 msgid "This plugin does not support copying files"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1069
-#: src/filemanager/panel_plugin_ops.c:1337
+#: src/filemanager/panel_plugin_ops.c:1071
+#: src/filemanager/panel_plugin_ops.c:1339
 msgid "Copy"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1069
+#: src/filemanager/panel_plugin_ops.c:1071
 msgid "Copy to:"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1162
+#: src/filemanager/panel_plugin_ops.c:1164
 msgid "This plugin does not support deleting files"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1184
+#: src/filemanager/panel_plugin_ops.c:1186
 msgid "Delete file from plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1187
+#: src/filemanager/panel_plugin_ops.c:1189
 msgid "Delete tagged files from plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1201
+#: src/filemanager/panel_plugin_ops.c:1203
 msgid "Delete failed"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1220
+#: src/filemanager/panel_plugin_ops.c:1222
 msgid "This plugin does not support creating items"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1267
-#: src/filemanager/panel_plugin_ops.c:1318
+#: src/filemanager/panel_plugin_ops.c:1269
+#: src/filemanager/panel_plugin_ops.c:1320
 msgid "This plugin does not support creating files"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1337
-#: src/filemanager/panel_plugin_ops.c:1378
+#: src/filemanager/panel_plugin_ops.c:1339
+#: src/filemanager/panel_plugin_ops.c:1392
 msgid "Move"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1341
+#: src/filemanager/panel_plugin_ops.c:1344
 msgid "Move file to plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1341
+#: src/filemanager/panel_plugin_ops.c:1344
 msgid "Copy file to plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1345
+#: src/filemanager/panel_plugin_ops.c:1346
 msgid "Move tagged files to plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1346
+#: src/filemanager/panel_plugin_ops.c:1347
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1373
+#: src/filemanager/panel_plugin_ops.c:1354
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
+#: src/filemanager/panel_plugin_ops.c:1387
 msgid "This plugin does not support moving files"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1378
+#: src/filemanager/panel_plugin_ops.c:1392
 msgid "Move to:"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1431
+#: src/filemanager/panel_plugin_ops.c:1445
 msgid "Move succeeded but delete from plugin failed"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1502
+#: src/filemanager/panel_plugin_ops.c:1516
 #, c-format
 msgid "%s: the copy does not match the source"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1542
-#: src/filemanager/panel_plugin_ops.c:1653
+#: src/filemanager/panel_plugin_ops.c:1569
+msgid "This plugin takes files, not directories"
+msgstr ""
+
+#: src/filemanager/panel_plugin_ops.c:1747
+#: src/filemanager/panel_plugin_ops.c:1903
 msgid "This plugin does not support receiving files"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1699
-#: src/filemanager/panel_plugin_ops.c:1731
+#: src/filemanager/panel_plugin_ops.c:1970
+#: src/filemanager/panel_plugin_ops.c:2021
 #, c-format
 msgid "Cannot move %s to plugin"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ops.c:1705
-#: src/filemanager/panel_plugin_ops.c:1737
+#: src/filemanager/panel_plugin_ops.c:1983
+#: src/filemanager/panel_plugin_ops.c:2034
 #, c-format
 msgid "Cannot delete local file %s"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:830
+#: src/filemanager/panel_plugin_ui.c:879
 #, c-format
 msgid "%s produced nothing to view for %s"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:1342
+#: src/filemanager/panel_plugin_ui.c:1392
 msgid "Send to panel"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:1508
-#: src/filemanager/panel_plugin_ui.c:1512
-#: src/filemanager/panel_plugin_ui.c:1568
+#: src/filemanager/panel_plugin_ui.c:1554
+#: src/filemanager/panel_plugin_ui.c:1558
+#: src/filemanager/panel_plugin_ui.c:1614
 msgid "Plugin panel"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:1508
-#: src/filemanager/panel_plugin_ui.c:1568
+#: src/filemanager/panel_plugin_ui.c:1554
+#: src/filemanager/panel_plugin_ui.c:1614
 msgid "No panel plugins are loaded."
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:1589
-#: src/filemanager/panel_plugin_ui.c:1594
+#: src/filemanager/panel_plugin_ui.c:1635
+#: src/filemanager/panel_plugin_ui.c:1640
 msgid "Change drive"
 msgstr ""
 
-#: src/filemanager/panel_plugin_ui.c:1590
+#: src/filemanager/panel_plugin_ui.c:1636
 msgid "No plugins with drive menu support are loaded."
 msgstr ""
 
@@ -6583,32 +6648,32 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/help.c:400
+#: src/help.c:403
 msgid "Help file format error\n"
 msgstr ""
 
-#: src/help.c:438
+#: src/help.c:441
 msgid "Internal bug: Double start of link area"
 msgstr ""
 
-#: src/help.c:764 src/help.c:1294
+#: src/help.c:767 src/help.c:1308
 #, c-format
 msgid "Cannot find node %s in help file"
 msgstr ""
 
-#: src/help.c:1123
+#: src/help.c:1126
 msgid "See also"
 msgstr ""
 
-#: src/help.c:1308 src/panel-plugins/skineditor/skinedit_table.c:342
+#: src/help.c:1322 src/panel-plugins/skineditor/skinedit_table.c:342
 msgid "Help"
 msgstr ""
 
-#: src/help.c:1338
+#: src/help.c:1352
 msgid "ButtonBar|Index"
 msgstr ""
 
-#: src/help.c:1339
+#: src/help.c:1353
 msgid "ButtonBar|Prev"
 msgstr ""
 
@@ -7124,8 +7189,8 @@ msgstr ""
 #: src/panel-plugins/arcmc/archive-io.c:2544
 #: src/panel-plugins/arcmc/archive-io.c:2572
 #: src/panel-plugins/docker/container-files.c:456
-#: src/panel-plugins/ftp/ftp.c:1992 src/panel-plugins/s3/s3_connect_status.c:88
-#: src/panel-plugins/sftp/sftp.c:771
+#: src/panel-plugins/ftp/ftp.c:2012 src/panel-plugins/s3/s3_connect_status.c:88
+#: src/panel-plugins/sftp/sftp.c:786
 msgid "Please wait..."
 msgstr ""
 
@@ -7595,25 +7660,25 @@ msgstr ""
 msgid "SSH settings (used for SSH):"
 msgstr ""
 
-#: src/panel-plugins/docker/docker-ui.c:306 src/panel-plugins/ftp/ftp.c:1645
-#: src/panel-plugins/ftp/ftp.c:1823 src/panel-plugins/sftp/sftp.c:1314
+#: src/panel-plugins/docker/docker-ui.c:306 src/panel-plugins/ftp/ftp.c:1665
+#: src/panel-plugins/ftp/ftp.c:1843 src/panel-plugins/sftp/sftp.c:1357
 #: src/panel-plugins/shell-link/shell-link.c:680
 msgid "Host:"
 msgstr ""
 
-#: src/panel-plugins/docker/docker-ui.c:309 src/panel-plugins/ftp/ftp.c:1651
-#: src/panel-plugins/ftp/ftp.c:1832 src/panel-plugins/sftp/sftp.c:1320
+#: src/panel-plugins/docker/docker-ui.c:309 src/panel-plugins/ftp/ftp.c:1671
+#: src/panel-plugins/ftp/ftp.c:1852 src/panel-plugins/sftp/sftp.c:1363
 #: src/panel-plugins/shell-link/shell-link.c:686
 msgid "User:"
 msgstr ""
 
-#: src/panel-plugins/docker/docker-ui.c:312 src/panel-plugins/ftp/ftp.c:1648
-#: src/panel-plugins/ftp/ftp.c:1827 src/panel-plugins/sftp/sftp.c:1317
+#: src/panel-plugins/docker/docker-ui.c:312 src/panel-plugins/ftp/ftp.c:1668
+#: src/panel-plugins/ftp/ftp.c:1847 src/panel-plugins/sftp/sftp.c:1360
 #: src/panel-plugins/shell-link/shell-link.c:683
 msgid "Port:"
 msgstr ""
 
-#: src/panel-plugins/docker/docker-ui.c:315 src/panel-plugins/sftp/sftp.c:1332
+#: src/panel-plugins/docker/docker-ui.c:315 src/panel-plugins/sftp/sftp.c:1375
 msgid "Private key file:"
 msgstr ""
 
@@ -7667,189 +7732,212 @@ msgstr ""
 msgid "New Connection"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1495
+#: src/panel-plugins/ftp/ftp.c:1515
 msgid "FTP"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1498
+#: src/panel-plugins/ftp/ftp.c:1518
 msgid "Reading remote directory..."
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1638 src/panel-plugins/ftp/ftp.c:1727
-#: src/panel-plugins/ftp/ftp.c:1808 src/panel-plugins/sftp/sftp.c:1308
-#: src/panel-plugins/sftp/sftp.c:1401
+#: src/panel-plugins/ftp/ftp.c:1658 src/panel-plugins/ftp/ftp.c:1747
+#: src/panel-plugins/ftp/ftp.c:1828 src/panel-plugins/sftp/sftp.c:1351
+#: src/panel-plugins/sftp/sftp.c:1444
 msgid "&Basic"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1639 src/panel-plugins/ftp/ftp.c:1728
-#: src/panel-plugins/ftp/ftp.c:1809
+#: src/panel-plugins/ftp/ftp.c:1659 src/panel-plugins/ftp/ftp.c:1748
+#: src/panel-plugins/ftp/ftp.c:1829
 msgid "&Security"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1640 src/panel-plugins/ftp/ftp.c:1729
-#: src/panel-plugins/ftp/ftp.c:1810
+#: src/panel-plugins/ftp/ftp.c:1660 src/panel-plugins/ftp/ftp.c:1749
+#: src/panel-plugins/ftp/ftp.c:1830
 msgid "&Advanced"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1642 src/panel-plugins/mongo/mongo_settings.c:95
-#: src/panel-plugins/s3/s3_connection.c:118 src/panel-plugins/sftp/sftp.c:1311
+#: src/panel-plugins/ftp/ftp.c:1662 src/panel-plugins/mongo/mongo_settings.c:95
+#: src/panel-plugins/s3/s3_connection.c:118 src/panel-plugins/sftp/sftp.c:1354
 #: src/panel-plugins/shell-link/shell-link.c:677
 msgid "Connection name:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1657 src/panel-plugins/sftp/sftp.c:1326
+#: src/panel-plugins/ftp/ftp.c:1677 src/panel-plugins/sftp/sftp.c:1369
 #: src/panel-plugins/shell-link/shell-link.c:692
 msgid "Remote path:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1669 src/panel-plugins/ftp/ftp.c:1765
-#: src/panel-plugins/ftp/ftp.c:1850
+#: src/panel-plugins/ftp/ftp.c:1689 src/panel-plugins/ftp/ftp.c:1785
+#: src/panel-plugins/ftp/ftp.c:1870
 msgid "FTP Connection"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1711
+#: src/panel-plugins/ftp/ftp.c:1731
 msgid "&None (FTP)"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1711
+#: src/panel-plugins/ftp/ftp.c:1731
 msgid "&Try SSL"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1712
+#: src/panel-plugins/ftp/ftp.c:1732
 msgid "SSL &commands only"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1712
+#: src/panel-plugins/ftp/ftp.c:1732
 msgid "SSL &all (FTPS)"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1714 src/panel-plugins/sftp/sftp.c:1388
+#: src/panel-plugins/ftp/ftp.c:1734 src/panel-plugins/sftp/sftp.c:1431
 msgid "A&uto"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1714 src/panel-plugins/sftp/sftp.c:1388
+#: src/panel-plugins/ftp/ftp.c:1734 src/panel-plugins/sftp/sftp.c:1431
 msgid "IPv&4"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1714 src/panel-plugins/sftp/sftp.c:1388
+#: src/panel-plugins/ftp/ftp.c:1734 src/panel-plugins/sftp/sftp.c:1431
 msgid "IPv&6"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1731
+#: src/panel-plugins/ftp/ftp.c:1751
 msgid "SSL/TLS"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1733
+#: src/panel-plugins/ftp/ftp.c:1753
 msgid "&Passive mode"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1735
+#: src/panel-plugins/ftp/ftp.c:1755
 msgid "Connection"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1737 src/panel-plugins/sftp/sftp.c:1406
+#: src/panel-plugins/ftp/ftp.c:1757 src/panel-plugins/sftp/sftp.c:1449
 msgid "Connect timeout:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1742
+#: src/panel-plugins/ftp/ftp.c:1762
 msgid "Response timeout:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1747
+#: src/panel-plugins/ftp/ftp.c:1767
 msgid "TCP &Keepalive"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1749 src/panel-plugins/sftp/sftp.c:1420
+#: src/panel-plugins/ftp/ftp.c:1769 src/panel-plugins/sftp/sftp.c:1463
 msgid "Interval:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1801
+#: src/panel-plugins/ftp/ftp.c:1821
 msgid "&HTTP"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1801
+#: src/panel-plugins/ftp/ftp.c:1821
 msgid "SOCKS&4"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1802
+#: src/panel-plugins/ftp/ftp.c:1822
 msgid "SOCKS&5"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1812
+#: src/panel-plugins/ftp/ftp.c:1832
 msgid "Advanced"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1813
+#: src/panel-plugins/ftp/ftp.c:1833
 msgid "Encoding:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1816
+#: src/panel-plugins/ftp/ftp.c:1836
 msgid "Commands after login:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1820
+#: src/panel-plugins/ftp/ftp.c:1840
 msgid "Proxy"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:1836
+#: src/panel-plugins/ftp/ftp.c:1856
 msgid "Pass:"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2101 src/panel-plugins/ftp/ftp.c:2218
+#: src/panel-plugins/ftp/ftp.c:2147
+msgid "Connected"
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2152
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2154
+msgid "Asking for TLS..."
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2156
+#, c-format
+msgid "Opening %s..."
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2166
+#, c-format
+msgid "Server: %s"
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2168
+msgid "Logged in"
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2170
+msgid "TLS accepted"
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2261 src/panel-plugins/ftp/ftp.c:2300
 msgid "FTP connection"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2106 src/panel-plugins/sftp/sftp.c:857
+#: src/panel-plugins/ftp/ftp.c:2266 src/panel-plugins/sftp/sftp.c:901
 #, c-format
 msgid "Connecting to %s:%d..."
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2113
-msgid "Initializing network session..."
-msgstr ""
-
-#: src/panel-plugins/ftp/ftp.c:2163
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#: src/panel-plugins/ftp/ftp.c:2190
-#, c-format
-msgid "Initial attempt failed: %s"
-msgstr ""
-
-#: src/panel-plugins/ftp/ftp.c:2204 src/panel-plugins/sftp/sftp.c:991
+#: src/panel-plugins/ftp/ftp.c:2283 src/panel-plugins/sftp/sftp.c:1035
 #, c-format
 msgid "Enter password for %s@%s"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2206
+#: src/panel-plugins/ftp/ftp.c:2285
 msgid "FTP password"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2261
+#: src/panel-plugins/ftp/ftp.c:2305
 msgid "Retrying with password..."
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2288
+#: src/panel-plugins/ftp/ftp.c:2318 src/panel-plugins/sftp/sftp.c:1054
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:2308
+#: src/panel-plugins/ftp/ftp.c:2324 src/panel-plugins/sftp/sftp.c:908
+#, c-format
+msgid "Cannot connect to %s:%d"
+msgstr ""
+
+#: src/panel-plugins/ftp/ftp.c:2334
 msgid "Connection successful, loading entries..."
 msgstr ""
 
-#: src/panel-plugins/ftp/ftp.c:3179 src/panel-plugins/s3/s3.c:3002
-#: src/panel-plugins/samba/samba.c:1501 src/panel-plugins/sftp/sftp.c:2967
+#: src/panel-plugins/ftp/ftp.c:3375 src/panel-plugins/s3/s3.c:3002
+#: src/panel-plugins/samba/samba.c:1501 src/panel-plugins/sftp/sftp.c:3006
 #, c-format
 msgid "Copy of %s"
 msgstr ""
 
-#: src/panel-plugins/git/git.c:1452
+#: src/panel-plugins/git/git.c:1540
 msgid "Git panel"
 msgstr ""
 
-#: src/panel-plugins/git/git.c:1453
+#: src/panel-plugins/git/git.c:1541
 msgid ""
 "This operation is irreversible.\n"
 "Selected files will be reset to HEAD.\n"
@@ -7858,16 +7946,16 @@ msgid ""
 "Do you want to continue?"
 msgstr ""
 
-#: src/panel-plugins/git/git.c:1457
+#: src/panel-plugins/git/git.c:1545
 #: src/panel-plugins/skineditor/skineditor_color.c:668
 msgid "&Reset"
 msgstr ""
 
-#: src/panel-plugins/git/git.c:2758
+#: src/panel-plugins/git/git.c:2765
 msgid "Add to favorites"
 msgstr ""
 
-#: src/panel-plugins/git/git.c:2758
+#: src/panel-plugins/git/git.c:2765
 msgid "Repository path:"
 msgstr ""
 
@@ -8417,7 +8505,7 @@ msgstr ""
 msgid "ButtonBar|Struct"
 msgstr ""
 
-#: src/panel-plugins/mcstruct/mcstruct_ui.c:1470 src/viewer/display.c:135
+#: src/panel-plugins/mcstruct/mcstruct_ui.c:1470 src/viewer/display.c:145
 msgid "ButtonBar|Goto"
 msgstr ""
 
@@ -8425,7 +8513,8 @@ msgstr ""
 msgid "ButtonBar|DefFil"
 msgstr ""
 
-#: src/panel-plugins/mcstruct/mcstruct_ui.c:1473 src/viewer/display.c:130
+#: src/panel-plugins/mcstruct/mcstruct_ui.c:1473 src/viewer/display.c:131
+#: src/viewer/display.c:140
 msgid "ButtonBar|Hex"
 msgstr ""
 
@@ -9060,164 +9149,158 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:853
+#: src/panel-plugins/sftp/sftp.c:647
+#, c-format
+msgid "Cannot resolve %s: %s"
+msgstr ""
+
+#: src/panel-plugins/sftp/sftp.c:897
 msgid "SFTP connection"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:864
-#, c-format
-msgid "Cannot connect to %s:%d"
-msgstr ""
-
-#: src/panel-plugins/sftp/sftp.c:871
+#: src/panel-plugins/sftp/sftp.c:915
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:888
+#: src/panel-plugins/sftp/sftp.c:932
 msgid "SSH handshake..."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:893
+#: src/panel-plugins/sftp/sftp.c:937
 #, c-format
 msgid "SSH handshake with %s:%d failed"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:910
+#: src/panel-plugins/sftp/sftp.c:954
 msgid "Authenticating via ssh-agent..."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:934
+#: src/panel-plugins/sftp/sftp.c:978
 msgid "Authenticating with public key..."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:953
+#: src/panel-plugins/sftp/sftp.c:997
 #, c-format
 msgid "Enter passphrase for key %s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:954
+#: src/panel-plugins/sftp/sftp.c:998
 msgid "SFTP key passphrase"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:979
+#: src/panel-plugins/sftp/sftp.c:1023
 msgid "Authenticating with password..."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:992
+#: src/panel-plugins/sftp/sftp.c:1036
 msgid "SFTP password"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1010
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
-#: src/panel-plugins/sftp/sftp.c:1014
+#: src/panel-plugins/sftp/sftp.c:1058
 msgid "Initializing SFTP session..."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1020
+#: src/panel-plugins/sftp/sftp.c:1064
 #, c-format
 msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1024
+#: src/panel-plugins/sftp/sftp.c:1068
 msgid "Connected."
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1053 src/panel-plugins/sftp/sftp.c:1055
-#: src/panel-plugins/sftp/sftp.c:1914 src/panel-plugins/sftp/sftp.c:2238
-#: src/panel-plugins/sftp/sftp.c:2620 src/panel-plugins/sftp/sftp.c:2625
-msgid "SFTP"
-msgstr ""
-
-#: src/panel-plugins/sftp/sftp.c:1309 src/panel-plugins/sftp/sftp.c:1402
+#: src/panel-plugins/sftp/sftp.c:1352 src/panel-plugins/sftp/sftp.c:1445
 msgid "&Connection"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1329
+#: src/panel-plugins/sftp/sftp.c:1372
 msgid "Public key file:"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1335
+#: src/panel-plugins/sftp/sftp.c:1378
 msgid "Use SSH &agent"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1345 src/panel-plugins/sftp/sftp.c:1438
+#: src/panel-plugins/sftp/sftp.c:1388 src/panel-plugins/sftp/sftp.c:1481
 msgid "SFTP Connection"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1404
+#: src/panel-plugins/sftp/sftp.c:1447
 msgid "Timeouts"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1411
+#: src/panel-plugins/sftp/sftp.c:1454
 msgid "Session timeout:"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1416
+#: src/panel-plugins/sftp/sftp.c:1459
 msgid "Keepalive"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1418
+#: src/panel-plugins/sftp/sftp.c:1461
 msgid "SSH &Keepalive"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1426
+#: src/panel-plugins/sftp/sftp.c:1469
 msgid "IP version"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:1914
+#: src/panel-plugins/sftp/sftp.c:1953 src/panel-plugins/sftp/sftp.c:2277
+#: src/panel-plugins/sftp/sftp.c:2659 src/panel-plugins/sftp/sftp.c:2664
+msgid "SFTP"
+msgstr ""
+
+#: src/panel-plugins/sftp/sftp.c:1953
 msgid "Abort current transfer?"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2040 src/panel-plugins/sftp/sftp.c:2146
+#: src/panel-plugins/sftp/sftp.c:2079 src/panel-plugins/sftp/sftp.c:2185
 msgid "Downloading"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2238
+#: src/panel-plugins/sftp/sftp.c:2277
 msgid "Remote file already exists. Overwrite?"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2260
+#: src/panel-plugins/sftp/sftp.c:2299
 msgid "Uploading"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2620
+#: src/panel-plugins/sftp/sftp.c:2659
 #, c-format
 msgid ""
 "Cannot open remote file\n"
 "%s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2625
+#: src/panel-plugins/sftp/sftp.c:2664
 #, c-format
 msgid ""
 "Error reading remote file\n"
 "%s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2653
+#: src/panel-plugins/sftp/sftp.c:2692
 #, c-format
 msgid "sftp: cannot connect to %s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2682 src/panel-plugins/sftp/sftp.c:2702
+#: src/panel-plugins/sftp/sftp.c:2721 src/panel-plugins/sftp/sftp.c:2741
 #, c-format
 msgid "sftp: cannot read %s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2733
+#: src/panel-plugins/sftp/sftp.c:2772
 #, c-format
 msgid "sftp: cannot get the size of %s"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2740
+#: src/panel-plugins/sftp/sftp.c:2779
 msgid "sftp: unsupported seek"
 msgstr ""
 
-#: src/panel-plugins/sftp/sftp.c:2746
+#: src/panel-plugins/sftp/sftp.c:2785
 msgid "sftp: seek before the start of the file"
 msgstr ""
 
@@ -9554,101 +9637,101 @@ msgid "shfs: %s is shorter than the range asked for"
 msgstr ""
 
 #: src/panel-plugins/shell-link/shfs-resume.c:397
-#: src/panel-plugins/shell-link/shfs.c:353
-#: src/panel-plugins/shell-link/shfs.c:973
-#: src/panel-plugins/shell-link/shfs.c:1108
-#: src/panel-plugins/shell-link/shfs.c:1232
-#: src/panel-plugins/shell-link/shfs.c:1298
-#: src/panel-plugins/shell-link/shfs.c:1641
+#: src/panel-plugins/shell-link/shfs.c:352
+#: src/panel-plugins/shell-link/shfs.c:972
+#: src/panel-plugins/shell-link/shfs.c:1107
+#: src/panel-plugins/shell-link/shfs.c:1231
+#: src/panel-plugins/shell-link/shfs.c:1297
+#: src/panel-plugins/shell-link/shfs.c:1640
 msgid "shell: connection is closed"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:368
+#: src/panel-plugins/shell-link/shfs.c:367
 msgid "shell: the remote command failed"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:515
+#: src/panel-plugins/shell-link/shfs.c:514
 #, c-format
 msgid "shell: %s already exists"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:525
+#: src/panel-plugins/shell-link/shfs.c:524
 msgid "shell: the directory was not created"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:712
+#: src/panel-plugins/shell-link/shfs.c:711
 msgid "shell: cannot create a pipe"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:719
+#: src/panel-plugins/shell-link/shfs.c:718
 msgid "shell: cannot fork"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:764
+#: src/panel-plugins/shell-link/shfs.c:763
 msgid "shell: no greeting from the remote shell"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:771
+#: src/panel-plugins/shell-link/shfs.c:770
 msgid "shell: the host wants a password; build with libssh2 to supply one"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:786
-#: src/panel-plugins/shell-link/shfs.c:799
+#: src/panel-plugins/shell-link/shfs.c:785
+#: src/panel-plugins/shell-link/shfs.c:798
 msgid "shell: cannot probe the host"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:897
+#: src/panel-plugins/shell-link/shfs.c:896
 msgid "shell: the remote shell did not answer"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:987
+#: src/panel-plugins/shell-link/shfs.c:986
 msgid "shell: cannot read the remote file"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1018
-#: src/panel-plugins/shell-link/shfs.c:1065
-#: src/panel-plugins/shell-link/shfs.c:1163
-#: src/panel-plugins/shell-link/shfs.c:1192
+#: src/panel-plugins/shell-link/shfs.c:1017
+#: src/panel-plugins/shell-link/shfs.c:1064
+#: src/panel-plugins/shell-link/shfs.c:1162
+#: src/panel-plugins/shell-link/shfs.c:1191
 msgid "shell: no transfer in progress"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1043
+#: src/panel-plugins/shell-link/shfs.c:1042
 msgid "shell: the transfer was cancelled"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1044
-#: src/panel-plugins/shell-link/shfs.c:1171
+#: src/panel-plugins/shell-link/shfs.c:1043
+#: src/panel-plugins/shell-link/shfs.c:1170
 msgid "shell: the connection broke"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1077
+#: src/panel-plugins/shell-link/shfs.c:1076
 msgid "shell: the transfer was left unfinished"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1084
-#: src/panel-plugins/shell-link/shfs.c:1209
+#: src/panel-plugins/shell-link/shfs.c:1083
+#: src/panel-plugins/shell-link/shfs.c:1208
 msgid "shell: the transfer failed"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1135
+#: src/panel-plugins/shell-link/shfs.c:1134
 msgid "shell: cannot write the remote file"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1202
+#: src/panel-plugins/shell-link/shfs.c:1201
 msgid "shell: fewer bytes were sent than announced"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1249
-#: src/panel-plugins/shell-link/shfs.c:1257
-#: src/panel-plugins/shell-link/shfs.c:1265
-#: src/panel-plugins/shell-link/shfs.c:1272
-#: src/panel-plugins/shell-link/shfs.c:1321
-#: src/panel-plugins/shell-link/shfs.c:1342
+#: src/panel-plugins/shell-link/shfs.c:1248
+#: src/panel-plugins/shell-link/shfs.c:1256
+#: src/panel-plugins/shell-link/shfs.c:1264
+#: src/panel-plugins/shell-link/shfs.c:1271
+#: src/panel-plugins/shell-link/shfs.c:1320
+#: src/panel-plugins/shell-link/shfs.c:1341
 msgid "shell: cannot checksum the remote file"
 msgstr ""
 
-#: src/panel-plugins/shell-link/shfs.c:1664
-#: src/panel-plugins/shell-link/shfs.c:1691
+#: src/panel-plugins/shell-link/shfs.c:1663
+#: src/panel-plugins/shell-link/shfs.c:1690
 msgid "shell: reading the directory failed"
 msgstr ""
 
@@ -9680,7 +9763,7 @@ msgid "Cannot create directory %s"
 msgstr ""
 
 #: src/panel-plugins/skineditor/skinedit_model.c:1233
-#: src/panel-plugins/skineditor/skineditor_ui.c:814
+#: src/panel-plugins/skineditor/skineditor_ui.c:815
 #, c-format
 msgid "\"%s\" is not a skin name: no directory part, not .ini"
 msgstr ""
@@ -10617,11 +10700,11 @@ msgid "S&kin editor..."
 msgstr ""
 
 #: src/panel-plugins/skineditor/skineditor.c:61
-#: src/panel-plugins/skineditor/skineditor_ui.c:359
-#: src/panel-plugins/skineditor/skineditor_ui.c:874
-#: src/panel-plugins/skineditor/skineditor_ui.c:913
-#: src/panel-plugins/skineditor/skineditor_ui.c:1192
-#: src/panel-plugins/skineditor/skineditor_ui.c:1464
+#: src/panel-plugins/skineditor/skineditor_ui.c:360
+#: src/panel-plugins/skineditor/skineditor_ui.c:875
+#: src/panel-plugins/skineditor/skineditor_ui.c:914
+#: src/panel-plugins/skineditor/skineditor_ui.c:1193
+#: src/panel-plugins/skineditor/skineditor_ui.c:1465
 msgid "Skin editor"
 msgstr ""
 
@@ -10646,8 +10729,8 @@ msgid "Blin&k"
 msgstr ""
 
 #: src/panel-plugins/skineditor/skineditor_color.c:183
-#: src/panel-plugins/skineditor/skineditor_ui.c:249
 #: src/panel-plugins/skineditor/skineditor_ui.c:250
+#: src/panel-plugins/skineditor/skineditor_ui.c:251
 msgid "terminal"
 msgstr ""
 
@@ -10657,7 +10740,7 @@ msgstr ""
 
 #: src/panel-plugins/skineditor/skineditor_color.c:344
 #: src/panel-plugins/skineditor/skineditor_color.c:350
-#: src/panel-plugins/skineditor/skineditor_ui.c:127
+#: src/panel-plugins/skineditor/skineditor_ui.c:128
 msgid "True color"
 msgstr ""
 
@@ -10672,7 +10755,7 @@ msgstr ""
 
 #: src/panel-plugins/skineditor/skineditor_color.c:567
 #: src/panel-plugins/skineditor/skineditor_color.c:573
-#: src/panel-plugins/skineditor/skineditor_ui.c:129
+#: src/panel-plugins/skineditor/skineditor_ui.c:130
 msgid "256 colors"
 msgstr ""
 
@@ -10717,143 +10800,143 @@ msgstr ""
 msgid "Sample"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:131
+#: src/panel-plugins/skineditor/skineditor_ui.c:132
 msgid "16 colors"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:262
+#: src/panel-plugins/skineditor/skineditor_ui.c:263
 #, c-format
 msgid "%s: what mc fills in"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:278
+#: src/panel-plugins/skineditor/skineditor_ui.c:279
 msgid "built-in"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:360
+#: src/panel-plugins/skineditor/skineditor_ui.c:361
 #, c-format
 msgid ""
 "This terminal cannot show the colors of \"%s\".\n"
 "The skin can be edited and saved, but the screen will not follow."
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:430
+#: src/panel-plugins/skineditor/skineditor_ui.c:431
 #, c-format
 msgid "Skin: %s  %s"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:463
+#: src/panel-plugins/skineditor/skineditor_ui.c:464
 msgid "Foreground:"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:466
+#: src/panel-plugins/skineditor/skineditor_ui.c:467
 msgid "Background:"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:469
+#: src/panel-plugins/skineditor/skineditor_ui.c:470
 msgid "Attributes:"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:472
+#: src/panel-plugins/skineditor/skineditor_ui.c:473
 msgid "Empty = inherited"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:532
+#: src/panel-plugins/skineditor/skineditor_ui.c:533
 msgid "One character (empty = built-in):"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:533
+#: src/panel-plugins/skineditor/skineditor_ui.c:534
 msgid "Value (empty = built-in):"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:543
+#: src/panel-plugins/skineditor/skineditor_ui.c:544
 msgid "One character is expected here"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:713
+#: src/panel-plugins/skineditor/skineditor_ui.c:714
 msgid "Description:"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:725
+#: src/panel-plugins/skineditor/skineditor_ui.c:726
 msgid "Save skin as"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:770
+#: src/panel-plugins/skineditor/skineditor_ui.c:771
 #, c-format
 msgid ""
 "This is a %s skin, but [%s] %s uses %s.\n"
 "Save it as a %s skin?"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:774
-#: src/panel-plugins/skineditor/skineditor_ui.c:799
-#: src/panel-plugins/skineditor/skineditor_ui.c:813
-#: src/panel-plugins/skineditor/skineditor_ui.c:826
-#: src/panel-plugins/skineditor/skineditor_ui.c:855
+#: src/panel-plugins/skineditor/skineditor_ui.c:775
+#: src/panel-plugins/skineditor/skineditor_ui.c:800
+#: src/panel-plugins/skineditor/skineditor_ui.c:814
+#: src/panel-plugins/skineditor/skineditor_ui.c:827
+#: src/panel-plugins/skineditor/skineditor_ui.c:856
 msgid "Save skin"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:800
+#: src/panel-plugins/skineditor/skineditor_ui.c:801
 msgid "This is a system skin. Save a copy in your skins directory as:"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:826
+#: src/panel-plugins/skineditor/skineditor_ui.c:827
 msgid "A skin of this name exists. Overwrite it?"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:856
+#: src/panel-plugins/skineditor/skineditor_ui.c:857
 msgid ""
 "The skin is saved. This terminal cannot show it,\n"
 "so the skin mc runs with stays as it was."
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:874
-#: src/panel-plugins/skineditor/skineditor_ui.c:913
+#: src/panel-plugins/skineditor/skineditor_ui.c:875
+#: src/panel-plugins/skineditor/skineditor_ui.c:914
 msgid "Discard the changes?"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1052
+#: src/panel-plugins/skineditor/skineditor_ui.c:1053
 msgid " on "
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1053
+#: src/panel-plugins/skineditor/skineditor_ui.c:1054
 msgid "inherited"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1079
+#: src/panel-plugins/skineditor/skineditor_ui.c:1080
 #, c-format
 msgid "Copied: %s"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1095
+#: src/panel-plugins/skineditor/skineditor_ui.c:1096
 msgid "&Everything"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1095
+#: src/panel-plugins/skineditor/skineditor_ui.c:1096
 msgid "&Foreground only"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1095
+#: src/panel-plugins/skineditor/skineditor_ui.c:1096
 msgid "&Background only"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1096
+#: src/panel-plugins/skineditor/skineditor_ui.c:1097
 msgid "&Attributes only"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1192
+#: src/panel-plugins/skineditor/skineditor_ui.c:1193
 msgid "The skin has unsaved changes."
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1193
+#: src/panel-plugins/skineditor/skineditor_ui.c:1194
 msgid "&Discard"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1454
+#: src/panel-plugins/skineditor/skineditor_ui.c:1455
 msgid "Edit as &file"
 msgstr ""
 
-#: src/panel-plugins/skineditor/skineditor_ui.c:1464
+#: src/panel-plugins/skineditor/skineditor_ui.c:1465
 #, c-format
 msgid "The skin editor needs a terminal of %dx%d"
 msgstr ""
@@ -10887,7 +10970,7 @@ msgstr ""
 msgid "Cannot read the database."
 msgstr ""
 
-#: src/runtime-host.c:2253
+#: src/runtime-host.c:2463
 msgid "Runtime errors"
 msgstr ""
 
@@ -10899,15 +10982,15 @@ msgstr ""
 msgid "-  < No translation >"
 msgstr ""
 
-#: src/setup.c:214
+#: src/setup.c:215
 msgid "%b %e  %Y"
 msgstr ""
 
-#: src/setup.c:215
+#: src/setup.c:216
 msgid "%b %e %H:%M"
 msgstr ""
 
-#: src/setup.c:1066
+#: src/setup.c:1067
 #, c-format
 msgid ""
 "Cannot save file %s:\n"
@@ -11068,43 +11151,43 @@ msgstr ""
 msgid "False:"
 msgstr ""
 
-#: src/usermenu.c:606
+#: src/usermenu.c:610
 msgid "Error calling program"
 msgstr ""
 
-#: src/usermenu.c:633 src/usermenu_ini.c:142
+#: src/usermenu.c:639 src/usermenu_ini.c:142
 msgid "Warning -- ignoring file"
 msgstr ""
 
-#: src/usermenu.c:634 src/usermenu_ini.c:143
+#: src/usermenu.c:640 src/usermenu_ini.c:143
 #, c-format
 msgid ""
 "File %s is not owned by root or you or is world writable.\n"
 "Using it may compromise your security"
 msgstr ""
 
-#: src/usermenu.c:805
+#: src/usermenu.c:811
 msgid "Format error on file Extensions File"
 msgstr ""
 
-#: src/usermenu.c:806
+#: src/usermenu.c:812
 #, c-format
 msgid "The %%var macro has no default"
 msgstr ""
 
-#: src/usermenu.c:807
+#: src/usermenu.c:813
 #, c-format
 msgid "The %%var macro has no variable"
 msgstr ""
 
-#: src/usermenu.c:1198
+#: src/usermenu.c:1212
 #, c-format
 msgid "No suitable entries found in %s"
 msgstr ""
 
-#: src/usermenu.c:1211 src/usermenu_ini.c:1293 src/usermenu_ini.c:1535
-#: src/usermenu_ini.c:1586 src/usermenu_ini.c:1638 src/usermenu_ini.c:1644
-#: src/usermenu_ini.c:1723 src/usermenu_ini.c:1790
+#: src/usermenu.c:1225 src/usermenu_ini.c:1296 src/usermenu_ini.c:1538
+#: src/usermenu_ini.c:1589 src/usermenu_ini.c:1641 src/usermenu_ini.c:1647
+#: src/usermenu_ini.c:1726 src/usermenu_ini.c:1793
 msgid "User menu"
 msgstr ""
 
@@ -11161,18 +11244,18 @@ msgstr ""
 msgid "The entry needs a label"
 msgstr ""
 
-#: src/usermenu_ini.c:1182
+#: src/usermenu_ini.c:1185
 msgid "Import: space marks, Enter takes"
 msgstr ""
 
-#: src/usermenu_ini.c:1287
+#: src/usermenu_ini.c:1290
 #, c-format
 msgid ""
 "Nothing was taken from\n"
 "%s"
 msgstr ""
 
-#: src/usermenu_ini.c:1294
+#: src/usermenu_ini.c:1297
 #, c-format
 msgid ""
 "Taken into\n"
@@ -11182,15 +11265,15 @@ msgid ""
 "and conditions and masks were dropped."
 msgstr ""
 
-#: src/usermenu_ini.c:1429
+#: src/usermenu_ini.c:1432
 msgid "Import a menu file"
 msgstr ""
 
-#: src/usermenu_ini.c:1429
+#: src/usermenu_ini.c:1432
 msgid "The file to take the entries from"
 msgstr ""
 
-#: src/usermenu_ini.c:1532
+#: src/usermenu_ini.c:1535
 #, c-format
 msgid ""
 "The menu is a file written by hand:\n"
@@ -11199,42 +11282,42 @@ msgid ""
 "Import entries of it into the menu that edits itself?"
 msgstr ""
 
-#: src/usermenu_ini.c:1535 src/usermenu_ini.c:1590
+#: src/usermenu_ini.c:1538 src/usermenu_ini.c:1593
 msgid "&Import"
 msgstr ""
 
-#: src/usermenu_ini.c:1536
+#: src/usermenu_ini.c:1539
 msgid "&Keep the file"
 msgstr ""
 
-#: src/usermenu_ini.c:1587
+#: src/usermenu_ini.c:1590
 msgid ""
 "The menu is empty.\n"
 "\n"
 "Add an entry, or take entries from a menu file written by hand?"
 msgstr ""
 
-#: src/usermenu_ini.c:1590
+#: src/usermenu_ini.c:1593
 msgid "&Add an entry"
 msgstr ""
 
-#: src/usermenu_ini.c:1723
+#: src/usermenu_ini.c:1726
 msgid "Add a command, or a submenu to hold other entries?"
 msgstr ""
 
-#: src/usermenu_ini.c:1724
+#: src/usermenu_ini.c:1727
 msgid "Add a &command"
 msgstr ""
 
-#: src/usermenu_ini.c:1724
+#: src/usermenu_ini.c:1727
 msgid "Add a &submenu"
 msgstr ""
 
-#: src/usermenu_ini.c:1791
+#: src/usermenu_ini.c:1794
 msgid "Delete this submenu and everything in it?"
 msgstr ""
 
-#: src/usermenu_ini.c:1792
+#: src/usermenu_ini.c:1795
 msgid "Delete this entry?"
 msgstr ""
 
@@ -11314,30 +11397,30 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: src/viewer/actions_cmd.c:487
+#: src/viewer/actions_cmd.c:513
 msgid "Invalid value"
 msgstr ""
 
-#: src/viewer/actions_cmd.c:803
+#: src/viewer/actions_cmd.c:858
 msgid "File was modified. Save with exit?"
 msgstr ""
 
-#: src/viewer/actions_cmd.c:810
+#: src/viewer/actions_cmd.c:865
 #, c-format
 msgid ""
 "%s is being shut down.\n"
 "Save modified file?"
 msgstr ""
 
-#: src/viewer/actions_cmd.c:848
+#: src/viewer/actions_cmd.c:903
 msgid "The structure viewer works on local files only"
 msgstr ""
 
-#: src/viewer/ascii.c:1440
+#: src/viewer/ascii.c:1579
 msgid "(no matches -- waiting for data)"
 msgstr ""
 
-#: src/viewer/ascii.c:1441
+#: src/viewer/ascii.c:1580
 msgid "(no matches)"
 msgstr ""
 
@@ -11369,50 +11452,50 @@ msgstr ""
 msgid "ButtonBar|HxSrch"
 msgstr ""
 
-#: src/viewer/display.c:128
+#: src/viewer/display.c:138
 msgid "ButtonBar|UnWrap"
 msgstr ""
 
-#: src/viewer/display.c:128
+#: src/viewer/display.c:138
 msgid "ButtonBar|Wrap"
 msgstr ""
 
-#: src/viewer/display.c:137
+#: src/viewer/display.c:147
 msgid "ButtonBar|Raw"
 msgstr ""
 
-#: src/viewer/display.c:137
+#: src/viewer/display.c:147
 msgid "ButtonBar|Parse"
 msgstr ""
 
-#: src/viewer/display.c:143
+#: src/viewer/display.c:153
 msgid "ButtonBar|Unform"
 msgstr ""
 
-#: src/viewer/display.c:145
+#: src/viewer/display.c:155
 msgid "ButtonBar|Term mode"
 msgstr ""
 
-#: src/viewer/display.c:147
+#: src/viewer/display.c:157
 msgid "ButtonBar|Format"
 msgstr ""
 
-#: src/viewer/display.c:255
+#: src/viewer/display.c:265
 #, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
-#: src/viewer/display.c:258
+#: src/viewer/display.c:268
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
 msgstr ""
 
-#: src/viewer/display.c:262
+#: src/viewer/display.c:272
 #, c-format
 msgid "Filter: %s  %u matches"
 msgstr ""
 
-#: src/viewer/display.c:663
+#: src/viewer/display.c:700
 msgid "Quick view"
 msgstr ""
 
@@ -11478,7 +11561,7 @@ msgstr ""
 msgid "unknown error"
 msgstr ""
 
-#: src/viewer/growbuf.c:295
+#: src/viewer/growbuf.c:318
 msgid "Failed to read data from child stdout"
 msgstr ""
 
@@ -11497,15 +11580,15 @@ msgid ""
 "%s"
 msgstr ""
 
-#: src/viewer/lib.c:575 src/viewer/lib.c:577
+#: src/viewer/lib.c:599 src/viewer/lib.c:601
 msgid "View: "
 msgstr ""
 
-#: src/viewer/mcviewer.c:561
+#: src/viewer/mcviewer.c:646
 msgid "Cannot open source."
 msgstr ""
 
-#: src/viewer/mcviewer.c:680
+#: src/viewer/mcviewer.c:765
 #, c-format
 msgid ""
 "Cannot view\n"
@@ -11513,57 +11596,65 @@ msgid ""
 "Not a regular file"
 msgstr ""
 
-#: src/viewer/search.c:308 src/viewer/search.c:502
+#: src/viewer/search.c:312 src/viewer/search.c:515
 msgid "Search done"
 msgstr ""
 
-#: src/viewer/search.c:308 src/viewer/search.c:502
+#: src/viewer/search.c:312 src/viewer/search.c:515
 msgid "Continue from beginning?"
 msgstr ""
 
-#: src/viewer/source.c:68
+#: src/viewer/search.c:549
+msgid "Not found in the text rendered so far."
+msgstr ""
+
+#: src/viewer/source.c:72
 msgid "Source spec must set either command or file."
 msgstr ""
 
-#: src/viewer/source.c:84
+#: src/viewer/source.c:83 src/viewer/source.c:95
+msgid "Cannot open source pipe."
+msgstr ""
+
+#: src/viewer/source.c:114
 msgid "Cannot open source process."
 msgstr ""
 
-#: src/viewer/source.c:103
+#: src/viewer/source.c:133
 msgid "Cannot open source command."
 msgstr ""
 
-#: src/viewer/source.c:122
+#: src/viewer/source.c:152
 #, c-format
 msgid "Cannot open %s"
 msgstr ""
 
-#: src/viewer/source.c:131
+#: src/viewer/source.c:161
 #, c-format
 msgid "Cannot stat %s"
 msgstr ""
 
-#: src/viewer/source.c:262
+#: src/viewer/source.c:306
 msgid "Viewport source prepare failed."
 msgstr ""
 
-#: src/viewer/source.c:271
+#: src/viewer/source.c:315
 msgid "Cannot open resized source."
 msgstr ""
 
-#: src/viewer/source.c:383
+#: src/viewer/source.c:430
 msgid "Cannot switch viewer source."
 msgstr ""
 
-#: src/viewer/source.c:442
+#: src/viewer/source.c:502
 msgid "Invalid source controller."
 msgstr ""
 
-#: src/viewer/source.c:576
+#: src/viewer/source.c:636
 msgid "Source prepare failed."
 msgstr ""
 
-#: src/viewer/source.c:586
+#: src/viewer/source.c:646
 msgid "Cannot open new source."
 msgstr ""
 
