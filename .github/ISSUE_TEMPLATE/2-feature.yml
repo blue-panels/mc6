@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for Midnight Commander
+description: Suggest an idea for M-Commander
 labels: [ 'needs triage', 'prio: medium' ]
 type: Feature
 
@@ -9,7 +9,7 @@ body:
     id: search-confirmation
     attributes:
       label: Is there an existing request for this?
-      description: 'Please [:mag: search the issues](/MidnightCommander/mc/issues) to check if this feature has already been requested.'
+      description: 'Please [:mag: search the issues](/blue-panels/mcommander/issues) to check if this feature has already been requested.'
       options:
         - label: I have searched the existing issues
           required: true

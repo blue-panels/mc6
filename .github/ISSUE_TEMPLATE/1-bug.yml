@@ -10,13 +10,13 @@ body:
       value: |
         Please summarize the issue in a few words.
 
-        :stop_sign: _Make sure you are reporting an issue. For general questions, please use [Discussions](/MidnightCommander/mc/discussions)._
+        :stop_sign: _Make sure you are reporting an issue. For general questions, see the [Wiki](/blue-panels/mcommander/wiki)._
 
   - type: checkboxes
     id: search-confirmation
     attributes:
       label: Is there an existing issue for this?
-      description: 'Please [:mag: search the issues](/MidnightCommander/mc/issues) to check if this bug has already been reported.'
+      description: 'Please [:mag: search the issues](/blue-panels/mcommander/issues) to check if this bug has already been reported.'
       options:
         - label: I have searched the existing issues
           required: true
@@ -24,8 +24,8 @@ body:
   - type: textarea
     id: mc-version
     attributes:
-      label: Midnight Commander version and build configuration
-      placeholder: Output of `mc -V`
+      label: M-Commander version and build configuration
+      placeholder: Output of `mcommander --version`
       render: shell
     validations:
       required: true
@@ -42,11 +42,11 @@ body:
   - type: checkboxes
     id: reproducible-latest
     attributes:
-      label: Is this issue reproducible using the latest version of Midnight Commander?
+      label: Is this issue reproducible using the latest version of M-Commander?
       description: |
-        Check [Releases](/MidnightCommander/mc/tags) for the latest version of Midnight Commander. If you are not up to date, please try to reproduce your problem after updating to the latest version.
+        Check [Releases](/blue-panels/mcommander/tags) for the latest version of M-Commander. If you are not up to date, please try to reproduce your problem after updating to the latest version.
       options:
-        - label: I confirm the issue is still reproducible with the latest version of Midnight Commander
+        - label: I confirm the issue is still reproducible with the latest version of M-Commander
 
   - type: textarea
     id: reproduction-steps
@@ -80,4 +80,4 @@ body:
 
   - type: markdown
     attributes:
-      value: ':stop_sign: _Make sure you are reporting an issue. For general questions, please use [Discussions](/MidnightCommander/mc/discussions)._'
+      value: ':stop_sign: _Make sure you are reporting an issue. For general questions, see the [Wiki](/blue-panels/mcommander/wiki)._'
