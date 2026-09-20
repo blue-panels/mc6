@@ -3896,6 +3896,13 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
         spec->top_row = row > 0 ? (guint) row : 0;
     }
     lua_pop (lua, 1);
+    lua_getfield (lua, table, "wrap");
+    if (!lua_isnil (lua, -1))
+    {
+        spec->has_wrap = TRUE;
+        spec->wrap = lua_toboolean (lua, -1) != 0;
+    }
+    lua_pop (lua, 1);
     g_free (scroll);
     display = mc_lua_dup_table_string (lua, table, "initial_display");
     if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0

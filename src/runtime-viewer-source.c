@@ -238,6 +238,12 @@ runtime_viewer_convert_spec (const mc_runtime_viewer_spec_t *source, mcview_sour
     if (source->struct_size
         >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, top_row) + sizeof (source->top_row))
         target->top_row = source->top_row;
+    if (source->struct_size
+        >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, wrap) + sizeof (source->wrap))
+    {
+        target->has_wrap = source->has_wrap;
+        target->wrap = source->wrap;
+    }
     if (source->struct_size >= G_STRUCT_OFFSET (mc_runtime_viewer_spec_t, initial_display)
             + sizeof (source->initial_display))
     {

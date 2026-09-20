@@ -419,6 +419,10 @@ typedef struct
     /* Terminal display: the row of the output the viewer opens at, from 0.
        Ignored where the view follows the end of the output. */
     guint top_row;
+    /* Text display: the viewer opens with wrapping as wrap says.  Leave
+       has_wrap FALSE to keep whatever the user set. */
+    gboolean has_wrap;
+    gboolean wrap;
 } mc_runtime_viewer_spec_t;
 
 typedef enum

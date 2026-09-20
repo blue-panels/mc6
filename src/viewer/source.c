@@ -186,6 +186,10 @@ mcview_install_source (WView *view, mcview_source_handle_t *handle,
         view->mode_flags.hex = FALSE;
         view->mode_flags.nroff = TRUE;
     }
+    /* A source that lays its own text out, such as a diagram wider than the
+       screen, asks to be scrolled sideways rather than broken. */
+    if (spec->has_wrap)
+        view->mode_flags.wrap = spec->wrap;
     if (spec->initial_terminal)
     {
         view->mode_flags.hex = FALSE;
@@ -378,6 +382,8 @@ mcview_source_spec_clone (const mcview_source_spec_t *src)
     dst->top_row = src->top_row;
     dst->initial_terminal = src->initial_terminal;
     dst->initial_nroff = src->initial_nroff;
+    dst->has_wrap = src->has_wrap;
+    dst->wrap = src->wrap;
     dst->raw_file = g_strdup (src->raw_file);
     dst->generator = mcview_generator_ref (src->generator);
     return dst;
