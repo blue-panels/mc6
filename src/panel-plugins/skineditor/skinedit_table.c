@@ -36,11 +36,23 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#define C(group, key, label, desc)       { group, key, SKINEDIT_ENTRY_COLOR, label, desc, NULL }
-#define CH(group, key, label, desc, def) { group, key, SKINEDIT_ENTRY_CHAR, label, desc, def }
-#define ST(group, key, label, desc, def) { group, key, SKINEDIT_ENTRY_STRING, label, desc, def }
+#define C(group, key, label, desc)                                                                 \
+    {                                                                                              \
+        group, key, SKINEDIT_ENTRY_COLOR, label, desc, NULL                                        \
+    }
+#define CH(group, key, label, desc, def)                                                           \
+    {                                                                                              \
+        group, key, SKINEDIT_ENTRY_CHAR, label, desc, def                                          \
+    }
+#define ST(group, key, label, desc, def)                                                           \
+    {                                                                                              \
+        group, key, SKINEDIT_ENTRY_STRING, label, desc, def                                        \
+    }
 
-#define SECTION(label, rows)             { label, rows, G_N_ELEMENTS (rows) }
+#define SECTION(label, rows)                                                                       \
+    {                                                                                              \
+        label, rows, G_N_ELEMENTS (rows)                                                           \
+    }
 
 /*** file scope type declarations ****************************************************************/
 

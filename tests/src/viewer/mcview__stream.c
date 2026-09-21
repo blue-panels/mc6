@@ -553,7 +553,7 @@ START_TEST (test_generator_failure_and_cancel_release_source)
     mcview_close_datasource (&test_view);
     ck_assert_uint_eq (state.destroyed, 1);
 
-    state = (test_generator_t) { 0 };
+    state = (test_generator_t){ 0 };
     generator = mcview_generator_new ("", 0, produce_bytes, &state, release_generator);
     install_generator (generator);
     mcview_generator_unref (generator);

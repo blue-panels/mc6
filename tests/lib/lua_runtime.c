@@ -160,7 +160,7 @@ test_panel_provider_register (mc_runtime_plugin_context_t *context,
         registered_panel_provider.help = &registered_panel_help;
     }
     panel_provider_registered = TRUE;
-    *registration = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL_PROVIDER, 91, 1 };
+    *registration = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL_PROVIDER, 91, 1 };
     return TRUE;
 }
 
@@ -242,6 +242,7 @@ test_screen_run (mc_runtime_plugin_context_t *context,
     ck_assert_str_eq (descriptor->spec->title, "Screen test");
     ck_assert_str_eq (descriptor->spec->help_node, "[Test]");
     ck_assert_str_eq (descriptor->spec->status, "ready");
+    ck_assert_int_eq (descriptor->spec->palette, MC_RUNTIME_SCREEN_PALETTE_VIEWER);
     ck_assert_uint_eq (descriptor->spec->rows_count, 2);
     ck_assert_uint_eq (descriptor->spec->rows[0].height, 1);
     ck_assert_uint_eq (descriptor->spec->rows[0].cells_count, 1);
@@ -725,7 +726,8 @@ create_file_handler_script (void)
                 "assert(mc.file_handler.register {id='view',kind='view',"
                 "handler=function(r) assert(r.kind=='view' and r.display_name=='photo.png' "
                 "and r.local_path=='/tmp/photo.png' and r.mime_type=='image/png' "
-                "and r.magic_group=='image'); return nil,'not_supported' end})\n"
+                "and r.magic_group=='image' and r.embedded==false); "
+                "return nil,'not_supported' end})\n"
                 "local d=assert(mc.viewer_source.define {id='handler-view',"
                 "help={node='controller-help'},"
                 "open=function(identity)return {name=identity.name}end,"
@@ -736,7 +738,8 @@ create_file_handler_script (void)
                 "assert(mc.file_handler.register {id='switched',kind='view',"
                 "handler=function(r) return {handled=true} end})\n"
                 "assert(mc.file_handler.register {id='controlled',kind='view',"
-                "handler=function(r) return {handled=true,controller=assert(d:create("
+                "handler=function(r) assert(r.embedded==true); "
+                "return {handled=true,controller=assert(d:create("
                 "{name='demo'},{text='one',revision=1}))} end})\n");
     g_free (entry_path);
     g_free (ini_path);
@@ -1657,7 +1660,7 @@ test_object_file_new (const char *name, const char *path, gboolean marked)
 static mc_runtime_handle_t
 test_object_panel_active (void)
 {
-    return (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 1, 1 };
+    return (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 1, 1 };
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1665,7 +1668,7 @@ test_object_panel_active (void)
 static mc_runtime_handle_t
 test_object_panel_passive (void)
 {
-    return (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 4, 1 };
+    return (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 4, 1 };
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1742,7 +1745,7 @@ test_object_panel_chdir (const mc_runtime_handle_t *panel, const char *path,
 static mc_runtime_handle_t
 test_object_editor_current (void)
 {
-    return (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    return (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1804,12 +1807,12 @@ test_object_editor_selection (const mc_runtime_handle_t *editor,
     memset (selection, 0, sizeof (*selection));
     selection->kind = MC_RUNTIME_EDITOR_SELECTION_COLUMN;
     selection->revision = 7;
-    selection->anchor = (mc_runtime_editor_position_t) { 1, 1, 2 };
-    selection->cursor = (mc_runtime_editor_position_t) { 8, 2, 4 };
+    selection->anchor = (mc_runtime_editor_position_t){ 1, 1, 2 };
+    selection->cursor = (mc_runtime_editor_position_t){ 8, 2, 4 };
     selection->ranges_count = 2;
     selection->ranges = g_new (mc_runtime_editor_range_t, 2);
-    selection->ranges[0] = (mc_runtime_editor_range_t) { 1, 3 };
-    selection->ranges[1] = (mc_runtime_editor_range_t) { 6, 8 };
+    selection->ranges[0] = (mc_runtime_editor_range_t){ 1, 3 };
+    selection->ranges[1] = (mc_runtime_editor_range_t){ 6, 8 };
     selection->text = g_strdup ("bc\ngh");
     selection->text_length = 5;
     selection->has_text = TRUE;
@@ -1839,7 +1842,7 @@ test_object_editor_replace_selection (const mc_runtime_handle_t *editor, const c
     g_free (object_editor_replacement);
     object_editor_replacement = g_strndup (text, text_length);
     result->revision = 8;
-    result->cursor = (mc_runtime_editor_position_t) { 5, 1, 6 };
+    result->cursor = (mc_runtime_editor_position_t){ 5, 1, 6 };
     return TRUE;
 }
 
@@ -1858,7 +1861,7 @@ test_object_editor_replace (const mc_runtime_handle_t *editor, guint64 from, gui
     g_free (object_editor_range_replacement);
     object_editor_range_replacement = g_strndup (text, text_length);
     result->revision = 9;
-    result->cursor = (mc_runtime_editor_position_t) { 3, 1, 4 };
+    result->cursor = (mc_runtime_editor_position_t){ 3, 1, 4 };
     return TRUE;
 }
 
@@ -1889,8 +1892,8 @@ test_object_editor_edit (const mc_runtime_handle_t *editor,
     object_editor_typed_changes = edit_spec->changes_count;
     result->revision = edit_spec->changes_count == 1 ? 10 : 11;
     result->cursor =
-        (mc_runtime_editor_position_t) { edit_spec->has_cursor ? edit_spec->cursor.offset : 3, 1,
-                                         3 };
+        (mc_runtime_editor_position_t){ edit_spec->has_cursor ? edit_spec->cursor.offset : 3, 1,
+                                        3 };
     return TRUE;
 }
 
@@ -2107,7 +2110,7 @@ test_object_editor_save (const mc_runtime_handle_t *editor, const char **object_
 static mc_runtime_handle_t
 test_object_viewer_current (void)
 {
-    return (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_VIEWER, 3, 1 };
+    return (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_VIEWER, 3, 1 };
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -2605,9 +2608,12 @@ create_screen_script (void)
     write_file (
         entry_path,
         "seen = {}\n"
+        "local bad,err=mc.ui.screen {palette='unknown'}\n"
+        "assert(bad==nil and err=='invalid_screen')\n"
         "local function show()\n"
         "local s = assert(mc.ui.screen {\n"
-        " title = 'Screen test', status = 'ready', help = { node = '[Test]' },\n"
+        " title = 'Screen test', palette = 'viewer', status = 'ready', "
+        "help = { node = '[Test]' },\n"
         " layout = {\n"
         "  { height = 1, { type = 'label', text = 'head' } },\n"
         "  { weight = 1,\n"
@@ -3012,7 +3018,7 @@ START_TEST (test_lua_runtime_uses_optional_ui_host_services)
     }
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_KEY);
-    snapshot->data.editor_key.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_key.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_key.key.name = g_strdup ("F11");
     snapshot->data.editor_key.key.code = 11;
     mctest_assert_true (mc_runtime_event_publish (snapshot, &error));
@@ -3074,7 +3080,7 @@ START_TEST (test_lua_runtime_exposes_object_api_through_opaque_handles)
     ck_assert_int_eq ((int) object_viewer_offset, 17);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_PANEL_CHDIR);
-    snapshot->data.panel_chdir.panel = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 99, 1 };
+    snapshot->data.panel_chdir.panel = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 99, 1 };
     snapshot->data.panel_chdir.old_path = g_strdup ("/old");
     snapshot->data.panel_chdir.new_path = g_strdup ("/new");
     snapshot->data.panel_chdir.cause = g_strdup ("user");
@@ -3082,7 +3088,7 @@ START_TEST (test_lua_runtime_exposes_object_api_through_opaque_handles)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_PANEL_FILE_OPEN);
-    snapshot->data.panel_file_open.panel = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 1, 1 };
+    snapshot->data.panel_file_open.panel = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 1, 1 };
     snapshot->data.panel_file_open.path = g_strdup ("/panel/file");
     snapshot->data.panel_file_open.open_mode = g_strdup ("view");
     mctest_assert_true (mc_runtime_event_publish (snapshot, &error));
@@ -3123,7 +3129,7 @@ START_TEST (test_lua_runtime_registers_editor_macros)
     }
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_KEY);
-    snapshot->data.editor_key.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_key.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_key.key.name = g_strdup ("F11");
     snapshot->data.editor_key.key.code = 11;
     mctest_assert_true (mc_runtime_event_publish (snapshot, &error));
@@ -3131,7 +3137,7 @@ START_TEST (test_lua_runtime_registers_editor_macros)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_KEY);
-    snapshot->data.editor_key.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_key.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_key.key.name = g_strdup ("f10");
     snapshot->data.editor_key.key.code = 10;
     mctest_assert_true (mc_runtime_event_publish (snapshot, &error));
@@ -3158,7 +3164,7 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
     (void) g_remove (output_path);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_PANEL_CHDIR);
-    snapshot->data.panel_chdir.panel = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 1, 1 };
+    snapshot->data.panel_chdir.panel = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 1, 1 };
     snapshot->data.panel_chdir.old_path = g_strdup ("/old");
     snapshot->data.panel_chdir.new_path = g_strdup ("/new");
     snapshot->data.panel_chdir.cause = g_strdup ("user");
@@ -3167,7 +3173,7 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_PANEL_SELECTION_CHANGED);
     snapshot->data.panel_selection_changed.panel =
-        (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 1, 1 };
+        (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 1, 1 };
     snapshot->data.panel_selection_changed.current =
         file_snapshot_new ("chosen", "/new/chosen", FALSE);
     g_ptr_array_add (snapshot->data.panel_selection_changed.selected,
@@ -3177,14 +3183,14 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_PANEL_FILE_OPEN);
-    snapshot->data.panel_file_open.panel = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_PANEL, 1, 1 };
+    snapshot->data.panel_file_open.panel = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_PANEL, 1, 1 };
     snapshot->data.panel_file_open.path = g_strdup ("/new/file");
     snapshot->data.panel_file_open.open_mode = g_strdup ("view");
     mctest_assert_true (mc_runtime_event_publish (snapshot, &error));
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_OPEN);
-    snapshot->data.editor_open.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_open.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_open.path = g_strdup ("/new/edit");
     snapshot->data.editor_open.readonly = TRUE;
     snapshot->data.editor_open.line = 4;
@@ -3193,7 +3199,7 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_SAVE);
-    snapshot->data.editor_save.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_save.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_save.path = g_strdup ("/new/edit");
     snapshot->data.editor_save.previous_path = g_strdup ("/old/edit");
     snapshot->data.editor_save.save_as = TRUE;
@@ -3201,7 +3207,7 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_EDITOR_KEY);
-    snapshot->data.editor_key.editor = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
+    snapshot->data.editor_key.editor = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_EDITOR, 2, 1 };
     snapshot->data.editor_key.key.name = g_strdup ("Ctrl-S");
     snapshot->data.editor_key.key.code = 19;
     snapshot->data.editor_key.key.ctrl = TRUE;
@@ -3210,7 +3216,7 @@ START_TEST (test_lua_runtime_converts_all_domain_event_snapshots)
     mc_runtime_event_snapshot_free (snapshot);
 
     snapshot = mc_runtime_event_snapshot_new (MC_RUNTIME_EVENT_VIEWER_OPEN);
-    snapshot->data.viewer_open.viewer = (mc_runtime_handle_t) { MC_RUNTIME_HANDLE_VIEWER, 3, 1 };
+    snapshot->data.viewer_open.viewer = (mc_runtime_handle_t){ MC_RUNTIME_HANDLE_VIEWER, 3, 1 };
     snapshot->data.viewer_open.path = g_strdup ("/new/view");
     snapshot->data.viewer_open.source_kind = g_strdup ("file");
     snapshot->data.viewer_open.start_line = 7;

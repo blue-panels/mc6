@@ -275,7 +275,7 @@ START_TEST (test_runtime_edit_is_atomic_and_revision_checked)
     for (const char *text = "abcdef"; *text != '\0'; text++)
         edit_insert (test_edit, *text);
     revision = test_edit->runtime_revision;
-    edit_spec = (mc_runtime_editor_edit_t) {
+    edit_spec = (mc_runtime_editor_edit_t){
         .revision = revision,
         .changes = changes,
         .changes_count = G_N_ELEMENTS (changes),

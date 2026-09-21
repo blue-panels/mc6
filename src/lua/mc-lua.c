@@ -6096,12 +6096,14 @@ mc_lua_screen_dispatch (mc_runtime_plugin_context_t *context, guint64 screen_id,
  * a cell is width = n columns or weight = n and holds one control: label, status, text,
  * separator, input, checkbox, or a table with columns and rows(first, count).  help =
  * {file, node}; the callbacks are on_key, on_enter, on_action, on_check, on_row, on_resize,
- * on_close.  screen:run() shows it and returns when it is closed. */
+ * on_close.  palette = "viewer" gives the whole screen the viewer skin colors; the default is
+ * the dialog palette.  screen:run() shows it and returns when it is closed. */
 static int
 mc_lua_ui_screen (lua_State *lua)
 {
     mc_lua_package_t *package = mc_lua_package_from_state (lua);
     mc_lua_screen_t *screen;
+    char *palette;
     guint64 *key;
     gboolean ok;
 
@@ -6122,6 +6124,18 @@ mc_lua_ui_screen (lua_State *lua)
     screen->spec.title = mc_lua_dup_table_string (lua, 1, "title");
     screen->spec.status = mc_lua_dup_table_string (lua, 1, "status");
     screen->spec.focus = mc_lua_dup_table_string (lua, 1, "focus");
+    palette = mc_lua_dup_table_string (lua, 1, "palette");
+    if (palette == NULL || strcmp (palette, "dialog") == 0)
+        screen->spec.palette = MC_RUNTIME_SCREEN_PALETTE_DIALOG;
+    else if (strcmp (palette, "viewer") == 0)
+        screen->spec.palette = MC_RUNTIME_SCREEN_PALETTE_VIEWER;
+    else
+    {
+        g_free (palette);
+        mc_lua_screen_release (screen);
+        return mc_lua_return_error (lua, "invalid_screen");
+    }
+    g_free (palette);
     lua_getfield (lua, 1, "help");
     if (lua_istable (lua, -1))
     {
@@ -7898,6 +7912,7 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
     mc_lua_runtime_t *runtime = mc_lua_runtime_current;
     mc_lua_package_t *package = NULL;
     mc_lua_file_handler_t *handler = NULL;
+    const mc_runtime_handle_t *target_viewer = NULL;
     lua_State *lua;
     guint i, j;
 
@@ -7946,10 +7961,14 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
             *error = "operation_kind_mismatch";
         return MC_RUNTIME_FILE_OPERATION_RESULT_FAILED;
     }
+    if (request->struct_size >= G_STRUCT_OFFSET (mc_runtime_file_operation_request_t, target_viewer)
+                + sizeof (request->target_viewer)
+        && mc_lua_handle_is_valid (&request->target_viewer))
+        target_viewer = &request->target_viewer;
 
     lua = package->lua;
     lua_rawgeti (lua, LUA_REGISTRYINDEX, handler->handler_ref);
-    lua_createtable (lua, 0, 5);
+    lua_createtable (lua, 0, 6);
 #define MC_LUA_REQUEST_STRING(field_)                                                              \
     do                                                                                             \
     {                                                                                              \
@@ -7967,6 +7986,8 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
     MC_LUA_REQUEST_STRING (mime_type);
     MC_LUA_REQUEST_STRING (magic_group);
 #undef MC_LUA_REQUEST_STRING
+    lua_pushboolean (lua, target_viewer != NULL);
+    lua_setfield (lua, -2, "embedded");
     package->callback_depth++;
     if (lua_pcall (lua, 1, 3, 0) != LUA_OK)
     {
@@ -7983,7 +8004,6 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
     if (lua_istable (lua, -3))
     {
         mc_lua_viewer_controller_t *controller;
-        const mc_runtime_handle_t *target_viewer = NULL;
         gboolean handled;
         const char *transfer_error = NULL;
 
@@ -7993,11 +8013,6 @@ mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, cons
         lua_getfield (lua, -3, "controller");
         controller =
             (mc_lua_viewer_controller_t *) luaL_testudata (lua, -1, MC_LUA_VIEWER_CONTROLLER_MT);
-        if (request->struct_size
-                >= G_STRUCT_OFFSET (mc_runtime_file_operation_request_t, target_viewer)
-                    + sizeof (request->target_viewer)
-            && mc_lua_handle_is_valid (&request->target_viewer))
-            target_viewer = &request->target_viewer;
         if (handled && controller != NULL
             && mc_lua_viewer_controller_transfer (package, controller, -1, target_viewer,
                                                   &transfer_error))

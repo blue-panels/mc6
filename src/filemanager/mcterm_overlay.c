@@ -140,7 +140,7 @@ mcterm_overlay_rect (const WRect *mwr, WRect *r)
     int height = mwr->lines - (menubar_visible ? 1 : 0) - (mc_global.keybar_visible ? 1 : 0)
         - (mcterm_overlay_owns_bottom_row () ? 1 : 0);
 
-    *r = (WRect) { start_y, mwr->x, MAX (height, 1), mwr->cols };
+    *r = (WRect){ start_y, mwr->x, MAX (height, 1), mwr->cols };
 }
 
 /* --------------------------------------------------------------------------------------------- */

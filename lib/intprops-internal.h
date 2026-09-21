@@ -190,25 +190,25 @@
 #if 201112 <= __STDC_VERSION__ && !_GL__GENERIC_BOGUS
 #define _GL_INT_OP_WRAPV(a, b, r, op, overflow)                                                    \
     (_Generic (*(r),                                                                               \
-         signed char: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, signed char,           \
-                                       SCHAR_MIN, SCHAR_MAX),                                      \
-         unsigned char: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, unsigned char, 0,    \
-                                         UCHAR_MAX),                                               \
-         short int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, short int, SHRT_MIN,     \
-                                     SHRT_MAX),                                                    \
-         unsigned short int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int,                 \
-                                              unsigned short int, 0, USHRT_MAX),                   \
-         int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, int, INT_MIN, INT_MAX),        \
-         unsigned int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, unsigned int, 0,      \
-                                        UINT_MAX),                                                 \
-         long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, long int, LONG_MIN,  \
-                                    LONG_MAX),                                                     \
-         unsigned long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int,             \
-                                             unsigned long int, 0, ULONG_MAX),                     \
-         long long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int,            \
-                                         long long int, LLONG_MIN, LLONG_MAX),                     \
-         unsigned long long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int,   \
-                                                  unsigned long long int, 0, ULLONG_MAX)))
+        signed char: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, signed char, SCHAR_MIN, \
+                                      SCHAR_MAX),                                                  \
+        unsigned char: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, unsigned char, 0,     \
+                                        UCHAR_MAX),                                                \
+        short int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, short int, SHRT_MIN,      \
+                                    SHRT_MAX),                                                     \
+        unsigned short int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int,                  \
+                                             unsigned short int, 0, USHRT_MAX),                    \
+        int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, int, INT_MIN, INT_MAX),         \
+        unsigned int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, unsigned int, 0,       \
+                                       UINT_MAX),                                                  \
+        long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, long int, LONG_MIN,   \
+                                   LONG_MAX),                                                      \
+        unsigned long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int,              \
+                                            unsigned long int, 0, ULONG_MAX),                      \
+        long long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int,             \
+                                        long long int, LLONG_MIN, LLONG_MAX),                      \
+        unsigned long long int: _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int,    \
+                                                 unsigned long long int, 0, ULLONG_MAX)))
 #else
 /* Store the low-order bits of A <op> B into *R, where OP specifies
    the operation and OVERFLOW the overflow predicate.  If *R is

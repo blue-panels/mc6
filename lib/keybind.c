@@ -40,13 +40,25 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#define ADD_KEYMAP_NAME(name)                         { #name, CK_##name, NULL, KEYBIND_ACTION_NONE }
-#define ADD_KEYMAP_NAME_DESC(name, desc)              { #name, CK_##name, desc, KEYBIND_ACTION_NONE }
-#define ADD_KEYMAP_NAME_FLAGS(name, flags)            { #name, CK_##name, NULL, flags }
-#define ADD_KEYMAP_NAME_DESC_FLAGS(name, desc, flags) { #name, CK_##name, desc, flags }
+#define ADD_KEYMAP_NAME(name)                                                                      \
+    {                                                                                              \
+        #name, CK_##name, NULL, KEYBIND_ACTION_NONE                                                \
+    }
+#define ADD_KEYMAP_NAME_DESC(name, desc)                                                           \
+    {                                                                                              \
+        #name, CK_##name, desc, KEYBIND_ACTION_NONE                                                \
+    }
+#define ADD_KEYMAP_NAME_FLAGS(name, flags)                                                         \
+    {                                                                                              \
+        #name, CK_##name, NULL, flags                                                              \
+    }
+#define ADD_KEYMAP_NAME_DESC_FLAGS(name, desc, flags)                                              \
+    {                                                                                              \
+        #name, CK_##name, desc, flags                                                              \
+    }
 
-#define PANEL_FILTER_NAVIGATION                       KEYBIND_ACTION_KEEP_PANEL_FILTER
-#define PANEL_FILTER_SELECTION                        (KEYBIND_ACTION_KEEP_PANEL_FILTER | KEYBIND_ACTION_PANEL_SELECTION)
+#define PANEL_FILTER_NAVIGATION KEYBIND_ACTION_KEEP_PANEL_FILTER
+#define PANEL_FILTER_SELECTION  (KEYBIND_ACTION_KEEP_PANEL_FILTER | KEYBIND_ACTION_PANEL_SELECTION)
 
 /*** file scope type declarations ****************************************************************/
 

@@ -940,7 +940,7 @@ runtime_panel_provider_register (mc_runtime_plugin_context_t *context,
         provider->help_node = g_strdup (source->help->node);
     }
     provider->active = TRUE;
-    provider->plugin = (mc_panel_plugin_t) {
+    provider->plugin = (mc_panel_plugin_t){
         .api_version = MC_PANEL_PLUGIN_API_VERSION,
         .name = provider->id,
         .display_name = provider->title,

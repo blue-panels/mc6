@@ -296,7 +296,12 @@ local text_viewer = mc.viewer_source.define {
     id = "dbf-text",
     help = { file = "help.hlp", node = "[DBF Viewer]" },
     open = function(request)
-        return { text = request.text, title = request.title, raw_path = request.raw_path }
+        return {
+            text = request.text,
+            title = request.title,
+            raw_path = request.raw_path,
+            wrap = request.wrap,
+        }
     end,
     prepare = function(session)
         return {
@@ -305,6 +310,7 @@ local text_viewer = mc.viewer_source.define {
             raw_path = session.raw_path,
             initial_display = "text",
             auto_scroll = "top",
+            wrap = session.wrap,
         }
     end,
     close = function() end,
@@ -420,6 +426,19 @@ local function status_text(session)
     return text .. ", " .. encoding_of(session) .. (session.deleted and "" or ", deleted hidden")
 end
 
+-- Keep deleted rows red without replacing the background of the active
+-- viewer skin.
+local function deleted_color()
+    if mc.tty == nil or mc.tty.info == nil then
+        return "red"
+    end
+    local info = mc.tty.info("Viewer")
+    if info == nil or info.bg == nil then
+        return "red"
+    end
+    return "red;" .. info.bg
+end
+
 -- Rows first..first+count-1 (from 0) as cells: the record number, then the
 -- fields; a deleted record is drawn in red.
 local function screen_rows(session, first, count)
@@ -437,7 +456,7 @@ local function screen_rows(session, first, count)
         end
         if record.deleted then
             for i, value in ipairs(cells) do
-                cells[i] = { text = value, color = "red" }
+                cells[i] = { text = value, color = session.deleted_color }
             end
         end
         rows[#rows + 1] = cells
@@ -471,6 +490,51 @@ local function screen_columns(info)
         }
     end
     return columns
+end
+
+-- A passive Quick View cannot own a screen.  Give its embedded viewer a
+-- compact textual table instead; the full interactive table remains the F3
+-- and Enter experience.
+local function preview_text(info, display_name)
+    local session = {
+        info = info,
+        display_name = display_name,
+        encoding = "auto",
+        deleted = true,
+    }
+    local columns = screen_columns(info)
+    local function line(cells)
+        local parts = {}
+        for i, column in ipairs(columns) do
+            parts[i] = pad(cells[i] or "", column.min_width, column.align == "right")
+        end
+        return table.concat(parts, " ")
+    end
+
+    local out = { status_text(session) }
+    local headings = {}
+    for i, column in ipairs(columns) do
+        headings[i] = column.title
+    end
+    out[#out + 1] = line(headings)
+    for row = 0, math.min(info.record_count, PAGE_SIZE) - 1 do
+        local record = read_record(session, row + 1)
+        if record == nil then
+            break
+        end
+        local cells = { record.deleted and "*" or "", tostring(record.number) }
+        for _, value in ipairs(record.values) do
+            cells[#cells + 1] = value
+        end
+        out[#out + 1] = line(cells)
+    end
+    if info.record_count > PAGE_SIZE then
+        out[#out + 1] = string.format("... %d more records", info.record_count - PAGE_SIZE)
+    end
+    if session.file ~= nil then
+        session.file:close()
+    end
+    return table.concat(out, "\n") .. "\n"
 end
 
 local function show_card(session, row)
@@ -542,10 +606,12 @@ local function open_screen(info, display_name)
         encoding = "auto",
         deleted = true,
         live = nil,
+        deleted_color = deleted_color(),
     }
 
     local screen = mc.ui.screen {
         title = display_name,
+        palette = "viewer",
         status = status_text(session),
         help = { file = "help.hlp", node = "[DBF Viewer]" },
         layout = {
@@ -620,6 +686,18 @@ local function view_file(request)
     if info == nil then
         mc.log.info(request.display_name .. ": " .. err)
         return nil, "not_supported"
+    end
+    if request.embedded then
+        local controller, create_err = text_viewer:create {
+            text = preview_text(info, request.display_name),
+            title = request.display_name,
+            raw_path = request.local_path,
+            wrap = false,
+        }
+        if controller == nil then
+            return nil, create_err
+        end
+        return { handled = true, controller = controller }
     end
     local ok, run_err = open_screen(info, request.display_name)
     if not ok then

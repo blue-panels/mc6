@@ -55,6 +55,12 @@ typedef enum
 
 typedef struct mc_runtime_screen_table mc_runtime_screen_table_t;
 
+typedef enum
+{
+    MC_RUNTIME_SCREEN_PALETTE_DIALOG = 0,
+    MC_RUNTIME_SCREEN_PALETTE_VIEWER
+} mc_runtime_screen_palette_t;
+
 typedef struct
 {
     const char *id;
@@ -596,6 +602,7 @@ typedef struct
     guint keys_count;
     /* The control focused first; NULL for the first focusable one. */
     const char *focus;
+    mc_runtime_screen_palette_t palette;
 } mc_runtime_screen_t;
 
 typedef enum

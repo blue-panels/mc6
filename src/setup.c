@@ -521,7 +521,7 @@ load_config (void)
             mc_config_get_string (mc_global.main_config, CONFIG_APP_SECTION,
                                   str_options[i].opt_name, str_options[i].opt_defval);
 
-    // Overwrite some options
+        // Overwrite some options
 #ifdef USE_INTERNAL_EDIT
     if (edit_options.word_wrap_line_length <= 0)
         edit_options.word_wrap_line_length = DEFAULT_WRAP_LINE_LENGTH;

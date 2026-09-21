@@ -137,7 +137,7 @@ ui_layout (ui_t *ui)
         }
         else
         {
-            ui->box[ui->zoom - 1] = (WRect) { y + 1, d->x, rows, cols };
+            ui->box[ui->zoom - 1] = (WRect){ y + 1, d->x, rows, cols };
             widget_set_size (head, y + 2, d->x + 1, 1, cols - 2);
             widget_set_size (body, y + 3, d->x + 1, MAX (rows - 3, 1), cols - 1);
         }
@@ -199,13 +199,13 @@ ui_layout (ui_t *ui)
     widget_set_visibility (WIDGET (ui->tree), ui->grid == NULL);
     widget_set_size (WIDGET (ui->title), y, d->x, 1, cols);
     y++;
-    ui->box[0] = (WRect) { y, d->x, tree_lines + 2, tree_cols };
+    ui->box[0] = (WRect){ y, d->x, tree_lines + 2, tree_cols };
     widget_set_size (WIDGET (ui->tree_head), y + 1, d->x + 1, 1, tree_cols - 2);
     /* the table is one column wider than the frame's inside: its scrollbar sits on the frame */
     widget_set_size (WIDGET (ui->tree), y + 2, d->x + 1, MAX (tree_lines - 1, 1), tree_cols - 1);
     if (side && def_lines > 0)
     {
-        ui->box[1] = (WRect) { y, def_x, def_lines + 2, def_cols };
+        ui->box[1] = (WRect){ y, def_x, def_lines + 2, def_cols };
         widget_set_size (WIDGET (ui->def_head), y + 1, def_x + 1, 1, def_cols - 2);
         widget_set_size (WIDGET (ui->def), y + 2, def_x + 1, MAX (def_lines - 1, 1), def_cols - 1);
     }
@@ -227,7 +227,7 @@ ui_layout (ui_t *ui)
     widget_set_visibility (WIDGET (ui->def), def_lines > 0);
     if (!side && def_lines > 0)
     {
-        ui->box[1] = (WRect) { y, d->x, def_lines + 2, cols };
+        ui->box[1] = (WRect){ y, d->x, def_lines + 2, cols };
         widget_set_size (WIDGET (ui->def_head), y + 1, d->x + 1, 1, cols - 2);
         widget_set_size (WIDGET (ui->def), y + 2, d->x + 1, MAX (def_lines - 1, 1), cols - 1);
         y += def_lines + 2;

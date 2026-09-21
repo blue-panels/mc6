@@ -228,7 +228,7 @@ preview_line_new (int y, int x, int cols)
     WPreviewLine *pl;
 
     pl = g_new0 (WPreviewLine, 1);
-    widget_init (WIDGET (pl), &(WRect) { y, x, 1, cols }, preview_line_callback, NULL);
+    widget_init (WIDGET (pl), &(WRect){ y, x, 1, cols }, preview_line_callback, NULL);
     pl->match_start = -1;
     return pl;
 }
