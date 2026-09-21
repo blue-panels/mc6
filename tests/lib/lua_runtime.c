@@ -754,20 +754,29 @@ create_settings_script (void)
     char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
     char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
     char *mark_path = g_build_filename (root, "shown.txt", (char *) NULL);
+    char *help_path = g_build_filename (root, "help.hlp", (char *) NULL);
     char *script;
 
     ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
     write_file (ini_path,
                 "[Lua]\nid=with-settings\napi_version=1\nname=With settings\nentry=init.lua\n"
                 "provides=file-handler\n");
+    write_file (help_path, "[Probe]\n\nThe settings of the probe.\n");
     script = g_strdup_printf ("assert(mc.settings(function()\n"
                               "  local f = assert(io.open('%s', 'a'))\n"
                               "  f:write('shown\\n')\n"
                               "  f:close()\n"
+                              "  mc.ui.dialog {\n"
+                              "    title = 'Settings probe',\n"
+                              "    help = { file = 'help.hlp', node = '[Probe]' },\n"
+                              "    controls = {{ id = 'ok', type = 'button', label = '&OK',\n"
+                              "                  default = true }},\n"
+                              "  }\n"
                               "end))\n",
                               mark_path);
     write_file (entry_path, script);
     g_free (script);
+    g_free (help_path);
     g_free (mark_path);
     g_free (entry_path);
     g_free (ini_path);
@@ -1371,6 +1380,21 @@ test_ui_dialog (const mc_runtime_dialog_t *dialog, mc_runtime_dialog_result_t *r
 
     (void) dialog_error;
     ck_assert_ptr_nonnull (dialog);
+
+    /* the dialog a package opens for its settings carries what F1 shows */
+    if (g_strcmp0 (dialog->title, "Settings probe") == 0)
+    {
+        char *expected =
+            g_build_filename (user_mc_scripts_dir, "with-settings", "help.hlp", (char *) NULL);
+
+        ck_assert_str_eq (dialog->help_node, "[Probe]");
+        ck_assert_str_eq (dialog->help_file, expected);
+        g_free (expected);
+        result->button_id = g_strdup ("ok");
+        ui_dialog_count++;
+        return TRUE;
+    }
+
     ck_assert_str_eq (dialog->title, "Base64 tools");
     ck_assert_int_eq ((int) dialog->controls_count, 5);
     ck_assert_int_eq ((int) dialog->controls[0].type, (int) MC_RUNTIME_DIALOG_LABEL);

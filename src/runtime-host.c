@@ -2302,8 +2302,8 @@ runtime_host_ui_dialog (const mc_runtime_dialog_t *dialog, mc_runtime_dialog_res
     rect.cols = dialog->has_width ? (int) dialog->width : 0;
     qdlg.rect = rect;
     qdlg.title = dialog->title;
-    qdlg.help = NULL;
-    qdlg.help_file = NULL;
+    qdlg.help = dialog->help_node;
+    qdlg.help_file = dialog->help_file;
     qdlg.widgets = (quick_widget_t *) builder.widgets->data;
     qdlg.callback = runtime_host_dialog_callback;
     qdlg.mouse_callback = NULL;

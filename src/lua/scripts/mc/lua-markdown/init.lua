@@ -30,6 +30,7 @@ settings.load()
 local viewer = mc.viewer_source.define {
     id = "markdown",
     resize = "rebuild",
+    help = { file = "help.hlp", node = "[Markdown Viewer]" },
     open = function(request)
         -- one record per width the document was rendered at
         request.cache = {}

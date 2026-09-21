@@ -43,7 +43,8 @@ dist_lua_dbf_DATA = \
 lua_markdowndir = $(lua_scripts_dir)/mc/lua-markdown
 dist_lua_markdown_DATA = \
 	scripts/mc/lua-markdown/lua.ini \
-	scripts/mc/lua-markdown/init.lua
+	scripts/mc/lua-markdown/init.lua \
+	scripts/mc/lua-markdown/help.hlp
 lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
 dist_lua_markdown_lib_DATA = \
 	scripts/mc/lua-markdown/lib/config.lua \

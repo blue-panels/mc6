@@ -449,7 +449,7 @@
       "capability": "ui",
       "mutation": "yes",
       "errors": [],
-      "summary": "Show a declarative native modal dialog."
+      "summary": "Show a declarative native modal dialog.  spec.help = {file, node} is what F1 opens over it; a relative file is taken from the script's directory, and a spec without a node has no help."
     },
     {
       "signature": "mc.ui.indicator(spec) -> boolean|nil, error?",

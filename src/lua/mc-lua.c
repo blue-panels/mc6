@@ -6358,8 +6358,10 @@ mc_lua_settings (lua_State *lua)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes @summary Show a
- * declarative native modal dialog. */
+/** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes
+ * @summary Show a declarative native modal dialog.  spec.help = {file, node} is what F1 opens over
+ * it; a relative file is taken from the script's directory, and a spec without a node has no
+ * help. */
 static int
 mc_lua_ui_dialog (lua_State *lua)
 {
@@ -6381,6 +6383,13 @@ mc_lua_ui_dialog (lua_State *lua)
         || !mc_lua_dialog_uint (lua, 1, "width", &spec.dialog.width, &spec.dialog.has_width)
         || !mc_lua_dialog_uint (lua, 1, "height", &spec.dialog.height, &spec.dialog.has_height))
         goto invalid;
+    lua_getfield (lua, 1, "help");
+    if (lua_istable (lua, -1))
+    {
+        spec.dialog.help_file = mc_lua_dup_help_file (lua, -1, package);
+        spec.dialog.help_node = mc_lua_dup_table_string (lua, -1, "node");
+    }
+    lua_pop (lua, 1);
     ids = g_hash_table_new (g_str_hash, g_str_equal);
     lua_getfield (lua, 1, "controls");
     if (!mc_lua_dialog_parse_controls (lua, lua_gettop (lua), 1, &spec, ids,
@@ -6407,6 +6416,8 @@ mc_lua_ui_dialog (lua_State *lua)
         mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                      spec.dialog.controls_count);
         g_free ((char *) spec.dialog.title);
+        g_free ((char *) spec.dialog.help_file);
+        g_free ((char *) spec.dialog.help_node);
         return mc_lua_return_error (lua, error != NULL ? error : "not_ready");
     }
     lua_newtable (lua);
@@ -6426,17 +6437,23 @@ mc_lua_ui_dialog (lua_State *lua)
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return 1;
 not_ready:
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return mc_lua_not_ready (lua);
 invalid:
     mc_lua_log (package, "error", "invalid Lua dialog specification");
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return mc_lua_return_error (lua, "invalid_dialog");
 }
 

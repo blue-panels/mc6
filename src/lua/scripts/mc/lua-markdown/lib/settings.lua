@@ -255,6 +255,7 @@ function M.dialog()
     local result, err = mc.ui.dialog {
         title = "Markdown viewer settings",
         width = 64,
+        help = { file = "help.hlp", node = "[Markdown viewer settings]" },
         controls = controls,
     }
     if result == nil then
