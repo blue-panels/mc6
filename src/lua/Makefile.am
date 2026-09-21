@@ -46,8 +46,33 @@ dist_lua_markdown_DATA = \
 	scripts/mc/lua-markdown/init.lua
 lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
 dist_lua_markdown_lib_DATA = \
-	scripts/mc/lua-markdown/lib/render.lua \
+	scripts/mc/lua-markdown/lib/config.lua \
+	scripts/mc/lua-markdown/lib/text.lua \
+	scripts/mc/lua-markdown/lib/sgr.lua \
+	scripts/mc/lua-markdown/lib/spans.lua \
+	scripts/mc/lua-markdown/lib/inline.lua \
+	scripts/mc/lua-markdown/lib/document.lua \
+	scripts/mc/lua-markdown/lib/measure.lua \
 	scripts/mc/lua-markdown/lib/mermaid.lua
+lua_markdown_formuladir = $(lua_scripts_dir)/mc/lua-markdown/lib/formula
+dist_lua_markdown_formula_DATA = \
+	scripts/mc/lua-markdown/lib/formula/latex.lua \
+	scripts/mc/lua-markdown/lib/formula/env.lua
+lua_markdown_blockdir = $(lua_scripts_dir)/mc/lua-markdown/lib/block
+dist_lua_markdown_block_DATA = \
+	scripts/mc/lua-markdown/lib/block/scanner.lua \
+	scripts/mc/lua-markdown/lib/block/definitions.lua \
+	scripts/mc/lua-markdown/lib/block/code.lua \
+	scripts/mc/lua-markdown/lib/block/table.lua \
+	scripts/mc/lua-markdown/lib/block/flow.lua
+lua_markdown_mermaiddir = $(lua_scripts_dir)/mc/lua-markdown/lib/mermaid
+dist_lua_markdown_mermaid_DATA = \
+	scripts/mc/lua-markdown/lib/mermaid/glyphs.lua \
+	scripts/mc/lua-markdown/lib/mermaid/canvas.lua \
+	scripts/mc/lua-markdown/lib/mermaid/flowchart.lua \
+	scripts/mc/lua-markdown/lib/mermaid/class.lua \
+	scripts/mc/lua-markdown/lib/mermaid/pie.lua \
+	scripts/mc/lua-markdown/lib/mermaid/sequence.lua
 
 lua_pdfdir = $(lua_scripts_dir)/mc/lua-pdf
 dist_lua_pdf_DATA = \
