@@ -41,6 +41,11 @@ M.CODE_MIN = 30
 -- wrapped, before the first screen of it is rendered
 M.UNWRAPPED_SCAN = 256 * 1024
 
+-- A diagram is laid out up to this width whatever the screen has, and a
+-- block this wide is scrolled sideways rather than broken.  Squeezing a
+-- drawing into a narrow screen costs more than the scrolling does.
+M.DIAGRAM_WIDTH = 160
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -1278,7 +1283,8 @@ local function mermaid_lines(code, language, out, width_limit)
     if language == nil or language:lower() ~= "mermaid" then
         return false
     end
-    local drawn = mermaid.render(code, width_limit ~= nil and width_limit - 4 or nil)
+    local room = math.max(width_limit or M.DIAGRAM_WIDTH, M.DIAGRAM_WIDTH) - #CODE_INDENT
+    local drawn = mermaid.render(code, room)
 
     if drawn == nil then
         return false

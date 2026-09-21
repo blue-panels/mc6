@@ -16,11 +16,6 @@ local MAX_RENDERED = 60 * 1024 * 1024
 
 local md = require("render")
 
--- A diagram or a code block wider than the screen reads better scrolled
--- sideways than broken in two, up to this width; past it the viewer keeps
--- wrapping, because scrolling that far is worse than a break.
-local MAX_UNWRAPPED = 160
-
 ------------------------------------------------------------------------
 -- F3 on a .md file.
 
@@ -102,8 +97,9 @@ local viewer = mc.viewer_source.define {
                 }
             end
         end
-        -- What is wider than the screen but still narrow enough to reach by
-        -- scrolling is left whole; the rest of the text is wrapped already.
+        -- What is wider than the screen but no wider than a diagram is laid
+        -- out is left whole and scrolled sideways; the prose is wrapped to
+        -- the screen already.
         -- The widest block is looked up before the first screen is rendered,
         -- because a diagram halfway down the file counts as well.
         if session.unwrapped[width] == nil then
@@ -111,7 +107,7 @@ local viewer = mc.viewer_source.define {
         end
         local widest = math.max(session.unwrapped[width], opts.max_line or 0)
         local wrap = nil
-        if widest > viewport.columns and widest <= MAX_UNWRAPPED then
+        if widest > viewport.columns and widest <= md.DIAGRAM_WIDTH then
             wrap = false
         end
         return {
