@@ -27,6 +27,8 @@ local viewer = mc.viewer_source.define {
     resize = "rebuild",
     open = function(request)
         request.rendered = {}
+        request.widest = {}
+        request.unwrapped = {}
         return request
     end,
     prepare = function(session, _, viewport)
@@ -39,14 +41,17 @@ local viewer = mc.viewer_source.define {
             }
         end
         local width = math.min(viewport.columns, md.MAX_WIDTH)
+        local opts = { width = width }
         local source
         if session.rendered[width] ~= nil then
+            opts.max_line = session.widest[width]
             source = mc.source.bytes(session.rendered[width])
         elseif mc.source.generator == nil then
-            session.rendered[width] = md.render(session.text, { width = width })
+            session.rendered[width] = md.render(session.text, opts)
+            session.widest[width] = opts.max_line
             source = mc.source.bytes(session.rendered[width])
         else
-            local next_block = md.blocks(session.text, { width = width })
+            local next_block = md.blocks(session.text, opts)
             local pieces = {}
             local lines = 0
             local done = false
@@ -63,6 +68,7 @@ local viewer = mc.viewer_source.define {
             local initial = table.concat(pieces)
             if done then
                 session.rendered[width] = initial
+                session.widest[width] = opts.max_line
                 source = mc.source.bytes(initial)
             else
                 local produced = #initial
@@ -75,6 +81,7 @@ local viewer = mc.viewer_source.define {
                         local chunk = next_block()
                         if chunk == nil then
                             session.rendered[width] = table.concat(pieces)
+                            session.widest[width] = opts.max_line
                             pieces = nil
                             return nil
                         end
@@ -90,12 +97,26 @@ local viewer = mc.viewer_source.define {
                 }
             end
         end
+        -- What is wider than the screen but no wider than a diagram is laid
+        -- out is left whole and scrolled sideways; the prose is wrapped to
+        -- the screen already.
+        -- The widest block is looked up before the first screen is rendered,
+        -- because a diagram halfway down the file counts as well.
+        if session.unwrapped[width] == nil then
+            session.unwrapped[width] = md.unwrapped_width(session.text, width)
+        end
+        local widest = math.max(session.unwrapped[width], opts.max_line or 0)
+        local wrap = nil
+        if widest > viewport.columns and widest <= md.DIAGRAM_WIDTH then
+            wrap = false
+        end
         return {
             source = source,
             title = session.title,
             raw_path = session.raw_path,
             initial_display = "nroff",
             auto_scroll = "top",
+            wrap = wrap,
         }
     end,
     close = function() end,

@@ -16,6 +16,40 @@ M.MAX_WIDTH = 120    -- text is never flowed wider than this, whatever the scree
 -- first level keeps the heading color of the skin
 M.HEADING_COLORS = { [2] = "96", [3] = "92" }
 
+-- SGR background of a code block.  "auto" asks mc: a terminal of 256 colors
+-- or more gets a shade of the background the skin paints the viewer with, a
+-- poorer one keeps its background untouched.  A string such as "100" or
+-- "48;5;236" is used as it is, and nil or "" leaves the background alone.
+M.CODE_BG = "auto"
+
+-- how far the background of a code block is moved away from the one of the
+-- viewer, of 255 per channel
+M.CODE_BG_SHIFT = 24
+
+-- draw the corners of a code block, with the language of the fence in the
+-- top edge
+M.CODE_FRAME = true
+
+-- what the top edge says of a block whose language is not known: a fence
+-- that names none, or a block written with four columns of indent
+M.CODE_PLAIN = "text"
+
+-- the block is this share of its longest line wider than the code in it, so
+-- that a line does not end right at the frame
+M.CODE_AIR = 0.2
+
+-- the narrowest a code block gets, margins counted, however short the code
+M.CODE_MIN = 43
+
+-- how much of a document is looked through for blocks that cannot be
+-- wrapped, before the first screen of it is rendered
+M.UNWRAPPED_SCAN = 256 * 1024
+
+-- A diagram is laid out up to this width whatever the screen has, and a
+-- block this wide is scrolled sideways rather than broken.  Squeezing a
+-- drawing into a narrow screen costs more than the scrolling does.
+M.DIAGRAM_WIDTH = 160
+
 -- a space no line is broken at; written out as a plain space
 local NBSP = "\u{00A0}"
 
@@ -29,6 +63,10 @@ local WIDE = "\1"
 local SGR_ITALIC = "\27[3m"
 local SGR_ITALIC_OFF = "\27[23m"
 local SGR_COLOR_OFF = "\27[39m"
+local SGR_BG_OFF = "\27[49m"
+-- closes what a rule of the syntax engine opened; a plain reset would close
+-- the background of the code block too
+local SGR_RUN_OFF = "\27[22;23;24;27;39m"
 local LINK_END = "\27]8;;\27\\"
 
 -- The OSC 8 sequence that starts a link to url; bytes that could end the
@@ -50,6 +88,17 @@ local BOX_DONE = "\u{2611}"
 
 -- a tab in a code block moves to the next stop
 local TAB_WIDTH = 8
+
+-- a code block is indented this far, and the frame and the background keep
+-- a margin between their edge and the code
+local CODE_INDENT = "    "
+local CODE_MARGIN = 2
+
+-- the corners of a code block, each with the stub of an edge
+local FRAME_TL = "\u{250C}\u{2574}"
+local FRAME_TR = "\u{2576}\u{2510}"
+local FRAME_BL = "\u{2514}\u{2574}"
+local FRAME_BR = "\u{2576}\u{2518}"
 
 ------------------------------------------------------------------------
 -- Text helpers.  Lengths count characters, not bytes; a stray byte that is
@@ -1238,7 +1287,8 @@ local function mermaid_lines(code, language, out, width_limit)
     if language == nil or language:lower() ~= "mermaid" then
         return false
     end
-    local drawn = mermaid.render(code, width_limit ~= nil and width_limit - 4 or nil)
+    local room = math.max(width_limit or M.DIAGRAM_WIDTH, M.DIAGRAM_WIDTH) - #CODE_INDENT
+    local drawn = mermaid.render(code, room)
 
     if drawn == nil then
         return false
@@ -1247,6 +1297,193 @@ local function mermaid_lines(code, language, out, width_limit)
         out[#out + 1] = line == "" and "" or ("    " .. line)
     end
     return true
+end
+
+-- The columns a line takes on the screen, past the sequences in it.
+local function code_width(line)
+    return width((line:gsub("\27%[[%d;]*m", ""):gsub("\27%]8;;.-\27\\", "")))
+end
+
+-- The colors a skin names, as the terminal draws them.  A name it does not
+-- know, and the "default" of the terminal itself, are taken for a dark
+-- background: that is what a terminal running mc almost always has.
+local SKIN_RGB = {
+    black = { 0, 0, 0 }, red = { 128, 0, 0 }, green = { 0, 128, 0 },
+    brown = { 128, 128, 0 }, blue = { 0, 0, 128 }, magenta = { 128, 0, 128 },
+    cyan = { 0, 128, 128 }, lightgray = { 192, 192, 192 }, gray = { 128, 128, 128 },
+    brightred = { 255, 0, 0 }, brightgreen = { 0, 255, 0 }, yellow = { 255, 255, 0 },
+    brightblue = { 0, 0, 255 }, brightmagenta = { 255, 0, 255 },
+    brightcyan = { 0, 255, 255 }, white = { 255, 255, 255 },
+}
+
+-- The steps of the 6x6x6 cube of a terminal of 256 colors.
+local CUBE_STEPS = { 0, 95, 135, 175, 215, 255 }
+
+-- What the skin means by a color name, as red, green and blue.
+local function skin_rgb(name)
+    if name == nil or name == "" or name == "default" then
+        return { 0, 0, 0 }
+    end
+    local hex = name:match("^#(%x%x%x%x%x%x)$")
+
+    if hex ~= nil then
+        return {
+            tonumber(hex:sub(1, 2), 16),
+            tonumber(hex:sub(3, 4), 16),
+            tonumber(hex:sub(5, 6), 16),
+        }
+    end
+    local index = tonumber(name:match("^color(%d+)$") or "")
+
+    if index ~= nil and index >= 232 and index <= 255 then
+        local gray = 8 + (index - 232) * 10
+
+        return { gray, gray, gray }
+    end
+    if index ~= nil and index >= 16 and index <= 231 then
+        local n = index - 16
+
+        return {
+            CUBE_STEPS[math.floor(n / 36) % 6 + 1],
+            CUBE_STEPS[math.floor(n / 6) % 6 + 1],
+            CUBE_STEPS[n % 6 + 1],
+        }
+    end
+    return SKIN_RGB[name] or { 0, 0, 0 }
+end
+
+-- The nearest color of a terminal of 256: the gray ramp for a gray, the cube
+-- for everything else.
+local function rgb_to_256(r, g, b)
+    if math.abs(r - g) < 10 and math.abs(g - b) < 10 then
+        local gray = math.floor((r + g + b) / 3)
+
+        if gray < 8 then
+            return 16
+        end
+        if gray > 238 then
+            return 231
+        end
+        return 232 + math.floor((gray - 8) / 10)
+    end
+    local function step(v)
+        local best, best_d = 0, 1e9
+
+        for i, s in ipairs(CUBE_STEPS) do
+            local d = math.abs(s - v)
+
+            if d < best_d then
+                best, best_d = i - 1, d
+            end
+        end
+        return best
+    end
+
+    return 16 + 36 * step(r) + 6 * step(g) + step(b)
+end
+
+-- The SGR background of a code block: a shade of the one the skin paints the
+-- viewer with, dark backgrounds lightened and light ones darkened.  A
+-- terminal of fewer than 256 colors keeps its background: the sixteen it has
+-- are too far apart for a shade.
+local function auto_bg()
+    if mc == nil or mc.tty == nil or mc.tty.info == nil then
+        return nil
+    end
+    local info = mc.tty.info("Viewer")
+
+    if info == nil or info.colors == nil or info.colors < 256 then
+        return nil
+    end
+    local rgb = skin_rgb(info.bg)
+    local shift = (rgb[1] + rgb[2] + rgb[3]) / 3 < 128 and M.CODE_BG_SHIFT or -M.CODE_BG_SHIFT
+    local out = {}
+
+    for i = 1, 3 do
+        out[i] = math.max(0, math.min(255, rgb[i] + shift))
+    end
+    if info.colors >= 1 << 24 then
+        return "48;2;" .. out[1] .. ";" .. out[2] .. ";" .. out[3]
+    end
+    return "48;5;" .. rgb_to_256(out[1], out[2], out[3])
+end
+
+-- The SGR background in force, nil when the block is drawn without one.
+local function code_bg()
+    if M.CODE_BG == "auto" then
+        return auto_bg()
+    end
+    if M.CODE_BG == nil or M.CODE_BG == "" then
+        return nil
+    end
+    return M.CODE_BG
+end
+
+-- The columns the block takes: the widest line and the air after it, never
+-- wider than the screen.
+local function code_box(lines, width_limit)
+    local box = 0
+
+    for _, line in ipairs(lines) do
+        local w = code_width(line)
+
+        if w > box then
+            box = w
+        end
+    end
+    box = math.max(box + math.floor(box * M.CODE_AIR), M.CODE_MIN - 2 * CODE_MARGIN)
+    if width_limit ~= nil then
+        box = math.min(box, math.max(width_limit - #CODE_INDENT - 2 * CODE_MARGIN, 1))
+    end
+    return box
+end
+
+-- One edge of the frame: the corners with their stubs, the language in the
+-- top one.  The edge is as wide as the lines between the corners, so that
+-- the background of the block is a rectangle.
+local function code_edge(left, right, label, box)
+    local text = label ~= nil and label ~= "" and (" " .. label) or ""
+    local fill = math.max(box + 2 * CODE_MARGIN - width(left) - width(right) - width(text), 0)
+
+    return left .. text .. (" "):rep(fill) .. right
+end
+
+-- The lines of a code block, padded to the widest one so that the background
+-- covers a rectangle.  Each line opens the background and closes it at its
+-- end, because the viewer may start reading at any line.
+local function emit_code(lines, out, width_limit, language)
+    if language == nil or language == "" then
+        language = M.CODE_PLAIN
+    end
+
+    local box = code_box(lines, width_limit)
+    local color = code_bg()
+    local bg = color ~= nil and ("\27[" .. color .. "m") or ""
+    local off = bg ~= "" and SGR_BG_OFF or ""
+
+    if M.CODE_FRAME and language ~= nil and language ~= "" then
+        -- a language longer than the code widens the block, so that both
+        -- edges and the lines between them keep the same width
+        local edge = width(FRAME_TL) + width(" " .. language) + CODE_MARGIN + width(FRAME_TR)
+
+        box = math.max(box, edge - 2 * CODE_MARGIN)
+    end
+    if M.CODE_FRAME then
+        out[#out + 1] = CODE_INDENT .. bg .. code_edge(FRAME_TL, FRAME_TR, language, box) .. off
+    end
+    for _, line in ipairs(lines) do
+        local fill = math.max(box - code_width(line), 0) + CODE_MARGIN
+
+        out[#out + 1] = CODE_INDENT
+            .. bg
+            .. (" "):rep(CODE_MARGIN)
+            .. line
+            .. (bg ~= "" and (" "):rep(fill) or "")
+            .. off
+    end
+    if M.CODE_FRAME then
+        out[#out + 1] = CODE_INDENT .. bg .. code_edge(FRAME_BL, FRAME_BR, nil, box) .. off
+    end
 end
 
 -- The lines of a code block, colored where the rules say so.  Each line
@@ -1258,15 +1495,17 @@ local function code_lines(code, language, out, width_limit)
     end
     local scan = scan_code(code, language)
     local colored = {}
+    local lines = {}
     local pos = 1
 
     if scan == nil then
         for line in (code .. "\n"):gmatch("(.-)\n") do
-            out[#out + 1] = "    " .. expand_tabs(line)
+            lines[#lines + 1] = expand_tabs(line)
         end
         if code:sub(-1) == "\n" then
-            out[#out] = nil
+            lines[#lines] = nil
         end
+        emit_code(lines, out, width_limit, language)
         return
     end
 
@@ -1276,7 +1515,7 @@ local function code_lines(code, language, out, width_limit)
 
         for piece, eol in (text .. "\0"):gmatch("([^\n]*)(\n?)") do
             if piece ~= "" then
-                colored[#colored + 1] = sgr ~= "" and (sgr .. piece:gsub("%z", "") .. "\27[0m")
+                colored[#colored + 1] = sgr ~= "" and (sgr .. piece:gsub("%z", "") .. SGR_RUN_OFF)
                     or piece:gsub("%z", "")
             end
             if eol == "\n" then
@@ -1290,11 +1529,12 @@ local function code_lines(code, language, out, width_limit)
     end
 
     for line in (table.concat(colored) .. "\n"):gmatch("(.-)\n") do
-        out[#out + 1] = "    " .. expand_tabs(line)
+        lines[#lines + 1] = expand_tabs(line)
     end
     if code:sub(-1) == "\n" then
-        out[#out] = nil
+        lines[#lines] = nil
     end
+    emit_code(lines, out, width_limit, language)
 end
 
 ------------------------------------------------------------------------
@@ -1926,6 +2166,28 @@ local function render_footnotes(width_limit, out)
     end
 end
 
+-- The widest line of a chunk, kept in the options: the caller tells the
+-- viewer from it whether the text has to be broken or can be scrolled
+-- sideways.  A line no longer than the screen in bytes cannot be wider than
+-- it in columns, which keeps the walk off most of the text.
+local function note_width(chunk, opts, width_limit)
+    if opts == nil then
+        return
+    end
+    local most = opts.max_line or 0
+
+    for line in chunk:gmatch("([^\n]*)\n") do
+        if #line > width_limit then
+            local w = code_width(line)
+
+            if w > most then
+                most = w
+            end
+        end
+    end
+    opts.max_line = most
+end
+
 local function render_document(text, opts, emit)
     local width_limit = opts and opts.width or M.DEFAULT_WIDTH
     local lines = collect_definitions(join_display_math(split_lines(text)))
@@ -1973,13 +2235,18 @@ local function render_document(text, opts, emit)
             out[#out + 1] = ""
             i = i + 1
         elseif prev_blank and not was_list and (line:match("^    ") or line:match("^\t")) then
+            local block = {}
+
             while i <= #lines and (lines[i]:match("^    ") or lines[i]:match("^\t") or is_blank(lines[i])) do
                 if is_blank(lines[i]) and not (lines[i + 1] and (lines[i + 1]:match("^    ") or lines[i + 1]:match("^\t"))) then
                     break
                 end
-                out[#out + 1] = expand_tabs(lines[i])
+                -- the four columns the block is written with are the ones it
+                -- is drawn with, so they are taken off and put back by emit_code
+                block[#block + 1] = expand_tabs(lines[i]):gsub("^    ", "", 1)
                 i = i + 1
             end
+            emit_code(block, out, width_limit)
         elseif math_block_of(line, width_limit) ~= nil then
             for _, l in ipairs(math_block_of(line, width_limit)) do
                 out[#out + 1] = l
@@ -2091,18 +2358,92 @@ local function render_document(text, opts, emit)
                 end
                 out = pending
                 emitted = true
+                note_width(chunk, opts, width_limit)
                 emit(chunk)
             end
         end
     end
     render_footnotes(width_limit, out)
     local tail = (table.concat(out, "\n"):gsub(NBSP, " ")) .. "\n"
+
+    note_width(tail, opts, width_limit)
     if emit == nil then
         return tail
     end
     if #out > 0 or not emitted then
         emit(tail)
     end
+end
+
+-- How wide the blocks that cannot be wrapped are: a fenced block, a diagram
+-- drawn in place of one, and an indented block of code.  The prose around
+-- them is flowed to the screen and never needs this.  Only the fences are
+-- rendered, and only those of the first M.UNWRAPPED_SCAN bytes, so that the
+-- walk stays cheap on a document the viewer renders block by block.
+function M.unwrapped_width(text, width_limit)
+    local lines = split_lines(#text > M.UNWRAPPED_SCAN and text:sub(1, M.UNWRAPPED_SCAN) or text)
+    local most = 0
+    local i = 1
+
+    local function widest(taken)
+        for _, line in ipairs(taken) do
+            local w = code_width(line)
+
+            if w > most then
+                most = w
+            end
+        end
+    end
+
+    local function measure(block, language)
+        local out = {}
+
+        emit_code(block, out, width_limit, language)
+        widest(out)
+    end
+
+    while i <= #lines do
+        local line = lines[i]
+        local fence = fence_of(line)
+
+        if fence ~= nil then
+            local fence_char = fence:sub(1, 1)
+            local language = trim(line:match("^ ? ? ?[`~]+(.*)$") or ""):match("^([%w+#._-]*)")
+            local code = {}
+
+            i = i + 1
+            while i <= #lines do
+                local close =
+                    lines[i]:match("^ ? ? ?(" .. (fence_char == "`" and "```+" or "~~~+") .. ")%s*$")
+
+                if close ~= nil and #close >= #fence then
+                    break
+                end
+                code[#code + 1] = lines[i]
+                i = i + 1
+            end
+            i = i + 1
+
+            local drawn = {}
+
+            if mermaid_lines(table.concat(code, "\n"), language, drawn, width_limit) then
+                widest(drawn)
+            else
+                measure(code, language)
+            end
+        elseif line:match("^    ") or line:match("^\t") then
+            local block = {}
+
+            while i <= #lines and (lines[i]:match("^    ") or lines[i]:match("^\t")) do
+                block[#block + 1] = expand_tabs(lines[i]):gsub("^    ", "", 1)
+                i = i + 1
+            end
+            measure(block, nil)
+        else
+            i = i + 1
+        end
+    end
+    return most
 end
 
 function M.render(text, opts)

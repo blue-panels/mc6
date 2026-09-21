@@ -371,6 +371,16 @@ test_viewer_controller_open (mc_runtime_plugin_context_t *context,
             mctest_assert_true (handled);
             ck_assert_int_eq (draft.initial_display, MC_RUNTIME_VIEWER_DISPLAY_NROFF);
             ck_assert_str_eq (draft.raw_path, markdown_fixture_path);
+            /* A document with a line wider than the 91 columns of the viewport
+               is scrolled sideways instead of being broken; one that fits is
+               left to the setting of the user. */
+            if (strstr (markdown_fixture_path, "sgr.md") != NULL)
+            {
+                ck_assert (draft.has_wrap);
+                ck_assert (!draft.wrap);
+            }
+            if (strstr (markdown_fixture_path, "task_list.md") != NULL)
+                ck_assert (!draft.has_wrap);
             rendered = g_string_new_len (draft.source->bytes, draft.source->bytes_length);
             if (draft.source->kind == MC_RUNTIME_VIEWER_SOURCE_GENERATOR)
             {
@@ -1823,6 +1833,19 @@ test_object_editor_replace_selection_v2 (const mc_runtime_handle_t *editor, guin
     return test_object_editor_replace_selection (editor, text, text_length, result, object_error);
 }
 
+/* A terminal of 256 colors over the black background of a dark skin. */
+static gboolean
+test_tty_info (const char *section, mc_runtime_tty_info_t *info, const char **object_error)
+{
+    (void) section;
+    (void) object_error;
+
+    info->colors = 256;
+    info->fg = "white";
+    info->bg = "black";
+    return TRUE;
+}
+
 static gboolean
 test_syntax_scan (const char *text, gsize text_length, const char *type, const char *filename,
                   mc_runtime_syntax_result_t *result, const char **object_error)
@@ -2161,6 +2184,7 @@ setup (void)
         .ui_text_width = test_ui_text_width,
         .syntax_scan = test_syntax_scan,
         .syntax_result_free = test_syntax_result_free,
+        .tty_info = test_tty_info,
         .panel_provider_register = test_panel_provider_register,
         .panel_provider_unregister = test_panel_provider_unregister,
         .viewer_controller_open = test_viewer_controller_open,

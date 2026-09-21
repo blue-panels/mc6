@@ -365,6 +365,11 @@ In the terminal display a prepared spec may set `top_row`: the row of the output
 viewer opens at, counted from 0.  It is what a source that writes a whole page at once
 uses to put a line of its own in view; `auto_scroll = "bottom"` ignores it.
 
+A prepared spec may also set `wrap`: `false` opens the viewer without wrapping, so a
+line wider than the screen is reached by scrolling sideways, `true` opens it with
+wrapping, and leaving the field out keeps whatever the user set.  A source that lays
+its own text out uses it for a table or a diagram it does not want broken in two.
+
 A viewer-source definition may take viewer keys of its own with `keys` (up to 32 key
 names, as in the keymap: `"gt"`, `"plus"`, `"alt-n"`) and the `on_key(session, params, key)`
 callback they go to.  Such a key reaches the source before the viewer looks it up in its

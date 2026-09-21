@@ -69,6 +69,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.source.pipeline(stages) -> Source` | Compose process sources into one pipeline. | `—` | no |
 | `mc.source.process(spec) -> Source` | Describe a process source using direct argv, an optional working directory, and stderr policy. | `—` | no |
 | `mc.syntax.scan(text, options?) -> table\|nil, error?` | Color text with the syntax rules of the editor.  options.type names the rule set the way the Syntax file does ("C Program"), options.filename picks it by name; without both, the first line of the text decides.  Returns { type = "C Program", colors = { { fg = "yellow", bg = nil, attrs = "bold" } }, runs = { { offset = 1, length = 6, color = 1 } } }, offsets counting bytes from one and color indexing colors. | `syntax` | no |
+| `mc.tty.info(section?) -> table\|nil, error?` | What the terminal shows and what the skin paints a section with.  The section is named the way the skin names it ("Viewer", "Editor"); the default is the core.  Returns { colors = 256, fg = "white", bg = "black" }, colors being 16, 256 or 16777216 for true color, and fg and bg the color names of the skin, nil when it names none. | `tty` | no |
 | `mc.ui.dialog(spec) -> DialogResult\|nil, error?` | Show a declarative native modal dialog. | `ui` | yes |
 | `mc.ui.indicator(spec) -> boolean\|nil, error?` | Set or replace a package-owned persistent UI indicator. | `ui` | yes |
 | `mc.ui.indicator_clear(id, area?) -> boolean\|nil, error?` | Remove a package-owned UI indicator. | `ui` | yes |

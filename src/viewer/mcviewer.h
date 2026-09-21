@@ -53,6 +53,9 @@ typedef struct
     char *help_node;
     gboolean initial_terminal;
     gboolean initial_nroff;
+    /* the source asks the viewer to open with wrapping on or off */
+    gboolean has_wrap;
+    gboolean wrap;
     char *raw_file;
     mcview_generator_t *generator;
 } mcview_source_spec_t;

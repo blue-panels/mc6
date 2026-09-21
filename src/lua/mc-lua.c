@@ -130,6 +130,9 @@
 #define MC_LUA_HOST_API_SYNTAX_SIZE                                                                \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, syntax_result_free)                                \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->syntax_result_free))
+#define MC_LUA_HOST_API_TTY_SIZE                                                                   \
+    (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, tty_info)                                          \
+     + sizeof (((mc_runtime_host_api_v1_t *) NULL)->tty_info))
 #define MC_LUA_HOST_API_PANEL_PROVIDER_SIZE                                                        \
     (G_STRUCT_OFFSET (mc_runtime_host_api_v1_t, panel_provider_unregister)                         \
      + sizeof (((mc_runtime_host_api_v1_t *) NULL)->panel_provider_unregister))
@@ -3893,6 +3896,13 @@ mc_lua_parse_viewer_spec (lua_State *lua, int table, mc_runtime_viewer_spec_t *s
         spec->top_row = row > 0 ? (guint) row : 0;
     }
     lua_pop (lua, 1);
+    lua_getfield (lua, table, "wrap");
+    if (!lua_isnil (lua, -1))
+    {
+        spec->has_wrap = TRUE;
+        spec->wrap = lua_toboolean (lua, -1) != 0;
+    }
+    lua_pop (lua, 1);
     g_free (scroll);
     display = mc_lua_dup_table_string (lua, table, "initial_display");
     if (display != NULL && g_strcmp0 (display, "text") != 0 && g_strcmp0 (display, "terminal") != 0
@@ -6552,6 +6562,53 @@ mc_lua_syntax_option (lua_State *lua, const char *name)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/** @lua mc.tty.info(section?) -> table|nil, error? @capability tty @mutation no
+ * @summary What the terminal shows and what the skin paints a section with.  The section is
+ * named the way the skin names it ("Viewer", "Editor"); the default is the core.  Returns
+ * { colors = 256, fg = "white", bg = "black" }, colors being 16, 256 or 16777216 for true
+ * color, and fg and bg the color names of the skin, nil when it names none. */
+static int
+mc_lua_tty_info (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+    mc_runtime_tty_info_t info = { .struct_size = sizeof (info) };
+    const char *section = NULL;
+    const char *error = NULL;
+
+    if (!mc_lua_require_active_context (lua, package))
+        return 2;
+    if (!lua_isnoneornil (lua, 1))
+        section = luaL_checkstring (lua, 1);
+
+    if (!mc_lua_host_has_capability (package, MC_RUNTIME_HOST_CAP_TTY, MC_LUA_HOST_API_TTY_SIZE)
+        || package->runtime->host->tty_info == NULL)
+        return mc_lua_not_ready (lua);
+
+    if (!package->runtime->host->tty_info (package->runtime->context, section, &info, &error))
+    {
+        lua_pushnil (lua);
+        lua_pushstring (lua, error != NULL ? error : "tty_info_failed");
+        return 2;
+    }
+
+    lua_createtable (lua, 0, 3);
+    lua_pushinteger (lua, (lua_Integer) info.colors);
+    lua_setfield (lua, -2, "colors");
+    if (info.fg != NULL)
+    {
+        lua_pushstring (lua, info.fg);
+        lua_setfield (lua, -2, "fg");
+    }
+    if (info.bg != NULL)
+    {
+        lua_pushstring (lua, info.bg);
+        lua_setfield (lua, -2, "bg");
+    }
+    return 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /** @lua mc.syntax.scan(text, options?) -> table|nil, error? @capability syntax @mutation no
  * @summary Color text with the syntax rules of the editor.  options.type names the rule set the
  * way the Syntax file does ("C Program"), options.filename picks it by name; without both, the
@@ -6891,6 +6948,11 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_pushcfunction (lua, mc_lua_syntax_scan);
     lua_setfield (lua, -2, "scan");
     lua_setfield (lua, -2, "syntax");
+
+    lua_createtable (lua, 0, 1);
+    lua_pushcfunction (lua, mc_lua_tty_info);
+    lua_setfield (lua, -2, "info");
+    lua_setfield (lua, -2, "tty");
 
     lua_createtable (lua, 0, 1);
     lua_pushcfunction (lua, mc_lua_process_run);
