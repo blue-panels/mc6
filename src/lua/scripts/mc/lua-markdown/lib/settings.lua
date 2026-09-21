@@ -36,12 +36,20 @@ M.ITEMS = {
         label = "How far that shade moves, of 255:",
     },
     {
+        key = "CODE_MIN", kind = "number", min = 20, max = 200,
+        label = "The narrowest a code block gets, in columns:",
+    },
+    {
         key = "DECISION_STYLE", kind = "choice",
         label = "A decision in a diagram is drawn with:",
         choices = {
             { id = "braille", label = "Sloping sides, out of braille dots" },
             { id = "box", label = "Box drawing characters" },
         },
+    },
+    {
+        key = "DIAGRAM_WIDTH", kind = "number", min = 40, max = 512,
+        label = "A diagram is laid out up to this width, in columns:",
     },
 }
 
