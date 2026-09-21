@@ -30,6 +30,10 @@ M.CODE_BG_SHIFT = 24
 -- top edge
 M.CODE_FRAME = true
 
+-- what the top edge says of a block whose language is not known: a fence
+-- that names none, or a block written with four columns of indent
+M.CODE_PLAIN = "text"
+
 -- the block is this share of its longest line wider than the code in it, so
 -- that a line does not end right at the frame
 M.CODE_AIR = 0.2
@@ -1448,6 +1452,10 @@ end
 -- covers a rectangle.  Each line opens the background and closes it at its
 -- end, because the viewer may start reading at any line.
 local function emit_code(lines, out, width_limit, language)
+    if language == nil or language == "" then
+        language = M.CODE_PLAIN
+    end
+
     local box = code_box(lines, width_limit)
     local color = code_bg()
     local bg = color ~= nil and ("\27[" .. color .. "m") or ""
