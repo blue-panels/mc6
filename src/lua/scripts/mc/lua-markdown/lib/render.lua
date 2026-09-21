@@ -39,7 +39,7 @@ M.CODE_PLAIN = "text"
 M.CODE_AIR = 0.2
 
 -- the narrowest a code block gets, margins counted, however short the code
-M.CODE_MIN = 30
+M.CODE_MIN = 43
 
 -- how much of a document is looked through for blocks that cannot be
 -- wrapped, before the first screen of it is rendered
