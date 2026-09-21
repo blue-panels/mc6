@@ -1,4 +1,4 @@
--- F3 on a markdown file: lib/render.lua turns the text into the
+-- F3 on a markdown file: lib/document.lua turns the text into the
 -- nroff-style text the viewer paints: headings and **bold** as overstruck
 -- letters, `code`, *italic* and links as underlined, $LaTeX$ as Unicode
 -- symbols, tables aligned in columns with box-drawing rules.  F8 shows the
@@ -14,23 +14,25 @@ local MAX_FILE_SIZE = 64 * 1024 * 1024
 -- with a line that says so, rather than let the source fail on it.
 local MAX_RENDERED = 60 * 1024 * 1024
 
-local md = require("render")
+local cfg = require("config")
+local md = require("document")
+local measure = require("measure")
 
 ------------------------------------------------------------------------
 -- F3 on a .md file.
 
--- Paragraphs are wrapped to the width of the viewer, up to md.MAX_WIDTH
+-- Paragraphs are wrapped to the width of the viewer, up to cfg.MAX_WIDTH
 -- columns on a wide screen, so the text is rendered again when the window
 -- changes size; a width seen before is served from the session.
 local viewer = mc.viewer_source.define {
     id = "markdown",
     resize = "rebuild",
     open = function(request)
-        request.rendered = {}
-        request.widest = {}
-        request.unwrapped = {}
+        -- one record per width the document was rendered at
+        request.cache = {}
         return request
     end,
+
     prepare = function(session, _, viewport)
         if session.text == nil then
             return {
@@ -40,16 +42,22 @@ local viewer = mc.viewer_source.define {
                 auto_scroll = "top",
             }
         end
-        local width = math.min(viewport.columns, md.MAX_WIDTH)
+        local width = math.min(viewport.columns, cfg.MAX_WIDTH)
         local opts = { width = width }
+        local cached = session.cache[width]
         local source
-        if session.rendered[width] ~= nil then
-            opts.max_line = session.widest[width]
-            source = mc.source.bytes(session.rendered[width])
+
+        if cached == nil then
+            cached = {}
+            session.cache[width] = cached
+        end
+        if cached.text ~= nil then
+            opts.max_line = cached.widest
+            source = mc.source.bytes(cached.text)
         elseif mc.source.generator == nil then
-            session.rendered[width] = md.render(session.text, opts)
-            session.widest[width] = opts.max_line
-            source = mc.source.bytes(session.rendered[width])
+            cached.text = md.render(session.text, opts)
+            cached.widest = opts.max_line
+            source = mc.source.bytes(cached.text)
         else
             local next_block = md.blocks(session.text, opts)
             local pieces = {}
@@ -67,8 +75,8 @@ local viewer = mc.viewer_source.define {
             until done or lines >= viewport.lines
             local initial = table.concat(pieces)
             if done then
-                session.rendered[width] = initial
-                session.widest[width] = opts.max_line
+                cached.text = initial
+                cached.widest = opts.max_line
                 source = mc.source.bytes(initial)
             else
                 local produced = #initial
@@ -80,8 +88,8 @@ local viewer = mc.viewer_source.define {
                         end
                         local chunk = next_block()
                         if chunk == nil then
-                            session.rendered[width] = table.concat(pieces)
-                            session.widest[width] = opts.max_line
+                            cached.text = table.concat(pieces)
+                            cached.widest = opts.max_line
                             pieces = nil
                             return nil
                         end
@@ -102,12 +110,12 @@ local viewer = mc.viewer_source.define {
         -- the screen already.
         -- The widest block is looked up before the first screen is rendered,
         -- because a diagram halfway down the file counts as well.
-        if session.unwrapped[width] == nil then
-            session.unwrapped[width] = md.unwrapped_width(session.text, width)
+        if cached.unwrapped == nil then
+            cached.unwrapped = measure.unwrapped_width(session.text, width)
         end
-        local widest = math.max(session.unwrapped[width], opts.max_line or 0)
+        local widest = math.max(cached.unwrapped, opts.max_line or 0)
         local wrap = nil
-        if widest > viewport.columns and widest <= md.DIAGRAM_WIDTH then
+        if widest > viewport.columns and widest <= cfg.DIAGRAM_WIDTH then
             wrap = false
         end
         return {

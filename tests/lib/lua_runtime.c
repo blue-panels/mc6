@@ -801,30 +801,46 @@ create_sixel_handler_script (void)
     g_free (root);
 }
 
+/* Copy a directory of scripts, so that a plugin split into more modules needs
+   no change here. */
 static void
-create_markdown_handler_script (void)
+copy_script_tree (const char *source_dir, const char *target_dir)
 {
-    static const char *const files[] = { "lua.ini", "init.lua", "lib/render.lua",
-                                         "lib/mermaid.lua" };
-    char *root = g_build_filename (user_mc_scripts_dir, "lua-markdown", (char *) NULL);
-    char *lib = g_build_filename (root, "lib", (char *) NULL);
-    size_t i;
+    GDir *dir;
+    const char *name;
 
-    ck_assert_int_eq (g_mkdir_with_parents (lib, 0700), 0);
-    for (i = 0; i < G_N_ELEMENTS (files); i++)
+    ck_assert_int_eq (g_mkdir_with_parents (target_dir, 0700), 0);
+    dir = g_dir_open (source_dir, 0, &error);
+    ck_assert_msg (dir != NULL, "%s: %s", source_dir,
+                   error != NULL ? error->message : "cannot open");
+    while ((name = g_dir_read_name (dir)) != NULL)
     {
-        char *source = g_build_filename (TEST_LUA_MARKDOWN_DIR, files[i], (char *) NULL);
-        char *target = g_build_filename (root, files[i], (char *) NULL);
-        char *contents = NULL;
+        char *source = g_build_filename (source_dir, name, (char *) NULL);
+        char *target = g_build_filename (target_dir, name, (char *) NULL);
 
-        mctest_assert_true (g_file_get_contents (source, &contents, NULL, &error));
-        g_clear_error (&error);
-        write_file (target, contents);
-        g_free (contents);
+        if (g_file_test (source, G_FILE_TEST_IS_DIR))
+            copy_script_tree (source, target);
+        else
+        {
+            char *contents = NULL;
+
+            mctest_assert_true (g_file_get_contents (source, &contents, NULL, &error));
+            g_clear_error (&error);
+            write_file (target, contents);
+            g_free (contents);
+        }
         g_free (target);
         g_free (source);
     }
-    g_free (lib);
+    g_dir_close (dir);
+}
+
+static void
+create_markdown_handler_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "lua-markdown", (char *) NULL);
+
+    copy_script_tree (TEST_LUA_MARKDOWN_DIR, root);
     g_free (root);
 }
 
@@ -2707,7 +2723,7 @@ START_TEST (test_lua_markdown_blocks_are_lazy_and_isolated)
     entry = g_build_filename (user_mc_scripts_dir, "lua-markdown", "init.lua", (char *) NULL);
     mctest_assert_true (g_file_get_contents (entry, &contents, NULL, &error));
     script = g_strconcat (contents,
-                          "\nlocal r=require('render')\n"
+                          "\nlocal r=require('document')\n"
                           "local one='[a][ref]\\n\\n[^n]\\n\\n[ref]: /a\\n[^n]: note a\\n'\n"
                           "local two='[b][ref]\\n\\n[^n]\\n\\n[ref]: /b\\n[^n]: note b\\n'\n"
                           "local a,b=r.blocks(one,{width=30}),r.blocks(two,{width=60})\n"
