@@ -434,6 +434,16 @@
       "summary": "Close a running screen; screen:run() then returns."
     },
     {
+      "signature": "mc.settings(handler) -> true|nil, error?",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "yes",
+      "errors": [
+        "invalid_settings_handler"
+      ],
+      "summary": "Register the dialog this package shows when its settings are asked for in Manage Plugins.  The handler takes no argument and returns nothing; it owns the dialog and whatever it keeps.  A package of any workspace may register one, not only an editor script."
+    },
+    {
       "signature": "mc.ui.dialog(spec) -> DialogResult|nil, error?",
       "workspace": "any",
       "capability": "ui",

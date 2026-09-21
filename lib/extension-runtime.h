@@ -1215,6 +1215,13 @@ typedef struct
     mc_runtime_file_operation_result_t (*invoke_file_operation) (
         mc_runtime_plugin_context_t *context, const char *package_id, const char *operation_id,
         const mc_runtime_file_operation_request_t *request, const char **error);
+
+    /* Optional append-only v1 settings of one package: the call that shows
+     * the dialog the package owns, and fails with "settings_not_found" when
+     * it has none.  Manage Plugins uses it, so that a package of any
+     * workspace, not only an editor script, is configured from one place. */
+    gboolean (*configure_package) (mc_runtime_plugin_context_t *context, const char *package_id,
+                                   const char **error);
 } mc_runtime_plugin_descriptor_v1_t;
 
 typedef const mc_runtime_plugin_descriptor_v1_t *(*mc_runtime_plugin_register_v1_fn) (void);
@@ -1247,6 +1254,8 @@ gboolean mc_runtime_plugins_invoke_action (const char *runtime_name, const char 
 mc_runtime_file_operation_result_t mc_runtime_plugins_invoke_file_operation (
     const char *runtime_name, const char *package_id, const char *operation_id,
     const mc_runtime_file_operation_request_t *request, const char **error);
+gboolean mc_runtime_plugins_configure_package (const char *runtime_name, const char *package_id,
+                                               const char **error);
 void mc_runtime_plugins_enumerate_menu_actions (const char *workspace,
                                                 mc_runtime_loaded_menu_action_callback_t callback,
                                                 gpointer user_data);

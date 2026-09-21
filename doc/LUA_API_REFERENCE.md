@@ -63,6 +63,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.panel.active() -> panel\|nil, error?` | Return a handle to the active panel. | `panel` | no |
 | `mc.panel.passive() -> panel\|nil, error?` | Return a handle to the passive panel. | `panel` | no |
 | `mc.process.run(spec) -> ProcessResult\|nil, error?` | Run a shell command and capture its bounded output. | `process` | yes |
+| `mc.settings(handler) -> true\|nil, error?` | Register the dialog this package shows when its settings are asked for in Manage Plugins.  The handler takes no argument and returns nothing; it owns the dialog and whatever it keeps.  A package of any workspace may register one, not only an editor script. | `—` | yes |
 | `mc.source.bytes(data) -> Source` | Describe an in-memory byte source: the string is its whole content. | `—` | no |
 | `mc.source.file(spec) -> Source` | Describe a local-file source and its ownership. | `—` | no |
 | `mc.source.generator(spec) -> Source` | Produce viewer bytes cooperatively. spec.initial is an optional first chunk; spec.next() returns the next string, or nil at EOF. Each call should finish one bounded unit of work; MC yields to input between batches. Closing or replacing the source stops further calls. Switching to raw pauses it; switching back replays its bytes and resumes. | `—` | no |

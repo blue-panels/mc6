@@ -17,6 +17,9 @@ local MAX_RENDERED = 60 * 1024 * 1024
 local cfg = require("config")
 local md = require("document")
 local measure = require("measure")
+local settings = require("settings")
+
+settings.load()
 
 ------------------------------------------------------------------------
 -- F3 on a .md file.
@@ -31,6 +34,17 @@ local viewer = mc.viewer_source.define {
         -- one record per width the document was rendered at
         request.cache = {}
         return request
+    end,
+
+    -- i: the settings of the viewer.  They change what every width looks
+    -- like, so what was rendered before is thrown away.
+    options_key = "i",
+    options = function(session, params)
+        if not settings.dialog() then
+            return nil
+        end
+        session.cache = {}
+        return { revision = ((params ~= nil and params.revision) or 0) + 1 }
     end,
 
     prepare = function(session, _, viewport)
@@ -174,3 +188,11 @@ local function view_file(request)
 end
 
 mc.file_handler.register { id = "view", kind = "view", handler = view_file }
+
+-- The same settings, reached from Manage Plugins for a reader who is not
+-- looking at a document right now.
+if mc.settings ~= nil then
+    mc.settings(function()
+        settings.dialog()
+    end)
+end

@@ -745,6 +745,37 @@ create_file_handler_script (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* A package of the "mc" workspace that owns a settings dialog: it is not an
+   editor script, so only the settings hook makes it configurable. */
+static void
+create_settings_script (void)
+{
+    char *root = g_build_filename (user_mc_scripts_dir, "with-settings", (char *) NULL);
+    char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
+    char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
+    char *mark_path = g_build_filename (root, "shown.txt", (char *) NULL);
+    char *script;
+
+    ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
+    write_file (ini_path,
+                "[Lua]\nid=with-settings\napi_version=1\nname=With settings\nentry=init.lua\n"
+                "provides=file-handler\n");
+    script = g_strdup_printf ("assert(mc.settings(function()\n"
+                              "  local f = assert(io.open('%s', 'a'))\n"
+                              "  f:write('shown\\n')\n"
+                              "  f:close()\n"
+                              "end))\n",
+                              mark_path);
+    write_file (entry_path, script);
+    g_free (script);
+    g_free (mark_path);
+    g_free (entry_path);
+    g_free (ini_path);
+    g_free (root);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static void
 create_java_class_handler_script (void)
 {
@@ -2664,6 +2695,39 @@ START_TEST (test_lua_runtime_file_handler_registration_and_dispatch)
 }
 END_TEST
 
+/* A package that is not an editor script still offers its settings. */
+START_TEST (test_lua_package_settings_are_shown_on_request)
+{
+    const char *settings_error = NULL;
+    char *mark_path;
+    char *contents = NULL;
+
+    create_settings_script ();
+    create_file_handler_script ();
+    ck_assert_msg (mc_runtime_plugins_load (&error), "Failed to load runtime: %s",
+                   error != NULL ? error->message : "unknown error");
+
+    mctest_assert_true (
+        mc_runtime_plugins_configure_package ("lua", "with-settings", &settings_error));
+    ck_assert_ptr_null (settings_error);
+    mctest_assert_true (
+        mc_runtime_plugins_configure_package ("lua", "with-settings", &settings_error));
+
+    /* a package that registered no dialog says so, and nothing of it is run */
+    ck_assert (!mc_runtime_plugins_configure_package ("lua", "file-handler", &settings_error));
+    ck_assert_str_eq (settings_error, "settings_not_found");
+    ck_assert (!mc_runtime_plugins_configure_package ("lua", "no-such-package", &settings_error));
+    ck_assert_str_eq (settings_error, "package_not_found");
+
+    /* the handler ran twice, once for each call that found it */
+    mark_path = g_build_filename (user_mc_scripts_dir, "with-settings", "shown.txt", (char *) NULL);
+    mctest_assert_true (g_file_get_contents (mark_path, &contents, NULL, &error));
+    ck_assert_str_eq (contents, "shown\nshown\n");
+    g_free (contents);
+    g_free (mark_path);
+}
+END_TEST
+
 START_TEST (test_lua_java_class_handler_uses_pty_process)
 {
     mc_runtime_file_operation_request_t request = {
@@ -2737,7 +2801,18 @@ START_TEST (test_lua_markdown_blocks_are_lazy_and_isolated)
                           "local next=r.blocks('# first\\n\\n```c\\nint x;\\n```\\n')\n"
                           "assert(next()~=nil and calls==0)\n"
                           "assert(next()~=nil and calls==1)\n"
-                          "mc.syntax.scan=scan\n",
+                          "mc.syntax.scan=scan\n"
+                          /* every option of the settings dialog needs an id the
+                             runtime accepts: never empty, letters and digits */
+                          "local s=require('settings')\n"
+                          "assert(#s.ITEMS > 0)\n"
+                          "for _,item in ipairs(s.ITEMS) do\n"
+                          "  assert(item.key ~= nil and item.label ~= nil)\n"
+                          "  for _,c in ipairs(item.choices or {}) do\n"
+                          "    assert(type(c.id)=='string' and c.id:match('^[%w_.-]+$'),\n"
+                          "           'bad option id in '..item.key)\n"
+                          "  end\n"
+                          "end\n",
                           (char *) NULL);
     write_file (entry, script);
     mctest_assert_true (mc_runtime_plugins_load (&error));
@@ -3283,6 +3358,7 @@ main (void)
     tcase_add_test (tc_core, test_lua_readelf_handler_uses_direct_argv);
     tcase_add_test (tc_core, test_lua_markdown_blocks_are_lazy_and_isolated);
     tcase_add_test (tc_core, test_lua_markdown_handler_renders_nroff_bytes);
+    tcase_add_test (tc_core, test_lua_package_settings_are_shown_on_request);
     tcase_add_test (tc_core, test_lua_sixel_handler_sizes_the_picture_in_pixels);
     tcase_add_test (tc_core, test_lua_runtime_viewport_controller_uses_direct_argv);
 

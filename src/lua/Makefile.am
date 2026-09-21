@@ -53,6 +53,7 @@ dist_lua_markdown_lib_DATA = \
 	scripts/mc/lua-markdown/lib/inline.lua \
 	scripts/mc/lua-markdown/lib/document.lua \
 	scripts/mc/lua-markdown/lib/measure.lua \
+	scripts/mc/lua-markdown/lib/settings.lua \
 	scripts/mc/lua-markdown/lib/mermaid.lua
 lua_markdown_formuladir = $(lua_scripts_dir)/mc/lua-markdown/lib/formula
 dist_lua_markdown_formula_DATA = \
