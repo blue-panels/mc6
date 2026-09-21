@@ -63,6 +63,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.panel.active() -> panel\|nil, error?` | Return a handle to the active panel. | `panel` | no |
 | `mc.panel.passive() -> panel\|nil, error?` | Return a handle to the passive panel. | `panel` | no |
 | `mc.process.run(spec) -> ProcessResult\|nil, error?` | Run a shell command and capture its bounded output. | `process` | yes |
+| `mc.settings(handler) -> true\|nil, error?` | Register the dialog this package shows when its settings are asked for in Manage Plugins.  The handler takes no argument and returns nothing; it owns the dialog and whatever it keeps.  A package of any workspace may register one, not only an editor script. | `—` | yes |
 | `mc.source.bytes(data) -> Source` | Describe an in-memory byte source: the string is its whole content. | `—` | no |
 | `mc.source.file(spec) -> Source` | Describe a local-file source and its ownership. | `—` | no |
 | `mc.source.generator(spec) -> Source` | Produce viewer bytes cooperatively. spec.initial is an optional first chunk; spec.next() returns the next string, or nil at EOF. Each call should finish one bounded unit of work; MC yields to input between batches. Closing or replacing the source stops further calls. Switching to raw pauses it; switching back replays its bytes and resumes. | `—` | no |
@@ -70,7 +71,7 @@ Do not edit it manually; run `python3 maint/generate-lua-api.py`.
 | `mc.source.process(spec) -> Source` | Describe a process source using direct argv, an optional working directory, and stderr policy. | `—` | no |
 | `mc.syntax.scan(text, options?) -> table\|nil, error?` | Color text with the syntax rules of the editor.  options.type names the rule set the way the Syntax file does ("C Program"), options.filename picks it by name; without both, the first line of the text decides.  Returns { type = "C Program", colors = { { fg = "yellow", bg = nil, attrs = "bold" } }, runs = { { offset = 1, length = 6, color = 1 } } }, offsets counting bytes from one and color indexing colors. | `syntax` | no |
 | `mc.tty.info(section?) -> table\|nil, error?` | What the terminal shows and what the skin paints a section with.  The section is named the way the skin names it ("Viewer", "Editor"); the default is the core.  Returns { colors = 256, fg = "white", bg = "black" }, colors being 16, 256 or 16777216 for true color, and fg and bg the color names of the skin, nil when it names none. | `tty` | no |
-| `mc.ui.dialog(spec) -> DialogResult\|nil, error?` | Show a declarative native modal dialog. | `ui` | yes |
+| `mc.ui.dialog(spec) -> DialogResult\|nil, error?` | Show a declarative native modal dialog.  spec.help = {file, node} is what F1 opens over it; a relative file is taken from the script's directory, and a spec without a node has no help. | `ui` | yes |
 | `mc.ui.indicator(spec) -> boolean\|nil, error?` | Set or replace a package-owned persistent UI indicator. | `ui` | yes |
 | `mc.ui.indicator_clear(id, area?) -> boolean\|nil, error?` | Remove a package-owned UI indicator. | `ui` | yes |
 | `mc.ui.message(title, text) -> boolean\|nil, error?` | Show a native informational message box. | `ui` | yes |

@@ -332,7 +332,6 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("Learn &keys..."), CK_LearnKeys));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &bindings..."), CK_KeyBindings));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &sniffer..."), CK_KeySniffer));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("&Manage plugins..."), CK_ManagePlugins));
 #ifdef ENABLE_VFS
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Virtual FS..."), CK_OptionsVfs));
 #endif
@@ -345,6 +344,7 @@ create_options_menu (void)
 #ifdef USE_INTERNAL_EDIT
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Editor options..."), CK_OptionsEditor));
 #endif
+    entries = g_list_prepend (entries, menu_entry_new (_ ("&Manage plugins..."), CK_ManagePlugins));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Save setup"), CK_SaveSetup));
     entries = g_list_prepend (entries, menu_separator_new ());

@@ -434,12 +434,22 @@
       "summary": "Close a running screen; screen:run() then returns."
     },
     {
+      "signature": "mc.settings(handler) -> true|nil, error?",
+      "workspace": "any",
+      "capability": "—",
+      "mutation": "yes",
+      "errors": [
+        "invalid_settings_handler"
+      ],
+      "summary": "Register the dialog this package shows when its settings are asked for in Manage Plugins.  The handler takes no argument and returns nothing; it owns the dialog and whatever it keeps.  A package of any workspace may register one, not only an editor script."
+    },
+    {
       "signature": "mc.ui.dialog(spec) -> DialogResult|nil, error?",
       "workspace": "any",
       "capability": "ui",
       "mutation": "yes",
       "errors": [],
-      "summary": "Show a declarative native modal dialog."
+      "summary": "Show a declarative native modal dialog.  spec.help = {file, node} is what F1 opens over it; a relative file is taken from the script's directory, and a spec without a node has no help."
     },
     {
       "signature": "mc.ui.indicator(spec) -> boolean|nil, error?",

@@ -138,6 +138,9 @@
 #define MC_RUNTIME_PLUGIN_DESCRIPTOR_FILE_OPERATIONS_SIZE                                          \
     (G_STRUCT_OFFSET (mc_runtime_plugin_descriptor_v1_t, invoke_file_operation)                    \
      + sizeof (((mc_runtime_plugin_descriptor_v1_t *) NULL)->invoke_file_operation))
+#define MC_RUNTIME_PLUGIN_DESCRIPTOR_SETTINGS_SIZE                                                 \
+    (G_STRUCT_OFFSET (mc_runtime_plugin_descriptor_v1_t, configure_package)                        \
+     + sizeof (((mc_runtime_plugin_descriptor_v1_t *) NULL)->configure_package))
 
 /*** file scope type declarations ****************************************************************/
 
@@ -2204,6 +2207,44 @@ mc_runtime_plugins_invoke_action (const char *runtime_name, const char *workspac
 
     if (error != NULL)
         *error = "action_not_found";
+    return FALSE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Show the settings dialog of one package.  FALSE, with @error set, when the
+ * runtime has none to show. */
+
+gboolean
+mc_runtime_plugins_configure_package (const char *runtime_name, const char *package_id,
+                                      const char **error)
+{
+    guint i;
+
+    if (error != NULL)
+        *error = NULL;
+    if (runtime_name == NULL || package_id == NULL)
+    {
+        if (error != NULL)
+            *error = "invalid_argument";
+        return FALSE;
+    }
+
+    for (i = 0; mc_runtime_plugin_instances != NULL && i < mc_runtime_plugin_instances->len; i++)
+    {
+        const mc_runtime_plugin_instance_t *instance =
+            (const mc_runtime_plugin_instance_t *) g_ptr_array_index (mc_runtime_plugin_instances,
+                                                                      i);
+
+        if (g_strcmp0 (instance->descriptor->runtime_name, runtime_name) != 0)
+            continue;
+        if (instance->descriptor->struct_size < MC_RUNTIME_PLUGIN_DESCRIPTOR_SETTINGS_SIZE
+            || instance->descriptor->configure_package == NULL)
+            break;
+        return instance->descriptor->configure_package (instance->context, package_id, error);
+    }
+
+    if (error != NULL)
+        *error = "settings_not_found";
     return FALSE;
 }
 

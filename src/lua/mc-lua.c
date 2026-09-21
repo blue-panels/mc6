@@ -263,6 +263,7 @@ struct mc_lua_package
     GPtrArray *panel_providers;
     GPtrArray *viewer_definitions;
     GPtrArray *file_handlers;
+    int settings_ref;  // the callback mc.settings() registered, or LUA_NOREF
     gboolean closed;
     guint callback_depth;
     mc_runtime_event_id_t active_event;
@@ -2318,6 +2319,11 @@ mc_lua_package_close (mc_lua_package_t *package)
         g_ptr_array_set_size (package->panel_providers, 0);
     if (package->file_handlers != NULL)
         g_ptr_array_set_size (package->file_handlers, 0);
+    if (package->settings_ref != LUA_NOREF && package->lua != NULL)
+    {
+        luaL_unref (package->lua, LUA_REGISTRYINDEX, package->settings_ref);
+        package->settings_ref = LUA_NOREF;
+    }
 
     package->closed = TRUE;
     if (package->lua != NULL)
@@ -6326,8 +6332,36 @@ mc_lua_screen_index (lua_State *lua)
     return 1;
 }
 
-/** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes @summary Show a
- * declarative native modal dialog. */
+/** @lua mc.settings(handler) -> true|nil, error? @mutation yes
+ * @errors invalid_settings_handler
+ * @summary Register the dialog this package shows when its settings are asked
+ * for in Manage Plugins.  The handler takes no argument and returns nothing;
+ * it owns the dialog and whatever it keeps.  A package of any workspace may
+ * register one, not only an editor script. */
+static int
+mc_lua_settings (lua_State *lua)
+{
+    mc_lua_package_t *package = mc_lua_package_from_state (lua);
+
+    if (package == NULL)
+        return luaL_error (lua, "no Lua script context");
+    if (!lua_isfunction (lua, 1))
+        return mc_lua_return_error (lua, "invalid_settings_handler");
+
+    if (package->settings_ref != LUA_NOREF)
+        luaL_unref (lua, LUA_REGISTRYINDEX, package->settings_ref);
+    lua_pushvalue (lua, 1);
+    package->settings_ref = luaL_ref (lua, LUA_REGISTRYINDEX);
+    lua_pushboolean (lua, TRUE);
+    return 1;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** @lua mc.ui.dialog(spec) -> DialogResult|nil, error? @capability ui @mutation yes
+ * @summary Show a declarative native modal dialog.  spec.help = {file, node} is what F1 opens over
+ * it; a relative file is taken from the script's directory, and a spec without a node has no
+ * help. */
 static int
 mc_lua_ui_dialog (lua_State *lua)
 {
@@ -6349,6 +6383,13 @@ mc_lua_ui_dialog (lua_State *lua)
         || !mc_lua_dialog_uint (lua, 1, "width", &spec.dialog.width, &spec.dialog.has_width)
         || !mc_lua_dialog_uint (lua, 1, "height", &spec.dialog.height, &spec.dialog.has_height))
         goto invalid;
+    lua_getfield (lua, 1, "help");
+    if (lua_istable (lua, -1))
+    {
+        spec.dialog.help_file = mc_lua_dup_help_file (lua, -1, package);
+        spec.dialog.help_node = mc_lua_dup_table_string (lua, -1, "node");
+    }
+    lua_pop (lua, 1);
     ids = g_hash_table_new (g_str_hash, g_str_equal);
     lua_getfield (lua, 1, "controls");
     if (!mc_lua_dialog_parse_controls (lua, lua_gettop (lua), 1, &spec, ids,
@@ -6375,6 +6416,8 @@ mc_lua_ui_dialog (lua_State *lua)
         mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                      spec.dialog.controls_count);
         g_free ((char *) spec.dialog.title);
+        g_free ((char *) spec.dialog.help_file);
+        g_free ((char *) spec.dialog.help_node);
         return mc_lua_return_error (lua, error != NULL ? error : "not_ready");
     }
     lua_newtable (lua);
@@ -6394,17 +6437,23 @@ mc_lua_ui_dialog (lua_State *lua)
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return 1;
 not_ready:
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return mc_lua_not_ready (lua);
 invalid:
     mc_lua_log (package, "error", "invalid Lua dialog specification");
     mc_lua_dialog_controls_free ((mc_runtime_dialog_control_t *) spec.dialog.controls,
                                  spec.dialog.controls_count);
     g_free ((char *) spec.dialog.title);
+    g_free ((char *) spec.dialog.help_file);
+    g_free ((char *) spec.dialog.help_node);
     return mc_lua_return_error (lua, "invalid_dialog");
 }
 
@@ -6959,6 +7008,9 @@ mc_lua_install_api (mc_lua_package_t *package)
     lua_setfield (lua, -2, "run");
     lua_setfield (lua, -2, "process");
 
+    lua_pushcfunction (lua, mc_lua_settings);
+    lua_setfield (lua, -2, "settings");
+
     lua_createtable (lua, 0, 2);
     lua_pushcfunction (lua, mc_lua_panel_active);
     lua_setfield (lua, -2, "active");
@@ -7385,6 +7437,7 @@ mc_lua_package_load (mc_lua_runtime_t *runtime, const mc_lua_package_candidate_t
     package->panel_providers = g_ptr_array_new_with_free_func (mc_lua_panel_provider_destroy);
     package->viewer_definitions = g_ptr_array_new_with_free_func (mc_lua_viewer_definition_destroy);
     package->file_handlers = g_ptr_array_new_with_free_func (mc_lua_file_handler_destroy);
+    package->settings_ref = LUA_NOREF;
     package->lua = luaL_newstate ();
 
     if (package->lua == NULL)
@@ -7767,6 +7820,75 @@ mc_lua_runtime_enumerate_file_operations (mc_runtime_plugin_context_t *context,
     }
 }
 
+static mc_lua_package_t *
+mc_lua_runtime_package_by_id (mc_lua_runtime_t *runtime, const char *package_id)
+{
+    guint i;
+
+    if (runtime == NULL || package_id == NULL)
+        return NULL;
+
+    for (i = 0; i < runtime->packages->len; i++)
+    {
+        mc_lua_package_t *candidate = (mc_lua_package_t *) g_ptr_array_index (runtime->packages, i);
+
+        if (candidate != NULL && !candidate->closed && g_strcmp0 (candidate->id, package_id) == 0)
+            return candidate;
+    }
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Show that dialog.  The script owns it, so there is nothing to return. */
+
+static gboolean
+mc_lua_runtime_configure_package (mc_runtime_plugin_context_t *context, const char *package_id,
+                                  const char **error)
+{
+    mc_lua_runtime_t *runtime = mc_lua_runtime_current;
+    mc_lua_package_t *package;
+    lua_State *lua;
+
+    if (error != NULL)
+        *error = NULL;
+    if (runtime == NULL || runtime->context != context || runtime->stopping)
+    {
+        if (error != NULL)
+            *error = "invalid_context";
+        return FALSE;
+    }
+    package = mc_lua_runtime_package_by_id (runtime, package_id);
+    if (package == NULL)
+    {
+        if (error != NULL)
+            *error = "package_not_found";
+        return FALSE;
+    }
+    if (package->settings_ref == LUA_NOREF)
+    {
+        if (error != NULL)
+            *error = "settings_not_found";
+        return FALSE;
+    }
+
+    lua = package->lua;
+    lua_rawgeti (lua, LUA_REGISTRYINDEX, package->settings_ref);
+    package->callback_depth++;
+    if (lua_pcall (lua, 0, 0, 0) != LUA_OK)
+    {
+        /* the report takes the error off the stack */
+        mc_lua_report_error (package, MC_RUNTIME_ERROR_PHASE_EVENT, "Lua settings callback failed");
+        package->callback_depth--;
+        if (error != NULL)
+            *error = "script_error";
+        return FALSE;
+    }
+    package->callback_depth--;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_runtime_file_operation_result_t
 mc_lua_runtime_invoke_file_operation (mc_runtime_plugin_context_t *context, const char *package_id,
                                       const char *operation_id,
@@ -8011,6 +8133,7 @@ mc_runtime_plugin_register_v1 (void)
         .display_name = "Lua engine",
         .enumerate_file_operations = mc_lua_runtime_enumerate_file_operations,
         .invoke_file_operation = mc_lua_runtime_invoke_file_operation,
+        .configure_package = mc_lua_runtime_configure_package,
     };
 
     return &descriptor;
