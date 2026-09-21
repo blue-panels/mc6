@@ -286,6 +286,8 @@ mcview_structured_try_enter (WView *view, gboolean quiet)
     path = vfs_path_get_last_path_str (view->filename_vpath);
 
     mctree_resolver_config_init (&config);
+    config.max_parse_size = (gsize) mcview_structured_max_size;
+    config.max_nodes = (gsize) mcview_structured_max_nodes;
     memset (&result, 0, sizeof (result));
 
     model = mctree_resolve_file (path, &config, &result, &error);

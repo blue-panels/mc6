@@ -76,6 +76,10 @@ gboolean mcview_mouse_move_pages = TRUE;
 /* Open supported files (JSON/YAML/XML) in structured (tree) mode right away */
 gboolean mcview_structured_auto = FALSE;
 
+/* The file size and the node count the structured view stops at */
+int mcview_structured_max_size = MCTREE_DEFAULT_MAX_PARSE_SIZE;
+int mcview_structured_max_nodes = MCTREE_DEFAULT_MAX_NODES;
+
 /* One-shot: open the next viewed file in structured mode.
  * A separate variable, not a bit in mcview_global_flags: intermediate viewer
  * instances (mc.ext preprocessing) write the global flags back on close and
@@ -359,6 +363,19 @@ mcview_load_options (void)
     mcview_max_dirt_limit = mc_config_get_int (
         mc_global.main_config, group, old ? "max_dirt_limit" : "dirt_limit", mcview_max_dirt_limit);
 
+    /* Both are new in the [Viewer] section: an older file has nothing to read
+       them from, and the defaults of the resolver stand. */
+    mcview_structured_max_size =
+        mc_config_get_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "structured_max_size",
+                           mcview_structured_max_size);
+    mcview_structured_max_nodes =
+        mc_config_get_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "structured_max_nodes",
+                           mcview_structured_max_nodes);
+    if (mcview_structured_max_size <= 0)
+        mcview_structured_max_size = MCTREE_DEFAULT_MAX_PARSE_SIZE;
+    if (mcview_structured_max_nodes <= 0)
+        mcview_structured_max_nodes = MCTREE_DEFAULT_MAX_NODES;
+
     g_free (mcview_show_eof);
     mcview_show_eof =
         mc_config_get_string (mc_global.main_config, group, old ? "mcview_eof" : "eof", "");
@@ -384,6 +401,11 @@ mcview_save_options (void)
     mc_config_set_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "dirt_limit",
                        mcview_max_dirt_limit);
     mc_config_del_key (mc_global.main_config, CONFIG_APP_SECTION, "max_dirt_limit");
+
+    mc_config_set_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "structured_max_size",
+                       mcview_structured_max_size);
+    mc_config_set_int (mc_global.main_config, CONFIG_VIEWER_SECTION, "structured_max_nodes",
+                       mcview_structured_max_nodes);
 
     mc_config_set_string (mc_global.main_config, CONFIG_VIEWER_SECTION, "eof",
                           mcview_show_eof != NULL ? mcview_show_eof : "");

@@ -4339,6 +4339,16 @@ used silently. False by default.
 .I eof
 The text printed after the last line of the file. Empty by default.
 .TP
+.I structured_max_size
+The largest file the structured (tree) view parses, in bytes. A larger one is
+refused before it is read. 67108864 (64 MB) by default.
+.TP
+.I structured_max_nodes
+The largest tree the structured view builds, counted in nodes. A dense
+document, such as XML of small tags, meets this limit before the size one: it
+spends about a node per twelve bytes, and every node costs memory. 10000000 by
+default, which holds some 120 MB of such a file in about 1.5 GB.
+.TP
 .I dirt_limit
 How many screen updates may be skipped at most while a file is being read.
 Normally this value is not significant, because the code adjusts the number

@@ -840,10 +840,18 @@ void
 viewer_options_box (void)
 {
     char dirt_limit[BUF_TINY];
+    char struct_size[BUF_TINY];
+    char struct_nodes[BUF_TINY];
     char *new_eof = NULL;
     char *new_dirt_limit = NULL;
+    char *new_struct_size = NULL;
+    char *new_struct_nodes = NULL;
 
     g_snprintf (dirt_limit, sizeof (dirt_limit), "%d", mcview_max_dirt_limit);
+    // the setting is kept in bytes, but megabytes are what one types
+    g_snprintf (struct_size, sizeof (struct_size), "%d",
+                mcview_structured_max_size / (1024 * 1024));
+    g_snprintf (struct_nodes, sizeof (struct_nodes), "%d", mcview_structured_max_nodes);
 
     {
         quick_widget_t quick_widgets[] = {
@@ -862,6 +870,12 @@ viewer_options_box (void)
                                  &new_eof, NULL, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_LABELED_INPUT (_ ("Redraws to skip at most:"), input_label_left, dirt_limit,
                                  "viewer-dirt-limit", &new_dirt_limit, NULL, FALSE, FALSE,
+                                 INPUT_COMPLETE_NONE),
+            QUICK_LABELED_INPUT (_ ("Tree view file limit, MB:"), input_label_left, struct_size,
+                                 "viewer-struct-size", &new_struct_size, NULL, FALSE, FALSE,
+                                 INPUT_COMPLETE_NONE),
+            QUICK_LABELED_INPUT (_ ("Tree view node limit:"), input_label_left, struct_nodes,
+                                 "viewer-struct-nodes", &new_struct_nodes, NULL, FALSE, FALSE,
                                  INPUT_COMPLETE_NONE),
             QUICK_BUTTONS_OK_CANCEL,
             QUICK_END,
@@ -894,6 +908,25 @@ viewer_options_box (void)
         if (limit > 0)
             mcview_max_dirt_limit = limit;
         g_free (new_dirt_limit);
+    }
+
+    if (new_struct_size != NULL)
+    {
+        const int megabytes = atoi (new_struct_size);
+
+        // what would not fit in the int the setting is kept in is left alone
+        if (megabytes > 0 && megabytes <= G_MAXINT / (1024 * 1024))
+            mcview_structured_max_size = megabytes * 1024 * 1024;
+        g_free (new_struct_size);
+    }
+
+    if (new_struct_nodes != NULL)
+    {
+        const int nodes = atoi (new_struct_nodes);
+
+        if (nodes > 0)
+            mcview_structured_max_nodes = nodes;
+        g_free (new_struct_nodes);
     }
 }
 
