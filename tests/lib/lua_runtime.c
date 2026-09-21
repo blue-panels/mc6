@@ -242,6 +242,7 @@ test_screen_run (mc_runtime_plugin_context_t *context,
     ck_assert_str_eq (descriptor->spec->title, "Screen test");
     ck_assert_str_eq (descriptor->spec->help_node, "[Test]");
     ck_assert_str_eq (descriptor->spec->status, "ready");
+    ck_assert_int_eq (descriptor->spec->palette, MC_RUNTIME_SCREEN_PALETTE_VIEWER);
     ck_assert_uint_eq (descriptor->spec->rows_count, 2);
     ck_assert_uint_eq (descriptor->spec->rows[0].height, 1);
     ck_assert_uint_eq (descriptor->spec->rows[0].cells_count, 1);
@@ -725,7 +726,8 @@ create_file_handler_script (void)
                 "assert(mc.file_handler.register {id='view',kind='view',"
                 "handler=function(r) assert(r.kind=='view' and r.display_name=='photo.png' "
                 "and r.local_path=='/tmp/photo.png' and r.mime_type=='image/png' "
-                "and r.magic_group=='image'); return nil,'not_supported' end})\n"
+                "and r.magic_group=='image' and r.embedded==false); "
+                "return nil,'not_supported' end})\n"
                 "local d=assert(mc.viewer_source.define {id='handler-view',"
                 "help={node='controller-help'},"
                 "open=function(identity)return {name=identity.name}end,"
@@ -736,7 +738,8 @@ create_file_handler_script (void)
                 "assert(mc.file_handler.register {id='switched',kind='view',"
                 "handler=function(r) return {handled=true} end})\n"
                 "assert(mc.file_handler.register {id='controlled',kind='view',"
-                "handler=function(r) return {handled=true,controller=assert(d:create("
+                "handler=function(r) assert(r.embedded==true); "
+                "return {handled=true,controller=assert(d:create("
                 "{name='demo'},{text='one',revision=1}))} end})\n");
     g_free (entry_path);
     g_free (ini_path);
@@ -2605,9 +2608,12 @@ create_screen_script (void)
     write_file (
         entry_path,
         "seen = {}\n"
+        "local bad,err=mc.ui.screen {palette='unknown'}\n"
+        "assert(bad==nil and err=='invalid_screen')\n"
         "local function show()\n"
         "local s = assert(mc.ui.screen {\n"
-        " title = 'Screen test', status = 'ready', help = { node = '[Test]' },\n"
+        " title = 'Screen test', palette = 'viewer', status = 'ready', "
+        "help = { node = '[Test]' },\n"
         " layout = {\n"
         "  { height = 1, { type = 'label', text = 'head' } },\n"
         "  { weight = 1,\n"

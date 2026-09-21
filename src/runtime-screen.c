@@ -129,6 +129,7 @@ struct runtime_screen
     GHashTable *by_id;     /* control id -> screen_cell_t * */
     GHashTable *by_widget; /* Widget * -> screen_cell_t * */
     GHashTable *color_pairs;
+    dlg_colors_t colors;
 
     /* the keys list, by index */
     int *key_codes;
@@ -989,9 +990,24 @@ static gboolean
 screen_build (runtime_screen_t *scr, const char **error)
 {
     const mc_runtime_screen_t *spec = scr->descriptor->spec;
+    const gboolean viewer_palette = spec->palette == MC_RUNTIME_SCREEN_PALETTE_VIEWER;
     guint i;
 
-    scr->dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, dialog_colors,
+    if (viewer_palette)
+    {
+        scr->colors[DLG_COLOR_NORMAL] = VIEWER_NORMAL_COLOR;
+        scr->colors[DLG_COLOR_FOCUS] = VIEWER_NORMAL_COLOR;
+        scr->colors[DLG_COLOR_HOT_NORMAL] = VIEWER_BOLD_COLOR;
+        scr->colors[DLG_COLOR_HOT_FOCUS] = VIEWER_BOLD_COLOR;
+        scr->colors[DLG_COLOR_SELECTED_NORMAL] = VIEWER_SELECTED_COLOR;
+        scr->colors[DLG_COLOR_SELECTED_FOCUS] = VIEWER_SELECTED_COLOR;
+        scr->colors[DLG_COLOR_TITLE] = VIEWER_HEADING_COLOR;
+        scr->colors[DLG_COLOR_FRAME] = VIEWER_FRAME_COLOR;
+    }
+    else
+        memcpy (scr->colors, dialog_colors, sizeof (scr->colors));
+
+    scr->dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, scr->colors,
                            screen_dialog_callback, NULL, NULL, spec->title);
     scr->dlg->data.p = scr;
     scr->dlg->get_title = screen_get_title;
