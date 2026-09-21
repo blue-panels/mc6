@@ -125,6 +125,8 @@ extern int mcview_max_dirt_limit;
 extern gboolean mcview_mouse_move_pages;
 extern char *mcview_show_eof;
 extern gboolean mcview_structured_auto;
+extern int mcview_structured_max_size;
+extern int mcview_structured_max_nodes;
 /* One-shot request to open the next viewed file in structured mode
  * (set by the mctree symlink and %view{structured}; consumed by mcview_load) */
 extern gboolean mcview_open_structured_once;

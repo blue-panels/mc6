@@ -1,26 +1,24 @@
 /*
-   Structured tree resolver and provider registry.
+   Structured tree view for the M-Commander
+   Resolver that picks a provider for a file and builds its model
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
@@ -37,19 +35,6 @@
 #include "src/mctree/mctree-resolver.h"
 
 /*** file scope macro definitions ****************************************************************/
-
-/* The real cost of a tree is its node count, not the file size: a sparse
- * document is cheap per byte while a dense one is not.  Keep the byte limit
- * generous and let MCTREE_DEFAULT_MAX_NODES bound the memory. */
-#define MCTREE_DEFAULT_MAX_PARSE_SIZE (64 * 1024 * 1024)
-#define MCTREE_DEFAULT_MAX_NODES      1000000
-/* Both the parsers and the model walkers recurse per nesting level, so the
- * depth must be capped independently of the file size. */
-#define MCTREE_DEFAULT_MAX_DEPTH 200
-/* Chained YAML aliases multiply nodes ("billion laughs"), so expansion is
- * capped by a node budget independent of the file size. */
-#define MCTREE_DEFAULT_MAX_ALIAS_NODES 10000
-#define MCTREE_DEFAULT_EXPAND_DEPTH    2
 
 /*** file scope variables ************************************************************************/
 
