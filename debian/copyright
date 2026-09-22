@@ -32,15 +32,6 @@ Copyright: 2026 Ilia Maslakov <il.smind@gmail.com>
 License: GPL-3+
 
 Files:
-    lib/idx.h
-    lib/intprops-internal.h
-    lib/intprops.h
-    lib/stdckdint.in.h
-Copyright: 2001-2024 Free Software Foundation, Inc.
-License: LGPL-2.1+
-Comment: Taken from gnulib and the GNU C Library.
-
-Files:
     lib/strutil/strverscmp.c
 Copyright: 1997-2025 Free Software Foundation, Inc.
 License: LGPL-2.1+ and GPL-3+
