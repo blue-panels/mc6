@@ -2010,7 +2010,7 @@ Súgó a kiegészítéshez. Beviteli ablak jelenik meg, és a szöveg
 magyarázatként jelenik meg. A makró a felhasználó által begépelendő
 szöveget helyettesíti. Ezt az ESC, vagy az F10 lenyomásával tudja törölni
 a felhasználó.  Ez a makró jelenleg még nem működik a parancssorban.
-.\"NODE "  The subshell support"
+.\"NODE "  The terminal"
 .SH "  A subshell támogatás"
 A subshell támogatás fordításkori opció, amely a shellek alkalmazásával
 működik: bash, tcsh and zsh.

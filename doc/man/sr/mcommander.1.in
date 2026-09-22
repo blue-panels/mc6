@@ -2286,7 +2286,7 @@ netrc(5) за опис формата датотеке .netrc.
 .IR подразумевано .
 Иначе, користи се вредност променљиве
 .IR ENV .
-.\"NODE "  The subshell support"
+.\"NODE "  The terminal"
 .SH "  Подршка за подљуске"
 Подршка за подљуске је опција за време компајлирања програма; она ради са
 љускама bash, ash (BusyBox и Debian), (o/m)ksh, tcsh, zsh и fish.

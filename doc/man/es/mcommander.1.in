@@ -2354,7 +2354,7 @@ de las llaves se usa como mensaje. La macro es sustituida por el texto
 tecleado por el usuario. El usuario puede pulsar 
 .IR Esc " o " F10
 para cancelar. Esta macro no funciona aún sobre la línea de órdenes.
-.\"NODE "  The subshell support"
+.\"NODE "  The terminal"
 .SH "  Soporte de Subshell"
 El soporte del subshell es una opción de tiempo de compilación, que funciona con los
 shells: bash, tcsh y zsh.

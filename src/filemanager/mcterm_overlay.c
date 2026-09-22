@@ -763,6 +763,8 @@ mcterm_overlay_terminal_owns (long command)
     case CK_MarkAll:
     case CK_FilterWord:
     case CK_FilterToggle:
+    case CK_Search:
+    case CK_QuickFilter:
     case CK_Clear:
     case CK_ClearAll:
         return TRUE;
@@ -957,6 +959,14 @@ mcterm_overlay_active (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcterm_overlay_terminal_alone (void)
+{
+    return (mcterm_mode && mcterm_panel != NULL && !mcterm_overlay_any_panel_visible ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 mcterm_overlay_toggle (void)
 {
@@ -1076,10 +1086,10 @@ mcterm_overlay_draw_panel_slot (int idx, const WPanel *active_panel)
         widget_draw (pw);
 }
 
-/* The button bar names the keys that are on offer, and with no panel on screen those are the
-   terminal's own: F2 to F7 mark the output, cut it down and clear it. Help, the pull-down menu
-   and the way out stay the file manager's wherever the keys are typed, and F8 is left empty -
-   the reach for Delete is too well worn to give it another meaning here. */
+/* The button bar names the keys that are on offer, and with no panel on screen those are mostly
+   the terminal's own: F2 to F6 mark the output, cut it down and clear it. Help, Mkdir, the
+   pull-down menu and the way out stay the file manager's wherever the keys are typed, and F8 is
+   left empty - the reach for Delete is too well worn to give it another meaning here. */
 static void
 mcterm_overlay_set_buttonbar (void)
 {
@@ -1108,7 +1118,7 @@ mcterm_overlay_set_buttonbar (void)
         buttonbar_set_label (the_bar, 4, Q_ ("ButtonBar|Filter"), mcterm_map, tw);
         buttonbar_set_label (the_bar, 5, Q_ ("ButtonBar|UnFilt"), mcterm_map, tw);
         buttonbar_set_label (the_bar, 6, Q_ ("ButtonBar|ClrAll"), mcterm_map, tw);
-        buttonbar_set_label (the_bar, 7, Q_ ("ButtonBar|Clear"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 7, Q_ ("ButtonBar|Mkdir"), fw->keymap, NULL);
         buttonbar_clear_label (the_bar, 8, NULL);
         buttonbar_set_label (the_bar, 9, Q_ ("ButtonBar|PullDn"), fw->keymap, NULL);
         buttonbar_set_label (the_bar, 10, Q_ ("ButtonBar|Quit"), fw->keymap, NULL);
@@ -1681,6 +1691,23 @@ mcterm_overlay_cmdline_enter (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Hand the key to the terminal. A key it cannot type into the shell - a function key, say - is
+   stopped here all the same when the file manager would run it on the panel cursor that cannot
+   be seen: left unhandled, the dialog looks the key up in its own keymap and runs the command,
+   and F8 deletes the file under the hidden cursor. */
+static cb_ret_t
+mcterm_overlay_key_to_terminal (Widget *w, int parm)
+{
+    if (send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL) == MSG_HANDLED)
+        return MSG_HANDLED;
+
+    return mcterm_overlay_command_needs_panel_cursor (widget_lookup_key (w, parm))
+        ? MSG_HANDLED
+        : MSG_NOT_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 cb_ret_t
 mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t execute_command,
                            mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data)
@@ -1705,6 +1732,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
     // Both can be turned off while the terminal is up, so they are told each time.
     mcterm_set_typing_elsewhere (mcterm_panel, command_prompt);
+
+    // What is typed for the terminal to search or filter by takes the keys that edit it.
+    if (mcterm_query_key (mcterm_panel, parm) == MSG_HANDLED)
+        return MSG_HANDLED;
 
     {
         WGroup *g = GROUP (filemanager);
@@ -1770,7 +1801,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
            typing: the line stays put, and the view is not dragged back to the end first. */
         if (!in_alt && !mcterm_overlay_any_panel_visible ()
             && mcterm_overlay_terminal_owns (term_cmd))
-            return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+            return mcterm_overlay_key_to_terminal (w, parm);
 
         if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey
             && mcterm_overlay_terminal_focused ())
@@ -1791,7 +1822,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         }
 
         if (in_alt || !at_prompt)
-            return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+            return mcterm_overlay_key_to_terminal (w, parm);
     }
 
     // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
@@ -1801,10 +1832,17 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         return MSG_HANDLED;
     }
 
+    /* A new file goes to the directory of the panel, which the shell follows, and needs no
+       cursor to stand on. The panel keymap names the key, and with no panel on screen the
+       panel is not asked. */
+    if (!mcterm_overlay_any_panel_visible () && current_panel != NULL
+        && keybind_lookup_keymap_command (panel_map, parm) == CK_EditNew)
+        return send_message (current_panel, NULL, MSG_ACTION, CK_EditNew, NULL);
+
     /* With no panel on screen the terminal's keymap comes first: what it names is the
        terminal's, and the file manager's key of the same name never gets to run. */
     if (term_cmd != CK_IgnoreKey && !mcterm_overlay_any_panel_visible ())
-        return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+        return mcterm_overlay_key_to_terminal (w, parm);
 
     cmd = widget_lookup_key (w, parm);
     if (cmd != CK_IgnoreKey && !mcterm_overlay_command_needs_panel_cursor (cmd))
@@ -1817,7 +1855,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         return MSG_HANDLED;
     }
 
-    return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+    return mcterm_overlay_key_to_terminal (w, parm);
 }
 
 #else /* !ENABLE_MCTERM */
@@ -1867,6 +1905,12 @@ mcterm_overlay_exec_command (const char *cmd)
 
 gboolean
 mcterm_overlay_active (void)
+{
+    return FALSE;
+}
+
+gboolean
+mcterm_overlay_terminal_alone (void)
 {
     return FALSE;
 }

@@ -731,8 +731,8 @@ static const global_keymap_ini_t default_diff_keymap[] = {
 #ifdef ENABLE_MCTERM
 /* embedded terminal: what is bound here is taken from the shell */
 static const global_keymap_ini_t default_mcterm_keymap[] = {
-    /* marking the output, and taking it out. The function keys are the terminal's own while no
-       panel is on screen: the file manager's would work on a cursor nobody can see. */
+    /* marking the output, and taking it out. The function keys named here are the terminal's own
+       while no panel is on screen: the file manager's would work on a cursor nobody can see. */
     { "Store", "ctrl-insert; enter; f2" },
     { "MarkAll", "f3" },
     { "Unmark", "ctrl-shift-u" },
@@ -757,11 +757,14 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "PageDown", "pgdn" },
     { "Top", "ctrl-home" },
     { "Bottom", "ctrl-end" },
-    { "Clear", "ctrl-l; f7" },
+    { "Clear", "ctrl-l" },
     { "ClearAll", "ctrl-shift-l; ctrl-alt-l; f6" },
     // the output cut down to the rows that match
-    { "FilterWord", "alt-shift-s; f4" },
-    { "FilterToggle", "alt-s; f5" },
+    { "FilterWord", "f4" },
+    { "FilterToggle", "f5" },
+    // a pattern typed the way the panels take one: the output searched, or cut down
+    { "Search", "alt-s" },
+    { "QuickFilter", "alt-shift-s" },
     {
         NULL,
         NULL,

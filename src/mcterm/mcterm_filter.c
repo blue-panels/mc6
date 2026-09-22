@@ -1,26 +1,24 @@
 /*
-   Midnight Commander - mcterm line filter.
+   Terminal widget mcterm for the M-Commander
+   The output of the terminal cut down to the rows that match, and searched
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
@@ -35,6 +33,56 @@
 #include "mcterm_select.h"
 
 /*** file scope functions ************************************************************************/
+
+/* What a log is filtered by is looked for the way the viewer looks for it:
+   a plain string, of either case. */
+static mc_search_t *
+mcterm_filter_search_new (const char *pattern)
+{
+    mc_search_t *search;
+
+    search = mc_search_new (pattern, NULL);
+    if (search != NULL)
+    {
+        search->search_type = MC_SEARCH_T_NORMAL;
+        search->is_case_sensitive = FALSE;
+    }
+
+    return search;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The last match in @text that starts at byte @limit or before it, as its first byte and its
+   length in bytes. */
+static gboolean
+mcterm_filter_last_match (mc_search_t *search, const char *text, gsize limit, gsize *start,
+                          gsize *len)
+{
+    const gsize text_len = strlen (text);
+    gsize from = 0;
+    gboolean found = FALSE;
+
+    while (from <= limit && from < text_len)
+    {
+        gsize found_len = 0;
+        gsize at;
+
+        if (!mc_search_run (search, text, (off_t) from, (off_t) text_len, &found_len))
+            break;
+
+        at = (gsize) search->normal_offset;
+        if (at > limit)
+            break;
+
+        *start = at;
+        *len = found_len;
+        found = TRUE;
+        from = (gsize) (g_utf8_next_char (text + at) - text);
+    }
+
+    return found;
+}
 
 /* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
@@ -73,14 +121,9 @@ mcterm_filter_apply (mcterm_filter_t *f, mcview_vterm_t *vt, int cols, gint64 ne
     if (f == NULL || vt == NULL || cols <= 0 || pattern == NULL || *pattern == '\0')
         return FALSE;
 
-    search = mc_search_new (pattern, NULL);
+    search = mcterm_filter_search_new (pattern);
     if (search == NULL)
         return FALSE;
-
-    /* What a log is filtered by is looked for the way the viewer looks for it:
-       a plain string, of either case. */
-    search->search_type = MC_SEARCH_T_NORMAL;
-    search->is_case_sensitive = FALSE;
 
     rows = g_array_new (FALSE, FALSE, sizeof (gint64));
     oldest = mcview_vterm_scrolled_rows (vt) - mcview_vterm_history_len (vt);
@@ -159,6 +202,65 @@ mcterm_filter_index (const mcterm_filter_t *f, gint64 row)
     }
 
     return lo;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+gboolean
+mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pattern, gint64 row,
+                    int col, gint64 *found_row, int *found_col, int *found_width)
+{
+    mc_search_t *search;
+    gint64 oldest, left;
+    gboolean found = FALSE;
+
+    if (vt == NULL || cols <= 0 || pattern == NULL || *pattern == '\0')
+        return FALSE;
+
+    oldest = mcview_vterm_scrolled_rows (vt) - mcview_vterm_history_len (vt);
+    if (row < oldest || row > newest)
+    {
+        row = newest;
+        col = cols;
+    }
+
+    search = mcterm_filter_search_new (pattern);
+    if (search == NULL)
+        return FALSE;
+
+    /* Every row once, and the row it starts on a second time at the end of the round: the part
+       of it after @col comes last. */
+    for (left = newest - oldest + 2; left > 0 && !found; left--)
+    {
+        char *text;
+
+        text = mcterm_filter_row_text (vt, row, cols);
+        if (text != NULL && col >= 0)
+        {
+            const glong chars = g_utf8_strlen (text, -1);
+            const gsize limit = (col >= chars)
+                ? strlen (text)
+                : (gsize) (g_utf8_offset_to_pointer (text, col) - text);
+            gsize start, len;
+
+            if (mcterm_filter_last_match (search, text, limit, &start, &len))
+            {
+                *found_row = row;
+                *found_col = (int) g_utf8_pointer_to_offset (text, text + start);
+                *found_width = (int) g_utf8_strlen (text + start, (gssize) len);
+                found = TRUE;
+            }
+        }
+        g_free (text);
+
+        // The rows above, and past the oldest one round to the newest.
+        row = (row > oldest) ? row - 1 : newest;
+        col = cols;
+    }
+
+    mc_search_free (search);
+
+    return found;
 }
 
 /* --------------------------------------------------------------------------------------------- */

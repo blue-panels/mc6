@@ -2033,7 +2033,7 @@ non è impostata, la sostituzione prenderà
 .IR default . 
 Altrimenti, verrà sostituito il valore di 
 .IR ENV .
-.\"NODE "  The subshell support"
+.\"NODE "  The terminal"
 .SH "  Supporto alla subshell"
 Il supporto alla subshell è una opzione di compilazione che lavora
 con le seguenti shell: bash, tcsh e zsh.

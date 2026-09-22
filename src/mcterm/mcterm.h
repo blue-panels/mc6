@@ -70,6 +70,9 @@ gboolean mcterm_send_tab_complete (WMcTerm *t, const char *text);
 /* Hand one key to the shell, for its own line editor to act on. */
 gboolean mcterm_send_key (WMcTerm *t, int key);
 long mcterm_key_command (const WMcTerm *t, int key);
+/* While a search or a filter is typed, the key that edits or ends it. MSG_NOT_HANDLED for any
+   other: the typing may have ended, and the key goes where it would have gone. */
+cb_ret_t mcterm_query_key (WMcTerm *t, int key);
 /* Whether the host types on a command line of its own. Without one the plain
    arrows are left to the shell, there being nowhere else for typing to go. */
 void mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere);
@@ -279,6 +282,13 @@ mcterm_key_command (const WMcTerm *t, int key)
     (void) t;
     (void) key;
     return CK_IgnoreKey;
+}
+static inline cb_ret_t
+mcterm_query_key (WMcTerm *t, int key)
+{
+    (void) t;
+    (void) key;
+    return MSG_NOT_HANDLED;
 }
 static inline void
 mcterm_set_typing_elsewhere (WMcTerm *t, gboolean elsewhere)
