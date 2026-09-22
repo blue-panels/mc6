@@ -1,26 +1,24 @@
 /*
-   Panel plugin file operations -- copy, move, delete, create, put.
+   Panel plugins for the M-Commander
+   File operations on a panel driven by a plugin: copy, move, delete, put
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 /** \file panel_plugin_ops.c
@@ -2038,6 +2036,73 @@ plugin_panel_put_move_cmd (WPanel *panel)
     }
 
     update_panels (UP_OPTIMIZE, UP_KEEPSEL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Hand Ctrl-Space to the plugin. */
+static gboolean
+plugin_panel_dirsize_run (WPanel *panel)
+{
+    return panel->plugin != NULL && panel->plugin_data != NULL && panel->plugin->handle_key != NULL
+        && panel->plugin->handle_key (panel->plugin_data, CK_DirSize) == MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/** Ctrl-Space on a plugin panel: the plugin counts the sizes of its
+    directories, the panel lists them again with the marks it had.
+    FALSE when the entries are real local files, which the core counts
+    itself. */
+gboolean
+plugin_panel_dirsize_cmd (WPanel *panel)
+{
+    GPtrArray *marked;
+    const file_entry_t *fe;
+    gboolean move_down;
+    int i;
+
+    if (panel->plugin != NULL && (panel->plugin->flags & MC_PPF_LOCAL_FILES) != 0)
+        return FALSE;
+
+    if (!plugin_panel_dirsize_run (panel))
+    {
+        message (D_ERROR, MSG_ERROR, _ ("This operation is not supported for plugin panels"));
+        return TRUE;
+    }
+
+    /* the listing is built anew from the plugin, so keep the marks */
+    marked = g_ptr_array_new_with_free_func (g_free);
+    for (i = 0; i < panel->dir.len; i++)
+        if (panel->dir.list[i].f.marked != 0)
+            g_ptr_array_add (
+                marked, g_strndup (panel->dir.list[i].fname->str, panel->dir.list[i].fname->len));
+
+    fe = panel_current_entry (panel);
+    move_down = marked->len == 0 && panels_options.mark_moves_down && fe != NULL
+        && !DIR_IS_DOTDOT (fe->fname->str);
+
+    panel_plugin_refresh (panel);
+
+    for (i = 0; i < panel->dir.len; i++)
+    {
+        guint j;
+
+        for (j = 0; j < marked->len; j++)
+            if (strcmp (panel->dir.list[i].fname->str, (const char *) g_ptr_array_index (marked, j))
+                == 0)
+            {
+                do_file_mark (panel, i, 1);
+                break;
+            }
+    }
+
+    g_ptr_array_free (marked, TRUE);
+
+    if (move_down)
+        send_message (panel, NULL, MSG_ACTION, CK_Down, NULL);
+
+    return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */

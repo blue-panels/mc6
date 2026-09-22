@@ -1,26 +1,24 @@
 /*
-   arcmc panel plugin - the entries of an archive: lookup, links, release
+   Panel plugin arcmc for the M-Commander
+   The entries of an archive: lookup, sizes, links, release
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
@@ -66,6 +64,58 @@ arcmc_find_entry (GPtrArray *entries, const char *full_path)
     }
 
     return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check if `entry_path` lies anywhere below `dir`. An empty `dir` is the root,
+   which holds everything. */
+gboolean
+is_under_dir (const char *entry_path, const char *dir)
+{
+    size_t dir_len;
+
+    if (dir == NULL || dir[0] == '\0')
+        return TRUE;
+
+    dir_len = strlen (dir);
+
+    return strncmp (entry_path, dir, dir_len) == 0 && entry_path[dir_len] == '/';
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check if `entry_path` is a direct child of `dir`.
+   If so, return the child name component; otherwise NULL. */
+const char *
+is_direct_child (const char *entry_path, const char *dir)
+{
+    size_t dir_len;
+    const char *rest;
+
+    if (dir == NULL || dir[0] == '\0')
+    {
+        /* root: direct child if no '/' in path */
+        if (strchr (entry_path, '/') == NULL)
+            return entry_path;
+        return NULL;
+    }
+
+    dir_len = strlen (dir);
+
+    if (strncmp (entry_path, dir, dir_len) != 0)
+        return NULL;
+
+    if (entry_path[dir_len] != '/')
+        return NULL;
+
+    rest = entry_path + dir_len + 1;
+
+    /* must not contain further '/' (i.e., must be direct child) */
+    if (rest[0] == '\0' || strchr (rest, '/') != NULL)
+        return NULL;
+
+    return rest;
 }
 
 /* --------------------------------------------------------------------------------------------- */

@@ -1,23 +1,24 @@
 /*
-   Panel plugin registry.
+   Panel plugins for the M-Commander
+   The registry of the loaded plugin descriptors
 
-   Copyright (C) 2025
-   Free Software Foundation, Inc.
+   Copyright (C) 2025-2026
+   Ilia Maslakov il.smind@gmail.com
 
-   This file is part of the Midnight Commander.
+   This file is part of M-Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 /** \file panel-plugin.c
@@ -92,7 +93,7 @@ mc_pp_dir_list_grow (dir_list *list, int delta)
 
 static gboolean
 mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st,
-                       gboolean link_to_dir, gboolean stale_link)
+                       gboolean link_to_dir, gboolean stale_link, gboolean dir_size_computed)
 {
     file_entry_t *fentry;
 
@@ -104,7 +105,7 @@ mc_pp_dir_list_append (dir_list *list, const char *fname, const struct stat *st,
     fentry->f.marked = 0;
     fentry->f.link_to_dir = link_to_dir ? 1 : 0;
     fentry->f.stale_link = stale_link ? 1 : 0;
-    fentry->f.dir_size_computed = 0;
+    fentry->f.dir_size_computed = dir_size_computed ? 1 : 0;
     fentry->st = *st;
     fentry->name_sort_key = NULL;
     fentry->extension_sort_key = NULL;
@@ -398,7 +399,7 @@ mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, time_t m
     st.st_gid = getgid ();
     st.st_nlink = 1;
 
-    (void) mc_pp_dir_list_append ((dir_list *) list, name, &st, FALSE, FALSE);
+    (void) mc_pp_dir_list_append ((dir_list *) list, name, &st, FALSE, FALSE, FALSE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -406,9 +407,9 @@ mc_pp_add_entry (void *list, const char *name, mode_t mode, off_t size, time_t m
 void
 mc_pp_add_entry_st (void *list, const char *name, const struct stat *st, mc_pp_entry_flags_t flags)
 {
-    (void) mc_pp_dir_list_append ((dir_list *) list, name, st,
-                                  (flags & MC_PP_ENTRY_LINK_TO_DIR) != 0,
-                                  (flags & MC_PP_ENTRY_STALE_LINK) != 0);
+    (void) mc_pp_dir_list_append (
+        (dir_list *) list, name, st, (flags & MC_PP_ENTRY_LINK_TO_DIR) != 0,
+        (flags & MC_PP_ENTRY_STALE_LINK) != 0, (flags & MC_PP_ENTRY_DIR_SIZE_COMPUTED) != 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
