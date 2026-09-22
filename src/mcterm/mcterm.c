@@ -25,6 +25,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>  // MB_LEN_MAX
 #include <signal.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -142,6 +143,15 @@ struct WMcTerm
     /* Only the rows that matched are drawn, the view moving among them alone. */
     mcterm_filter_t filter;
     char *last_filter;  // what was filtered by last, for the filter to go back on
+    /* A pattern typed the way the panels take one, on the top row: the output is searched for
+       it, or cut down to the rows that match it, as it grows. */
+    gboolean query_active;
+    gboolean query_filtering;
+    GString *query;
+    char query_ch[MB_LEN_MAX];  // the bytes of a character typed so far
+    int query_chpoint;
+    gboolean query_found;  // the search has marked a match, and goes on from it
+    char *last_search;     // what was searched for last, for the search to go on with
     /* Where the terminal is being read, as against where the shell is typing.
        It exists while the widget has the focus, and the arrows move it. */
     gboolean cursor_valid;
@@ -191,6 +201,14 @@ static int mcterm_resolve_top_row_for_buf (const WMcTerm *t, const mcview_termin
                                            int rows);
 
 /*** file scope functions ************************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+/* The rows the query takes at the top of the screen. */
+static inline int
+mcterm_query_rows (const WMcTerm *t)
+{
+    return t->query_active ? 1 : 0;
+}
 
 /* --------------------------------------------------------------------------------------------- */
 
@@ -1002,7 +1020,7 @@ mcterm_scroll_view (WMcTerm *t, int delta)
 
     if (mcterm_filter_active (&t->filter))
     {
-        const int lines = WIDGET (t)->rect.lines;
+        const int lines = WIDGET (t)->rect.lines - mcterm_query_rows (t);
         const int len = mcterm_filter_len (&t->filter);
         int top;
 
@@ -1190,7 +1208,8 @@ mcterm_geometry (const WMcTerm *t, mcterm_geom_t *g)
         g->filtered = TRUE;
         g->buf = mcview_vterm_buf (t->vterm);
         g->top_row = 0;
-        g->content_rows = CLAMP (len - t->filter.top, 0, r->lines);
+        // The rows that matched stand below the query row.
+        g->content_rows = CLAMP (len - t->filter.top, 0, r->lines - mcterm_query_rows (t));
         g->blank_above = r->lines - g->content_rows;
         g->first_abs = mcterm_filter_row (&t->filter, t->filter.top);
         g->newest_abs = mcterm_filter_row (&t->filter, len - 1);
@@ -1334,8 +1353,9 @@ mcterm_show_row (WMcTerm *t, gint64 row)
         return;
 
     screen_row = mcterm_geom_screen_row (t, &g, row);
-    if (screen_row < 0)
-        delta = screen_row;
+    // The query row covers the top of the screen.
+    if (screen_row < mcterm_query_rows (t))
+        delta = screen_row - mcterm_query_rows (t);
     else if (screen_row >= r->lines)
         delta = screen_row - r->lines + 1;
     else
@@ -1629,17 +1649,27 @@ mcterm_filter_pattern (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The last row of the output there is to look at: the one the shell writes on, or one it wrote
+   below that. */
+static gint64
+mcterm_newest_row (WMcTerm *t)
+{
+    return mcview_vterm_scrolled_rows (t->vterm)
+        + MAX (mcview_terminal_buffer_max_row (mcview_vterm_buf (t->vterm)),
+               mcview_vterm_cursor_row (t->vterm));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Show the rows that match @pattern and no others. FALSE when none of them does,
    the view left as it was. */
 static gboolean
 mcterm_filter_set (WMcTerm *t, const char *pattern)
 {
     const WRect *r = &WIDGET (t)->rect;
-    const gint64 newest = mcview_vterm_scrolled_rows (t->vterm)
-        + MAX (mcview_terminal_buffer_max_row (mcview_vterm_buf (t->vterm)),
-               mcview_vterm_cursor_row (t->vterm));
+    const gint64 newest = mcterm_newest_row (t);
     gint64 cursor_row;
-    int index, len;
+    int index, len, lines;
 
     if (!t->cursor_valid)
         mcterm_cursor_reset (t);
@@ -1663,7 +1693,8 @@ mcterm_filter_set (WMcTerm *t, const char *pattern)
        first row that matched below it. */
     len = mcterm_filter_len (&t->filter);
     index = mcterm_filter_index (&t->filter, cursor_row);
-    t->filter.top = CLAMP (index - r->lines / 2, 0, MAX (len - r->lines, 0));
+    lines = r->lines - mcterm_query_rows (t);
+    t->filter.top = CLAMP (index - lines / 2, 0, MAX (len - lines, 0));
     t->cursor_row = mcterm_filter_row (&t->filter, index);
     // The column it was reading at is the column it goes on reading at.
     t->cursor_col = CLAMP (t->cursor_col, 0, r->cols - 1);
@@ -1712,6 +1743,220 @@ mcterm_filter_toggle (WMcTerm *t)
     }
 
     return (t->last_filter != NULL && mcterm_filter_set (t, t->last_filter));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_query_redraw (WMcTerm *t)
+{
+    widget_draw (WIDGET (t));
+    send_message (WIDGET (t), NULL, MSG_CURSOR, 0, NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Mark the match of @pattern nearest the cursor going up, the cursor on its first cell. The
+   search starts from the end of the cursor row, and once it has marked a match, from that
+   match: it stays while it still matches, unless it is the @next one that is wanted. FALSE,
+   nothing moved, when there is none. */
+static gboolean
+mcterm_query_search (WMcTerm *t, const char *pattern, gboolean next)
+{
+    const WRect *r = &WIDGET (t)->rect;
+    gint64 row;
+    int from, col, width;
+
+    if (!t->cursor_valid)
+        mcterm_cursor_reset (t);
+
+    if (!t->query_found)
+        from = r->cols;
+    else
+        from = next ? t->cursor_col - 1 : t->cursor_col;
+
+    if (!mcterm_filter_find (t->vterm, r->cols, mcterm_newest_row (t), pattern, t->cursor_row, from,
+                             &row, &col, &width))
+        return FALSE;
+
+    t->query_found = TRUE;
+
+    mcterm_sel_start (&t->sel, row, col);
+    mcterm_sel_extend (&t->sel, row, MIN (col + width, r->cols) - 1);
+    t->cursor_row = row;
+    t->cursor_col = col;
+    mcterm_show_row (t, row);
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The output cut down to what is typed, and shown whole while nothing is. FALSE when no row
+   matches, the view left as it was. */
+static gboolean
+mcterm_query_filter (WMcTerm *t)
+{
+    if (t->query->len != 0)
+        return mcterm_filter_set (t, t->query->str);
+
+    mcterm_filter_clear (&t->filter);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Look for what is typed again, from where the cursor is. FALSE when it is not there. */
+static gboolean
+mcterm_query_apply (WMcTerm *t)
+{
+    if (t->query_filtering)
+        return mcterm_query_filter (t);
+
+    if (t->query->len != 0)
+        return mcterm_query_search (t, t->query->str, FALSE);
+
+    mcterm_sel_clear (&t->sel);
+    t->query_found = FALSE;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* One byte more of what is typed. TRUE once it completes a character; a byte that starts none
+   is dropped. */
+static gboolean
+mcterm_query_add_byte (WMcTerm *t, int key)
+{
+    if (t->query_chpoint < (int) sizeof (t->query_ch))
+        t->query_ch[t->query_chpoint++] = (char) key;
+
+    switch (str_is_valid_char (t->query_ch, t->query_chpoint))
+    {
+    case -2:
+        // More bytes of it are to come.
+        return FALSE;
+    case -1:
+        t->query_chpoint = 0;
+        return FALSE;
+    default:
+        g_string_append_len (t->query, t->query_ch, t->query_chpoint);
+        t->query_chpoint = 0;
+        return TRUE;
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_query_drop_char (WMcTerm *t)
+{
+    char *end;
+
+    if (t->query->len == 0)
+        return;
+
+    end = t->query->str + t->query->len;
+    str_prev_noncomb_char (&end, t->query->str);
+    g_string_set_size (t->query, (gsize) (end - t->query->str));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The row that matched above the cursor, and past the first one round to the last. */
+static void
+mcterm_query_prev_row (WMcTerm *t)
+{
+    const int len = mcterm_filter_len (&t->filter);
+    int index;
+
+    if (len == 0)
+        return;
+
+    index = mcterm_filter_index (&t->filter, t->cursor_row) - 1;
+    t->cursor_row = mcterm_filter_row (&t->filter, index < 0 ? len - 1 : index);
+    t->cursor_valid = TRUE;
+    mcterm_show_row (t, t->cursor_row);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Done typing. @keep leaves the output cut down to what was typed; without it the filter goes,
+   the way Escape lifts the quick filter of a panel. */
+static void
+mcterm_query_stop (WMcTerm *t, gboolean keep)
+{
+    if (!t->query_active)
+        return;
+
+    t->query_active = FALSE;
+    t->query_chpoint = 0;
+
+    if (!t->query_filtering && t->query->len != 0)
+    {
+        g_free (t->last_search);
+        t->last_search = g_strdup (t->query->str);
+    }
+
+    if (t->query_filtering && !keep)
+        mcterm_filter_clear (&t->filter);
+
+    // Under a panel there is nothing of it to draw.
+    if (t->scroll_allowed)
+        mcterm_query_redraw (t);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Alt-S searches and Alt-Shift-S filters, the keys of the panels. Pressed again, the key goes on
+   to the match above; with nothing typed, to what was looked for last. The other key turns a
+   search into a filter by the same text, and a filter back into a search. */
+static void
+mcterm_query_start (WMcTerm *t, gboolean filtering)
+{
+    if (t->query_active && t->query_filtering == filtering)
+    {
+        const char *last = filtering ? t->last_filter : t->last_search;
+
+        if (t->query->len == 0 && last != NULL)
+        {
+            g_string_assign (t->query, last);
+            if (!mcterm_query_apply (t))
+                g_string_set_size (t->query, 0);
+        }
+        else if (filtering)
+            mcterm_query_prev_row (t);
+        else if (t->query->len != 0)
+            (void) mcterm_query_search (t, t->query->str, TRUE);
+
+        mcterm_query_redraw (t);
+        return;
+    }
+
+    if (!t->query_active)
+    {
+        if (t->query == NULL)
+            t->query = g_string_new (NULL);
+        g_string_set_size (t->query, 0);
+        t->query_chpoint = 0;
+        t->query_active = TRUE;
+
+        // Its cursor is where the text is typed.
+        if (!widget_get_state (WIDGET (t), WST_FOCUSED))
+            widget_select (WIDGET (t));
+    }
+
+    t->query_filtering = filtering;
+    t->query_found = FALSE;
+
+    // A search goes over the output as a whole.
+    if (!filtering)
+        mcterm_filter_clear (&t->filter);
+
+    if (!mcterm_query_apply (t))
+        g_string_set_size (t->query, 0);
+
+    mcterm_query_redraw (t);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1784,6 +2029,28 @@ mcterm_draw_selection (WMcTerm *t, const mcterm_geom_t *g)
             tty_gotoyx (r->y + row, r->x + col);
             tty_print_anychar ((cell == NULL || cell->ch == 0) ? ' ' : cell->ch);
         }
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* What is typed, on the top row, the way a panel shows it under its list. */
+static void
+mcterm_draw_query (const WMcTerm *t)
+{
+    const WRect *r = &CONST_WIDGET (t)->rect;
+    const char *prefix = t->query_filtering ? _ ("Filter: ") : "/";
+    const int prefix_width = str_term_width1 (prefix);
+
+    tty_setcolor (CORE_INPUT_COLOR);
+    tty_gotoyx (r->y, r->x);
+
+    if (prefix_width >= r->cols)
+        tty_print_string (str_fit_to_term (prefix, r->cols, J_LEFT));
+    else
+    {
+        tty_print_string (prefix);
+        tty_print_string (str_fit_to_term (t->query->str, r->cols - prefix_width, J_LEFT_FIT));
     }
 }
 
@@ -1946,6 +2213,9 @@ mcterm_do_draw (WMcTerm *t)
         }
 
         mcterm_draw_selection (t, &g);
+
+        if (t->query_active && !mcview_vterm_in_alt_screen (t->vterm))
+            mcterm_draw_query (t);
     }
 }
 
@@ -2167,6 +2437,14 @@ mcterm_execute_cmd (WMcTerm *t, long command, int key)
         mcterm_filter_toggle (t);
         return MSG_HANDLED;
 
+    case CK_Search:
+    case CK_QuickFilter:
+        // A panel over it: the key is the file manager's.
+        if (!t->scroll_allowed)
+            break;
+        mcterm_query_start (t, command == CK_QuickFilter);
+        return MSG_HANDLED;
+
     case CK_ScrollUp:
     case CK_ScrollDown:
     case CK_PageUp:
@@ -2238,6 +2516,17 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
            follows the shell, not the reading cursor left at the focus point. */
         const gboolean live_line = !t->typing_elsewhere && t->shell_at_prompt && t->scrollback == 0
             && !t->sel.anchored && !mcterm_filter_active (&t->filter);
+
+        // The text being typed has the cursor at its end.
+        if (t->query_active && t->vterm != NULL && !mcview_vterm_in_alt_screen (t->vterm))
+        {
+            const WRect *r = &w->rect;
+            const int x = str_term_width1 (t->query_filtering ? _ ("Filter: ") : "/")
+                + str_term_width1 (t->query->str);
+
+            tty_gotoyx (r->y, r->x + MIN (x, r->cols - 1));
+            return MSG_HANDLED;
+        }
 
         /* Focused, the terminal shows where it is being read; the shell has
            the cursor back as soon as the focus goes to the command line. */
@@ -2313,6 +2602,9 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         return mcterm_send_encoded_key (t, parm) ? MSG_HANDLED : MSG_NOT_HANDLED;
 
     case MSG_KEY:
+        if (mcterm_query_key (t, parm) == MSG_HANDLED)
+            return MSG_HANDLED;
+
         /* Alt-screen applications own Ctrl+O. */
         if ((parm == 0x0F || parm == XCTRL ('O'))
             && (t->vterm == NULL || !mcview_vterm_in_alt_screen (t->vterm)))
@@ -2398,6 +2690,13 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         t->sync_snapshot_buf = NULL;
         mcterm_filter_clear (&t->filter);
         g_clear_pointer (&t->last_filter, g_free);
+        if (t->query != NULL)
+        {
+            g_string_free (t->query, TRUE);
+            t->query = NULL;
+        }
+        t->query_active = FALSE;
+        g_clear_pointer (&t->last_search, g_free);
         return MSG_HANDLED;
 
     default:
@@ -2767,6 +3066,86 @@ mcterm_send_text (WMcTerm *t, const char *text)
 
 /* --------------------------------------------------------------------------------------------- */
 
+cb_ret_t
+mcterm_query_key (WMcTerm *t, int key)
+{
+    if (t == NULL || !t->query_active)
+        return MSG_NOT_HANDLED;
+
+    // A panel came up, or a full-screen application: the keys are theirs now.
+    if (t->vterm == NULL || mcview_vterm_in_alt_screen (t->vterm) || !t->scroll_allowed)
+    {
+        mcterm_query_stop (t, TRUE);
+        return MSG_NOT_HANDLED;
+    }
+
+    if (is_abort_char (key))
+    {
+        mcterm_query_stop (t, FALSE);
+        return MSG_HANDLED;
+    }
+
+    // Enter ends the typing and nothing else: the shell's line is not run.
+    if (key == '\n' || key == KEY_ENTER)
+    {
+        mcterm_query_stop (t, TRUE);
+        return MSG_HANDLED;
+    }
+
+    if (key == KEY_BACKSPACE)
+    {
+        t->query_chpoint = 0;
+        mcterm_query_drop_char (t);
+        (void) mcterm_query_apply (t);
+        mcterm_query_redraw (t);
+        return MSG_HANDLED;
+    }
+
+    if (key >= ' ' && key <= 0xFF)
+    {
+        // A character nothing matches with is not taken.
+        if (mcterm_query_add_byte (t, key) && !mcterm_query_apply (t))
+            mcterm_query_drop_char (t);
+        mcterm_query_redraw (t);
+        return MSG_HANDLED;
+    }
+
+    switch (keybind_lookup_keymap_command (mcterm_map, key))
+    {
+    case CK_Search:
+    case CK_QuickFilter:
+        return MSG_NOT_HANDLED;
+
+    // The rows that matched are walked with the typing still going on.
+    case CK_Left:
+    case CK_Right:
+    case CK_Up:
+    case CK_Down:
+    case CK_WordLeft:
+    case CK_WordRight:
+    case CK_Home:
+    case CK_End:
+    case CK_ScrollUp:
+    case CK_ScrollDown:
+    case CK_PageUp:
+    case CK_PageDown:
+    case CK_Top:
+    case CK_Bottom:
+        if (t->query_filtering)
+            return MSG_NOT_HANDLED;
+        break;
+
+    default:
+        break;
+    }
+
+    // Any other key ends the typing and goes on to do what it does.
+    mcterm_query_stop (t, TRUE);
+    return MSG_NOT_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 long
 mcterm_key_command (const WMcTerm *t, int key)
 {
@@ -2816,6 +3195,8 @@ mcterm_key_command (const WMcTerm *t, int key)
     case CK_MarkAll:
     case CK_FilterWord:
     case CK_FilterToggle:
+    case CK_Search:
+    case CK_QuickFilter:
         /* Marking the output, cutting it down and taking it out are the terminal's whoever is
          * typing, as long as it has the screen to itself. Enter is the exception: it is the
          * shell's own key and stays with whoever holds the focus. */
@@ -2838,6 +3219,10 @@ mcterm_set_scroll_allowed (WMcTerm *t, gboolean allowed)
         return;
 
     t->scroll_allowed = allowed;
+
+    // A panel has come over the terminal: what was being typed there is done with.
+    if (!allowed)
+        mcterm_query_stop (t, TRUE);
 
     /* A panel has come over the terminal: what is marked below it can neither
        be seen nor added to, so the mark goes. */

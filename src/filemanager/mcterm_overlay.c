@@ -763,6 +763,8 @@ mcterm_overlay_terminal_owns (long command)
     case CK_MarkAll:
     case CK_FilterWord:
     case CK_FilterToggle:
+    case CK_Search:
+    case CK_QuickFilter:
     case CK_Clear:
     case CK_ClearAll:
         return TRUE;
@@ -1713,6 +1715,10 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     mcterm_set_scroll_allowed (mcterm_panel, !mcterm_overlay_any_panel_visible ());
     // Both can be turned off while the terminal is up, so they are told each time.
     mcterm_set_typing_elsewhere (mcterm_panel, command_prompt);
+
+    // What is typed for the terminal to search or filter by takes the keys that edit it.
+    if (mcterm_query_key (mcterm_panel, parm) == MSG_HANDLED)
+        return MSG_HANDLED;
 
     {
         WGroup *g = GROUP (filemanager);

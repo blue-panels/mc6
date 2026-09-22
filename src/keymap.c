@@ -760,8 +760,11 @@ static const global_keymap_ini_t default_mcterm_keymap[] = {
     { "Clear", "ctrl-l; f7" },
     { "ClearAll", "ctrl-shift-l; ctrl-alt-l; f6" },
     // the output cut down to the rows that match
-    { "FilterWord", "alt-shift-s; f4" },
-    { "FilterToggle", "alt-s; f5" },
+    { "FilterWord", "f4" },
+    { "FilterToggle", "f5" },
+    // a pattern typed the way the panels take one: the output searched, or cut down
+    { "Search", "alt-s" },
+    { "QuickFilter", "alt-shift-s" },
     {
         NULL,
         NULL,

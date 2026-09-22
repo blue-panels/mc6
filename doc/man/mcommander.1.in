@@ -2689,7 +2689,7 @@ users cannot specify mcommander\-specific startup commands at present. They have
 shell\-specific startup files.
 .PP
 You can suspend applications at any
-time with the sequence C\-o and jump back to M\-Commander, if
+time with the sequence Ctrl\-o and jump back to M\-Commander, if
 you interrupt an application, you will not be able to run other
 external commands until you quit the application you interrupted.
 .PP
@@ -2701,15 +2701,27 @@ the view work whoever is typing.  Every key not named below is typed into
 the shell.
 .PP
 .nf
-C\-Insert     copy the marked output to the clipboard
-C\-S\-u        take the mark back
-A\-S\-s        cut the output down to the rows that match the mark,
-             or the word under the cursor
-A\-s          turn that filter off, and on again
-C\-l          clear the screen, keeping the scrollback
-C\-S\-l        clear the screen and the scrollback both
-             (also C\-A\-l)
+Ctrl\-Insert    copy the marked output to the clipboard
+Ctrl\-Shift\-u   take the mark back
+Alt\-s          search the output for what is typed next
+Alt\-Shift\-s    show only the rows that match what is typed next
+Ctrl\-l         clear the screen, keeping the scrollback
+Ctrl\-Shift\-l   clear the screen and the scrollback both
+               (also Ctrl\-Alt\-l)
 .fi
+.PP
+Alt\-s and Alt\-Shift\-s take a pattern the way they do in the panels: it is
+typed on the top row of the screen, and the output follows it as it
+grows.  Case does not matter.  A search goes up the output from the
+cursor and marks the nearest match; Alt\-s again marks the one above it,
+and past the oldest row the search goes round to the newest.  A filter
+shows the rows that match and no others, and the cursor keys walk them
+while the pattern is still being typed; Alt\-Shift\-s again moves the cursor
+to the row above.  Pressed with nothing typed, either key takes the
+pattern it had last.  Backspace takes a character back, and a character
+that nothing matches is not taken.  Enter ends the typing and leaves
+the view as it is, Esc ends it and lifts the filter; any other key ends
+it and then does what it does.
 .PP
 With no panel on screen the function keys are the terminal's own and the
 button bar names them.  The file manager's View, Edit, Copy, RenMov and
