@@ -1,22 +1,185 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: mcommander
+Upstream-Name: M-Commander
 Source: https://github.com/blue-panels/mcommander
+Comment:
+ M-Commander is a fork of GNU Midnight Commander.  Most of the code comes
+ from there and is held by the Free Software Foundation, to which the
+ Midnight Commander authors assigned their copyright.  The list of authors
+ and contributors is in the file AUTHORS.
 
 Files: *
-Copyright: 1994-2026 The Midnight Commander developers
-           2026 Ilia Maslakov
+Copyright:
+    1991-1992, 1994-2025 Free Software Foundation, Inc.
+    2026      Ilia Maslakov <il.smind@gmail.com>
+    1996      andrey joukov <2:5020/337.13@fidonet.org>
+    2002      ARJ Software Russia
+    2003      Alexander Serkov <serkov@ukrpost.net>
+    2008      Jacques Pelletier <jpelletier@ieee.org>
+    2020      Jonas Smedegaard <dr@jones.dk>
+    1996-1997 Joseph M. Hinkle <jhinkle@rockisland.com>
+    2005-2006 Leonard den Ottolander <leonard den ottolander nl>
+    1995-1996 Miguel de Icaza
+    2000-2001 Oskar Liljeblad <osk@hem.passagen.se>
+    1996      Paul Sheer
+    2003      Pavel Roskin
+    2002      Petr Kozelka <pkozelka@email.cz>
+    1999      Piotr Roszatycki <dexter@debian.org>
+    2001      Walery Studennikov <despair@sama.ru>
 License: GPL-3+
 
+Files: debian/*
+Copyright: 2026 Ilia Maslakov <il.smind@gmail.com>
 License: GPL-3+
- This program is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published by the Free
- Software Foundation, either version 3 of the License, or (at your option)
- any later version.
+
+Files:
+    lib/idx.h
+    lib/intprops-internal.h
+    lib/intprops.h
+    lib/stdckdint.in.h
+Copyright: 2001-2024 Free Software Foundation, Inc.
+License: LGPL-2.1+
+Comment: Taken from gnulib and the GNU C Library.
+
+Files:
+    lib/strutil/strverscmp.c
+Copyright: 1997-2025 Free Software Foundation, Inc.
+License: LGPL-2.1+ and GPL-3+
+Comment:
+ Taken from the GNU C Library and adapted to this tree, which added a second
+ notice of its own.  Both notices are in the file, so both licenses apply.
+
+Files:
+    lib/strutil/filevercmp.c
+Copyright:
+    1995      Ian Jackson <iwj10@cus.cam.ac.uk>
+    2001      Anthony Towns <aj@azure.humbug.org.au>
+    2008-2022 Free Software Foundation, Inc.
+License: LGPL-3+
+Comment: Taken from gnulib.
+
+Files:
+    m4.include/gnulib/*.m4
+Copyright: 1997-2025 Free Software Foundation, Inc.
+License: FSFULLR
+
+Files:
+    m4.include/ax_append_compile_flags.m4
+    m4.include/ax_append_flag.m4
+    m4.include/ax_check_compile_flag.m4
+    m4.include/ax_require_defined.m4
+Copyright:
+    2008 Guido U. Draheim <guidod@gmx.de>
+    2011 Maarten Bosmans <mkbosmans@gmail.com>
+    2014 Mike Frysinger <vapier@gentoo.org>
+License: FSFAP
+Comment: Taken from the GNU Autoconf Archive.
+
+Files:
+    misc/syntax/nemerle.syntax
+Copyright: 2004 The University of Wroclaw
+License: BSD-3-Clause
+
+Files:
+    misc/syntax/meson.syntax
+Copyright: 2018 Vitold S
+License: Expat
+
+License: GPL-3+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
  .
- This program is distributed in the hope that it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- details.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
  .
- On Debian systems, the complete text of the GNU General Public License
- version 3 can be found in /usr/share/common-licenses/GPL-3.
+ On Debian systems, the complete text of the GNU General Public
+ License Version 3 can be found in "/usr/share/common-licenses/GPL-3".
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or (at
+ your option) any later version.
+ .
+ This library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+ General Public License for more details.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License Version 2.1 can be found in
+ "/usr/share/common-licenses/LGPL-2.1".
+
+License: LGPL-3+
+ This file is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or (at
+ your option) any later version.
+ .
+ This file is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+ License for more details.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License Version 3 can be found in "/usr/share/common-licenses/LGPL-3".
+
+License: FSFULLR
+ This file is free software; the Free Software Foundation gives unlimited
+ permission to copy and/or distribute it, with or without modifications,
+ as long as this notice is preserved.
+ .
+ This file is offered as-is, without any warranty.
+
+License: FSFAP
+ Copying and distribution of this file, with or without modification, are
+ permitted in any medium without royalty provided the copyright notice
+ and this notice are preserved.  This file is offered as-is, without any
+ warranty.
+
+License: BSD-3-Clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    3. The name of the University may not be used to endorse or promote
+       products derived from this software without specific prior
+       written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY ``AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
+ NO EVENT SHALL THE UNIVERSITY BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+License: Expat
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to permit
+ persons to whom the Software is furnished to do so, subject to the
+ following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+ NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+ USE OR OTHER DEALINGS IN THE SOFTWARE.
