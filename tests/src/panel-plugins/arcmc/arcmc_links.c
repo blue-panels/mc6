@@ -1,26 +1,23 @@
 /*
-   src/panel-plugins/arcmc - tests for the links inside an archive
+   src/panel-plugins/arcmc - tests for the entries of an archive
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #define TEST_SUITE_NAME "/src/panel-plugins/arcmc"
@@ -122,6 +119,65 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_compute_dir_size)
+{
+    arcmc_entry_t *dir;
+
+    dir = add ("etc", S_IFDIR | 0755, NULL);
+    add ("etc/sub", S_IFDIR | 0755, NULL);
+    add ("etc/config", S_IFREG | 0644, NULL)->size = 12;
+    add ("etc/sub/data", S_IFREG | 0644, NULL)->size = 30;
+    add ("other", S_IFREG | 0644, NULL)->size = 50;
+    // a name that starts with "etc" is not inside it
+    add ("etc-old", S_IFDIR | 0755, NULL);
+    add ("etc-old/data", S_IFREG | 0644, NULL)->size = 100;
+
+    ck_assert (arcmc_compute_dir_size (entries, "etc"));
+    ck_assert (dir->dir_size_computed);
+    ck_assert_int_eq (dir->dir_size, 42);
+
+    // a file and a name of nothing are not directories
+    ck_assert (!arcmc_compute_dir_size (entries, "other"));
+    ck_assert (!arcmc_compute_dir_size (entries, "nowhere"));
+    ck_assert (!arcmc_compute_dir_size (entries, ""));
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Every directory of one level, in a single pass. */
+START_TEST (test_compute_level_dir_sizes)
+{
+    add ("etc", S_IFDIR | 0755, NULL);
+    add ("etc/sub", S_IFDIR | 0755, NULL);
+    add ("etc/config", S_IFREG | 0644, NULL)->size = 12;
+    add ("etc/sub/data", S_IFREG | 0644, NULL)->size = 30;
+    add ("var", S_IFDIR | 0755, NULL);
+    add ("var/log", S_IFREG | 0644, NULL)->size = 7;
+    add ("empty", S_IFDIR | 0755, NULL);
+    add ("loose", S_IFREG | 0644, NULL)->size = 99;
+
+    arcmc_compute_level_dir_sizes (entries, "");
+
+    ck_assert (get ("etc")->dir_size_computed);
+    ck_assert_int_eq (get ("etc")->dir_size, 42);
+    ck_assert_int_eq (get ("var")->dir_size, 7);
+    ck_assert (get ("empty")->dir_size_computed);
+    ck_assert_int_eq (get ("empty")->dir_size, 0);
+    // a file of this level is not a directory of it
+    ck_assert (!get ("loose")->dir_size_computed);
+    // a directory of a level below is left alone
+    ck_assert (!get ("etc/sub")->dir_size_computed);
+
+    arcmc_compute_level_dir_sizes (entries, "etc");
+
+    ck_assert (get ("etc/sub")->dir_size_computed);
+    ck_assert_int_eq (get ("etc/sub")->dir_size, 30);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* A second pass starts over, as after a reload. */
 START_TEST (test_resolve_twice)
 {
@@ -147,6 +203,8 @@ main (void)
     tcase_add_checked_fixture (tc_core, setup, teardown);
 
     tcase_add_test (tc_core, test_links_are_resolved);
+    tcase_add_test (tc_core, test_compute_dir_size);
+    tcase_add_test (tc_core, test_compute_level_dir_sizes);
     tcase_add_test (tc_core, test_resolve_twice);
 
     return mctest_run_all (tc_core);

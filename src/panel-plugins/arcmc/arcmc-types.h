@@ -24,6 +24,8 @@ typedef struct
     char *link_path;         /* the entry a link leads to, or NULL */
     gboolean link_to_dir;    /* the link leads to a directory */
     gboolean stale_link;     /* the link leads nowhere in the archive */
+    off_t dir_size;          /* recursive size after Ctrl-Space */
+    gboolean dir_size_computed;
 } arcmc_entry_t;
 
 /* Format indices for arcmc_pack_opts_t.format */
