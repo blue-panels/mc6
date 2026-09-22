@@ -1691,6 +1691,23 @@ mcterm_overlay_cmdline_enter (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Hand the key to the terminal. A key it cannot type into the shell - a function key, say - is
+   stopped here all the same when the file manager would run it on the panel cursor that cannot
+   be seen: left unhandled, the dialog looks the key up in its own keymap and runs the command,
+   and F8 deletes the file under the hidden cursor. */
+static cb_ret_t
+mcterm_overlay_key_to_terminal (Widget *w, int parm)
+{
+    if (send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL) == MSG_HANDLED)
+        return MSG_HANDLED;
+
+    return mcterm_overlay_command_needs_panel_cursor (widget_lookup_key (w, parm))
+        ? MSG_HANDLED
+        : MSG_NOT_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 cb_ret_t
 mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t execute_command,
                            mcterm_overlay_enter_cb_t execute_cmdline_enter, void *data)
@@ -1784,7 +1801,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
            typing: the line stays put, and the view is not dragged back to the end first. */
         if (!in_alt && !mcterm_overlay_any_panel_visible ()
             && mcterm_overlay_terminal_owns (term_cmd))
-            return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+            return mcterm_overlay_key_to_terminal (w, parm);
 
         if (!in_alt && !mcterm_overlay_any_panel_visible () && term_cmd != CK_IgnoreKey
             && mcterm_overlay_terminal_focused ())
@@ -1805,7 +1822,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         }
 
         if (in_alt || !at_prompt)
-            return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+            return mcterm_overlay_key_to_terminal (w, parm);
     }
 
     // At the shell's prompt the command line is its own: hand it the key to edit and recall with.
@@ -1825,7 +1842,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
     /* With no panel on screen the terminal's keymap comes first: what it names is the
        terminal's, and the file manager's key of the same name never gets to run. */
     if (term_cmd != CK_IgnoreKey && !mcterm_overlay_any_panel_visible ())
-        return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+        return mcterm_overlay_key_to_terminal (w, parm);
 
     cmd = widget_lookup_key (w, parm);
     if (cmd != CK_IgnoreKey && !mcterm_overlay_command_needs_panel_cursor (cmd))
@@ -1838,7 +1855,7 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         return MSG_HANDLED;
     }
 
-    return send_message (mcterm_overlay_widget (), NULL, MSG_KEY, parm, NULL);
+    return mcterm_overlay_key_to_terminal (w, parm);
 }
 
 #else /* !ENABLE_MCTERM */
