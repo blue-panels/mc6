@@ -3,34 +3,58 @@
 #
 # History:
 #
+# - 2026: Update language, literals, escapes, operators and standard library for Lua 5.4. (smind)
 # - 2015: Support for long strings and long comments.
 # - 2011: String-literal fixes.
 # - 2005: Started by Mike Gorchak <lestat@i.com.ua>
 
 context default lightgray
 
-# keywords
-    keyword whole and white
-    keyword whole break white
-    keyword whole do white
-    keyword whole else white
-    keyword whole elseif white
-    keyword whole end white
-    keyword whole false white
-    keyword whole for white
-    keyword whole function white
-    keyword whole if white
-    keyword whole in white
-    keyword whole local white
-    keyword whole nil white
-    keyword whole not white
-    keyword whole or white
-    keyword whole repeat white
-    keyword whole return white
-    keyword whole then white
-    keyword whole true white
-    keyword whole until white
-    keyword whole while white
+# Keywords use the closest 16-color equivalents of GitHub's syntax palette.
+    keyword whole and brightred
+    keyword whole break brightred
+    keyword whole do brightred
+    keyword whole else brightred
+    keyword whole elseif brightred
+    keyword whole end brightred
+    keyword whole for brightred
+    keyword whole function brightred
+    keyword whole goto brightred
+    keyword whole if brightred
+    keyword whole in brightred
+    keyword whole local brightred
+    keyword whole not brightred
+    keyword whole or brightred
+    keyword whole repeat brightred
+    keyword whole return brightred
+    keyword whole then brightred
+    keyword whole until brightred
+    keyword whole while brightred
+
+# Literal constants
+    keyword whole false brightcyan
+    keyword whole nil brightcyan
+    keyword whole true brightcyan
+
+# Lua 5.4 variable attributes (const and close are not keywords on their own)
+    keyword <const> brightmagenta
+    keyword <close> brightmagenta
+
+# Numbers
+    wholechars abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_
+
+    keyword whole 0\{xX\}\{0123456789abcdefABCDEF\}\[0123456789abcdefABCDEF\]\.\[0123456789abcdefABCDEF\]\{pP\}\{0123456789\}\[0123456789\] cyan
+    keyword whole 0\{xX\}\{0123456789abcdefABCDEF\}\[0123456789abcdefABCDEF\]\.\[0123456789abcdefABCDEF\]\{pP\}\{\-\+\}\{0123456789\}\[0123456789\] cyan
+    keyword whole 0\{xX\}\{0123456789abcdefABCDEF\}\[0123456789abcdefABCDEF\]\{pP\}\{0123456789\}\[0123456789\] cyan
+    keyword whole 0\{xX\}\{0123456789abcdefABCDEF\}\[0123456789abcdefABCDEF\]\{pP\}\{\-\+\}\{0123456789\}\[0123456789\] cyan
+    keyword whole 0\{xX\}\{0123456789abcdefABCDEF\}\[0123456789abcdefABCDEF\] cyan
+    keyword whole \{0123456789\}\[0123456789\] cyan
+    keyword whole \[0123456789\]\.\{0123456789\}\[0123456789\] cyan
+    keyword whole \{0123456789\}\[0123456789\]\.\[0123456789\] cyan
+    keyword whole \{0123456789\}\[0123456789\]\{eE\}\{0123456789\}\[0123456789\] cyan
+    keyword whole \{0123456789\}\[0123456789\]\{eE\}\{\-\+\}\{0123456789\}\[0123456789\] cyan
+    keyword whole \{0123456789\}\[0123456789\]\.\[0123456789\]\{eE\}\{0123456789\}\[0123456789\] cyan
+    keyword whole \{0123456789\}\[0123456789\]\.\[0123456789\]\{eE\}\{\-\+\}\{0123456789\}\[0123456789\] cyan
 
 # Comment and string delimiters
     keyword -- brown
@@ -41,6 +65,19 @@ context default lightgray
     keyword [\[=\][ brown
 
 # Operators
+    # Field names.  The syntax engine has no lookbehind, so '.' is part of the
+    # match; unlike a context rule, this cannot leak into following text.
+    keyword .\{abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_\}+ brightmagenta
+    keyword ... white
+    keyword .. white
+    keyword // white
+    keyword << white
+    keyword >> white
+    keyword <= white
+    keyword >= white
+    keyword == white
+    keyword ~= white
+    keyword :: brightcyan
     keyword ( white
     keyword ) white
     keyword { white
@@ -51,158 +88,213 @@ context default lightgray
     keyword , white
     keyword ; white
     keyword : white
-    keyword .. white
-    keyword ... white
     keyword = white
-    keyword == white
-    keyword ~= white
-    keyword <= white
-    keyword => white
     keyword > white
     keyword < white
     keyword \+ white
     keyword - white
     keyword \* white
     keyword / white
+    keyword % white
     keyword ^ white
+    keyword # white
+    keyword & white
+    keyword | white
+    keyword ~ white
 
 
 # Library Functions
 
     # basiclib
-    keyword whole error yellow
-    keyword whole getmetatable yellow
-    keyword whole setmetatable yellow
-    keyword whole getfenv yellow
-    keyword whole setfenv yellow
-    keyword whole next yellow
-    keyword whole ipairs yellow
-    keyword whole pairs yellow
-    keyword whole print yellow
-    keyword whole tonumber yellow
-    keyword whole tostring yellow
-    keyword whole type yellow
-    keyword whole assert yellow
+    keyword whole error brightmagenta
+    keyword whole getmetatable brightmagenta
+    keyword whole setmetatable brightmagenta
+    keyword whole getfenv brightmagenta
+    keyword whole setfenv brightmagenta
+    keyword whole next brightmagenta
+    keyword whole ipairs brightmagenta
+    keyword whole pairs brightmagenta
+    keyword whole print brightmagenta
+    keyword whole tonumber brightmagenta
+    keyword whole tostring brightmagenta
+    keyword whole type brightmagenta
+    keyword whole assert brightmagenta
     #keyword whole unpack yellow    # modern code should use table.unpack()
-    keyword whole rawequal yellow
-    keyword whole rawget yellow
-    keyword whole rawset yellow
-    keyword whole pcall yellow
-    keyword whole xpcall yellow
-    keyword whole collectgarbage yellow
-    keyword whole gcinfo yellow
-    keyword whole loadfile yellow
-    keyword whole dofile yellow
-    keyword whole loadstring yellow
-    keyword whole require yellow
-    keyword whole coroutine.create yellow
-    keyword whole coroutine.wrap yellow
-    keyword whole coroutine.resume yellow
-    keyword whole coroutine.yield yellow
-    keyword whole coroutine.status yellow
+    keyword whole rawequal brightmagenta
+    keyword whole rawget brightmagenta
+    keyword whole rawlen brightmagenta
+    keyword whole rawset brightmagenta
+    keyword whole pcall brightmagenta
+    keyword whole xpcall brightmagenta
+    keyword whole collectgarbage brightmagenta
+    keyword whole gcinfo brightmagenta
+    keyword whole loadfile brightmagenta
+    keyword whole load brightmagenta
+    keyword whole dofile brightmagenta
+    keyword whole loadstring brightmagenta
+    keyword whole require brightmagenta
+    keyword whole select brightmagenta
+    keyword whole warn brightmagenta
+    keyword whole coroutine.create brightmagenta
+    keyword whole coroutine.wrap brightmagenta
+    keyword whole coroutine.resume brightmagenta
+    keyword whole coroutine.yield brightmagenta
+    keyword whole coroutine.status brightmagenta
+    keyword whole coroutine.isyieldable brightmagenta
+    keyword whole coroutine.running brightmagenta
+    keyword whole coroutine.close brightmagenta
 
     # stringlib
-    keyword whole string.len yellow
-    keyword whole string.sub yellow
-    keyword whole string.lower yellow
-    keyword whole string.upper yellow
-    keyword whole string.char yellow
-    keyword whole string.rep yellow
-    keyword whole string.byte yellow
-    keyword whole string.format yellow
-    keyword whole string.dump yellow
-    keyword whole string.find yellow
-    keyword whole string.gfind yellow
-    keyword whole string.gsub yellow
+    keyword whole string.len brightmagenta
+    keyword whole string.sub brightmagenta
+    keyword whole string.lower brightmagenta
+    keyword whole string.upper brightmagenta
+    keyword whole string.char brightmagenta
+    keyword whole string.rep brightmagenta
+    keyword whole string.byte brightmagenta
+    keyword whole string.format brightmagenta
+    keyword whole string.dump brightmagenta
+    keyword whole string.find brightmagenta
+    keyword whole string.gfind brightmagenta
+    keyword whole string.gsub brightmagenta
+    keyword whole string.gmatch brightmagenta
+    keyword whole string.match brightmagenta
+    keyword whole string.reverse brightmagenta
+    keyword whole string.pack brightmagenta
+    keyword whole string.packsize brightmagenta
+    keyword whole string.unpack brightmagenta
 
     # tablelib
-    keyword whole table.concat yellow
-    keyword whole table.foreach yellow
-    keyword whole table.foreachi yellow
-    keyword whole table.getn yellow
-    keyword whole table.setn yellow
-    keyword whole table.sort yellow
-    keyword whole table.insert yellow
-    keyword whole table.remove yellow
-    keyword whole table.unpack yellow
+    keyword whole table.concat brightmagenta
+    keyword whole table.foreach brightmagenta
+    keyword whole table.foreachi brightmagenta
+    keyword whole table.getn brightmagenta
+    keyword whole table.setn brightmagenta
+    keyword whole table.sort brightmagenta
+    keyword whole table.insert brightmagenta
+    keyword whole table.remove brightmagenta
+    keyword whole table.unpack brightmagenta
+    keyword whole table.pack brightmagenta
+    keyword whole table.move brightmagenta
 
     # mathlib
-    keyword whole math.abs yellow
-    keyword whole math.sin yellow
-    keyword whole math.cos yellow
-    keyword whole math.tan yellow
-    keyword whole math.asin yellow
-    keyword whole math.acos yellow
-    keyword whole math.atan yellow
-    keyword whole math.atan2 yellow
-    keyword whole math.ceil yellow
-    keyword whole math.floor yellow
-    keyword whole math.mod yellow
-    keyword whole math.frexp yellow
-    keyword whole math.ldexp yellow
-    keyword whole math.sqrt yellow
-    keyword whole math.min yellow
-    keyword whole math.max yellow
-    keyword whole math.log yellow
-    keyword whole math.log10 yellow
-    keyword whole math.exp yellow
-    keyword whole math.deg yellow
-    keyword whole math.pow yellow
-    keyword whole math.rad yellow
-    keyword whole math.random yellow
-    keyword whole math.randomseed yellow
+    keyword whole math.abs brightmagenta
+    keyword whole math.sin brightmagenta
+    keyword whole math.cos brightmagenta
+    keyword whole math.tan brightmagenta
+    keyword whole math.asin brightmagenta
+    keyword whole math.acos brightmagenta
+    keyword whole math.atan brightmagenta
+    keyword whole math.atan2 brightmagenta
+    keyword whole math.ceil brightmagenta
+    keyword whole math.floor brightmagenta
+    keyword whole math.mod brightmagenta
+    keyword whole math.frexp brightmagenta
+    keyword whole math.ldexp brightmagenta
+    keyword whole math.sqrt brightmagenta
+    keyword whole math.min brightmagenta
+    keyword whole math.max brightmagenta
+    keyword whole math.log brightmagenta
+    keyword whole math.log10 brightmagenta
+    keyword whole math.exp brightmagenta
+    keyword whole math.deg brightmagenta
+    keyword whole math.pow brightmagenta
+    keyword whole math.rad brightmagenta
+    keyword whole math.random brightmagenta
+    keyword whole math.randomseed brightmagenta
+    keyword whole math.fmod brightmagenta
+    keyword whole math.modf brightmagenta
+    keyword whole math.tointeger brightmagenta
+    keyword whole math.type brightmagenta
+    keyword whole math.ult brightmagenta
+    keyword whole math.huge cyan
+    keyword whole math.maxinteger cyan
+    keyword whole math.mininteger cyan
+    keyword whole math.pi cyan
 
     # iolib
-    keyword whole io.input yellow
-    keyword whole io.output yellow
-    keyword whole io.lines yellow
-    keyword whole io.close yellow
-    keyword whole io.flush yellow
-    keyword whole io.open yellow
-    keyword whole io.popen yellow
-    keyword whole io.read yellow
-    keyword whole io.tmpfile yellow
-    keyword whole io.type yellow
-    keyword whole io.write yellow
+    keyword whole io.input brightmagenta
+    keyword whole io.output brightmagenta
+    keyword whole io.lines brightmagenta
+    keyword whole io.close brightmagenta
+    keyword whole io.flush brightmagenta
+    keyword whole io.open brightmagenta
+    keyword whole io.popen brightmagenta
+    keyword whole io.read brightmagenta
+    keyword whole io.tmpfile brightmagenta
+    keyword whole io.type brightmagenta
+    keyword whole io.write brightmagenta
 
     # filelib
-    keyword whole file.flush yellow
-    keyword whole file.read yellow
-    keyword whole file.lines yellow
-    keyword whole file.seek yellow
-    keyword whole file.write yellow
-    keyword whole file.close yellow
-    keyword whole file.__gc yellow
-    keyword whole file.__tostring yellow
+    keyword whole file.flush brightmagenta
+    keyword whole file.read brightmagenta
+    keyword whole file.lines brightmagenta
+    keyword whole file.seek brightmagenta
+    keyword whole file.write brightmagenta
+    keyword whole file.close brightmagenta
+    keyword whole file.__gc brightmagenta
+    keyword whole file.__tostring brightmagenta
 
     # syslib
-    keyword whole os.clock yellow
-    keyword whole os.date yellow
-    keyword whole os.difftime yellow
-    keyword whole os.execute yellow
-    keyword whole os.exit yellow
-    keyword whole os.getenv yellow
-    keyword whole os.remove yellow
-    keyword whole os.rename yellow
-    keyword whole os.setlocale yellow
-    keyword whole os.time yellow
-    keyword whole os.tmpname yellow
+    keyword whole os.clock brightmagenta
+    keyword whole os.date brightmagenta
+    keyword whole os.difftime brightmagenta
+    keyword whole os.execute brightmagenta
+    keyword whole os.exit brightmagenta
+    keyword whole os.getenv brightmagenta
+    keyword whole os.remove brightmagenta
+    keyword whole os.rename brightmagenta
+    keyword whole os.setlocale brightmagenta
+    keyword whole os.time brightmagenta
+    keyword whole os.tmpname brightmagenta
 
     # debuglib
-    keyword whole debug.getlocal yellow
-    keyword whole debug.getinfo yellow
-    keyword whole debug.gethook yellow
-    keyword whole debug.getupvalue yellow
-    keyword whole debug.sethook yellow
-    keyword whole debug.setlocal yellow
-    keyword whole debug.setupvalue yellow
-    keyword whole debug.debug yellow
-    keyword whole debug.traceback yellow
+    keyword whole debug.getlocal brightmagenta
+    keyword whole debug.getinfo brightmagenta
+    keyword whole debug.gethook brightmagenta
+    keyword whole debug.getupvalue brightmagenta
+    keyword whole debug.sethook brightmagenta
+    keyword whole debug.setlocal brightmagenta
+    keyword whole debug.setupvalue brightmagenta
+    keyword whole debug.debug brightmagenta
+    keyword whole debug.traceback brightmagenta
+    keyword whole debug.getmetatable brightmagenta
+    keyword whole debug.setmetatable brightmagenta
+    keyword whole debug.getregistry brightmagenta
+    keyword whole debug.getuservalue brightmagenta
+    keyword whole debug.setuservalue brightmagenta
+    keyword whole debug.upvalueid brightmagenta
+    keyword whole debug.upvaluejoin brightmagenta
 
+    # utf8lib
+    keyword whole utf8.char brightmagenta
+    keyword whole utf8.charpattern cyan
+    keyword whole utf8.codepoint brightmagenta
+    keyword whole utf8.codes brightmagenta
+    keyword whole utf8.len brightmagenta
+    keyword whole utf8.offset brightmagenta
+
+    # packagelib
+    keyword whole package.config cyan
+    keyword whole package.cpath cyan
+    keyword whole package.loaded cyan
+    keyword whole package.loadlib brightmagenta
+    keyword whole package.path cyan
+    keyword whole package.preload cyan
+    keyword whole package.searchers cyan
+    keyword whole package.searchpath brightmagenta
+
+# Function names in declarations and calls.  The leading word boundary also
+# handles method calls after '.' and ':'.
+    keyword wholeleft +\[\s\]( magenta
 
 # Global Variables
-    keyword whole _VERSION brightmagenta
-    keyword whole _G brightmagenta
+    keyword whole _VERSION cyan
+    keyword whole _G cyan
+    keyword whole _ENV cyan
+    keyword whole io.stdin cyan
+    keyword whole io.stdout cyan
+    keyword whole io.stderr cyan
 
 #
 # Long comments
@@ -230,16 +322,16 @@ context exclusive --[====\[=\][ ]====\[=\]] brown
 # Long strings
 #
 
-context exclusive [[ ]] brightmagenta
+context exclusive [[ ]] brightcyan
     spellcheck
-context exclusive [=[ ]=] brightmagenta
+context exclusive [=[ ]=] brightcyan
     spellcheck
-context exclusive [==[ ]==] brightmagenta
+context exclusive [==[ ]==] brightcyan
     spellcheck
-context exclusive [===[ ]===] brightmagenta
+context exclusive [===[ ]===] brightcyan
     spellcheck
 # 4 equals and up (the number of ='s doesn't have to match, but that's the best we can do):
-context exclusive [====\[=\][ ]====\[=\]] brightmagenta
+context exclusive [====\[=\][ ]====\[=\]] brightcyan
     spellcheck
 
 
@@ -252,7 +344,7 @@ context exclusive -- \n brown
 context linestart #! \n brown
 
 # Strings
-context " " green
+context " " brightcyan
     keyword %a brightgreen
     keyword %c brightgreen
     keyword %d brightgreen
@@ -268,12 +360,15 @@ context " " green
     keyword \\" brightgreen
     keyword \\' brightgreen
     keyword \\\{abtnvfr\} brightgreen
-    keyword \\\{0123\}\{01234567\}\{01234567\} brightgreen
-    keyword \\\{01234567\}\{01234567\} brightgreen
-    keyword \\\{01234567\} brightgreen
+    keyword \\z brightgreen
+    keyword \\x\{0123456789abcdefABCDEF\}\{0123456789abcdefABCDEF\} brightgreen
+    keyword \\u{*} brightgreen
+    keyword \\\{0123456789\}\{0123456789\}\{0123456789\} brightgreen
+    keyword \\\{0123456789\}\{0123456789\} brightgreen
+    keyword \\\{0123456789\} brightgreen
     spellcheck
 
-context ' ' green
+context ' ' brightcyan
     keyword %a brightgreen
     keyword %c brightgreen
     keyword %d brightgreen
@@ -289,7 +384,10 @@ context ' ' green
     keyword \\" brightgreen
     keyword \\' brightgreen
     keyword \\\{abtnvfr\} brightgreen
-    keyword \\\{0123\}\{01234567\}\{01234567\} brightgreen
-    keyword \\\{01234567\}\{01234567\} brightgreen
-    keyword \\\{01234567\} brightgreen
+    keyword \\z brightgreen
+    keyword \\x\{0123456789abcdefABCDEF\}\{0123456789abcdefABCDEF\} brightgreen
+    keyword \\u{*} brightgreen
+    keyword \\\{0123456789\}\{0123456789\}\{0123456789\} brightgreen
+    keyword \\\{0123456789\}\{0123456789\} brightgreen
+    keyword \\\{0123456789\} brightgreen
     spellcheck
