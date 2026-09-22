@@ -3,17 +3,21 @@
 
 EAPI=8
 
-DESCRIPTION="Modular TUI file manager with a tiny core, based on GNU Midnight Commander"
-HOMEPAGE="https://github.com/blue-panels/mcommander/wiki"
+inherit optfeature
+
+DESCRIPTION="Two-pane text-mode file manager with loadable panel plugins"
+HOMEPAGE="https://blue-panels.github.io/mcommander/"
 SRC_URI="https://github.com/blue-panels/mcommander/releases/download/v${PV}/mcommander-${PV}.tar.gz"
 S="${WORKDIR}/mcommander-${PV}"
 
 LICENSE="GPL-3+"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64"
-IUSE="+arcmc +ftp +gpm +lua +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang"
+IUSE="+arcmc +ftp +gpm +lua +magic +mongo +s3 +samba +sftp +shell-link +shell-ssh2 +slang +sqlite X"
 REQUIRED_USE="shell-ssh2? ( shell-link )"
 
+# chafa is read at configure time as well: without it the lua-chafa script is
+# not installed at all, so it belongs in DEPEND and not only in RDEPEND.
 COMMON_DEPEND="
 	dev-libs/glib:2
 	slang? ( sys-libs/slang )
@@ -28,6 +32,9 @@ COMMON_DEPEND="
 	mongo? ( dev-libs/mongo-c-driver )
 	sftp? ( net-libs/libssh2 )
 	shell-ssh2? ( net-libs/libssh2 )
+	sqlite? ( dev-db/sqlite )
+	X? ( x11-libs/libX11 )
+	lua? ( media-gfx/chafa )
 "
 # The files carry their own name, so the distribution mc is not in the way.
 # The predecessor under the old name owned the same paths as mc and is not.
@@ -56,6 +63,8 @@ src_configure() {
 		$(use_enable arcmc panel-plugin-arcmc)
 		$(use_enable s3 panel-plugin-s3)
 		$(use_enable mongo panel-plugin-mongo)
+		$(use_enable sqlite panel-plugin-sqlite)
+		$(use_with X x)
 		$(use_enable sftp vfs-sftp)
 		$(use_enable shell-link panel-plugin-shell-link)
 		$(use_enable shell-ssh2 shell-ssh2)
@@ -74,4 +83,20 @@ src_install() {
 pkg_postinst() {
 	elog "The program is /usr/bin/mcommander, with mc6 as a short symbolic link."
 	elog "app-misc/mc can stay installed: no file is shared with it."
+
+	optfeature "nroff text and man pages in the viewer" sys-apps/groff
+	optfeature "man pages read through man itself" sys-apps/man-db
+	optfeature "spell checking in the editor" app-text/aspell app-text/hunspell
+	optfeature "the tag index the editor reads" dev-util/ctags
+	optfeature "the Git panel" dev-vcs/git
+	optfeature "the Docker panel" app-containers/docker-cli
+	optfeature "the Kubernetes panel" sys-cluster/kubectl
+	optfeature "shell links where libssh2 cannot serve the host" net-misc/openssh
+
+	if use lua; then
+		optfeature "text and pages of a PDF" app-text/poppler[utils]
+		optfeature "img2sixel as the second sixel encoder" media-libs/libsixel
+		optfeature "readelf for the ELF view" sys-devel/binutils
+		optfeature "the line of details above a picture" media-gfx/imagemagick media-gfx/exif
+	fi
 }
