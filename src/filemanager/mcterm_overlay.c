@@ -514,6 +514,28 @@ mcterm_overlay_move_cmdline_to_shell (void)
 /* --------------------------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
+/* Redraw everything that may cover the terminal after the terminal or its status row was drawn. */
+static void
+mcterm_overlay_draw_covering_widgets (void)
+{
+    GList *l;
+
+    mcterm_overlay_draw_visible_panels ();
+
+    if (the_menubar != NULL && the_menubar->is_dropped)
+        widget_draw (WIDGET (the_menubar));
+
+    for (l = top_dlg; l != NULL; l = g_list_next (l))
+        if (WIDGET (l->data) == WIDGET (filemanager))
+            break;
+    if (l == NULL)
+        return;
+    for (l = g_list_previous (l); l != NULL; l = g_list_previous (l))
+        widget_draw (WIDGET (l->data));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Something is running: keep the row in front of the command line moving. */
 static void
 mcterm_overlay_busy_tick_cb (void *data)
@@ -531,16 +553,17 @@ mcterm_overlay_busy_tick_cb (void *data)
         return;
 
     /* In either view the busy line lives on the same bottom row; with the terminal on screen
-       the row is kept clear for it, so lay the terminal out to that height first. Laying it
-       out repaints the terminal over the whole area, so any panel on top of it has to be
-       drawn again, or it is left blanked until the next redraw and reads as flicker. */
+       the row is kept clear for it, so lay the terminal out to that height first. */
     if (mcterm_mode)
-    {
         mcterm_overlay_resize (&CONST_WIDGET (filemanager)->rect);
-        mcterm_overlay_draw_visible_panels ();
-    }
 
     mcterm_overlay_place_prompt ();
+
+    /* The terminal resize and the busy line are below panels, menus and dialogs. Restore all
+       of them before the refresh, just as the PTY output redraw path does. */
+    if (mcterm_mode)
+        mcterm_overlay_draw_covering_widgets ();
+
     tty_refresh ();
 }
 
@@ -628,8 +651,6 @@ mcterm_overlay_prompt_ready_cb (void *data)
 static void
 mcterm_overlay_after_redraw_cb (void *data)
 {
-    GList *l;
-
     (void) data;
 
     /* An mc started in our terminal asked for the panels and exited. The shell has drawn its
@@ -641,18 +662,7 @@ mcterm_overlay_after_redraw_cb (void *data)
         return;
     }
 
-    mcterm_overlay_draw_visible_panels ();
-
-    if (the_menubar != NULL && the_menubar->is_dropped)
-        widget_draw (WIDGET (the_menubar));
-
-    for (l = top_dlg; l != NULL; l = g_list_next (l))
-        if (WIDGET (l->data) == WIDGET (filemanager))
-            break;
-    if (l == NULL)
-        return;
-    for (l = g_list_previous (l); l != NULL; l = g_list_previous (l))
-        widget_draw (WIDGET (l->data));
+    mcterm_overlay_draw_covering_widgets ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1151,14 +1161,24 @@ void
 mcterm_overlay_resize (const WRect *r)
 {
     WRect tr;
+    Widget *tw;
 
     if (!mcterm_mode || mcterm_panel == NULL)
         return;
 
     mcterm_overlay_rect (r, &tr);
-    widget_set_size_rect (mcterm_overlay_widget (), &tr);
+    tw = mcterm_overlay_widget ();
+    if (!rects_are_equal (&tw->rect, &tr))
+        widget_set_size_rect (tw, &tr);
+
     if (command_prompt)
-        widget_set_size (WIDGET (cmdline), WIDGET (cmdline)->rect.y, r->x, 1, r->cols);
+    {
+        Widget *cw = WIDGET (cmdline);
+        WRect cr = { cw->rect.y, r->x, 1, r->cols };
+
+        if (!rects_are_equal (&cw->rect, &cr))
+            widget_set_size_rect (cw, &cr);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
