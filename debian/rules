@@ -31,6 +31,7 @@ override_dh_auto_configure:
 		--enable-panel-plugin-arcmc=yes \
 		--enable-panel-plugin-s3=yes \
 		--enable-panel-plugin-mongo=yes \
+		--enable-panel-plugin-sqlite=yes \
 		--enable-vfs-sftp=yes \
 		--enable-panel-plugin-shell-link=yes \
 		--enable-shell-ssh2=yes

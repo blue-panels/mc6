@@ -3,13 +3,14 @@
 pkgname=(mcommander mcommander-plugins mcommander-lua)
 pkgver=@VERSION@
 pkgrel=1
-pkgdesc='Modular TUI file manager with a tiny core, based on GNU Midnight Commander'
+pkgdesc='Two-pane text-mode file manager with loadable panel plugins'
 arch=('x86_64' 'aarch64')
-url='https://github.com/blue-panels/mcommander/wiki'
+url='https://blue-panels.github.io/mcommander/'
 license=('GPL-3.0-or-later')
 makedepends=('make' 'pkgconf' 'gettext'
              'glib2' 'slang' 'gpm' 'e2fsprogs' 'libssh2' 'curl' 'samba'
-             'libarchive' 'file' 'mongo-c-driver' 'lua')
+             'libarchive' 'file' 'mongo-c-driver' 'lua' 'sqlite' 'libx11'
+             'chafa')
 options=('!emptydirs')
 source=("mcommander-${pkgver}.tar.gz::${url}/releases/download/v${pkgver}/mcommander-${pkgver}.tar.gz")
 # Filled in by packaging/prepare.sh from the release archive; SKIP when no
@@ -35,6 +36,7 @@ build() {
     --enable-panel-plugin-arcmc=yes \
     --enable-panel-plugin-s3=yes \
     --enable-panel-plugin-mongo=yes \
+    --enable-panel-plugin-sqlite=yes \
     --enable-vfs-sftp=yes \
     --enable-panel-plugin-shell-link=yes \
     --enable-shell-ssh2=yes
@@ -42,14 +44,19 @@ build() {
 }
 
 package_mcommander() {
-  pkgdesc='Modular TUI file manager with a tiny core, based on GNU Midnight Commander'
+  pkgdesc='Two-pane text-mode file manager with loadable panel plugins'
   # libe2p comes in through --enable-ext2fs-attr, which defaults to auto and
   # always finds the library here; libmagic through --enable-mctree-magic.
   depends=('glib2' 'slang' 'gpm' 'e2fsprogs' 'file')
-  optdepends=('mcommander-plugins: panel plugins for FTP, SFTP, S3, Samba, Docker, k8s, MongoDB'
-              'mcommander-lua: Lua runtime extension and the scripts that use it'
+  optdepends=('mcommander-plugins: panels for archives and remote systems'
+              'mcommander-lua: pictures, markdown and PDF in the viewer'
+              'groff: man pages and nroff text in the viewer'
+              'man-db: man pages in the viewer'
+              'python: three of the extfs helpers'
+              'libx11: keyboard modifiers under X'
               'aspell: spell checking in the editor'
-              'hunspell: spell checking in the editor')
+              'hunspell: spell checking in the editor'
+              'ctags: the tag index the editor reads')
   conflicts=('mc6')
   replaces=('mc6')
   backup=('etc/mcommander/ctags.keymap' 'etc/mcommander/edit.indent.rc'
@@ -65,6 +72,8 @@ package_mcommander() {
   rm -rf "${pkgdir}/usr/lib/mcommander/panel-plugins"
   rm -rf "${pkgdir}/usr/lib/mcommander/runtime-plugins"
   rm -rf "${pkgdir}/usr/share/mcommander/lua"
+  # mcstruct opens a panel plugin, so it goes with the plugins.
+  rm "${pkgdir}/usr/bin/mcstruct"
   find "${pkgdir}" -name '*.la' -delete
 
   # keymap.ini is installed as a symlink to keymap.default.ini, and pacman
@@ -77,16 +86,21 @@ package_mcommander() {
 }
 
 package_mcommander-plugins() {
-  pkgdesc='Panel plugins for M-Commander'
+  pkgdesc='Archive and remote system panels for M-Commander'
   depends=("mcommander=${pkgver}-${pkgrel}" 'glib2' 'libssh2' 'curl' 'samba'
-           'libarchive' 'file' 'mongo-c-driver')
+           'libarchive' 'file' 'mongo-c-driver' 'sqlite')
+  optdepends=('git: the Git panel'
+              'docker: the Docker panel'
+              'kubectl: the Kubernetes panel'
+              'openssh: shell links where libssh2 cannot serve the host')
 
   cd "${srcdir}/mcommander-${pkgver}"
   make DESTDIR="${pkgdir}" install
-  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/bin" "${pkgdir}/usr/share"
-  # Keep the plugin modules and nothing else: naming what to drop instead left
-  # cons.saver and the shell wrappers in both packages, and pacman refuses to
-  # install two packages that own the same file.
+  rm -rf "${pkgdir}/etc" "${pkgdir}/usr/share"
+  # Keep the plugin modules and the mcstruct entry point, nothing else: naming
+  # what to drop instead left cons.saver and the shell wrappers in both
+  # packages, and pacman refuses to install two packages that own the same file.
+  find "${pkgdir}/usr/bin" -mindepth 1 ! -name mcstruct -delete
   find "${pkgdir}/usr/lib/mcommander" -mindepth 1 -maxdepth 1 ! -name panel-plugins \
     -exec rm -rf {} +
   find "${pkgdir}" -name '*.la' -delete
@@ -94,8 +108,14 @@ package_mcommander-plugins() {
 }
 
 package_mcommander-lua() {
-  pkgdesc='Lua runtime extension for M-Commander'
+  pkgdesc='Lua runtime and scripts for M-Commander'
   depends=("mcommander=${pkgver}-${pkgrel}" 'glib2' 'lua')
+  optdepends=('chafa: pictures in the terminal'
+              'poppler: text and pages of a PDF'
+              'libsixel: img2sixel as the second sixel encoder'
+              'binutils: readelf for the ELF view'
+              'imagemagick: the line of details above a picture'
+              'perl-image-exiftool: the same line where exif is missing')
 
   cd "${srcdir}/mcommander-${pkgver}"
   make DESTDIR="${pkgdir}" install

@@ -3,55 +3,79 @@ Section: utils
 Priority: optional
 Maintainer: Ilia Maslakov <il.smind@gmail.com>
 Build-Depends: debhelper-compat (= 13),
+               pkgconf,
                gettext,
-               check,
-               perl,
-               python3,
-               pkgconf | pkg-config,
+               perl:any,
+               python3:any,
+               chafa,
                libglib2.0-dev,
                libslang2-dev,
                libssh2-1-dev,
-               libgpm-dev [linux-any],
-               libext2fs-dev,
                libmagic-dev,
                libsmbclient-dev,
                libcurl4-openssl-dev,
                libarchive-dev,
+               libsqlite3-dev,
                libmongoc-dev,
+               libbson-dev,
                liblua5.4-dev,
-               libbson-dev
-Standards-Version: 4.7.0
+               libx11-dev,
+               libgpm-dev [linux-any],
+               libext2fs-dev [linux-any],
+               check <!nocheck>
+Standards-Version: 4.7.2
 Rules-Requires-Root: no
-Homepage: https://github.com/blue-panels/mcommander/wiki
+Homepage: https://blue-panels.github.io/mcommander/
+Vcs-Git: https://github.com/blue-panels/mcommander.git
+Vcs-Browser: https://github.com/blue-panels/mcommander
 
 Package: mcommander
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends},
-         python3:any
-Recommends: mailcap, perl, sensible-utils, unzip
-Suggests: mcommander-plugins, aspell, hunspell
-Conflicts: mc6, mc6-data
-Description: Modular TUI file manager with a tiny core, based on GNU Midnight Commander
- Based on GNU Midnight Commander, with dynamically loaded panel plugins.  It
- installs /usr/bin/mcommander and the mc6, mcedit6, mview, mdiff and mctree
- symlinks, and can be installed beside the mc package.
+Multi-Arch: foreign
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
+Recommends: mcommander-plugins, mcommander-lua, groff-base, man-db, python3
+Suggests: libx11-6, libaspell15 | libhunspell-1.7-0, universal-ctags
+Replaces: mc6
+Description: two-pane text-mode file manager with loadable panel plugins
+ M-Commander is a file manager for the terminal, based on GNU Midnight
+ Commander.  It keeps a small core and loads its panel plugins at run time.
+ Commands run in a built-in terminal, and the program comes with an editor
+ with syntax highlighting and a viewer that also reads binary files.
+ .
+ It installs /usr/bin/mcommander and the mc6, mcedit6, mview, mdiff and mctree
+ symbolic links, so it can be installed beside the mc package.
+ .
+ The mcommander-plugins package adds panels for archives and for files on
+ remote systems.  The mcommander-lua package adds the features written in Lua.
 
 Package: mcommander-plugins
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
          mcommander (= ${binary:Version})
-Enhances: mcommander
-Conflicts: mc6-plugins
-Description: M-Commander -- panel plugins
- Dynamic panel plugins for Git, Docker, Kubernetes, MongoDB, S3, FTP,
- SFTP, Samba, systemd, shell links, panelize and archive management.
+Suggests: git, docker.io, openssh-client
+Description: archive and remote system panels for M-Commander
+ Panel plugins that M-Commander loads at run time.  They open an archive or a
+ remote system in a panel, so that its contents are handled like ordinary
+ files: tar, zip and the other formats libarchive reads, FTP, SFTP, Samba, S3,
+ Git, Docker, Kubernetes, MongoDB, SQLite, systemd units and shell links over
+ ssh.
+ .
+ The Docker and Kubernetes panels talk to the docker and kubectl commands,
+ which have to be installed separately.
+ .
+ The package also installs mcstruct, which shows a binary file as a tree of
+ named fields.
 
 Package: mcommander-lua
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
          mcommander (= ${binary:Version})
-Enhances: mcommander
-Description: M-Commander -- Lua runtime extension
- The Lua runtime plugin and the scripts that come with it, including the
- sixel and markdown viewers.  Without this package M-Commander runs, and
- the features written in Lua are absent.
+Recommends: chafa, poppler-utils
+Suggests: libsixel-bin, binutils, imagemagick, exif
+Description: Lua runtime and scripts for M-Commander
+ The Lua runtime plugin that M-Commander loads at run time, and the scripts
+ that come with it: pictures in the terminal through sixel or chafa, markdown
+ and PDF in the viewer, and readable views of dBase tables and ELF binaries.
+ .
+ Without this package M-Commander runs, and the features written in Lua are
+ absent.

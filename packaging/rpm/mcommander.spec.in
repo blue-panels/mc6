@@ -1,9 +1,9 @@
 Name:           mcommander
 Version:         @VERSION@
 Release:         1%{?dist}
-Summary:         Modular TUI file manager with a tiny core, based on GNU Midnight Commander
+Summary:         Two-pane text-mode file manager with loadable panel plugins
 License:         GPL-3.0-or-later
-URL:             https://github.com/blue-panels/mcommander/wiki
+URL:             https://blue-panels.github.io/mcommander/
 Source0:         https://github.com/blue-panels/mcommander/releases/download/v%{version}/mcommander-%{version}.tar.gz
 
 BuildRequires:   check-devel
@@ -24,32 +24,61 @@ BuildRequires:   pkgconf-pkg-config
 BuildRequires:   libsmbclient-devel
 BuildRequires:   slang-devel
 BuildRequires:   lua-devel
+BuildRequires:   sqlite-devel
+BuildRequires:   libX11-devel
+BuildRequires:   chafa
 
 # mc6 carried epoch 2, so the bound has to name it; this package has no epoch.
 Obsoletes:       mc6 < 2:%{version}-%{release}
 Obsoletes:       mc6-plugins < 2:%{version}-%{release}
 
+Recommends:      %{name}-plugins%{?_isa} = %{version}-%{release}
+Recommends:      %{name}-lua%{?_isa} = %{version}-%{release}
+Recommends:      groff-base
+Recommends:      man-db
+Recommends:      python3
+Suggests:        libX11
+Suggests:        aspell
+Suggests:        ctags
+
 %description
-M-Commander is based on GNU Midnight Commander, with dynamically loaded
-panel plugins.  Its files carry its own name, so it installs beside the
-distribution mc.
+M-Commander is a file manager for the terminal, based on GNU Midnight
+Commander.  It keeps a small core and loads its panel plugins at run time.
+Commands run in a built-in terminal, and the program comes with an editor
+with syntax highlighting and a viewer that also reads binary files.  Its
+files carry its own name, so it installs beside the distribution mc.
 
 %package plugins
-Summary:         Panel plugins for M-Commander
+Summary:         Archive and remote system panels for M-Commander
 Requires:        %{name}%{?_isa} = %{version}-%{release}
+Suggests:        git-core
+Suggests:        moby-engine
+Suggests:        openssh-clients
 
 %description plugins
-Dynamic panel plugins for M-Commander: Git, Docker, Kubernetes, MongoDB, S3, FTP,
-SFTP, Samba, systemd, shell links, panelize and archive management.
+Panel plugins that M-Commander loads at run time.  They open an archive or a
+remote system in a panel, so that its contents are handled like ordinary
+files: tar, zip and the other formats libarchive reads, FTP, SFTP, Samba, S3,
+Git, Docker, Kubernetes, MongoDB, SQLite, systemd units and shell links over
+ssh.  The Docker and Kubernetes panels talk to the docker and kubectl
+commands, which have to be installed separately.
 
 %package lua
-Summary:         Lua runtime extension for M-Commander
+Summary:         Lua runtime and scripts for M-Commander
 Requires:        %{name}%{?_isa} = %{version}-%{release}
+Recommends:      chafa
+Recommends:      poppler-utils
+Suggests:        libsixel-utils
+Suggests:        binutils
+Suggests:        ImageMagick
+Suggests:        exif
 
 %description lua
-The Lua runtime plugin and the scripts that come with it, including the
-sixel and markdown viewers.  Without this package M-Commander runs, and
-the features written in Lua are absent.
+The Lua runtime plugin that M-Commander loads at run time, and the scripts
+that come with it: pictures in the terminal through sixel or chafa, markdown
+and PDF in the viewer, and readable views of dBase tables and ELF binaries.
+Without this package M-Commander runs, and the features written in Lua are
+absent.
 
 %prep
 %autosetup -n %{name}-%{version}
@@ -71,6 +100,7 @@ the features written in Lua are absent.
     --enable-panel-plugin-arcmc=yes \
     --enable-panel-plugin-s3=yes \
     --enable-panel-plugin-mongo=yes \
+    --enable-panel-plugin-sqlite=yes \
     --enable-vfs-sftp=yes \
     --enable-panel-plugin-shell-link=yes \
     --enable-shell-ssh2=yes
