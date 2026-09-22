@@ -1,26 +1,23 @@
 /*
-   lib - tests for mc_pp_add_entry_st()
+   src/panel-plugins/pp_common - tests for mc_pp_add_entry_st()
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #define TEST_SUITE_NAME "/src/panel-plugins/pp_common"
@@ -143,6 +140,18 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+START_TEST (test_add_entry_st_computed_directory_size)
+{
+    struct stat st = make_stat (S_IFDIR | 0755);
+
+    mc_pp_add_entry_st (&list, "etc", &st, MC_PP_ENTRY_DIR_SIZE_COMPUTED);
+
+    ck_assert_int_eq (list.list[0].f.dir_size_computed, 1);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* The short form makes the entry the local user's. */
 START_TEST (test_add_entry_owner_is_local)
 {
@@ -193,6 +202,7 @@ main (void)
     tcase_add_test (tc_core, test_add_entry_st_link_to_dir);
     tcase_add_test (tc_core, test_add_entry_st_stale_link);
     tcase_add_test (tc_core, test_add_entry_st_directory);
+    tcase_add_test (tc_core, test_add_entry_st_computed_directory_size);
     tcase_add_test (tc_core, test_add_entry_owner_is_local);
     tcase_add_test (tc_core, test_add_entry_grows_the_list);
 

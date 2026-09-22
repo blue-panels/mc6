@@ -1,26 +1,24 @@
 /*
-   Archive browser panel plugin -core plugin API and actions.
+   Panel plugin arcmc for the M-Commander
+   The core plugin API and the actions
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026.
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
@@ -34,6 +32,7 @@
 #include <unistd.h>
 
 #include "lib/global.h"
+#include "lib/keybind.h"
 #include "lib/panel-plugin.h"
 #include "lib/widget.h"
 
@@ -1090,7 +1089,7 @@ arcmc_get_items (void *plugin_data, void *list_ptr)
 
             memset (&st, 0, sizeof (st));
             st.st_mode = e->mode;
-            st.st_size = e->size;
+            st.st_size = e->dir_size_computed ? e->dir_size : e->size;
             st.st_mtime = e->mtime;
             st.st_uid = getuid ();
             st.st_gid = getgid ();
@@ -1099,6 +1098,8 @@ arcmc_get_items (void *plugin_data, void *list_ptr)
                 flags |= MC_PP_ENTRY_LINK_TO_DIR;
             if (e->stale_link)
                 flags |= MC_PP_ENTRY_STALE_LINK;
+            if (e->dir_size_computed)
+                flags |= MC_PP_ENTRY_DIR_SIZE_COMPUTED;
 
             mc_pp_add_entry_st (list_ptr, child_name, &st, flags);
         }
@@ -1773,12 +1774,69 @@ arcmc_get_title (void *plugin_data)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Ctrl-Space: the size of every file below a directory, as the file manager
+   counts it for a real one. The marked directories, or all of them when the
+   cursor is on "..", or the one under the cursor. */
+static void
+arcmc_dir_size (arcmc_data_t *data)
+{
+    const GString *current;
+    gboolean done = FALSE;
+
+    if (data->host->get_marked_count (data->host) != 0)
+    {
+        const GString *name;
+        int idx = 0;
+
+        while ((name = data->host->get_next_marked (data->host, &idx)) != NULL)
+        {
+            char *path;
+
+            path = build_child_path (data->current_dir, name->str);
+            if (arcmc_compute_dir_size (data->all_entries, path))
+                done = TRUE;
+            g_free (path);
+            idx++;
+        }
+    }
+
+    if (done)
+        return;
+
+    /* nothing marked was a directory: take the cursor, as the file manager does */
+    current = data->host->get_current (data->host);
+    if (current == NULL)
+        return;
+
+    if (strcmp (current->str, "..") == 0)
+        arcmc_compute_level_dir_sizes (data->all_entries, data->current_dir);
+    else
+    {
+        char *path;
+
+        path = build_child_path (data->current_dir, current->str);
+        (void) arcmc_compute_dir_size (data->all_entries, path);
+        g_free (path);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 static mc_pp_result_t
 arcmc_handle_key (void *plugin_data, int key)
 {
+    arcmc_data_t *data = (arcmc_data_t *) plugin_data;
     arcmc_pack_opts_t opts;
 
-    (void) plugin_data;
+    if (key == CK_DirSize)
+    {
+        if (data->host == NULL || data->all_entries == NULL)
+            return MC_PPR_NOT_SUPPORTED;
+
+        arcmc_dir_size (data);
+
+        return MC_PPR_OK;
+    }
 
     /* The global Command-menu shortcut (see arcmc_cmd_menu) already runs the
        real create action when the panel is focused; here we only honour the

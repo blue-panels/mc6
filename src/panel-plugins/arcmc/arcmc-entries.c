@@ -1,26 +1,24 @@
 /*
-   arcmc panel plugin - the entries of an archive: lookup, links, release
+   Panel plugin arcmc for the M-Commander
+   The entries of an archive: lookup, sizes, links, release
 
    Copyright (C) 2026
-   Free Software Foundation, Inc.
+   Ilia Maslakov il.smind@gmail.com
 
-   Written by:
-   Ilia Maslakov <il.smind@gmail.com>, 2026
+   This file is part of M-Commander.
 
-   This file is part of the Midnight Commander.
-
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
 #include <config.h>
@@ -66,6 +64,168 @@ arcmc_find_entry (GPtrArray *entries, const char *full_path)
     }
 
     return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The total size of the files below @full_path, at any depth, kept on the
+   directory entry itself. FALSE when @full_path is not a directory here. */
+gboolean
+arcmc_compute_dir_size (GPtrArray *entries, const char *full_path)
+{
+    arcmc_entry_t *dir;
+    size_t path_len;
+    off_t total = 0;
+    guint i;
+
+    if (entries == NULL || full_path == NULL)
+        return FALSE;
+
+    dir = (arcmc_entry_t *) arcmc_find_entry (entries, full_path);
+    if (dir == NULL || !S_ISDIR (dir->mode))
+        return FALSE;
+
+    path_len = strlen (full_path);
+    for (i = 0; i < entries->len; i++)
+    {
+        const arcmc_entry_t *entry = (const arcmc_entry_t *) g_ptr_array_index (entries, i);
+
+        if (strncmp (entry->full_path, full_path, path_len) == 0
+            && entry->full_path[path_len] == '/' && !S_ISDIR (entry->mode))
+            total += entry->size;
+    }
+
+    dir->dir_size = total;
+    dir->dir_size_computed = TRUE;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check if `entry_path` lies anywhere below `dir`. An empty `dir` is the root,
+   which holds everything. */
+gboolean
+is_under_dir (const char *entry_path, const char *dir)
+{
+    size_t dir_len;
+
+    if (dir == NULL || dir[0] == '\0')
+        return TRUE;
+
+    dir_len = strlen (dir);
+
+    return strncmp (entry_path, dir, dir_len) == 0 && entry_path[dir_len] == '/';
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Check if `entry_path` is a direct child of `dir`.
+   If so, return the child name component; otherwise NULL. */
+const char *
+is_direct_child (const char *entry_path, const char *dir)
+{
+    size_t dir_len;
+    const char *rest;
+
+    if (dir == NULL || dir[0] == '\0')
+    {
+        /* root: direct child if no '/' in path */
+        if (strchr (entry_path, '/') == NULL)
+            return entry_path;
+        return NULL;
+    }
+
+    dir_len = strlen (dir);
+
+    if (strncmp (entry_path, dir, dir_len) != 0)
+        return NULL;
+
+    if (entry_path[dir_len] != '/')
+        return NULL;
+
+    rest = entry_path + dir_len + 1;
+
+    /* must not contain further '/' (i.e., must be direct child) */
+    if (rest[0] == '\0' || strchr (rest, '/') != NULL)
+        return NULL;
+
+    return rest;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The name of the directory of @dir that @path lies in, or NULL when @path is
+   not below @dir or is at that level itself. */
+static char *
+arcmc_level_name (const char *path, const char *dir)
+{
+    const char *rest;
+    const char *slash;
+
+    if (!is_under_dir (path, dir))
+        return NULL;
+
+    rest = (dir == NULL || dir[0] == '\0') ? path : path + strlen (dir) + 1;
+    slash = strchr (rest, '/');
+
+    return slash == NULL ? NULL : g_strndup (rest, (gsize) (slash - rest));
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The sizes of every directory of @dir at once: one pass over the entries, so
+   that a whole panel level costs what a single directory costs. */
+void
+arcmc_compute_level_dir_sizes (GPtrArray *entries, const char *dir)
+{
+    GHashTable *dirs;
+    guint i;
+
+    if (entries == NULL)
+        return;
+
+    /* the name of each directory of this level, and the entry to count into */
+    dirs = g_hash_table_new (g_str_hash, g_str_equal);
+
+    for (i = 0; i < entries->len; i++)
+    {
+        arcmc_entry_t *e = (arcmc_entry_t *) g_ptr_array_index (entries, i);
+        const char *name;
+
+        if (!S_ISDIR (e->mode))
+            continue;
+
+        name = is_direct_child (e->full_path, dir);
+        if (name == NULL)
+            continue;
+
+        e->dir_size = 0;
+        e->dir_size_computed = TRUE;
+        g_hash_table_insert (dirs, (gpointer) name, e);
+    }
+
+    if (g_hash_table_size (dirs) != 0)
+        for (i = 0; i < entries->len; i++)
+        {
+            const arcmc_entry_t *e = (const arcmc_entry_t *) g_ptr_array_index (entries, i);
+            arcmc_entry_t *level;
+            char *name;
+
+            if (S_ISDIR (e->mode))
+                continue;
+
+            name = arcmc_level_name (e->full_path, dir);
+            if (name == NULL)
+                continue;
+
+            level = (arcmc_entry_t *) g_hash_table_lookup (dirs, name);
+            if (level != NULL)
+                level->dir_size += e->size;
+
+            g_free (name);
+        }
+
+    g_hash_table_destroy (dirs);
 }
 
 /* --------------------------------------------------------------------------------------------- */

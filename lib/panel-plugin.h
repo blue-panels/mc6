@@ -15,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define MC_PANEL_PLUGIN_API_VERSION 18
+#define MC_PANEL_PLUGIN_API_VERSION 19
 #define MC_PANEL_PLUGIN_ENTRY       "mc_panel_plugin_register"
 
 /* Well-known target menu names for mc_pp_cmd_menu_entry_t.menu_name.
@@ -70,7 +70,10 @@ typedef enum
 {
     MC_PP_ENTRY_NONE = 0,
     MC_PP_ENTRY_LINK_TO_DIR = 1 << 0,
-    MC_PP_ENTRY_STALE_LINK = 1 << 1
+    MC_PP_ENTRY_STALE_LINK = 1 << 1,
+    /* The entry is a directory whose displayed size was calculated by the
+       plugin.  The core must show its size instead of "SUB-DIR". */
+    MC_PP_ENTRY_DIR_SIZE_COMPUTED = 1 << 2
 } mc_pp_entry_flags_t;
 
 /*** structures declarations (and typedefs of structures)*****************************************/

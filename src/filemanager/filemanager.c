@@ -1,8 +1,10 @@
 /*
-   Main dialog (file panels) of the Midnight Commander
+   Main dialog (file panels) of the M-Commander
 
    Copyright (C) 1994-2026
    Free Software Foundation, Inc.
+   Copyright (C) 2026
+   Ilia Maslakov <il.smind@gmail.com>
 
    Written by:
    Miguel de Icaza, 1994, 1995, 1996, 1997
@@ -12,14 +14,15 @@
    Slava Zanko <slavazanko@gmail.com>, 2013
    Ilia Maslakov <il.smind@gmail.com>, 2011, 2012, 2026.
 
-   This file is part of the Midnight Commander.
+   This file is part of the M-Commander
+   a fork of GNU Midnight Commander.
 
-   The Midnight Commander is free software: you can redistribute it
+   M-Commander is free software: you can redistribute it
    and/or modify it under the terms of the GNU General Public License as
    published by the Free Software Foundation, either version 3 of the License,
    or (at your option) any later version.
 
-   The Midnight Commander is distributed in the hope that it will be useful,
+   M-Commander is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
@@ -29,7 +32,7 @@
  */
 
 /** \file filemanager.c
- *  \brief Source: main dialog (file panels) of the Midnight Commander
+ *  \brief Source: main dialog (file panels) of the M-Commander
  */
 
 #include <config.h>
@@ -1199,6 +1202,10 @@ midnight_execute_cmd (Widget *sender, long command)
                 }
             }
             break;
+        case CK_DirSize:
+            if (plugin_panel_dirsize_cmd (current_panel))
+                return MSG_HANDLED;
+            break; /* real local files; native handlers can operate on them */
         case CK_ChangeMode:
         case CK_ChangeOwn:
         case CK_ChangeOwnAdvanced:
@@ -1209,7 +1216,6 @@ midnight_execute_cmd (Widget *sender, long command)
         case CK_LinkSymbolic:
         case CK_LinkSymbolicRelative:
         case CK_LinkSymbolicEdit:
-        case CK_DirSize:
         case CK_CompareDirs:
 #ifdef USE_DIFF_VIEW
         case CK_CompareFiles:

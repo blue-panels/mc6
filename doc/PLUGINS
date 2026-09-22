@@ -117,6 +117,10 @@ through mkdir() and hands each file to put_file() under a name that is
 relative to the panel's directory and may have directories in it.
 Without mkdir() the core takes single files only and says so.
 
+API 19 adds MC_PP_ENTRY_DIR_SIZE_COMPUTED (see 3.4).  A plugin that
+counts the size of its directories on Ctrl-Space handles CK_DirSize in
+handle_key() (see 6) and lists them with that flag.
+
 
 3.2 Capability Flags (mc_pp_flags_t)
 
@@ -200,9 +204,11 @@ with a whole struct stat (owner, group, link count and so on) goes
 through mc_pp_add_entry_st(); its mc_pp_entry_flags_t argument says
 what a symbolic link points to: MC_PP_ENTRY_LINK_TO_DIR for a link to
 a directory, which the panel then shows, sorts, enters and copies as
-one, MC_PP_ENTRY_STALE_LINK for a link that points to nothing.  Do not
-call dir_list_append() from src/filemanager/dir.h: it is not part of
-the plugin API.
+one, MC_PP_ENTRY_STALE_LINK for a link that points to nothing.
+MC_PP_ENTRY_DIR_SIZE_COMPUTED says that st.st_size of a directory is
+the size of what is in it: the panel prints that number instead of
+"SUB-DIR" and sorts by it.  Do not call dir_list_append() from
+src/filemanager/dir.h: it is not part of the plugin API.
 
 Minimal working example -- a panel with three fake regular files of
 different sizes:
@@ -812,6 +818,12 @@ Panel plugins:
 - core first passes the mapped command id to handle_key()
 - if the plugin returns MC_PPR_NOT_SUPPORTED and the raw key differs,
   core retries with the raw key
+- CK_DirSize (Ctrl-Space) reaches handle_key() as well: count the sizes
+  of the marked directories, of every directory of this level when the
+  cursor is on "..", or of the one under the cursor, and return
+  MC_PPR_OK.  The core then lists the panel again, keeping the marks,
+  and the entries carrying MC_PP_ENTRY_DIR_SIZE_COMPUTED show their
+  size.  MC_PPR_NOT_SUPPORTED keeps the "not supported" message
 
 This allows either style:
 
