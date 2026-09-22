@@ -8,7 +8,9 @@
 # Ubuntu turns link time optimisation on by default; Debian does not.  With it,
 # gcc 15 leaves the recursion in mctree_node_expand_to_depth unrun, so a tree
 # opens collapsed and the mctree_view test fails.  Nothing here needs LTO.
-export DEB_BUILD_MAINT_OPTIONS = optimize=-lto
+# Link the plugins with -z now as well: they are opened with dlopen, and a
+# resolved symbol table is what keeps the first call out of the resolver.
+export DEB_BUILD_MAINT_OPTIONS = optimize=-lto hardening=+bindnow
 
 %:
 	dh $@
