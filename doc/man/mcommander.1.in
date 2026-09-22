@@ -2723,11 +2723,14 @@ that nothing matches is not taken.  Enter ends the typing and leaves
 the view as it is, Esc ends it and lifts the filter; any other key ends
 it and then does what it does.
 .PP
-With no panel on screen the function keys are the terminal's own and the
+With no panel on screen most function keys are the terminal's own and the
 button bar names them.  The file manager's View, Edit, Copy, RenMov and
 Delete are not on offer there: they work on the file the panel cursor
 stands on, and that cursor cannot be seen.  F8 is left empty on purpose,
 so that the reach for Delete does nothing rather than something else.
+F7 makes a directory and Shift\-F4 edits a new file, as they do with the
+panels up: both work in the directory of the panel, which is the one the
+shell is in.
 .PP
 .nf
 F2           copy the marked output to the clipboard
@@ -2736,13 +2739,12 @@ F4           cut the output down to the rows that match the mark,
              or the word under the cursor
 F5           turn that filter off, and on again
 F6           clear the screen and the scrollback both
-F7           clear the screen, keeping the scrollback
 .fi
 .PP
-F1, F9 and F10 stay the file manager's while the shell waits at its prompt,
-and F1 opens the help on this section.
+F1, F7, Shift\-F4, F9 and F10 stay the file manager's while the shell waits
+at its prompt, and F1 opens the help on this section.
 Once a command is running the screen and every key on it are that command's,
-these among them.  The six above are the exception: they stay the terminal's
+these among them.  The five above are the exception: they stay the terminal's
 while a command is running.  A full\-screen application, an editor or a pager,
 takes every key itself, those included.  All of them are listed in the
 .B [mcterm]

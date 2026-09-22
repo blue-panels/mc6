@@ -1086,10 +1086,10 @@ mcterm_overlay_draw_panel_slot (int idx, const WPanel *active_panel)
         widget_draw (pw);
 }
 
-/* The button bar names the keys that are on offer, and with no panel on screen those are the
-   terminal's own: F2 to F7 mark the output, cut it down and clear it. Help, the pull-down menu
-   and the way out stay the file manager's wherever the keys are typed, and F8 is left empty -
-   the reach for Delete is too well worn to give it another meaning here. */
+/* The button bar names the keys that are on offer, and with no panel on screen those are mostly
+   the terminal's own: F2 to F6 mark the output, cut it down and clear it. Help, Mkdir, the
+   pull-down menu and the way out stay the file manager's wherever the keys are typed, and F8 is
+   left empty - the reach for Delete is too well worn to give it another meaning here. */
 static void
 mcterm_overlay_set_buttonbar (void)
 {
@@ -1118,7 +1118,7 @@ mcterm_overlay_set_buttonbar (void)
         buttonbar_set_label (the_bar, 4, Q_ ("ButtonBar|Filter"), mcterm_map, tw);
         buttonbar_set_label (the_bar, 5, Q_ ("ButtonBar|UnFilt"), mcterm_map, tw);
         buttonbar_set_label (the_bar, 6, Q_ ("ButtonBar|ClrAll"), mcterm_map, tw);
-        buttonbar_set_label (the_bar, 7, Q_ ("ButtonBar|Clear"), mcterm_map, tw);
+        buttonbar_set_label (the_bar, 7, Q_ ("ButtonBar|Mkdir"), fw->keymap, NULL);
         buttonbar_clear_label (the_bar, 8, NULL);
         buttonbar_set_label (the_bar, 9, Q_ ("ButtonBar|PullDn"), fw->keymap, NULL);
         buttonbar_set_label (the_bar, 10, Q_ ("ButtonBar|Quit"), fw->keymap, NULL);
@@ -1814,6 +1814,13 @@ mcterm_overlay_handle_key (Widget *w, int parm, mcterm_overlay_command_cb_t exec
         mcterm_overlay_send_cmdline_key (parm);
         return MSG_HANDLED;
     }
+
+    /* A new file goes to the directory of the panel, which the shell follows, and needs no
+       cursor to stand on. The panel keymap names the key, and with no panel on screen the
+       panel is not asked. */
+    if (!mcterm_overlay_any_panel_visible () && current_panel != NULL
+        && keybind_lookup_keymap_command (panel_map, parm) == CK_EditNew)
+        return send_message (current_panel, NULL, MSG_ACTION, CK_EditNew, NULL);
 
     /* With no panel on screen the terminal's keymap comes first: what it names is the
        terminal's, and the file manager's key of the same name never gets to run. */
