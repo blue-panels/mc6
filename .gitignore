@@ -58,7 +58,6 @@ tests/src/editor/test-data.txt
 src/vfs/extfs/helpers/usqfs
 tests/src/vfs/extfs/helpers-list/data/config.sh
 mc-version.h
-lib/stdckdint.h
 src/panel-plugins/shell-link/shelldef.h
 
 # editor/build artifacts

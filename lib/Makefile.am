@@ -19,9 +19,6 @@ SUBLIB_includes = \
 	runtime-events.h \
 	editor-plugin.h \
 	filehighlight.h \
-	idx.h \
-	intprops-internal.h \
-	intprops.h \
 	mcconfig.h \
 	search.h \
 	skin.h \
@@ -62,9 +59,6 @@ libmc_la_SOURCES += logging.c logging.h
 endif
 
 libmc_la_SOURCES += charsets.c charsets.h
-
-EXTRA_DIST = \
-	stdckdint.in.h
 
 AM_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir) \
 	-DMC_EDITOR_PLUGINS_DIR=\""$(editor_plugins_dir)"\" \
