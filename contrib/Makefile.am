@@ -16,7 +16,13 @@ SCRIPTS_OUT = \
 	mc6-wrapper.fish \
 	mc6-wrapper.sh
 
-pkglibexec_SCRIPTS = $(SCRIPTS_OUT)
+# Data, not scripts: every one of these is read with "." from a shell profile,
+# and none carries a shebang. mc6.sh returns at the top level, and
+# mc6-wrapper.sh ends with a return, which no shell accepts from a program.
+# The directory is named here because automake takes _DATA only in a directory
+# of its own, never in an exec one such as pkglibexecdir.
+wrapperdir = $(pkglibexecdir)
+wrapper_DATA = $(SCRIPTS_OUT)
 
 cfgdir = $(sysconfdir)/@PACKAGE@
 cfg_DATA = \
