@@ -1400,6 +1400,15 @@ midnight_execute_cmd (Widget *sender, long command)
         return exec_cmdline_enter ();
     }
     case CK_Help:
+        // With no panel on screen the help is about what is there: the terminal.
+        if (mcterm_overlay_terminal_alone ())
+        {
+            ev_help_t event_data = { NULL, "[The terminal]", NULL };
+
+            mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
+            break;
+        }
+
         if (current_panel != NULL && current_panel->is_plugin_panel && current_panel->plugin != NULL
             && current_panel->plugin_data != NULL && current_panel->plugin->get_help_info != NULL)
         {

@@ -1677,7 +1677,7 @@ używany jest jako zachęta (prompt). Makro jest zastępowane tekstem wpisanym
 przez użytkownika. Użytkownik może nacisnąć ESC lub F10 aby anulować. To
 makro nie działa jeszcze w linii poleceń.
 .PP
-.\"NODE "  The subshell support"
+.\"NODE "  The terminal"
 .SH "  Obsługa podpowłoki (The subshell support)"
 Podpowłoka (powłoka w tle) jest opcją, która musi być wybrana przy kompilacji,
 działa ona z powłokami: bash, tcsh i zsh.

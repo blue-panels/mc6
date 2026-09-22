@@ -957,6 +957,14 @@ mcterm_overlay_active (void)
 
 /* --------------------------------------------------------------------------------------------- */
 
+gboolean
+mcterm_overlay_terminal_alone (void)
+{
+    return (mcterm_mode && mcterm_panel != NULL && !mcterm_overlay_any_panel_visible ());
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 void
 mcterm_overlay_toggle (void)
 {
@@ -1867,6 +1875,12 @@ mcterm_overlay_exec_command (const char *cmd)
 
 gboolean
 mcterm_overlay_active (void)
+{
+    return FALSE;
+}
+
+gboolean
+mcterm_overlay_terminal_alone (void)
 {
     return FALSE;
 }

@@ -2727,7 +2727,8 @@ F6           clear the screen and the scrollback both
 F7           clear the screen, keeping the scrollback
 .fi
 .PP
-F1, F9 and F10 stay the file manager's while the shell waits at its prompt.
+F1, F9 and F10 stay the file manager's while the shell waits at its prompt,
+and F1 opens the help on this section.
 Once a command is running the screen and every key on it are that command's,
 these among them.  The six above are the exception: they stay the terminal's
 while a command is running.  A full\-screen application, an editor or a pager,
