@@ -290,13 +290,6 @@ main (int argc, char *argv[])
         goto startup_exit_ok;
     }
 
-    /* check terminal type
-     * $TERM must be set and not empty
-     * mc_global.tty.xterm_flag is used in init_key() and tty_init()
-     * Do this after mc_args_parse() where mc_args__force_xterm is set up.
-     */
-    mc_global.tty.xterm_flag = tty_check_xterm_compat (mc_args__force_xterm);
-
     // do this before mc_args_show_info () to view paths in the --datadir-info output
     OS_Setup ();
 
@@ -313,6 +306,14 @@ main (int argc, char *argv[])
         exit_code = EXIT_SUCCESS;
         goto startup_exit_ok;
     }
+
+    /* check terminal type
+     * $TERM must be set and not empty
+     * mc_global.tty.xterm_flag is used in init_key() and tty_init()
+     * Do this after mc_args_parse() where mc_args__force_xterm is set up, and after
+     * mc_args_show_info(), which answers --version and --datadir-info without a terminal.
+     */
+    mc_global.tty.xterm_flag = tty_check_xterm_compat (mc_args__force_xterm);
 
     if (!events_init (&mcerror))
         goto startup_exit_falure;
