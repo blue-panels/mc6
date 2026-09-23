@@ -1,0 +1,20 @@
+#!/bin/sh
+# The program starts and says which version it is.
+set -e
+
+# A test bed has no terminal of its own. The program answers --version without
+# one, and TERM is set here so that the rest of the test does not depend on it.
+TERM=${TERM:-dumb}
+export TERM
+
+out=$(mcommander --version)
+printf '%s\n' "$out"
+
+printf '%s' "$out" | grep -q "M-Commander"
+printf '%s' "$out" | grep -qE "v?[0-9]+\.[0-9]+\.[0-9]+"
+
+# Every name the package installs points at the same program.
+for name in mc6 mcedit6 mview mdiff mctree; do
+    command -v "$name" >/dev/null
+    test "$(readlink -f "$(command -v "$name")")" = "$(command -v mcommander)"
+done

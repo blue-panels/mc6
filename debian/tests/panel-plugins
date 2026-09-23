@@ -1,0 +1,30 @@
+#!/bin/sh
+# Every panel plugin in the package carries the entry point the loader calls and
+# finds each library it links against.
+set -e
+
+dir=/usr/lib/mcommander/panel-plugins
+test -d "$dir"
+
+# Every plugin sits in a directory of its own, named after it.
+count=0
+for so in "$dir"/*/*.so; do
+    test -f "$so" || continue
+    count=$((count + 1))
+
+    if ! nm -D --defined-only "$so" | grep -q " mc_panel_plugin_register$"; then
+        echo "no mc_panel_plugin_register in $so" >&2
+        exit 1
+    fi
+
+    if ldd "$so" | grep -q "not found"; then
+        echo "unresolved library in $so:" >&2
+        ldd "$so" | grep "not found" >&2
+        exit 1
+    fi
+
+    echo "ok $so"
+done
+
+test "$count" -gt 0 || { echo "no plugins in $dir" >&2; exit 1; }
+echo "$count panel plugins in place"

@@ -1,0 +1,11 @@
+Tests: version
+Depends: @
+Restrictions: allow-stderr
+
+Tests: panel-plugins
+Depends: @, binutils
+Restrictions: allow-stderr
+
+Tests: lua
+Depends: @, binutils
+Restrictions: allow-stderr

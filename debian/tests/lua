@@ -1,0 +1,34 @@
+#!/bin/sh
+# The Lua runtime plugin carries its entry point, and the scripts that use it are
+# where the program looks for them.
+set -e
+
+dir=/usr/lib/mcommander/runtime-plugins
+test -d "$dir"
+
+count=0
+for so in "$dir"/*.so; do
+    test -f "$so" || continue
+    count=$((count + 1))
+
+    if ! nm -D --defined-only "$so" | grep -q " mc_runtime_plugin_register_v1$"; then
+        echo "no mc_runtime_plugin_register_v1 in $so" >&2
+        exit 1
+    fi
+
+    if ldd "$so" | grep -q "not found"; then
+        echo "unresolved library in $so:" >&2
+        ldd "$so" | grep "not found" >&2
+        exit 1
+    fi
+
+    echo "ok $so"
+done
+
+test "$count" -gt 0 || { echo "no runtime plugin in $dir" >&2; exit 1; }
+
+for pkg in lua-markdown lua-pdf lua-sixel lua-dbf; do
+    test -d "/usr/share/mcommander/lua/scripts/mc/$pkg" \
+        || { echo "missing script package: $pkg" >&2; exit 1; }
+done
+echo "lua runtime and scripts in place"

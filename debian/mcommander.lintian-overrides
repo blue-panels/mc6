@@ -1,0 +1,7 @@
+# These three extfs helpers exist to show what dpkg knows: apt+ lists the
+# packages of the system, dpkg+ opens one of them as a directory, and debd shows
+# the files a package installed. There is no dpkg command that gives a listing
+# in the form a panel reads, so they read /var/lib/dpkg themselves.
+mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/apt+]
+mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/debd]
+mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/dpkg+]
