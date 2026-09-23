@@ -4,7 +4,8 @@ SED_PARAMETERS = \
 	-e "s{%sysconfdir%{$(sysconfdir){g" \
 	-e "s{%libexecdir%{$(libexecdir){g" \
 	-e "s{%pkglibexecdir%{$(pkglibexecdir){g" \
-	-e "s{%pkgdatadir%{$(pkgdatadir){g"
+	-e "s{%pkgdatadir%{$(pkgdatadir){g" \
+	-e "s{%panel_plugins_dir%{$(panel_plugins_dir){g"
 
 MAN_DATE_CMD = \
 	LC_ALL=$(DATE_LANG) @PERL_FOR_BUILD@ -CS -MPOSIX -e '\
@@ -21,6 +22,14 @@ mc6.1: $(srcdir)/mc6.1.in
 mview.1: $(srcdir)/mview.1.in
 	MAN_FILE='$(srcdir)/mview.1.in'; MAN_DATE=$$($(MAN_DATE_CMD)); \
 	$(SED) $(SED_PARAMETERS) '$(srcdir)/mview.1.in' > '$@'
+
+mctree.1: $(srcdir)/mctree.1.in
+	MAN_FILE='$(srcdir)/mctree.1.in'; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/mctree.1.in' > '$@'
+
+mcstruct.1: $(srcdir)/mcstruct.1.in
+	MAN_FILE='$(srcdir)/mcstruct.1.in'; MAN_DATE=$$($(MAN_DATE_CMD)); \
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/mcstruct.1.in' > '$@'
 
 if USE_INTERNAL_EDIT
 mcedit6.1: $(srcdir)/mcedit6.1.in

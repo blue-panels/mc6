@@ -24,5 +24,11 @@ usr/share/mcommander/help/
 usr/share/mcommander/hints/
 usr/share/mcommander/skins/
 usr/share/mcommander/syntax/
-usr/share/man/
+usr/share/man/man1/mcommander.1
+usr/share/man/man1/mc6.1
+usr/share/man/man1/mcedit6.1
+usr/share/man/man1/mview.1
+usr/share/man/man1/mdiff.1
+usr/share/man/man1/mctree.1
+usr/share/man/*/man1/
 usr/share/locale/

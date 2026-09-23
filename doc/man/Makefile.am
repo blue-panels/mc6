@@ -3,7 +3,7 @@ if USE_NLS
 SUBDIRS = $(DOC_LINGUAS)
 endif
 
-man_MANS = mcommander.1 mc6.1 mview.1
+man_MANS = mcommander.1 mc6.1 mview.1 mctree.1 mcstruct.1
 
 if USE_INTERNAL_EDIT
 man_MANS += mcedit6.1
@@ -21,6 +21,8 @@ EXTRA_DIST = \
 	mc6.1.in \
 	mcedit6.1.in \
 	mview.1.in \
+	mctree.1.in \
+	mcstruct.1.in \
 	mdiff.1.in
 
 DATE_LANG=en_US.UTF-8
