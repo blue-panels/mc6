@@ -2,8 +2,8 @@
 # The program starts and says which version it is.
 set -e
 
-# The program initialises the terminal layer before it prints the version, so a
-# testbed without TERM gets "The TERM environment variable is unset!" instead.
+# A test bed has no terminal of its own. The program answers --version without
+# one, and TERM is set here so that the rest of the test does not depend on it.
 TERM=${TERM:-dumb}
 export TERM
 
