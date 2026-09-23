@@ -5,3 +5,12 @@
 mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/apt+]
 mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/debd]
 mcommander: uses-dpkg-database-directly [usr/lib/mcommander/extfs.d/dpkg+]
+
+# The syntax files are not UTF-8 on purpose. Each of these has one line that
+# lists the bytes from 0x20 to 0xFF as a character class, which is how the
+# editor highlights any printable character inside a literal. The engine
+# matches bytes and not characters: src/syntax/syntax.c fills a set of 256
+# entries, one per byte. Recoded to UTF-8 the class would cover 0xC2, 0xC3 and
+# 0x80 to 0xBF instead, so it would lose 0xC4 to 0xFF, and Cyrillic, Greek and
+# everything else outside Latin-1 would stop matching.
+mcommander: national-encoding [usr/share/mcommander/syntax/*.syntax]

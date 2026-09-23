@@ -35,6 +35,9 @@ Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${perl:Depends}
 Recommends: mcommander-plugins, mcommander-lua, groff-base, man-db, python3
 Suggests: libx11-6, libaspell15 | libhunspell-1.7-0, universal-ctags
+# mc6 was an earlier name of this program, published in a PPA of its own and
+# retired. The two share one path, /usr/bin/mctree, which this package takes
+# over; they can otherwise be installed together, so no Conflicts is needed.
 Replaces: mc6
 Description: two-pane text-mode file manager with loadable panel plugins
  M-Commander is a file manager for the terminal, based on GNU Midnight
