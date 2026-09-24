@@ -364,7 +364,6 @@ AC_CHECK_DECLS([environ], , ,
     #include <stdlib.h> ])
 
 AC_PATH_PROG([PERL], [perl], [/usr/bin/env perl], [$PATH$PATH_SEPARATORQOpenSys/pkgs/bin])
-AC_PATH_PROG([PERL_FOR_BUILD], [perl], [/usr/bin/env perl], [$PATH$PATH_SEPARATORQOpenSys/pkgs/bin])
 AC_PATH_PROG([PYTHON], [python3], [/usr/bin/env python3], [$PATH$PATH_SEPARATORQOpenSys/pkgs/bin])
 AC_PATH_PROG([RUBY], [ruby], [/usr/bin/env ruby], [$PATH$PATH_SEPARATORQOpenSys/pkgs/bin])
 
@@ -1181,14 +1180,6 @@ if test "x$enable_configure_args" != xno; then
 fi
 
 
-AC_CONFIG_FILES(
-[
-src/man2hlp/man2hlp
-],
-[
-chmod +x src/man2hlp/man2hlp
-])
-
 AC_CONFIG_FILES([
 Makefile
 
@@ -1209,7 +1200,6 @@ src/Makefile
 src/consaver/Makefile
 src/editor/Makefile
 src/lua/Makefile
-src/man2hlp/Makefile
 src/mctree/Makefile
 src/viewer/Makefile
 src/mcterm/Makefile
