@@ -1,4 +1,4 @@
-SUBDIRS = syntax mctree filemanager man2hlp vfs viewer panel-plugins
+SUBDIRS = syntax mctree filemanager vfs viewer panel-plugins
 
 if ENABLE_LUA_PLUGIN
 SUBDIRS += lua
@@ -27,7 +27,11 @@ AM_CPPFLAGS = \
 	-DEXTHELPERSDIR=\""@EXTHELPERSDIR@/"\" \
 	-DMC_PANEL_PLUGINS_DIR=\""$(panel_plugins_dir)"\" \
 	-DMC_EDITOR_PLUGINS_DIR=\""$(editor_plugins_dir)"\" \
-	-DMC_RUNTIME_PLUGINS_DIR=\""$(runtime_plugins_dir)"\"
+	-DMC_RUNTIME_PLUGINS_DIR=\""$(runtime_plugins_dir)"\" \
+	-DMC_PKGDATADIR=\""$(pkgdatadir)"\" \
+	-DMC_SYSCONFDIR=\""$(sysconfdir)"\" \
+	-DMC_PKGLIBEXECDIR=\""$(pkglibexecdir)"\" \
+	-DMC_BINDIR=\""$(bindir)"\"
 
 if ENABLE_LUA_PLUGIN
 AM_CPPFLAGS += \
@@ -95,6 +99,7 @@ libinternal_la_SOURCES = \
 	execute.c execute.h \
 	file_history.c file_history.h \
 	help.c help.h \
+	help_md.c help_md.h \
 	history.h \
 	keybind_dialog.c keybind_dialog.h \
 	key_sniffer.c key_sniffer.h \

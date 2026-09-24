@@ -1,0 +1,70 @@
+.\" Generated from mcstruct.md by maint/update-man-in.sh. Do not edit.
+.TH MCSTRUCT 1 "September 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NAME
+.PP
+mcstruct \- Show a binary file as a tree of named fields.
+
+
+.SH SYNOPSIS
+.PP
+\fBmcstruct\fP
+\fIfile\fP
+\fI[definition]\fP
+
+
+.SH DESCRIPTION
+.PP
+mcstruct is a link to
+\fBmcommander\fP,
+the main M\-Commander executable.  Under this name the program opens the
+\fIfile\fP
+in the structure panel: the bytes are read through a definition and shown as a
+tree of named fields, with the value of each field beside its name and the
+place it was read from.
+
+.PP
+Without a second argument the definition is chosen by the contents of the
+file, from the ones that come with the package.  Give
+\fIdefinition\fP
+to name one instead; a relative path is taken from the current directory.
+
+.PP
+The name needs a file.  Without one the program says so and stops.
+
+
+.SH FILES
+.TP
+\fI{{panel_plugins_dir}}/mcstruct/data\fP
+The definitions that come with the package, one file per format.
+
+.TP
+\fI{{panel_plugins_dir}}/mcstruct/mcstruct_panel.hlp\fP
+The help text of the panel, also reachable with
+\fBF1\fP
+inside it.
+
+
+.SH LICENSE
+.PP
+This program is distributed under the terms of the GNU General Public
+License as published by the Free Software Foundation.  See the built\-in
+help of M\-Commander for details on the License and the lack
+of warranty.
+
+
+.SH AVAILABILITY
+.PP
+The latest version of this program can be found at
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
+.SH SEE ALSO
+.PP
+mcommander(1), mview(1), mctree(1)
+
+
+.SH BUGS
+.PP
+Bugs should be reported to
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

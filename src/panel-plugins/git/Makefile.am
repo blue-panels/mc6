@@ -1,6 +1,6 @@
 gitdir = $(panel_plugins_dir)/git
 git_LTLIBRARIES = mc-panel-git.la
-git_DATA = git_panel.hlp
+git_DATA = git_panel.md
 
 mc_panel_git_la_SOURCES = git.c
 mc_panel_git_la_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir) \

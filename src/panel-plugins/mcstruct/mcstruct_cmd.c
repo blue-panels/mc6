@@ -808,7 +808,7 @@ ui_cmd_save (ui_t *ui)
 void
 ui_cmd_help (void)
 {
-    ev_help_t event_data = { MC_PLUGIN_DIR "/mcstruct_panel.hlp", "[mcstruct]", "[main]" };
+    ev_help_t event_data = { MC_PLUGIN_DIR "/mcstruct_panel.md", "[mcstruct]", "[main]" };
 
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
 }

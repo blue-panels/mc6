@@ -7,8 +7,6 @@ URL:             https://blue-panels.github.io/mcommander/
 Source0:         https://github.com/blue-panels/mcommander/releases/download/v%{version}/mcommander-%{version}.tar.gz
 
 BuildRequires:   check-devel
-BuildRequires:   perl
-BuildRequires:   python3
 BuildRequires:   gcc
 BuildRequires:   gettext
 BuildRequires:   glib2-devel

@@ -1,6 +1,6 @@
 mcpeekdir = $(panel_plugins_dir)/mcpeek
 mcpeek_LTLIBRARIES = mc-panel-mcpeek.la
-dist_mcpeek_DATA = mcpeek_panel.hlp
+dist_mcpeek_DATA = mcpeek_panel.md
 
 mc_panel_mcpeek_la_SOURCES = \
 	mcpeek.c \

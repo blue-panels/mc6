@@ -1151,9 +1151,9 @@ ui_help (void)
     ev_help_t ev = { NULL, "[skineditor]", "[main]" };
 
     user_path = g_build_filename (g_get_home_dir (), ".local", "lib", MC_USERCONF_DIR,
-                                  "panel-plugins", "skineditor", "skineditor.hlp", (char *) NULL);
+                                  "panel-plugins", "skineditor", "skineditor.md", (char *) NULL);
     ev.filename =
-        g_file_test (user_path, G_FILE_TEST_EXISTS) ? user_path : MC_PLUGIN_DIR "/skineditor.hlp";
+        g_file_test (user_path, G_FILE_TEST_EXISTS) ? user_path : MC_PLUGIN_DIR "/skineditor.md";
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &ev);
     g_free (user_path);
 }

@@ -49,7 +49,7 @@ local viewer = mc.viewer_source.define {
     id = "chafa-image",
     resize = "rebuild",
     options_key = "i",
-    help = { file = "help.hlp", node = "[Image Viewer]" },
+    help = { file = "help.md", node = "[Image Viewer]" },
 
     open = function(request)
         next_session_id = next_session_id + 1

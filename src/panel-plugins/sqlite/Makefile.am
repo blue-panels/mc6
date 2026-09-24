@@ -1,6 +1,6 @@
 sqlitedir = $(panel_plugins_dir)/sqlite
 sqlite_LTLIBRARIES = mc-panel-sqlite.la
-dist_sqlite_DATA = sqlite_panel.hlp
+dist_sqlite_DATA = sqlite_panel.md
 
 mc_panel_sqlite_la_SOURCES = \
 	sqlite.c \

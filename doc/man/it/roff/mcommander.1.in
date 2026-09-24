@@ -1,0 +1,3392 @@
+.\" Generated from mcommander.md by maint/update-man-in.sh. Do not edit.
+.TH MCOMMANDER 1 "settembre 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOME
+.PP
+mcommander \- interfaccia visuale per sistemi tipo Unix.
+
+
+.SH USO
+.PP
+\fBmcommander\fP
+[\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-e [file]] [\-v file]
+
+
+.SH DESCRIZIONE
+.PP
+Il M\-Commander è un file manager per sistemi operativi di tipo Unix.
+
+
+.SH OPZIONI
+.TP
+\fI\-a\fP
+Disabilita l'uso dei caratteri grafici per il disegno delle linee.
+
+.TP
+\fI\-b\fP
+Forza la visualizzazione in bianco e nero.
+
+.TP
+\fI\-c\fP
+Forza la modalità colore; consultare la sezione
+colori
+per ulteriori informazioni.
+
+.TP
+\fI\-d\fP
+Disabilita il supporto mouse.
+
+.TP
+\fI\-e [file]\fP
+Esegue l'editor interno. Se il file viene specificato, lo apre alla
+partenza. Vedere anche
+\fBmcedit6(1)\fP\&.
+
+.TP
+\fI\-f\fP
+Mostra i percorsi di ricerca compilati per i file del M\-Commander.
+
+.TP
+\fI\-l file\fP
+Salva il dialogo ftpfs con il server in file.
+
+.TP
+\fI\-P file\fP
+Quest'opzione indica al M\-Commander di stampare l'ultima
+directory di lavoro sul file specificato.
+Questa funzione non è fatta per un uso diretto, ma dovrebbe essere
+utilizzata da una speciale funzione shell che imposti automaticamente
+l'ultima directory corrente della shell come l'ultima directory in cui
+stava il M\-Commander. Prelevate i file
+\fB{{pkglibexecdir}}/mc6.sh\fP
+(utenti bash e zsh),
+\fB{{pkglibexecdir}}/mc6.csh\fP
+(utenti tcsh) o rispettivamente
+\fB{{pkglibexecdir}}/mc6.fish\fP
+(utenti fish) per definire
+\fBmcommander\fP
+come un alias allo script di shell appropriato.
+
+.TP
+\fI\-s\fP
+Abilita il modo terminale lento, in questa modalità il programma
+non disegna le linee e disabilita la modalità prolissa.
+
+.TP
+\fI\-t\fP
+Usata solo se il codice è stato compilato con S\-Lang e terminfo: fa
+in modo che il M\-Commander usi il valore della variabile
+\fBTERMCAP\fP
+per le informazioni sul terminale invece delle informazioni di sistema
+sul database terminali.
+
+.TP
+\fI\-u\fP
+Disabilita l'uso della shell concorrente (ha senso solo se il
+M\-Commander è stato compilato con il supporto per la shell
+concorrente).
+
+.TP
+\fI\-U\fP
+Abilita l'uso della shell concorrente (ha senso solo se il
+M\-Commander è stato compilato con il supporto per la shell
+concorrente impostato come una caratteristica opzionale).
+
+.TP
+\fI\-v file\fP
+Lancia il visualizzatore interno per il file specificato.
+
+.TP
+\fI\-V\fP
+Mostra la versione del programma.
+
+.TP
+\fI\-x\fP
+Forza la modalità xterm. Usata quando è in funzione su terminali
+abilitati\-xterm (due modalità video e in grado di spedire sequenze
+mouse di escape).
+
+.TP
+\fI\-X, \-\-no\-x11\fP
+Do not use X11 to get the state of modifiers Alt, Ctrl, Shift
+
+.TP
+\fI\-g, \-\-oldmouse\fP
+Force a "normal tracking" mouse mode. Used when running on
+xterm\-capable terminals (tmux/screen).
+
+.PP
+Se specificato, il primo percorso è la directory mostrata nel
+pannello selezionato; il secondo è la directory mostrata nell'altro
+pannello.
+
+
+.SH Panoramica
+.PP
+Lo schermo del M\-Commander è diviso in quattro parti. Quasi tutto
+lo spazio è occupato dai due pannelli directory. Come impostazione
+predefinita la seconda riga dal fondo è la riga di comando, mentre
+quella in basso mostra le etichette dei tasti funzione. La riga più in
+alto è la
+riga dei menu\&.
+La barra dei menu può essere invisibile, ma compare se clicchi la
+riga più in alto con il mouse o se premi il tasto F9.
+
+.PP
+Il M\-Commander fornisce la vista di due directory
+contemporaneamente. Uno dei due pannelli è quello corrente (la barra
+di selezione è presente solo in questo). Quasi tutte le operazioni
+hanno luogo nel pannello corrente. Alcune azioni come Rinomina e
+Copia usano la directory del pannello non selezionato come valore
+predefinito di destinazione (ma si richiede sempre una conferma prima).
+Per informazioni aggiuntive, vedere le sezioni sui
+pannelli directory,
+i
+menu sinistra e destra
+e
+menu file\&.
+
+.PP
+E' possibile eseguire comandi di sistema dal M\-Commander
+semplicemente battendoli. Ogni cosa scritta apparirà sulla riga di
+comando e quando si preme l'invio il M\-Commander eseguirà la
+riga di comando appena battuta; leggere le sezioni
+shell a riga di comando
+e
+tasti della riga di ingresso
+per saperne di più sulla riga di comando.
+
+
+.SH Supporto mouse
+.PP
+Il M\-Commander è fornito di supporto mouse. Esso viene
+attivato ogniqualvolta lo si esegue in un terminale
+\fBxterm(1)\fP
+(funziona anche se si fa una connessione telnet, ssh o rlogin con
+un'altra macchina da un xterm) o se sta funzionando su una console Linux
+e si ha il mouse server
+\fBgpm\fP
+in funzione.
+
+.PP
+Quando si fa clic con il tasto sinistro in un file nel pannello
+directory, il file viene selezionato; se si fa clic con il tasto destro
+il file viene marcato (o smarcato, a seconda dello stato precedente).
+
+.PP
+Se il file è un programma eseguibile, il doppio clic su di esso lo eseguirà
+altrimenti se il
+file estensioni
+ha un programma specifico per quell'estensione del file, il suddetto programma
+verrà eseguito.
+
+.PP
+E' anche possibile eseguire i comandi assegnati ai tasti funzione
+cliccando sulle etichette dei tasti.
+
+.PP
+Se un tasto del mouse viene premuto sulla riga in cima al pannello directory,
+il pannello sfoglia di una pagina in alto. Allo stesso modo, un clic sulla
+riga in basso provocherà un cambio di pagina in basso. Questo metodo dei bordi
+funziona anche nel
+visualizzatore dell'aiuto
+e nell'
+albero directory\&.
+
+.PP
+L'auto ripetizione predefinita per il mouse è di 400 millisecondi. Questo
+valore può essere cambiato modificando il file
+~/.config/mc6/ini
+e cambiando il parametro
+\fImouse_repeat_rate.\fP
+
+.PP
+Se il Commander sta funzionando con il supporto mouse, si può saltarlo
+ed ottenere il funzionamento del mouse normale (taglia e incolla di testo)
+tenendo premuto il tasto Maiuscole.
+
+
+.SH Tasti
+.PP
+Alcuni comandi nel M\-Commander presuppongono l'uso dei tasti
+\fIControl\fP
+(talvolta chiamato CTRL o CTL) e
+\fIMeta\fP
+(talvolta chiamato ALT o anche Compose). In questo manuale si utilizzeranno
+le seguenti abbreviazioni:
+
+.TP
+\fBC\-<chr>\fP
+significa premere il tasto control mentre si batte il carattere <chr>.
+Perciò C\-f sarà: premi e tieni premuto il tasto Control e premi f.
+
+.TP
+\fBM\-<chr>\fP
+significa premere il tasto Meta o Alt mentre si batte <chr>.
+Se non c'è un tasto Meta o Alt, premere
+\fIESC,\fP
+rilasciarlo, poi premere il carattere <chr>.
+
+.TP
+\fBS\-<chr>\fP
+significa premere il tasto Maiuscole mentre si batte il carattere <chr>.
+
+.PP
+Tutte le linee di ingresso nel M\-Commander usano un'approssimazione
+dei tasti usati dall'editor GNU Emacs.
+
+.PP
+Ci sono molte sezioni che parlano dei tasti. Le seguenti sono le
+più importanti.
+
+.PP
+La sezione
+menu file
+documenta le abbreviazioni di tasti per i comandi che appaiono nel
+menu file. Questa sezione include i tasti funzione. Molti di questi comandi
+lavorano sui file selezionati o sui file marcati.
+
+.PP
+La sezione
+pannelli directory
+documenta i tasti che selezionano o marcano i file come oggetto
+per una seguente azione (l'azione normalmente deriva dal menu file).
+
+.PP
+La sezione
+shell a riga di comando
+elenca i tasti utilizzati per immettere e modificare linee di comando.
+Molti di questi copiano nomi di file o altro dal pannello directory
+alla riga di comando (per evitare troppo lavoro di battitura) o per
+accedere alla cronologia comandi.
+
+.PP
+I
+tasti della riga di ingresso
+sono usati per modificare le righe di ingresso. Cioè sia la riga di comando
+che le righe di ingresso nelle finestre di interrogazione.
+
+.SH Tasti vari
+.PP
+Qua ci sono alcuni tasti che non sono classificabili in nessuna delle
+altre categorie:
+
+.TP
+\fBInvio\fP
+se c'è del testo nella riga di comando (quella in fondo ai pannelli),
+allora quel comando viene eseguito. Se non c'è testo nella riga di
+comando allora se la barra di selezione è sopra una directory il
+M\-Commander esegue un
+\fBchdir(2)\fP
+alla directory selezionata e ricarica le informazioni sul pannello;
+se la selezione è un file eseguibile allora esso viene eseguito.
+Per ultimo, se l'estensione del file selezionato corrisponde ad una
+delle estensioni presenti nel
+file estensioni,
+il comando corrispondente viene eseguito.
+
+.TP
+\fBC\-l\fP
+ridisegna tutto nel M\-Commander.
+
+.TP
+\fBC\-x c\fP
+esegue il comando
+chmod
+su un file o su un gruppo di file marcati.
+
+.TP
+\fBC\-x o\fP
+esegue il comando
+chown
+sul file corrente o sui file marcati.
+
+.TP
+\fBC\-x l\fP
+crea un collegamento.
+
+.TP
+\fBC\-x s\fP
+crea un collegamento simbolico.
+
+.TP
+\fBC\-x i\fP
+imposta la modalità della visualizzazione dell'altro pannello a informazioni.
+
+.TP
+\fBC\-x q\fP
+imposta la modalità della visualizzazione dell'altro pannello a vista rapida.
+
+.TP
+\fBC\-x !\fP
+esegue il comando
+pannellizza comando\&.
+
+.TP
+\fBC\-x h\fP
+esegue il comando aggiungi directory alla lista
+directory favorite\&.
+
+.TP
+\fBM\-!\fP
+esegue il comando vista filtrata, descritto in
+visualizzatore di file interno\&.
+
+.TP
+\fBM\-?\fP
+esegue il comando
+trova file\&.
+
+.TP
+\fBM\-c\fP
+mostra la finestra
+cambia dir veloce\&.
+
+.TP
+\fBC\-o\fP
+quando il programma viene eseguito in una console Linux o FreeBSD o in
+un xterm, mostrerà il risultato del comando precedente. Eseguito in
+console Linux, il M\-Commander usa un programma esterno
+(cons.saver) per gestire il salvataggio e recupero delle informazioni
+sullo schermo.
+
+.PP
+Se è stato compilato il supporto alla subsell, è possibile premere C\-o
+in ogni momento per tornare alla schermata principale del M\-Commander;
+per tornare all'applicazione basta premere C\-o. Se si ha un'applicazione
+sospesa usando questo trucco, non si sarà in grado di eseguire altri
+programmi dal M\-Commander finché non si terminerà l'applicazione
+sospesa.
+
+.SH Pannelli directory
+.PP
+Questa sezione elenca i tasti che operano sui pannelli directory.
+Se si desidera sapere come cambiare la visualizzazione dei pannelli,
+date un'occhiata alla sezione su
+menu sinistra e destra\&.
+
+.TP
+\fBTab, C\-i\fP
+cambia il pannello corrente. L'altro pannello diventa il nuovo pannello
+corrente mentre il pannello corrente diventa l'altro pannello.
+La barra di selezione si sposta dal vecchio pannello al nuovo corrente.
+
+.TP
+\fBIns, C\-t\fP
+DEPRECATED! per marcare i file si può usare il tasto di Inserimento (la sequenza
+teminfo kich1) o la sequenza C\-t (Control\-t). Per smarcare i file
+basta marcare un file già marcato.
+
+.TP
+\fBInsert, C\-t\fP
+to tag files you may use the Insert key (the kich1 terminfo sequence).
+To untag files, just retag a tagged file.
+
+.TP
+\fBM\-e\fP
+to change charset of panel you may use M\-e (Alt\-e).
+Recoding is made from selected codepage into system codepage. To
+cancel the recoding you may select "directory up" (..) in active panel.
+To cancel the charsets in all directories, select "No translation " in
+the dialog of encodings.
+
+.TP
+\fBM\-g, M\-r, M\-j\fP
+usato per selezionare rispettivamente il file superiore, il file centrale o
+quello inferiore in un pannello.
+
+.TP
+\fBM\-t\fP
+cambia il modo di visualizzazione corrente per mostrare la modalità
+successiva. In questo modo è possibile cambiare velocemente da listati
+lunghi a listati normali a listati definiti dall'utente.
+
+.TP
+\fBC\-\e (control\-barra retroversa)\fP
+mostra le
+directory favorite
+e va alla directory selezionata.
+
+.TP
+\fB+  (più)\fP
+viene utilizzato per selezionare (marcare) un gruppo di file. Il
+M\-Commander richiederà un'espressione regolare per descrivere il gruppo.
+Quando i
+\fImodelli della shell\fP
+sono abilitati, le espressioni regolari sono molto simili alle espressioni
+regolari in una shell (* significa zero o più caratteri e ? un carattere). Se i
+\fImodelli della shell\fP
+sono disabilitati, la marcatura dei file viene fatta con le normali espressioni
+regolari (vedere ed (1)).
+
+.TP
+\fB\e (barra retroversa)\fP
+usare il tasto "\e" per deselezionare un gruppo di file. Questo è l'opposto
+del tasto più.
+
+.TP
+\fBfreccia\-su, C\-p\fP
+sposta la barra di selezione alla voce precedente nel pannello.
+
+.TP
+\fBfreccia\-giù, C\-n\fP
+sposta barra di selezione alla voce successiva nel pannello.
+
+.TP
+\fBhome, a1, M\-<\fP
+sposta la barra di selezione alla prima voce nel pannello.
+
+.TP
+\fBfine, c1, M\->\fP
+sposta la barra di selezione all'ultima voce nel pannello.
+
+.TP
+\fBpagina\-giù, C\-v\fP
+sposta la barra di selezione di una pagina in basso.
+
+.TP
+\fBpagina\-su, M\-v\fP
+sposta la barra di selezione di una pagina in alto.
+
+.TP
+\fBM\-o\fP
+rende la directory corrente del pannello corrente, la directory
+corrente dell'altro pannello. Mette l'altro pannello in modalità
+elenco se necessario. Se il pannello corrente è pannellizzato,
+l'altro non diventa pannellizzato.
+
+.TP
+\fBC\-PaginaSu, C\-PaginaGiù\fP
+solo quando si esegue in console Linux: rispettivamente cambia
+directory a ".." e alla directory correntemente selezionata.
+
+.TP
+\fBM\-y\fP
+sposta la directory precedente nella cronologia, equivalente a
+premere '<' con il mouse.
+
+.TP
+\fBM\-u\fP
+sposta la directory successiva nella cronologia, equivalente a
+premere '>' con il mouse.
+
+.TP
+\fBM\-S\-h, M\-H\fP
+mostra la cronologia directory, equivalente a premere 'v' con il mouse.
+
+.SH Quick search
+.TP
+\fBC\-s, M\-s\fP
+inizia una ricerca nella directory. Quando la ricerca è attiva i dati
+immessi dall'utente vengono aggiunti alla stringa di ricerca invece
+della riga di comando. Se l'opzione
+\fIMostra mini\-stato\fP
+è abilitata, la stringa di ricerca viene mostrata nella riga di
+mini\-stato. Scrivendo, la barra di selezione si muove al prossimo
+file che comincia con le lettere battute. I tasti
+\fIbackspace\fP
+o
+\fIcanc\fP
+possono essere utilizzati per correggere errori di battitura. Se viene premuto
+nuovamente, viene ricercata la corrispondenza successiva.
+
+.SH Shell a riga di comando
+.PP
+Questa sezione elenca i tasti utili ad evitare troppe battiture
+nell'immissione dei comandi.
+
+.TP
+\fBM\-Invio\fP
+copia nella riga di comando il nome del file attualmente selezionato.
+
+.TP
+\fBC\-Invio\fP
+come M\-Invio, ma funziona solo dalla console Linux.
+
+.TP
+\fBM\-Tab\fP
+esegue automaticamente il
+completamento
+del nome del file, variabile, nome utente e nome host.
+
+.TP
+\fBC\-x t, C\-x C\-t\fP
+copia i file marcati (o se non vi sono file marcati, il file selezionato)
+del pannello corrente (C\-x t) o dell'altro pannello (C\-x C\-t) sulla
+riga di comando.
+
+.TP
+\fBC\-x p, C\-x C\-p\fP
+la prima sequenza di tasti copia il percorso corrente sulla riga di comando
+e la seconda copia il percorso del pannello non selezionato sulla riga
+di comando.
+
+.TP
+\fBC\-q\fP
+il comando di inserimento letterale serve per inserire caratteri che
+sarebbero altrimenti interpretati dal M\-Commander (come il simbolo '+')
+
+.TP
+\fBM\-p, M\-n\fP
+Usa questi tasti per navigare attraverso la cronologia comandi. M\-p va alla voce
+precedente, M\-n va alla successiva.
+
+.TP
+\fBM\-h\fP
+mostra la cronologia per la riga di ingresso corrente.
+
+.SH Tasti generali di movimento
+.PP
+Il visualizzatore dell'aiuto, il visualizzatore dei file e l'albero directory
+usano un codice comune per gestire il movimento. Per questa ragione essi
+accettano esattamente gli stessi tasti. Ognuno di questi però accetta anche
+altri tasti indipendenti.
+
+.PP
+Diverse parti del M\-Commander usano gli stessi tasti di
+movimento, questa sezione riguarda quelle parti.
+
+.TP
+\fBSu, C\-p\fP
+si sposta di una riga indietro.
+
+.TP
+\fBGiù, C\-n\fP
+si sposta di una riga avanti.
+
+.TP
+\fBPag. Prec., Pagina Su, M\-v\fP
+si sposta di una pagina in alto.
+
+.TP
+\fBPag. Succ., Pagina Giù, C\-v\fP
+si sposta di una pagina in basso.
+
+.TP
+\fBHome, A1\fP
+si sposta all'inizio.
+
+.TP
+\fBFine, C1\fP
+si sposta alla fine.
+
+.PP
+In aggiunta a quelli menzionati sopra, il visualizzatore dell'aiuto accetta
+i seguenti tasti:
+
+.TP
+\fBb, C\-b, C\-h, Backspace, Canc\fP
+si sposta di una pagina in alto.
+
+.TP
+\fBBarra spaziatrice\fP
+si sposta di una pagina in basso.
+
+.TP
+\fBu, d\fP
+si sposta di mezza pagina in alto o in basso.
+
+.TP
+\fBg, G\fP
+si sposta all'inizio o alla fine.
+
+.SH Tasti di riga di ingresso
+.PP
+I tasti di riga di ingresso (sono usati
+per la
+riga di comando
+e per i dialoghi di richiesta dati nel programma) accettano
+questi tasti:
+
+.TP
+\fBC\-a\fP
+sposta il cursore all'inizio della riga.
+
+.TP
+\fBC\-e\fP
+sposta il cursore alla fine della riga
+
+.TP
+\fBC\-b, freccia\-sinistra\fP
+sposta il cursore di una posizione a sinistra.
+
+.TP
+\fBC\-f, freccia\-destra\fP
+sposta il cursore di una posizione a destra.
+
+.TP
+\fBM\-f\fP
+sposta il cursore di una parola in avanti.
+
+.TP
+\fBM\-b\fP
+sposta il cursore di una parola indietro.
+
+.TP
+\fBC\-h, backspace\fP
+cancella il carattere precedente.
+
+.TP
+\fBC\-d, Canc\fP
+cancella il carattere nel punto (sopra il cursore).
+
+.TP
+\fBC\-@\fP
+imposta il marcatore per tagliare.
+
+.TP
+\fBC\-w\fP
+copia il testo tra il cursore e il marcatore in un kill buffer
+e rimuove il testo dalla riga di ingresso.
+
+.TP
+\fBM\-w\fP
+copia il testo tra il cursore ed il marcatore in un kill buffer.
+
+.TP
+\fBC\-y\fP
+inserisce il contenuto del kill buffer.
+
+.TP
+\fBC\-k\fP
+elimina il testo dal cursore alla fine della riga.
+
+.TP
+\fBM\-p, M\-n\fP
+usa questi tasti per navigare attraverso la cronologia dei comandi. M\-p
+posiziona sull'ultima voce, M\-n posiziona sulla seguente.
+
+.TP
+\fBM\-C\-h, M\-Backspace\fP
+cancella una parola indietro.
+
+.TP
+\fBM\-Tab\fP
+fa del nomefile, comando, variabile, nomeutente e nomehost il
+completamento
+automatico.
+
+
+.SH Barra dei menu
+.PP
+La barra dei menu compare premendo F9 o cliccando con il mouse sopra la riga
+superiore dello schermo. La barra menu possiede cinque menu: "Sinistra", "File",
+"Comando", "Opzioni" e "Destra".
+
+.PP
+I
+menu sinistra e destra
+permettono di modificare l'aspetto dei pannelli directory di
+sinistra e di destra.
+
+.PP
+Il
+menu file
+elenca le azioni che possono essere condotte sui file correntemente selezionati
+o marcati.
+
+.PP
+Il
+menu comando
+elenca le azioni più generali e non ha relazione con il file correntemente
+selezionati o marcati.
+
+.PP
+Il
+menu opzioni
+elenca le azioni che permettono di personalizzare il M\-Commander.
+
+.SH Menu sinistra e destra (sopra e sotto)
+.PP
+L'apparenza dei pannelli directory è modificabile tramite i menu
+\fBsinistra\fP
+e
+\fBdestra\fP
+(vengono chiamati
+\fBsopra\fP
+e
+\fBsotto\fP
+se la divisione pannello nella finestra
+aspetto
+del menu opzioni è orizzontale).
+
+.SS Modalità lista...
+.PP
+La modalità lista serve a mostrare un elenco di file; ci sono quattro
+modalità elenco disponibili:
+\fBcompleta\fP,
+\fBbreve\fP,
+\fBlunga\fP
+e
+\fBdefinita dall'utente\fP\&.
+La modalità completa mostra il nome del file, l'ampiezza del file e
+la data di modifica.
+
+.PP
+La modalità breve mostra solo il nome del file in due colonne
+(perciò mostrando il doppio del numero dei file che nelle altre
+modalità). La modalità lunga è simile a quella del comando
+\fBls \-l\fP\&.
+La modalità lunga usa tutta l'ampiezza dello schermo.
+
+.PP
+Se si sceglie il formato definibile dall'utente, è necessario specificare
+il formato della vista.
+
+.PP
+Il formato definibile dall'utente deve cominciare con una specifica
+dell'ampiezza del pannello. Questa può essere "half" o "full", che descrive
+un pannello di mezza grandezza o completa rispettivamente.
+
+.PP
+Dopo l'ampiezza del pannello, è possibile specificare la modalità a
+due colonne aggiungendo il numero "2" alla stringa di formato.
+
+.PP
+Dopodiché si aggiunge il nome dei campi con una specifica di ampiezza
+opzionale. Questi sono i campi disponibile per la visualizzazione:
+
+.TP
+\fBname\fP
+mostra il nome del file.
+
+.TP
+\fBsize\fP
+mostra l'ampiezza del file.
+
+.TP
+\fBbsize\fP
+è una forma alternativa del formato
+\fBsize\fP
+mostra l'ampiezza del file e per le directory mostra solo
+SUB\-DIR o UP\-\-DIR.
+
+.TP
+\fBtype\fP
+mostra un campo di un carattere. Questo carattere è simile a quello
+mostrato dal comando ls con la flag \-F \-
+\fB*\fP
+per i file eseguibili,
+\fB/\fP
+per le directory,
+\fB@\fP
+per i collegamenti,
+\fB=\fP
+per i socket,
+\fB\-\fP
+per i dispositivi a carattere,
+\fB+\fP
+per i dispositivi a blocchi,
+\fB|\fP
+per le pipe,
+\fB~\fP
+per i collegamenti simbolici a directory e
+\fB!\fP
+per i collegamenti simbolici stallati (che non puntano a niente).
+
+.TP
+\fBmark\fP
+un asterisco se il file è marcato, uno spazio se non lo è.
+
+.TP
+\fBmtime\fP
+la data dell'ultima modifica al file.
+
+.TP
+\fBatime\fP
+la data dell'ultimo accesso al file.
+
+.TP
+\fBctime\fP
+la data della creazione del file.
+
+.TP
+\fBperm\fP
+una stringa che rappresenta i bit dei permessi del file.
+
+.TP
+\fBmode\fP
+un valore ottale con i permessi correnti del file.
+
+.TP
+\fBnlink\fP
+il numero dei collegamenti al file.
+
+.TP
+\fBngid\fP
+il GID (numerico).
+
+.TP
+\fBnuid\fP
+l'UID (numerico).
+
+.TP
+\fBowner\fP
+il proprietario del file.
+
+.TP
+\fBgroup\fP
+il gruppo del file.
+
+.TP
+\fBinode\fP
+l'inode del file.
+
+.PP
+Puoi usare ache questi campi per sistemare la visualizzazione:
+
+.TP
+\fBspace\fP
+uno spazio nel formato visualizzazione.
+
+.TP
+\fB|\fP
+aggiunge una linea verticale al formato di visualizzazione.
+
+.PP
+Per forzare un campo ad un'ampiezza fissa (una specifica di ampiezza),
+basta semplicemente aggiungere
+\fB:\fP
+ed il numero dei caratteri che si vuole che il campo abbia. Se il
+numero è seguito dal simbolo
+\fB+\fP,
+allora la specifica definisce l'ampiezza minima \- se il programma
+trova che serve più spazio sullo schermo, espanderà il campo.
+
+.PP
+Per esempio la modalità
+\fBcompleta\fP
+corrisponde a questo formato:
+
+.PP
+half type name | size | mtime
+
+.PP
+E quella
+\fBlunga\fP
+corrisponde a questo formato:
+
+.PP
+full perm space nlink space owner space group space size space mtime
+space name
+
+.PP
+Questa è una modalità interessante:
+
+.PP
+half name | size:7 | type mode:3
+
+.PP
+I pannelli possono anche essere impostati alle modalità seguenti:
+
+.TP
+\fBInformazioni\fP
+La modalità informazioni mostra alcuni dati relativi al file
+correntemente selezionato e se possibile informazioni circa il file
+system corrente.
+
+.TP
+\fBAlbero\fP
+La vista ad albero è abbastanza simile al comando
+albero directory\&.
+Vedere la sezione corrispondente per maggiori informazioni.
+
+.TP
+\fBVista rapida\fP
+In questa modalità il pannello si imposta come un
+visualizzatore
+ridotto che mostra i contenuti del file correntemente selezionato;
+se si seleziona il pannello (con il tasto tab o con il mouse), si ha
+accesso ai normali comandi del visualizzatore.
+
+.SS Ordina per...
+.PP
+Gli otto possibili ordinamenti sono per nome, estensione, data
+di modifica, data di accesso, data di modifica informazioni di
+inode, ampiezza, per inode e non ordinato. Nella finestra di dialogo
+di ordinamento è possibile scegliere il tipo di ordinamento ed è anche
+possibile specificare se si desidera l'ordinamento inverso selezionando
+la voce inverso.
+
+.PP
+Normalmente le directory sono ordinate prima dei file ma quest'impostazione
+può essere modificata dal
+menu opzioni
+(opzione
+\fBmescola tutti i file\fP).
+
+.SS Filtro...
+.PP
+Il comando di filtro permette di specificare un modello (per esempio
+\fB*\&.tar.gz\fP)
+che il file deve corrispondere per essere visualizzato. Malgrado
+il modello del filtro, le directory e i collegamenti a directory
+vengono sempre visualizzati sul pannello directory.
+
+.SS Ricarica
+.PP
+Il comando ricarica l'elenco dei file nella directory. E' utile
+se un'altro processo ha creato o rimosso dei file. Se
+si ha pannellizzato dei nomi di file in un pannello, questo ricaricherà
+il contenuto della directory e rimuoverà le informazioni pannellizzate
+(vedere sezione
+pannellizza comando
+per ulteriori informazioni).
+
+.SH Menu file
+.PP
+Il M\-Commander usa i tasti F1 \- F10 come tasti veloci
+per i comandi che appaiono nel menu file. Le sequenze di escape
+per i tasti funzione sono capacità terminfo da kf1 a kf10. Su terminali
+senza supporto per i tasti funzione, è possibile ottenere la stessa
+funzionalità premendo il tasto ESC e un numero da 1 a 9 più lo 0
+(corrispondentemente ai tasti da F1 a F9 e F10 rispettivamente).
+
+.PP
+Il file menu comprende i comandi seguenti (tasti veloci tra parentesi):
+
+.PP
+\fBAiuto (F1)\fP
+
+.PP
+Invoca il visualizzatore incorporato di ipertesti per l'aiuto.
+All'interno del
+visualizzatore aiuto,
+è possibile usare il tasto tab per selezionare il successivo collegamento
+e il tasto invio per seguirlo. I tasti Barra spaziatrice e Backspace vengono
+utilizzati per muoversi avanti e indietro nella pagina di aiuto. Premere F1
+nuovamente per ottenere la lista completa dei tasti accettati.
+
+.PP
+\fBMenu (F2)\fP
+
+.PP
+Invoca il
+menu utente\&.
+Il menu utente fornisce un modo semplice per dare agli utenti un menu ed
+aggiungere nuove funzionalità al M\-Commander.
+
+.PP
+\fBVisualizza (F3, Maiusc\-F3)\fP
+
+.PP
+Visualizza il file correntemente selezionato. Nell'impostazione predefinita
+viene invocato il
+visualizzatore interno di file
+ma se l'opzione "Usa visualizzatore interno" è deselezionata, verrà invocato
+un visualizzatore esterno specificato dalla variabile ambiente
+\fBPAGER\fP\&.
+Se
+\fBPAGER\fP
+non è definita, verrà invocato il comando "view". Se si usa invece il comando
+Maiusc\-F3, il visualizzatore verrà invocato senza nessun tipo di formattazione
+o preprocessamento sul file.
+
+.PP
+\fBVista filtrata (M\-!)\fP
+
+.PP
+Questo tasto richiede all'utente un comando ed i suoi argomenti (l'argomento
+predefinito è il nome del file attualmente selezionato), il risultato di tale
+comando viene mostrato nel visualizzatore di file interno.
+
+.PP
+\fBCambia (F4)\fP
+
+.PP
+Invoca l'editor
+\fBvi\fP
+o l'editor specificato nella variabile d'ambiente
+\fBEDITOR\fP
+oppure
+l'editor di file interno
+se l'opzione, "usa editor interno" è stata impostata.
+
+.PP
+\fBCopia (F5)\fP
+
+.PP
+Mostra una finestra di dialogo con destinazione predefinita alla
+directory del pannello non selezionato, che copia il file selezionato (o
+i file marcati, se ce n'è almeno uno) sulla directory specificata
+dall'utente nella finestra di dialogo. Space for destination
+file may be preallocated relative to preallocate_space configure option.
+Durante il processo è possibile
+premere C\-c o ESC per abortire l'operazione. Per maggiori dettagli sulla
+maschera sorgente (che sarà normalmente * o ^\e(.*\e)$ a seconda
+dell'impostazione di "modelli della shell") o sui caratteri jolly sulla
+destinazione vedere
+maschera copia/rinomina\&.
+
+.PP
+In alcuni sistemi è possibile eseguire la copia in background cliccando
+sul bottone background (o premendo M\-b nella finestra di dialogo). Il
+comando
+processi in background
+è utile per controllarne l'andamento.
+
+.PP
+\fBCollegamento (C\-x l)\fP
+
+.PP
+Crea un collegamento fisico (hard link) al file corrente.
+
+.PP
+\fBCollegamento Simbolico (C\-x s)\fP
+
+.PP
+Crea un collegamento simbolico al file corrente. Per chi non sapesse
+cosa sono i collegamenti: creare un collegamento ad un file è come
+copiare il file ma sia il nome sorgente che destinazione rappresentano
+la stessa immagine fisica del file. Per esempio, se si modifica uno dei
+due file, tutti i cambiamenti appariranno su tutti i file. Alcuni li
+chiamano anche alias o scorciatoie (o link come in originale inglese).
+
+.PP
+Un collegamento fisico appare come un file reale. Dopo che sia stato
+creato non c'è modo di distinguere quale sia il collegamento e quale sia
+l'originale. Se si cancella uno dei due l'altro rimarrà intatto. E' molto
+difficile notare che i file rappresentano la stessa immagine. Usate i
+collegamenti fisici quando non volete proprio saperlo.
+
+.PP
+Un collegamento simbolico è un riferimento al nome del file originale.
+Se il file originale viene cancellato, il collegamento è inutile.
+E' facile distinguere i collegamenti simbolici dall'immagine stessa.
+Se il file è un collegamento simbolico a qualcosa, il M\-Commander
+mostra un simbolo "@" davanti al nome del file (eccetto se punta ad una
+directory, nel qualcaso mostrerà una tilde  (~)).
+Il file originale sul quale punta il collegamento simbolico viene mostrato
+sulla riga di mini\-stato se
+\fIMostra Mini\-stato\fP
+è abilitata. Usare i collegamenti simbolici se si vuole evitare la confusione
+che creano i collegamenti fisici.
+
+.PP
+\fBRinomina/Sposta (F6)\fP
+
+.PP
+Mostra una finestra di dialogo con destinazione predefinita alla
+directory del pannello non selezionato, che sposta il file selezionato (o
+i file marcati, se ce n'è almeno uno) sulla directory specificata dall'utente
+nella finestra di dialogo. Durante il processo è possibile
+premere C\-c o ESC per abortire l'operazione. Per maggiori dettagli vedere la
+sezione precedente Copia, dato che il comando è molto simile.
+
+.PP
+In alcuni sistemi è possibile eseguire la copia in background cliccando
+sul bottone background (o premendo M\-b nella finestra di dialogo). Il
+comando
+processi in background
+è utile per controllarne l'andamento.
+
+.PP
+\fBCrea Directory (F7)\fP
+
+.PP
+Mostra una finestra di dialogo che crea la directory specificata.
+
+.PP
+\fBElimina (F8)\fP
+
+.PP
+Cancella il file correntemente selezionato o i file marcati nel
+pannello corrente. Durante il processo è possibile premere C\-c
+o ESC per abortire l'operazione.
+
+.PP
+\fBCambia dir veloce (M\-c)\fP
+Usare il comando
+Cambia Dir veloce
+se si vuole cambiare directory corrente e si ha la riga di comando occupata.
+
+.PP
+\fBSeleziona gruppo (+)\fP
+
+.PP
+Viene utilizzato per selezionare (marcare) un gruppo di file. Il
+M\-Commander richiedera un'espressione regolare per descrivere il
+gruppo; se l'opzione
+\fImodelli della shell\fP
+è abilitata, l'espressione regolare è simile al file globbing nella shell
+(* significa zero o più caratteri e ? significa un carattere). Se l'opzione
+\fImodelli della shell\fP
+è disabilitata, allora la selezione dei file viene eseguita con le normali
+espressioni regolari (vedere ed (1)).
+
+.PP
+\fBDeseleziona gruppo (\e)\fP
+
+.PP
+Usata per deselezionare un gruppo di file. E' l'opposto di del comando
+\fISeleziona gruppo.\fP
+
+.PP
+\fBUscita (F10, Maiusc\-F10)\fP
+
+.PP
+Termina l'esecuzione del M\-Commander. Maiusc\-F10 viene usata se
+si esce e si sta usando lo shell wrapper. Maiusc\-F10 in tal caso non
+vi porterà all'ultima directory utilizzata dal M\-Commander ma
+vi lascerà nella directory dalla quale avete fatto partire il
+M\-Commander.
+
+.SS Cambia dir veloce
+.PP
+Questo comando è utile se si ha la riga di comando piena e si vuole
+eseguire
+cd
+per cambiare directory senza dover cancellare e riscrivere la riga di comando.
+Questo comando fa uscire una piccola finestra di dialogo che richiede
+l'immissione degli stessi argomenti che si darebbero al comando
+\fBcd\fP
+a riga di comando. Questo ha le stesse caratteristiche già presenti nel
+comando
+comando interno cd\&.
+
+.SH Menu comando
+.PP
+Il comando
+albero directory
+mostra un disegno ad albero delle directory.
+
+.PP
+Il comando
+trova file
+permette di cercare un file specifico. Il comando "Scambia pannelli"
+scambia il contenuto dei due pannelli directory.
+
+.PP
+Il comando "attiva/disattiva pannelli" mostra il risultato dell'ultimo
+comando shell. Quest'ultimo funziona solo su xterm e sulle console Linux
+e FreeBSD.
+
+.PP
+Il comando Confronta directory (C\-x d) confronta il contenuto dei
+pannelli directory uno con l'altro. E' poi possibile usare il comando
+Copia (F5) per rendere i pannelli identici. Ci sono tre metodi di
+confronto. Il metodo veloce confronta solo l'ampiezza e la data del
+file. Il metodo completo fa un confronto byte\-per\-byte. Il metodo
+solo dimensione confronta solo l'ampiezza dei
+file e non controlla il contenuto né la data del file.
+
+.PP
+Il comando cronologia comandi mostra un'elenco dei comandi battuti. Il
+comando selezionato viene copiato sulla riga di comando. Alla cronologia
+comandi vi si  può accedere premendo M\-p o M\-n.
+
+.PP
+Il comando
+directory favorite (C\-\e)
+permette un cambio più veloce dalla directory corrente ad una di quelle usate
+più spesso.
+
+.PP
+Il comando
+pannellizza comando
+permette di eseguire un coamndo esterno e di mettere il risultato nel pannello
+corrente.
+
+.PP
+Il comando
+modifica file estensioni
+permette di specificare i programmi che devono essere eseguiti quando
+si prova ad eseguire, visualizzare, modificare e un mucchio di altre
+cose, file con una specifica estensione (la fine del nome del file).
+Il comando
+modifica file menu
+serve a modificare il menu utente (che appare premendo F2).
+
+.SS Albero directory
+.PP
+Il comando albero directory mostra una rappresentazione ad albero delle
+directory. Selezionando una directory dalla rappresentazione il
+M\-Commander cambierà a quella directory.
+
+.PP
+Ci sono due modi di invocare l'albero. Il vero comando di albero directory
+è accessibile dal menu Comandi. L'altro modo è di selezionare la vista ad
+albero dai menu Sinistra o Destra.
+
+.PP
+Per evitare i lunghi ritardi il M\-Commander crea la rappresentazione ad
+albero scansionando solo una piccola porzione di tutte le directory.
+Se manca la directory che si vuole visualizzare, spostarsi sulla sua directory
+genitrice e premere C\-r (o F2).
+
+.PP
+E' possibile utilizzare i tasti seguenti:
+
+.PP
+Sono accettati i
+tasti generali di movimento\&.
+
+.PP
+\fBInvio.\fP
+Nell'albero directory, esce dall'albero della directory e lo cambia
+alla directory corrente nel pannello selezionato. Nella vista ad albero,
+cambia a questa directory nell'altro pannello e rimane nella modalità
+vista ad albero in quello corrente.
+
+.PP
+\fBC\-r, F2 (Ricarica).\fP
+Ricarica la directory. Usare questo comando quando la rappresentazione ad
+albero non è aggiornata: mancano directory o mostra alcune sottodirectory
+che non esistono più.
+
+.PP
+\fBF3 (Scorda).\fP
+Cancella questa directory dalla rappresentazione ad albero. Usare questo
+comando per eliminare la confusione dal'albero. Se si vuole nuovamente
+visualizzare l'albero completo premere F2 nella sua directory genitrice.
+
+.PP
+\fBF4 (Statico/Dinamico).\fP
+Cambia tra modo di navigazione dinamico (predefinito) e statico.
+
+.PP
+Nella navigazione statica si usano i tasti Su e Giù per
+selezionare la directory. Tutte le directory conosciute vengono mostrate.
+
+.PP
+Nella navigazione dinamica si usano i tasti Su e Giù per selezionare
+una directory sorella, il tasto Sinistra sposta sulla directory genitrice
+e il tasto Destra sposta sulla directory figlia. Solo i parenti, sorelle
+e figlie, vengono mostrate; le altre sono tralasciate. La rappresentazione
+ad albero cambia dinamicamente come la si attraversa.
+
+.PP
+\fBF5 (Copia).\fP
+Copia la directory.
+
+.PP
+\fBF6 (RinSpo).\fP
+Sposta la directory.
+
+.PP
+\fBF7 (CreDir).\fP
+Crea una nuova directory sotto questa directory.
+
+.PP
+\fBF8 (CancDir).\fP
+Cancella questa directory dal file system.
+
+.PP
+\fBC\-s, M\-s.\fP
+Cerca la prossima directory che corrisponde alla stringa di ricerca.
+Se tale directory non esiste, questi tasti faranno scendere di una riga
+(il cursore).
+
+.PP
+\fBC\-h, Backspace.\fP
+Cancella l'ultimo carattere nella stringa di ricerca.
+
+.PP
+\fBQualsiasi altro carattere.\fP
+Aggiunge un carattere alla stringa di ricerca e sposta alla nuova directory
+che comincia con questi caratteri (il cursore). Nella vista ad albero
+si deve prima attivare la ricerca premendo C\-s. La stringa di ricerca è
+visibile nella riga di mini stato.
+
+.PP
+Le azioni seguenti sono disponibili solo nell'albero directory.
+Non sono supportate nella vista ad albero.
+
+.PP
+\fBF1 (Aiuto).\fP
+Invoca il visualizzatore dell'aiuto e mostra questa sezione.
+
+.PP
+\fBEsc, F10.\fP
+Esce dalla rappresentazione ad albero. Non cambia directory.
+
+.PP
+Il mouse è supportato. Un doppio clic si comporta come premere Invio.
+Vedere anche la sezione
+supporto mouse\&.
+
+.SS Trova file
+.PP
+Il comando trova file domanda prima la directory di inizio per la
+ricerca ed il nome del file da cercare. Premendo il tasto albero
+puoi selezionare la directory di partenza
+dall'albero directory\&.
+
+.PP
+Il campo contenuto accetta espressioni regolari simili a egrep(1). Ciò
+significa che è necessario proteggere i caratteri con significati speciali per
+egrep con "\e", per esempio se si ricerca "strcmp (" si dovrà immettere
+"strcmp \e(" (senza le virgolette).
+
+.PP
+Per far partire la ricerca premere il tasto Ok.
+E' possibile bloccare la ricerca con il tasto Sospende e farla riprendere
+con il tasto Continua.
+
+.PP
+E' possibile navigare l'elenco file con i tasti freccia Su e Giù.
+Il tasto Chdir cambierà la directory corrente a quella del file selezionato.
+Il tasto Ripete chiederà nuovamente i parametri per una nuova ricerca.
+Il tasto Uscita esce dal comando Trova. Il tasto Pannellizza
+metterà i file trovati sul pannello di directory corrente cosicché si
+possa svolgere ulteriori operazioni su di essi (visualizzazione, copia,
+spostamento, e così via). Dopo la pannellizzazione è possibile premere C\-r
+per ripristinare la vista normale dei file.
+
+.PP
+E' possibile avere una lista di directory che il comando trova file dovrebbe
+saltare durante la ricerca (per esempio, si può evitare di fare ricerche su
+un CDROM o su una directory NFS montata attraverso un collegamento lento).
+
+.PP
+Le directory che devono essere saltate devono essere impostate nella variabile
+\fBignore_dirs\fP
+nella sezione
+\fBFindFile\fP
+del file ~/.config/mc6/ini.
+
+.PP
+Le directory devono essere separate da una virgola, come nell'esempio:
+
+.EX
+[FindFile]
+ignore_dirs=/cdrom:/nfs/wuarchive:/afs
+
+.EE
+
+.PP
+Si può prendere in considerazione l'uso del comando
+pannellizza comando
+per operazioni particolari. Il comando trova file serve solo per
+ricerche semplici mentre usando pannellizza comando si può fare
+ricerche complesse come si vuole.
+
+.SS Pannellizza comando
+.PP
+Pannellizza comando permette di eseguire un programma esterno, e
+mettere il risultato del programma nel pannello corrente.
+
+.PP
+Per esempio, se si vuole manipolare in uno dei pannelli tutti i collegamenti
+simbolici nella directory corrente, basta usare pannellizza comando per
+eseguire il seguente:
+
+.EX
+find . \-type l \-print
+
+.EE
+
+.PP
+Al completamento del comando, il contenuto del pannello non sarà più
+il listato della directory ma tutti i file che rappresentano
+collegamenti simbolici.
+
+.PP
+Volendo pannellizzare tutti i file che sono stati scaricati dal
+proprio server ftp preferito, si può usare questo comando awk per
+estrarre il nome del file dal file di log del traferimento:
+
+.EX
+awk '$9 ~! /incoming/ { print $9 }' < /var/log/xferlog
+
+.EE
+
+.PP
+Se si desidera si può salvare i comandi di pannellizzazione usati più
+spesso con uno nome più descrittivo, in maniera da richiamarli più velocemente.
+Per fare ciò basta battere il comando sulla riga di ingresso e premere il tasto
+Aggiungi nuovo. Poi si deve dare un nome al quale associare il comando che si
+desidera salvare. La prossima volta sarà possibile scegliere quel comando
+dall'elenco e non servirà ribatterlo nuovamente.
+
+.SS Directory favorite
+.PP
+Il comando Directory favorite mostra le etichette delle directory nell'elenco
+delle favorite. Il M\-Commander andrà alla directory corrispondente
+all'etichetta selezionata. Dalla finestra delle favorite si possono rimuovere
+etichette/directory già create ed aggiungerne di nuove. Per aggiungere
+velocemente nuove directory basta usare il comando Aggiungi alle favorite
+(C\-x h), che aggiunge la directory corrente alla lista delle favorite,
+richiedendo l'etichetta per identificarla.
+
+.PP
+Questo rende più veloce il cd verso directory usate spesso. Considera l'uso della
+variabile CDPATH come descritto in
+comando cd interno\&.
+
+.SS Modifica file estensioni
+.PP
+Questo comando invocherà l'editor sul file
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
+
+.SS Processi in background
+.PP
+Questo comando permette di controllare lo stato di ogni processo
+in background del M\-Commander (in background possono essere
+eseguite solo operazioni di copia e rinomina). Da qui si può bloccare,
+far ripartire e uccidere un lavoro in background.
+
+.SS Modifica file menu
+.PP
+Il menu utente è un menu di comandi utili che possono essere
+personalizzati dall'utente. Quando si accede al menu utente, viene
+utilizzato, se esiste, il file .usermenu dalla directory corrente,
+ma solo se è di proprietà dell'utente o di root e se non è scrivibile
+a tutti. Se tale file non viene trovato, mcommander alla stessa maniera
+prova con ~/.config/mc6/menu altrimenti usa il menu di sistema
+{{pkgdatadir}}/usermenu.
+
+.PP
+Il formato del file menu è molto semplice. Le righe che cominciano
+con qualsiasi cosa che non sia uno spazio o una tabulazione sono
+considerate voci per il menu (per fare in modo di usarle anche come
+scelta rapida, il primo carattere deve essere una lettera). Tutte le
+righe che cominciano con uno spazio o un tab sono i comandi che verranno
+eseguiti quando la voce viene selezionata.
+
+.PP
+Quando un'opzione viene selezionata tutte le linee di comando dell'opzione
+vengono copiate in un file temporaneo nella directory temporanea (normalmente
+/usr/tmp) e poi il file viene eseguito. Ciò permette all'utente di mettere
+normali costrutti shell nei menu. Prima dell'esecuzione del codice del menu
+ha luogo una semplice sostituzione di macro. Per ulteriori informazioni vedere
+sostituzione macro\&.
+
+.PP
+Ecco un esempio di un file usermenu:
+
+.EX
+A	Mostra un dump del file correntemente selezionato
+	od \-c %f
+
+B	Modifica un rapporto bachi e lo spedisce a root
+	I=`mktemp ${MC_TMPDIR:\-/tmp}/mail.XXXXXX` || exit 1
+	vi $I
+	mail \-s "M\-Commander bug" root < $I
+	rm \-f $I
+
+M	Legge la posta
+	emacs \-f rmail
+
+N	Legge le news
+	emacs \-f gnus
+
+H	Chiama il visualizzatore ipertestuale info
+	info
+
+J	Copia la directory corrente nell'altro pannello ricorsivamente
+	tar cf \- . | (cd %D && tar xvpf \-)
+
+K	Crea un rilascio della directory corrente
+	echo \-n "Nome del file di distribuzione: "
+	read tar
+	ln \-s %d `dirname %d`/$tar
+	cd ..
+	tar cvhf ${tar}.tar $tar
+
+= f *.tar.gz | f *.tgz & t n
+X       Estrae il contenuto di un file tar compresso
+	tar xzvf %f
+
+.EE
+
+.PP
+\fBCondizioni Predefinite\fP
+
+.PP
+Ogni voce di menu può essere preceduta da una condizione. La condizione
+deve cominciare nella prima colonna con un carattere '='. Se la condizione
+è vera, la voce di menu sarà la voce predefinita.
+
+.EX
+Sintassi condizione: 	= <sotto\-cond>
+  oppure:		= <sotto\-cond> | <sotto\-cond> ...
+  oppure:		= <sotto\-cond> & <sotto\-cond> ...
+
+Sotto\-condizione è una delle seguenti:
+
+  y <modello>	        sintassi della corrispondenza modello file corrente?
+                        (solo per modifica menu).
+  f <modello>	        corrispondenza modello file corrente?
+  F <modello>	        corrispondenza modello altro file?
+  d <modello>	        corrispondenza modello directory corrente?
+  D <modello>	        corrispondenza modello altra directory?
+  t <tipo>		file corrente di tipo?
+  T <tipo>		altro file di tipo?
+  x <nomefile>		nomefile è eseguibile?
+  ! <sotto\-cond>	nega il risultato di una sotto\-condizione
+
+.EE
+
+.PP
+Modello è un normale modello della shell o un'espressione regolare,
+a seconda dell'opzione modelli della shell. E' possibile scavalcare
+il valore globale dell'opzione modelli della shell scrivendo
+"shell_patterns=x" sulla prima riga del file menu (dove "x" è 0 o 1).
+
+.EX
+Tipo è uno o più dei seguenti caratteri:
+
+  n	non directory
+  r	file regolare
+  d	directory
+  l	collegamento
+  c	carattere speciale
+  b	blocco speciale
+  f	fifo (pipe)
+  s	socket
+  x	eseguibile
+  t	marcato
+
+.EE
+
+.PP
+Per esempio 'rlf' significa file regolare, collegamento o fifo. Il
+tipo 't' è particolare perché agisce sul pannello invece che sul file.
+La condizione '=t t' è vera se ci sono file marcati nel pannello corrente
+e falsa se non ce ne sono.
+
+.PP
+Se la condizione comincia con '=?' invece che '=' una traccia di debug
+sarà mostrata ogniqualvolta viene calcolato il valore della condizione.
+
+.PP
+Le condizioni sono calcolate da sinistra a destra. Ciò significa che
+
+.EX
+	= f *.tar.gz | f *.tgz & t n
+
+.EE
+
+.PP
+viene calcolata come
+
+.EX
+	( (f *.tar.gz) | (f *.tgz) ) & (t n)
+
+.EE
+
+.PP
+Ecco un esempio dell'uso delle condizioni:
+
+.EX
+= f *.tar.gz | f *.tgz & t n
+L	Elenca i contenuti di un archivio compresso tar
+	gzip \-cd %f | tar xvf \-
+
+.EE
+
+.PP
+\fBCondizioni Addizione\fP
+
+.PP
+Se la condizione comincia con '+' (o '+?') invece che '=' (o '=?') è
+una condizione addizione. Se la condizione è vera la voce di menu sarà
+inclusa nel menu. Se la condizione è falsa la voce di menu non sarà
+inclusa nel menu.
+
+.PP
+E' possibile combinare condizioni predefinite e addizione iniziando
+la condizione con '+=' o '=+' (o '+=?' o '=+?' se vuoi una traccia di
+debug). Se si vuole usare due differenti condizioni, una per addizionale
+e l'altra per predefinita, si può precedere una voce di menu con due righe
+di condizione, una che comincia con '+' e l'altra con '='.
+
+.PP
+I commenti cominciano con '#'. Linee di commento aggiuntive devono cominciare con
+\&'#', spazi o tabulazioni.
+
+.SH Menu opzioni
+.PP
+Il M\-Commander possiede alcune opzioni che possono essere
+abilitate e disabilitate in molte finestre di dialogo accessibili
+da questo menu. Le opzioni sono abilitate se hanno un "x" di fronte
+ad esse.
+
+.PP
+Il comando
+configurazione
+mostra una finestra di dialogo dalla quale è possibile cambiare
+molte delle inpostazioni del M\-Commander.
+
+.PP
+Il comando
+aspetto
+mostra una finestra di dialogo con la quale è possibile impostare molte
+opzioni relative a come mcommander appare sullo schermo.
+
+.PP
+Il comando
+conferme
+mostra una finestra di dialogo dalla quale è possibile specificare per
+quali azioni si vuole una richiesta di conferma.
+
+.PP
+Il comando
+impara tasti
+mostra una finestra di dialogo dalla quale è possibile controllare i tasti
+che non appaiono funzionare su alcuni terminali ed è possibile aggiustare.
+
+.PP
+Il comando
+FS virtuale
+mostra una finestra di dialogo con la quale è possibile impostare alcune
+opzioni relative al VFS.
+
+.PP
+Il comando
+salva configurazione
+salva le impostazioni correnti dei menu sinistra, destra e opzioni. Viene salvato
+anche un piccolo numero di altre opzioni.
+
+.SS Configurazione
+.PP
+Le opzioni in questa finestra sono divise in tre gruppi:
+Opzioni del pannello, Pausa dopo l'esecuzione e Altre opzioni.
+
+.PP
+\fBOpzioni del pannello\fP
+
+.PP
+\fIMostra file di backup.\fP
+Se abilitata, il M\-Commander mostrerà i file che terminano con una tilde.
+Altrimenti essi non verranno mostrati (come nell'opzione \-B del comando GNU ls).
+
+.PP
+\fIMostra file nascosti.\fP
+Se abilitata, il M\-Commander mostrerà tutti i file che cominciano con
+un punto (come ls \-a).
+
+.PP
+\fICursore in basso mentre seleziona.\fP
+Se abilitata, la barra di selezione si muoverà in basso dopo aver selezionato
+un file (sia con tasto Ins).
+
+.PP
+\fIRilascia menu a cascata.\fP
+Quando quest'opzione è abilitata, la discesa dei menu sarà attivata non appena
+si preme il tasto
+\fBF9\fP\&.
+Altrimenti si otterrà solo il titolo del menu e si dovrà attivare il menu con
+i tasti freccia o con i tasti di selezione rapida.
+E' raccomandata se si stanno usando i tasti di selezione rapida.
+
+.PP
+\fIMescola tutti i file.\fP
+Se quest'opzione è abilitata, tutti i file e le directory vengono mostrati
+mescolati insieme. Se l'opzione è spenta, le directory (e i collegamenti a
+sottodirectory) vengono mostrati all'inizio dell'elenco con gli altri file
+a seguire.
+
+.PP
+\fIAggiornamento rapido directory.\fP
+Se quest'opzione è abilitata, il M\-Commander userà un trucco per
+determinare se i contenuti della directory sono cambiati. Il trucco consiste
+nel ricaricare la directory solo se l'i\-node della directory è cambiato.
+Ciò significa che la ricarica accade solo quando i file vengono creati o
+cancellati. Se quello che cambia è l'i\-node di un file nella directory
+(cambia l'ampiezza di un file, cambiano il proprietario o le flag, etc.)
+la visualizzazione non viene aggiornata. In questi casi se l'opzione è
+abilitata, è necessario ricaricare la directory manualmente (con C\-r).
+
+.PP
+\fBPausa dopo l'esecuzione\fP
+
+.PP
+Dopo l'esecuzione di comandi, il M\-Commander può fermarsi, in
+maniera da permettere di esaminare il risultato del comando. Ci sono
+tre possibili impostazioni per questa variabile:
+
+.PP
+.RS
+
+.PP
+\fIMai.\fP
+Significa che non si vuole vedere il risultato del comando. Se si sta
+usando la console Linux o FreeBSD o un xterm, ci sarà la possibilità di
+vedere il risultato del comando premendo C\-o.
+
+.PP
+\fISu terminali stupidi.\fP
+Si avrà il messaggio di pausa su quei terminali che non sono in grado di
+mostrare il risultato dell'ultimo comando eseguito (qualsiasi terminale
+che non sia un xterm o una console Linux o FreeBSD).
+
+.PP
+\fISempre.\fP
+Il programma si fermerà dopo l'esecuzione di tutti i comandi.
+
+.RE
+
+.PP
+\fBAltre opzioni\fP
+
+.PP
+\fIOperazioni prolisse.\fP
+Quest'opzione decide se le operazioni di Copia, Spostamento o Cancellazione
+saranno prolisse (cioè se mostreranno una finestra di dialogo per ogni
+operazione). Se si ha un terminale lento potresti voler disabilitare
+quest'opzione. Viene automaticamente spenta se la velocità del proprio
+terminale è inferiore a 9600 bps.
+
+.PP
+\fICalcola totali.\fP
+Se quest'opzione è abilitata, il M\-Commander calcolerà i totali
+delle ampiezze in byte e il numero totale dei file prima di ogni operazione di
+Copia, Spostamento o Cancellazione. Questo genererà una barra di progressione
+più accurata a discapito di un po' di velocità. Quest'opzione non ha effetto se
+\fIOperazioni prolisse\fP
+è disabilitata.
+
+.PP
+\fIModelli della shell.\fP
+Normalmente i comandi Seleziona, Deseleziona e Filtro usano espressioni
+regolari di tipo shell. Le seguenti conversioni vengono eseguite per
+ottenere questo risultato: '*\&' viene rimpiazzato da '.*\&' (zero o più
+caratteri); '?' viene rimpiazzato da '.' (esattamente un carattere) e '.'
+dal carattere letterale punto. Se l'opzione è disabilitata, allora le
+espressioni regolari sono quelle descritte in ed(1).
+
+.PP
+\fIAutosalva configurazione.\fP
+Se quest'opzione è abilitata, quando si esce dal M\-Commander le
+opzioni configurabili del M\-Commander vengono salvate nel file
+~/.config/mc6/ini.
+
+.PP
+\fIMenu automatici.\fP
+Se quest'opzione è abilitata, il menu utente sarà invocato alla partenza.
+Utile per creare menu per utenti non abituati a unix.
+
+.PP
+\fIUsa editor interno.\fP
+Se quest'opzione è abilitata, verrà usato l'editor integrato interno per
+modificare i file. Se l'opzione è disabilitata, verrà usato l'editor
+specificato dalla variabile ambiente
+\fBEDITOR\fP\&.
+Se nessun editor è stato specificato, verrà usato
+\fBvi\fP\&.
+Vedere la sezione
+editor di file interno\&.
+
+.PP
+\fIUsa il visualizzatore interno.\fP
+Se quest'opzione è abilitata, verrà usato il visualizzatore di file
+interno per visualizzare i file. Se l'opzione è disabilitata, verrà
+utilizzato il visualizzatore specificato dalla variabile ambiente
+\fBPAGER\fP\&.
+Se il visualizzatore non è definito, verrà usato il comando
+\fBview\fP\&.
+Vedere sezione
+visualizzatore file interno\&.
+
+.PP
+\fICompletamento: visualizza tutto\fP
+Normalmente il M\-Commander
+mostra tutti i possibili
+completamenti
+se il completamento è
+ambiguo se si preme
+\fBM\-Tab\fP
+una seconda volta, la prima completa per quanto possibile
+e, in caso di ambiguità, emette un suono. Se si vuole vedere
+tutti i possibili completamenti già alla pressione del primo
+M\-Tab\fB,\fP
+abilitare quest'opzione.
+
+.PP
+\fIBarre che girano.\fP
+Se quest'opzione è abilitata, il M\-Commander mostra
+una barra rotante nell'angolo in alto a destra come indicatore
+di progressione.
+
+.PP
+\fINavigazione stile Lynx.\fP
+Se quest'opzione è abilitata, è possibile usare i tasti freccia per
+cambiare automaticamente directory se la selezione corrente è
+una subdirectory e se la riga di comando è vuota. Normalmente
+quest'opzione è spenta.
+
+.PP
+\fICd segue i collegamenti.\fP
+Quest'opzione, se impostata, fa in modo che il M\-Commander
+segua la catena logica delle directory, quando si cambia la directory
+corrente in ogni pannello o usando il comando cd. Questo è il
+comportamento predefinito di bash. Quando non è impostata, il
+M\-Commander segue la reale struttura della directory, perciò
+eseguendo cd .. se si è entrati in una directory attraverso un
+collegamento, ci porterà alla genitrice reale della directory corrente
+e non alla directory dov'era il collegamento.
+
+.PP
+\fICancellazione sicura.\fP
+Se quest'opzione è abilitata, la cancellazione non intenzionale dei file
+sarà più difficile. La preimpostazione della finestra di dialogo della
+conferma cambia da "Si" a "No". Normalmente quest'opzione è
+disabilitata.
+
+.SS Aspetto
+.PP
+La finestra di aspetto da la possibilità di cambiare l'aspetto generale
+dello schermo. Si può specificare la visibilità della barra dei menu,
+della riga dei comandi, della riga dei suggerimenti o della riga dei
+tasti funzione. Sulle console Linux o FreeBSD si può impostare quante
+righe siano visibili sulla finestra di uscita.
+
+.PP
+Il resto dell'area dello schermo viene usata per i due pannelli directory.
+Si può specificare se l'area venga divisa dai due pannelli in direzione
+verticale o orizzontale. La divisione può essere uguale o si può dividere
+in maniera asimmetrica.
+
+.PP
+Normalmente i contenuti dei pannelli directory sono visualizzati dello stesso
+colore, ma si può specificare se i
+\fIpermessi\fP
+e i
+\fItipi di file\fP
+siano evidenziati con speciali
+colori\&.
+Se l'evidenziazione dei permessi è abilitata, i campi
+\fIpermessi\fP
+e
+\fImodalità\fP
+dello schermo
+valide per l'utente che usa il M\-Commander
+sono evidenziati con il colore definito con la parolachiave
+\fIselezionata.\fP
+Se l'evidenziazione del tipo di file è abilitata, i file vengono colorati
+a seconda del tipo (per esempio directory, file core, eseguibili, ...).
+
+.PP
+Se l'opzione
+\fIMostra mini\-stato\fP
+è abilitata, una riga di informazioni di stato circa la voce correntemente
+selezionata viene mostrata sul fondo dei pannelli.
+
+.SS Conferme
+.PP
+In questo menu è possibile configurare le opzioni di conferma per la
+cancellazione e sovrascrittura dei file, esecuzione dei file premendo invio e
+per l'uscita dal programma.
+
+.SS Impara tasti
+.PP
+Questa finestra di dialogo permette di controllare e ridefinire i tasti
+funzione, i tasti freccia e alcuni altri tasti per farli funzionare
+correttamente sul terminale corrente. Spesso non funzionano dato che
+molti database di terminali sono incompleti o errati.
+
+.PP
+Ci si può muovere con il tasto Tab e con i tasti di movimento di vi ('h'
+sinistra, 'j' giù, 'k' su e 'l' destra). Una volta premuti e riconosciuti
+i tasti di movimento del cursore, si possono tranquillamente utilizzare.
+
+.PP
+E' possibile provare i tasti semplicemente premendoli ognuno. Quando si preme
+un tasto ed è riconosciuto correttamente, appare un OK accanto al nome di
+quel tasto. Una volta che il tasto è marcato OK, esso comincia a funzionare
+regolarmente, per esempio premendo il tasto F1, la prima volta controllerà
+il funzionamento, ma dopodiché mostrerà la schermata di aiuto. Lo stesso
+dicasi per i tasti freccia.
+Il tasto Tab dovrebbe funzionare sempre.
+
+.PP
+Se alcuni tasti non funzionano correttamente, non si vedrà apparire
+l'OK dopo la pressione di quel tasto. Allora è possibile ridefinirlo.
+Fatelo, premendo il bottone corrispondente al nome del tasto (con il mouse
+o premendo Invio o Spazio, dopo aver selezionato il bottone con Tab o con
+le frecce). Ecco che un messaggio apparirà richiedendo di premere quel tasto.
+Fatelo ed aspettate che la finestra sparisca. Se si vuole annullare, basta
+premere Esc una volta ed aspettare.
+
+.PP
+Quando si è finito con tutti i tasti, è possibile salvarli. Le definizioni
+dei tasti che si è ridefinito saranno scritte nella sezione [terminal:TERM]
+del vostro ~/.config/mc6/ini file (dove TERM è il nome del terminale corrente). Le
+definizioni dei tasti che già funzionavano correttamente non vengono salvate.
+
+.SS FS virtuale
+.PP
+Quest'opzione permette di controllare l'impostazione della cache informazioni
+del
+file system virtuale\&.
+
+.PP
+Il M\-Commander tiene in memoria le informazioni
+relative ad alcuni dei file system virtuali per accelerare
+l'accesso all'elenco dei file nel file system (per esempio,
+l'elenco dei file scaricato dai server ftp).
+
+.PP
+Inoltre, per accedere al contenuto dei file compressi (per
+esempio file tar compressi) il M\-Commander deve creare
+un file temporaneo non compresso sul disco.
+
+.PP
+Siccome sia le informazioni in memoria che i file temporanei su
+disco occupano risorse, si può voler impostare i parametri delle
+informazioni della cache per ridurre l'uso delle risorse o per
+massimizzare la velocità di accesso ai file system usati spesso.
+
+.PP
+A causa del formato degli archivi tar, il
+\fIfilesystem tar\fP
+necessita di leggere l'intero file solo per caricare le voci dei
+file. Dato che molti file tar sono compressi (i file
+tar non compressi sono una specie in via di estinzione),
+il file system tar deve decomprimere il file su disco,
+in una locazione temporanea per poi accedervi come un file tar
+normale.
+
+.PP
+Ora, visto che noi tutti amiamo navigare nei file e nei file tar
+dappertutto su disco, succede spesso che si lascia un file tar per
+poi rientrarvi successivamente. Siccome la decompressione è lenta,
+il M\-Commander conserverà l'informazione in memoria per un
+tempo limitato, allo scadere del quale, tutte le risorse associate
+al file system verranno liberate. La scadenza predefinita è impostata
+a un minuto.
+
+.PP
+Il
+file system FTP
+(ftpfs) permette di navigare le directory su server FTP remoti. Esso
+possiede diverse opzioni.
+
+.PP
+\fIPassword ftp anonimo\fP
+è la password utilizzata per accedere come "anonimo". Alcuni siti
+richiedono un indirizzo email valido. D'altra parte, probabilmente
+non si vuole dare il vostro indirizzo email reale a siti non di fiducia,
+specialmente se non si sta usando filtri anti spam.
+
+.PP
+L'ftpfs mantiene l'elenco della directory che scarica dal server ftp
+in una cache. Il tempo di scadenza della cache è configurabile
+con l'opzione
+\fIscadenza cache directory ftpfs.\fP
+Un valore basso per quest'opzione può rallentare ogni operazione sul
+file system ftp perché ogni operazione è accompagnata da una
+richiesta al server ftp.
+
+.PP
+E' possibile definire un host proxy per fare trasferimenti ftp.
+Notare che molti firewall moderni sono totalmente trasparenti almeno
+per i trasferimenti FTP passivi (vedere di seguito), perciò i proxy
+ftp sono considerati obsoleti.
+
+.PP
+Se
+\fIusa sempre ftp proxy\fP
+non è impostata, è possibile usare il punto escamativo per abilitare
+il proxy per certi host. Vedere la sezione
+file system FTP
+per gli esempi.
+
+.PP
+Se quest'opzione è impostata, il programma farà due cose: consulterà
+il file {{sysconfdir}}/mcommander/mc.no_proxy per le righe contenenti nomi host
+locali (se il nome host comincia con un punto, è considerato un
+dominio) e assumendo che ogni nome host senza punti nel nome sia
+direttamente accessibile. Tutti gli altri host verranno contattati
+attraverso il proxy host specificato.
+
+.PP
+E' possibile abilitare l'uso del file
+\fI~/.netrc\fP
+che mantiene i nomi di accesso e le password per i server ftp. Vedere
+netrc (5) per una descrizione del formato .netrc.
+
+.PP
+\fIUsa modalità passiva\fP
+abilita l'uso della modalità FTP passiva quando la connessione per
+il trasferimento file è iniziata dal client, non dal server.
+Quest'opzione è raccomandata e preimpostata. Se quest'opzione è spenta,
+la connessione dati viene iniziata dal server. Questo potrebbe non
+funzionare con alcuni firewall.
+
+.SS Salva configurazione
+.PP
+Alla partenza il M\-Commander prova a caricare le informazioni di
+inizializzazione dal file ~/.config/mc6/ini. Se questo file non esiste,
+caricherà le informazioni dal file di configurazione di sistema
+posizionato in {{pkgdatadir}}/mc.ini. Se il file di configurazione di
+sistema non esiste, M\-Commander userà le impostazioni predefinite.
+
+.PP
+Il comando
+\fIsalva configurazione\fP
+crea il file ~/.config/mc6/ini salvando le impostazioni correnti
+dei menu
+sinistra, destra
+e
+opzioni\&.
+
+.PP
+Se si attiva l'opzione
+\fIautosalva configurazione,\fP
+M\-Commander salverà sempre le impostazioni correnti all'uscita.
+
+.PP
+Esistono anche impostazioni che non possono essere cambiate dai menu.
+Per cambiare queste impostazioni è necessario modificare il file di
+configurazione con il vostro editor preferito. Vedere sezione
+impostazioni speciali
+per ulteriori informazioni.
+
+
+.SH Esecuzione comandi del sistema operativo
+.PP
+E' possibile eseguire comandi del sistema operativo direttamente
+nella riga di comando del M\-Commander o selezionando il
+programma che si vuole eseguire con la barra di selezione in uno
+dei pannelli e premendo Invio.
+
+.PP
+Se si preme Invio su di un file che non è eseguibile, il
+M\-Commander confronta l'estensione del file selezionato con ciò
+che trova nel
+file estensioni\&.
+Se viene trovata una corrispondenza, verrà eseguito il codice associato.
+Verrà eseguita una semplice
+espansione di macro
+prima di eseguire il comando.
+
+.SH Il comando cd interno
+.PP
+Il comando
+\fIcd\fP
+non viene passato alla shell per l'esecuzione ma viene interpretato
+dal M\-Commander. Perciò esso non può gestire tutte quelle
+simpatiche espansioni di macro e sostituzioni che fa la shell, malgrado
+alcune le possa ancora fare:
+
+.PP
+\fISostituzione della tilde.\fP
+La (~) verrà sostituita con la vostra directory home e se si appende
+un nome utente dopo la tilde, allora verrà sostituita con la directory
+di login dell'utente indicato.
+
+.PP
+Per esempio, ~ospite è la directory home dell'utente ospite, mentre
+~/ospite è la directory ospite nella vostra home directory.
+
+.PP
+\fIDirectory precedente.\fP
+E' possibile saltare alla directory dove si era precedentemente usando
+il nome directory speciale '\-' così:
+\fBcd \-\fP
+
+.PP
+\fIDirectory CDPATH.\fP
+Se la directory indicata al comando
+\fBcd\fP
+non è nella directory corrente, il M\-Commander userà il
+valore della viariabile ambiente
+\fBCDPATH\fP
+per cercare la directory in ognuna delle directory nominate.
+
+.PP
+Per esempio si può impostare la variabile
+\fBCDPATH\fP
+a ~/src:/usr/src, permettendo di cambiare directory verso ognuna
+delle directory presenti nelle directory ~/src e /usr/src da qualunque
+parte nel file system (per esempio cd linux vi porterà in
+/usr/src/linux).
+
+.SH Sostituzione di macro
+.PP
+Quando si accede ad un
+menu utente,
+o si esegue un
+comando dipendente dall'estensione,
+o si esegue un comando dalla riga di ingresso,
+viene eseguita una semplice sostituzione di macro.
+
+.PP
+Le macro sono:
+
+.TP
+\fI%i\fP
+Indentazione di spazi, uguale alla colonna della
+posizione del cursore. Solo per la modifica menu.
+
+.TP
+\fI%y\fP
+Il tipo di sintassi del file corrente. Solo per la modifica menu.
+
+.TP
+\fI%b\fP
+Nome del file di blocco.
+
+.TP
+\fI%e\fP
+Nome del file di errore.
+
+.TP
+\fI%m\fP
+Nome del menu corrente.
+
+.TP
+\fI%fe%p\fP
+Nome del file corrente.
+
+.TP
+\fI%x\fP
+L'estensione del file corrente.
+
+.TP
+\fI%n\fP
+Nome del file corrente ma senza estensione.
+
+.TP
+\fI%d\fP
+Nome della directory corrente.
+
+.TP
+\fI%F\fP
+Il file corrente nel pannello non selezionato.
+
+.TP
+\fI%D\fP
+La directory corrente nel pannello non selezionato.
+
+.TP
+\fI%t\fP
+I file attualmente marcati.
+
+.TP
+\fI%T\fP
+I file attualmente marcati nel pannello non selezionato.
+
+.TP
+\fI%ue%U\fP
+Simili alle macro %t e %T, in aggiunta i file vengono deselezionati.
+E' possibile usare questa macro solo una volta per voce di menu file
+o per voce di file estensione, dato che la volta successiva non ci
+saranno file marcati.
+
+.TP
+\fI%se%S\fP
+I file selezionati se ce ne sono. Altrimenti il file corrente.
+
+.TP
+\fI%cd\fP
+Questa è una macro speciale usata per cambiare la directory corrente
+alla directory specificata di fronte ad essa. Usata principalmente
+come interfaccia al
+file system virtuale\&.
+
+.TP
+\fI%view\fP
+Questa macro serve per invocare il visualizzatore interno. Può essere
+usata da sola o con argomenti. Se si passa argomenti a questa macro,
+questi dovrebbero essere racchiusi da parentesi.
+
+.PP
+.RS
+
+.PP
+Gli argomenti sono:
+\fIascii\fP
+per forzare il visualizzatore in modo ascii;
+\fIhex\fP
+per forzare il visualizzatore in modo esadecimale;
+\fInroff\fP
+per dire al visualizzatore che deve interpretare le sequenze di
+grassetto e sottolineato di nroff;
+\fIunformatted\fP
+per dire al visualizzatore di non interpretare i comandi nroff
+per rendere il testo grassetto o sottolineato.
+
+.RE
+
+.TP
+\fI%%\fP
+Il carattere %
+
+.TP
+\fI%{testo}\fP
+Visualizza una richiesta di sostituzione. Viene mostrata una finestra
+contenente il testo all'interno delle graffe. La macro viene sostituita
+dal testo immesso dall'utente. L'utente può premere ESC o F10 per annullare.
+Questa macro non funziona ancora sulla riga di comando.
+
+.TP
+\fI%var{ENV:default}\fP
+Se la variabile di ambiente
+\fIENV\fP
+non è impostata, la sostituzione prenderà
+\fIdefault.\fP
+Altrimenti, verrà sostituito il valore di
+\fIENV.\fP
+
+.SH Supporto alla subshell
+.PP
+Il supporto alla subshell è una opzione di compilazione che lavora
+con le seguenti shell: bash, tcsh e zsh.
+
+.PP
+Quando il codice di subshell è attivato il M\-Commander
+genererà un processo copia concorrente della shell (quella definita
+dalla variabile
+\fBSHELL\fP
+e se non è definita, prenderà quella presente nel file /etc/passwd)
+e lo eseguirà in un pseudo terminale; invece di invocare una nuova
+shell ogniqualvolta si esegue un comando, il comando verrà passato
+alla subshell come se lo si avesse battuto personalmente. Questo
+permette di cambiare le variabili di ambiente, usare funzioni della
+shell e definire alias che rimangono validi fintanto che non si
+esca dal M\-Commander.
+
+.PP
+Se si sta usando
+\fBbash\fP
+si può specificare comandi alla partenza della subshell nel file
+~/.local/share/mc6/bashrc e mappature speciali della tastiera nel file
+~/.local/share/mc6/inputrc.
+\fBtcsh\fP
+gli utenti possono specificare comandi alla partenza nel file
+~/.local/share/mc6/tcshrc.
+
+.PP
+Quando il codice della subshell viene utilizzato, si può sospendere
+l'applicazione in ogni momento con la sequenza C\-o e saltare nuovamente
+al M\-Commander; se si interrompe un'applicazione, non si sarà
+in grado di eseguire altri comandi esterni finché non si esce
+dall'applicazione interrotta.
+
+.PP
+Una caratteristica aggiuntiva dell'usare la subshell è data dal
+fatto che il prompt mostrato dal M\-Commander sarà lo stesso
+di quello utilizzato dalla shell.
+
+.PP
+La sezione
+OPZIONI
+contiene informazioni aggiuntive riguardo come controllare il codice
+della subshell.
+
+
+.SH Permessi
+.PP
+La finestra Permessi serve a cambiare i bit di attributo in gruppi di
+file o directory. La si può invocare con la combinazione di tasti C\-x c.
+
+.PP
+La finestra dei Permessi ha due parti \-
+\fIPermessi\fP
+e
+\fIFile.\fP
+
+.PP
+La sezione File mostra il nome del file o della directory ed i suoi
+permessi in forma ottale, oltre che il proprietario ed il gruppo.
+
+.PP
+Nella sezione Permessi c'è un set di caselle che corrispondono
+agli attributi dei file. Come si cambia il bit di attributo,
+si può vedere il valore in ottale aggiornato nella sezione File.
+
+.PP
+Per muoversi attraverso le sezioni (bottoni e caselle) usare i
+\fItasti freccia\fP
+oppure
+\fITab.\fP
+Per cambiare lo stato delle caselle o per selezionare un bottone
+usare lo
+\fISpazio.\fP
+Si può usare anche i tasti di scelta rapida sui bottoni per attivarli
+velocemente. I tasti di scelta rapida corrispondono alle lettere evidenziate
+dei bottoni.
+
+.PP
+Per impostare i bit degli attributi, usare il tasto Invio.
+
+.PP
+Quando si lavora con un gruppo di file o directory, basta cliccare sui
+bit che si vogliono impostare o cancellare. Una volta selezionati i bit
+da cambiare, selezionare una delle azioni (Imposta marcati o Cancella
+marcati).
+
+.PP
+Infine, per impostare gli attributi esattamente come specificato, usare
+il tasto
+\fB[Imposta tutti]\fP,
+che agisce su tutti i file marcati.
+
+.PP
+\fB[Modifica tutti]\fP
+modifica solo gli attributi marcati su tutti i file.
+
+.PP
+\fB[Imposta marcati]\fP
+pone a uno i bit marcati degli attributi di tutti i file selezionati.
+
+.PP
+\fB[Cancella marcati]\fP
+pone a zero i bit marcati degli attributi di tutti i file selezionati.
+
+.PP
+\fB[Imposta]\fP
+imposta gli attributi di un file.
+
+.PP
+\fB[Cancella]\fP
+cancella il comando Permessi.
+
+
+.SH Proprietario
+.PP
+Il comando proprietario serve a cambiare il proprietario/gruppo di un
+file. Il tasto di scelta rapida per questo comando è C\-x o.
+
+
+.SH Proprietario avanzato
+.PP
+Il comando Proprietario avanzato consiste nel comando
+permessi
+e
+proprietario
+combinati assieme in una finestra. E' così possibile cambiare i permessi
+ed il proprietario/gruppo dei file in un sol colpo.
+
+
+.SH Operazioni sui file
+.PP
+Quando si copia, sposta o cancella dei file il M\-Commander
+mostra la finestra di operazioni sui file. Essa mostra i file sui cui
+si sta operando attualmente e ci possono essere fino a tre barre di
+progressione. La barra file mostra quanta parte del file corrente è
+stata copiata. La barra conteggio mostra quanti dei file selezionati
+sono stati gestiti. La barra byte comunica quanto dell'ampiezza totale
+dei file selezionati è stata elaborato. Se l'opzione operazioni prolisse
+è deselezionata, non verranno mostrate la barra file e la barra byte.
+
+.PP
+Ci sono due bottoni sul fondo della finestra di dialogo. Premendo
+il tasto Salta si salterà il resto del file. Premendo il tasto
+Esci si bloccherà tutta l'operazione ed il resto dei file saranno
+ignorati.
+
+.PP
+Ci sono tre altre finestre di dialogo che si possono incontrare
+durante le operazioni sui file.
+
+.PP
+La finestra di dialogo di errore informa circa le condizioni di
+errore ed ha tre scelte. Normalmente si seleziona il tasto
+Salta per saltare il file o Esci per bloccare l'operazione. E'
+possibile anche selezionare il tasto Riprova se nel frattempo si ha
+risolto il problema da un'altro terminale.
+
+.PP
+La finestra di dialogo di rimpiazzo viene mostrata quando si tenta
+di copiare o spostare un file sopra un file esistente. La finestra
+mostra la data e la dimensione di tutti e due i file. Premere il
+tasto Si per rimpiazzare il file, No per saltare il file, Tutti per
+sovrascrivere tutti i file, Nessuno per non sovrascriverli mai e
+Aggiorna per sovrascriverli solo se il file sorgente è più recente
+del file di destinazione. E' possibile bloccare l'intera operazione
+premendo il tasto Esci.
+
+.PP
+La finestra di dialogo della cancellazione ricorsiva appare quando
+si tenta di cancellare una directory che non è vuota. Premere il
+tasto Si per cancellare la directory ricorsivamente o No per
+saltare la directory, il tasto Tutto per cancellare tutte le
+directory non vuote e Nessuno per saltare tutte le directory non
+vuote. Per fermare l'intera operazione premere il tasto Esci.
+Se si seleziona il tasto Si o Tutto verrà richiesta una conferma.
+Premere "si" solo se si è veramente sicuri di voler fare una
+cancellazione ricorsiva.
+
+.PP
+Se si hanno dei file marcati e si esegue un'operazione su di essi, solo
+i file sui quali l'operazione ha avuto successo verranno deselezionati.
+I file su cui è fallita l'operazione o che sono stati saltati vengono
+lasciati marcati.
+
+
+.SH Maschera Copia/Rinomina
+.PP
+L'operazione di copia/rinomina permette di cambiare il nomi dei file in
+maniera semplice. Per farlo, è necessario specificare la maschera di
+sorgente corretta e generalmente, nella parte finale della destinazione,
+specificare alcuni caratteri jolly.
+Tutti i file corrispondenti alla maschera sorgente sono
+copiati/rinominati secondo la maschera destinazione. Se ci sono file
+marcati, vengono rinominati solo i file marcati che corrispondono alla
+maschera sorgente.
+
+.PP
+Queste le opzioni che possono essere impostate:
+
+.PP
+Segue i collegamenti, specifica se creare i collegamenti simbolici o no
+(hard link), presenti nella directory sorgente (e ricorsivamente nelle
+sue sotto directory) come nuovi collegamenti oppure se invece si
+desidera che venga copiato il loro contenuto.
+
+.PP
+In una sottodir se esiste già, specifica cosa fare se nella
+directory obiettivo esiste una directory con lo stesso nome del
+file/directory in copia. L'azione predefinita è di copiare
+il suo contenuto in quella directory, ma selezionando quest'opzione
+si può copiare la directory sorgente in questa directory.
+Forse un esempio aiuterà:
+
+.PP
+Si vuole copiare il contenuto di una directory pallo su /pinco/pallo,
+che è una directory che esiste già. Normalmente (quando l'opzione
+non è impostata), mcommander farebbe la copia in /pinco/pallo. Abilitando
+quest'opzione verrà eseguita la copia in /pinco/pallo/pallo, perché
+la directory esiste già.
+
+.PP
+Mantiene gli attributi, specifica se si vuole preservare i permessi
+originali del file, le date e se si è l'utente root, gli attributi
+UID e GID. Se quest'opzione non è impostata verrà rispettato il valore
+corrente di umask.
+
+.PP
+\fBUsa i modelli della shell, opzione abilitata\fP
+
+.PP
+Quando l'opzione dei modelli della shell è abilitata è possibile usare
+i caratteri jolly '*\&' e '?' nella maschera sorgente. Questi lavorano
+come nella shell. Nella maschera obbiettivo sono permessi solo i caratteri
+jolly '*\&' e '\e<cifra>'. Il primo carattere jolly '*\&' nella maschera
+obbiettivo corrisponde al primo gruppo di caratteri jolly nella maschera
+sorgente, il secondo '*\&' al secondo gruppo e così via. Il carattere
+jolly '\e1' corrisponde al primo gruppo di caratteri jolly nella maschera
+sorgente, '\e2' corrisponde al secondo gruppo e così via fino al '\e9'.
+Il carattere jolly '\e0' rappresenta tutto il nome del file sorgente.
+
+.PP
+Due esempi:
+
+.PP
+Se la maschera sorgente è "*\&.tar.gz", la destinazione è "/bla/*\&.tgz" e
+il file da copiare è "foo.tar.gz", la copia sarà "foo.tgz" in "/bla".
+
+.PP
+Supponiamo si voglia scambiare la base e l'estensione di un file cosicché
+"file.c" divenga "c.file" e così via. La maschera sorgente per questa
+operazione sarà "*\&.*" e la destinazione sarà "\e2.\e1".
+
+.PP
+\fBUsa i modelli della shell, opzione disabilitata\fP
+
+.PP
+Quando l'opzione dei modelli della shell è disabilitata, M\-Commander non
+esegue più il raggruppamento automatico. E' necessario usare
+espressioni tipo '\e(...\e)' nella maschera sorgente per dare significato
+ai caratteri jolly nella maschera obbiettivo. Altrimenti le maschere
+obbiettivo si trovano nella situazione di quando i modelli della shell
+sono abilitati.
+
+.PP
+Due esempi:
+
+.PP
+Se la maschera sorgente è "^\e(.*\e)\e\&.tar\e\&.gz$", la destinazione è
+"/bla/*\&.tgz" e il file da copiare è "foo.tar.gz", la copia sarà
+"/bla/foo.tgz".
+
+.PP
+Supponiamo che si voglia scambiare la base e l'estensione di un file
+cosicché "file.c" divenga "c.file" e così via. La maschera sorgente per
+questa  operazione sarà "^\e(.*\e)\e\&.\e(.*\e)$" e la destinazione sarà
+"\e2.\e1".
+
+.PP
+\fBConversioni Maiuscole/Minuscole\fP
+
+.PP
+E' anche possibile cambiare tra maiuscole e minuscole i caratteri dei file.
+Se si usa '\eu' o '\el' nella maschera obbiettivo, il carattere successivo
+sarà convertito rispettivamente in maiuscolo o minuscolo.
+
+.PP
+Se si usa '\eU' o '\eL' nella maschera obbiettivo, il caratteri successivi
+saranno convertiti rispettivamente in maiuscolo o minuscolo fino alla
+prossima corrispondenza di '\eE' o '\eU', '\eL' o alla fine del nome del file.
+
+.PP
+Notare che '\eu' e '\el' sono più forti di '\eU' e '\eL'.
+
+.PP
+Per esempio, se la maschera sorgente è '*\&' (modelli della shell abilitati)
+o '^\e(.*\e)$' (modelli della shell disabilitati) e la maschera obbiettivo
+è '\eL\eu*\&' i nomi dei file saranno convertiti ad avere maiuscola iniziale
+ed il resto minuscolo.
+
+.PP
+Si può usare '\e\&' come carattere di protezione. Per esempio, '\e\e\&' è
+una barra retroversa e '\e*\&' è un asterisco.
+
+
+.SH Visualizzatore di file interno
+.PP
+Il visualizzatore di file interno fornisce due modalità di visualizzazione:
+ASCII e esadecimale. Per passare da una modalità all'altra, usare il tasto F4.
+Se si ha il programma GNU gzip installato, esso verrà usato automaticamente
+per decomprimere i file al volo.
+
+.PP
+Il visualizzatore tenterà di usare il metodo migliore fornito dal sistema
+o a seconda del tipo di file, per mostrare le informazioni. Il visualizzatore
+interno interpreterà alcune sequenze di stringa per impostare gli attributi
+di grassetto e sottolineato, per mostrare al meglio i file.
+
+.PP
+In modalità esadecimale, la funzione di ricerca accetta testo protetto e
+costanti numeriche. Il testo protetto viene confrontato esattamente dopo
+la rimozione della protezione. Ogni numero rappresenta un byte. E' possibile
+mescolare testo protetto con costanti come nell'esempio:
+
+.EX
+"Stringa" \-1 0xBB 012 "ancora testo"
+
+.EE
+
+.PP
+Notare che 012 è un numero ottale. \-1 viene convertito in 0xFF.
+
+.PP
+Ecco un'elenco di azioni associate ad ogni tasto che il M\-Commander
+gestisce nel visualizzatore di file interno.
+
+.PP
+\fBF1\fP
+Invoca il visualizzatore ipertestuale dell'aiuto.
+
+.PP
+\fBF2\fP
+Abilita/disabilita la funzione di a capo automatico.
+
+.PP
+\fBF4\fP
+Abilita/disabilita la modalità esadecimale.
+
+.PP
+\fBF5\fP
+Vai alla riga. Questo comando richiederà un numero di riga e mostrerà
+quella riga.
+
+.PP
+\fBF6, /.\fP
+Ricerca tramite espressione regolare.
+
+.PP
+\fB?,\fP
+Ricerca in ordine inverso, tramite espressione regolare.
+
+.PP
+\fBF7\fP
+Ricerca normale / ricerca in modalità esadecimale.
+
+.PP
+\fBC\-s, F17, n.\fP
+Inizia una ricerca normale, se non c'era già un'espressione di
+ricerca, altrimenti trova la prossima occorrenza.
+
+.PP
+\fBC\-r.\fP
+Inizia una ricerca normale in ordine inverso, se non c'era già
+un'espressione di ricerca, altrimenti trova la prossima occorrenza.
+
+.PP
+\fBF8\fP
+Cambia tra modalità Normale/Filtrata: questo mostrerà il file come si
+trova su disco o se è stato specificato un filtro nel file extensions.ini, come
+esce dal filtro. La modalità corrente è sempre quella diversa da quella
+mostrata dall'etichetta del tasto, dato che il bottone rappresenta la
+modalità nella quale si entra premendolo.
+
+.PP
+\fBF9\fP
+Cambia tra modalità non formattata e formattata: quando la modalità è
+formattata, il visualizzatore interpreterà alcune sequenze di stringa
+per rappresentare il grassetto e il sottolineato con colori diversi.
+Anche per questa funzione, l'etichetta sul tasto rappresenta la modalità
+non corrente.
+
+.PP
+\fBF10, Esc.\fP
+Esce dal visualizzatore di file interno.
+
+.PP
+\fBpagina\-giù, spazio, C\-v.\fP
+Sfoglia di una pagina in avanti.
+
+.PP
+\fBpagina\-sù, M\-v, C\-b, backspace.\fP
+Sfoglia di una pagina indietro.
+
+.PP
+\fBfreccia\-in\-basso\fP
+Si sposta di una riga in avanti.
+
+.PP
+\fBup\-key\fP
+Si sposta di una riga indietro.
+
+.PP
+\fBC\-l\fP
+Ridisegna lo schermo.
+
+.PP
+\fBC\-o\fP
+Passa alla subshell e mostra la schermata dei comandi.
+
+.PP
+\fB[n] m\fP
+Imposta l'indice n.
+
+.PP
+\fB[n] r\fP
+Salta all' indice n.
+
+.PP
+\fBC\-f\fP
+Salta al file successivo.
+
+.PP
+\fBC\-b\fP
+Salta al file precedente.
+
+.PP
+\fBM\-r\fP
+Abilita/disabilita il righello.
+
+.PP
+E' anche possibile istruire il visualizzatore su come mostrare un file,
+vedere la sezione
+modifica file estensioni\&.
+
+
+.SH Editor di file interno
+.PP
+L'editor di file interno fornisce molte delle funzioni dei più
+diffusi editor a pieno schermo. Viene invocato tramite
+\fBF4\fP
+sempre che l'opzione
+\fIuse_internal_edit\fP
+sia impostata nel file di inizializzazione. Esso ha un limite estensibile
+di sedici megabyte e gestisce i file binari senza problemi.
+
+.PP
+Le funzioni che allo stato attuale supporta sono: copia,
+spostamento, cancellazione, taglia e incolla di blocchi;
+\fItasto per l'annullamento;\fP
+menu a discesa, inserimento file, definizione di macro, ricerca e
+sostituzione di espressioni regolari; evidenziazione di testo maiuscole\-freccia
+MSW\-MAC (solo per la console Linux); scambio tra inserimento\-rimpiazzo e
+un'opzionale flusso di blocchi di testo attraverso comandi shell come indent.
+
+.PP
+L'editor è molto semplice da usare e non richiede apprendimento.
+Per vedere cosa fanno i tasti, basta consultare il menu a
+discesa appropriato. Gli altri tasti sono: maiusc + tasti freccia
+produce la selezione del testo.
+\fBCtrl\-Ins\fP
+copia nel file
+\fBmcedit6.clip\fP
+e
+\fBShift\-Ins\fP
+incolla da mcedit6.clip.
+\fBShift\-Del\fP
+taglia in
+\fBmcedit6.clip\fP,
+e
+\fBCtrl\-Del\fP
+cancella il testo selezionato.
+Funziona anche l'evidenziazione con il mouse che, come al solito, si può
+utilizzare come in un normale terminale, premendo contemporaneamente
+il tasto Maiuscole mentre si fa clic trascinando con il mouse.
+
+.PP
+Per definire una macro, premere
+\fBCtrl\-R\fP
+poi premere i tasti che si voglia essere eseguiti. Premere nuovamente
+\fBCtrl\-R\fP
+quando si ha finito. E' possibile assegnare una macro a qualsiasi tasto
+si preme. La macro viene eseguita quando si preme
+\fBCtrl\-A\fP
+e poi il tasto assegnato. La macro viene eseguita anche se si
+preme il tasto Meta, Ctrl, o Esc e il tasto assegnato, basta che il tasto
+non sia già assegnato a qualche altra funzione. Una volta definiti, i
+macro comandi finiscono nel file
+\fB~/.local/share/mc6/mcedit6/mcedit6.macros\fP
+nella propria directory home. E' possibile cancellare una macro cancellando
+la riga appropriata nel suddetto file.
+
+.PP
+\fBF19\fP
+formatterà il blocco evidenziato correntemente (testo, codice
+\fBC\fP
+o
+\fBC++\fP
+o altro). Questo comportamento viene controllato dal file
+\fB{{pkgdatadir}}/edit.indent.rc\fP
+che viene copiato nel
+\fB~/.local/share/mc6/mcedit6/edit.indent.rc\fP
+nella propria directory home la prima volta che lo si usa.
+
+.PP
+L'editor visualizza snche caratteri non\-americani (160+). Quando si modifica
+file binari, si dovrebbe impostare
+\fBmostra bit\fP
+a 7 bit nel menu opzioni, per mantenere la spaziatura pulita.
+
+
+.SH Completamento
+.PP
+Ovvero lascia che il M\-Commander scriva per te.
+
+.PP
+Tentativi per eseguire un completamento del testo prima della posizione
+corrente. M\-Commander tenta il completamento trattando il testo come una variabile
+(se il testo comincia con
+\fB$\fP),
+nomeutente (se il testo comincia con
+\fB~\fP),
+nomehost (se il testo comincia con
+\fB@\fP)
+o comando (se si è sulla riga di comando nell'atto di battere un comando,
+allora possibili completamenti includerebbero parole riservate e comandi
+integrati della shell). Se nessuno di questi produce una corrispondenza,
+viene tentato un completamento del nome del file.
+
+.PP
+Completamenti di nomefile, nomeutente, variabili e nomehost funzionano
+su tutte le righe di ingresso, il completamento dei comandi invece è
+specifico della riga di comando.
+Se il completamento è ambiguo (ci sono più possibilità differenti),
+M\-Commander emette un suono e l'azione seguente dipenderà a seconda delle impostazioni
+dell'opzione
+\fIcompletamento: visualizza tutto\fP
+nella finestra
+configurazione\&.
+Se è abilitata, un elenco di tutte le possibilità viene mostrato vicino
+alla posizione corrente per poter selezionare con i tasti freccia e
+\fBInvio\fP
+la voce corretta. Si può anche battere le prime lettere nelle quali le varie
+possibilità differiscono per muoversi in un sottoinsieme di tutte le
+possibilità e completare il più possibile. Se si preme nuovamente
+\fBM\-Tab\fP,
+verrà mostrato solo il sottoinsieme nella finestra dell'elenco, altrimenti
+la prima voce che corrisponde a tutti i caratteri precedenti verrà evidenziata.
+Non appena non c'è più ambiguità, la finestra scompare, ma la si può nascondere
+con i tasti di cancellamento
+\fBEsc\fP,
+\fBF10\fP
+e i tasti di freccia sinistra e destra. Se
+completamento: visualizza tutto
+è disabilitato, la finestra viene mostrata solo se si preme
+\fBM\-Tab\fP
+una seconda volta; la prima volta M\-Commander emette solo un suono.
+
+
+.SH File system virtuale
+.PP
+Il M\-Commander è provvisto di uno strato di codice per
+accedere al file system; questo strato di codice è conosciuto anche
+con il nome di commutazione di file system virtuale. La commutazione
+del file system virtuale permette al M\-Commander di manipolare
+file all'interno di un file system non di tipo Unix.
+
+.PP
+Attualmente il M\-Commander viene confezionato con alcuni File
+System Virtuali (VFS): il file system locale, usato per accedere al
+normale file system Unix; l'ftpfs, usato per manipolare file su sistemi
+remoti con il protocollo FTP; l'undelfs, usato per recuperare file cancellati
+su file system di tipo ext2 (il file system predefinito per sistemi
+Unix), fish (per manipolare file su connessioni shell come rsh e ssh) e
+per ultimo l'mcfs (file system del M\-Commander), un file system
+basato sulla rete.
+
+.PP
+Il codice di commutazione di file system interpreta tutti i nomi di
+percorso utilizzati e li dirige al file system corretto; il formato
+utilizzato per ognuno di questi file system viene descritto più avanti
+nella sezioni apposite.
+
+.SH File system FTP
+.PP
+Il file system FTP (ftpfs) permette di manipolare file su macchine remote.
+Per utilizzarlo, si può usare il pannello del comando
+\fIConnessione FTP\fP
+(accessibile dalla barra dei menu) oppure si può cambiare direttamente
+la directory corrente con un comando
+\fIcd\fP
+verso un percorso simile al seguente:
+
+.PP
+\fIftp://[!][utente[:pass]@]macchina[:porta]/[dir\-remota]\fP
+
+.PP
+Gli elementi
+\fIutente,\fP
+\fIporta\fP
+e
+\fIdir\-remota\fP
+sono opzionali. Se si specifica l'elemento
+\fIutente,\fP
+allora il M\-Commander tenterà di collegarsi alla macchina remota
+come quell'utente, altrimenti userà il vostro nome di login o il nome
+di login prelevato dal file
+\fI~/.netrc.\fP
+L'elemento opzionale
+\fIpass\fP
+è la parola d'ordine per la connessione. L'uso della password nel nome VFS
+della directory non è raccomandabile, dato che può apparire sullo schermo in
+chiaro e può essere salvato nella cronologia directory.
+
+.PP
+Per abilitare l'uso del proxy FTP, anteporre
+\fB!\fP
+(un punto esclamativo) al nome host.
+
+.PP
+Esempi:
+
+.EX
+    ftp://ftp.nuclecu.unam.mx/linux/local
+    ftp://tsx\-11.mit.edu/pub/linux/packages
+    ftp://!dietro.il.firewall.edu/pub
+    ftp://guest@host\-remoto.com:40/pub
+    ftp://miguel:xxx@server/pub
+
+.EE
+
+.PP
+Controllare la finestra di dialogo
+file system virtuale
+per le opzioni ftpfs.
+
+.SH Trasferimento di file su FIlesystem di SHell (FISH)
+.PP
+Il file system fish è un file system basato sulla rete che permette di
+manipolare i file di una macchina remota come fossero locali. Per usarlo,
+l'altra parte deve avere un server fish o avere una shell compatibile
+bash.
+
+.PP
+Per collegarsi ad una macchina remota, basta solo fare cd
+in una speciale directory il cui nome ha il seguente formato:
+
+.EX
+sh://[utente@]macchina[:opzioni]/[dir\-remota]
+
+.EE
+
+.PP
+Gli elementi
+\fIutente,\fP
+\fIopzioni\fP
+e
+\fIdir\-remota\fP
+sono opzionali. Se si specifica l'elemento
+\fIutente\fP
+allora il M\-Commander tenterà di connettersi alla macchina remota
+con quell'utente, altrimenti userà il nome di login.
+
+.PP
+Le
+\fIopzioni\fP
+sono 'C' \- usa la compressione e 'rsh' per usare rsh invece
+di ssh. Se l'elemento
+\fIdir\-remota\fP
+è presente, la directory corrente sulla macchina remota sarà impostata
+a questo valore.
+
+.PP
+Esempi:
+
+.EX
+    sh://solorsh.mx:r/linux/locale
+    sh://joe@vuole.lacompressione.edu:C/privato
+    sh://joe@noncompresso.ssh.edu/privato
+
+.EE
+
+.SH EXTernal File System
+.PP
+\fBextfs\fP
+allows to integrate numerous features and file types into
+M\-Commander in an easy way, by writing scripts.
+
+.PP
+Extfs filesystems can be divided into two categories:
+
+.PP
+1\&. Stand\-alone filesystems, which are not associated with any existing
+file.  They represent certain system\-wide data as a directory tree.
+You can invoke them by typing
+\fI\&'cd fsname://'\fP
+where fsname is an extfs short name (see below).  Examples of such
+filesystems include audio (list audio tracks on the CD) or apt (list of
+all Debian packages in the system).
+
+.PP
+For example, to list CD\-Audio tracks on your CD\-ROM drive, type
+
+.EX
+  cd audio://
+
+.EE
+
+.PP
+2\&. 'Archive' filesystems (like rpm, patchfs and more), which represent
+contents of a file as a directory tree.  It can consist of 'real' files
+compressed in an archive (urar, rpm) or virtual files, like messages
+in a mailbox (mailfs) or parts of a patch (patchfs).  To access such
+filesystems
+\fI\&'fsname://'\fP
+should be appended to the archive name.  Note that the archive itself
+can be on another vfs.
+
+.PP
+For example, to list contents of a zip archive documents.zip type
+
+.EX
+  cd documents.zip/uzip://
+
+.EE
+
+.PP
+In many aspects, you could treat extfs like any other directory.  For
+instance, you can add it to the hotlist or change to it from directory
+history.  An important limitation is that you cannot invoke shell
+commands inside extfs, just like any other non\-local VFS.
+
+.PP
+Common extfs scripts included with M\-Commander are:
+
+.TP
+\fBa\fP
+access 'A:' DOS/Windows diskette
+\fI(cd a://).\fP
+
+.TP
+\fBapt\fP
+front end to Debian's APT package management system
+\fI(cd apt://).\fP
+
+.TP
+\fBaudio\fP
+audio CD ripping and playing
+\fI(cd audio://\fP
+or
+\fIcd device/audio://).\fP
+
+.TP
+\fBdeb\fP
+package of Debian GNU/Linux distribution
+\fI(cd file.deb/deb://).\fP
+
+.TP
+\fBdpkg\fP
+Debian GNU/Linux installed packages
+\fI(cd deb://).\fP
+
+.TP
+\fBhp48\fP
+view and copy files to/from a HP48 calculator
+\fI(cd hp48://).\fP
+
+.TP
+\fBlslR\fP
+browsing of lslR listings as found on many FTPs
+\fI(cd filename/lslR://).\fP
+
+.TP
+\fBmailfs\fP
+mbox\-style mailbox files support
+\fI(cd mailbox/mailfs://).\fP
+
+.TP
+\fBpatchfs\fP
+extfs to handle unified and context diffs
+\fI(cd filename/patchfs://).\fP
+
+.TP
+\fBrpm\fP
+RPM package
+\fI(cd filename/rpm://).\fP
+
+.TP
+\fBrpms\fP
+RPM database management
+\fI(cd rpms://).\fP
+
+.TP
+\fBulha, urar, uzip, uzoo, uar, uha\fP
+archivers
+\fI(cd archive/xxxx://\fP
+where xxxx is one of:
+\fIulha,\fP
+\fIurar,\fP
+\fIuzip,\fP
+\fIuzoo,\fP
+\fIuar,\fP
+\fIuha).\fP
+
+.PP
+You could bind file type/extension to specified extfs as described in the
+Edit Extension File
+section.  Here is an example entry for Debian packages:
+
+.EX
+  regex/\e.deb$
+          Open=%cd %p/deb://
+
+.EE
+
+
+.SH Colori
+.PP
+Il M\-Commander tenta di stabilire se il terminale corrente
+supporta i colori usando il database dei terminali e il nome del
+terminale corrente. Capita che possa sbagliarsi, perciò si può essere
+costretti a forzare la modalità a colori o a disabilitarla usando
+rispettivamente le opzioni \-c e \-b.
+
+.PP
+Se il programma è compilato con il manager dello schermo S\-Lang invece
+che ncurses, controllerà se è impostata anche la variabile
+\fBCOLORTERM,\fP
+con lo stesso effetto dell'opzione \-c.
+
+.PP
+E' possibile specificare i terminali su cui si vuole forzare sempre
+la modalità colore aggiungendo la variabile
+\fIcolor_terminals\fP
+nella sezione Colors del file di inizializzazione.
+Questo previene il M\-Commander dal tentare di controllare se
+il terminale supporta i colori. Per esempio:
+
+.EX
+[Colors]
+color_terminals=linux,xterm
+
+.EE
+
+.EX
+color_terminals=nome_terminale\-1,nome\-terminale\-2...
+
+.EE
+
+.PP
+Il programma può essere compilato sia con il supporto di ncurses che
+di S\-Lang ma ncurses non fornisce alcun modo per forzare la modalità
+colore: ncurses userà solo le informazioni nel database dei terminali.
+
+
+.SH Impostazioni speciali
+.PP
+Molte delle impostazioni del M\-Commander possono essere cambiate
+dai menu. Comunque, c'è un piccolo numero di impostazioni che possono
+essere cambiate solo agendo sul file di configurazione.
+
+.PP
+Queste sono le variabili che possono essere impostate nel file ~/.config/mc6/ini:
+
+.TP
+\fIclear_before_exec\fP
+Il valore predefinito del M\-Commander è di cancellare lo schermo
+prima dell'esecuzione di un comando. Se si preferisce vedere il risultato
+di un comando in fondo allo schermo, si modifichi la copia locale del file
+~/.config/mc6/ini e si cambi il valore del campo clear_before_exec a 0.
+
+.TP
+\fIconfirm_view_dir\fP
+Se si preme F3 su di una directory, normalmente M\-Commander entra nella directory.
+Se questa opzione è impostata a 1, M\-Commander chiederà una conferma prima di
+cambiare directory se si hanno dei file marcati.
+
+.TP
+\fIftpfs_retry_seconds\fP
+Questo valore è il numero di secondi che il M\-Commander aspetta
+prima di tentare di riconnettersi ad un ftp server che ha negato
+l'autenticazione. Se il valore è zero, l'autenticazione non verrà ritentata.
+
+.TP
+\fImax_dirt_limit\fP
+Specifica al massimo quanti aggiornamenti possono essere saltati nel
+visualizzatore di file interno. Normalmente questo valore non è
+significativo, dato che il codice automaticamente aggiusta il numero
+da saltare a seconda della velocità con cui arrivano le pressioni dei
+tasti. Comunque, su macchine molto lente o su terminali con un'auto
+ripetizione dei tasti molto veloce, un grande valore può rendere gli
+aggiornamenti dello schermo troppo instabili.
+
+.PP
+.RS
+
+.PP
+Sembra che impostare max_dirt_limit a 10 porta i migliori risultati,
+e questo è il valore predefinito.
+
+.RE
+
+.TP
+\fImouse_move_pages\fP
+Controlla il fatto che lo scorrimento con il mouse sui pannelli sia fatto
+per pagine o per righe.
+
+.TP
+\fImouse_move_pages_viewer\fP
+Controlla se lo scorrimento del mouse nel visualizzatore di file interno
+sia fatto per pagine o per righe.
+
+.TP
+\fIold_esc_mode\fP
+Normalmente il M\-Commander tratta il tasto ESC come un prefisso
+(old_esc_mode=0), ma se si imposta quest'opzione (old_esc_mode=1),
+allora il tasto ESC agirà come un tasto di prefisso per un secondo, e
+se non vengono premuti altri tasti, allora il tasto ESC sarà interpretato
+come un tasto di cancellazione (ESC ESC).
+
+.TP
+\fIonly_leading_plus_minus\fP
+Permette una gestione speciale per '+', '\-', '*\&' nella riga di comando
+(selezione, deselezione, selezione inversa) solo se la riga di comando è
+vuota. Non è necessario proteggere questi caratteri nel mezzo della riga
+di comando ma non è possibile cambiare selezione se la riga di comando
+non è vuota.
+
+.TP
+\fIpanel_scroll_pages\fP
+Se impostata (valore predefinito), i pannelli scorrono di metà
+quando il cursore raggiunge la fine o l'inizio del pannello,
+altrimenti scorrono di un file per volta.
+
+.TP
+\fIshow_output_starts_shell\fP
+Questa variabile lavora solo se non si sta usando il supporto della
+subshell. Quando si usano i tasti C\-o per tornare allo schermo utente,
+se quest'opzione è impostata, si avrà una nuova shell. Altrimenti,
+premendo qualsiasi tasto si tornerà al M\-Commander.
+
+.TP
+\fIuse_file_to_guess_type\fP
+Se questa variabile è abilitata (valore predefinito) userà il comando
+file per trovare delle corrispondenze sui tipi di file elencati nel
+file extensions.ini\&.
+
+.TP
+\fIxtree_mode\fP
+Se questa variabile è impostata (il valore predefinito è no) quando
+si naviga il file system su un pannello ad albero, automaticamente
+ricaricherà l'altro pannello con il contenuto della directory
+selezionata.
+
+
+.SH Database di terminali
+.PP
+Il M\-Commander fornisce una maniera per correggere il database
+dei terminali si sistema senza richiedere i privilegi di
+amministratore (root). Il M\-Commander ricerca nel file di
+inizializzazione di sistema (il file defaults.ini collocato nella directory
+di libreria del M\-Commander) e nel file ~/.config/mc6/ini la sezione
+"terminal:nome\-del\-terminale\-in\-uso" e poi la sezione "terminal:general",
+ogni riga della sezione contiene il simbolo chiave che si vuol definire,
+seguito da un segno di uguale e la definizione per quel tasto.
+E' possibile usare la forma speciale \ee per rappresentare il carattere
+di escape e ^x per rappresentare il carattere control\-x.
+
+.PP
+I simboli chiave possibili sono:
+
+.EX
+f0 a f20      tasti funzione f0\-f20
+bs	      backspace
+home          tasto inizio
+end           tasto fine
+up            tasto freccia in su
+down          tasto freccia in giù
+left          tasto freccia a sinistra
+right         tasto freccia a destra
+pgdn          tasto pagina in giù
+pgup          tasto pagina in su
+insert        tasto inserimento
+delete        tasto cancellazione
+complete      per fare il completamento
+
+.EE
+
+.PP
+Per esempio, per definire il tasto di inserimento come escape + [ + O + p
+impostare il seguente nel file ini:
+
+.EX
+insert=\ee[Op
+
+.EE
+
+.PP
+Il tasto di
+\fIcompletamento\fP
+rappresenta le sequenze di escape usate per invocare il processo di
+completamento, invocato tramite M\-tab, ma ridefinibile ad altri tasti
+per fare lo stesso lavoro (su quelle tastiere con tonnellate di
+simpatici tasti dappertutto).
+
+
+.SH FILE
+.PP
+Il programma recupera tutte le informazioni relative al proprio funzionamento
+dalla variabile ambiente
+\fBMC_DATADIR\fP,
+e se la variabile non è impostata, passerà alla directory {{pkgdatadir}} .
+
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
+Il file di aiuto per il programma.
+
+.TP
+\fI{{pkgdatadir}}/extensions.ini\fP
+Il file delle estensioni di sistema predefinito.
+
+.TP
+\fI~/.config/mc6/extensions.ini\fP
+Le estensioni dell'utente, la configurazione del visualizzatore e
+dell'editor di file. Se presenti, questi file si sovrappongono ai file di
+sistema.
+
+.TP
+\fI{{pkgdatadir}}/mc.ini\fP
+La configurazione di sistema predefinita per il M\-Commander, usata solo
+se l'utente non possiede il proprio file ~/.config/mc6/ini.
+
+.TP
+\fI{{pkgdatadir}}/defaults.ini\fP
+Le impostazioni globali per il M\-Commander. La modifica di questo
+file influisce su tutti gli utenti, che abbiano o no il file ~/.config/mc6/ini .
+Attualmente vengono caricate solo le
+impostazioni del terminale
+da defaults.ini.
+
+.TP
+\fI~/.config/mc6/ini\fP
+La configurazione dell'utente. Se questo file è presente, la configurazione
+viene caricata da qui invece che dal file di sistema.
+
+.TP
+\fI{{pkgdatadir}}/hints/hint\fP
+Questo file contiene i suggerimenti (dritte) mostrate dal programma.
+
+.TP
+\fI{{pkgdatadir}}/usermenu\fP
+Questo file contiene il menu di sistema per le applicazioni.
+
+.TP
+\fI~/.config/mc6/menu\fP
+Il menu utente per le applicazioni. Se presente viene usato al posto
+del menu delle applicazioni di sistema.
+
+.TP
+\fI~/.cache/mc6/Tree\fP
+L'elenco di directory per l'albero directory e per la vista ad albero.
+
+.TP
+\fI\&./.usermenu\fP
+Menu locale definito dall'utente. Se questo file è presente viene usato
+al posto del menu delle applicazioni utente o di sistema.
+
+.PP
+To change default home directory of M\-Commander, you can use
+\fBMC_PROFILE_ROOT\fP
+environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
+If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
+or empty, M\-Commander directories are get from GLib library.
+
+
+.SH LICENZA
+.PP
+Questo programma è distribuito sotto i termini della Licenza Generale
+GNU come pubblicata dalla Free Software Foundation. Vedere l'aiuto integrato
+per i dettagli sulla licenza e sulla mancanza di garanzie.
+
+
+.SH REPERIBILITA'
+.PP
+L'ultima versione di questo programma si trova su
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
+.SH VEDERE ANCHE
+.PP
+ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
+tcsh(1), zsh(1).
+
+.EX
+La pagina Web di M\-Commander:
+	https://github.com/blue\-panels/mcommander
+
+.EE
+
+
+.SH AUTORI
+.PP
+Miguel de Icaza (miguel@ximian.com), Janne Kukonlehto
+(jtklehto@paju.oulu.fi), Radek Doulik (rodo@ucw.cz), Fred
+Leeflang (fredl@nebula.ow.org), Dugan Porter (dugan@b011.eunet.es),
+Jakub Jelinek (jj@sunsite.mff.cuni.cz), Ching Hui
+(mr854307@cs.nthu.edu.tw), Andrej Borsenkow (borsenkow.msk@sni.de),
+Norbert Warmuth (nwarmuth@privat.circular.de),
+Mauricio Plaza (mok@roxanne.nuclecu.unam.mx), Paul Sheer
+(psheer@icon.co.za), Pavel Machek (pavel@ucw.cz) e Pavel Roskin
+(proski@gnu.org) sono gli sviluppatori di questo pacchetto.
+Alessandro Rubini (rubini@ipvvis.unipv.it) ha dato un notevole
+contribuito nella correzione e nel miglioramento del supporto del
+mouse nel programma, John Davis (davis@space.mit.edu) ha reso
+disponibile la sua libreria S\-lang sotto la licenza GPL e ha risposto
+alle mie domande su di essa; le seguenti persone hanno contribuito
+al codice e in molte correzioni (in ordine alfabetico):
+
+.PP
+Adam Tla/lka (atlka@sunrise.pg.gda.pl),
+alex@bcs.zp.ua (Alex I. Tkachenko), Antonio Palama,
+DOS port (palama@posso.dm.unipi.it), Erwin van Eijk
+(wabbit@corner.iaf.nl), Gerd Knorr (kraxel@cs.tu\-berlin.de),
+Jean\-Daniel Luiset (luiset@cih.hcuge.ch), Jon Stevens
+(root@dolphin.csudh.edu), Juan Francisco Grigera, port su piattaforma Win32
+(j\-grigera@usa.net), Juan Jose Ciarlante (jjciarla@raiz.uncu.edu.ar),
+Ilya Rybkin (rybkin@rouge.phys.lsu.edu), Marcelo Roccasalva
+(mfroccas@raiz.uncu.edu.ar), Massimo Fontanelli (MC8737@mclink.it),
+Sergey Ya. Korshunoff (seyko2@gmail.com), Thomas Pundt
+(pundtt@math.uni\-muenster.de), Timur Bakeyev
+(timur@goff.comtat.kazan.su), Tomasz Cholewo
+(tjchol01@mecca.spd.louisville.edu), Torben Fjerdingstad
+(torben.fjerdingstad@uni\-c.dk), Vadim Sinolitis (vvs@nsrd.npi.msu.su)
+e Wim Osterholt (wim@djo.wtm.tudelft.nl).
+
+
+.SH BACHI
+.PP
+Vedere il file TODO nella distribuzione per informazioni su
+quello che rimane ancora da fare.
+
+.PP
+Se si vuole fare un rapporto di un problema nel programma, si prega di
+aprire una segnalazione a questo indirizzo:
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
+
+.PP
+Nel rapporto è necessario fornire una descrizione dettagliata del baco,
+la versione del programma (mcommander \-v mostra quest'informazione), il sistema
+operativo su cui si sta facendo girare il programma e, se il programma
+va in crash, è gradita una traccia dello stack.

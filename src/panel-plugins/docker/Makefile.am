@@ -1,6 +1,6 @@
 dockerdir = $(panel_plugins_dir)/docker
 docker_LTLIBRARIES = mc-panel-docker.la
-docker_DATA = docker_panel.hlp
+docker_DATA = docker_panel.md
 # dlog.sh is meant to be run: install it with the exec bit, not as data.
 dist_docker_SCRIPTS = dlog.sh
 

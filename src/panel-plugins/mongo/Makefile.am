@@ -1,6 +1,6 @@
 mongodir = $(panel_plugins_dir)/mongo
 mongo_LTLIBRARIES = mc-panel-mongo.la
-mongo_DATA = mongo_panel.hlp
+mongo_DATA = mongo_panel.md
 
 mc_panel_mongo_la_SOURCES = \
 	mongo.c \

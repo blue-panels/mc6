@@ -218,6 +218,60 @@ g_memdup2 (gconstpointer mem, gsize byte_size)
 
     return new_mem;
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/**
+ * g_string_replace:
+ * @string: a GString
+ * @find: the string to find in @string
+ * @replace: the string to insert in place of @find
+ * @limit: the maximum instances of @find to replace, or 0 for all
+ *
+ * Replaces the string @find with the string @replace in a GString.
+ *
+ * Returns: the number of find and replace operations performed.
+ */
+guint
+g_string_replace (GString *string, const gchar *find, const gchar *replace, guint limit)
+{
+    gsize find_len;
+    gsize replace_len;
+    guint n = 0;
+    gsize pos = 0;
+
+    g_return_val_if_fail (string != NULL, 0);
+    g_return_val_if_fail (find != NULL, 0);
+    g_return_val_if_fail (replace != NULL, 0);
+
+    find_len = strlen (find);
+    replace_len = strlen (replace);
+
+    if (find_len == 0)
+        return 0;
+
+    while (pos <= string->len - find_len)
+    {
+        const char *p;
+
+        p = strstr (string->str + pos, find);
+        if (p == NULL)
+            break;
+
+        pos = p - string->str;
+        g_string_erase (string, pos, find_len);
+        g_string_insert_len (string, pos, replace, replace_len);
+        pos += replace_len;
+        n++;
+
+        if (limit != 0 && n == limit)
+            break;
+        if (string->len < find_len)
+            break;
+    }
+
+    return n;
+}
+
 #endif
 
 /* --------------------------------------------------------------------------------------------- */

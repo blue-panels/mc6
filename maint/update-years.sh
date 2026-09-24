@@ -3,7 +3,6 @@
 YEAR=`date +%Y`
 
 SOURCES="`find lib src tests -name '*.c'`"
-SOURCES="$SOURCES src/man2hlp/man2hlp.in"
 SOURCES="$SOURCES tests/src/vfs/extfs/helpers-list/test_all"
 
 LINE="Copyright (C)"

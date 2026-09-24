@@ -5,8 +5,6 @@ Maintainer: Ilia Maslakov <il.smind@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                pkgconf,
                gettext,
-               perl:any,
-               python3:any,
                chafa,
                libglib2.0-dev,
                libslang2-dev,

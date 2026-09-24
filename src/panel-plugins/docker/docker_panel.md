@@ -1,0 +1,210 @@
+# Docker Plugin <!-- help:notitle -->
+
+```
+  Docker Panel Plugin
+
+  The Docker panel plugin lets you browse and manage Docker resources
+  on a local machine or a remote host over SSH.
+
+  Opening the plugin:
+
+    Alt-F1 / Alt-F2 -> Docker   Opens the connection profile list (docker:/).
+
+  Connection Profiles
+
+    The first screen shows all saved connection profiles.
+
+    Enter      - Activate the selected profile and open its Docker root.
+    Shift-F4   - Create a new connection profile.
+    F4         - Edit the selected profile.
+    F8         - Delete the selected profile.
+               (The last local profile cannot be deleted.)
+
+  Docker Root
+
+    After activating a profile you see the Docker resource root:
+
+      containers/    Container projects and containers.
+      images/        Docker images.
+      volumes/       Docker volumes.
+      networks/      Docker networks.
+      daemon-info.txt  Docker daemon information (read-only).
+      version.txt    Docker version information (read-only).
+
+  Containers
+
+    Containers are grouped by Docker Compose project.
+    A special group named "(ungrouped)" holds containers
+    that do not belong to any project.
+
+    Enter a project folder to see its containers.
+    Inside a container folder:
+
+      exec           Open an interactive shell in the container.
+      files/         Browse the container filesystem.
+      logs           View container logs (last 1000 lines by default).
+                     In the log viewer, Alt-s opens a dialog to change how
+                     much is fetched: tail [n] / head [n] / a time window
+                     (30s, 5m, 1h), Follow for live streaming, and an
+                     optional formatter to pipe the output through.
+
+                     For .NET / Serilog console logs, the dlog formatter
+                     ships with this plugin and strips the trailing
+                     "<s:Namespace.Class>" SourceContext noise.  Type
+
+                         dlog
+
+                     in the Pipe through field.  To make it available as
+                     just "dlog", copy or symlink it to a PATH directory:
+
+                         cp ~/.local/lib/mc6/panel-plugins/docker/dlog.sh \
+                            ~/.local/bin/dlog
+                         chmod +x ~/.local/bin/dlog
+
+                     (Or use /usr/lib/mcommander/panel-plugins/docker/dlog.sh.)
+                     Chain it, e.g.  dlog | grep -v Diagnostics
+      mounts/        Browse container bind mounts (local profiles only).
+      inspect.json   Full container inspect output (read-only).
+
+    F3 on a container   - View a summary (status, image, ports, stats).
+    F8 on a container   - Remove the container (docker rm).
+    Shift-F4            - Create and run a new container.
+
+  Images
+
+    Lists all local Docker images (name, tag, size).
+
+    F8   - Remove the selected image (docker rmi).
+
+  Volumes
+
+    Lists all Docker volumes with driver and scope.
+    The state column shows U (in use) or N (not in use).
+
+    F3   - View volume summary (mountpoint, labels, options).
+    F8   - Remove the selected volume (docker volume rm).
+
+  Networks
+
+    Lists all Docker networks with driver and scope.
+
+    F8   - Remove the selected network (docker network rm).
+
+  SSH Connections
+
+    SSH profiles run Docker commands on a remote host.
+    Requirements:
+      - SSH key-based authentication must be configured.
+      - The private key must be listed in "Private key file"
+        or available via ssh-agent / ~/.ssh/config.
+      - The remote user must have access to the Docker daemon.
+
+    Limitations of SSH profiles:
+      - mounts/ is not available (host paths are not reachable remotely).
+      - files/, exec, logs, inspect.json, and all listing views work normally.
+
+  Connection Dialog Fields
+
+    Label            Display name shown in the profile list.
+    Connection type  Local or SSH.
+    Docker executable  Path to the docker binary.
+                     Leave empty to use "docker" from PATH.
+                     For SSH profiles this is the path on the remote host.
+    Host             SSH hostname or IP address.
+                     Used only for SSH profiles.
+    User             SSH login name.
+                     Used only for SSH profiles; empty = current user.
+    Port             SSH port.
+                     Used only for SSH profiles; empty or 0 = 22.
+    Private key file Path to the SSH private key file.
+                     Used only for SSH profiles.
+                     Leave empty to use the default key or ssh-agent.
+```
+
+# Docker Connection <!-- help:notitle -->
+
+```
+  Docker Connection Dialog
+
+  Label
+
+    A name displayed in the profile list. Must be unique.
+    Example: "Production", "Local Docker".
+
+  Connection type
+
+    Local  - runs docker directly on this machine.
+    SSH    - runs docker on a remote host over SSH.
+
+  Docker executable
+
+    Path to the docker binary. Leave empty to use "docker" from PATH.
+    For SSH connections this is the path on the remote host.
+
+  SSH settings
+
+    These fields are shown in the dialog and are used only
+    when the connection type is set to SSH.
+
+    Host             Hostname or IP address of the remote machine.
+    User             SSH login name. Leave empty to use the current user.
+    Port             SSH port number. Leave empty or enter 0 for port 22.
+    Private key file Path to the SSH private key file (PEM format).
+                     Leave empty to use ssh-agent or the default key
+                     (~/.ssh/id_rsa, ~/.ssh/id_ed25519, etc.).
+
+  Notes
+
+    - Key-based authentication must be configured on the remote host.
+    - The remote user must have access to the Docker daemon.
+    - Container file browsing (files/) works for SSH connections.
+    - Mount browsing (mounts/) is local-only.
+```
+
+# Container logs source <!-- help:notitle -->
+
+```
+  Container logs source dialog (Alt-s in the log viewer)
+
+  Controls the "docker logs" invocation that feeds the viewer.  Closing
+  the dialog with OK triggers a re-fetch with the new parameters; the
+  filter (F6) and viewing position are preserved across the swap.  This
+  dialog does NOT filter what is already displayed -- use F6 inside the
+  viewer for line filtering.
+
+  FIELDS
+  ------
+
+    Follow         docker logs --follow.  Stream new lines as they
+                   arrive; the viewer auto-scrolls to the bottom.
+
+    Show           How much to fetch.  Accepts one of:
+
+                     tail        last 100 lines
+                     tail <N>    last N lines (docker logs --tail=N)
+                     head        first 20 available lines
+                     head <N>    first N available lines (piped through
+                                 head -n N on the host)
+                     30s 5m 1h   a time window (docker logs --since=...)
+                     <empty>     no limit (all logs docker still has)
+
+                   Note: "head" can only show the earliest lines docker
+                   still retains.  If the container's json-file log has
+                   rotated (--log-opt max-size/max-file), the true start
+                   is gone and cannot be recovered.
+
+    Pipe through   A shell command applied to the output before it
+                   reaches the viewer.  Empty = raw.  For .NET / Serilog
+                   console logs, "dlog" strips the trailing
+                   "<s:Namespace.Class>" SourceContext tag.
+
+  BUTTONS
+  -------
+
+    OK             Validate the input, re-fetch with the new parameters
+                   and swap the viewer's data source.  The filter (F6)
+                   and viewing position carry over.
+
+    Cancel         Discard the changes; the viewer stays on the current
+                   data.
+```

@@ -864,7 +864,7 @@ samba_open (mc_panel_host_t *host, const char *open_path)
     data->auth_workgroup = NULL;
     samba_update_title (data);
 
-    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "samba_panel.hlp", (char *) NULL);
+    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "samba_panel.md", (char *) NULL);
 
     /* Load saved connections */
     data->connections_file = get_connections_file_path ();

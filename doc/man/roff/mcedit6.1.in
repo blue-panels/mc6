@@ -1,0 +1,833 @@
+.\" Generated from mcedit6.md by maint/update-man-in.sh. Do not edit.
+.TH MCEDIT6 1 "September 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NAME
+.PP
+mcedit6 \- Internal file editor of M\-Commander.
+
+
+.SH SYNOPSIS
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] [+lineno] [file1] [file2] ...
+
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] file1:lineno[:] file2:lineno[:] ...
+
+
+.SH DESCRIPTION
+.PP
+mcedit6 is a link to
+\fBmcommander\fP,
+the main M\-Commander executable. Executing M\-Commander
+under this name runs the internal editor and opens files
+specified on the command line. The editor is based on the terminal version of
+\fBcooledit\fP
+\- standalone editor for X Window System.
+
+
+.SH OPTIONS
+.TP
+\fI+lineno\fP
+Go to the line specified by number (do not put a space between the
+\fI+\fP
+sign and the number). Several line numbers are allowed but only the last one
+will be used, and it will be applied to the first file only.
+
+.TP
+\fI\-b\fP
+Force black and white display.
+
+.TP
+\fI\-c\fP
+Force ANSI color mode on terminals that don't seem to have color
+support.
+
+.TP
+\fI\-d\fP
+Disable mouse support.
+
+.TP
+\fI\-f\fP
+Display the compiled\-in search path for M\-Commander data
+files.
+
+.TP
+\fI\-S arg, \-\-skin=arg\fP
+Specify a name of skin in the command line.  See the
+\fBSkins\fP
+section in mcommander(1) for more information.
+
+.TP
+\fI\-t\fP
+Force using termcap database instead of terminfo.  This option is only
+applicable if M\-Commander was compiled with S\-Lang library
+with terminfo support.
+
+.TP
+\fI\-V\fP
+Display the version of the program.
+
+.TP
+\fI\-x\fP
+Force xterm mode.  Used when running on xterm\-capable terminals (two
+screen modes, and able to send mouse escape sequences).
+
+
+.SH FEATURES
+.PP
+The internal file editor is a full\-featured windowed editor.  It can
+edit several files at the same time. Maximum size of each file is 64
+megabytes. It is possible to edit binary files. The features it presently
+supports are: block copy, move, delete, cut, paste; key for key undo;
+pull\-down menus; file insertion; macro commands; regular expression
+search and replace; shift\-arrow text highlighting (if supported by
+the terminal); insert\-overwrite toggle; autoindent; tunable tab size;
+syntax highlighting for various file types; and an option to pipe text
+blocks through shell commands like indent and ispell.
+
+.PP
+Each file is opened in its own window in full\-screen mode. Window control
+in mcedit6 is similar to the window control in other multi\-window program:
+double click on window title maximizes the window to full\-screen or restores
+window size and position; left\-click on window title and mouse drag moves
+the window in editor area; left\-click on low\-right frame corner and mouse drag
+resizes the window. These actions can be made using "Window" menu.
+
+
+.SH KEYS
+.PP
+The editor is easy to use and can be used without learning.  The
+pull\-down menu is invoked by pressing F9.  You can learn other keys from
+the menu and from the button bar labels.
+
+.PP
+In addition to that, Shift combined with arrows does text highlighting
+(if supported by the terminal):
+\fBCtrl\-Ins\fP
+copies to the file
+\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+\fBShift\-Ins\fP
+pastes from
+\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+\fBShift\-Del\fP
+cuts to
+\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+and
+\fBCtrl\-Del\fP
+deletes highlighted text.  Mouse highlighting also works on some
+terminals.  To use the standard mouse support provided by your terminal,
+hold the Shift key.  Please note that the mouse support in the terminal
+doesn't share the clipboard with
+\fBmcedit6\fP\&.
+
+.PP
+The completion key (usually
+\fBMeta\-Tab\fP
+or
+\fBEscape Tab\fP)
+completes the word under the cursor using the words used in the file.
+
+.PP
+The
+\fBFilter\fP
+button of the search dialog
+(\fBF7\fP)
+hides every line that does not match the search string, with the search
+dialog's own type, case and whole\-word settings.  Line numbers keep their
+original values.  The set of hidden lines is fixed when the button is
+pressed: editing never re\-applies the match, so split, joined and newly
+typed lines stay shown.
+\fBMeta\-s\fP
+lifts the filter and, pressed again, puts the last search back on as a
+filter.
+
+
+.SH MACRO
+.PP
+To define a macro, press
+\fBCtrl\-R\fP
+and then type out the keys you want to be executed.  Press
+\fBCtrl\-R\fP
+again when finished.  The macro can be assigned to any key by pressing that key.
+The macro is executed when you press the assigned key.
+
+.PP
+The macro commands are stored in section
+\fB[editor]\fP
+it the file
+\fB~/.local/share/mc6/macros\fP\&.
+
+.PP
+External scripts (filters) can be assigned into the any hotkey by edit
+\fBmacros\fP
+like following:
+
+.EX
+[editor]
+ctrl\-W=ExecuteScript:25;
+
+.EE
+
+.PP
+This means that ctrl\-W hotkey initiates the
+\fIExecuteScript(25)\fP
+action, then editor handler translates this into execution of
+\fB~/.local/share/mc6/mcedit6/macros.d/macro.25.sh\fP
+shell script.
+
+.PP
+External scripts are stored in
+\fB~/.local/share/mc6/mcedit6/macros.d/\fP
+directory and must be named as
+\fBmacro.XXXX.sh\fP
+where
+\fBXXXX\fP
+is the number from 0 to 9999.
+See
+\fBEdit Menu File\fP
+for more detail about format of the script.
+
+.PP
+Following macro definition and directives can be used:
+
+.TP
+\fI#silent\fP
+If this directive is set, then script starts without an interactive shell.
+
+.TP
+\fI%c\fP
+The cursor column position number.
+
+.TP
+\fI%i\fP
+The indent of blank space, equal the cursor column.
+
+.TP
+\fI%y\fP
+The syntax type of current file.
+
+.TP
+\fI%b\fP
+The block file name.
+
+.TP
+\fI%f\fP
+The current file name.
+
+.TP
+\fI%n\fP
+Only the current file name without extension.
+
+.TP
+\fI%x\fP
+The extension of current file name.
+
+.TP
+\fI%d\fP
+The current directory name.
+
+.TP
+\fI%F\fP
+The current file in the unselected panel.
+
+.TP
+\fI%D\fP
+The directory name of the unselected panel.
+
+.TP
+\fI%t\fP
+The currently tagged files.
+
+.TP
+\fI%T\fP
+The tagged files in the unselected panel.
+
+.TP
+\fI%v\fP and \fI%V\fP
+Similar to the
+\fI%t\fP
+and
+\fI%T\fP
+, but expands to full names of tagged files.
+
+.TP
+\fI%u\fP and \fI%U\fP
+Similar to the
+\fI%t\fP
+and
+\fI%T\fP
+macros, but in addition the files are untagged. You can use this macro
+only once per menu file entry or extension file entry, because next time
+there will be no tagged files.
+
+.TP
+\fI%s\fP and \fI%S\fP
+The selected files: The tagged files if there are any. Otherwise the
+current file.
+
+.PP
+Feel free to edit this files, if you need.
+Here is a sample external script:
+
+.EX
+l       comment selection
+	TMPFILE=`mktemp ${MC_TMPDIR:\-/tmp}/up.XXXXXX` || exit 1
+	echo #if 0 > $TMPFILE
+	cat %b >> $TMPFILE
+	echo #endif >> $TMPFILE
+	cat $TMPFILE > %b
+	rm \-f $TMPFILE
+
+.EE
+
+.PP
+If some keys don't work, you can use
+\fBLearn Keys\fP
+in the
+\fBOptions\fP
+menu.
+
+
+.SH CODE NAVIGATION
+.PP
+\fBmcedit6\fP
+can be used for navigation through code with tags files created by etags
+or ctags commands. If there is no TAGS file code navigation will not work.
+For example, in case of exuberant\-ctags for C language command will be:
+
+.PP
+ctags \-e \-\-language\-force=C \-R ./
+
+.PP
+\fBMeta\-Enter\fP
+shows list box to select item under cursor (cursor should stand at the end
+of the word).
+
+.PP
+\fBMeta\-Minus\fP
+where minus is symbol "\-" goes to previous function in navigation list
+(like browser's Back button).
+
+.PP
+\fBMeta\-Equal\fP
+where equal is symbol "=" goes to next function in navigation list
+(like browser's Forward button).
+
+
+.SH SYNTAX HIGHLIGHTING
+.PP
+\fBmcedit6\fP
+supports syntax highlighting.  This means that keywords and contexts
+(like C comments, string constants, etc) are highlighted in different
+colors.  The following section explains the format of the file
+\fB~/.local/share/mc6/syntax/Syntax\fP\&.
+If this file is missing, system\-wide
+\fB{{pkgdatadir}}/syntax/Syntax\fP
+is used.
+The file
+\fB~/.local/share/mc6/syntax/Syntax\fP
+is rescanned on opening of every new editor file.  The file contains
+rules for highlighting, each of which is given on a separate line, and
+define which keywords will be highlighted with what color.
+
+.PP
+The file is divided into sections, each beginning with a line with the
+\fBfile\fP
+command.  The sections are normally put into separate files using the
+\fBinclude\fP
+command.
+
+.PP
+The
+\fBfile\fP
+command has three arguments.  The first argument is a regular expression
+that is applied to the file name to determine if the following section
+applies to the file.  The second argument is the description of the file
+type.  It is used in
+\fBcooledit\fP;
+future versions of
+\fBmcedit6\fP
+may use it as well.  The third optional argument is a regular expression
+to match the first line of text of the file.  The rules in the following
+section apply if either the file name or the first line of text matches.
+
+.PP
+A section ends with the start of another section.  Each section is
+divided into contexts, and each context contains rules.  A context is a
+scope within the text that a particular set of rules belongs to.  For
+instance, the text within a C style comment (i.e. between
+\fB/*\fP
+and
+\fB*/\fP)
+has its own color.  This is a context, although it has no further rules
+inside it because there is probably nothing that we want highlighted
+within a C comment.
+
+.PP
+A trivial C programming section might look like this:
+
+.EX
+file .\e*\e\e.c C\esProgram\esFile (#include|/\e\e\e*)
+
+wholechars abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_
+
+# default colors
+define  comment   brown
+context default
+  keyword  whole  if       yellow
+  keyword  whole  else     yellow
+  keyword  whole  for      yellow
+  keyword  whole  while    yellow
+  keyword  whole  do       yellow
+  keyword  whole  switch   yellow
+  keyword  whole  case     yellow
+  keyword  whole  static   yellow
+  keyword  whole  extern   yellow
+  keyword         {        brightcyan
+  keyword         }        brightcyan
+  keyword         '*'      green
+
+# C comments
+context /\e* \e*/ comment
+
+# C preprocessor directives
+context linestart # \en red
+  keyword  \e\e\en  brightred
+
+# C string constants
+context " " green
+  keyword  %d    brightgreen
+  keyword  %s    brightgreen
+  keyword  %c    brightgreen
+  keyword  \e\e"   brightgreen
+
+.EE
+
+.PP
+Each context starts with a line of the form:
+
+.PP
+\fBcontext\fP
+[\fBexclusive\fP]
+[\fBwhole\fP|\fBwholeright\fP|\fBwholeleft\fP]
+[\fBlinestart\fP]
+\fIdelim\fP
+[\fBlinestart\fP]
+\fIdelim\fP
+\fI[foreground]\fP
+\fI[background]\fP
+\fI[attributes]\fP
+
+.PP
+The first context is an exception.  It must start with the command
+
+.PP
+\fBcontext default\fP
+\fI[foreground]\fP
+\fI[background]\fP
+\fI[attributes]\fP
+
+.PP
+otherwise
+\fBmcedit6\fP
+will report an error.  The
+\fBlinestart\fP
+option specifies that
+\fIdelim\fP
+must start at the beginning of a line.  The
+\fBwhole\fP
+option tells that
+\fIdelim\fP
+must be a whole word.  To specify that a word must begin on the word
+boundary only on the left side, you can use the
+\fBwholeleft\fP
+option, and similarly a word that must end on the word boundary is specified by
+\fBwholeright\fP\&.
+
+.PP
+The set of characters that constitute a whole word can be changed at any
+point in the file with the
+\fBwholechars\fP
+command.  The left and right set of characters can be set separately
+with
+
+.PP
+\fBwholechars\fP
+[\fBleft\fP|\fBright\fP]
+\fIcharacters\fP
+
+.PP
+The
+\fBexclusive\fP
+option causes the text between the delimiters to be highlighted, but not
+the delimiters themselves.
+
+.PP
+Each rule is a line of the form:
+
+.PP
+\fBkeyword\fP
+[\fBwhole\fP|\fBwholeright\fP|\fBwholeleft\fP]
+[\fBlinestart\fP]
+\fIstring foreground\fP
+\fI[background]\fP
+\fI[attributes]\fP
+
+.PP
+Context or keyword strings are interpreted, so that you can include tabs
+and spaces with the sequences \et and \es.  Newlines and backslashes are
+specified with \en and \e\e respectively.  Since whitespace is used as a
+separator, it may not be used as is.  Also, \e* must be used to specify
+an asterisk.  The * itself is a wildcard that matches any length of
+characters.  For example,
+
+.EX
+  keyword         '*'      green
+
+.EE
+
+.PP
+colors all C single character constants green.  You also could use
+
+.EX
+  keyword         "*"      green
+
+.EE
+
+.PP
+to color string constants, but the matched string would not be allowed
+to span across multiple newlines.  The wildcard may be used within
+context delimiters as well, but you cannot have a wildcard as the last
+or first character.
+
+.PP
+Important to note is the line
+
+.EX
+  keyword  \e\e\en  brightgreen
+
+.EE
+
+.PP
+This line defines a keyword containing the backslash and newline
+characters.  Since the keywords are matched before the context
+delimiters, this keyword prevents the context from ending at the end of
+the lines that end in a backslash, thus allowing C preprocessor
+directive to continue across multiple lines.
+
+.PP
+The possible colors are: black, gray, red, brightred, green,
+brightgreen, brown, yellow, blue, brightblue, magenta, brightmagenta,
+cyan, brightcyan, lightgray and white. The special keyword "default" means
+the terminal's default. Another special keyword "base" means mcommander's main
+colors, it is useful as a placeholder if you want to specify attributes
+without modifying the background color. When 256 colors are available,
+they can be specified either as color16 to color255, or as rgb000 to rgb555
+and gray0 to gray23.
+
+.PP
+If the syntax file is shared with
+\fBcooledit\fP,
+it is possible to specify different colors for
+\fBmcedit6\fP
+and
+\fBcooledit\fP
+by separating them with a slash, e.g.
+
+.EX
+keyword  #include  red/Orange
+
+.EE
+
+.PP
+\fBmcedit6\fP
+uses the color before the slash.  See cooledit(1) for supported
+\fBcooledit\fP
+colors.
+
+.PP
+Attributes can be any of bold, italic, underline, reverse and blink, appended by a
+plus sign if more than one are desired.
+
+.PP
+Comments may be put on a separate line starting with the hash sign (#).
+
+.PP
+If you are describing case insensitive language you need to use
+\fBcaseinsensitive\fP
+directive. It should be specified at the beginning of syntax file.
+
+.PP
+Because of the simplicity of the implementation, there are a few
+intricacies that will not be dealt with correctly but these are a minor
+irritation.  On the whole, a broad spectrum of quite complicated
+situations are handled with these simple rules.  It is a good idea to
+take a look at the syntax file to see some of the nifty tricks you can
+do with a little imagination.  If you cannot get by with the rules I
+have coded, and you think you have a rule that would be useful, please
+email me with your request.  However, do not ask for regular expression
+support, because this is flatly impossible.
+
+.PP
+The special
+\fBline\-local\fP
+syntax mode is intended for plain text.  It resets at every newline and
+screen boundary, and only scans the displayed text.  It supports
+\fBnumber\fP
+\fImax foreground\fP
+for decimal numbers up to
+\fImax\fP
+digits,
+\fBstring\fP
+\fIquote foreground\fP
+for single\- or double\-quoted strings, and
+\fBsymbols\fP
+\fIcharacters foreground\fP
+for individually colored punctuation characters.
+
+.PP
+A useful hint is to work with as much as possible with the things you
+can do rather than try to do things that this implementation cannot deal
+with.  Also remember that the aim of syntax highlighting is to make
+programming less prone to error, not to make code look pretty.
+
+.PP
+The syntax highlighting can be toggled using Ctrl\-s shortcut.
+
+
+.SH OPTIONS
+.PP
+Most options can be set from Options dialog box.  See the
+\fBOptions\fP
+menu.  The following options are defined in
+\fB~/.config/mc6/ini\fP
+and have obvious counterparts in the dialog box.  You can modify them to
+change the editor behavior, by editing the file.  Unless specified, a 1
+sets the option to on, and a 0 sets it to off, as usual.
+
+.TP
+\fIuse_internal_edit\fP
+This option is ignored when invoking
+\fBmcedit6\fP\&.
+
+.TP
+\fIeditor_tab_spacing\fP
+Interpret the tab character as being of this length.
+Default is 8. You should avoid using
+other than 8 since most other editors and text viewers
+assume a tab spacing of 8. Use
+\fBeditor_fake_half_tabs\fP
+to simulate a smaller tab spacing.
+
+.TP
+\fIeditor_fill_tabs_with_spaces\fP
+Never insert a tab character. Rather insert spaces (ascii 32) to fill to the
+desired tab size.
+
+.TP
+\fIeditor_return_does_auto_indent\fP
+Pressing return will tab across to match the indentation
+of the first line above that has text on it.
+
+.TP
+\fIeditor_backspace_through_tabs\fP
+Make a single backspace delete all the space to the left
+margin if there is no text between the cursor and the left
+margin.
+
+.TP
+\fIeditor_fake_half_tabs\fP
+This will emulate a half tab for those who want to program
+with a tab spacing of 4, but do not want the tab size changed
+from 8 (so that the code will be formatted the same when displayed
+by other programs). When editing between text and the left
+margin, moving and tabbing will be as though a tab space were
+4, while actually using spaces and normal tabs for an optimal fill.
+When editing anywhere else, a normal tab is inserted.
+
+.TP
+\fIeditor_option_save_mode\fP
+Possible values 0, 1 and 2.  The save mode (see the options menu also)
+allows you to change the method of saving a file.  Quick save (0) saves
+the file immediately, truncating the disk file to zero length (i.e.
+erasing it) and then writing the editor contents to the file.  This
+method is fast, but dangerous, since a system error during a file save
+will leave the file only partially written, possibly rendering the data
+irretrievable.  When saving, the safe save (1) option enables creation
+of a temporary file into which the file contents are first written.  In
+the event of a problem, the original file is untouched.  When the
+temporary file is successfully written, it is renamed to the name of the
+original file, thus replacing it.  The safest method is create backups
+(2): a backup file is created before any changes are made.  You
+can specify your own backup file extension in the dialog.  Note that
+saving twice will replace your backup as well as your original file.
+
+.TP
+\fIeditor_word_wrap_line_length\fP
+Line length to wrap at. Default is 72.
+
+.TP
+\fIeditor_backup_extension\fP
+Symbol to add to name of backup files. Default is "~".
+
+.TP
+\fIeditor_line_state\fP
+Show state line of editor. Currently it shows current line number (in the future
+it might show things like folding, breakpoints, etc.). M\-n toggles this option.
+
+.TP
+\fIeditor_visible_spaces\fP
+Toggle "show visible trailing spaces".  If editor_visible_spaces=1, they are shown
+as '.'
+
+.TP
+\fIeditor_visible_tabs\fP
+Toggle "show visible tabs".  If editor_visible_tabs=1, tabs are shown as '<\-\-\-\->'
+
+.TP
+\fIeditor_show_control_chars\fP
+Show control characters in caret notation, for example '^M' or '^L'.
+If editor_show_control_chars=0, each of them takes one blank cell instead.
+The "Toggle control characters" item of the Command menu switches this option.
+
+.TP
+\fIeditor_persistent_selections\fP
+Do not remove block selection after cursor movement.
+
+.TP
+\fIeditor_drop_selection_on_copy\fP
+Reset selection after copy to clipboard.
+
+.TP
+\fIeditor_cursor_beyond_eol\fP
+Allow moving cursor beyond the end of line.
+
+.TP
+\fIeditor_cursor_after_inserted_block\fP
+Allow moving cursor after inserted block.
+
+.TP
+\fIeditor_syntax_highlighting\fP
+enable syntax highlighting.
+
+.TP
+\fIeditor_edit_confirm_save\fP
+Show confirmation dialog on save.
+
+.TP
+\fIeditor_option_typewriter_wrap\fP
+to be described
+
+.TP
+\fIeditor_option_auto_para_formatting\fP
+to be described
+
+.TP
+\fIeditor_option_save_position\fP
+Save file position on exit.
+
+.TP
+\fIsource_codepage\fP
+Symbol representation of codepage name for file (i.e. CP1251, ~ \- default).
+
+.TP
+\fIeditor_group_undo\fP
+Combine UNDO actions for several of the same type of action (inserting/overwriting,
+deleting, navigating, typing)
+
+.TP
+\fIeditor_wordcompletion_collect_entire_file\fP
+Search autocomplete candidates in entire file (1) or just from
+beginning of file to cursor position (0).
+
+.TP
+\fIeditor_wordcompletion_collect_all_files\fP
+Search autocomplete candidates from all loaded files (1, default), not only from
+the currently edited one (0).
+
+.TP
+\fIspell_language\fP
+Spelling language (en, en\-variant_0, ru, etc) installed with aspell
+package (a full list can be obtained using 'aspell' utility).
+Use
+\fBspell_language = NONE\fP
+to disable aspell support. Default value is 'en'. Option must be located
+in the [Misc] section.
+
+.TP
+\fIeditor_stop_format_chars\fP
+Set of characters to stop paragraph formatting. If one of those characters
+is found in the beginning of line, that line and all following lines of paragraph
+will be untouched. Default value is
+"\fB\-+*\e,.;:&>\fP".
+
+.TP
+\fIeditor_state_full_filename\fP
+Show full path name in the status line. If disabled (default), only base name of the
+file is shown.
+
+
+.SH FILES
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
+The help file for the program.
+
+.TP
+\fI{{pkgdatadir}}/mc.ini\fP
+The default system\-wide setup for M\-Commander, used only if
+the user's own ~/.config/mc6/ini file is missing.
+
+.TP
+\fI{{pkgdatadir}}/defaults.ini\fP
+Global settings for M\-Commander. Settings in this file
+affect all users, whether they have ~/.config/mc6/ini or not.
+
+.TP
+\fI{{pkgdatadir}}/syntax/*\fP
+The default system\-wide syntax files for mcedit6, used only if
+the corresponding user's own file in
+\fB~/.local/share/mc6/syntax/\fP
+is missing.
+
+.TP
+\fI~/.config/mc6/ini\fP
+User's own setup.  If this file is present then the setup is loaded
+from here instead of the system\-wide setup file.
+
+.TP
+\fI~/.local/share/mc6/mcedit6/\fP
+User's own directory where block commands are processed and saved and
+user's own syntax files are located.
+
+
+.SH LICENSE
+.PP
+This program is distributed under the terms of the GNU General Public
+License as published by the Free Software Foundation.  See the built\-in
+help of M\-Commander for details on the License and the lack
+of warranty.
+
+
+.SH AVAILABILITY
+.PP
+The latest version of this program can be found at
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
+.SH SEE ALSO
+.PP
+cooledit(1), mcommander(1), gpm(1), terminfo(1), scanf(3).
+
+
+.SH AUTHORS
+.PP
+Paul Sheer (psheer@obsidian.co.za) is the original author of
+M\-Commander's internal editor.
+
+
+.SH BUGS
+.PP
+Bugs should be reported to
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

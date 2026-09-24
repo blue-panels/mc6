@@ -1,0 +1,25 @@
+# Git panel plugin <!-- help:notitle -->
+
+```
+  Git Panel Plugin
+
+  Navigation & Structure:
+    Outside Git repo : Shows the favorites list.
+    /branches        : Local and remote branches.
+    /commits         : Commit history (parent commits act as directories).
+
+  Keys (Repository View):
+    F3         - View commit details
+    Shift-F3   - Show diff for file (in commit/status view)
+    Shift-F5   - Stage file(s)
+    Shift-F6   - Unstage file(s)
+    Shift-F8   - Discard changes (reset to HEAD)
+    Ctrl-B     - Add current repo to favorites
+    Ctrl-R     - Refresh panel
+
+  Keys (Favorites View):
+    Enter      - Open repository
+    Shift-F4   - Add repository to favorites (by path)
+    F8         - Remove from favorites
+    Ctrl-R     - Refresh panel
+```

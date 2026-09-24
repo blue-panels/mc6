@@ -1,13 +1,13 @@
 LANG=hu
 mandir = @mandir@/$(LANG)
 
-EXTRA_DIST = mcommander.1.in
+EXTRA_DIST = roff/mcommander.1.in mcommander.md
 
 man_MANS = mcommander.1
 
 CLEANFILES = $(man_MANS)
 
-DATE_LANG=hu_HU.UTF-8
-DATE_FORMAT=%Y. %B
+include ../man-include.am
 
-include ../date-of-man-include.am
+mcommander.1: $(srcdir)/roff/mcommander.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mcommander.1.in' > '$@'

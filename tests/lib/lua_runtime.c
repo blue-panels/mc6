@@ -188,7 +188,7 @@ create_panel_provider_script (void)
         entry_path,
         "assert(mc.panel_provider.register {\n"
         " id='test-panel', title='Test panel', prefix='test-panel:',\n"
-        " help={file='help/test.hlp',node='provider'},\n"
+        " help={file='help/test.md',node='provider'},\n"
         " open=function(host,path) assert(host==nil); if path=='reject' then"
         " return nil,'Not a repository' end; return {path=path, revision=1} end,\n"
         " close=function(instance) assert(delete_called); instance.closed=true end,\n"
@@ -757,7 +757,7 @@ create_settings_script (void)
     char *ini_path = g_build_filename (root, "lua.ini", (char *) NULL);
     char *entry_path = g_build_filename (root, "init.lua", (char *) NULL);
     char *mark_path = g_build_filename (root, "shown.txt", (char *) NULL);
-    char *help_path = g_build_filename (root, "help.hlp", (char *) NULL);
+    char *help_path = g_build_filename (root, "help.md", (char *) NULL);
     char *script;
 
     ck_assert_int_eq (g_mkdir_with_parents (root, 0700), 0);
@@ -771,7 +771,7 @@ create_settings_script (void)
                               "  f:close()\n"
                               "  mc.ui.dialog {\n"
                               "    title = 'Settings probe',\n"
-                              "    help = { file = 'help.hlp', node = '[Probe]' },\n"
+                              "    help = { file = 'help.md', node = '[Probe]' },\n"
                               "    controls = {{ id = 'ok', type = 'button', label = '&OK',\n"
                               "                  default = true }},\n"
                               "  }\n"
@@ -1388,7 +1388,7 @@ test_ui_dialog (const mc_runtime_dialog_t *dialog, mc_runtime_dialog_result_t *r
     if (g_strcmp0 (dialog->title, "Settings probe") == 0)
     {
         char *expected =
-            g_build_filename (user_mc_scripts_dir, "with-settings", "help.hlp", (char *) NULL);
+            g_build_filename (user_mc_scripts_dir, "with-settings", "help.md", (char *) NULL);
 
         ck_assert_str_eq (dialog->help_node, "[Probe]");
         ck_assert_str_eq (dialog->help_file, expected);
@@ -2456,8 +2456,8 @@ START_TEST (test_lua_runtime_panel_provider_dispatch)
     ck_assert_str_eq (registered_panel_provider.help->node, "provider");
     {
         /* A relative help file is taken from the package directory. */
-        char *expected = g_build_filename (user_mc_scripts_dir, "panel-provider", "help",
-                                           "test.hlp", (char *) NULL);
+        char *expected = g_build_filename (user_mc_scripts_dir, "panel-provider", "help", "test.md",
+                                           (char *) NULL);
 
         ck_assert_str_eq (registered_panel_provider.help->file, expected);
         g_free (expected);

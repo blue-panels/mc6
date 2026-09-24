@@ -15,17 +15,47 @@ endif
 
 CLEANFILES = $(man_MANS)
 
+# Everything under roff/ is made from the *.md files by
+# maint/update-man-in.sh and is not to be edited by hand.
 EXTRA_DIST = \
-	date-of-man-include.am \
-	mcommander.1.in \
+	man-include.am \
 	mc6.1.in \
-	mcedit6.1.in \
-	mview.1.in \
-	mctree.1.in \
-	mcstruct.1.in \
-	mdiff.1.in
+	mcommander.md \
+	roff/mcommander.1.in \
+	mcedit6.md \
+	roff/mcedit6.1.in \
+	mview.md \
+	roff/mview.1.in \
+	mctree.md \
+	roff/mctree.1.in \
+	mcstruct.md \
+	roff/mcstruct.1.in \
+	mdiff.md \
+	roff/mdiff.1.in
 
-DATE_LANG=en_US.UTF-8
-DATE_FORMAT=%B %Y
+include man-include.am
 
-include date-of-man-include.am
+mcommander.1: $(srcdir)/roff/mcommander.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mcommander.1.in' > '$@'
+
+mc6.1: $(srcdir)/mc6.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/mc6.1.in' > '$@'
+
+mview.1: $(srcdir)/roff/mview.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mview.1.in' > '$@'
+
+mctree.1: $(srcdir)/roff/mctree.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mctree.1.in' > '$@'
+
+mcstruct.1: $(srcdir)/roff/mcstruct.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mcstruct.1.in' > '$@'
+
+if USE_INTERNAL_EDIT
+mcedit6.1: $(srcdir)/roff/mcedit6.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mcedit6.1.in' > '$@'
+endif
+
+if USE_DIFF
+mdiff.1: $(srcdir)/roff/mdiff.1.in
+	$(SED) $(SED_PARAMETERS) '$(srcdir)/roff/mdiff.1.in' > '$@'
+endif

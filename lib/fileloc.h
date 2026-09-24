@@ -30,7 +30,8 @@
 // pre-6.1 name of the local menu, still read if the new one is absent
 #define MC_LOCAL_MENU_LEGACY            ".mc.menu"
 #define MC_HINT                         "hints" PATH_SEP_STR "hint"
-#define MC_HELP                         "help" PATH_SEP_STR "mcommander.hlp"
+#define MC_HELP_DIR                     "help"
+#define MC_HELP                         MC_HELP_DIR PATH_SEP_STR "mcommander.md"
 #define GLOBAL_KEYMAP_FILE              "keymap.ini"
 #define CHARSETS_LIST                   "charsets"
 #define MC_MACRO_FILE                   "macros"

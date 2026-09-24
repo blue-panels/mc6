@@ -1979,7 +1979,7 @@ git_open (mc_panel_host_t *host, const char *open_path)
         data->view = GIT_VIEW_FAVORITES;
         data->commit_stack = g_ptr_array_new_with_free_func (git_commit_nav_free);
         data->fav_repos = git_favorites_load ();
-        data->help_filename = g_build_filename (MC_PLUGIN_DIR, "git_panel.hlp", (char *) NULL);
+        data->help_filename = g_build_filename (MC_PLUGIN_DIR, "git_panel.md", (char *) NULL);
         git_update_title (data);
         return data;
     }
@@ -1988,7 +1988,7 @@ git_open (mc_panel_host_t *host, const char *open_path)
     data->host = host;
     data->repo_root = repo_root;
     data->title = g_strdup (repo_root);
-    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "git_panel.hlp", (char *) NULL);
+    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "git_panel.md", (char *) NULL);
     data->display_to_info =
         g_hash_table_new_full (g_str_hash, g_str_equal, g_free, git_entry_info_free);
     data->default_format = git_load_default_format ();

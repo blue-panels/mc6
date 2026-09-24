@@ -26,21 +26,10 @@
 /** \file help.c
  *  \brief Source: hypertext file browser
  *
- *  Implements the hypertext file viewer.
- *  The hypertext file is a file that may have one or more nodes.  Each
- *  node ends with a ^D character and starts with a bracket, then the
- *  name of the node and then a closing bracket. Right after the closing
- *  bracket a newline is placed. This newline is not to be displayed by
- *  the help viewer and must be skipped - its sole purpose is to facilitate
- *  the work of the people managing the help file template (xnc.hlp) .
- *
- *  Links in the hypertext file are specified like this: the text that
- *  will be highlighted should have a leading ^A, then it comes the
- *  text, then a ^B indicating that highlighting is done, then the name
- *  of the node you want to link to and then a ^C.
- *
- *  The file must contain a ^D at the beginning and at the end of the
- *  file or the program will not be able to detect the end of file.
+ *  Implements the hypertext file viewer.  The help file is markdown, and
+ *  help_md.c turns it into the text painted here: a node per heading, ended
+ *  by a ^D, links as a ^A, the text, a ^B, the name of the node they lead
+ *  to and a ^C.
  *
  *  Laziness/widgeting attack: This file does use the dialog manager
  *  and uses mainly the dialog to achieve the help work.  there is only
@@ -68,6 +57,7 @@
 #include "keymap.h"
 #include "util.h"  // file_error_message()
 #include "help.h"
+#include "help_md.h"
 
 /*** global variables ****************************************************************************/
 
@@ -76,7 +66,6 @@
 #define MAXLINKNAME         80
 #define HISTORY_SIZE        20
 #define HELP_WINDOW_WIDTH   MIN (80, COLS - 16)
-#define HELP_VERSION_WIDTH  32
 
 #define STRING_LINK_START   "\01"
 #define STRING_LINK_POINTER "\02"
@@ -95,18 +84,20 @@ typedef struct Link_Area
 /*** forward declarations (file scope functions) *************************************************/
 
 static char *translate_file (const char *filedata);
+static char *help_load (const char *filedata);
 static void help_link_script_node (char **filedata, const char *node, const char *parent_node);
 
 /*** file scope variables ************************************************************************/
 
-static char *fdata = NULL;             // The help file shown: script_data or main_data
-static char *script_data = NULL;       // A script's own help file, if one was asked for
-static char *main_data = NULL;         // mc.hlp, loaded when a node is not in script_data
-static int help_lines;                 // Lines in help viewer
-static int history_ptr = 0;            // For the history queue
-static const char *main_node;          // The main node
-static const char *last_shown = NULL;  // Last byte shown in a screen
-static gboolean end_of_node = FALSE;   // Flag: the last character of the node shown?
+static char *fdata = NULL;               // The help file shown: script_data or main_data
+static char *script_data = NULL;         // A script's own help file, if one was asked for
+static char *main_data = NULL;           // the help of the program, for a node a script has not
+static GHashTable *linked_files = NULL;  // the files links led to, by name
+static int help_lines;                   // Lines in help viewer
+static int history_ptr = 0;              // For the history queue
+static const char *main_node;            // The main node
+static const char *last_shown = NULL;    // Last byte shown in a screen
+static gboolean end_of_node = FALSE;     // Flag: the last character of the node shown?
 static const char *currentpoint;
 static const char *selected_item;
 
@@ -127,41 +118,138 @@ static gboolean inside_link_area = FALSE;
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-/** returns the position where text was found in the start buffer
- * or 0 if not found
+/** A help file a link leads to, read from where the help of the program lives.
+ * @return TRUE when the file is the one shown now
  */
-static const char *
-search_string (const char *start, const char *text)
+
+static gboolean
+help_open_file (const char *name)
 {
-    const char *result = NULL;
-    char *local_text;
-    char *d;
-    const char *e = start;
+    char *path;
+    char *filedata;
+    char *text;
 
-    local_text = g_strdup (text);
+    if (linked_files == NULL)
+        linked_files = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-    // fmt sometimes replaces a space with a newline in the help file
-    // Replace the newlines in the link name with spaces to correct the situation
-    for (d = local_text; *d != '\0'; str_next_char (&d))
-        if (*d == '\n')
-            *d = ' ';
-
-    // Do search
-    for (d = local_text; *e != '\0'; e++)
+    text = g_hash_table_lookup (linked_files, name);
+    if (text != NULL)
     {
-        if (*d == *e)
-            d++;
-        else
-            d = local_text;
-        if (*d == '\0')
-        {
-            result = e + 1;
-            break;
-        }
+        fdata = text;
+        return TRUE;
     }
 
-    g_free (local_text);
-    return result;
+    path = g_build_filename (mc_global.share_data_dir, MC_HELP_DIR, name, (char *) NULL);
+    if (!g_file_get_contents (path, &filedata, NULL, NULL))
+    {
+        file_error_message (_ ("Cannot open file\n%s"), path);
+        g_free (path);
+        return FALSE;
+    }
+    g_free (path);
+
+    text = help_load (filedata);
+    g_free (filedata);
+    if (text == NULL)
+        return FALSE;
+
+    g_hash_table_insert (linked_files, g_strdup (name), text);
+    fdata = text;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** The node a name stands for.  A markdown heading is known by its anchor, which is the title
+ * folded to lower case with the spaces turned into dashes, so the name a dialog carries is
+ * compared in that shape and keeps working whatever the heading says.
+ */
+
+static const char *
+search_node (const char *data, const char *name)
+{
+    char *want;
+    const char *inner = name;
+    const char *found = NULL;
+    const char *p;
+    int pass;
+
+    if (data == NULL || name == NULL || *name == '\0')
+        return NULL;
+
+    if (*inner == '[')
+    {
+        const char *end;
+
+        inner++;
+        end = strchr (inner, ']');
+        if (end == NULL)
+            return NULL;
+
+        {
+            char *dup;
+
+            dup = g_strndup (inner, end - inner);
+            want = help_md_node_id (dup);
+            g_free (dup);
+        }
+    }
+    else
+        want = help_md_node_id (inner);
+
+    // a place inside a node, then a node of its own, then a name standing in
+    // the text as an old help file has it
+    for (p = data; found == NULL && (p = strchr (p, CHAR_ANCHOR)) != NULL; p++)
+    {
+        const char *end = strchr (p + 1, CHAR_ANCHOR);
+        char *dup;
+        char *id;
+
+        if (end == NULL)
+            break;
+
+        dup = g_strndup (p + 1, end - (p + 1));
+        id = help_md_node_id (dup);
+        g_free (dup);
+
+        if (strcmp (id, want) == 0)
+            found = end + 1;
+        g_free (id);
+
+        p = end;
+    }
+
+    for (pass = 0; pass < 2 && found == NULL; pass++)
+        for (p = data; (p = strchr (p, '[')) != NULL; p++)
+        {
+            const char *end;
+            char *dup;
+            char *id;
+
+            if (pass == 0 && (p == data || p[-1] != CHAR_NODE_END))
+                continue;
+
+            end = strchr (p, ']');
+            if (end == NULL)
+                break;
+            if (memchr (p, '\n', end - p) != NULL)
+                continue;
+
+            dup = g_strndup (p + 1, end - p - 1);
+            id = help_md_node_id (dup);
+            g_free (dup);
+
+            if (strcmp (id, want) == 0)
+                found = end + 1;
+            g_free (id);
+
+            if (found != NULL)
+                break;
+        }
+
+    g_free (want);
+
+    return found;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -193,7 +281,7 @@ search_string_node (const char *start, const char *text)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** mc.hlp, loaded once per help session. */
+/** The help of the program, loaded once per help session. */
 
 static const char *
 help_main_data (void)
@@ -205,7 +293,7 @@ help_main_data (void)
         filedata = load_mc_home_file (mc_global.share_data_dir, MC_HELP, NULL, NULL);
         if (filedata != NULL)
         {
-            main_data = translate_file (filedata);
+            main_data = help_load (filedata);
             g_free (filedata);
         }
     }
@@ -215,7 +303,7 @@ help_main_data (void)
 
 /* --------------------------------------------------------------------------------------------- */
 /** Finds a node in the help file shown; a node a script's help does not have is looked for in
- * mc.hlp, which then becomes the file shown.
+ * the help of the program, which then becomes the file shown.
  * @return the node, or NULL when neither file has it
  */
 
@@ -224,10 +312,10 @@ help_find_node (const char *name)
 {
     const char *node;
 
-    node = search_string (fdata, name);
+    node = search_node (fdata, name);
     if (node == NULL && fdata != main_data && help_main_data () != NULL)
     {
-        node = search_string (main_data, name);
+        node = search_node (main_data, name);
         if (node != NULL)
             fdata = main_data;
     }
@@ -281,21 +369,144 @@ search_char_node (const char *start, char the_char, int direction)
 /** Returns the new current pointer when moved lines lines */
 
 static const char *
-move_forward2 (const char *c, int lines)
+help_node_start (const char *c)
 {
     const char *p;
+
+    for (p = c; (int) (p - fdata) > 0 && *p != CHAR_NODE_END; p--)
+        ;
+
+    if (*p != CHAR_NODE_END)
+        return fdata;
+
+    while (*p != '\0' && *p != ']')
+        p++;
+
+    return *p == '\0' ? fdata : p + 2;  // skip the newline after the name of the node
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Where the line after this one starts on the screen.  The window breaks a line that does not
+ * fit its width, so a paragraph written as one long line takes several lines of the screen, and
+ * counting the newlines of the text would not find them.
+ * @return NULL at the end of the node
+ */
+
+static const char *
+help_next_line (const char *start)
+{
+    const char *p = start;
+    const char *word_start = NULL;
+    const char *mark_start = NULL;  // the markers that open the word
+    int col = 0;
+    int word = 0;
+    gboolean painting = TRUE;
+
+    while (*p != '\0' && *p != CHAR_NODE_END)
+    {
+        const char *n = str_cget_next_char (p);
+
+        switch (*p)
+        {
+        case CHAR_LINK_POINTER:
+            painting = FALSE;
+            break;
+        case CHAR_LINK_END:
+            painting = TRUE;
+            break;
+        case CHAR_ANCHOR:
+            for (n = p + 1; *n != '\0' && *n != CHAR_ANCHOR && *n != CHAR_NODE_END; n++)
+                ;
+            if (*n == CHAR_ANCHOR)
+                n++;
+            break;
+        case CHAR_VERSION:
+        {
+            int width = 0;
+
+            for (n = p + 1; *n >= '0' && *n <= '9'; n++)
+                width = width * 10 + *n - '0';
+            if (*n == CHAR_VERSION)
+                n++;
+            col += width;
+            break;
+        }
+        case CHAR_LINK_START:
+        case CHAR_FONT_BOLD:
+        case CHAR_FONT_ITALIC:
+            if (word == 0 && mark_start == NULL)
+                mark_start = p;
+            break;
+        case CHAR_ALTERNATE:
+        case CHAR_NORMAL:
+        case CHAR_FONT_NORMAL:
+            break;
+        default:
+            if (!painting)
+                break;
+
+            if (*p == '\n')
+                return n;
+
+            if (*p != ' ' && *p != '\t')
+            {
+                if (word == 0)
+                    word_start = p;
+                word++;
+                break;
+            }
+
+            // a word goes out whole, and starts the next line when it does not fit
+            if (word != 0)
+            {
+                if (col + word >= HELP_WINDOW_WIDTH && word_start != start)
+                    return word_start;
+                col += word;
+                word = 0;
+                word_start = NULL;
+            }
+
+            if (*p == ' ')
+            {
+                if (col >= HELP_WINDOW_WIDTH - 1)
+                    return n;
+                col++;
+            }
+            else
+            {
+                col = (col / 8 + 1) * 8;
+                if (col >= HELP_WINDOW_WIDTH)
+                    return n;
+            }
+        }
+
+        p = n;
+    }
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static const char *
+move_forward2 (const char *c, int lines)
+{
+    const char *p = c;
     int line;
 
     currentpoint = c;
-    for (line = 0, p = currentpoint; (*p != '\0') && (*p != CHAR_NODE_END); str_cnext_char (&p))
-    {
-        if (line == lines)
-            return currentpoint = p;
 
-        if (*p == '\n')
-            line++;
+    for (line = 0; line < lines; line++)
+    {
+        const char *next;
+
+        next = help_next_line (p);
+        if (next == NULL)
+            return currentpoint = c;
+        p = next;
     }
-    return currentpoint = c;
+
+    return currentpoint = p;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -303,27 +514,25 @@ move_forward2 (const char *c, int lines)
 static const char *
 move_backward2 (const char *c, int lines)
 {
+    GPtrArray *starts;
+    const char *start;
     const char *p;
-    int line;
 
     currentpoint = c;
-    for (line = 0, p = currentpoint; (*p != '\0') && ((int) (p - fdata) >= 0); str_cprev_char (&p))
-    {
-        if (*p == CHAR_NODE_END)
-        {
-            // We reached the beginning of the node
-            // Skip the node headers
-            while (*p != ']')
-                str_cnext_char (&p);
-            return currentpoint = p + 2;  // Skip the newline following the start of the node
-        }
+    start = help_node_start (c);
 
-        if (*(p - 1) == '\n')
-            line++;
-        if (line == lines)
-            return currentpoint = p;
-    }
-    return currentpoint = c;
+    starts = g_ptr_array_new ();
+    for (p = start; p != NULL && p <= c; p = help_next_line (p))
+        g_ptr_array_add (starts, (gpointer) p);
+
+    if (starts->len > (guint) lines)
+        currentpoint = g_ptr_array_index (starts, starts->len - 1 - lines);
+    else
+        currentpoint = start;
+
+    g_ptr_array_free (starts, TRUE);
+
+    return currentpoint;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -385,13 +594,53 @@ help_follow_link (const char *start, const char *lc_selected_item)
         int i;
         char link_name[MAXLINKNAME];
 
+        char *hash;
+
         link_name[0] = '[';
         for (i = 1;
              *p != CHAR_LINK_END && *p != '\0' && *p != CHAR_NODE_END && i < MAXLINKNAME - 3;)
             link_name[i++] = *++p;
         link_name[i - 1] = ']';
         link_name[i] = '\0';
-        p = help_find_node (link_name);
+
+        // a link names a file of its own when it leads out of this one
+        for (hash = strstr (link_name, ".md"); hash != NULL; hash = strstr (hash + 1, ".md"))
+            if (hash[3] == '#' || hash[3] == ']')
+                break;
+
+        if (hash != NULL)
+        {
+            char node[MAXLINKNAME];
+            gboolean have_node = hash[3] == '#';
+
+            if (have_node)
+            {
+                char *end;
+
+                node[0] = '[';
+                g_strlcpy (node + 1, hash + 4, sizeof (node) - 2);
+                end = strrchr (node, ']');
+                if (end != NULL)
+                    *end = '\0';
+                strcat (node, "]");
+            }
+
+            hash[3] = '\0';  // what is left is the name of the file
+            if (!help_open_file (link_name + 1))
+                return start;
+
+            if (have_node)
+                p = help_find_node (node);
+            else
+            {
+                // the file opens on the first node it has
+                p = strchr (fdata, ']');
+                if (p != NULL)
+                    p++;
+            }
+        }
+        else
+            p = help_find_node (link_name);
         if (p != NULL)
         {
             p += 1;  // Skip the newline following the start of the node
@@ -645,6 +894,13 @@ help_show (WDialog *h, const char *paint_start)
                 end_link_area (col - 1, line);
                 tty_setcolor (HELP_NORMAL_COLOR);
                 break;
+            case CHAR_ANCHOR:
+                // a place a link leads to, of no width
+                while (n[0] != '\0' && n[0] != CHAR_ANCHOR && n[0] != CHAR_NODE_END)
+                    n++;
+                if (n[0] == CHAR_ANCHOR)
+                    n++;
+                break;
             case CHAR_ALTERNATE:
                 acs = TRUE;
                 break;
@@ -652,10 +908,25 @@ help_show (WDialog *h, const char *paint_start)
                 acs = FALSE;
                 break;
             case CHAR_VERSION:
+            {
+                // the field says how many columns it takes, so a version
+                // longer than that paints over what follows it rather than
+                // pushing it aside
+                int width = 0;
+
+                while (n[0] >= '0' && n[0] <= '9')
+                    width = width * 10 + *n++ - '0';
+
+                if (n[0] == CHAR_VERSION)
+                    n++;
+                else
+                    width = str_term_width1 (mc_global.mc_version);
+
                 widget_gotoyx (h, line + 2, col + 2);
                 tty_print_string (mc_global.mc_version);
-                col += MAX (str_term_width1 (mc_global.mc_version), HELP_VERSION_WIDTH);
+                col += width;
                 break;
+            }
             case CHAR_FONT_BOLD:
                 tty_setcolor (HELP_BOLD_COLOR);
                 break;
@@ -1063,6 +1334,11 @@ interactive_display_finish (void)
     clear_link_areas ();
     MC_PTR_FREE (script_data);
     MC_PTR_FREE (main_data);
+    if (linked_files != NULL)
+    {
+        g_hash_table_destroy (linked_files);
+        linked_files = NULL;
+    }
     fdata = NULL;
 }
 
@@ -1093,8 +1369,27 @@ translate_file (const char *filedata)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** A script's help stands in for a node of mc.hlp (the viewer's, the editor's); the node shown
- * gets a link to that one under its heading, so the way to the help it replaced is always there.
+/** The text of a help file, ready for the window: the markdown becomes nodes, and the nodes
+ * are then put into the charset of the terminal.
+ */
+
+static char *
+help_load (const char *filedata)
+{
+    char *nodes;
+    char *text;
+
+    nodes = help_md_convert (filedata, NULL);
+    text = translate_file (nodes);
+    g_free (nodes);
+
+    return text;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** A script's help stands in for a node of the program's help (the viewer's, the editor's); the
+ * node shown gets a link to that one under its heading, so the way to the help it replaced is
+ * always there.
  */
 
 static void
@@ -1109,7 +1404,7 @@ help_link_script_node (char **filedata, const char *node, const char *parent_nod
     if (parent_node == NULL || *parent_node == '\0' || strcmp (parent_node, node) == 0)
         return;
 
-    heading = search_string (*filedata, node);
+    heading = search_node (*filedata, node);
     if (heading == NULL)
         return;
     eol = strchr (heading, '\n');
@@ -1252,7 +1547,7 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     WGroup *g;
     WButtonBar *help_bar;
     Widget *md;
-    char *hlpfile = NULL;
+    char *helpfile = NULL;
     char *filedata;
     ev_help_t *event_data = (ev_help_t *) data;
     WRect r = { 1, 1, 1, 1 };
@@ -1270,7 +1565,7 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
         g_file_get_contents (event_data->filename, &filedata, NULL, NULL);
         if (filedata != NULL)
         {
-            script_data = translate_file (filedata);
+            script_data = help_load (filedata);
             g_free (filedata);
             /* after the translation: gettext already speaks the terminal's charset */
             if (script_data != NULL)
@@ -1280,10 +1575,10 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     }
     else
     {
-        filedata = load_mc_home_file (mc_global.share_data_dir, MC_HELP, &hlpfile, NULL);
+        filedata = load_mc_home_file (mc_global.share_data_dir, MC_HELP, &helpfile, NULL);
         if (filedata != NULL)
         {
-            main_data = translate_file (filedata);
+            main_data = help_load (filedata);
             g_free (filedata);
         }
         fdata = main_data;
@@ -1291,9 +1586,9 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
 
     if (filedata == NULL)
         file_error_message (_ ("Cannot open file\n%s"),
-                            event_data->filename ? event_data->filename : hlpfile);
+                            event_data->filename ? event_data->filename : helpfile);
 
-    g_free (hlpfile);
+    g_free (helpfile);
 
     if (fdata == NULL)
     {
@@ -1327,7 +1622,9 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     // draw background
     whelp->bg->callback = help_bg_callback;
 
-    selected_item = search_string_node (main_node, STRING_LINK_START) - 1;
+    selected_item = search_string_node (main_node, STRING_LINK_START);
+    if (selected_item != NULL)
+        selected_item--;
     currentpoint = main_node + 1;  // Skip the newline following the start of the node
 
     for (i = HISTORY_SIZE - 1; i >= 0; i--)

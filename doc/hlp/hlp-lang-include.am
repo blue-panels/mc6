@@ -1,10 +1,8 @@
-MAN2HLP=$(top_builddir)/src/man2hlp/man2hlp
-
 hlpdir = $(pkgdatadir)/help
-hlp_DATA = mcommander.hlp.$(HLP_LANG)
+hlp_DATA = mcommander.$(HLP_LANG).md
 
-EXTRA_DIST = xnc.hlp
+EXTRA_DIST = xnc.md
 CLEANFILES = $(hlp_DATA)
 
-mcommander.hlp.$(HLP_LANG): $(top_builddir)/doc/man/$(HLP_LANG)/mcommander.1 $(srcdir)/xnc.hlp $(MAN2HLP)
-	- $(MAN2HLP) $(top_builddir)/doc/man/$(HLP_LANG)/mcommander.1 $(srcdir)/xnc.hlp mcommander.hlp.$(HLP_LANG)
+mcommander.$(HLP_LANG).md: $(top_srcdir)/doc/man/$(HLP_LANG)/mcommander.md $(srcdir)/xnc.md
+	cat $(top_srcdir)/doc/man/$(HLP_LANG)/mcommander.md $(srcdir)/xnc.md > $@
