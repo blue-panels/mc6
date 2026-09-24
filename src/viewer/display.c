@@ -96,7 +96,7 @@ mcview_set_buttonbar (WView *view)
         buttonbar_set_label (b, 2, "", keymap, w);
         buttonbar_set_label (b, 4, Q_ ("ButtonBar|Text"), keymap, w);
         buttonbar_set_label (b, 5, "", keymap, w);
-        buttonbar_set_label (b, 6, "", keymap, w);
+        buttonbar_set_label (b, 6, Q_ ("ButtonBar|Filter"), keymap, w);
         buttonbar_set_label (b, 7, Q_ ("ButtonBar|Search"), keymap, w);
         buttonbar_set_label (b, 8, "", keymap, w);
 
@@ -254,7 +254,19 @@ mcview_display_status (WView *view)
                                                        : "");
         }
     }
-    if (view->filter_active && view->filter_pattern != NULL)
+    if (view->mode_flags.structured && view->struct_filter_pattern != NULL)
+    {
+        char *fstat;
+
+        fstat = g_strdup_printf (_ ("Filter: %s  %u matches"), view->struct_filter_pattern,
+                                 view->struct_filter_hits);
+        widget_gotoyx (view, r->y, r->x);
+        // the content type and the path of the node are written at r->cols - 32
+        tty_print_string (
+            str_fit_to_term (fstat, r->cols > 40 ? r->cols - 34 : r->cols - 5, J_LEFT_FIT));
+        g_free (fstat);
+    }
+    else if (view->filter_active && view->filter_pattern != NULL)
     {
         /* Show filter status instead of the file label. */
         gboolean scanning = (view->filter_scanned_up_to < mcview_get_filesize (view));

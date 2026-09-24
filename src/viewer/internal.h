@@ -285,6 +285,8 @@ struct WView
     mctree_view_t *struct_tree;                 // cursor/expansion state over struct_model
     mctree_content_type_t struct_content_type;  // for the status line
     gchar *struct_needle;                       // last tree search string
+    gchar *struct_filter_pattern;               // tree filter pattern, NULL when the filter is off
+    guint struct_filter_hits;                   // nodes the tree filter matched
 
     guint source_viewport_columns;
     guint source_viewport_lines;
@@ -537,6 +539,12 @@ char *mcview_structured_current_path (WView *view);
 cb_ret_t mcview_structured_execute_cmd (WView *view, long command);
 gboolean mcview_structured_handle_char (WView *view, int key);
 gboolean mcview_structured_auto_candidate (const WView *view);
+gboolean mcview_structured_filter_set (WView *view, const char *pattern,
+                                       const mcview_filter_options_t *opts, gchar **err_msg);
+void mcview_structured_filter_clear (WView *view);
+int mcview_structured_preview_scan (WView *view, const char *pattern,
+                                    const mcview_filter_options_t *opts,
+                                    mcview_preview_match_t *out, int max_matches, gchar **err);
 
 /* search.c: */
 gboolean mcview_search_init (WView *view);

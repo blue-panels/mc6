@@ -102,6 +102,9 @@ mctree_model_add_visible_node (const mctree_node_t *node, int depth, GArray *row
 {
     mctree_visible_row_t row;
 
+    if (node->filter_hidden)
+        return;
+
     if (mctree_node_is_transparent_container (node))
     {
         mctree_model_add_visible_transparent_children (node, depth, rows);
@@ -157,6 +160,38 @@ mctree_node_expand_to_depth (mctree_node_t *node, int current_depth, int target_
     for (i = 0; i < node->children->len; i++)
         mctree_node_expand_to_depth (g_ptr_array_index (node->children, i), current_depth + 1,
                                      target_depth);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Mark the nodes the filter keeps and open the way to them: a node stays when
+   it matches, when a match is somewhere below it, or when it sits inside a
+   match (a matched node keeps its whole subtree to browse).  Returns TRUE when
+   this subtree holds a match. */
+static gboolean
+mctree_node_filter_mark (mctree_node_t *node, mctree_node_match_fn match, void *user_data,
+                         gboolean inside_hit, guint *hits)
+{
+    gboolean hit_below = FALSE;
+    guint i;
+
+    node->filter_hit = node->parent != NULL && match (node, user_data);
+    if (node->filter_hit)
+        (*hits)++;
+
+    if (node->children != NULL)
+        for (i = 0; i < node->children->len; i++)
+            if (mctree_node_filter_mark (g_ptr_array_index (node->children, i), match, user_data,
+                                         inside_hit || node->filter_hit, hits))
+                hit_below = TRUE;
+
+    node->filter_hidden = !node->filter_hit && !hit_below && !inside_hit;
+
+    /* the path down to a match is opened, the match itself keeps its own state */
+    if (hit_below)
+        node->expanded = TRUE;
+
+    return node->filter_hit || hit_below;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -276,6 +311,50 @@ mctree_model_build_visible_rows (const mctree_model_t *model)
 
     mctree_model_add_visible_children (model->root, 0, rows);
     return rows;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Keep only the nodes the predicate matches, with the path to each of them and
+ * everything below them.  The root is never matched: it carries no text.
+ *
+ * @return the number of matched nodes.
+ */
+guint
+mctree_model_filter_apply (mctree_model_t *model, mctree_node_match_fn match, void *user_data)
+{
+    guint hits = 0;
+
+    if (model == NULL || model->root == NULL || match == NULL)
+        return 0;
+
+    model->filter_on = TRUE;
+    mctree_node_filter_mark (model->root, match, user_data, FALSE, &hits);
+    model->root->filter_hidden = FALSE;
+
+    return hits;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mctree_model_filter_clear (mctree_model_t *model)
+{
+    guint i;
+
+    if (model == NULL || !model->filter_on)
+        return;
+
+    model->filter_on = FALSE;
+
+    for (i = 0; i < model->nodes->len; i++)
+    {
+        mctree_node_t *node = g_ptr_array_index (model->nodes, i);
+
+        node->filter_hit = FALSE;
+        node->filter_hidden = FALSE;
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */

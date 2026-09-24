@@ -159,6 +159,26 @@ mctree_view_cursor_to_node (mctree_view_t *view, mctree_node_t *node)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* Put the cursor on the node, opening the way to it. */
+static void
+mctree_view_goto_node (mctree_view_t *view, mctree_node_t *node)
+{
+    mctree_node_t *parent;
+    int idx;
+
+    for (parent = node->parent; parent != NULL; parent = parent->parent)
+        parent->expanded = TRUE;
+
+    mctree_view_rebuild (view);
+
+    idx = mctree_view_find_node (view, node);
+    if (idx >= 0)
+        view->cursor = idx;
+    mctree_view_clamp (view);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
 /* Append node and all its descendants to flat in depth-first pre-order. */
 static void
 mctree_view_flatten (mctree_node_t *node, GPtrArray *flat)
@@ -518,6 +538,8 @@ mctree_view_search_model (mctree_view_t *view, const char *text)
         mctree_node_t *node;
 
         node = g_ptr_array_index (flat, (start + i) % flat->len);
+        if (node->filter_hidden)
+            continue;
         if (node != view->model->root && mctree_view_node_matches (node, needle))
         {
             found = node;
@@ -531,15 +553,112 @@ mctree_view_search_model (mctree_view_t *view, const char *text)
     if (found == NULL)
         return FALSE;
 
-    {
-        mctree_node_t *parent;
-
-        for (parent = found->parent; parent != NULL; parent = parent->parent)
-            parent->expanded = TRUE;
-    }
-
-    mctree_view_rebuild (view);
-    view->cursor = mctree_view_find_node (view, found);
-    mctree_view_clamp (view);
+    mctree_view_goto_node (view, found);
     return TRUE;
 }
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Show only the nodes the predicate matches, with the path to each match and
+ * its subtree.  The cursor goes to the first match.
+ *
+ * @return the number of matched nodes.
+ */
+guint
+mctree_view_set_filter (mctree_view_t *view, mctree_node_match_fn match, void *user_data)
+{
+    guint hits;
+
+    if (view == NULL || view->model == NULL)
+        return 0;
+
+    hits = mctree_model_filter_apply (view->model, match, user_data);
+    mctree_view_rebuild (view);
+    view->cursor = 0;
+    view->top = 0;
+    mctree_view_clamp (view);
+
+    if (hits != 0)
+    {
+        const mctree_node_t *first = mctree_view_current_node (view);
+
+        if (first == NULL || !first->filter_hit)
+            mctree_view_filter_nav (view, FALSE);
+    }
+
+    return hits;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Drop the filter, keeping the cursor on the node it stands on. */
+void
+mctree_view_clear_filter (mctree_view_t *view)
+{
+    mctree_node_t *node;
+
+    if (view == NULL || view->model == NULL || !view->model->filter_on)
+        return;
+
+    node = mctree_view_current_node (view);
+    mctree_model_filter_clear (view->model);
+    mctree_view_rebuild (view);
+    mctree_view_cursor_to_node (view, node);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Move the cursor to the next (or previous) match, wrapping around.  A filtered
+   tree also shows the path to a match and what is inside it, so the rows in
+   between are not matches themselves; and a match under a node the user
+   collapsed is still a match, so the walk goes over the whole model and opens
+   the way to what it lands on, as the search does. */
+gboolean
+mctree_view_filter_nav (mctree_view_t *view, gboolean backwards)
+{
+    GPtrArray *flat;
+    const mctree_node_t *current;
+    mctree_node_t *found = NULL;
+    guint start = 0;
+    guint i;
+
+    if (view == NULL || view->model == NULL || !view->model->filter_on)
+        return FALSE;
+
+    flat = g_ptr_array_new ();
+    mctree_view_flatten (view->model->root, flat);
+
+    current = mctree_view_current_node (view);
+    if (current != NULL)
+        for (i = 0; i < flat->len; i++)
+            if (g_ptr_array_index (flat, i) == current)
+            {
+                start = i;
+                break;
+            }
+
+    for (i = 1; i <= flat->len; i++)
+    {
+        mctree_node_t *node;
+        guint index;
+
+        index = backwards ? (start + flat->len - i) % flat->len : (start + i) % flat->len;
+        node = g_ptr_array_index (flat, index);
+        if (node->filter_hit)
+        {
+            found = node;
+            break;
+        }
+    }
+
+    g_ptr_array_free (flat, TRUE);
+
+    if (found == NULL)
+        return FALSE;
+
+    mctree_view_goto_node (view, found);
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */

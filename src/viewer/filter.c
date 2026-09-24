@@ -264,6 +264,10 @@ mcview_filter_preview_scan (WView *view, const char *pattern, const mcview_filte
     if (err != NULL)
         *err = NULL;
 
+    // the tree mode filters nodes, so its preview shows the rows of the tree
+    if (view->mode_flags.structured)
+        return mcview_structured_preview_scan (view, pattern, opts, out, max_matches, err);
+
     engine = mc_search_new (pattern, NULL);
     if (engine == NULL)
     {
@@ -600,6 +604,7 @@ gboolean
 mcview_filter_dialog (WView *view)
 {
     char *exp = NULL;
+    const char *current_pattern;
     int result;
     size_t num_of_types = 0;
     gchar **list_of_types;
@@ -629,9 +634,10 @@ mcview_filter_dialog (WView *view)
     grp = GROUP (dlg);
 
     group_add_widget (grp, label_new (2, ux, _ ("Filter pattern (empty = clear):")));
-    inp = input_new (3, ux, input_colors, inp_w,
-                     view->filter_pattern != NULL ? view->filter_pattern : "", "mc.view.filter",
-                     INPUT_COMPLETE_NONE);
+    current_pattern =
+        view->mode_flags.structured ? view->struct_filter_pattern : view->filter_pattern;
+    inp = input_new (3, ux, input_colors, inp_w, current_pattern != NULL ? current_pattern : "",
+                     "mc.view.filter", INPUT_COMPLETE_NONE);
     group_add_widget (grp, inp);
     group_add_widget (
         grp,
@@ -686,6 +692,8 @@ mcview_filter_dialog (WView *view)
         g_free (exp);
         /* Commit options even on clear so next open reflects what user set. */
         mcview_filter_options = opts;
+        if (view->mode_flags.structured)
+            return mcview_structured_filter_set (view, NULL, &opts, NULL);
         if (view->filter_active)
         {
             mcview_filter_deactivate (view);
@@ -704,8 +712,11 @@ mcview_filter_dialog (WView *view)
 
     {
         gchar *err = NULL;
+        gboolean ok;
 
-        if (!mcview_filter_activate (view, exp, &opts, &err))
+        ok = view->mode_flags.structured ? mcview_structured_filter_set (view, exp, &opts, &err)
+                                         : mcview_filter_activate (view, exp, &opts, &err);
+        if (!ok)
         {
             message (D_ERROR, MSG_ERROR, _ ("Filter error: %s"),
                      err != NULL ? err : _ ("unknown error"));
