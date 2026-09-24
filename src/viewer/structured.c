@@ -216,6 +216,77 @@ mcview_structured_show_value (WView *view)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* The text a filter or a preview works on: the key and the value of the node,
+   as the row shows them.  The type name is left out on purpose: "text" or
+   "element" would otherwise match every node of that kind. */
+static char *
+mcview_structured_node_text (const mctree_node_t *node)
+{
+    if (node->key != NULL && node->value != NULL)
+        return g_strdup_printf ("%s: %s", node->key, node->value);
+    if (node->key != NULL)
+        return g_strdup (node->key);
+    if (node->value != NULL)
+        return g_strdup (node->value);
+
+    return NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+mcview_structured_node_match (const mctree_node_t *node, void *user_data)
+{
+    mc_search_t *engine = (mc_search_t *) user_data;
+    char *text;
+    gsize found_len = 0;
+    gboolean found;
+
+    text = mcview_structured_node_text (node);
+    if (text == NULL)
+        return FALSE;
+
+    found = mc_search_run (engine, text, 0, strlen (text), &found_len);
+    g_free (text);
+
+    return found;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Compile a filter pattern the same way the text filter does. */
+static mc_search_t *
+mcview_structured_filter_engine (const char *pattern, const mcview_filter_options_t *opts,
+                                 gchar **err_msg)
+{
+    mc_search_t *engine;
+
+    engine = mc_search_new (pattern, NULL);
+    if (engine == NULL)
+    {
+        if (err_msg != NULL)
+            *err_msg = g_strdup (_ ("Error: out of memory"));
+        return NULL;
+    }
+
+    engine->search_type = opts->type;
+    engine->is_case_sensitive = opts->case_sens;
+    engine->whole_words = opts->whole_words;
+    engine->is_all_charsets = opts->all_codepages;
+
+    if (!mc_search_prepare (engine))
+    {
+        if (err_msg != NULL)
+            *err_msg = g_strdup (engine->error_str);
+        mc_search_free (engine);
+        return NULL;
+    }
+
+    return engine;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -258,6 +329,8 @@ mcview_structured_reset (WView *view)
     g_clear_pointer (&view->struct_tree, mctree_view_free);
     g_clear_pointer (&view->struct_model, mctree_model_free);
     MC_PTR_FREE (view->struct_needle);
+    MC_PTR_FREE (view->struct_filter_pattern);
+    view->struct_filter_hits = 0;
     view->struct_content_type = MCTREE_CONTENT_UNKNOWN;
 }
 
@@ -377,6 +450,20 @@ mcview_display_structured (WView *view)
 
     mctree_view_set_page_rows (tree, r->lines);
     row_count = mctree_view_row_count (tree);
+
+    if (view->struct_filter_pattern != NULL && row_count == 0)
+    {
+        tty_setcolor (STATUSBAR_COLOR);
+        widget_gotoyx (view, r->y, r->x);
+        tty_print_string (str_fit_to_term (_ ("(no matches)"), r->cols, J_LEFT));
+        for (y = 1; y < r->lines; y++)
+        {
+            widget_gotoyx (view, r->y + y, r->x);
+            tty_setcolor (VIEWER_NORMAL_COLOR);
+            tty_print_string (str_fit_to_term ("", r->cols, J_LEFT));
+        }
+        return;
+    }
 
     for (y = 0; y < r->lines; y++)
     {
@@ -548,12 +635,144 @@ mcview_structured_execute_cmd (WView *view, long command)
     case CK_SearchContinue:
         mcview_structured_do_search (view, FALSE);
         break;
+    case CK_FilterActivate:
+        if (!mcview_filter_dialog (view))
+            return MSG_HANDLED;
+        break;
+    case CK_FilterNext:
+        mctree_view_filter_nav (tree, FALSE);
+        break;
+    case CK_FilterPrev:
+        mctree_view_filter_nav (tree, TRUE);
+        break;
     default:
         return MSG_NOT_HANDLED;
     }
 
     view->dirty++;
     return MSG_HANDLED;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Show only the nodes whose key and value match the pattern, with the path to
+ * every match and what is inside it.  An empty pattern clears the filter.
+ *
+ * @param err_msg  If non-NULL, receives a newly-allocated error string when the
+ *                 pattern does not compile (caller must g_free()).
+ * @return TRUE when the filter state changed.
+ */
+gboolean
+mcview_structured_filter_set (WView *view, const char *pattern, const mcview_filter_options_t *opts,
+                              gchar **err_msg)
+{
+    mc_search_t *engine;
+
+    if (err_msg != NULL)
+        *err_msg = NULL;
+
+    if (view->struct_tree == NULL)
+        return FALSE;
+
+    if (pattern == NULL || pattern[0] == '\0')
+    {
+        if (view->struct_filter_pattern == NULL)
+            return FALSE;
+
+        mcview_structured_filter_clear (view);
+        return TRUE;
+    }
+
+    engine = mcview_structured_filter_engine (pattern, opts, err_msg);
+    if (engine == NULL)
+        return FALSE;
+
+    view->struct_filter_hits =
+        mctree_view_set_filter (view->struct_tree, mcview_structured_node_match, engine);
+    mc_search_free (engine);
+
+    g_free (view->struct_filter_pattern);
+    view->struct_filter_pattern = g_strdup (pattern);
+
+    view->dirty++;
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcview_structured_filter_clear (WView *view)
+{
+    if (view->struct_filter_pattern == NULL)
+        return;
+
+    MC_PTR_FREE (view->struct_filter_pattern);
+    view->struct_filter_hits = 0;
+    mctree_view_clear_filter (view->struct_tree);
+    view->dirty++;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* Rows of the tree that match the pattern, for the preview of the filter
+   dialog.  Scans the whole model, collapsed nodes included. */
+int
+mcview_structured_preview_scan (WView *view, const char *pattern,
+                                const mcview_filter_options_t *opts, mcview_preview_match_t *out,
+                                int max_matches, gchar **err)
+{
+    mc_search_t *engine;
+    int found = 0;
+    guint i;
+
+    if (err != NULL)
+        *err = NULL;
+
+    if (view->struct_model == NULL)
+        return 0;
+
+    engine = mcview_structured_filter_engine (pattern, opts, err);
+    if (engine == NULL)
+    {
+        if (err != NULL && *err != NULL)
+        {
+            gchar *tmp = *err;
+
+            *err = g_strdup_printf (_ ("Error: %s"), tmp);
+            g_free (tmp);
+        }
+        return -1;
+    }
+
+    for (i = 0; i < view->struct_model->nodes->len && found < max_matches; i++)
+    {
+        const mctree_node_t *node = g_ptr_array_index (view->struct_model->nodes, i);
+        char *text;
+        gsize found_len = 0;
+
+        if (node->parent == NULL)
+            continue;
+
+        text = mcview_structured_node_text (node);
+        if (text == NULL)
+            continue;
+
+        if (mc_search_run (engine, text, 0, strlen (text), &found_len))
+        {
+            out[found].text = text;
+            out[found].match_start = (int) engine->normal_offset;
+            out[found].match_len = (int) found_len;
+            found++;
+        }
+        else
+            g_free (text);
+    }
+
+    mc_search_free (engine);
+    return found;
 }
 
 /* --------------------------------------------------------------------------------------------- */

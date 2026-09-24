@@ -25,6 +25,8 @@
 
 #define TEST_SUITE_NAME "/src/mctree-view"
 
+#include <string.h>
+
 #include "tests/mctest.h"
 
 #include "src/mctree/mctree-view.h"
@@ -233,6 +235,139 @@ END_TEST
 
 /* --------------------------------------------------------------------------------------------- */
 
+static gboolean
+value_is (const mctree_node_t *node, void *user_data)
+{
+    return node->value != NULL && strcmp (node->value, (const char *) user_data) == 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static gboolean
+key_or_value_has (const mctree_node_t *node, void *user_data)
+{
+    const char *needle = (const char *) user_data;
+
+    return (node->key != NULL && strstr (node->key, needle) != NULL)
+        || (node->value != NULL && strstr (node->value, needle) != NULL);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_shows_matches_with_their_path)
+{
+    mctree_model_t *model;
+    mctree_view_t *view;
+
+    model = make_sample_model ();
+    view = mctree_view_new ();
+    mctree_view_set_page_rows (view, 10);
+    mctree_view_set_model (view, model);
+
+    // "second" sits under the collapsed "beta": the filter opens the way to it
+    ck_assert_uint_eq (mctree_view_set_filter (view, value_is, (void *) "second"), 1);
+    ck_assert_uint_eq (mctree_view_row_count (view), 2);
+    ck_assert_str_eq (mctree_view_current_node (view)->value, "second");
+
+    mctree_view_clear_filter (view);
+    ck_assert_uint_eq (mctree_view_row_count (view), 3);
+    ck_assert_str_eq (mctree_view_current_node (view)->value, "second");
+
+    mctree_view_free (view);
+    mctree_model_free (model);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_nav_walks_matches_only)
+{
+    mctree_model_t *model;
+    mctree_view_t *view;
+    int first;
+
+    model = make_sample_model ();
+    view = mctree_view_new ();
+    mctree_view_set_page_rows (view, 10);
+    mctree_view_set_model (view, model);
+
+    // both scalars match, and both of their parents are kept as the path
+    ck_assert_uint_eq (mctree_view_set_filter (view, key_or_value_has, (void *) "s"), 2);
+    ck_assert_uint_eq (mctree_view_row_count (view), 4);
+
+    first = view->cursor;
+    mctest_assert_true (mctree_view_current_node (view)->filter_hit);
+    mctest_assert_true (mctree_view_filter_nav (view, FALSE));
+    mctest_assert_true (mctree_view_current_node (view)->filter_hit);
+    ck_assert_int_ne (view->cursor, first);
+    // the walk wraps around
+    mctest_assert_true (mctree_view_filter_nav (view, FALSE));
+    ck_assert_int_eq (view->cursor, first);
+    mctest_assert_true (mctree_view_filter_nav (view, TRUE));
+    ck_assert_int_ne (view->cursor, first);
+
+    mctree_view_free (view);
+    mctree_model_free (model);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_nav_reaches_a_match_under_a_collapsed_node)
+{
+    mctree_model_t *model;
+    mctree_view_t *view;
+    mctree_node_t *parent;
+
+    model = make_sample_model ();
+    view = mctree_view_new ();
+    mctree_view_set_page_rows (view, 10);
+    mctree_view_set_model (view, model);
+
+    ck_assert_uint_eq (mctree_view_set_filter (view, value_is, (void *) "second"), 1);
+    ck_assert_uint_eq (mctree_view_row_count (view), 2);
+    ck_assert_str_eq (mctree_view_current_node (view)->value, "second");
+
+    // the user collapses the parent of the match: the row is gone
+    parent = mctree_view_current_node (view)->parent;
+    parent->expanded = FALSE;
+    mctree_view_rebuild (view);
+    ck_assert_uint_eq (mctree_view_row_count (view), 1);
+
+    // the match is still a match: the walk opens the way to it again
+    mctest_assert_true (mctree_view_filter_nav (view, FALSE));
+    ck_assert_str_eq (mctree_view_current_node (view)->value, "second");
+    mctest_assert_true (parent->expanded);
+
+    mctree_view_free (view);
+    mctree_model_free (model);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
+START_TEST (test_filter_keeps_the_cursor_on_a_matching_first_row)
+{
+    mctree_model_t *model;
+    mctree_view_t *view;
+
+    model = make_sample_model ();
+    view = mctree_view_new ();
+    mctree_view_set_page_rows (view, 10);
+    mctree_view_set_model (view, model);
+
+    // both "alpha" and "beta" match: the cursor stays on the first row
+    ck_assert_uint_eq (mctree_view_set_filter (view, key_or_value_has, (void *) "a"), 2);
+    ck_assert_int_eq (view->cursor, 0);
+    ck_assert_str_eq (mctree_view_current_node (view)->key, "alpha");
+
+    mctree_view_free (view);
+    mctree_model_free (model);
+}
+END_TEST
+
+/* --------------------------------------------------------------------------------------------- */
+
 int
 main (void)
 {
@@ -247,6 +382,10 @@ main (void)
     tcase_add_test (tc_core, test_toggle_current_expands_and_collapses);
     tcase_add_test (tc_core, test_expand_all_and_collapse_all_keep_cursor_node);
     tcase_add_test (tc_core, test_search_model_finds_collapsed_node_and_expands_path);
+    tcase_add_test (tc_core, test_filter_shows_matches_with_their_path);
+    tcase_add_test (tc_core, test_filter_nav_walks_matches_only);
+    tcase_add_test (tc_core, test_filter_nav_reaches_a_match_under_a_collapsed_node);
+    tcase_add_test (tc_core, test_filter_keeps_the_cursor_on_a_matching_first_row);
 
     return mctest_run_all (tc_core);
 }

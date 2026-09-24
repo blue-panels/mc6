@@ -48,4 +48,8 @@ void mctree_view_expand_to_depth (mctree_view_t *view, int depth);
 gboolean mctree_view_search (mctree_view_t *view, const char *text);
 gboolean mctree_view_search_model (mctree_view_t *view, const char *text);
 
+guint mctree_view_set_filter (mctree_view_t *view, mctree_node_match_fn match, void *user_data);
+void mctree_view_clear_filter (mctree_view_t *view);
+gboolean mctree_view_filter_nav (mctree_view_t *view, gboolean backwards);
+
 #endif

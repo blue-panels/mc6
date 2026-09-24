@@ -31,6 +31,9 @@ typedef enum
 typedef struct mctree_node_t mctree_node_t;
 typedef struct mctree_model_t mctree_model_t;
 
+/* Filter predicate: TRUE when the node itself matches. */
+typedef gboolean (*mctree_node_match_fn) (const mctree_node_t *node, void *user_data);
+
 typedef struct
 {
     mctree_node_t *node;
@@ -45,6 +48,8 @@ struct mctree_node_t
     gsize original_value_len;
     gboolean value_truncated;
     gboolean expanded;
+    gboolean filter_hit;    /* the node itself matches the filter */
+    gboolean filter_hidden; /* dropped by the filter: no match in it, above it or below it */
     mctree_node_t *parent;
     GPtrArray *children;
 };
@@ -54,6 +59,7 @@ struct mctree_model_t
     GPtrArray *nodes;
     mctree_node_t *root;
     gsize scalar_preview_limit;
+    gboolean filter_on;
 };
 
 /*** declarations of public functions ************************************************************/
@@ -66,6 +72,10 @@ mctree_node_t *mctree_model_add_node (mctree_model_t *model, mctree_node_t *pare
 
 void mctree_model_expand_to_depth (mctree_model_t *model, int depth);
 GArray *mctree_model_build_visible_rows (const mctree_model_t *model);
+
+guint mctree_model_filter_apply (mctree_model_t *model, mctree_node_match_fn match,
+                                 void *user_data);
+void mctree_model_filter_clear (mctree_model_t *model);
 
 guint mctree_node_child_count (const mctree_node_t *node);
 guint mctree_node_descendant_count (const mctree_node_t *node);
