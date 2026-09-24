@@ -354,8 +354,9 @@ panel_plugin_reload_internal (WPanel *panel, gboolean call_plugin_reload)
 
     if (focus_name != NULL)
         panel_set_current_by_name (panel, focus_name);
-    else if (was_dotdot && panel->dir.len > 1)
-        panel_set_current (panel, 1);
+    else if (was_dotdot)
+        /* ".." is always the first entry, so the cursor stays where it was */
+        panel_set_current (panel, 0);
 
     g_free (focus_name);
     panel->dirty = TRUE;
