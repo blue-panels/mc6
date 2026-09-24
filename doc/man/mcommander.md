@@ -3179,7 +3179,19 @@ Alt-Enter    copy the path of the current node to the clipboard
 F7, /        search the whole document, including collapsed
              nodes; the path to a match is expanded
 F17, n       continue the search
+F6           filter the tree by a pattern
+] / [        go to the next / previous match of the filter
 ```
+
+The filter (F6) takes the pattern in the same dialog as the one of the
+ASCII mode, with the same type, case and whole-word settings, and keeps
+only the nodes whose key or value matches it.  The path down to every
+match stays visible, and so does what is inside a match, so a matched
+node can still be opened and browsed.  The status line counts the
+matches; ] and [ walk them.  An empty pattern clears the filter, and so
+does leaving the tree.  A node matches on the text its row shows, so a
+long value is matched only up to the length the tree keeps for the
+preview (160 characters).
 
 Here is a listing of the actions associated with each key that the
 M-Commander handles in the internal file viewer.
