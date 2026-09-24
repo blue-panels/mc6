@@ -2388,7 +2388,7 @@ s3_open (mc_panel_host_t *host, const char *open_path)
 
     data->connections_file = s3_get_connections_file_path ();
     data->connections = s3_load_connections (data->connections_file);
-    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "s3_panel.hlp", (char *) NULL);
+    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "s3_panel.md", (char *) NULL);
 
     mc_pp_dir_cache_init (&data->dir_cache, S3_DIR_CACHE_TTL);
 

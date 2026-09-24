@@ -1518,7 +1518,7 @@ docker_open (mc_panel_host_t *host, const char *open_path)
         g_hash_table_new_full (g_str_hash, g_str_equal, g_free, (GDestroyNotify) g_ptr_array_unref);
     data->files_focus_cache = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
     data->title_buf = NULL;
-    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "docker_panel.hlp", (char *) NULL);
+    data->help_filename = g_build_filename (MC_PLUGIN_DIR, "docker_panel.md", (char *) NULL);
     data->pending_focus = NULL;
     data->nav_stack = g_array_new (FALSE, TRUE, sizeof (docker_nav_frame_t));
 

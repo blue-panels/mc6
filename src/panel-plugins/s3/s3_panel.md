@@ -1,14 +1,19 @@
-[S3 Plugin]
+# S3 Plugin <!-- help:notitle -->
 
 S3 object storage plugin
 
 Navigation:
+
+```
   Connection list -> Bucket list -> Object browser
 
   Enter      - open connection / enter bucket / enter directory
   Backspace  - go up (directory -> bucket -> connections)
+```
 
 File operations:
+
+```
   F3         - view selected file
   F5         - copy file(s) to local panel
   F6         - move file(s) to local panel
@@ -16,18 +21,23 @@ File operations:
   F8         - delete selected file(s) or bucket
   Shift-F5   - upload file(s) from local panel
   Shift-F6   - upload and remove local file(s)
+```
 
 Connection management:
+
+```
   F4         - edit selected connection
   F7         - create new connection (at connection level)
   F8         - delete selected connection
+```
 
 Config file: ~/.config/mc6/s3-connections.ini
 
-[S3 Connection]
+# S3 Connection <!-- help:notitle -->
 
 S3 Connection settings
 
+```
   Connection name   - display label for the connection list
 
   Access Key        - S3 access key ID
@@ -52,3 +62,4 @@ S3 Connection settings
   Path-style URLs   - use path-style URLs (endpoint/bucket/key)
                       instead of virtual-hosted (bucket.endpoint/key).
                       Required for some MinIO/Ceph setups.
+```

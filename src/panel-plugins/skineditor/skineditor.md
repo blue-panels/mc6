@@ -1,4 +1,4 @@
-[skineditor]
+# skineditor <!-- help:notitle -->
 
 Skin editor
 
@@ -7,22 +7,25 @@ from inside mc and shows the result as it goes.
 
 Starting it:
 
+```
   F9 -> Command -> Skin editor...
   F9 -> Command -> Plugin panel... -> Skin editor
   Manage Plugins -> Skin editor -> Enter
+```
 
 It opens on the skin mc runs with; the title names the file the skin
-comes from.  Skin: [ name ] at the top of the list opens another one.
+comes from.  Skin: \[ name \] at the top of the list opens another one.
 The button next to it says what the skin is for: 16 colors, 256 colors
 or True color; it opens a list of the three.  The Color dialog offers
 the 256.. and RGB.. pickers by that choice, and the flags 256colors and
-truecolors in [skin] are written from it.
+truecolors in \[skin\] are written from it.
 A skin that uses colors this terminal cannot show, or is declared for
 them, is edited without the live preview; the editor says so when it
 opens the skin or when the class goes up.
 
 The screen:
 
+```
   The left half lists every key of the skin, grouped by the part of the
   screen it paints: Panels, File types, Dialogs, Menu bar, Editor and so
   on.  The right half is a sample of that part, drawn with the colors of
@@ -33,9 +36,11 @@ The screen:
 
   A click on the sample moves the cursor to the key that paints that
   spot; a double click edits it.
+```
 
 Keys in the list:
 
+```
   Up, Down, PgUp, PgDn, Home, End   move
   Ctrl-PgUp, Ctrl-PgDn              previous, next section
   Enter, F4                         edit the key
@@ -60,6 +65,7 @@ Keys in the list:
   Esc, F10                          leave; asks first when there are
                                     changes
   F1                                this text
+```
 
 Every change goes to the screen at once.  Esc puts the skin mc had back.
 Save writes the file to your skins directory, ~/.local/share/mc6/skins,
@@ -78,6 +84,7 @@ closes.
 
 The Color dialog:
 
+```
   Foreground and background each have a palette of the 16 named colors,
   an Inherit box, a Terminal default box and the buttons 256.. and
   RGB..  256.. opens the 256-color picker: the 16 system colors, the
@@ -96,19 +103,24 @@ The Color dialog:
   The dialog needs 72x21; on a smaller terminal Enter asks for the
   three parts as text instead, empty meaning inherited.  The editor
   itself needs 66x16.
+```
 
 Characters:
 
+```
   The sections Frames, Panel marks, Find and editor marks and Spinner
   hold characters, not colors.  Enter asks for the character, or the
   whole string of the spinner; an empty value puts the built-in one
   back.
+```
 
 Notes:
 
+```
   A key that is not in the skin file inherits: the value line says from
   where.  [core] _default_ is the one key every skin must have; making
   it inherit sets it to the terminal's own colors instead.
 
   The file is written with its comments and its order kept.  The flags
   256colors and truecolors in [skin] follow the class button.
+```

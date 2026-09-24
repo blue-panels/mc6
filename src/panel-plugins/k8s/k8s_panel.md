@@ -1,5 +1,6 @@
-[Kubernetes Plugin]
+# Kubernetes Plugin <!-- help:notitle -->
 
+```
   Kubernetes Panel Plugin
 
   Browse and operate on a Kubernetes cluster as if it were a directory
@@ -218,9 +219,11 @@
   Empty viewer / nothing happens on Follow
     The pipe-through command is not line-buffered.  Add --unbuffered
     (jq), --line-buffered (grep), or -u (sed).
+```
 
-[Pod logs source]
+# Pod logs source <!-- help:notitle -->
 
+```
   Pod logs source dialog (Alt-S in viewer)
 
   Controls the kubectl invocation that feeds the viewer.  Closing the
@@ -362,3 +365,4 @@
   Discovering the schema: set Pipe through to empty, OK, look at one
   raw JSON line in the viewer, copy the keys you want, open Alt-S
   again, and write your jq.
+```

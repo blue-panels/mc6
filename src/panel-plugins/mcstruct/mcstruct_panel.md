@@ -1,4 +1,4 @@
-[mcstruct]
+# mcstruct <!-- help:notitle -->
 
 Struct look: a structured view of a binary file
 
@@ -9,6 +9,7 @@ with Struct Look 4.00.
 
 Starting it:
 
+```
   mcstruct FILE [DEF]      from the shell; DEF is a def-file name without
                            .stl, or a path
   F3 in the file panel     on a file that a magic.ini group hands to the
@@ -17,10 +18,11 @@ Starting it:
   Shift-F4 in the viewer   opens the file here at the current offset;
                            Shift-F4 goes back to the viewer at the
                            byte you were on, F10 closes both
+```
 
 The def-file is chosen in this order: the name from the command line or
-the magic.ini group ([mcstruct-mbr] means mbr.stl), a signature or a name
-pattern from stl.als, <extension>.stl, else a list to choose from.
+the magic.ini group (\[mcstruct-mbr\] means mbr.stl), a signature or a name
+pattern from stl.als, \<extension>.stl, else a list to choose from.
 
 Def-files are searched in ~/.config/mc6/mcstruct/, /etc/mcommander/mcstruct/ and
 the plugin's own data directory; the first hit wins.  Put your own files
@@ -28,14 +30,17 @@ and your stl.als into the first one.
 
 The screen:
 
+```
   Three zones, all in sync: the structure tree, the hex dump and the
   def-file.  Moving in the tree highlights the bytes of the field in the
   dump and the def-file line that produced it; moving the hex cursor
   selects the field under it.  On terminals narrower than 120 columns the
   def-file goes below the hex dump.
+```
 
 Keys in the tree:
 
+```
   Up Down PgUp PgDn Home End   move
   Right, Enter     expand; on an array, table or #repeat open it as a
                    grid; on a jump follow it; on a string show the whole
@@ -69,9 +74,11 @@ Keys in the tree:
   Shift-F4         back to the viewer at the current byte
   F10, Esc         quit; from the viewer, the viewer closes too (asks when
                    edits are pending)
+```
 
 Keys in the grid:
 
+```
   Left Right, Tab  move between cells
   < >              scroll the columns
   F4               edit the cell
@@ -80,9 +87,11 @@ Keys in the grid:
 
   The first column is the row number or the file offset of the row
   (GridRowColumn in the settings).
+```
 
 Keys in the hex zone:
 
+```
   Tab              switch between the hex and the text column
   typing           edits the byte under the cursor
   [ ]              start / end of a block at the cursor
@@ -91,9 +100,11 @@ Keys in the hex zone:
 
   A block is what Shift-F2 and Ctrl-F2 write or read while the hex zone
   is focused.
+```
 
 Saved fragments:
 
+```
   Shift-F2 keeps the bytes under a number that is never reused, with a
   name (the structure by default), the file they came from and the
   time. The set is shared by every mcstruct, so fragments taken from
@@ -103,23 +114,29 @@ Saved fragments:
   current row, Delete drops it from the set, the last item reads a
   file instead. Fragments older than the "Keep fragments" setting
   (7 days by default, 0 keeps them) are dropped.
+```
 
 Keys in the def-file zone:
 
+```
   Enter            go to the structure the line refers to
                    (* N Name, jNN Name=expr, :Table)
+```
 
 Editing:
 
+```
   F4 shows the value in the form of its type: hex for b w d q, decimal for
   u* i*, text for strings, a bit string for t*, SEG:OFF for pointers,
   YYYY-MM-DD HH:MM:SS for dates.  The bytes are replaced in place, the
   structure is re-evaluated, F2 writes the file.  Only fixed-width edits:
   the file never changes size.  The first edit takes the file lock as
   mcedit6 does.
+```
 
 STL5, the def-file language:
 
+```
   A def-file starts with a version line, "STL 4.00" (strict compatibility
   mode) or "STL 5.00" (with the extensions marked 5.00 below), and holds
   structures, tables and legends:
@@ -225,17 +242,21 @@ STL5, the def-file language:
 
   The shipped def-files (zip exe dbf elf mbr fat_boot uimage dtb png bmp
   wav sqlite) are the reference for the language.
+```
 
 Aliases and signatures, stl.als:
 
+```
     elf.stl: *.so *.o @0:7F454C46
     png.stl: @0:89504E470D0A1A0A
     mbr.stl: *.img @510:55AA
 
   Name patterns match the file name, @offset:hexbytes the file contents.
+```
 
 Settings, Manage plugins -> mcstruct, or ~/.config/mc6/mcstruct/mcstruct.ini:
 
+```
     [mcstruct]
     TreeLines=14            rows of the tree, 0 = the rest
     HexLines=4              rows of the hex zone, 0 hides it
@@ -249,6 +270,7 @@ Settings, Manage plugins -> mcstruct, or ~/.config/mc6/mcstruct/mcstruct.ini:
     ShowHiddenStructures=false
     LazyRows=64             arrays longer than this are built on expand
     FloatingPointFormat=%g
+```
 
-Skin: three sections, one per zone, [mcstruct-tree], [mcstruct-hex] and
-[mcstruct-def]; a missing section falls back to the core colors.
+Skin: three sections, one per zone, \[mcstruct-tree\], \[mcstruct-hex\] and
+\[mcstruct-def\]; a missing section falls back to the core colors.

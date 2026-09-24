@@ -1,4 +1,4 @@
-[PDF Viewer]
+# PDF Viewer <!-- help:notitle -->
 
 PDF viewer (lua-pdf)
 
@@ -9,6 +9,7 @@ of eight at a time, and writes the pictures out next to them.
 A page is written out whole, so the usual keys scroll it: PgUp, PgDn,
 the arrows, Home and End.  The menu changes the page.
 
+```
   >          - the next page
   <          - the page before
   p          - go to a page by its number
@@ -19,6 +20,7 @@ the arrows, Home and End.  The menu changes the page.
                is laid out
   F8         - switch between the plugin's view and the file itself
   F1         - this help
+```
 
 The search reads the pages as it goes and stops after 200 of them.  The
 text of the last four runs of pages it read is kept, along with the
@@ -32,11 +34,13 @@ the screen is drawn from a stream, not read from a file.
 In the menu, Alt-N is the next page and Alt-P the previous one; the
 Page field takes a number.  Three layouts:
 
+```
   text       - a line of the document is a row of the screen, and a
                character of the document is about a cell wide; the
                pictures sit in the flow of the text
   page       - the paper as printed, scaled to the width of the viewer
   fit        - the paper as printed, the whole page in the window
+```
 
 A page with no text layer is a picture of a page, and is laid out
 "fit" whatever the menu says.
@@ -50,7 +54,7 @@ libsixel (img2sixel) or chafa where the terminal draws sixel, and chafa
 where it does not: there a picture is drawn with characters, in the
 place and the size it has on the page.  A picture larger than the window
 is drawn smaller: the viewer draws a picture whole or not at all.  With
-neither of them the status line says "no pictures" and [image] stands
+neither of them the status line says "no pictures" and \[image\] stands
 where a picture belongs.  Where pdftohtml is not installed there are no
 pages to show: the viewer shows the file as it is, and the status line
 names what is missing.

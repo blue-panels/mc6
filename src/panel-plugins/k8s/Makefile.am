@@ -1,6 +1,6 @@
 k8sdir = $(panel_plugins_dir)/k8s
 k8s_LTLIBRARIES = mc-panel-k8s.la
-k8s_DATA = k8s_panel.hlp
+k8s_DATA = k8s_panel.md
 # klog.sh is meant to be run: install it with the exec bit, not as data.
 dist_k8s_SCRIPTS = klog.sh
 

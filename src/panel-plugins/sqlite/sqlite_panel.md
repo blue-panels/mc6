@@ -1,9 +1,10 @@
-[SQLite Plugin]
+# SQLite Plugin <!-- help:notitle -->
 
 SQLite database browser panel plugin
 
 Opening a database:
 
+```
   Enter on a database file opens it, and F3 on the same file shows its
   schema.  Both come from magic.ini, which binds the file to this plugin:
 
@@ -20,15 +21,19 @@ Opening a database:
   or type a path such as:
 
     cd sqlite:/absolute/path/to/database.sqlite
+```
 
 The database is always opened read-only.  This plugin never changes its
 schema or records.
 
+```
   The database and any active -wal/-shm sidecar files must be readable.  A
   database that needs an unreadable WAL file cannot be opened.
+```
 
 Navigation:
 
+```
   Database -> table or view -> row page -> JSON row
 
   Each table and view contains schema.sql and one or more row-page
@@ -45,3 +50,4 @@ Navigation:
   Ordinary rowid tables are read in rowid order.  Views and WITHOUT ROWID
   tables are supported too, but very large ones can be slower to browse.  Use
   Ctrl-C to cancel a long database scan.
+```

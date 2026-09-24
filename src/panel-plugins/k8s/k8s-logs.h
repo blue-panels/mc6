@@ -39,7 +39,7 @@ typedef struct
     char *context;
     char *namespace;
     char *pod;
-    char *help_file; /* path to the plugin's hlp file (NULL = default mc.hlp). */
+    char *help_file; /* path to the plugin's help file (NULL = the help of the program). */
     int options_key; /* viewer keycode that opens the logs options dialog. */
 
     /* Initial dialog defaults (applied to live state before first prepare). */

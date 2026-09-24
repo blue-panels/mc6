@@ -1,14 +1,19 @@
-[Samba Plugin]
+# Samba Plugin <!-- help:notitle -->
 
 Samba network browser plugin
 
 Navigation:
+
+```
   Connection list -> Server -> Shares -> Files
 
   Enter      - open connection / enter share / enter directory
   Backspace  - go up (directory -> share -> server -> connections)
+```
 
 File operations:
+
+```
   F3         - view selected file
   F5         - copy file(s) to local panel
   F6         - move file(s) to local panel
@@ -16,16 +21,21 @@ File operations:
   F8         - delete selected file(s)
   Shift-F5   - upload file(s) from local panel
   Shift-F6   - upload and remove local file(s)
+```
 
 Connection management:
+
+```
   F4         - edit selected connection
   F7         - create new connection (at connection level)
   F8         - delete selected connection
+```
 
-[Samba Connection]
+# Samba Connection <!-- help:notitle -->
 
 Samba connection settings
 
+```
   Name              - display label for the connection list
 
   Server/UNC path   - server address in one of the formats:
@@ -39,5 +49,6 @@ Samba connection settings
                       Example: WORKGROUP\john
 
   Password          - authentication password (stored encoded)
+```
 
 Config file: ~/.config/mc6/smb-connections.ini

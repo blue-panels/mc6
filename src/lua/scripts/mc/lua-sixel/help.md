@@ -1,14 +1,17 @@
-[Image Viewer]
+# Image Viewer <!-- help:notitle -->
 
-Image viewer (lua-chafa)
+Image viewer (lua-sixel)
 
 F3 on a picture shows one line about it (format, size, depth, frames)
-and the picture under it, drawn with chafa's characters.
+and the picture under it: in sixel where the terminal draws it, in
+chafa's characters where it does not.
 
+```
   i          - switch between the picture and its full properties
                (exif, exiftool or identify, whichever is installed)
   F8         - switch between the plugin's view and the file itself
   F1         - this help
+```
 
 The picture needs chafa; the properties need exif, exiftool or
 ImageMagick's identify.

@@ -18,14 +18,14 @@ if ENABLE_LUA_CHAFA
 dist_lua_chafa_DATA = \
 	scripts/mc/lua-chafa/lua.ini \
 	scripts/mc/lua-chafa/init.lua \
-	scripts/mc/lua-chafa/help.hlp
+	scripts/mc/lua-chafa/help.md
 endif
 
 lua_sixeldir = $(lua_scripts_dir)/mc/lua-sixel
 dist_lua_sixel_DATA = \
 	scripts/mc/lua-sixel/lua.ini \
 	scripts/mc/lua-sixel/init.lua \
-	scripts/mc/lua-sixel/help.hlp
+	scripts/mc/lua-sixel/help.md
 
 lua_java_classdir = $(lua_scripts_dir)/mc/lua-java-class
 if ENABLE_LUA_JAVA_CLASS
@@ -38,13 +38,13 @@ lua_dbfdir = $(lua_scripts_dir)/mc/lua-dbf
 dist_lua_dbf_DATA = \
 	scripts/mc/lua-dbf/lua.ini \
 	scripts/mc/lua-dbf/init.lua \
-	scripts/mc/lua-dbf/help.hlp
+	scripts/mc/lua-dbf/help.md
 
 lua_markdowndir = $(lua_scripts_dir)/mc/lua-markdown
 dist_lua_markdown_DATA = \
 	scripts/mc/lua-markdown/lua.ini \
 	scripts/mc/lua-markdown/init.lua \
-	scripts/mc/lua-markdown/help.hlp
+	scripts/mc/lua-markdown/help.md
 lua_markdown_libdir = $(lua_scripts_dir)/mc/lua-markdown/lib
 dist_lua_markdown_lib_DATA = \
 	scripts/mc/lua-markdown/lib/config.lua \
@@ -80,7 +80,7 @@ lua_pdfdir = $(lua_scripts_dir)/mc/lua-pdf
 dist_lua_pdf_DATA = \
 	scripts/mc/lua-pdf/lua.ini \
 	scripts/mc/lua-pdf/init.lua \
-	scripts/mc/lua-pdf/help.hlp
+	scripts/mc/lua-pdf/help.md
 lua_pdf_libdir = $(lua_scripts_dir)/mc/lua-pdf/lib
 dist_lua_pdf_lib_DATA = \
 	scripts/mc/lua-pdf/lib/pdfxml.lua \

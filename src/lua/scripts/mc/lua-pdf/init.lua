@@ -482,7 +482,7 @@ local viewer = mc.viewer_source.define {
     resize = "rebuild",
     options_key = "i",
     keys = { "gt", "lt", "plus", "minus", "p", "slash", "n", "shift-n" },
-    help = { file = "help.hlp", node = "[PDF Viewer]" },
+    help = { file = "help.md", node = "[PDF Viewer]" },
 
     open = function(request)
         if request.local_path == nil then

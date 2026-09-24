@@ -502,7 +502,7 @@ mongo_filter_dialog_run (const mongo_filter_t *initial, mongo_filter_sample_fn s
             .rect = r,
             .title = N_ ("MongoDB find"),
             .help = "[MongoDB Plugin]",
-            .help_file = MC_PLUGIN_DIR "/mongo_panel.hlp",
+            .help_file = MC_PLUGIN_DIR "/mongo_panel.md",
             .widgets = quick_widgets,
             .callback = NULL,
             .mouse_callback = NULL,

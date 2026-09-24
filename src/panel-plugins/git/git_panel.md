@@ -1,5 +1,6 @@
-[Git panel plugin]
+# Git panel plugin <!-- help:notitle -->
 
+```
   Git Panel Plugin
 
   Navigation & Structure:
@@ -21,3 +22,4 @@
     Shift-F4   - Add repository to favorites (by path)
     F8         - Remove from favorites
     Ctrl-R     - Refresh panel
+```

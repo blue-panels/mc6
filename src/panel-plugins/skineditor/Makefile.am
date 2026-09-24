@@ -12,7 +12,7 @@ libmcskinedit_la_LIBADD = $(GLIB_LIBS)
 
 skineditordir = $(panel_plugins_dir)/skineditor
 skineditor_LTLIBRARIES = mc-panel-skineditor.la
-dist_skineditor_DATA = skineditor.hlp
+dist_skineditor_DATA = skineditor.md
 
 mc_panel_skineditor_la_SOURCES = \
 	skineditor.c \

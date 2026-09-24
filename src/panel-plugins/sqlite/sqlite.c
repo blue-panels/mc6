@@ -1923,7 +1923,7 @@ sqlite_reload (void *plugin_data)
 static mc_pp_result_t
 sqlite_get_help_info (void *plugin_data, const char **filename, const char **node)
 {
-    static const char help_path[] = MC_PLUGIN_DIR "/sqlite_panel.hlp";
+    static const char help_path[] = MC_PLUGIN_DIR "/sqlite_panel.md";
 
     (void) plugin_data;
     *filename = help_path;

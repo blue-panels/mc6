@@ -1,6 +1,6 @@
-[mcpeek]
+# mcpeek <!-- help:notitle -->
 
-.NET assembly browser panel plugin
+\.NET assembly browser panel plugin
 
 mcpeek shows a managed assembly as the tree its metadata already forms:
 references, namespaces, types, members, embedded resources.  Nothing is
@@ -12,6 +12,7 @@ and a stream has no file behind it.  The copy lives as long as the panel.
 
 Opening an assembly:
 
+```
   Enter on a .dll, .exe or .winmd   through the magic.ini rule that
                                     matches what libmagic calls a
                                     Mono/.Net assembly
@@ -19,9 +20,11 @@ Opening an assembly:
   F9 -> Left/Right -> .NET assembly browser
                                     opens the current directory as a set
                                     of assemblies
+```
 
 The panel:
 
+```
   Enter, F3   on a member shows it as C#, with the cursor on the member
   Shift-F3    shows the IL the C# was made from
   F4          opens the same text in the editor
@@ -35,9 +38,11 @@ The panel:
   Alt-F7      on a type, a method or a field lists where it is used
   Ctrl-R      re-reads the assembly after it has been rebuilt and
               returns to the type the panel stood in, found by name
+```
 
 Levels:
 
+```
   a directory      every managed assembly in it
   an assembly      with a decompiler, the directory the sources would
                    form: one directory per namespace holding a .cs per
@@ -50,6 +55,7 @@ Levels:
   References       what the assembly needs, with the file each name
                    resolves to; an unresolved one is marked "missing"
                    and cannot be entered
+```
 
 A .cs is decompiled when it is opened, not when it is listed, so a listing
 costs nothing however large the assembly.  The project file and
@@ -59,10 +65,12 @@ and kept for as long as the assembly keeps its mtime.
 
 Columns:
 
+```
   Kind    what the entry is: asm, ns, type, method, field, prop, event,
           ref, res, use
   Token   the metadata token, as it appears in the IL
   Size    the size of a method body, in bytes of IL
+```
 
 C# and export
 
@@ -85,7 +93,7 @@ Where a type or member is used
 Alt-F7 lists every place the selected entry is used, across the assemblies
 this panel has opened: the ones in the directory it started from and the
 ones reached through a reference.  Enter on a result opens the type that
-declares the using method.  The key can be changed under [keys] in
+declares the using method.  The key can be changed under \[keys\] in
 mcpeek.ini.
 
 The search reads metadata and IL only, so it costs a fraction of a second

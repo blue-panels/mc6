@@ -38,8 +38,8 @@ typedef struct
     docker_connection_t *conn; /* active profile; cloned by open. */
     char *container_id;        /* container id or name for `docker logs`. */
     char *container_name;      /* display name for title/announcement; may be NULL. */
-    char *help_file;           /* path to the plugin's hlp file (NULL = default mc.hlp). */
-    int options_key;           /* viewer keycode that opens the logs options dialog. */
+    char *help_file; /* path to the plugin's help file (NULL = the help of the program). */
+    int options_key; /* viewer keycode that opens the logs options dialog. */
 
     /* Initial dialog defaults (applied to live state before first prepare). */
     char *initial_since; /* "5m"; "" = unset. */

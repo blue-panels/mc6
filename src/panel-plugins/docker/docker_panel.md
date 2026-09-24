@@ -1,5 +1,6 @@
-[Docker Plugin]
+# Docker Plugin <!-- help:notitle -->
 
+```
   Docker Panel Plugin
 
   The Docker panel plugin lets you browse and manage Docker resources
@@ -118,9 +119,11 @@
     Private key file Path to the SSH private key file.
                      Used only for SSH profiles.
                      Leave empty to use the default key or ssh-agent.
+```
 
-[Docker Connection]
+# Docker Connection <!-- help:notitle -->
 
+```
   Docker Connection Dialog
 
   Label
@@ -156,9 +159,11 @@
     - The remote user must have access to the Docker daemon.
     - Container file browsing (files/) works for SSH connections.
     - Mount browsing (mounts/) is local-only.
+```
 
-[Container logs source]
+# Container logs source <!-- help:notitle -->
 
+```
   Container logs source dialog (Alt-s in the log viewer)
 
   Controls the "docker logs" invocation that feeds the viewer.  Closing
@@ -202,3 +207,4 @@
 
     Cancel         Discard the changes; the viewer stays on the current
                    data.
+```

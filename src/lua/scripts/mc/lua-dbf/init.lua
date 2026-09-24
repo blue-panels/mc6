@@ -294,7 +294,7 @@ end
 
 local text_viewer = mc.viewer_source.define {
     id = "dbf-text",
-    help = { file = "help.hlp", node = "[DBF Viewer]" },
+    help = { file = "help.md", node = "[DBF Viewer]" },
     open = function(request)
         return {
             text = request.text,
@@ -613,7 +613,7 @@ local function open_screen(info, display_name)
         title = display_name,
         palette = "viewer",
         status = status_text(session),
-        help = { file = "help.hlp", node = "[DBF Viewer]" },
+        help = { file = "help.md", node = "[DBF Viewer]" },
         layout = {
             { weight = 1,
               { weight = 1, id = "grid", type = "table",

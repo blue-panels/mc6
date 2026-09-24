@@ -1,18 +1,20 @@
-[Markdown Viewer]
+# Markdown Viewer <!-- help:notitle -->
 
 Markdown viewer (lua-markdown)
 
 F3 on a markdown file shows the text the way it is meant to read, not
-the way it is written.  Headings and **bold** come out as overstruck
-letters, `code`, *italic* and links as underlined, $LaTeX$ as the
+the way it is written.  Headings and \*\*bold\*\* come out as overstruck
+letters, \`code\`, \*italic\* and links as underlined, $LaTeX$ as the
 Unicode symbols that stand for it, and a table as columns with rules
 between them.  A fenced block of code is drawn in a frame, over a
 background the skin agrees with, and colored by the rules of the
 editor.  A mermaid fence is drawn as the schema it describes.
 
+```
   i          - the settings of the viewer
   F8         - switch between this view and the file itself
   F1         - this help
+```
 
 The text is flowed to the width of the screen, so the window may be
 resized and the document is laid out again.  A block that cannot be
@@ -20,7 +22,7 @@ broken, a table or a schema, is scrolled sideways instead.
 
 A file larger than 64 MB is shown as it is, without rendering.
 
-[Markdown viewer settings]
+# Markdown viewer settings <!-- help:notitle -->
 
 Markdown viewer settings
 
@@ -28,6 +30,7 @@ The dialog is opened with "i" in the viewer, and from the Options menu
 with Manage plugins, Lua engine, lua-markdown.  What is set here holds
 for every document, and the one on the screen is rendered again at once.
 
+```
   Widest the text is flowed
                The text is never flowed wider than this, whatever the
                screen has.  A wide terminal keeps the lines readable.
@@ -60,6 +63,7 @@ for every document, and the one on the screen is rendered again at once.
                A schema is laid out at the width it needs, up to this,
                whatever the screen has.  What does not fit is scrolled
                sideways rather than broken.
+```
 
 The settings are kept in lua-markdown.ini, in the configuration
 directory of mc.  The dialog writes the whole file, so a line it does

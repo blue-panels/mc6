@@ -1,4 +1,4 @@
-[DBF Viewer]
+# DBF Viewer <!-- help:notitle -->
 
 DBF table viewer (lua-dbf)
 
@@ -7,9 +7,10 @@ one row per record, one column per field, the first column the
 record number.  Numbers are aligned to the right, dates are
 shown as YYYY-MM-DD, logical fields as T, F or ?, memo fields as
 their block number.  The rows are read as the table scrolls, so a
-large file opens at once.  Records marked deleted carry the * of
+large file opens at once.  Records marked deleted carry the \* of
 the file in the first column and are drawn in red; F4 hides them.
 
+```
   Up, Down, PgUp, PgDn, Home, End
              - move along the records
   Left, Right - scroll the columns when they do not fit;
@@ -23,6 +24,7 @@ the file in the first column and are drawn in red; F4 hides them.
   F8         - the file itself, in the viewer
   F10, Esc   - back to the panel
   F1         - this help
+```
 
 Nothing outside MC is needed: the file is decoded by the script.
 Memo texts (.dbt / .fpt) are not read.

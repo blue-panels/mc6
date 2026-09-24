@@ -22,7 +22,7 @@ libmcslv_la_LIBADD = $(GLIB_LIBS) $(ZLIB_LIBS) -lm
 
 mcstructdir = $(panel_plugins_dir)/mcstruct
 mcstruct_LTLIBRARIES = mc-panel-mcstruct.la
-dist_mcstruct_DATA = mcstruct_panel.hlp
+dist_mcstruct_DATA = mcstruct_panel.md
 
 mc_panel_mcstruct_la_SOURCES = \
 	mcstruct.c \

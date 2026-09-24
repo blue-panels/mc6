@@ -1,5 +1,6 @@
-[MongoDB Plugin]
+# MongoDB Plugin <!-- help:notitle -->
 
+```
   MongoDB Panel Plugin
 
   The MongoDB plugin lets you navigate a MongoDB deployment as panel
@@ -121,3 +122,4 @@
     (OID, string, int, int64, bool, double, null are checked) and
     refuses with "_id is immutable" if they differ. Remove the
     _id field from the JSON to keep the original.
+```
