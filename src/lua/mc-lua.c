@@ -6380,7 +6380,7 @@ static int
 mc_lua_ui_dialog (lua_State *lua)
 {
     mc_lua_package_t *package = mc_lua_package_from_state (lua);
-    mc_lua_dialog_spec_t spec = { { NULL, 0, 0, FALSE, FALSE, NULL, 0 }, 0 };
+    mc_lua_dialog_spec_t spec = { { NULL, 0, 0, FALSE, FALSE, NULL, 0, NULL, NULL }, 0 };
     GHashTable *ids;
     mc_runtime_dialog_result_t result = { NULL, NULL, 0 };
     const char *error = NULL;
