@@ -1,81 +1,110 @@
-.TH MDIFF 1 "%DATE_OF_MAN_PAGE%" "ПН верзија %MAN_VERSION%" "M\-Commander"
+.\" Generated from mdiff.md by maint/update-man-in.sh. Do not edit.
+.TH MDIFF 1 "септембар 2026." "MCommander {{MAN_VERSION}}" "M\-Commander"
+
 .SH НАЗИВ
+.PP
 mdiff \- Уграђени diff прегледач ГНУ\-овог поноћног наредника..
+
+
 .SH УПОТРЕБА
-.B mdiff
+.PP
+\fBmdiff\fP
 [\-bcCdfhstVx?] дато1 дато2
+
+
 .SH ОПИС
-.LP
+.PP
 mdiff је веза ка
-.BR mcommander \-у,
+\fBmcommander\fP\-у,
 главној извршној датотеци ГНУ\-овог поноћног наредника. Извршавање ГНУ\-овог
 поноћног наредника под овим именом захтева покретање уграђеног diff прегледача,
 који пореди
-.I дато1
+\fIдато1\fP
 са
-.IR дато2 ,
+\fIдато2,\fP
 задатим у командној линији.
+
+
 .SH ОПЦИЈЕ
 .TP
-.I "\-b"
+\fI\-b\fP
 Намеће црно\-бели приказ.
+
 .TP
-.I "\-c"
+\fI\-c\fP
 Намеће колор режим на терминалима на којима је
-.B mdiff
+\fBmdiff\fP
 подразумевано црно\-бео.
+
 .TP
-.I "\-d"
+\fI\-d\fP
 Деактивира подршку за миша.
+
 .TP
-.I "\-f"
+\fI\-f\fP
 Приказује укомпајлиране путање за претрагу за датотеке Поноћног наредника.
+
 .TP
-.I \-S арг, \-\-skin=арг
+\fI\-S арг, \-\-skin=арг\fP
 Задаје назив скина у командној линији.
+
 .TP
-.I "\-t"
+\fI\-t\fP
 Користи се само ако је код компајлиран са S\-Lang\-ом и terminfo\-ом: чини да
 Поноћни наредник користи вредност променљиве
-.B TERMCAP
+\fBTERMCAP\fP
 за информације о терминалу уместо информација из системске базе терминала
+
 .TP
-.I "\-V"
+\fI\-V\fP
 Приказује верзију програма.
+
 .TP
-.I "\-x"
+\fI\-x\fP
 Намеће xterm режим. Користи се на терминалима сагласним са xterm\-ом (два
 екранска режима и способност за слање ескејп секвенци миша).
-.PP
+
+
 .SH ДАТОТЕКЕ
-.I %pkgdatadir%/mcommander.hlp
-.IP
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
 Датотека помоћи за овај програм.
-.PP
-.I %pkgdatadir%/mc.ini
-.IP
+
+.TP
+\fI{{pkgdatadir}}/mc.ini\fP
 Подразумевана системска подешавања ГНУ\-овог Поноћног наредника, која се користе
 само ако не постоји корисничка датотека ~/.config/mc6/ini.
-.PP
-.I %pkgdatadir%/defaults.ini
-.IP
+
+.TP
+\fI{{pkgdatadir}}/defaults.ini\fP
 Глобална подешавања Поноћног наредника. Подешавања у овој датотеци утичу на све
 кориснике, без обзира на то да ли имају ~/.config/mc6/ini или не.
-.PP
-.I ~/.config/mc6/ini
-.IP
+
+.TP
+\fI~/.config/mc6/ini\fP
 Корисничка подешавања. Ако је ова датотека присутна, онда се подешавања
 учитавају одавде уместо из системске датотеке са подешавањима.
-.PP
+
+
 .SH ЛИЦЕНЦА
+.PP
 Овај програм се расподељује под одредбама ГНУ\-ове опште јавне лиценце коју је
 објавила Задужбина за слободни софтвер. Погледајте уграђену помоћ за детаље о
 Лиценци и одсуству гаранције.
+
+
 .SH ДОСТУПНОСТ
+.PP
 Најновија верзија овог програма се може наћи на
 \X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
 .SH ВИДЕТИ И
-mcommander(1), mcedit6(1), mview(1)
 .PP
+mcommander(1), mcedit6(1), mview(1)
+
+
 .SH ГРЕШКЕ
-Грешке пријавите на \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
+.PP
+Грешке пријавите на
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

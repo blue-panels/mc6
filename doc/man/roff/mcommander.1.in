@@ -1,135 +1,158 @@
-.\" -*- mode: troff; coding: UTF-8 -*-
-.\"TOPICS "Topics:"
-.TH MCOMMANDER 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
-.\"SKIP_SECTION"
-.SH "NAME"
+.\" Generated from mcommander.md by maint/update-man-in.sh. Do not edit.
+.TH MCOMMANDER 1 "September 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NAME
+.PP
 mcommander, mc6 \- Visual shell for Unix\-like systems.
-.\"SKIP_SECTION"
-.SH "SYNOPSIS"
-.B mcommander
+
+
+.SH SYNOPSIS
+.PP
+\fBmcommander\fP
 [\-abcCdfhPstuUVx] [\-l log] [dir1 [dir2]] [\-e [file] ...] [\-v file]
-.\"NODE "DESCRIPTION"
-.SH "DESCRIPTION"
+
+
+.SH DESCRIPTION
+.PP
 M\-Commander is a directory browser/file manager for
 Unix\-like operating systems.
-.\"NODE "OPTIONS"
-.\"DONT_SPLIT"
-.SH "OPTIONS"
+
+
+.SH OPTIONS
 .TP
-.I \-a, \-\-stickchars
+\fI\-a, \-\-stickchars\fP
 Disable usage of graphic characters for line drawing.
+
 .TP
-.I \-b, \-\-nocolor
+\fI\-b, \-\-nocolor\fP
 Force black and white display.
+
 .TP
-.I \-c, \-\-color
+\fI\-c, \-\-color\fP
 Force color mode, please check the section
-.\"LINK2"
 Colors
-.\"Colors"
 for more information.
+
 .TP
-.I \-\-configure\-options
+\fI\-\-configure\-options\fP
 Display configure options.
+
 .TP
-.I \-d, \-\-nomouse
+\fI\-d, \-\-nomouse\fP
 Disable mouse support.
+
 .TP
-.I \-e [file], \-\-edit[=file]
+\fI\-e [file], \-\-edit[=file]\fP
 Start the internal editor.  If the file is specified, open it on
 startup.  See also
-.BR "mcedit6(1)" .
+\fBmcedit6(1)\fP\&.
+
 .TP
-.I \-f, \-\-datadir
+\fI\-f, \-\-datadir\fP
 Display the compiled\-in search paths for M\-Commander files.
+
 .TP
-.I \-F, \-\-datadir\-info
+\fI\-F, \-\-datadir\-info\fP
 Display extended info about compiled\-in paths for
 M\-Commander.
+
 .TP
-.I \-g, \-\-oldmouse
+\fI\-g, \-\-oldmouse\fP
 Force a "normal tracking" mouse mode. Used when running on
 xterm\-capable terminals (tmux/screen).
+
 .TP
-.I \-K file, \-\-keymap=file
+\fI\-K file, \-\-keymap=file\fP
 Specify a name of keymap file in the command line.
+
 .TP
-.I \-l file, \-\-ftplog=file
+\fI\-l file, \-\-ftplog=file\fP
 Save the ftpfs dialog with the server in file.
+
 .TP
-.I \-\-nokeymap
+\fI\-\-nokeymap\fP
 Don't load key bindings from any file, use default hardcoded keys.
+
 .TP
-.I \-P file, \-\-printwd=file
+\fI\-P file, \-\-printwd=file\fP
 Print the last working directory to the specified file.  This option is
 not meant to be used directly.  Instead, it's used from a special shell
 script that automatically changes the current directory of the shell to
 the last directory M\-Commander was in. Source the file
-.B %pkglibexecdir%/mc6.sh
+\fB{{pkglibexecdir}}/mc6.sh\fP
 (bash and zsh users),
-.B %pkglibexecdir%/mc6.csh
+\fB{{pkglibexecdir}}/mc6.csh\fP
 (tcsh users), or
-.B %pkglibexecdir%/mc6.fish
+\fB{{pkglibexecdir}}/mc6.fish\fP
 (fish users) respectively to define
-.B mcommander
+\fBmcommander\fP
 as an alias to the appropriate shell script.
+
 .TP
-.I \-s, \-\-slow
+\fI\-s, \-\-slow\fP
 Turn on the slow terminal mode, in this mode the program will not draw
 expensive line drawing characters and will toggle verbose mode off.
+
 .TP
-.I \-S arg, \-\-skin=arg
+\fI\-S arg, \-\-skin=arg\fP
 Specify a name of skin in the command line. Technology of skins is
 documented in the
-.\"LINK2"
 Skins
-.\"Skins"
 section.
+
 .TP
-.I \-t, \-\-termcap
+\fI\-t, \-\-termcap\fP
 Used only if the code was compiled with S\-Lang and terminfo: it makes
 M\-Commander use the value of the
-.B TERMCAP
+\fBTERMCAP\fP
 variable for the terminal information instead of the information on
 the system wide terminal database
+
 .TP
-.I \-v file, \-\-view=file
+\fI\-v file, \-\-view=file\fP
 Start the internal viewer to view the specified file.  See also
-.BR "mview(1)" .
+\fBmview(1)\fP\&.
+
 .TP
-.I \-V, \-\-version
+\fI\-V, \-\-version\fP
 Display the version of the program.
+
 .TP
-.I \-x, \-\-xterm
+\fI\-x, \-\-xterm\fP
 Force xterm mode.  Used when running on xterm\-capable terminals (two
 screen modes, and able to send mouse escape sequences).
+
 .TP
-.I \-X, \-\-no\-x11
+\fI\-X, \-\-no\-x11\fP
 Do not use X11 to get the state of modifiers Alt, Ctrl, Shift
+
 .PP
 If both paths are specified, the first path name is the directory to show
 in the active panel; the second path name is the directory to be shown in
 the other panel.
+
 .PP
 If one path is specified, the path name is the directory to show
 in the active panel; value of "other_dir" from panels.ini is the directory
 to be shown in the passive panel.
+
 .PP
 If no paths are specified, current directory is shown in the active panel;
 value of "other_dir" from panels.ini is the directory to be shown in
 the passive panel.
-.\"NODE "Overview"
-.SH "Overview"
+
+
+.SH Overview
+.PP
 The screen of M\-Commander is divided into four parts.
 Almost all of the screen space is taken up by two directory panels.
 By default, the second line from the bottom of the screen is the
 shell command line, and the bottom line shows the function key labels.
 The topmost line is the
-.\"LINK2"
 menu bar line\&.
-.\"Menu Bar"
 The menu bar line may not be visible, but appears if you click the
 topmost line with the mouse or press the F9 key.
+
 .PP
 M\-Commander provides a view of two directories at the same
 time. One of the panels is the current panel (a selection bar is in
@@ -138,98 +161,97 @@ panel. Some file operations like Rename and Copy by default use the
 directory of the unselected panel as a destination (don't worry, they
 always ask you for confirmation first). For more information, see the
 sections on the
-.\"LINK2"
-Directory Panels\&,
-.\"Directory Panels"
+Directory Panels,
 the
-.\"LINK2"
 Left and Right Menus
-.\"Left and Right Menus"
 and the
-.\"LINK2"
 File Menu\&.
-.\"File Menu"
+
 .PP
 You can execute system commands from M\-Commander by simply
 typing them. Everything you type will appear on the shell command line,
 and when you press Enter, M\-Commander will execute the
 command line you typed; read the
-.\"LINK2"
 Shell Command Line
-.\"Shell Command Line"
 and
-.\"LINK2"
 Input Line Keys
-.\"Input Line Keys"
 sections to learn more about the command line.
-.\"NODE "Mouse Support"
-.SH "Mouse Support"
+
+
+.SH Mouse Support
+.PP
 M\-Commander comes with mouse support. It is activated
 whenever you are running on an
-.B xterm(1)
+\fBxterm(1)\fP
 terminal (it even works if you take a telnet, ssh or rlogin connection to
 another machine from the xterm) or if you are running on a Linux
 console and have the
-.B gpm
+\fBgpm\fP
 mouse server running.
+
 .PP
 When you left click on a file in the directory panels, that file is
 selected; if you click with the right button, the file is marked (or
 unmarked, depending on the previous state).
+
 .PP
 Double\-clicking on a file will try to execute the command if it is
 an executable program; and if the
-.\"LINK2"
 extension file
-.\"Edit Extension File"
 has a program specified for the file's extension, the specified
 program is executed.
+
 .PP
 Also, it is possible to execute the commands assigned to the function
 key labels by clicking on them.
+
 .PP
 The default auto repeat rate for the mouse buttons is 400
 milliseconds. This may be changed to other values by editing the
-.\"LINK2"
-\&~/.config/mc6/ini
-.\"Save Setup"
+~/.config/mc6/ini
 file and changing the
-.I mouse_repeat_rate
+\fImouse_repeat_rate\fP
 parameter.
+
 .PP
 If you are running M\-Commander with the mouse support, you
 can get the default mouse behavior (cutting and pasting text) by holding
 down the Shift key.
-.SH ""
-.\"NODE "Keys"
-.SH "Keys"
+
+
+.SH Keys
+.PP
 Some commands in M\-Commander involve the use of the
-.I Control
+\fIControl\fP
 (sometimes labeled CTRL or CTL) and the
-.I Meta
+\fIMeta\fP
 (sometimes labeled ALT or even Compose) keys. In this manual we will
 use the following abbreviations:
+
 .TP
-.B C\-<chr>
+\fBC\-<chr>\fP
 means hold the Control key while typing the character <chr>.
 Thus C\-f would be: hold the Control key and type f.
+
 .TP
-.B Alt\-<chr>
+\fBAlt\-<chr>\fP
 means hold the Meta or Alt key down while typing <chr>.
 If there is no Meta or Alt key, type
-.IR Esc ,
+\fIEsc,\fP
 release it, then type the character <chr>.
+
 .TP
-.B S\-<chr>
+\fBS\-<chr>\fP
 means hold the Shift key down while typing <chr>.
+
 .PP
 All input lines in M\-Commander use an approximation to
 the GNU Emacs editor's key bindings (default).
+
 .PP
 You may redefine key bindings. See
-.\"LINK2"
-.I redefine hotkey bindings
-.\"Keys_redefine"
+redefine hotkey bindings
+
 .PP
 for more info. All other key bindings (described in this manual) are relative
 to default behavior.
@@ -237,914 +259,1014 @@ to default behavior.
 .PP
 There are many sections which tell about the keys. The following are
 the most important.
+
 .PP
 The
-.\"LINK2"
 File Menu
-.\"File Menu"
 section documents the keyboard shortcuts for the commands appearing in
 the File menu. This section includes the function keys. Most of these
 commands perform some action, usually on the selected file or the
 tagged files.
+
 .PP
 The
-.\"LINK2"
 Directory Panels
-.\"Directory Panels"
 section documents the keys which select a file or tag files as a
 target for a later action (the action is usually one from the file
 menu).
+
 .PP
 The
-.\"LINK2"
 Shell Command Line
-.\"Shell Command Line"
 section list the keys which are used for entering and editing command
 lines. Most of these copy file names and such from the directory
 panels to the command line (to avoid excessive typing) or access the
 command line history.
+
 .PP
-.\"LINK2"
 Input Line Keys
-.\"Input Line Keys"
 are used for editing input lines. This means both the command line and
 the input lines in the query dialogs.
 
-.\"NODE "  Keys_redefine"
-.SH "  Redefine hotkey bindings"
+.SH Redefine hotkey bindings
+.PP
 Hotkey bindings may be read from external file (keymap\-file).
 Initially, M\-Commander creates key bindings using keymap defined
 in the source code. Then, two files
-.B %pkgdatadir%/keymap.ini
+\fB{{pkgdatadir}}/keymap.ini\fP
 and
-.B %sysconfdir%/mcommander/keymap.ini
+\fB{{sysconfdir}}/mcommander/keymap.ini\fP
 are loaded always, sequentially reassigned key bindings defined earlier.
 User\-defined keymap\-file is searched on the following algorithm (to the first one found):
-.IP
-.br
+
+.PP
+.RS
+
+.PP
 1) command line option
-.B \-K <keymap>
+\fB\-K <keymap>\fP
 or
-.B \-\-keymap=<keymap>
+\fB\-\-keymap=<keymap>\fP
 .br
 2) Environment variable
-.B MC_KEYMAP
+\fBMC_KEYMAP\fP
 .br
 3) Parameter
-.B keymap
+\fBkeymap\fP
 in section
-.B [Midnight\-Commander]
+\fB[Midnight\-Commander]\fP
 of config file.
 .br
 4) File
-.B ~/.config/mc6/keymap.ini
-.br
+\fB~/.config/mc6/keymap.ini\fP
+
+.RE
+
 .PP
 Command line option, environment variable and parameter in config file may
 contain the absolute path to the keymap\-file (with the extension .keymap
 or without it). Search of keymap\-file will occur in (to the first one found):
-.IP
-.br
+
+.PP
+.RS
+
+.PP
 1)
-.B ~/.config/mc6
+\fB~/.config/mc6\fP
 .br
 2)
-.B %sysconfdir%/mcommander/
+\fB{{sysconfdir}}/mcommander/\fP
 .br
 3)
-.B %pkgdatadir%/
+\fB{{pkgdatadir}}/\fP
 
-.\"NODE "  Miscellaneous Keys"
-.SH "  Miscellaneous Keys"
+.RE
+
+.SH Miscellaneous Keys
+.PP
 Here are some keys which don't fall into any of the other categories:
+
 .TP
-.B Enter
+\fBEnter\fP
 if there is some text in the command line (the one at the bottom of
 the panels), then that command is executed. If there is no text in the
 command line then if the selection bar is over a directory the
 M\-Commander does a
-.B chdir(2)
+\fBchdir(2)\fP
 to the selected directory and reloads the information on the panel;
 if the selection is an executable file then it is executed. Finally,
 if the extension of the selected file name matches one of the
 extensions in the
-.\"LINK2"
 extensions file
-.\"Edit Extension File"
 then the corresponding command is executed.
+
 .TP
-.B C\-l
+\fBC\-l\fP
 repaint all the information in M\-Commander.
+
 .TP
-.B C\-x c
+\fBC\-x c\fP
 run the
-.\"LINK2"
 Chmod
-.\"Chmod"
 command on a file or on the tagged files.
+
 .TP
-.B C\-x o
+\fBC\-x o\fP
 run the
-.\"LINK2"
 Chown
-.\"Chown"
 command on the current file or on the tagged files.
+
 .TP
-.B C\-x l
+\fBC\-x l\fP
 run the hard link command.
+
 .TP
-.B C\-x s
+\fBC\-x s\fP
 run the absolute symbolic link command.
+
 .TP
-.B C\-x v
+\fBC\-x v\fP
 run the relative symbolic link command. See the
-.\"LINK2"
 File Menu
-.\"File Menu"
 section for more information about symbolic links.
+
 .TP
-.B C\-x i
+\fBC\-x i\fP
 set the other panel display mode to information.
+
 .TP
-.B C\-x q
+\fBC\-x q\fP
 set the other panel display mode to quick view.
+
 .TP
-.B C\-x !
+\fBC\-x !\fP
 execute the
-.\"LINK2"
 External panelize
-.\"External panelize"
 command.
+
 .TP
-.B C\-x h
+\fBC\-x h\fP
 run the
-.\"LINK2"
 add directory to hotlist
-.\"Hotlist"
 command.
+
 .TP
-.B Alt\-!
+\fBAlt\-!\fP
 executes the Filtered view command, described in the
-.\"LINK2"
 view command\&.
-.\"Internal File Viewer"
+
 .TP
-.B Alt\-?
+\fBAlt\-?\fP
 executes the
-.\"LINK2"
 Find file
-.\"Find File"
 command.
+
 .TP
-.B Alt\-c
+\fBAlt\-c\fP
 pops up the
-.\"LINK2"
 quick cd
-.\"Quick cd"
 dialog.
+
 .TP
-.B C\-o
+\fBC\-o\fP
 when the program is being run in the Linux or FreeBSD console or under
 an xterm, it will show you the output of the previous command.  When ran
 on the Linux console, M\-Commander uses an external program
 (cons.saver) to handle saving and restoring of information on the
 screen.
+
 .PP
 You can type C\-o at any time and you will be taken back to
 M\-Commander's main screen, to return to your application just type C\-o.
 If you have an application suspended by using this trick, you won't be
 able to execute other programs from M\-Commander until you
 terminate the suspended application.
-.\"NODE "  Directory Panels"
-.SH "  Directory Panels"
+
+.SH Directory Panels
+.PP
 This section lists the keys which operate on the directory panels. If
 you want to know how to change the appearance of the panels take a
 look at the section on
-.\"LINK2"
 Left and Right Menus\&.
-.\"Left and Right Menus"
+
 .TP
-.B Tab, C\-i, left\-key, right\-key
+\fBTab, C\-i, left\-key, right\-key\fP
 change the current panel. The old other panel becomes the new current
 panel and the old current panel becomes the new other panel. The
 selection bar moves from the old current panel to the new current
 panel.
+
 .TP
-.B Insert, C\-t
+\fBInsert, C\-t\fP
 to tag files you may use the Insert key (the kich1 terminfo sequence).
 To untag files, just retag a tagged file.
+
 .TP
-.B Alt\-e
+\fBAlt\-e\fP
 to change charset of panel you may use Alt\-e (M\-e).
 Recoding is made from selected codepage into system codepage. To
 cancel the recoding, select "No translation" in the dialog of encodings.
+
 .TP
-.B Alt\-g, Alt\-r, Alt\-j
+\fBAlt\-g, Alt\-r, Alt\-j\fP
 used to select the top file in a panel, the middle file and the bottom one,
 respectively.
+
 .TP
-.B Alt\-t
+\fBAlt\-t\fP
 toggle the current display listing to show the next display listing
 format.
 With this it is possible to quickly switch to brief listing, long
 listing, user defined listing format, and back to the default.
+
 .TP
-.B C\-\e (control\-backslash)
+\fBC\-\e (control\-backslash)\fP
 show the
-.\"LINK2"
 directory hotlist
-.\"Hotlist"
 and change to the selected directory.
+
 .TP
-.B + \ (plus)
+\fB+  (plus)\fP
 this is used to select (tag) a group of files. M\-Commander
 will prompt for a selection options. When
-.I Files only
+\fIFiles only\fP
 checkbox is on, only files will be selected.  If
-.I Files only
+\fIFiles only\fP
 is off, as files as directories will be selected.
 When
-.I Shell Patterns
+\fIShell Patterns\fP
 checkbox is on, the regular expression is much like the filename globbing
 in the shell (* standing for zero or more characters and ? standing
 for one character). If
-.I Shell Patterns
+\fIShell Patterns\fP
 is off, then the tagging of files is done with normal regular
 expressions (see ed (1)). When
-.I Case sensitive
+\fICase sensitive\fP
 checkbox is on, the selection will be case sensitive characters.
 If
-.I Case sensitive
+\fICase sensitive\fP
 is off, the case will be ignored.
+
 .TP
-.B \e (backslash)
+\fB\e (backslash)\fP
 use the "\e" key to unselect a group of files. This is the opposite of
 the Plus key.
+
 .TP
-.B up\-key, C\-p
+\fBup\-key, C\-p\fP
 move the selection bar to the previous entry in the panel.
+
 .TP
-.B down\-key, C\-n
+\fBdown\-key, C\-n\fP
 move the selection bar to the next entry in the panel.
+
 .TP
-.B home, a1, Alt\-<
+\fBhome, a1, Alt\-<\fP
 move the selection bar to the first entry in the panel.
+
 .TP
-.B end, c1, Alt\->
+\fBend, c1, Alt\->\fP
 move the selection bar to the last entry in the panel.
+
 .TP
-.B next\-page, C\-v
+\fBnext\-page, C\-v\fP
 move the selection bar one page down.
+
 .TP
-.B prev\-page, Alt\-v
+\fBprev\-page, Alt\-v\fP
 move the selection bar one page up.
+
 .TP
-.B Alt\-(, Alt\-)
+\fBAlt\-(, Alt\-)\fP
 scroll long filenames to the right or left.
+
 .TP
-.B Alt\-o
+\fBAlt\-o\fP
 If the currently selected file is a directory, load that directory on
 the other panel and moves the selection to the next file. If the
 currently selected file is not a directory, load the parent directory
 on the other panel and moves the selection to the next file.
+
 .TP
-.B Alt\-i
+\fBAlt\-i\fP
 make the current directory of the current panel also the current
 directory of the other panel.  Put the other panel to the listing mode
 if needed.  If the current panel is panelized, the other panel doesn't
 become panelized.
+
 .TP
-.B C\-PageUp, C\-PageDown
+\fBC\-PageUp, C\-PageDown\fP
 only when supported by the terminal: change to ".." and to the currently
 selected directory respectively.
+
 .TP
-.B Alt\-y
+\fBAlt\-y\fP
 moves to the previous directory in the history, equivalent to clicking
 the
-.I <
+\fI<\fP
 with the mouse.
+
 .TP
-.B Alt\-u
+\fBAlt\-u\fP
 moves to the next directory in the history, equivalent to clicking the
-.I >
+\fI>\fP
 with the mouse.
+
 .TP
-.B Alt\-S\-h, Alt\-H
+\fBAlt\-S\-h, Alt\-H\fP
 displays the directory history, equivalent to depressing the 'v' with
 the mouse.
-.\"NODE "  Quick search"
-.SH "  Quick search and quick filter"
+
+.SH Quick search and quick filter
+.PP
 The Quick search mode allows you to perform fast file search in a file panel.
 Press
-.I C\-s
+\fIC\-s\fP
 or
-.I Alt\-s
+\fIAlt\-s\fP
 to start a filename search in the directory listing. Press
-.I Alt\-Shift\-s
+\fIAlt\-Shift\-s\fP
 to start Quick filter, which uses the same pattern but hides entries that do
 not contain it. The parent directory entry is always shown.
-.P
+
+.PP
 When either mode is active, the user input will be added to the shared pattern
 instead of the command line. If the
-.I Show mini\-status
+\fIShow mini\-status\fP
 option is enabled, the pattern is shown on the mini\-status line. When typing,
 the selection bar will move to the next file starting with the typed letters;
 in Quick filter mode the list is also reduced to matching entries. The
-.I Backspace
+\fIBackspace\fP
 or
-.I DEL
+\fIDEL\fP
 keys can be used to correct typing mistakes.
-.P
+
+.PP
 Pressing C\-s or Alt\-s while Quick filter is active switches to Quick search
 and shows all entries without losing the pattern or current file. Pressing
 Alt\-Shift\-s while Quick search is active switches back to Quick filter.
 Repeating the shortcut of the active mode searches for the next match.
-.P
+
+.PP
 Navigation keys such as the arrow, Home, End, Page Up and Page Down keys move
 within the filtered list without closing Quick filter.
-.P
+
+.PP
 Files can be marked and unmarked while Quick filter is active. Their marks are
 preserved when switching modes or closing the filter.
-.P
+
+.PP
 If either mode is started by pressing its shortcut twice, the previous pattern
 will be used.
-.P
+
+.PP
 Besides the filename characters, you can also use wildcard
-characters '*' and '?'.
-.\"NODE "  Shell Command Line"
-.SH "  Shell Command Line"
+characters '*\&' and '?'.
+
+.SH Shell Command Line
+.PP
 This section lists keys which are useful to avoid excessive typing when
 entering shell commands.
+
 .TP
-.B Alt\-Enter
+\fBAlt\-Enter\fP
 copy the currently selected file name to the command line.
+
 .TP
-.B C\-Enter
+\fBC\-Enter\fP
 same a Alt\-Enter.  May not work on remote systems and some terminals.
+
 .TP
-.B C\-S\-Enter
+\fBC\-S\-Enter\fP
 copy the full path name of the currently selected file to the command
 line.  May not work on remote systems and some terminals.
+
 .TP
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 does the filename, command, variable, username and hostname
-.\"LINK2"
 completion
-.\"Completion"
 for you.
+
 .TP
-.B C\-x t, C\-x C\-t
+\fBC\-x t, C\-x C\-t\fP
 copy the tagged files (or if there are no tagged files, the selected
 file) of the current panel (C\-x t) or of the other panel (C\-x C\-t) to
 the command line.
+
 .TP
-.B C\-x p, C\-x C\-p
+\fBC\-x p, C\-x C\-p\fP
 the first key sequence copies the current path name to the command
 line, and the second one copies the unselected panel's path name to
 the command line.
+
 .TP
-.B C\-q
+\fBC\-q\fP
 the quote command can be used to insert characters that are otherwise
 interpreted by M\-Commander (like the '+' symbol)
+
 .TP
-.B Alt\-p, Alt\-n
+\fBAlt\-p, Alt\-n\fP
 use these keys to browse through the command history. Alt\-p takes you
 to the last entry, Alt\-n takes you to the next one.
+
 .TP
-.B Alt\-h
+\fBAlt\-h\fP
 displays the history for the current input line.
-.\"NODE "  General Movement Keys"
-.SH "  General Movement Keys"
+
+.SH General Movement Keys
+.PP
 The help viewer, the file viewer and the directory tree use common
 code to handle moving. Therefore they accept exactly the same
 keys. Each of them also accepts some keys of its own.
+
 .PP
 Other parts of M\-Commander use some of the same movement
 keys, so this section may be of use for those parts too.
+
 .TP
-.B Up, C\-p
+\fBUp, C\-p\fP
 moves one line backward.
+
 .TP
-.B Down, C\-n
+\fBDown, C\-n\fP
 moves one line forward.
+
 .TP
-.B Prev Page, Page Up, Alt\-v
+\fBPrev Page, Page Up, Alt\-v\fP
 moves one page up.
+
 .TP
-.B Next Page, Page Down, C\-v
+\fBNext Page, Page Down, C\-v\fP
 moves one page down.
+
 .TP
-.B Home, A1
+\fBHome, A1\fP
 moves to the beginning.
+
 .TP
-.B End, C1
+\fBEnd, C1\fP
 move to the end.
+
 .PP
 The help viewer and the file viewer accept the following keys in
 addition the to ones mentioned above:
+
 .TP
-.B b, C\-b, C\-h, Backspace, Delete
+\fBb, C\-b, C\-h, Backspace, Delete\fP
 moves one page up.
+
 .TP
-.B Space bar
+\fBSpace bar\fP
 moves one page down.
+
 .TP
-.B u, d
+\fBu, d\fP
 moves one half of a page up or down.
+
 .TP
-.B g, G
+\fBg, G\fP
 moves to the beginning or to the end.
-.\"NODE "  Input Line Keys"
-.SH "  Input Line Keys"
+
+.SH Input Line Keys
+.PP
 The input lines (they are used for the
-.\"LINK2"
 command line
-.\"Shell Command Line"
 and for the query dialogs in the program) accept these keys:
+
 .TP
-.B C\-a
+\fBC\-a\fP
 puts the cursor at the beginning of line.
+
 .TP
-.B C\-e
+\fBC\-e\fP
 puts the cursor at the end of the line.
+
 .TP
-.B C\-b, move\-left
+\fBC\-b, move\-left\fP
 move the cursor one position left.
+
 .TP
-.B C\-f, move\-right
+\fBC\-f, move\-right\fP
 move the cursor one position right.
+
 .TP
-.B Alt\-f
+\fBAlt\-f\fP
 moves one word forward.
+
 .TP
-.B Alt\-b
+\fBAlt\-b\fP
 moves one word backward.
+
 .TP
-.B C\-h, Backspace
+\fBC\-h, Backspace\fP
 delete the previous character.
+
 .TP
-.B C\-d, Delete
+\fBC\-d, Delete\fP
 delete the character in the point (over the cursor).
+
 .TP
-.B C\-@
+\fBC\-@\fP
 sets the mark for cutting.
+
 .TP
-.B C\-w
+\fBC\-w\fP
 copies the text between the cursor and the mark to a kill buffer and
 removes the text from the input line.
+
 .TP
-.B Alt\-w
+\fBAlt\-w\fP
 copies the text between the cursor and the mark to a kill buffer.
+
 .TP
-.B C\-y
+\fBC\-y\fP
 yanks back the contents of the kill buffer.
+
 .TP
-.B C\-k
+\fBC\-k\fP
 kills the text from the cursor to the end of the line.
+
 .TP
-.B Ctrl\-Insert
+\fBCtrl\-Insert\fP
 copies the selected text to the clipfile and to the external clipboard.
 With nothing selected: the marked files of the panel on screen, one per
 line; else the whole line; else the file under the panel cursor.
+
 .TP
-.B Shift\-Delete
+\fBShift\-Delete\fP
 cuts the selected text to the clipfile and to the external clipboard.
+
 .TP
-.B Shift\-Insert
+\fBShift\-Insert\fP
 pastes the clipfile into the line as one line: line breaks and other
 control characters become spaces. On the command line it works with the
 panels shown or hidden. More than 2 KB of text is pasted only after a
 confirmation.
+
 .TP
-.B Alt\-p, Alt\-n
+\fBAlt\-p, Alt\-n\fP
 Use these keys to browse through the command history. Alt\-p takes you
 to the last entry, Alt\-n takes you to the next one.
+
 .TP
-.B Alt\-C\-h, Alt\-Backspace
+\fBAlt\-C\-h, Alt\-Backspace\fP
 delete one word backward.
+
 .TP
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 does the filename, command, variable, username and hostname
-.\"LINK2"
 completion
-.\"Completion"
 for you.
-.SH ""
-.\"NODE "Menu Bar"
-.SH "Menu Bar"
+
+
+.SH Menu Bar
+.PP
 The menu bar pops up when you press F9 or click the mouse on the top
 row of the screen. The menu bar has five menus: "Left", "File",
 "Command", "Options" and "Right".
+
 .PP
 The
-.\"LINK2"
 Left and Right Menus
-.\"Left and Right Menus"
 allow you to modify the appearance of the left and right directory
 panels.
+
 .PP
 The
-.\"LINK2"
 File Menu
-.\"File Menu"
 lists the actions you can perform on the currently selected file or
 the tagged files.
+
 .PP
 The
-.\"LINK2"
 Command Menu
-.\"Command Menu"
 lists the actions which are more general and bear no relation to the
 currently selected file or the tagged files.
+
 .PP
 The
-.\"LINK2"
 Options Menu
-.\"Options Menu"
 lists the actions which allow you to customize M\-Commander.
-.\"NODE "  Left and Right Menus"
-.SH "  Left and Right (Above and Below) Menus"
+
+.SH Left and Right (Above and Below) Menus
+.PP
 The outlook of the directory panels can be changed from the
-.B Left
+\fBLeft\fP
 and
-.B Right
+\fBRight\fP
 menus (they are named
-.B Above
+\fBAbove\fP
 and
-.B Below
+\fBBelow\fP
 when the horizontal panel split is chosen from the
-.\"LINK2"
 Layout
-.\"Layout"
 options dialog).
-.\"NODE "    Listing Format..."
-.SH "    Listing Format..."
+
+.SS Listing Format...
+.PP
 The listing mode view is used to display a listing of files, there are
 four different listing formats available:
-.BR Full ,
-.BR Brief ,
-.B Long
+\fBFull\fP,
+\fBBrief\fP,
+\fBLong\fP
 and
-.BR User .
+\fBUser\fP\&.
 The full directory view shows the file name, the size of the file and
 the modification time.
+
 .PP
 The brief view shows only the file name and it has from 1 up to 9 columns
 (therefore showing more files unlike other views). The long view
 is similar to the output of
-.B "ls \-l"
+\fBls \-l\fP
 command. The long view takes the whole screen width.
+
 .PP
 If you choose the "User" display format, then you have to specify
 the display format.
+
 .PP
 The user display format must start with a panel size specifier.  This
 may be "half" or "full", and they specify a half screen panel and a
 full screen panel respectively.
+
 .PP
 After the panel size, you may specify how many listings to fit in the
 panel, side\-by\-side (in other words: how many times to repeat the
 fields horizontally). This defaults to 1. You may change this by adding a
 number from 1 to 9 to the format string.
+
 .PP
 After this you add the name of the fields with an optional size
 specifier.  This are the available fields you may display:
+
 .TP
-.B name
+\fBname\fP
 displays the file name.
+
 .TP
-.B size
+\fBsize\fP
 displays the file size.
+
 .TP
-.B bsize
+\fBbsize\fP
 is an alternative form of the
-.B size
+\fBsize\fP
 format. It displays the size of the files and for directories it just
 shows SUB\-DIR or UP\-\-DIR unless the directory size is computed by the
 "Show directory sizes" command.
+
 .TP
-.B type
+\fBtype\fP
 displays a one character wide type field.  This character is similar to
 what is displayed by ls with the \-F flag \-
-.B *
+\fB*\fP
 for executable files,
-.B /
+\fB/\fP
 for directories,
-.B @
+\fB@\fP
 for links,
-.B =
+\fB=\fP
 for sockets,
-.B \-
+\fB\-\fP
 for character devices,
-.B +
+\fB+\fP
 for block devices,
-.B |
+\fB|\fP
 for pipes,
-.B ~
+\fB~\fP
 for symbolic links to directories and
-.B !
+\fB!\fP
 for stale symlinks (links that point nowhere).
+
 .TP
-.B mark
+\fBmark\fP
 an asterisk if the file is tagged, a space if it's not.
+
 .TP
-.B mtime
+\fBmtime\fP
 file's last modification time.
+
 .TP
-.B atime
+\fBatime\fP
 file's last access time.
+
 .TP
-.B ctime
+\fBctime\fP
 file's status change time.
+
 .TP
-.B perm
+\fBperm\fP
 a string representing the current permission bits of the file.
+
 .TP
-.B mode
+\fBmode\fP
 an octal value with the current permission bits of the file.
+
 .TP
-.B nlink
+\fBnlink\fP
 the number of links to the file.
+
 .TP
-.B ngid
+\fBngid\fP
 the GID (numeric).
+
 .TP
-.B nuid
+\fBnuid\fP
 the UID (numeric).
+
 .TP
-.B owner
+\fBowner\fP
 the owner of the file.
+
 .TP
-.B group
+\fBgroup\fP
 the group of the file.
+
 .TP
-.B inode
+\fBinode\fP
 the inode of the file.
+
 .PP
 Also you can use following keywords to define the panel layout:
+
 .TP
-.B space
+\fBspace\fP
 a space in the display format.
+
 .TP
-.B |
+\fB|\fP
 add a vertical line to the display format.
+
 .PP
 To force one field to a fixed size (a size specifier), you just add
-.B :
+\fB:\fP
 followed by the number of characters you want the field to have.  If the
 number is followed by the symbol
-.BR + ,
+\fB+\fP,
 then the size specifies the minimal field size \- if the program finds
 out that there is more space on the screen, it will then expand that
 field.
+
 .PP
 For example, the
-.B Full
+\fBFull\fP
 display corresponds to this format:
+
 .PP
 half type name | size | mtime
+
 .PP
 And the
-.B Long
+\fBLong\fP
 display corresponds to this format:
+
 .PP
 full perm space nlink space owner space group space size space mtime
 space name
+
 .PP
 This is a nice user display format:
+
 .PP
 half name | size:7 | type mode:3
+
 .PP
 Panels may also be set to the following modes:
+
 .TP
-.B "Quick View"
+\fBQuick View\fP
 In this mode, the panel will switch to a reduced
-.\"LINK2"
 viewer
-.\"Internal File Viewer"
 that displays the contents of the currently selected file, if you
 select the panel (with the tab key or the mouse), you will have access
 to the usual viewer commands.
+
 .TP
-.B "Info"
+\fBInfo\fP
 The info view display information related to the currently
 selected file and if possible information about the current file
 system.
+
 .TP
-.B "Tree"
+\fBTree\fP
 The tree view is quite similar to the
-.\"LINK2"
 directory tree
-.\"Directory Tree"
 feature. See the section about it for more information.
+
 .TP
-.B "Panelize"
+\fBPanelize\fP
 This mode shows the results of the latest
-.\"LINK2"
 External panelize
-.\"External panelize"
 or
-.\"LINK2"
 Find file
-.\"Find File"
 commands.
-.\"NODE "Panel modes"
-.SH "Panel modes"
+
+
+.SH Panel modes
+.PP
 A panel mode is a named, reusable listing format. The list of modes is
 shared between both panels and is edited and applied through two dialogs.
+
 .PP
-.B Alt\-t
+\fBAlt\-t\fP
 (also the
-.B "Panel modes..."
+\fBPanel modes...\fP
 entry of the Left and Right menus) opens the
-.B switcher:
+\fBswitcher:\fP
 a plain list of the defined modes. Press
-.B Enter
+\fBEnter\fP
 on a mode to apply it to the panel (the menu's panel, or the active panel
 for
-.BR Alt\-t ),
+\fBAlt\-t\fP),
 or
-.B Esc
+\fBEsc\fP
 to leave the panel unchanged.
+
 .PP
 The
-.B "File panel modes..."
+\fBFile panel modes...\fP
 entry of the
-.B Options
+\fBOptions\fP
 menu opens the
-.B manager:
+\fBmanager:\fP
 the same list, edited with keys.
-.B Insert
+\fBInsert\fP
 creates a new mode,
-.B F4
+\fBF4\fP
 (or
-.BR Enter )
+\fBEnter\fP)
 edits the selected one,
-.B F5
+\fBF5\fP
 duplicates it, and
-.B Delete
+\fBDelete\fP
 (or
-.BR F8 )
+\fBF8\fP)
 removes it. The
-.B Defaults
+\fBDefaults\fP
 button replaces the list with the built\-in modes.
-.B Ok
+\fBOk\fP
 saves the list;
-.B Cancel
+\fBCancel\fP
 (or
-.BR Esc )
+\fBEsc\fP)
 discards every change made in the dialog.
 The manager edits the global list of modes; it does not switch any panel.
+
 .PP
 The mode editor has separate inputs for the column field types and their
 widths, and for the mini\-status line, using the field names described under
-.\"LINK2"
 Listing Format...
-.\"Listing Format..."
 \&. A field type list is comma\-separated, one entry per column; a column may
 contain several space\-separated fields (for example
-.BR "type name" ).
+\fBtype name\fP).
 A width of 0 (or empty) leaves the field at its automatic width.
 A complete format string (for example
-.BR "half name | size:7" )
+\fBhalf name | size:7\fP)
 may also be pasted into a types input: the
-.B |
+\fB|\fP
 separators and
-.B :width
+\fB:width\fP
 suffixes are converted into the two lists.
+
 .PP
 The defined modes and each panel's selected mode are saved across sessions.
-.\"NODE "    Sort Order..."
-.SH "    Sort Order..."
+
+.SS Sort Order...
+.PP
 The eight sort orders are by name (alphabetical sort or version sort,
 also known as natural sort), by extension, by modification time,
 by access time, and by inode information modification time, by size,
 by inode and unsorted.  In the Sort order dialog box you can choose
 the sort order and you may also specify if you want to sort in reverse
 order by checking the reverse box.
+
 .PP
 By default directories are sorted before files but this can be changed
 from the
-.\"LINK2"
 Panel options
-.\"Panel options"
 menu (option
-.BR "Mix all files" ).
-.\"NODE "    Filter..."
-.SH "    Filter..."
+\fBMix all files\fP).
+
+.SS Filter...
+.PP
 The filter command allows you to specify a shell pattern (for example
-.BR "*.tar.gz" )
+\fB*\&.tar.gz\fP)
 which the files and directories must match to be shown.
 The
-.\"LINK2"
 input line
-.\"Input Line Keys"
 allow enter the pattern of file/directory names that will be shown
 in the panel.
+
 .PP
 When
-.I Files only
+\fIFiles only\fP
 checkbox is on, only files will be matched to the filter, and all
 directories will be shown. Otherwise, as files as directories will
 be filtered. When
-.I Shell Patterns
+\fIShell Patterns\fP
 checkbox is on, the regular expression is much like the filename globbing
 in the shell (* standing for zero or more characters and ? standing
 for one character). Otherwise, the matching of files/directories is done
 with normal regular expressions (see ed(1)). When
-.I Case sensitive
+\fICase sensitive\fP
 checkbox is on, the filtering will be case sensitive characters. Otherwise,
 the case will be ignored.
-.\"NODE "    Reread"
-.SH "    Reread"
+
+.SS Reread
+.PP
 The reread command reload the list of files in the directory. It is
 useful if other processes have created or removed files.
-.\"NODE "  File Menu"
-.SH "  File Menu"
+
+.SH File Menu
+.PP
 M\-Commander uses the F1 \- F10 keys as keyboard shortcuts
 for commands appearing in the file menu.  The escape sequences for the
 function keys are terminfo capabilities kf1 trough kf10.  On terminals
 without function key support, you can achieve the same functionality by
 pressing the Esc key and then a number in the range 1 through 9 and 0
 (corresponding to F1 to F9 and F10 respectively).
+
 .PP
 The File menu has the following commands (keyboard shortcuts in parentheses):
+
 .PP
-.B Help (F1)
+\fBHelp (F1)\fP
+
 .PP
 Invokes the built\-in hypertext help viewer. Inside the
-.\"LINK2"
-help viewer\&,
-.\"Contents"
+help viewer,
 you can use the Tab key to select the next link and the Enter key to
 follow that link. The keys Space and Backspace are used to move
 forward and backward in a help page. Press F1 again to get the full
 list of accepted keys.
+
 .PP
-.B Menu (F2)
+\fBMenu (F2)\fP
+
 .PP
 Invoke the
-.\"LINK2"
 user menu\&.
-.\"Edit Menu File"
 The user menu provides an easy way to provide users with a menu and
 add extra features to M\-Commander.
+
 .PP
-.B View (F3, F13)
+\fBView (F3, F13)\fP
+
 .PP
 View the currently selected file. By default this invokes the
-.\"LINK2"
 Internal File Viewer
-.\"Internal File Viewer"
 but if the option "Use internal view" is off, it invokes an external
 file viewer specified by the
-.B VIEWER
+\fBVIEWER\fP
 environment variable.  If
-.B VIEWER
+\fBVIEWER\fP
 is undefined, the
-.B PAGER
+\fBPAGER\fP
 environment variable is tried.  If
-.B PAGER
+\fBPAGER\fP
 is also undefined, the "view" command is invoked.  If you use F13
 instead, the viewer will be invoked without doing any formatting or
 preprocessing to the file.
-.P
+
+.PP
 See
-.\"LINK2"
 parameters for external viewer
-.\"Parameters for external editor or viewer"
 for explain how you may specify an extended command line options
 for external viewers.
+
 .PP
-.B Filtered View (Alt\-!)
+\fBFiltered View (Alt\-!)\fP
+
 .PP
 This command prompts for a command
 and its arguments (the argument defaults to the currently selected
 file name), the output from such command is shown in the internal file
 viewer.
+
 .PP
-.B Edit (F4, F14)
+\fBEdit (F4, F14)\fP
+
 .PP
 Press F4 to edit the highlighted file.  Press F14 (usually F14)
 to start the editor with a new, empty file.
 Currently they invoke the
-.B vi
+\fBvi\fP
 editor, or the editor specified in the
-.B EDITOR
+\fBEDITOR\fP
 environment variable, or the
-.\"LINK2"
 Internal File Editor
-.\"Internal File Editor"
 if the use_internal_edit option is on.
-.P
+
+.PP
 See
-.\"LINK2"
 parameters for external editor
-.\"Parameters for external editor or viewer"
 for explain how you may specify an extended command line options
 for external editors.
+
 .PP
-.B Copy (F5, F15)
+\fBCopy (F5, F15)\fP
+
 .PP
 Press F5 to pop up an input dialog to copy the currently selected file (or
 the tagged files, if there is at least one file tagged) to the
@@ -1155,45 +1277,52 @@ During this process, you can press C\-c or Esc to abort the operation.
 For details about source mask (which will be usually either * or ^\e(.*\e)$
 depending on setting of Use shell patterns) and possible wildcards in the
 destination see
-.\"LINK2"
 Mask copy/rename\&.
-.\"Mask Copy/Rename"
+
 .PP
 F15 (usually F15) is similar, but defaults to the directory in the
 selected panel. It always operates on the selected file, regardless of
 any tagged files.
+
 .PP
 On some systems, it is possible to do the copy in the background by
 clicking on the background button (or pressing Alt\-b in the dialog
 box).  The
-.\"LINK2"
 Background Jobs
-.\"Background jobs"
 is used to control the background process.
+
 .PP
-.B Link (C\-x l)
+\fBLink (C\-x l)\fP
+
 .PP
 Create a hard link to the current file.
+
 .PP
-.B Absolute symlink (C\-x s)
+\fBAbsolute symlink (C\-x s)\fP
+
 .PP
 Create a absolute symbolic link to the current file.
+
 .PP
-.B Relative symLink (C\-x v)
+\fBRelative symLink (C\-x v)\fP
+
 .PP
 Create a relative symbolic link to the current file.
+
 .PP
 To those of you who don't know what links are: creating a link to a file
 is a bit like copying the file, but both the source filename and the destination
 filename represent the same file image. For example, if you edit one of these
 files, all changes you make will appear in both files. Some people call
 links aliases or shortcuts.
+
 .PP
 A hard link appears as a real file. After making it, there is no way of
 telling which one is the original and which is the link. If you delete
 either one of them the other one is still intact. It is very difficult
 to notice that the files represent the same image. Use hard links when
 you don't even want to know.
+
 .PP
 A symbolic link is a reference to the name of the original file. If
 the original file is deleted the symbolic link is useless. It is quite
@@ -1201,137 +1330,154 @@ easy to notice that the files represent the same image.
 M\-Commander shows an "@"\-sign in front of the file name if it is a
 symbolic link to somewhere (except to directory, where it shows a tilde (~)).
 The original file which the link points to is shown on mini\-status line if the
-.I "Show mini\-status"
+\fIShow mini\-status\fP
 option is enabled. Use symbolic links when you want to avoid the
 confusion that can be caused by hard links.
+
 .PP
 When you press "C\-x s" M\-Commander will automatically fill in the
 complete path+filename of the original file and suggest a name for the link.
 You can change either one.
+
 .PP
 Sometimes you may want to change the absolute path of the original into
 a relative path. An absolute path starts from the root directory:
+
 .PP
-.I /home/frodo/mc/mc \-> /home/frodo/new/mc
+\fI/home/frodo/mc/mc \-> /home/frodo/new/mc\fP
+
 .PP
 A relative link describes the original file's location starting from the
 location of the link itself:
+
 .PP
-.I /home/frodo/mc/mc \-> ../new/mc
+\fI/home/frodo/mc/mc \-> ../new/mc\fP
+
 .PP
 You can force M\-Commander to suggest a relative path by pressing
 "C\-x v" instead of "C\-x s".
+
 .PP
-.B Rename/Move (F6, F16)
+\fBRename/Move (F6, F16)\fP
+
 .PP
 Press F6 to pop up an input dialog to copy the currently selected file (or
 the tagged files, if there is at least one file tagged) to the
 directory/filename you specify in the input dialog.  The destination
 defaults to the directory in the non\-selected panel. For more details
 look at Copy (F5) operation above, most of the things are quite similar.
+
 .PP
 F16 (usually F16) is similar, but defaults to the directory in the
 selected panel. It always operates on the selected file, regardless of
 any tagged files.
+
 .PP
 On some systems, it is possible to do the copy in the background by
 clicking on the background button (or pressing Alt\-b in the dialog
 box).  The
-.\"LINK2"
 Background Jobs
-.\"Background jobs"
 is used to control the background process.
+
 .PP
-.B Mkdir (F7)
+\fBMkdir (F7)\fP
+
 .PP
 Pop up an input dialog and creates the directory specified.
+
 .PP
-.B Delete (F8)
+\fBDelete (F8)\fP
+
 .PP
 Delete the currently selected file or the tagged files in the
 currently selected panel. During the process, you can press C\-c or
 Esc to abort the operation.
+
 .PP
-.B Quick cd (Alt\-c)
+\fBQuick cd (Alt\-c)\fP
 Use the
-.\"LINK2"
 quick cd
-.\"Quick cd"
 command if you have full command line and want to cd somewhere.
+
 .PP
-.B Select group (+)
+\fBSelect group (+)\fP
+
 .PP
 This is used to select (tag) a group of files. M\-Commander
 will prompt for a selection options. When
-.I Files only
+\fIFiles only\fP
 checkbox is on, only files will be selected.  If
-.I Files only
+\fIFiles only\fP
 is off, as files as directories will be selected.
 When
-.I Shell Patterns
+\fIShell Patterns\fP
 checkbox is on, the regular expression is much like the filename globbing
 in the shell (* standing for zero or more characters and ?  standing
 for one character). If
-.I Shell Patterns
+\fIShell Patterns\fP
 is off, then the tagging of files is done with normal regular
 expressions (see ed (1)). When
-.I Case sensitive
+\fICase sensitive\fP
 checkbox is on, the selection will be case sensitive characters.
 If
-.I Case sensitive
+\fICase sensitive\fP
 is off, the case will be ignored.
+
 .PP
-.B Unselect group (\e)
+\fBUnselect group (\e)\fP
+
 .PP
 Used to unselect a group of files. This is the opposite of the
-.I "Select group"
+\fISelect group\fP
 command.
+
 .PP
-.B Invert selection (*)
+\fBInvert selection (*)\fP
+
 .PP
 Select (tag) all items that are currently unselected, and unselect
 (untag) all items that are currently selected. Applies to only files
 or to both files and directories, depending on whether 'Reverse files
 only' is enabled.
+
 .PP
-.B Quit (F10, S\-F10)
+\fBQuit (F10, S\-F10)\fP
+
 .PP
 Terminate M\-Commander. S\-F10 is used when you want to
 quit and you are using the shell wrapper.  S\-F10 will not take you
 to the last directory you visited with M\-Commander, instead
 it will stay at the directory where you started M\-Commander.
-.\"NODE "    Quick cd"
-.SH "    Quick cd"
+
+.SS Quick cd
+.PP
 This command is useful if you have a full command line and want to
-.\"LINK2"
 cd
-.\"The cd internal command"
 somewhere without having to yank and paste the command line. This command
 pops up a small dialog, where you enter everything you would enter after
-.B cd
+\fBcd\fP
 on the command line and then you press enter. This features all the things
 that are already in the
-.\"LINK2"
 internal cd command\&.
-.\"The cd internal command"
-.\"NODE "  Command Menu"
-.SH "  Command Menu"
-The
-.\"LINK2"
-Directory tree
-.\"Directory Tree"
-command shows a tree figure of the directories.
+
+.SH Command Menu
 .PP
 The
-.\"LINK2"
+Directory tree
+command shows a tree figure of the directories.
+
+.PP
+The
 "Find file"
-.\"Find File"
 command allows you to search for a specific file.
+
 .PP
 The "Swap panels" command swaps the contents of the two directory panels.
+
 .PP
 The "Switch panels on/off" command shows the output of the last shell command.
 This works only on xterm and on Linux and FreeBSD console.
+
 .PP
 The "Compare directories" command compares the directory
 panels with each other. You can then use the Copy (F5) command to make
@@ -1340,160 +1486,178 @@ compares only file size and file date. The thorough method makes a
 full byte\-by\-byte compare. The size\-only
 compare method just compares the file sizes and does not check the
 contents or the date times, it just checks the file size.
+
 .PP
 The
-.\"LINK2"
 "External panelize"
-.\"External panelize"
 allows you to execute an external program, and make the output of that
 program the contents of the current panel.
+
 .PP
 The "Command history" command shows a list of typed commands. The
 selected command is copied to the command line. The command history
 can also be accessed by typing Alt\-p or Alt\-n.
+
 .PP
 The
-.\"LINK2"
 "Hotlist"
-.\"Hotlist"
 command makes changing of the current directory to often used directories
 faster.
+
 .PP
 The
-.\"LINK2"
 "Screen list"
-.\"Screen selector"
 command shows a dialog window with the list of currently running
 internal editors, viewers and other M\-Commander modules that support this mode.
+
 .PP
 The
-.\"LINK2"
 "Edit extension file"
-.\"Edit Extension File"
 command allows you to specify programs to executed when you try to
 execute, view, edit and do a bunch of other thing on files
 with certain extensions (filename endings).
+
 .PP
 The
-.\"LINK2"
 "Edit Menu File"
-.\"Edit Menu File"
 command may be used for editing the user menu (which appears by
 pressing F2).
-.\"NODE "    Directory Tree"
-.SH "    Directory Tree"
+
+.SS Directory Tree
+.PP
 The Directory Tree command shows a tree figure of the directories. You
 can select a directory from the figure and M\-Commander will
 change to that directory.
+
 .PP
 There are two ways to invoke the tree. The real directory tree command
 is available from Commands menu. The other way is to select tree view
 from the Left or Right menu.
+
 .PP
 To get rid of long delays, M\-Commander creates the tree
 figure by scanning only a small subset of all the directories. If the
 directory which you want to see is missing, move to its parent
 directory and press C\-r (or F2).
+
 .PP
 You can use the following keys:
+
 .TP
-.\"LINK2"
 General movement keys
-.\"General Movement Keys"
 are accepted.
+
 .TP
-.B Enter.
+\fBEnter.\fP
 In the directory tree, exits the directory tree and changes to this
 directory in the current panel. In the tree view, changes to this
 directory in the other panel and stays in tree view mode in the
 current panel.
+
 .TP
-.B C\-r, F2 (Rescan).
+\fBC\-r, F2 (Rescan).\fP
 Rescan this directory. Use this when the tree figure is out of date:
 it is missing subdirectories or shows some subdirectories which don't
 exist any more.
+
 .TP
-.B F3 (Forget).
+\fBF3 (Forget).\fP
 Delete this directory from the tree figure. Use this to remove clutter
 from the figure. If you want the directory back to the tree figure
 press F2 in its parent directory.
+
 .TP
-.B F4 (Static/Dynamic).
+\fBF4 (Static/Dynamic).\fP
 Toggle between the dynamic navigation mode (default) and the static
 navigation mode.
+
 .PP
 In the static navigation mode you can use the Up and Down keys to
 select a directory. All known directories are shown.
+
 .PP
 In the dynamic navigation mode you can use the Up and Down keys to
 select a sibling directory, the Left key to move to the parent
 directory, and the Right key to move to a child directory. Only the
 parent, sibling and children directories are shown, others are left
 out. The tree figure changes dynamically as you traverse.
+
 .TP
-.B F5 (Copy).
+\fBF5 (Copy).\fP
 Copy the directory.
+
 .TP
-.B F6 (RenMov).
+\fBF6 (RenMov).\fP
 Move the directory.
+
 .TP
-.B F7 (Mkdir).
+\fBF7 (Mkdir).\fP
 Make a new directory below this directory.
+
 .TP
-.B F8 (Delete).
+\fBF8 (Delete).\fP
 Delete this directory from the file system.
+
 .TP
-.B C\-s, Alt\-s.
+\fBC\-s, Alt\-s.\fP
 Search the next directory matching the search string. If there is
 no such directory these keys will move one line down.
+
 .TP
-.B C\-h, Backspace.
+\fBC\-h, Backspace.\fP
 Delete the last character of the search string.
+
 .TP
-.B Any other character.
+\fBAny other character.\fP
 Add the character to the search string and move to the next directory
 which starts with these characters. In the tree view you must first
 activate the search mode by pressing C\-s. The search string is shown
 in the mini status line.
+
 .PP
 The following actions are available only in the directory tree. They
 aren't supported in the tree view.
+
 .TP
-.B F1 (Help).
+\fBF1 (Help).\fP
 Invoke the help viewer and show this section.
+
 .TP
-.B Esc, F10.
+\fBEsc, F10.\fP
 Exit the directory tree. Do not change the directory.
+
 .PP
 The mouse is supported. A double\-click behaves like Enter. See
 also the section on
-.\"LINK2"
 mouse support\&.
-.\"Mouse Support"
-.\"NODE "    Find File"
-.SH "    Find File"
+
+.SS Find File
+.PP
 The Find File feature first asks for the start directory for the
 search and the filename to be searched for. By pressing the Tree
 button you can select the start directory from the
-.\"LINK2"
 directory tree
-.\"Directory Tree"
 figure.
+
 .PP
 The "File name" input field contains a filename pattern to be searched
 for. It is interpreted as a shell pattern or as a regular expression
 depending on the state of the "Using shell patterns" checkbox. An empty
 value is valid and matches any file name.
+
 .PP
 The "Content" input field contains a string to search for within the
 files. Leave this field empty to disable searching file contents.
+
 .PP
 Option "Whole words" allows select only those files containing matches that
 form whole words. Like grep \-w.
+
 .PP
 You can start the search by pressing the OK button.
 During the search you can stop from the Stop button and continue from
 the Start button.
+
 .PP
 The file list shows the modification time, the size and the permissions of
 every found file along with its name. When the file contents are searched, a
@@ -1503,6 +1667,7 @@ and is marked with "[+]". The matches of such a file are shown by the Left key
 or by the click on the mark: the number of the line and the line itself. There
 you can press Enter to go to the file, F3 to view or F4 to edit it at the
 chosen match.
+
 .PP
 You can browse the filelist with the up and down arrow keys. The Chdir
 button will change to the directory of the currently selected
@@ -1513,81 +1678,95 @@ that you can do additional operations on them (view, copy, move,
 delete and so on). To return to the normal file listing, change directory
 to ".."; to see the panelized search results again, select the Panelize
 mode in the Left and Right menu.
+
 .PP
 The 'Enable ignore directories' checkbox and input field below it
 allow one to set up the list of directories that should be skip during the search
 files (for example, you may want to avoid searches on a CD\-ROM or on a NFS
 directory that is mounted across a slow link). List components must be separated
 with a colon, here is an example:
-.PP
-.nf
+
+.EX
 /cdrom:/nfs/wuarchive:/afs
-.fi
+
+.EE
+
 .PP
 Relative paths are supported also. The following example shows how to skip special
 directories of version control systems:
-.nf
+
+.EX
 /cdrom:/nfs/wuarchive:/afs:.svn:.git:CVS
-.fi
+
+.EE
+
 .PP
 Attention: input field can contain a dot (.), this means the current absolute path.
+
 .PP
 You may consider using the
-.\"LINK2"
 External panelize
-.\"External panelize"
 command for some operations. Find file command is for simple queries
 only, while using External panelize you can do as mysterious searches
 as you would like.
-.\"NODE "    External panelize"
-.SH "    External panelize"
+
+.SS External panelize
+.PP
 The External panelize allows you to execute an external program, and
 make the output of that program the contents of the current panel.
+
 .PP
 For example, if you want to manipulate in one of the panels all the
 symbolic links in the current directory, you can use external
 panelization to run the following command:
-.PP
-.nf
+
+.EX
 find . \-type l \-print
-.fi
+
+.EE
+
 .PP
 Upon command completion, the directory contents of the panel will no
 longer be the directory listing of the current directory, but all the
 files that are symbolic links. To return to the normal file listing,
 change directory to ".."; to see the command output again, select
 the Panelize mode in the Left and Right menu.
+
 .PP
 If you want to panelize all of the files that have been downloaded
 from your FTP server, you can use this awk command to extract the file
 name from the transfer log files:
-.PP
-.nf
+
+.EX
 awk '$9 ~! /incoming/ { print $9 }' < /var/log/xferlog
-.fi
+
+.EE
+
 .PP
 You may want to save often used panelize commands under a descriptive name,
 so that you can recall them quickly. You do this by typing the command on
 the input line and pressing Add new button. Then you enter a name under
 which you want the command to be saved. Next time, you just choose that
 command from the list and do not have to type it again.
-.\"NODE "    Hotlist"
-.SH "    Hotlist"
+
+.SS Hotlist
+.PP
 The Hotlist command shows the labels of the locations in the hotlist.
 M\-Commander will change to the location corresponding to the
 selected label. A location is a directory, a path inside a virtual file
 system, or a panel plugin address such as
-.IR sftp:host/dir .
+\fIsftp:host/dir.\fP
 From the hotlist dialog, you can remove already created label/location
 pairs and add new ones. To add new locations quickly, you can use the Add
 to hotlist command (C\-x h), which adds the current directory or plugin
 panel location into the hotlist, asking just for the label. A location
 that is already in the hotlist is not added twice: the dialog shows the
 existing entry instead.
+
 .PP
 Keys in the hotlist dialog:
-.PP
-.nf
+
+.EX
 Enter        change to the selected location
 Alt\-o        open the selected location in the other panel
 Ctrl\-Enter   put "cd location" into the command line
@@ -1605,40 +1784,45 @@ F6           move the selected entry into another group: the dialog lists
 F9           sort the current group by label, groups first
 Ctrl\-s       search the list as you type, Ctrl\-s again finds the next match
 Right, Left  enter and leave a group
-.fi
+
+.EE
+
 .PP
 This makes cd to often used directories faster. You may consider using the
 CDPATH variable as described in
-.\"LINK2"
 internal cd command
-.\"The cd internal command"
 description.
-.\"NODE "    Edit Extension File"
-.SH "    Edit Extension File"
+
+.SS Edit Extension File
+.PP
 This will invoke your editor on the file
-.IR ~/.config/mc6/extensions.ini .
+\fI~/.config/mc6/extensions.ini.\fP
 If this file does not exist and you are not root, it will be copied from
-.IR %sysconfdir%/mcommander/extensions.ini .
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
 If you are root, you can choose the file to edit: user's
-.I ~/.config/mc6/extensions.ini
+\fI~/.config/mc6/extensions.ini\fP
 or system\-wide
-.IR %sysconfdir%/mcommander/extensions.ini .
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
 The format of this file is described in detail in it.
-.\"NODE "    Background jobs"
-.SH "    Background Jobs"
+
+.SS Background Jobs
+.PP
 This lets you control the state of any background M\-Commander
 process (only copy and move files operations can be done in the
 background).  You can stop, restart and kill a background job from
 here.
-.\"NODE "    Edit Menu File"
-.SH "    Edit Menu File"
+
+.SS Edit Menu File
+.PP
 The user menu is a menu of useful actions that can be customized by
 the user. It comes in two forms: a menu that edits itself, kept in a key
 file, and the older menu file written by hand. Where a key file exists,
 that is the menu F2 opens; where none does, the old file is read as it
 always was.
+
 .PP
-.B The menu that edits itself
+\fBThe menu that edits itself\fP
+
 .PP
 The entries are kept in .mc6menu of the current directory and in
 ~/.config/mc6/menu.ini, and the two are shown together. A .mc6menu is read only where it
@@ -1647,8 +1831,8 @@ its entries run commands. Nothing else is
 read: the menu holds what its owner put there, and mcommander ships no entries
 at all, so the menu of a new user is empty and asks for its first one.
 Inside the menu:
-.PP
-.nf
+
+.EX
 Enter       run the entry
 Ins         add an entry
 F4          edit the entry
@@ -1657,22 +1841,24 @@ Shift\-F4    open the file the entry is kept in
 Del         delete the entry
 Ctrl\-Up     move the entry up
 Ctrl\-Down   move the entry down
-.fi
+
+.EE
+
 .PP
 An entry is a hotkey, a label and the commands, and the dialog asks for
 no more than that: there are no conditions and no file masks. The
 commands take the same substitutions the old menu takes, %f, %s,
 %{prompt} and the rest, described in
-.\"LINK2"
 macro substitution\&.
-.\"Macro Substitution"
 Two checkboxes say what to do with the output: whether it goes to the
 viewer, and whether the command runs without the shell of the panel.
+
 .PP
 The label is shown with those substitutions put in as well, so a label of
 "print %f" stands in the list with the name of the file under the cursor.
 What the file holds does not change, and %{...} is left as it is written:
 a list is no place to ask anything.
+
 .PP
 An entry can be a submenu instead of a command: Ins asks which of the two
 to add. A submenu is shown with a slash after its name, the way a
@@ -1681,6 +1867,7 @@ inside. Esc goes up a level, and out of the menu at the top. Deleting a
 submenu deletes what is in it. In the file, a submenu is a group with
 submenu=true and no command, and an entry inside it names the submenu
 in parent=.
+
 .PP
 The commands are a field of several lines: Enter opens a new one, and the
 arrows, Home and End walk the text. Shift and a motion mark what the
@@ -1689,49 +1876,54 @@ Shift\-Insert and Shift\-Delete copy, paste and cut through the clipboard
 file, as they do on an input line. The Editor button leaves the dialog
 and opens the file the entry is kept in, for what is easier to write
 there.
+
 .PP
 An entry is written back to the file it came from, and the order of the
 list is the order of the file. Conditions and masks belong to the older
 form: what the dialog cannot say, the file still can, and Shift\-F4 opens
 it.
+
 .PP
-.B The menu file written by hand
+\fBThe menu file written by hand\fP
+
 .PP
 The installation no longer ships one; what is described here is read
 where somebody keeps a menu of his own in the older form:
 the file .usermenu from the current directory is used if it exists, but
 only if it is owned by user or root and is not world\-writable. If no
 such file found, ~/.config/mc6/menu is tried in the same way.
+
 .PP
 Where the menu that edits itself has no file yet and another menu is
-found - his own written by hand, the usermenu of an installed mcommander, or a
-menu.ini an older mcommander installed - mcommander offers once in a session to import
+found \- his own written by hand, the usermenu of an installed mcommander, or a
+menu.ini an older mcommander installed \- mcommander offers once in a session to import
 it; F5 in the menu, and the Import button of the empty menu, ask for it
 at any time, for that file or one named by hand. It then lists what the file holds: Space
-marks an entry, Ins marks it and steps down, '*' turns every mark over,
+marks an entry, Ins marks it and steps down, '*\&' turns every mark over,
 and Enter takes the marked ones into ~/.config/mc6/menu.ini, where the
 dialog can edit them. The file they came from is left where it is, and
 conditions and masks are dropped, because the dialog has no place for
 them.
+
 .PP
 The format of the menu file is very simple. Lines that start with
 anything but space or tab are considered entries for the menu (in
 order to be able to use it like a hot key, the first character should
 be a letter). All the lines that start with a space or a tab are the
 commands that will be executed when the entry is selected.
+
 .PP
 When an option is selected all the command lines of the option are
 copied to a temporary file in the temporary directory (usually
 /usr/tmp) and then that file is executed. This allows the user to put
 normal shell constructs in the menus. Also simple macro substitution
 takes place before executing the menu code. For more information, see
-.\"LINK2"
 macro substitution\&.
-.\"Macro Substitution"
+
 .PP
 Here is a sample usermenu file:
-.PP
-.nf
+
+.EX
 A	Dump the currently selected file
 	od \-c %f
 
@@ -1763,15 +1955,18 @@ K	Make a release of the current subdirectory
 = f *.tar.gz | f *.tgz & t n
 X       Extract the contents of a compressed tar file
 	tar xzvf %f
-.fi
+
+.EE
+
 .PP
-.B Default Conditions
+\fBDefault Conditions\fP
+
 .PP
 Each menu entry may be preceded by a condition. The condition must
 start from the first column with a '=' character. If the condition is
 true, the menu entry will be the default entry.
-.PP
-.nf
+
+.EX
 Condition syntax: 	= <sub\-cond>
   or:			= <sub\-cond> | <sub\-cond> ...
   or:			= <sub\-cond> & <sub\-cond> ...
@@ -1788,16 +1983,19 @@ Sub\-condition is one of following:
   T <type>		other file of type?
   x <filename>		is it executable filename?
   ! <sub\-cond>		negate the result of sub\-condition
-.fi
+
+.EE
+
 .PP
 Pattern is a normal shell pattern or a regular expression, according
 to the shell patterns option. You can override the global value of
 the shell patterns option by writing "shell_patterns=x" on the first
 line of the menu file (where "x" is either 0 or 1).
+
 .PP
 Type is one or more of the following characters:
-.PP
-.nf
+
+.EX
   n	not a directory
   r	regular file
   d	directory
@@ -1808,261 +2006,289 @@ Type is one or more of the following characters:
   s	socket
   x	executable file
   t	tagged
-.fi
+
+.EE
+
 .PP
 For example 'rlf' means either regular file, link or fifo. The 't'
 type is a little special because it acts on the panel instead of the
 file. The condition '=t t' is true if there are tagged files in the
 current panel and false if not.
+
 .PP
 If the condition starts with '=?' instead of '=' a debug trace will be
 shown whenever the value of the condition is calculated.
+
 .PP
 The conditions are calculated from left to right. This means
-.nf
+
+.EX
 	= f *.tar.gz | f *.tgz & t n
-.fi
+
+.EE
+
+.PP
 is calculated as
-.nf
+
+.EX
 	( (f *.tar.gz) | (f *.tgz) ) & (t n)
-.fi
+
+.EE
+
 .PP
 Here is a sample of the use of conditions:
-.PP
-.nf
+
+.EX
 = f *.tar.gz | f *.tgz & t n
 L	List the contents of a compressed tar\-archive
 	gzip \-cd %f | tar xvf \-
-.fi
+
+.EE
+
 .PP
-.B Addition Conditions
+\fBAddition Conditions\fP
+
 .PP
 If the condition begins with '+' (or '+?') instead of '=' (or '=?') it
 is an addition condition. If the condition is true the menu entry will
 be included in the menu. If the condition is false the menu entry will
 not be included in the menu.
+
 .PP
 You can combine default and addition conditions by starting condition
 with '+=' or '=+' (or '+=?' or '=+?' if you want debug trace). If you
 want to use two different conditions, one for adding and another for
 defaulting, you can precede a menu entry with two condition lines, one
 starting with '+' and another starting with '='.
+
 .PP
 Comments are started with '#'. The additional comment lines must start
 with '#', space or tab.
-.\"NODE "  Options Menu"
-.SH "  Options Menu"
+
+.SH Options Menu
+.PP
 M\-Commander has some options that may be toggled on and
 off in several dialogs which are accessible from this menu. Options
 are enabled if they have an asterisk or "x" in front of them.
+
 .PP
 The
-.\"LINK2"
 Configuration
-.\"Configuration"
 command pops up a dialog from which you can change most of settings of
 M\-Commander.
+
 .PP
 The
-.\"LINK2"
 Layout
-.\"Layout"
 command pops up a dialog from which you specify a bunch of options how mcommander
 looks like on the screen.
+
 .PP
 The
-.\"LINK2"
 Panel options
-.\"Panel options"
 command pops up a dialog from which you specify options of file manager panels.
+
 .PP
 The
-.\"LINK2"
 Confirmation
-.\"Confirmation"
 command pops up a dialog from which you specify which actions you want to
 confirm.
+
 .PP
 The
-.BR "Diff viewer options" ,
-.\"LINK2"
+\fBDiff viewer options\fP,
 Viewer options
-.\"Viewer options"
 and
-.B "Editor options"
+\fBEditor options\fP
 commands pop up the dialogs of the three programs that show a file: the
 compare view, the viewer and the editor. The same dialogs are in the Options
 menu of each of them; here they are reachable without opening a file first.
 The compare view takes its options when it starts, so a view already on the
 screen keeps the ones it was opened with.
+
 .PP
 The
-.\"LINK2"
 Appearance
-.\"Appearance"
 command pops up a dialog from which you specify the skin.
+
 .PP
 The
-.\"LINK2"
 Learn keys
-.\"Learn keys"
 command pops up a dialog from which you test some keys which are not working
 on some terminals and you may fix them.
+
 .PP
 The
-.\"LINK2"
 Virtual FS
-.\"Virtual FS"
 command pops up a dialog from which you specify some VFS related options.
+
 .PP
 The
-.\"LINK2"
 Save setup
-.\"Save Setup"
 command saves the current settings of the Left, Right and Options
 menus. A small number of other settings is saved, too.
-.\"NODE "    Configuration"
-.SH "    Configuration"
+
+.SS Configuration
+.PP
 The options in this dialog are divided into several groups: "File
 operation options", "Esc key mode", "Pause after run" and "Other options".
+
 .PP
-.B File operation options
+\fBFile operation options\fP
+
 .PP
-.I Verbose operation.
+\fIVerbose operation.\fP
 This toggles whether the file Copy, Rename and Delete operations are
 verbose (i.e., display a dialog box for each operation). If you have a
 slow terminal, you may wish to disable the verbose operation. It is
 automatically turned off if the speed of your terminal is less than
 9600 bps.
+
 .PP
-.I Compute totals.
+\fICompute totals.\fP
 If this option is enabled, M\-Commander computes total byte
 sizes and total number of files prior to any Copy, Rename and Delete
 operations. This will provide you with a more accurate progress bar
 at the expense of some speed. This option has no effect, if
-.I Verbose  operation
+\fIVerbose operation\fP
 is disabled.
+
 .PP
-.I Classic progressbar.
+\fIClassic progressbar.\fP
 If this option is enabled, the progressbar of Copy/Move/Delete operations
 is always grown form left to right. If disabled, the growing direction
 of progressbar follows to direction of Copy/Move/Delete operation:
 from left panel to right one and vice versa. Enabled by default.
+
 .PP
-.I Mkdir autoname.
+\fIMkdir autoname.\fP
 When you press F7 to create a new directory, the input line in popup dialog
 will be filled by name of current file or directory in active panel.
 Disabled by default.
+
 .PP
-.I Preallocate space.
+\fIPreallocate space.\fP
 Preallocate space for whole target file, if possible, before copy operation.
 Disabled by default.
+
 .PP
-.B Esc key mode.
+\fBEsc key mode.\fP
+
 .PP
 By default, M\-Commander treats the Esc key as a key prefix.
 Therefore, you should press Esc code twice to exit a dialog. But there is
 a possibility to use a single press of Esc key for that action.
+
 .PP
-.I Single press.
+\fISingle press.\fP
 By default this option is disabled. If you'll enable it, the Esc key
 will act as a prefix key for set up time interval (see
-.I Timeout
+\fITimeout\fP
 option below), and if no extra keys have arrived, then the Esc key
 is interpreted as a cancel key (Esc Esc).
+
 .PP
-.I Timeout.
+\fITimeout.\fP
 This options is used to setup the time interval (in microseconds)
 for single press of Esc key. By default, this interval is one second
 (1000000 microseconds). Also the timeout can be set via KEYBOARD_KEY_TIMEOUT_US
 environment variable (also in microseconds), which has higher priority
 than Timeout option value.
+
 .PP
-.B Pause after run
+\fBPause after run\fP
+
 .PP
 After executing your commands, M\-Commander can pause, so
 that you can examine the output of the command.  There are three
 possible settings for this variable:
+
 .PP
-.I Never.
+\fINever.\fP
 Means that you do not want to see the output of your command.  If you
 are using the Linux or FreeBSD console or an xterm, you will be able to
 see the output of the command by typing C\-o.
+
 .PP
-.I On dumb terminals.
+\fIOn dumb terminals.\fP
 You will get the pause message on terminals that are not capable of
 showing the output of the last command executed (any terminal that is
 not an xterm or the Linux console).
+
 .PP
-.I Always.
+\fIAlways.\fP
 The program will pause after executing all of your commands.
+
 .PP
-.B Other options
+\fBOther options\fP
+
 .PP
-.I Use internal editor.
+\fIUse internal editor.\fP
 If this option is enabled, the built\-in file editor is used to edit
 files. If the option is disabled, the editor specified in the
-.B EDITOR
+\fBEDITOR\fP
 environment variable is used.
 If no editor is specified,
-.B vi
+\fBvi\fP
 is used.  See the section on the
-.\"LINK2"
 internal file editor\&.
-.\"Internal File Editor"
+
 .PP
-.I Use internal viewer.
+\fIUse internal viewer.\fP
 If this option is enabled, the built\-in file viewer is used to view
 files. If the option is disabled, the pager specified in the
-.B PAGER
+\fBPAGER\fP
 environment variable is used.
 If no pager is specified, the
-.B view
+\fBview\fP
 command is used.  See the section on the
-.\"LINK2"
 internal file viewer\&.
-.\"Internal File Viewer"
+
 .PP
-.I Ask new file name.
+\fIAsk new file name.\fP
 If this option is enabled, file name is asked before open new file in editor.
+
 .PP
-.I Auto menus.
+\fIAuto menus.\fP
 If this option is enabled, the user menu will be invoked at startup.
 Useful for building menus for non\-unixers.
+
 .PP
-.I Drop down menus.
+\fIDrop down menus.\fP
 When this option is enabled, the pull down menus will be activated as
 soon as you press the F9 key. Otherwise, you will only get the menu title,
 and you will have to activate the menu either with the arrow keys or with
 the hotkeys. It is recommended if you are using hotkeys.
+
 .PP
-.I Shell Patterns.
+\fIShell Patterns.\fP
 By default the Select, Unselect and Filter commands will use shell\-like
 regular expressions. The following conversions are performed to achieve
-this: the '*' is replaced by '.*' (zero or more characters); the '?'
+this: the '*\&' is replaced by '.*\&' (zero or more characters); the '?'
 is replaced by '.' (exactly one character) and '.' by the literal
 dot. If the option is disabled, then the regular expressions are the
 ones described in ed(1).
+
 .PP
-.I Complete: show all.
+\fIComplete: show all.\fP
 By default, M\-Commander pops up all possible
-.\"LINK2"
 completions
-.\"Completion"
 if the completion is ambiguous only when you press
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 for the second time.  For the first time, it just completes as much as
 possible and beeps in the case of ambiguity.  Enable this option if you
 want to see all possible completions even after pressing
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 the first time.
+
 .PP
-.I Rotating dash.
+\fIRotating dash.\fP
 If this option is enabled, the
 M\-Commander shows a rotating dash in the upper right corner
 as a work in progress indicator.
+
 .PP
-.I Cd follows links.
+\fICd follows links.\fP
 This option, if set, causes M\-Commander to follow the
 logical chain of directories when changing current directory
 either in the panels, or using the cd command. This is the default
@@ -2070,107 +2296,130 @@ behavior of bash. When unset, M\-Commander follows the
 real directory structure, so cd .. if you've entered that directory
 through a link will move you to the current directory's real parent
 and not to the directory where the link was present.
+
 .PP
-.I Safe delete.
+\fISafe delete.\fP
 If this option is enabled, deleting files and directory hotlist entries
 unintentionally becomes more difficult.  The default selection in the
 confirmation dialogs for deletion changes from
-.B Yes
+\fBYes\fP
 to
-.BR No .
+\fBNo\fP\&.
 This option is disabled by default.
+
 .PP
-.I Safe overwrite.
+\fISafe overwrite.\fP
 If this option is enabled, overwriting files unintentionally becomes
 more difficult.  The default selection in the overwrite confirmation dialog
 changes from
-.B Yes
+\fBYes\fP
 to
-.BR No .
+\fBNo\fP\&.
 This option is disabled by default.
+
 .PP
-.I Auto save setup.
+\fIAuto save setup.\fP
 If this option is enabled, when you exit M\-Commander, the
 configurable options of M\-Commander are saved in the
 ~/.config/mc6/ini file.
-.\"NODE "    Layout"
-.SH "    Layout"
+
+.SS Layout
+.PP
 The layout dialog gives you a possibility to change the general layout
 of screen. The options in this dialog are divided into several groups:
 "Panel split", "Console output" and "Other options".
+
 .PP
-.B Panel split
+\fBPanel split\fP
+
 .PP
 The rest of the screen area is used for the two directory panels. You
 can specify whether the area is split to the panels in
-.I Vertical
+\fIVertical\fP
 or
-.I Horizontal
+\fIHorizontal\fP
 direction. Panel layout can be changed using Alt\-, (Alt\-comma) shortcut.
+
 .PP
-.I Equal split.
+\fIEqual split.\fP
 By default, panels have equal sizes. Using this option you can specify
 an unequal split.
+
 .PP
-.B Console output
+\fBConsole output\fP
+
 .PP
 On the Linux or FreeBSD console you can specify how many lines are shown
 in the output window. This option is available if M\-Commander runs
 on native console only.
+
 .PP
-.B Other options
+\fBOther options\fP
+
 .PP
-.I Menu bar visible.
+\fIMenu bar visible.\fP
 If enabled, main menu of M\-Commander is always visible on the top row
 of screen above panels. Enabled by default.
+
 .PP
-.I Command prompt.
+\fICommand prompt.\fP
 If enabled, command line is available. Enabled by default.
+
 .PP
-.I Keybar visible.
+\fIKeybar visible.\fP
 If enabled, 10 labels associated with F1\-F10 keys are located at the bottom
 row of screen. Enabled by default.
+
 .PP
-.I Hintbar visible.
+\fIHintbar visible.\fP
 If enabled, the one\-line hints are visible below panels. Enabled by default.
+
 .PP
-.I XTerm window title.
+\fIXTerm window title.\fP
 When run in a terminal emulator for X11, M\-Commander sets the
 terminal window title to the current working directory and updates it
 when necessary.  If your terminal emulator is broken and you see some
 incorrect output on startup and directory change, turn off this option.
 Enabled by default.
+
 .PP
-.I Show free space.
+\fIShow free space.\fP
 If enabled, free space and total space of current file system is shown
 at the bottom frame of panel. Enabled by default.
-.\"NODE "    Panel options"
-.SH "    Panel options"
-.B Main panel options
+
+.SS Panel options
 .PP
-.I Show mini\-status.
+\fBMain panel options\fP
+
+.PP
+\fIShow mini\-status.\fP
 If enabled, one line of status information about the currently selected item
 is shown at the bottom of the panels. Enabled by default.
+
 .PP
-.I Use SI size units.
+\fIUse SI size units.\fP
 If this option is enabled, M\-Commander will use SI prefixes (base 10)
 when displaying any byte sizes. If disabled (default), M\-Commander will
 use IEC prefixes (base 2).
+
 .PP
-.I Mix all files.
+\fIMix all files.\fP
 If this option is enabled, all files and directories are shown mixed
 together.  If the option is disabled (default), directories (and links to
 directories) are shown at the beginning of the listing, and other files below.
+
 .PP
-.I Show backup files.
+\fIShow backup files.\fP
 If enabled, M\-Commander will show files ending with a tilde.
 Otherwise, they won't be shown (like GNU's ls option \-B). Enabled by default.
+
 .PP
-.I Show hidden files.
+\fIShow hidden files.\fP
 If enabled, M\-Commander will show all files that start with
 a dot (like ls \-a). Disabled by default.
+
 .PP
-.I Fast directory reload.
+\fIFast directory reload.\fP
 If this option is enabled, M\-Commander will use a trick to
 determine if the directory contents have changed.  The trick is to reload
 the directory only if the i\-node of the directory has changed; this means
@@ -2179,27 +2428,32 @@ changes is the i\-node for a file in the directory (file size changes,
 mode or owner changes, etc) the display is not updated.  In these cases,
 if you have the option on, you have to rescan the directory manually
 (with C\-r). Disabled by default.
+
 .PP
-.I Mark moves down.
+\fIMark moves down.\fP
 If enabled, the selection bar will move down when you mark a file (with
 Insert key). Enabled by default.
+
 .PP
-.I Reverse files only.
+\fIReverse files only.\fP
 If enabled, 'Invert selection' in the File menu will apply to only files
 rather than to both files and directories. Enabled by default.
+
 .PP
-.I Simple swap.
+\fISimple swap.\fP
 If both panels contain file listing, simple swap means that panels exchange
 its screen positions: left panel become right one, and vice versa. If this
 option is unchecked, file listing panels exchange its content keeping listing
 format and sort options. Unchecked by default.
+
 .PP
-.I Auto save panels setup.
+\fIAuto save panels setup.\fP
 If this option is enabled, when you exit M\-Commander, the
 current settings of panels are saved in the ~/.config/mc6/panels.ini file.
 Disabled by default.
+
 .PP
-.I Watch directories.
+\fIWatch directories.\fP
 If this option is enabled, M\-Commander asks the kernel to tell it about
 changes in the directories the panels show, and rereads a panel when a file
 in it is created, removed or changed by something else: another terminal, a
@@ -2210,184 +2464,203 @@ to one reread. Directories of a virtual file system, and those on a file
 system the kernel cannot watch, such as NFS, work as they did: there C\-r
 does the job. While this option is on, Fast directory reload has nothing to
 save and is shown disabled. Enabled by default.
+
 .PP
-.B Navigation
+\fBNavigation\fP
+
 .PP
-.I Lynx\-like motion.
+\fILynx\-like motion.\fP
 If this option is enabled, you may use the arrows keys to automatically
 chdir if the current selection is a subdirectory and the shell command
 line is empty. By default, this setting is off.
+
 .PP
-.I Page scrolling.
+\fIPage scrolling.\fP
 If set (the default), panel will scroll by half the display when the
 cursor reaches the end or the beginning of the panel, otherwise it
 will just scroll a file at a time.
+
 .PP
-.I Center scrolling.
+\fICenter scrolling.\fP
 If set, panel will scroll when the cursor reaches the middle of the
 panel column, only hitting the top or bottom of the panel when actually on
 the first or last file. This behavior applies when scrolling one file
 at a time, and does not apply to the page up/down keys.
+
 .PP
-.I Mouse page scrolling.
+\fIMouse page scrolling.\fP
 Controls whenever scrolling with the mouse wheel is done by pages or
 line by line on the panels.
+
 .PP
-.B File highlight
+\fBFile highlight\fP
+
 .PP
 You can specify whether
-.I permissions
+\fIpermissions\fP
 and
-.I file types
+\fIfile types\fP
 should be highlighted with distinctive
-.\"LINK2"
 Colors\&.
-.\"Colors"
 If the permission highlighting is enabled, the parts of the
-.I perm
+\fIperm\fP
 and
-.I mode
-.\"LINK2"
+\fImode\fP
 display fields
-.\"Listing Format..."
 which apply to the user running M\-Commander are highlighted with
 the color defined by the
-.I marked
+\fImarked\fP
 keyword.  If
-.I permission colors
+\fIpermission colors\fP
 are enabled, every character of the
-.I perm
+\fIperm\fP
 field is colored by what it stands for: the
-.I permread ,
-.I permwrite ,
-.I permexec ,
-.I permspecial
+\fIpermread ,\fP
+\fIpermwrite ,\fP
+\fIpermexec ,\fP
+\fIpermspecial\fP
 and
-.I permnone
+\fIpermnone\fP
 colors of the skin for r, w, x, s/t and \-.  Both can be on at once; the
 triplet that applies to the user then keeps the
-.I marked
+\fImarked\fP
 color.  If the file type highlighting is enabled, file names are colored
 according to rules described in
-%sysconfdir%/mcommander/filehighlight.ini
+{{sysconfdir}}/mcommander/filehighlight.ini
 file. See
-.\"LINK2"
 Filenames Highlight
-.\"Filenames Highlight"
 for more info.
+
 .PP
-.B Quick search and quick filter
+\fBQuick search and quick filter\fP
+
 .PP
 You can specify how the
-.\"LINK2"
 Quick search
-.\"Quick search"
 and Quick filter modes should work: case insensitively, case sensitively or be matched
 to the panel sort order: case sensitive or not.
-.\"NODE "    Viewer options"
-.SH "    Viewer options"
-The options of the
-.\"LINK2"
-internal viewer
-.\"Internal File Viewer"
-that hold for every file it opens.
+
+.SS Viewer options
 .PP
-.I Wrap long lines.
+The options of the
+internal viewer
+that hold for every file it opens.
+
+.PP
+\fIWrap long lines.\fP
 If enabled, a line wider than the screen is continued on the next screen
 line; otherwise it is cut and the view scrolls sideways. Enabled by default.
+
 .PP
-.I Syntax highlighting.
+\fISyntax highlighting.\fP
 If enabled, the viewer colors the text by the syntax rules of the editor.
 A file opened in a mode that brings its own colors, such as a man page or
 rendered Markdown, keeps those colors. Disabled by default.
+
 .PP
-.I Mouse page scrolling.
+\fIMouse page scrolling.\fP
 If enabled, the mouse wheel scrolls by a page; otherwise it scrolls by a
 few lines. Enabled by default.
+
 .PP
-.I Remember file position.
+\fIRemember file position.\fP
 If enabled, the viewer opens a file at the place it was left the last time.
 Disabled by default.
+
 .PP
-.I Tree view of JSON, YAML and XML.
+\fITree view of JSON, YAML and XML.\fP
 If enabled, a file of one of these formats opens as a tree that can be
 folded, instead of plain text. The same view is always available with the
 key that switches the display mode. Disabled by default.
+
 .PP
-.I End of file marker.
+\fIEnd of file marker.\fP
 The text printed after the last line of the file. Empty by default, which
 prints nothing.
+
 .PP
-.I Redraws to skip at most.
+\fIRedraws to skip at most.\fP
 While a file is still being read, the viewer skips redraws to keep up with
 the data. This is how many it may skip in a row before it draws anyway. The
 default is 10.
-.\"NODE "    Confirmation"
-.SH "    Confirmation"
+
+.SS Confirmation
+.PP
 In this dialog you configure the confirmation options for file deletion,
 overwriting files, execution by pressing enter, quitting the program,
 directory hotlist entries deletion and history cleanup.
-.\"NODE "    Appearance"
-.SH "    Appearance"
+
+.SS Appearance
+.PP
 In this dialog you can select the skin to be used and enable shadow
 for dialogs and drop down menus.
+
 .PP
 See the
-.\"LINK2"
 Skins
-.\"Skins"
 section for technical details about the skin definition files.
+
 .PP
-.I Shadows.
+\fIShadows.\fP
 If this option is enabled, all dialogs and drop down menus will have a shadow.
-.\"NODE "    Learn keys"
-.SH "    Learn keys"
+
+.SS Learn keys
+.PP
 This dialog teaches mcommander the escape sequences your terminal sends
 for function keys, arrows and navigation keys.
+
 .PP
 Select a modifier combination (Ctrl, Alt, Shift) using the
 checkboxes, then click a key button. Press the physical key
 and wait for the capture message to disappear. The learned
 sequence appears next to the button.
+
 .PP
-.B Del
+\fBDel\fP
 \- clear a learned key.
+
 .PP
-.B Save
+\fBSave\fP
 \- write learned keys to ~/.config/mc6/term/<TERM>.
+
 .PP
-.B "Edit term file"
+\fBEdit term file\fP
 \- open the terminal key definitions file in the editor.
+
 .PP
 The old terminal key definitions from [terminal:TERM] in
 ~/.config/mc6/ini are migrated automatically on first run.
-.\"NODE "    Virtual FS"
-.SH "    Virtual FS"
+
+.SS Virtual FS
+.PP
 This option gives you control over the settings of the
-.\"LINK2"
 Virtual File System\&.
-.\"Virtual File System"
+
 .PP
 M\-Commander keeps in memory the information related to some
 of the virtual file systems to speed up the access to the files in the
 file system (for example, directory listings fetched from FTP servers).
+
 .PP
 Also, in order to access the contents of compressed files (for example,
 compressed tar files), M\-Commander needs to create temporary
 uncompressed files on your disk.
+
 .PP
 Since both the information in memory and the temporary files on disk
 take up resources, you may want to tune the parameters of the cached
 information to decrease your resource usage or to maximize the speed of
 access to frequently used file systems.
+
 .PP
 Because of the format of the tar archives, the
-.I Tar filesystem
+\fITar filesystem\fP
 needs to read the whole file just to load the file entries.  Since most
 tar files are usually kept compressed (plain tar files are species in
 extinction), the tar file system has to uncompress the file on the disk
 in a temporary location and then access the uncompressed file as a
 regular tar file.
+
 .PP
 Now, since we all love to browse files and tar files all over the disk,
 it's common that you will leave a tar file and then re\-enter it later.
@@ -2395,303 +2668,340 @@ Since decompression is slow, M\-Commander will cache the
 information in memory for a limited time.  When the timeout expires, all
 the resources associated with the file system are released.  The default
 timeout is set to one minute.
+
 .PP
 The
-.\"LINK2"
 FTP File System
-.\"FTP File System"
 (ftpfs) allows you to browse directories on remote FTP servers.  It has
 several options.
+
 .PP
-.I ftp anonymous password
+\fIftp anonymous password\fP
 is the password used when you login as "anonymous".  Some sites require
 a valid e\-mail address.  On the other hand, you probably don't want to
 give your real e\-mail address to untrusted sites, especially if you are
 not using spam filtering.
+
 .PP
 ftpfs keeps the directory listing it fetches from a FTP server in a cache.
 The cache expire time is configurable with the
-.I ftpfs directory cache timeout
+\fIftpfs directory cache timeout\fP
 option.  A low value for this option may slow down every operation on
 the ftpfs because every operation would require sending a request to the
 FTP server.
+
 .PP
 You can define an FTP proxy host for doing FTP.  Note that most modern
 firewalls are fully transparent at least for passive FTP (see below), so
 FTP proxies are considered obsolete.
+
 .PP
 If
-.I Always use ftp proxy
+\fIAlways use ftp proxy\fP
 is not set, you can use the exclamation sign to enable proxy for certain
 hosts.  See
-.\"LINK2"
 FTP File System
-.\"FTP File System"
 for examples.
+
 .PP
 If this option is set, the program will do two things: consult the
-%sysconfdir%/mcommander/mc.no_proxy file for lines containing host names that
+{{sysconfdir}}/mcommander/mc.no_proxy file for lines containing host names that
 are local (if the host name starts with a dot, it is assumed to be a
 domain) and to assume that any hostnames without dots in their names are
 directly accessible.  All other hosts will be accessed through the
 specified FTP proxy.
+
 .PP
 You can enable using
-.I ~/.netrc
+\fI~/.netrc\fP
 file, which keeps login names and passwords for ftp servers.  See netrc
 (5) for the description of the .netrc format.
+
 .PP
-.I Use passive mode
+\fIUse passive mode\fP
 enables using FTP passive mode, when the connection for data transfer is
 initiated by the client, not by the server.  This option is recommended
 and enabled by default.  If this option is turned off, the data
 connection is initiated by the server.  This may not work with some
 firewalls.
-.\"NODE "    Save Setup"
-.SH "    Save Setup"
+
+.SS Save Setup
+.PP
 At startup, M\-Commander tries to load initialization information
 from the ~/.config/mc6/ini file.
 If this file doesn't exist, the system\-wide file
-.B %sysconfdir%/mcommander/mc.ini
+\fB{{sysconfdir}}/mcommander/mc.ini\fP
 is used. If this file doesn't exist, the system\-wide file
-.B %pkgdatadir%/mc.ini
+\fB{{pkgdatadir}}/mc.ini\fP
 is used. If this file doesn't exist, M\-Commander uses the default settings.
+
 .PP
 The
-.I Save Setup
+\fISave Setup\fP
 command creates the ~/.config/mc6/ini file by saving the
 current settings of the
-.\"LINK2"
 Left, Right
-.\"Left and Right Menus"
 and
-.\"LINK2"
 Options
-.\"Options Menu"
 menus.
+
 .PP
 If you activate the
-.I auto save setup
+\fIauto save setup\fP
 option, M\-Commander will always save the current settings when exiting.
+
 .PP
 There also exist settings which can't be changed from the menus. To
 change these settings you have to edit the setup file with your
 favorite editor. See the section on
-.\"LINK2"
 Special Settings
-.\"Special Settings"
 for more information.
-.SH ""
-.\"NODE "Executing operating system commands"
-.SH "Executing operating system commands"
+
+
+.SH Executing operating system commands
+.PP
 You may execute commands by typing them directly in
 M\-Commander's input line, or by selecting the program you want to
 execute with the selection bar in one of the panels and hitting Enter.
+
 .PP
 If you press Enter over a file that is not executable,
 M\-Commander checks the extension of the selected file against the
 extensions in the
-.\"LINK2"
 Extensions File\&.
-.\"Edit Extension File"
 If a match is found then the code associated with that extension is
 executed. A very simple
-.\"LINK2"
 macro expansion
-.\"Macro Substitution"
 takes place before executing the command.
-.\"NODE "  The cd internal command"
-.SH "  The cd internal command"
+
+.SH The cd internal command
+.PP
 The
-.I cd
+\fIcd\fP
 command is interpreted by M\-Commander, it is not passed to
 the command shell for execution.  Thus it may not handle all of the
 nice macro expansion and substitution that your shell does, although it
 does some of them:
+
 .PP
-.I Tilde substitution.
+\fITilde substitution.\fP
 The (~) will be substituted with your home directory, if you append a
 username after the tilde, then it will be substituted with the login
 directory of the specified user.
+
 .PP
 For example, ~guest is the home directory for the user guest, while
 ~/guest is the directory guest in your home directory.
+
 .PP
-.I Previous directory.
+\fIPrevious directory.\fP
 You can jump to the directory you were previously by using the special
 directory name '\-' like this:
-.B cd \-
+\fBcd \-\fP
+
 .PP
-.I CDPATH directories.
+\fICDPATH directories.\fP
 If the directory specified to the
-.B cd
+\fBcd\fP
 command is not in the current directory, then M\-Commander
 uses the value in the environment variable
-.B CDPATH
+\fBCDPATH\fP
 to search for the directory in any of the named directories.
+
 .PP
 For example you could set your
-.B CDPATH
+\fBCDPATH\fP
 variable to ~/src:/usr/src, allowing you to change your directory to
 any of the directories inside the ~/src and /usr/src directories, from
 any place in the file system by using its relative name (for example
 cd linux could take you to /usr/src/linux).
-.\"NODE "  Macro Substitution"
-.SH "  Macro Substitution"
+
+.SH Macro Substitution
+.PP
 When accessing a
-.\"LINK2"
-user menu\&,
-.\"Edit Menu File"
+user menu,
 or executing an
-.\"LINK2"
-extension dependent command\&,
-.\"Edit Extension File"
+extension dependent command,
 or running a command from the command line input, a simple macro
 substitution takes place.
+
 .PP
 The macros are:
+
 .TP
-.I %i
+\fI%i\fP
 The indent of blank space, equal the cursor column position.  For edit
 menu only.
+
 .TP
-.I %y
+\fI%y\fP
 The syntax type of current file. For edit menu only.
+
 .TP
-.I %b
+\fI%b\fP
 The block file name.
+
 .TP
-.I %e
+\fI%e\fP
 The error file name.
+
 .TP
-.I %m
+\fI%m\fP
 The current menu name.
+
 .TP
-.IR %f " and " %p
+\fI%f\fP and \fI%p\fP
 In file manager user menu: the current file name in selected panel.
 In mcedit6 user menu: the name of opened file.
+
 .TP
-.I %x
+\fI%x\fP
 The extension of current file name.
+
 .TP
-.I %n
+\fI%n\fP
 The current file name without extension.
+
 .TP
-.I %d
+\fI%d\fP
 The current directory name.
+
 .TP
-.I %F
+\fI%F\fP
 The current file in the unselected panel.
+
 .TP
-.I %D
+\fI%D\fP
 The directory name of the unselected panel.
+
 .TP
-.I %t
+\fI%t\fP
 The currently tagged files.
+
 .TP
-.I %T
+\fI%T\fP
 The tagged files in the unselected panel.
+
 .TP
-.TP
-.IR %v " and " %V
+\fI%v\fP and \fI%V\fP
 Similar to the %t and %T, but expands to full names of tagged files.
-.IR %u " and " %U
+\fI%u\fP and \fI%U\fP
 Similar to the %t and %T macros, but in addition the files are untagged.
 You can use this macro only once per menu file entry or extension file
 entry, because next time there will be no tagged files.
+
 .TP
-.IR %s " and " %S
+\fI%s\fP and \fI%S\fP
 The selected files: The tagged files if there are any. Otherwise the
 current file.
+
 .TP
-.I %cd
+\fI%cd\fP
 This is a special macro that is used to change the current directory
 to the directory specified in front of it.  This is used primarily as
 an interface to the
-.\"LINK2"
 Virtual File System\&.
-.\"Virtual File System"
+
 .TP
-.I %view
+\fI%view\fP
 This macro is used to invoke the internal viewer.  This macro can be
 used alone, or with arguments.  If you pass any arguments to this
 macro, they should be enclosed in brackets.
-.IP
+
+.PP
+.RS
+
+.PP
 The arguments are:
-.I ascii
+\fIascii\fP
 to force the viewer into ascii mode;
-.I hex
+\fIhex\fP
 to force the viewer into hex mode;
-.I nroff
+\fInroff\fP
 to tell the viewer that it should interpret the bold and underline
 sequences of nroff;
-.I unformatted
+\fIunformatted\fP
 to tell the viewer to not interpret nroff commands for making the text
 bold or underlined;
-.I structured
+\fIstructured\fP
 to open the file in the structured (tree) mode.
+
+.RE
+
 .TP
-.I %%
+\fI%%\fP
 The % character
+
 .TP
-.I %{some text}
+\fI%{some text}\fP
 Prompt for the substitution. An input box is shown and the text inside
 the braces is used as a prompt. The macro is substituted by the text
 typed by the user. The user can press Esc or F10 to cancel. This macro
 doesn't work on the command line yet.
+
 .TP
-.I %var{ENV:default}
+\fI%var{ENV:default}\fP
 If environment variable
-.I ENV
+\fIENV\fP
 is unset, the
-.I default
+\fIdefault\fP
 is substituted.  Otherwise, the value of
-.I ENV
+\fIENV\fP
 is substituted.
-.\"NODE "  The terminal"
-.SH "  The terminal"
+
+.SH The terminal
+.PP
 M\-Commander runs your shell in a pseudo terminal behind the
 panels. It works with the shells: bash, ash (BusyBox and Debian),
 (o/m)ksh, tcsh, zsh and fish.
+
 .PP
 The shell is the one defined in the
-.B SHELL
+\fBSHELL\fP
 variable and if it is not defined, then the one in the /etc/passwd
 file. Rather than invoking a new shell each time you execute a command,
 the command is passed to that shell as if you had typed it.  This also
 allows you to change the environment variables, use shell functions and
 define aliases that are valid until you quit M\-Commander.
+
 .PP
-.B bash
+\fBbash\fP
 users may specify startup commands in ~/.local/share/mc6/bashrc (fallback ~/.bashrc)
 and special keyboard maps in ~/.local/share/mc6/inputrc (fallback ~/.inputrc).
+
 .PP
-.B ash/dash
+\fBash/dash\fP
 users (BusyBox or Debian) may specify startup commands in ~/.local/share/mc6/ashrc (fallback ~/.profile).
+
 .PP
-.B ksh/oksh
+\fBksh/oksh\fP
 users (PD ksh variants) may specify startup commands in ~/.local/share/mc6/kshrc
 (fallback
-.I ENV
+\fIENV\fP
 or ~/.profile).
+
 .PP
-.B mksh
+\fBmksh\fP
 users (MirBSD ksh) may specify startup commands in ~/.local/share/mc6/mkshrc
 (fallback
-.I ENV
+\fIENV\fP
 or ~/.mkshrc).
+
 .PP
-.B zsh
+\fBzsh\fP
 users may specify startup commands in ~/.local/share/mc6/.zshrc (fallback ~/.zshrc).
+
 .PP
-.B tcsh, fish
+\fBtcsh, fish\fP
 users cannot specify mcommander\-specific startup commands at present. They have to rely on
 shell\-specific startup files.
+
 .PP
 You can suspend applications at any
 time with the sequence Ctrl\-o and jump back to M\-Commander, if
 you interrupt an application, you will not be able to run other
 external commands until you quit the application you interrupted.
+
 .PP
 Behind the panels the terminal keeps a scrollback of everything the shell
 has printed, and while no panel is on screen it can be read, marked and
@@ -2699,8 +3009,8 @@ cleared.  The cursor keys walk the output and the shifted cursor keys mark
 it, both while the terminal itself holds the focus; the keys that only move
 the view work whoever is typing.  Every key not named below is typed into
 the shell.
-.PP
-.nf
+
+.EX
 Ctrl\-Insert    copy the marked output to the clipboard
 Ctrl\-Shift\-u   take the mark back
 Alt\-s          search the output for what is typed next
@@ -2708,7 +3018,9 @@ Alt\-Shift\-s    show only the rows that match what is typed next
 Ctrl\-l         clear the screen, keeping the scrollback
 Ctrl\-Shift\-l   clear the screen and the scrollback both
                (also Ctrl\-Alt\-l)
-.fi
+
+.EE
+
 .PP
 Alt\-s and Alt\-Shift\-s take a pattern the way they do in the panels: it is
 typed on the top row of the screen, and the output follows it as it
@@ -2722,6 +3034,7 @@ pattern it had last.  Backspace takes a character back, and a character
 that nothing matches is not taken.  Enter ends the typing and leaves
 the view as it is, Esc ends it and lifts the filter; any other key ends
 it and then does what it does.
+
 .PP
 With no panel on screen most function keys are the terminal's own and the
 button bar names them.  The file manager's View, Edit, Copy, RenMov and
@@ -2731,15 +3044,17 @@ so that the reach for Delete does nothing rather than something else.
 F7 makes a directory and Shift\-F4 edits a new file, as they do with the
 panels up: both work in the directory of the panel, which is the one the
 shell is in.
-.PP
-.nf
+
+.EX
 F2           copy the marked output to the clipboard
 F3           mark the whole output, or take back the mark there is
 F4           cut the output down to the rows that match the mark,
              or the word under the cursor
 F5           turn that filter off, and on again
 F6           clear the screen and the scrollback both
-.fi
+
+.EE
+
 .PP
 F1, F7, Shift\-F4, F9 and F10 stay the file manager's while the shell waits
 at its prompt, and F1 opens the help on this section.
@@ -2747,144 +3062,176 @@ Once a command is running the screen and every key on it are that command's,
 these among them.  The five above are the exception: they stay the terminal's
 while a command is running.  A full\-screen application, an editor or a pager,
 takes every key itself, those included.  All of them are listed in the
-.B [mcterm]
+\fB[mcterm]\fP
 section of the keymap file and can be redefined there.
+
 .PP
 If you type
-.B mcommander
+\fBmcommander\fP
 without arguments at the shell prompt behind the hidden panels, the running
 M\-Commander shows its panels again instead of starting a second copy.
 Pass an argument, a directory name for example, to start a nested
 M\-Commander as before.
+
 .PP
 The basic prompt displayed by M\-Commander is of the form
 "user@host:current_path$ ". When using a capable shell, like Bash, the
 prompt displayed by M\-Commander will be the same prompt that you
 are currently using in your shell.
+
 .PP
 (There's a known problem when using fish: the prompt is displayed only in
 full screen mode (Ctrl\-o), not when the panels are visible.)
+
 .PP
 To set a specific shell different from your current SHELL variable or
 login shell defined in /etc/passwd, you may call M\-Commander like this:
-.B SHELL=/bin/myshell mcommander
-.\"NODE "Chmod"
-.SH "Chmod"
+\fBSHELL=/bin/myshell mcommander\fP
+
+
+.SH Chmod
+.PP
 The Chmod window is used to change the attribute bits in a group of
 files and directories.  It can be invoked with the C\-x c key combination.
+
 .PP
 The Chmod window has two parts \-
-.I Permissions
+\fIPermissions\fP
 and
-.IR File .
+\fIFile.\fP
+
 .PP
 In the File section are displayed the name of the file or directory
 and its permissions in octal form, as well as its owner and group.
+
 .PP
 In the Permissions section there is a set of check buttons which
 correspond to the file attribute bits.  As you change the attribute
 bits, you can see the octal value change in the File section.
+
 .PP
 To move between the widgets (buttons and check buttons) use the
-.I arrow keys
+\fIarrow keys\fP
 or the
-.I Tab
+\fITab\fP
 key.  To change the state of the check buttons or to select a button
 use
-.I Space.
+\fISpace.\fP
 You can also use the hotkeys on the buttons to quickly activate them.
 Hotkeys are shown as highlighted letters on the buttons.
+
 .PP
 To set the attribute bits, use the Enter key.
+
 .PP
 When working with a group of files or directories, you just click on
 the bits you want to set or clear.  Once you have selected the bits
 you want to change, you select one of the action buttons (Set marked
 or Clear marked).
+
 .PP
 Finally, to set the attributes exactly to those specified, you can use
 the
-.B [Set all]
+\fB[Set all]\fP
 button, which will act on all the tagged files.
+
 .PP
-.B [Marked all]
+\fB[Marked all]\fP
 set only marked attributes to all selected files
+
 .PP
-.B [Set marked]
+\fB[Set marked]\fP
 set marked bits in attributes of all selected files
+
 .PP
-.B [Clean marked]
+\fB[Clean marked]\fP
 clear marked bits in attributes of all selected files
+
 .PP
-.B [Set]
+\fB[Set]\fP
 set the attributes of one file
+
 .PP
-.B [Cancel]
+\fB[Cancel]\fP
 cancel the Chmod command
-.\"NODE "Chown"
-.SH "Chown"
+
+
+.SH Chown
+.PP
 The Chown command is used to change the owner/group of a file. The hot
 key for this command is C\-x o.
-.\"NODE "Advanced Chown"
-.SH "Advanced Chown"
+
+
+.SH Advanced Chown
+.PP
 The Advanced Chown command is the
-.\"LINK2"
 Chmod
-.\"Chmod"
 and
-.\"LINK2"
 Chown
-.\"Chown"
 command combined into one window. You can change the permissions and
 owner/group of files at once.
-.\"NODE "Chattr"
-.SH "Chattr"
+
+
+.SH Chattr
+.PP
 The Chattr window is used to change the attributes of a group of files
 and directories on a Linux file system. It can be invoked with the C\-x e
 key combination.
+
 .PP
 Not all attributes are supported or utilized by all filesystems.
 List of available attribute flags is represented as a set of check buttons
 which correspond to the attribute flags (see
-.B chattr(1)
+\fBchattr(1)\fP
 for details). As you change the attribute flags, you can see the symbolic
 value change below file name.
+
 .PP
 To move between the widgets (buttons and check buttons) use the
-.I arrow keys
+\fIarrow keys\fP
 or the
-.I Tab
+\fITab\fP
 key. To change the state of the check buttons or to select a button use
-.BR Space .
+\fBSpace\fP\&.
+
 .PP
 To set the attributes, use the Enter key.
+
 .PP
 When working with a group of files or directories, you just click on
 the flags you want to set or clear. Once you have selected the flags
 you want to change, you select one of the action buttons (Set marked
 or Clear marked).
+
 .PP
 Finally, to set the attributes exactly to those specified, you can use
 the
-.B [Set all]
+\fB[Set all]\fP
 button, which will act on all the tagged files.
+
 .PP
-.B [Marked all]
+\fB[Marked all]\fP
 set only marked attributes to all selected files.
+
 .PP
-.B [Set marked]
+\fB[Set marked]\fP
 set marked flags in attributes of all selected files.
+
 .PP
-.B [Clean marked]
+\fB[Clean marked]\fP
 clear marked flags in attributes of all selected files.
+
 .PP
-.B [Set]
+\fB[Set]\fP
 set the attributes of one file.
+
 .PP
-.B [Cancel]
+\fB[Cancel]\fP
 cancel the Chattr command.
-.\"NODE "File Operations"
-.SH "File Operations"
+
+
+.SH File Operations
+.PP
 When you copy, move or delete files, M\-Commander shows the
 file operations dialog.  It shows the files currently being processed
 and uses up to two progress bars.  The file bytes bar indicates the
@@ -2892,217 +3239,276 @@ percentage of the current file that has been processed so far.  The
 total bytes bar indicates the percentage of the total size of the tagged
 files that has been handled. Counters that show how many of the tagged
 files have been handled are displayed. If the
-.I Verbose
+\fIVerbose\fP
 option is off, the file bytes bar and total bytes bar are not shown.
+
 .PP
 There are three buttons at the bottom of the dialog:
+
 .TP
-.B [Skip]
+\fB[Skip]\fP
 button to skip the rest of the current file.
+
 .TP
-.B [Suspend]
+\fB[Suspend]\fP
 button to suspend the file operation and button transforms to the
-.B [Continue]
+\fB[Continue]\fP
 one which continue the suspended operation.
+
 .TP
-.B [Abort]
+\fB[Abort]\fP
 button to abort the whole operation, the rest of the files are skipped.
+
 .PP
 There are three other dialogs which you can run into during the file
 operations.
+
 .PP
 The error dialog informs about error conditions and has four choices:
+
 .TP
-.B [Ignore]
+\fB[Ignore]\fP
 button to ignore this error.
+
 .TP
-.B [Ignore all]
+\fB[Ignore all]\fP
 button to ignore this and all future errors.
+
 .TP
-.B [Abort]
+\fB[Abort]\fP
 button to abort the operation altogether.
+
 .TP
-.B [Retry]
+\fB[Retry]\fP
 button to continue if you fixed the problem from another terminal.
+
 .PP
 The replace dialog is shown when you attempt to copy or move a file on
 the top of an existing file.  The dialog shows the dates and sizes of
 the both files. There are the following buttons in this dialog:
+
 .TP
-.B [Yes]
+\fB[Yes]\fP
 button to overwrite the file.
+
 .TP
-.B [No]
+\fB[No]\fP
 button to skip the file.
+
 .TP
-.B [Append]
+\fB[Append]\fP
 button to append the source file to the target one.
+
 .TP
-.B [Reget]
+\fB[Reget]\fP
 button to append the rest of the source file to the target one.
 This button is displayed only if the size of the target file
 is non\-zero and less than the size of the source file.
+
 .TP
-.B [All]
+\fB[All]\fP
 button to overwrite all the files.
+
 .TP
-.B [Older]
+\fB[Older]\fP
 button to overwrite if the source file is newer than the target file.
+
 .TP
-.B [None]
+\fB[None]\fP
 button to never overwrite files
+
 .TP
-.B [Smaller]
+\fB[Smaller]\fP
 button to overwrite if the source file size is less than the target one.
+
 .TP
-.B [Size differs]
+\fB[Size differs]\fP
 button to overwrite files with different sizes.
+
 .TP
-.B [Abort]
+\fB[Abort]\fP
 button to abort the whole operation.
+
 .PP
 If the
-.B Don't overwrite with zero length file
+\fBDon't overwrite with zero length file\fP
 checkbox is on, the zero\-sized source files don't overwrite the
 non\-zero\-sized target files.
+
 .PP
 The recursive delete dialog is shown when you try to delete a directory
 which is not empty. There are the following buttons in this dialog:
+
 .TP
-.B [Yes]
+\fB[Yes]\fP
 button to delete the directory recursively.
+
 .TP
-.B [No]
+\fB[No]\fP
 button to skip the directory.
+
 .TP
-.B [All]
+\fB[All]\fP
 button to delete all the directories.
+
 .TP
-.B [None]
+\fB[None]\fP
 button to skip all the non\-empty directories.
+
 .TP
-.B [Abort]
+\fB[Abort]\fP
 button to abort the whole operation.
+
 .PP
 If you have tagged files and perform an operation on them only the files
 on which the operation succeeded are untagged. Failed and skipped files
 are left tagged.
-.\"NODE "Mask Copy/Rename"
-.SH "Mask Copy/Rename"
+
+
+.SH Mask Copy/Rename
+.PP
 The copy/move operations let you translate the names of files in an
 easy way.  To do it, you have to specify the correct source mask and
 usually in the trailing part of the destination specify some wildcards.
 All the files matching the source mask are copied/renamed according to
 the target mask.  If there are tagged files, only the tagged files
 matching the source mask are renamed.
+
 .PP
 There are other options which you can set:
+
 .PP
-.B Follow links
+\fBFollow links\fP
+
 .PP
 determines whether make the symlinks and hardlinks in the source
 directory (recursively in subdirectories) new links in the target
 directory or whether would you like to copy their content.
+
 .PP
-.B Dive into subdirs
+\fBDive into subdirs\fP
+
 .PP
 determines the behavior when the source directory is about to be copied,
 but the target directory already exists.  The default action is to copy
 the contents of the source directory into the target directory.
 Enabling this option causes copying the source directory itself into the
 target directory.
+
 .PP
 For example, you want to copy directory
-.I /foo
+\fI/foo\fP
 containing file
-.I bar
+\fIbar\fP
 to
-.IR /bla/foo ,
+\fI/bla/foo,\fP
 which is an already existing directory.  Normally (when
-.B Dive into subdirs
+\fBDive into subdirs\fP
 is not set), mcommander would copy file
-.I /foo/bar
+\fI/foo/bar\fP
 into the file
-.IR /bla/foo/bar .
+\fI/bla/foo/bar.\fP
 By enabling this option the
-.I /bla/foo/foo
+\fI/bla/foo/foo\fP
 directory will be created, and
-.I /foo/bar
+\fI/foo/bar\fP
 will be copied into
-.IR /bla/foo/foo/bar .
+\fI/bla/foo/foo/bar.\fP
+
 .PP
-.B Preserve attributes
+\fBPreserve attributes\fP
+
 .PP
 determines whether to preserve the permissions, timestamps and (if you
 are root) the ownership of the original files.  If this option is not
 set, the current value of the umask will be respected.
+
 .PP
-.B Preserve ext2 attributes
+\fBPreserve ext2 attributes\fP
+
 .PP
 determines whether to preserve the attributes of files and directories
 on an ext2/3/4 file system.
+
 .PP
-.B Use shell patterns
+\fBUse shell patterns\fP
+
 .PP
-When this option is on you can use the '*' and '?' wildcards in the source
-mask. They work like they do in the shell. In the target mask only the '*'
-and '\e<digit>' wildcards are allowed. The first '*' wildcard in the target
+When this option is on you can use the '*\&' and '?' wildcards in the source
+mask. They work like they do in the shell. In the target mask only the '*\&'
+and '\e<digit>' wildcards are allowed. The first '*\&' wildcard in the target
 mask corresponds to the first wildcard group in the source mask,
-the second '*' corresponds to the second group and so on.  The '\e1' wildcard
+the second '*\&' corresponds to the second group and so on.  The '\e1' wildcard
 corresponds to the first wildcard group in the source mask, the '\e2' wildcard
 corresponds to the second group and so on all the way up to '\e9'.
 The '\e0' wildcard is the whole filename of the source file.
+
 .PP
 Two examples:
+
 .PP
-If the source mask is "*.tar.gz", the destination is "/bla/*.tgz" and the
+If the source mask is "*\&.tar.gz", the destination is "/bla/*\&.tgz" and the
 file to be copied is "foo.tar.gz", the copy will be "foo.tgz" in "/bla".
+
 .PP
 Suppose you want to swap basename and extension so that "file.c" would
-become "c.file" and so on.  The source mask for this is "*.*" and the
+become "c.file" and so on.  The source mask for this is "*\&.*" and the
 destination is "\e2.\e1".
+
 .PP
-.B Use shell patterns off
+\fBUse shell patterns off\fP
+
 .PP
 When the shell patterns option is off the M\-Commander doesn't do automatic
 grouping anymore. You must use '\e(...\e)' expressions in the source
 mask to specify meaning for the wildcards in the target mask. This is
 more flexible but also requires more typing. Otherwise target masks
 are similar to the situation when the shell patterns option is on.
+
 .PP
 Two examples:
+
 .PP
-If the source mask is "^\e(.*\e)\e.tar\e.gz$", the destination is
-"/bla/*.tgz" and the file to be copied is "foo.tar.gz", the copy
+If the source mask is "^\e(.*\e)\e\&.tar\e\&.gz$", the destination is
+"/bla/*\&.tgz" and the file to be copied is "foo.tar.gz", the copy
 will be "/bla/foo.tgz".
+
 .PP
 Let's suppose you want to swap basename and extension so that "file.c"
 will become "c.file" and so on. The source mask for this is
-"^\e(.*\e)\e.\e(.*\e)$" and the destination is "\e2.\e1".
+"^\e(.*\e)\e\&.\e(.*\e)$" and the destination is "\e2.\e1".
+
 .PP
-.B Case Conversions
+\fBCase Conversions\fP
+
 .PP
 You can also change the case of the filenames.  If you use '\eu'
 or '\el' in the target mask, the next character will be converted to
 uppercase or lowercase correspondingly.
+
 .PP
 If you use '\eU' or '\eL' in the target mask, the next characters will
 be converted to uppercase or lowercase correspondingly up to the
 next '\eE' or next '\eU', '\eL' or the end of the file name.
+
 .PP
 The '\eu' and '\el' are stronger than '\eU' and '\eL'.
+
 .PP
-For example, if the source mask is '*' (
-.I Use shell patterns
+For example, if the source mask is '*\&' (
+\fIUse shell patterns\fP
 on) or '^\e(.*\e)$' (
-.I Use shell patterns
-off) and the target mask is '\eL\eu*' the file names will be converted
+\fIUse shell patterns\fP
+off) and the target mask is '\eL\eu*\&' the file names will be converted
 to have initial upper case and otherwise lower case.
+
 .PP
-You can also use '\e' as a quote character. For example, '\e\e' is
-a backslash and '\e*' is an asterisk.
+You can also use '\e\&' as a quote character. For example, '\e\e\&' is
+a backslash and '\e*\&' is an asterisk.
+
 .PP
-.B Stable symlinks
+\fBStable symlinks\fP
+
 .PP
 commands M\-Commander, that it should change symlinks in the target,
 so that they'll point to the same location as it did before. With absolute
@@ -3111,157 +3517,196 @@ recompute its value, adding necessary ../ and other directory parts and making
 the value as short as possible (most modern filesystems keep short symlinks
 inside inodes and thus don't waste much disk space).
 
-.\"NODE "Select/Unselect Files"
-.SH "Select/Unselect Files"
+
+.SH Select/Unselect Files
+.PP
 The dialog of group of files and directories selection or uselection.
 The
-.\"LINK2"
 input line
-.\"Input Line Keys"
 allow enter the regular expression of filenames that will be
 selected/unselected.
+
 .PP
 When
-.I Files only
+\fIFiles only\fP
 checkbox is on, only files will be selected.  If
-.I Files only
+\fIFiles only\fP
 is off, as files as directories will be selected.
 When
-.I Shell Patterns
+\fIShell Patterns\fP
 checkbox is on, the regular expression is much like the filename globbing
 in the shell (* standing for zero or more characters and ?  standing
 for one character). If
-.I Shell Patterns
+\fIShell Patterns\fP
 is off, then the tagging of files is done with normal regular
 expressions (see ed (1)). When
-.I Case sensitive
+\fICase sensitive\fP
 checkbox is on, the selection will be case sensitive characters.
 If
-.I Case sensitive
+\fICase sensitive\fP
 is off, the case will be ignored.
-.\"NODE "Diff Viewer"
-.SH "Internal Diff Viewer"
+
+
+.SH Internal Diff Viewer
+.PP
 The mdiff is a visual diff tool. You can compare two files and edit them
 in\-place (diffs are updated dynamically). You can browse and view a working
 copy from popular version control systems (GIT, Subversion, etc).
+
 .PP
 Following shortcuts are available in internal diff viewer of
 M\-Commander.
+
 .TP
-.B F1
+\fBF1\fP
 Invoke the built\-in hypertext help viewer.
+
 .TP
-.B F2
+\fBF2\fP
 Save modified files.
+
 .TP
-.B F4
+\fBF4\fP
 Edit file of the left panel in the internal editor.
+
 .TP
-.B F14
+\fBF14\fP
 Edit file of the right panel in the internal editor.
+
 .TP
-.B F5
+\fBF5\fP
 Merge the current hunk. Only the current hunk will be merged.
+
 .TP
-.B F7
+\fBF7\fP
 Start search.
+
 .TP
-.B F17
+\fBF17\fP
 Continue search.
+
 .TP
-.B F10, Esc, q
+\fBF10, Esc, q\fP
 Exit from diff viewer.
+
 .TP
-.B Alt\-s, s
+\fBAlt\-s, s\fP
 Toggle show of hunk status.
+
 .TP
-.B Alt\-n, l
+\fBAlt\-n, l\fP
 Toggle show of line numbers.
+
 .TP
-.B Ctrl\-s
+\fBCtrl\-s\fP
 Toggle syntax highlighting. The text of each line is then colored by the
 syntax rules, the way the internal editor colors it, and the state of the line
 is left to the background and to the marker column. Where a skin tells a
 changed word from the rest of its line by the color of the text alone, the word
 is underlined instead. The setting is remembered separately from the editor's
 own.
+
 .TP
-.B f
+\fBf\fP
 Maximize left panel.
+
 .TP
-.B =
+\fB=\fP
 Make panels equal in width.
+
 .TP
-.B >
+\fB>\fP
 Reduce the size of the right panel.
+
 .TP
-.B <
+\fB<\fP
 Reduce the size of the left panel.
+
 .TP
-.B c
+\fBc\fP
 Toggle show of trailing carriage return (CR) symbol as ^M.
+
 .TP
-.B 2, 3, 4, 8
+\fB2, 3, 4, 8\fP
 Set tabulation size
+
 .TP
-.B C\-u
+\fBC\-u\fP
 Swap contents of diff panels.
+
 .TP
-.B C\-r
+\fBC\-r\fP
 Refresh the screen.
+
 .TP
-.B C\-o
+\fBC\-o\fP
 Toggle the terminal and show the command screen.
+
 .TP
-.B Enter, Space, n
+\fBEnter, Space, n\fP
 Find next diff hunk.
+
 .TP
-.B Backspace, p
+\fBBackspace, p\fP
 Find previous diff hunk.
+
 .TP
-.B g
+\fBg\fP
 Go to line.
+
 .TP
-.B Down
+\fBDown\fP
 Scroll one line forward.
+
 .TP
-.B Up
+\fBUp\fP
 Scroll one line backward.
+
 .TP
-.B PageUp
+\fBPageUp\fP
 Move one page up.
+
 .TP
-.B PageDown
+\fBPageDown\fP
 Moves one page down.
+
 .TP
-.B Home, A1
+\fBHome, A1\fP
 Moves to the line beginning.
+
 .TP
-.B End
+\fBEnd\fP
 Moves to the line end.
+
 .TP
-.B C\-Home
+\fBC\-Home\fP
 Move to the file beginning.
+
 .TP
-.B C\-End, C1
+\fBC\-End, C1\fP
 Move to the file end.
-.\"NODE "Internal File Viewer"
-.SH "Internal File Viewer"
+
+
+.SH Internal File Viewer
+.PP
 The internal file viewer provides three display modes: ASCII, hex and
 structured (tree).  To toggle between ASCII and hex, use the F4 key.
 To toggle the structured mode, use Alt\-s or t.
+
 .PP
 The viewer will try to use the best method provided by your system or
 the file type to display the information.
 Some character sequences, which appear most often in preformatted manual
 pages, are displayed bold and underlined, thus making a pretty display
 of your files.
+
 .PP
 In ASCII mode the arrow keys move the view until the reading cursor is
 turned on.  Enter turns it on, and off again; a click and the keys that
 mark turn it on as well.  With the cursor on, the arrow keys walk the
 text and the Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and
 Shift\-PageDown keys mark it.
+
 .PP
 Drag with the left mouse button to select text.  A double click selects
 a word and a triple click selects a visual line.  A single click only
@@ -3275,26 +3720,31 @@ cursor to turn on, in hex and tree modes.  Any cursor movement without
 Shift drops the selection and keeps the cursor.  The copied value is the
 displayed text: ANSI and nroff formatting is removed, tabs are expanded
 to spaces, and in filter mode only the visible lines are copied.
+
 .PP
 Since the left button selects text, scrolling by clicking in the upper
 or lower third of the view (see
-.I mouse_move_pages
+\fImouse_move_pages\fP
 in the [Viewer] section) is done with the right or middle mouse button in ASCII mode.
 The mouse wheel scrolls in every mode.
+
 .PP
 When in hex mode, the search function accepts text in quotes and
 constant numbers.  Text in quotes is matched exactly after removing
 the quotes.  Each number matches one byte.  You can mix quoted text
 with constants like this:
-.PP
-.nf
+
+.EX
 "String" 34 0xBB 012 "more text"
-.fi
+
+.EE
+
 .PP
 Numbers are always interpreted in hex. In the example above, "34" is
 interpreted as 0x34. The prefix "0x" isn't really needed: we could type
 "BB" instead of "0xBB". And "012" is interpreted as 0x12, not as an octal
 number.
+
 .PP
 The structured mode renders JSON, YAML and XML files as an
 expandable tree.  Press Alt\-s (or t) on a supported file to enter it;
@@ -3309,15 +3759,15 @@ values; documents outside the subset (multi\-line plain scalars, tab
 characters in indentation) are reported and shown as plain text.  Inside the tree F4, Alt\-s and t return to the
 ASCII mode.  The status line shows the content type and the jq\-style
 path of the current node (for example
-.BR .spec.containers[0].image ).
+\fB\&.spec.containers[0].image\fP).
 The mode also works in the quick view panel (C\-x q), where the tree
 follows the panel cursor.  With the
-.I structured_auto
+\fIstructured_auto\fP
 option of the [Viewer] section enabled supported files open in the tree
 right away.  Keys
 available inside the tree:
-.PP
-.nf
+
+.EX
 Enter        expand/collapse the current node; on a leaf show
              the full value
 Right/Left   expand / collapse (on a collapsed node Left jumps
@@ -3329,334 +3779,393 @@ Alt\-Enter    copy the path of the current node to the clipboard
 F7, /        search the whole document, including collapsed
              nodes; the path to a match is expanded
 F17, n       continue the search
-.fi
+
+.EE
+
 .PP
 Here is a listing of the actions associated with each key that the
 M\-Commander handles in the internal file viewer.
+
 .TP
-.B F1
+\fBF1\fP
 Invoke the built\-in hypertext help viewer.
+
 .TP
-.B F2
+\fBF2\fP
 Toggle the wrap mode.
+
 .TP
-.B F4
+\fBF4\fP
 Toggle the hex mode.
+
 .TP
-.B Alt\-s, t
+\fBAlt\-s, t\fP
 Toggle the structured (tree) mode for JSON, YAML and XML files.
+
 .TP
-.B F5
+\fBF5\fP
 Goto. You can specify a line number, offset or percentage of file size
 of position that you want to view.
+
 .TP
-.B F7, /, ?
+\fBF7, /, ?\fP
 Start search. These keys call the dialog window that allows you to set up
 the search options. If key is ? the "Backwards" option is on.
+
 .TP
-.B C\-s
+\fBC\-s\fP
 Continue forward search.
+
 .TP
-.B C\-r
+\fBC\-r\fP
 Continue reverse search.
+
 .TP
-.B F17, n
+\fBF17, n\fP
 Continue search in the chosen direction.
+
 .TP
-.B N
+\fBN\fP
 Temporary change the search direction: backwards if forward search is chosen,
 and vice versa.
+
 .TP
-.B Shift\-F8
+\fBShift\-F8\fP
 Toggle syntax highlighting: the text is colored by the syntax rules, the same
 ones and the same way the internal editor uses. Above a few megabytes a file
 gets the line\-local rules instead, which color numbers, quoted strings and
 punctuation without having to read everything above the line being shown.
+
 .TP
-.B Shift\-F9
+\fBShift\-F9\fP
 Toggle interpretation of ANSI color escape sequences found in the text.
+
 .TP
-.B F8
+\fBF8\fP
 Toggle Raw/Parsed mode: This will show the file as found on disk or if
 a processing filter has been specified in the extensions.ini file, then the
 output from the filter. Current mode is always the other than written
 on the button label, since on the button is the mode which you enter
 by that key.
+
 .TP
-.B F9
+\fBF9\fP
 Toggle the format/unformat mode: when format mode is on the viewer
 will interpret some string sequences to show bold and underline with
 different colors. Also, on button label is the other mode than current.
+
 .TP
-.B F10, Esc.
+\fBF10, Esc.\fP
 Exit the internal file viewer.
+
 .TP
-.B PageDown, space, C\-v.
+\fBPageDown, space, C\-v.\fP
 Scroll one page forward.
+
 .TP
-.B PageUp, Alt\-v, C\-b, Backspace.
+\fBPageUp, Alt\-v, C\-b, Backspace.\fP
 Scroll one page backward.
+
 .TP
-.B Down, Up
+\fBDown, Up\fP
 Move the text cursor one row down or up; on the edge of the view the
 text scrolls by one line.  In hex mode they scroll one line.
+
 .TP
-.B Left, Right
+\fBLeft, Right\fP
 Move the text cursor by one displayed character; at the end of the row
 it goes on to the next one.  In hex mode they move the hex cursor.
+
 .TP
-.B C\-Left, C\-Right
+\fBC\-Left, C\-Right\fP
 Move the text cursor by eight displayed characters.
+
 .TP
-.B Shift\-Left, Shift\-Right, Shift\-Up, Shift\-Down
+\fBShift\-Left, Shift\-Right, Shift\-Up, Shift\-Down\fP
 Extend the text selection by one displayed character or row.
+
 .TP
-.B Shift\-Home, Shift\-End
+\fBShift\-Home, Shift\-End\fP
 Extend the text selection to the start or end of the visual row.
+
 .TP
-.B Shift\-PageUp, Shift\-PageDown
+\fBShift\-PageUp, Shift\-PageDown\fP
 Extend the text selection to the first or last visible row.
+
 .TP
-.B Ctrl\-Insert, Enter
+\fBCtrl\-Insert, Enter\fP
 Copy selected text to the clipfile and external clipboard.  With no
 selection, Enter acts as Down.
+
 .TP
-.B C\-u
+\fBC\-u\fP
 Clear the text selection.
+
 .TP
-.B C\-l
+\fBC\-l\fP
 Refresh the screen.
+
 .TP
-.B C\-o
+\fBC\-o\fP
 Toggle the terminal and show the command screen.
+
 .TP
-.B "[n] m"
+\fB[n] m\fP
 Set the mark n.
+
 .TP
-.B "[n] r"
+\fB[n] r\fP
 Jump to the mark n.
+
 .TP
-.B C\-f
+\fBC\-f\fP
 Jump to the next file.
+
 .TP
-.B C\-b
+\fBC\-b\fP
 Jump to the previous file.
+
 .TP
-.B Alt\-r
+\fBAlt\-r\fP
 Toggle the ruler.
+
 .TP
-.B Alt\-e
+\fBAlt\-e\fP
 to change charset of displayed text may use Alt\-e (M\-e).
 Recoding is made from selected codepage into system codepage. To
 cancel the recoding you may select "<No translation>" in charset
 selection dialog.
+
 .PP
 It's possible to instruct the file viewer how to display a file, look
 at the
-.\"LINK2"
 Edit Extension File section
-.\"Edit Extension File"
 
-.\"NODE "  Regex Quick Reference"
-.SH "  Regex Quick Reference"
-.B Common Tokens
-.nf
-A single character of: a, b or c        \fB[abc]\fP
-A character except: a, b or c           \fB[^abc]\fP
-A character in the range: a\-z           \fB[a\-z]\fP
-A character not in the range: a\-z       \fB[^a\-z]\fP
-A character in the range: a\-z or A\-Z    \fB[a\-zA\-Z]\fP
-Any single character                    \fB.\fP
-Alternate - match either a or b         \fBa|b\fP
-Any whitespace character                \fB\es\fP
-Any non\-whitespace character            \fB\eS\fP
-Any digit                               \fB\ed\fP
-Any non\-digit                           \fB\eD\fP
-Any word character                      \fB\ew\fP
-Any non\-word character                  \fB\eW\fP
-Non\-capturing group                     \fB(?:...)\fP
-Capturing group                         \fB(...)\fP
-Zero or one of a                        \fBa?\fP
-Zero or more of a                       \fBa*\fP
-One or more of a                        \fBa+\fP
-Exactly 3 of a                          \fBa{3}\fP
-3 or more of a                          \fBa{3,}\fP
-Between 3 and 6 of a                    \fBa{3,6}\fP
-Start of string                         \fB^\fP
-End of string                           \fB$\fP
-A word boundary                         \fB\eb\fP
-Non\-word boundary                       \fB\eB\fP
-.fi
+.SH Regex Quick Reference
 .PP
-.B Anchors
-.nf
-Start of match                          \fB\eG\fP
-Start of string                         \fB^\fP
-End of string                           \fB$\fP
-Start of string                         \fB\eA\fP
-End of string                           \fB\eZ\fP
-Absolute end of string                  \fB\ez\fP
-A word boundary                         \fB\eb\fP
-Non\-word boundary                       \fB\eB\fP
-.fi
-.PP
-.B General Tokens
-.nf
-Newline                                 \fB\en\fP
-Carriage return                         \fB\er\fP
-Tab                                     \fB\et\fP
-Null character                          \fB\e0\fP
-.fi
-.PP
-.B Meta Sequences
-.nf
-Any single character                    \fB.\fP
-Alternate: match a or b                 \fBa|b\fP
-Any whitespace character                \fB\es\fP
-Any non\-whitespace character            \fB\eS\fP
-Any digit                               \fB\ed\fP
-Any non\-digit                           \fB\eD\fP
-Any word character                      \fB\ew\fP
-Any non\-word character                  \fB\eW\fP
-Unicode seq., linebreaks included       \fB\eX\fP
-Unicode newlines                        \fB\eR\fP
-Match anything but a newline            \fB\eN\fP
-Vertical whitespace character           \fB\ev\fP
-Negation of \ev                          \fB\eV\fP
-Horizontal whitespace character         \fB\eh\fP
-Negation of \eh                          \fB\eH\fP
-Reset match                             \fB\eK\fP
-Match subpattern number #               \fB\e#\fP
-Unicode property X                      \fB\epX\fP
-Unicode property or script category     \fB\ep{...}\fP
-Negation of \epX                         \fB\ePX\fP
-Negation of \ep{...}                     \fB\eP{...}\fP
-Quote; treat as literals                \fB\eQ...\eE\fP
-Match subpattern 'name'                 \fB\ek{name}\fP
-Match subpattern 'name'                 \fB\ek<name>\fP
-Match subpattern 'name'                 \fB\ek'name'\fP
-Match nth subpattern                    \fB\egn\fP
-Match nth subpattern                    \fB\eg{n}\fP
-Nth relative previous subpattern        \fB\eg{-n}\fP
-Nth capture group expression            \fB\eg<n>\fP
-Nth upcoming capture group expr.        \fB\eg<+n>\fP
-Nth capture group expression            \fB\eg'n'\fP
-Nth upcoming subpattern expr.           \fB\eg'+n'\fP
-Match named capture group               \fB\eg{letter}\fP
-Named capture group expression          \fB\eg<letter>\fP
-Named capture group expression          \fB\eg'letter'\fP
-Hex character YY                        \fB\exYY\fP
-Hex character YYYY                      \fB\ex{YYYY}\fP
-Octal character ddd                     \fB\eddd\fP
-Control character Y                     \fB\ecY\fP
-Backspace character                     \fB[\eb]\fP
-Makes any character literal             \fB\e\fP
-.fi
-.PP
-.B Quantifiers
-.nf
-Zero or one of a                        \fBa?\fP
-Zero or more of a                       \fBa*\fP
-One or more of a                        \fBa+\fP
-Exactly 3 of a                          \fBa{3}\fP
-3 or more of a                          \fBa{3,}\fP
-Between 3 and 6 of a                    \fBa{3,6}\fP
-Greedy quantifier                       \fBa*\fP
-Lazy quantifier                         \fBa*?\fP
-Possessive quantifier                   \fBa*+\fP
-.fi
-.PP
-.B Character Classes
-.nf
-A single character of: a, b or c        \fB[abc]\fP
-A character except: a, b or c           \fB[^abc]\fP
-A character in the range: a\-z           \fB[a\-z]\fP
-A character not in the range: a\-z       \fB[^a\-z]\fP
-Character in range: a\-z or A\-Z          \fB[a\-zA\-Z]\fP
-Letters and digits                      \fB[[:alnum:]]\fP
-Letters                                 \fB[[:alpha:]]\fP
-ASCII codes 0\-127                       \fB[[:ascii:]]\fP
-Space or tab only                       \fB[[:blank:]]\fP
-Control characters                      \fB[[:cntrl:]]\fP
-Decimal digits                          \fB[[:digit:]]\fP
-Visible characters (not space)          \fB[[:graph:]]\fP
-Lowercase letters                       \fB[[:lower:]]\fP
-Visible characters                      \fB[[:print:]]\fP
-Visible punctuation characters          \fB[[:punct:]]\fP
-Whitespace                              \fB[[:space:]]\fP
-Uppercase letters                       \fB[[:upper:]]\fP
-Word characters                         \fB[[:word:]]\fP
-Hexadecimal digits                      \fB[[:xdigit:]]\fP
-Start of word                           \fB[[:<:]]\fP
-End of word                             \fB[[:>:]]\fP
-.fi
-.PP
-.B Flags/Modifiers
-.nf
-Multiline                               \fBm\fP
-Case insensitive                        \fBi\fP
-Ignore whitespace / verbose             \fBx\fP
-Single line                             \fBs\fP
-Unicode                                 \fBu\fP
-eXtra                                   \fBX\fP
-Ungreedy                                \fBU\fP
-Anchor                                  \fBA\fP
-Duplicate group names                   \fBJ\fP
-Non\-capturing groups                    \fBn\fP
-Ignore all whitespace / verbose         \fBxx\fP
-.fi
-.PP
-.B Group Constructs
-.nf
-Non\-capturing group                 \fB(?:...)\fP
-Capturing group                     \fB(...)\fP
-Atomic group (non\-capturing)        \fB(?>...)\fP
-Reset subpattern group number       \fB(?|...)\fP
-Comment group                       \fB(?#...)\fP
-Named capturing group               \fB(?'name'...)\fP
-Named capturing group               \fB(?<name>...)\fP
-Named capturing group               \fB(?P<name>...)\fP
-Inline modifiers                    \fB(?imsxUJnxx)\fP
-Localized inline modifiers          \fB(?imsxUJnxx:...)\fP
-Conditional statement               \fB(?(1)yes|no)\fP
-Conditional statement               \fB(?(R)yes|no)\fP
-Recursive conditional statement     \fB(?(R#)yes|no)\fP
-Conditional statement               \fB(?(R&name)yes|no)\fP
-Lookahead conditional               \fB(?(?=...)yes|no)\fP
-Lookbehind conditional              \fB(?(?<=...)yes|no)\fP
-Recurse entire pattern              \fB(?R)\fP
-Match expr. in capture group 1      \fB(?1)\fP
-First relative capture group        \fB(?+1)\fP
-Named capture group expression      \fB(?&name)\fP
-Match subpattern 'name'             \fB(?P=name)\fP
-Match expr. in group '{name}'       \fB(?P>name)\fP
-Pre\-define patterns before use      \fB(?(DEFINE)...)\fP
-Positive lookahead                  \fB(?=...)\fP
-Negative lookahead                  \fB(?!...)\fP
-Positive lookbehind                 \fB(?<=...)\fP
-Negative lookbehind                 \fB(?<!...)\fP
-Alphabetic lookaround assertions    \fB(*pla:...)\fP
-Non\-atomic lookaround assertion     \fB(*non_atomic_positive_lookahead:...)\fP
-Script run assertion                \fB(*script_run:...)\fP
-Script run (shorthand)              \fB(*sr:...)\fP
-Control verb                        \fB(*ACCEPT)\fP
-Control verb                        \fB(*FAIL)\fP
-Control verb                        \fB(*MARK:NAME)\fP
-Control verb                        \fB(*COMMIT)\fP
-Control verb                        \fB(*PRUNE)\fP
-Control verb                        \fB(*SKIP)\fP
-Control verb                        \fB(*THEN)\fP
-.fi
+\fBCommon Tokens\fP
 
-.\"NODE "Internal File Editor"
-.SH "Internal File Editor"
+.EX
+A single character of: a, b or c        [abc]
+A character except: a, b or c           [^abc]
+A character in the range: a\-z           [a\-z]
+A character not in the range: a\-z       [^a\-z]
+A character in the range: a\-z or A\-Z    [a\-zA\-Z]
+Any single character                    .
+Alternate \- match either a or b         a|b
+Any whitespace character                \es
+Any non\-whitespace character            \eS
+Any digit                               \ed
+Any non\-digit                           \eD
+Any word character                      \ew
+Any non\-word character                  \eW
+Non\-capturing group                     (?:...)
+Capturing group                         (...)
+Zero or one of a                        a?
+Zero or more of a                       a*
+One or more of a                        a+
+Exactly 3 of a                          a{3}
+3 or more of a                          a{3,}
+Between 3 and 6 of a                    a{3,6}
+Start of string                         ^
+End of string                           $
+A word boundary                         \eb
+Non\-word boundary                       \eB
+
+.EE
+
+.PP
+\fBAnchors\fP
+
+.EX
+Start of match                          \eG
+Start of string                         ^
+End of string                           $
+Start of string                         \eA
+End of string                           \eZ
+Absolute end of string                  \ez
+A word boundary                         \eb
+Non\-word boundary                       \eB
+
+.EE
+
+.PP
+\fBGeneral Tokens\fP
+
+.EX
+Newline                                 \en
+Carriage return                         \er
+Tab                                     \et
+Null character                          \e0
+
+.EE
+
+.PP
+\fBMeta Sequences\fP
+
+.EX
+Any single character                    .
+Alternate: match a or b                 a|b
+Any whitespace character                \es
+Any non\-whitespace character            \eS
+Any digit                               \ed
+Any non\-digit                           \eD
+Any word character                      \ew
+Any non\-word character                  \eW
+Unicode seq., linebreaks included       \eX
+Unicode newlines                        \eR
+Match anything but a newline            \eN
+Vertical whitespace character           \ev
+Negation of \ev                          \eV
+Horizontal whitespace character         \eh
+Negation of \eh                          \eH
+Reset match                             \eK
+Match subpattern number #               \e#
+Unicode property X                      \epX
+Unicode property or script category     \ep{...}
+Negation of \epX                         \ePX
+Negation of \ep{...}                     \eP{...}
+Quote; treat as literals                \eQ...\eE
+Match subpattern 'name'                 \ek{name}
+Match subpattern 'name'                 \ek<name>
+Match subpattern 'name'                 \ek'name'
+Match nth subpattern                    \egn
+Match nth subpattern                    \eg{n}
+Nth relative previous subpattern        \eg{\-n}
+Nth capture group expression            \eg<n>
+Nth upcoming capture group expr.        \eg<+n>
+Nth capture group expression            \eg'n'
+Nth upcoming subpattern expr.           \eg'+n'
+Match named capture group               \eg{letter}
+Named capture group expression          \eg<letter>
+Named capture group expression          \eg'letter'
+Hex character YY                        \exYY
+Hex character YYYY                      \ex{YYYY}
+Octal character ddd                     \eddd
+Control character Y                     \ecY
+Backspace character                     [\eb]
+Makes any character literal             \e
+
+.EE
+
+.PP
+\fBQuantifiers\fP
+
+.EX
+Zero or one of a                        a?
+Zero or more of a                       a*
+One or more of a                        a+
+Exactly 3 of a                          a{3}
+3 or more of a                          a{3,}
+Between 3 and 6 of a                    a{3,6}
+Greedy quantifier                       a*
+Lazy quantifier                         a*?
+Possessive quantifier                   a*+
+
+.EE
+
+.PP
+\fBCharacter Classes\fP
+
+.EX
+A single character of: a, b or c        [abc]
+A character except: a, b or c           [^abc]
+A character in the range: a\-z           [a\-z]
+A character not in the range: a\-z       [^a\-z]
+Character in range: a\-z or A\-Z          [a\-zA\-Z]
+Letters and digits                      [[:alnum:]]
+Letters                                 [[:alpha:]]
+ASCII codes 0\-127                       [[:ascii:]]
+Space or tab only                       [[:blank:]]
+Control characters                      [[:cntrl:]]
+Decimal digits                          [[:digit:]]
+Visible characters (not space)          [[:graph:]]
+Lowercase letters                       [[:lower:]]
+Visible characters                      [[:print:]]
+Visible punctuation characters          [[:punct:]]
+Whitespace                              [[:space:]]
+Uppercase letters                       [[:upper:]]
+Word characters                         [[:word:]]
+Hexadecimal digits                      [[:xdigit:]]
+Start of word                           [[:<:]]
+End of word                             [[:>:]]
+
+.EE
+
+.PP
+\fBFlags/Modifiers\fP
+
+.EX
+Multiline                               m
+Case insensitive                        i
+Ignore whitespace / verbose             x
+Single line                             s
+Unicode                                 u
+eXtra                                   X
+Ungreedy                                U
+Anchor                                  A
+Duplicate group names                   J
+Non\-capturing groups                    n
+Ignore all whitespace / verbose         xx
+
+.EE
+
+.PP
+\fBGroup Constructs\fP
+
+.EX
+Non\-capturing group                 (?:...)
+Capturing group                     (...)
+Atomic group (non\-capturing)        (?>...)
+Reset subpattern group number       (?|...)
+Comment group                       (?#...)
+Named capturing group               (?'name'...)
+Named capturing group               (?<name>...)
+Named capturing group               (?P<name>...)
+Inline modifiers                    (?imsxUJnxx)
+Localized inline modifiers          (?imsxUJnxx:...)
+Conditional statement               (?(1)yes|no)
+Conditional statement               (?(R)yes|no)
+Recursive conditional statement     (?(R#)yes|no)
+Conditional statement               (?(R&name)yes|no)
+Lookahead conditional               (?(?=...)yes|no)
+Lookbehind conditional              (?(?<=...)yes|no)
+Recurse entire pattern              (?R)
+Match expr. in capture group 1      (?1)
+First relative capture group        (?+1)
+Named capture group expression      (?&name)
+Match subpattern 'name'             (?P=name)
+Match expr. in group '{name}'       (?P>name)
+Pre\-define patterns before use      (?(DEFINE)...)
+Positive lookahead                  (?=...)
+Negative lookahead                  (?!...)
+Positive lookbehind                 (?<=...)
+Negative lookbehind                 (?<!...)
+Alphabetic lookaround assertions    (*pla:...)
+Non\-atomic lookaround assertion     (*non_atomic_positive_lookahead:...)
+Script run assertion                (*script_run:...)
+Script run (shorthand)              (*sr:...)
+Control verb                        (*ACCEPT)
+Control verb                        (*FAIL)
+Control verb                        (*MARK:NAME)
+Control verb                        (*COMMIT)
+Control verb                        (*PRUNE)
+Control verb                        (*SKIP)
+Control verb                        (*THEN)
+
+.EE
+
+
+.SH Internal File Editor
+.PP
 The internal file editor is a full\-featured full screen editor.  It can
 edit files up to 64 megabytes.  It is possible to edit binary files.
 The internal file editor is invoked using
-.B F4
+\fBF4\fP
 if the
-.I use_internal_edit
+\fIuse_internal_edit\fP
 option is set in the initialization file.
+
 .PP
 The features it presently supports are: block copy, move, delete, cut,
 paste; key for key undo; pull\-down menus; file insertion; macro
@@ -3665,57 +4174,59 @@ commands; regular expression search and replace; S\-arrow text highlighting
 autoindent; tunable tab size; syntax highlighting for various file
 types; and an option to pipe text blocks through shell commands like
 indent and ispell.
-.PP
+
+.TP
 Sections:
-.IP
-.\"LINK2"
 Options of editor in ini\-file
-.\"Internal File Editor / options"
+
 .PP
 The editor is very easy to use and requires no tutoring. To see what
 keys do what, just consult the appropriate pull\-down menu. Other keys
 are: Shift movement keys do text highlighting.
-.B C\-Ins
+\fBC\-Ins\fP
 copies to the file
-.B mcedit6.clip
+\fBmcedit6.clip\fP
 and
-.B S\-Ins
+\fBS\-Ins\fP
 pastes from mcedit6.clip.
-.B S\-Del
+\fBS\-Del\fP
 cuts to
-.BR mcedit6.clip ,
+\fBmcedit6.clip\fP,
 and
-.B C\-Del
+\fBC\-Del\fP
 deletes highlighted text. Mouse highlighting also works, and you
 can override the mouse as usual by holding down the shift key
 while dragging the mouse to let normal terminal mouse highlighting
 work.
+
 .PP
 To define a macro, press
-.B C\-R
+\fBC\-R\fP
 and then type out the key
 strokes you want to be executed. Press
-.B C\-R
+\fBC\-R\fP
 again when finished. You can then assign the macro to any key you
 like by pressing that key. The macro is executed when you press
-.B C\-A
+\fBC\-A\fP
 and then the assigned key. The macro is also executed if
 you press Meta, Ctrl, or Esc and the assigned key, provided that the
 key is not used for any other function. Once defined, the macro
 commands go into the file
-.B ~/.local/share/mc6/mcedit6/mcedit6.macros
+\fB~/.local/share/mc6/mcedit6/mcedit6.macros\fP
 You can delete a macro by deleting the
 appropriate line in this file.
+
 .PP
 To change charset of displayed text may use Alt\-e (M\-e).
 Recoding is made from selected codepage into system codepage. To
 cancel the recoding you may select "<No translation>" in charset
 selection dialog.
+
 .PP
 The
-.B Filter
+\fBFilter\fP
 button of the search dialog
-.RB ( F7 )
+(\fBF7\fP)
 hides every line that does not match the search string, using the same
 type, case and whole\-word settings as the search.  Line numbers keep
 their original values and the line state gutter marks each hidden run.
@@ -3723,492 +4234,572 @@ The set of hidden lines is fixed at the moment the button is pressed:
 editing never re\-applies the match, so a shown line that is split or
 joined stays shown, and lines typed afterwards stay shown even if they
 do not match.
-.B M\-s
+\fBM\-s\fP
 lifts the filter; pressed again it puts the last search back on as a
 filter.  "Unfold all" in the Command menu lifts it as well.
+
 .PP
-.B F19
+\fBF19\fP
 will format the currently highlighted block (plain text or C or C++
 code or another). This is controlled by the
 file
-.B %pkgdatadir%/edit.indent.rc
+\fB{{pkgdatadir}}/edit.indent.rc\fP
 which is copied to
-.B ~/.local/share/mc6/mcedit6/edit.indent.rc
+\fB~/.local/share/mc6/mcedit6/edit.indent.rc\fP
 in your home directory the first time you use it.
 
-.\"NODE "Internal File Editor / options"
-.SH "Options of editor in ini\-file"
 
+.SH Options of editor in ini\-file
+.PP
 Some editor options of ini\-file are described in this section.
 Options are placed in [Midnight\-Commander] section
+
 .TP
-.I editor_wordcompletion_collect_entire_file
+\fIeditor_wordcompletion_collect_entire_file\fP
 Search autocomplete candidates in entire of file or just from
 begin of file to cursor position (0)
 
-.\"NODE "Screen selector"
-.SH "Screen selector"
+
+.SH Screen selector
+.PP
 M\-Commander supports running many internal modules (such as
 editor, viewer and diff viewer) simultaneously and switching between
 them without closing open files. Using several file managers at a time,
 however, is not currently supported.
+
 .PP
 Let's call each of these modules a screen. There are three ways to
 switch between screens, using one of these global shortcuts:
+
 .TP
-.B Alt\-}
+\fBAlt\-}\fP
 switch to the next screen;
+
 .TP
-.B Alt\-{
+\fBAlt\-{\fP
 switch to the previous screen;
+
 .TP
-.B Alt\-`
+\fBAlt\-`\fP
 open a dialog window with the list of currently open screens (or use the
 "Screen list" menu item).
-.\"NODE "Completion"
-.SH "Completion"
+
+
+.SH Completion
+.PP
 Let M\-Commander type for you.
+
 .PP
 Attempt to perform completion on the text before current position.  M\-Commander
 attempts completion treating the text as variable (if the text begins
 with
-.BR $ ),
+\fB$\fP),
 username (if the text begins with
-.BR ~ ),
+\fB~\fP),
 hostname (if the text begins with
-.BR @ )
+\fB@\fP)
 or command (if you are on the command line in the position where you
 might type a command, possible completions then include shell reserved
 words and shell built\-in commands as well) in turn.  If none of these
 matches, filename completion is attempted.
+
 .PP
 Filename, username, variable and hostname completion works on all input
 lines, command completion is command line specific.  If the completion
 is ambiguous (there are more different possibilities), M\-Commander beeps and the
 following action depends on the setting of the
-.\"LINK2"
 Complete: show all
-.\"Configuration"
 option in the
-.\"LINK2"
 Configuration
-.\"Configuration"
 dialog.  If it is enabled, a list of all possibilities pops up next to
 the current position and you can select with the arrow keys and
-.B Enter
+\fBEnter\fP
 the correct entry.  You can also type the first letters in which the
 possibilities differ to move to a subset of all possibilities and
 complete as much as possible.  If you press
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 again, only the subset will be shown in the listbox, otherwise the first
 item which matches all the previous characters will be highlighted.  As
 soon as there is no ambiguity, dialog disappears, but you can hide it by
 canceling keys
-.BR Esc ,
-.B F10
+\fBEsc\fP,
+\fBF10\fP
 and left and right arrow keys. If
-.\"LINK2"
 Complete: show all
-.\"Configuration"
 is disabled, the dialog pops up only if you press
-.B Alt\-Tab
+\fBAlt\-Tab\fP
 for the second time, for the first time M\-Commander just beeps.
+
 .PP
-Apply escaping of \fB?\fR, \fB*\fR, and \fB&\fR symbols (as \fB\e?\fR, \fB\e*\fR,
-and \fB\e&\fR) in filenames to disallow use them as metasymbols in regular
+Apply escaping of \fB?\fP, \fB*\fP, and \fB&\fP symbols (as \fB\e?\fP, \fB\e*\fP,
+and \fB\e&\fP) in filenames to disallow use them as metasymbols in regular
 expressions when substitution is performed in the input line.
 
-.\"NODE "Virtual File System"
-.SH "Virtual File System"
+
+.SH Virtual File System
+.PP
 M\-Commander is provided with a code layer to access the file
 system; this code layer is known as the virtual file system switch.  The
 virtual file system switch allows M\-Commander to manipulate
 files not located on the Unix file system.
+
 .PP
 Currently, M\-Commander is packaged with some Virtual File
 Systems (VFS): the
-.I local
+\fIlocal\fP
 file system, used for accessing the regular Unix file system; the
-.IR ftpfs ,
+\fIftpfs,\fP
 used to manipulate files on remote systems with the FTP protocol; the
-.IR undelfs ,
+\fIundelfs,\fP
 used to recover deleted files on ext2 file systems (the default file
 system for Linux systems),
-.I shell
+\fIshell\fP
 (for manipulating files over shell connections such as rsh and ssh).
 If the code was compiled with
-.I sftpfs
+\fIsftpfs\fP
 (for manipulating files over SFTP connections).
+
 .PP
 A generic
-.I extfs
+\fIextfs\fP
 (EXTernal virtual File System) is provided in order to easily expand
 VFS capabilities using scripts and external software.
+
 .PP
 The VFS switch code will interpret all of the path names used and will
 forward them to the correct file system, the formats used for each one
 of the file systems is described later in their own section.
-.\"NODE "  FTP File System"
-.SH "  FTP File System"
+
+.SH FTP File System
+.PP
 The FTP File System (ftpfs) allows you to manipulate files on remote
 machines.  To actually use it, you can use the
-.I FTP link
+\fIFTP link\fP
 item in the menu or directly change your current directory using the
-.I cd
+\fIcd\fP
 command to a path name that looks like this:
+
 .PP
-.I ftp://[!][user[:pass]@]machine[:port]/[remote\-dir]
+\fIftp://[!][user[:pass]@]machine[:port]/[remote\-dir]\fP
+
 .PP
 The
-.IR user ,
-.I port
+\fIuser,\fP
+\fIport\fP
 and
-.I remote\-dir
+\fIremote\-dir\fP
 elements are optional.  If you specify the
-.I user
+\fIuser\fP
 element, M\-Commander will login to the remote machine as that
 user, otherwise it will use anonymous login or the login name from the
-.I ~/.netrc
+\fI~/.netrc\fP
 file.  The optional
-.I pass
+\fIpass\fP
 element is the password used for the connection.  Using the password in
 the VFS directory name is not recommended, because it can appear on the
 screen in clear text and can be saved to the directory history.
+
 .PP
 To enable using FTP proxy, prepend
-.B !
+\fB!\fP
 (an exclamation sign) to the hostname.
+
 .PP
 Examples:
-.PP
-.nf
+
+.EX
     ftp://ftp.nuclecu.unam.mx/linux/local
     ftp://tsx\-11.mit.edu/pub/linux/packages
     ftp://!behind.firewall.edu/pub
     ftp://guest@remote\-host.com:40/pub
     ftp://miguel:xxx@server/pub
-.fi
+
+.EE
+
 .PP
 Please check the
-.\"LINK2"
 Virtual File System
-.\"Virtual FS"
 dialog box for ftpfs options.
-.\"NODE "  FIle transfer over SHell filesystem"
-.SH "  FIle transfer over SHell filesystem"
+
+.SH FIle transfer over SHell filesystem
+.PP
 The shell file system is a network based file system that allows you to
 manipulate the files in a remote machine as if they were local. To use
 this, the other side has to have bash\-compatible shell.
+
 .PP
 To connect to a remote machine, you just need to chdir
 into a special directory which name is in the following
 format:
+
 .PP
-.I sh://[user@]machine[:options]/[remote\-dir]
+\fIsh://[user@]machine[:options]/[remote\-dir]\fP
+
 .PP
 The
-.I user,
-.I options
+\fIuser,\fP
+\fIoptions\fP
 and
-.I remote\-dir
+\fIremote\-dir\fP
 elements are optional.  If you specify the
-.I user
+\fIuser\fP
 element, M\-Commander will try to login on the remote
 machine as that user, otherwise it will use your login name.
+
 .PP
 The available
-.I options
+\fIoptions\fP
 are:
-.nf
+
+.EX
   'C' \- use compression;
   'r' \- use rsh instead of ssh;
   port \- specify the port used by remote server.
-.fi
+
+.EE
+
+.PP
 If the
-.I remote\-dir
+\fIremote\-dir\fP
 element is present, your current directory on the remote machine will be
 set to this one.
+
 .PP
 Examples:
-.PP
-.nf
+
+.EX
     sh://onlyrsh.mx:r/linux/local
     sh://joe@want.compression.edu:C/private
     sh://joe@noncompressed.ssh.edu/private
     sh://joe@somehost.ssh.edu:2222/private
-.fi
-.\"NODE "  SFTP (SSH File Transfer Protocol) filesystem"
-.SH "  SFTP (SSH File Transfer Protocol) filesystem"
+
+.EE
+
+.SH SFTP (SSH File Transfer Protocol) filesystem
+.PP
 The SFTP file system is a network based file system that allows you to
 manipulate the files in a remote machine as if they were local.
+
 .PP
 To connect to a remote machine, you just need to chdir
 into a special directory which name is in the following
 format:
+
 .PP
-.I sftp://[user@]machine:[port]/[remote\-dir]
+\fIsftp://[user@]machine:[port]/[remote\-dir]\fP
+
 .PP
 The
-.I user,
-.I port
+\fIuser,\fP
+\fIport\fP
 and
-.I remote\-dir
+\fIremote\-dir\fP
 elements are optional.  If you specify the
-.I user
+\fIuser\fP
 element, M\-Commander will try to login on the remote
 machine as that user, otherwise it will use your login name.
-.I port
+\fIport\fP
 \- specify the port used by remote server (22 by default).
 If the
-.I remote\-dir
+\fIremote\-dir\fP
 element is present, your current directory on the remote machine will be
 set to this one.
+
 .PP
 Examples:
-.PP
-.nf
+
+.EX
     sftp://onlyrsh.mx/linux/local
     sftp://joe:password@want.compression.edu/private
     sftp://joe@noncompressed.ssh.edu/private
     sftp://joe@somehost.ssh.edu:2222/private
-.fi
+
+.EE
+
 .PP
 When establishing the connection, server key fingerprint is verified using
 the ~/.ssh/known_hosts file. If the host/key pair is not found or the host is found,
 but the key doesn't match, an appropriate message is shown.
 There are three buttons in the message dialog:
+
 .PP
-.B [Yes]
+\fB[Yes]\fP
 add new host/key pair to the ~/.ssh/known_hosts file and continue.
+
 .PP
-.B [Ignore]
+\fB[Ignore]\fP
 do not add new host/key pair to the ~/.ssh/known_hosts file, but continue
 nevertheless (at you own risk).
+
 .PP
-.B [No]
+\fB[No]\fP
 abort connection.
-.\"NODE "  EXTernal File System"
-.SH "  EXTernal File System"
-.B extfs
+
+.SH EXTernal File System
+.PP
+\fBextfs\fP
 allows you to integrate numerous features and file types into
 M\-Commander in an easy way, by writing scripts.
+
 .PP
 Extfs filesystems can be divided into two categories:
+
 .PP
-1. Stand\-alone filesystems, which are not associated with any existing
+1\&. Stand\-alone filesystems, which are not associated with any existing
 file.  They represent certain system\-wide data as a directory tree.
 You can invoke them by typing
-.I "cd fsname://"
+\fIcd fsname://\fP
 where fsname is an extfs short name (see below).  Examples of such
 filesystems include audio (list audio tracks on the CD) or apt (list of
 all Debian packages in the system).
+
 .PP
 For example, to list CD\-Audio tracks on your CD\-ROM drive, type
-.PP
-.nf
+
+.EX
   cd audio://
-.fi
+
+.EE
+
 .PP
-2. 'Archive' filesystems (like rpm, patchfs and more), which represent
+2\&. 'Archive' filesystems (like rpm, patchfs and more), which represent
 contents of a file as a directory tree.  It can consist of 'real' files
 compressed in an archive (urar, rpm) or virtual files, like messages
 in a mailbox (mailfs) or parts of a patch (patchfs).  To access such
 filesystems
-.I fsname://
+\fIfsname://\fP
 should be appended to the archive name.  Note that the archive itself
 can be on another vfs.
+
 .PP
 For example, to list contents of a zip archive documents.zip type
-.PP
-.nf
+
+.EX
   cd documents.zip/uzip://
-.fi
+
+.EE
+
 .PP
 In many aspects, you could treat extfs like any other directory.  For
 instance, you can add it to the hotlist or change to it from directory
 history.  An important limitation is that you cannot invoke shell
 commands inside extfs, just like any other non\-local VFS.
+
 .PP
 Common extfs scripts included with M\-Commander are:
+
 .TP
-.B a
+\fBa\fP
 access 'A:' DOS/Windows diskette
-.RI ( "cd a://" ).
+\fI(cd a://).\fP
+
 .TP
-.B apt
+\fBapt\fP
 front end to Debian's APT package management system
-.RI ( "cd apt://" ).
+\fI(cd apt://).\fP
+
 .TP
-.B audio
+\fBaudio\fP
 audio CD ripping and playing
-.RI ( "cd audio://"
+\fI(cd audio://\fP
 or
-.IR "cd device/audio://" ).
+\fIcd device/audio://).\fP
+
 .TP
-.B deb
+\fBdeb\fP
 package of Debian GNU/Linux distribution
-.RI ( "cd file.deb/deb://" ).
+\fI(cd file.deb/deb://).\fP
+
 .TP
-.B dpkg
+\fBdpkg\fP
 Debian GNU/Linux installed packages
-.RI ( "cd deb://" ).
+\fI(cd deb://).\fP
+
 .TP
-.B hp48
+\fBhp48\fP
 view and copy files to/from a HP48 calculator
-.RI ( "cd hp48://" ).
+\fI(cd hp48://).\fP
+
 .TP
-.B lslR
+\fBlslR\fP
 browsing of lslR listings as found on many FTPs
-.RI ( "cd filename/lslR://" ).
+\fI(cd filename/lslR://).\fP
+
 .TP
-.B mailfs
+\fBmailfs\fP
 mbox\-style mailbox files support
-.RI ( "cd mailbox/mailfs://" ).
+\fI(cd mailbox/mailfs://).\fP
+
 .TP
-.B patchfs
+\fBpatchfs\fP
 extfs to handle unified and context diffs
-.RI ( "cd filename/patchfs://" ).
+\fI(cd filename/patchfs://).\fP
+
 .TP
-.B rpm
+\fBrpm\fP
 RPM package
-.RI ( "cd filename/rpm://" ).
+\fI(cd filename/rpm://).\fP
+
 .TP
-.B rpms
+\fBrpms\fP
 RPM database management
-.RI ( "cd rpms://" ).
+\fI(cd rpms://).\fP
+
 .TP
-.B ulha, urar, uzip, uzoo, uar, uha
+\fBulha, urar, uzip, uzoo, uar, uha\fP
 archivers
-.RI ( "cd archive/xxxx://"
+\fI(cd archive/xxxx://\fP
 where xxxx is one of:
-.IR ulha ,
-.IR urar ,
-.IR uzip ,
-.IR uzoo ,
-.IR uar ,
-.IR uha ).
+\fIulha,\fP
+\fIurar,\fP
+\fIuzip,\fP
+\fIuzoo,\fP
+\fIuar,\fP
+\fIuha).\fP
+
 .PP
 You could bind file type/extension to specified extfs as described in the
-.\"LINK2"
 Edit Extension File
-.\"Edit Extension File"
 section.  Here is an example entry for Debian packages:
-.PP
-.nf
+
+.EX
   regex/\e.deb$
           Open=%cd %p/deb://
-.fi
-.\"NODE "Colors"
-.SH "Colors"
+
+.EE
+
+
+.SH Colors
+.PP
 M\-Commander will try to detect if your terminal supports
 color using the terminal database and your terminal name.  Sometimes
 it gets confused, so you may force color mode or disable color mode
 using the \-c and \-b flag respectively.
+
 .PP
 If the program is compiled with the S\-Lang screen manager instead of
 ncurses, it will also check the variable
-.B COLORTERM,
+\fBCOLORTERM,\fP
 if it is set, it has the same effect as the \-c flag.
+
 .PP
 You may specify terminals that always force color mode
 by adding the
-.I color_terminals
+\fIcolor_terminals\fP
 variable to the Colors section of the initialization file.  This will
 prevent M\-Commander from trying to detect if your terminal
 supports color.  Example:
-.PP
-.nf
+
+.EX
 [Colors]
 color_terminals=linux,xterm
 color_terminals=terminal\-name1,terminal\-name2...
-.fi
+
+.EE
+
 .PP
 The program can be compiled with both ncurses and S\-Lang, ncurses does
 not provide a way to force color mode: ncurses uses just the
 information in the terminal database.
 
-.\"NODE "Skins"
-.SH "Skins"
+
+.SH Skins
+.PP
 You can change the appearance of M\-Commander.
 To do this, you must specify a file that contain descriptions of colors
 and lines to draw boxes. Redefining of the colors is entirely compatible
 with the assignment of colors, as described in Section
-.\"LINK2"
 Colors\&.
-.\"Colors"
+
 .PP
 If your skin contains any true\-color definitions, you should define
 the 'truecolors' key set to TRUE value in [skin] section. If true\-color
 is not used but 256\-color is, you should define '256colors' instead.
-.PP
+
+.TP
 A skin\-file is searched on the following algorithm (to the first one found):
-.IP
 .br
+
 1) command line option
-.B \-S <skin>
+\fB\-S <skin>\fP
 or
-.B \-\-skin=<skin>
+\fB\-\-skin=<skin>\fP
 .br
 2) Environment variable
-.B MC_SKIN
+\fBMC_SKIN\fP
 .br
 3) Parameter
-.B skin
+\fBskin\fP
 in section
-.B [Midnight\-Commander]
+\fB[Midnight\-Commander]\fP
 in config file.
 .br
 4) File
-.B %sysconfdir%/mcommander/skins/default.ini
+\fB{{sysconfdir}}/mcommander/skins/default.ini\fP
 .br
 5) File
-.B %pkgdatadir%/skins/default.ini
+\fB{{pkgdatadir}}/skins/default.ini\fP
 
 .PP
 Command line option, environment variable and parameter in config file may
 contain the absolute path to the skin\-file (with the extension .ini
 or without it). Search of skin\-file will occur in (to the first one found):
-.IP
+
+.PP
+.RS
+
+.PP
 1)
-.B ~/.local/share/mc6/skins/
+\fB~/.local/share/mc6/skins/\fP
 .br
 2)
-.B %sysconfdir%/mcommander/skins/
+\fB{{sysconfdir}}/mcommander/skins/\fP
 .br
 3)
-.B %pkgdatadir%/skins/
-.br
+\fB{{pkgdatadir}}/skins/\fP
+
+.RE
 
 .PP
 The format of skin files is described in
-.BR %pkgdatadir%/skins/README.txt .
+\fB{{pkgdatadir}}/skins/README.txt\fP\&.
 
-.SH "Filenames Highlight"
+
+.SH Filenames Highlight
+.PP
 Section [filehighlight] in current skin\-file contains key names as
 highlight groups and values as color pairs.
+
 .PP
-Rules of filenames highlight are placed in %pkgdatadir%/filehighlight.ini file
+Rules of filenames highlight are placed in {{pkgdatadir}}/filehighlight.ini file
 (~/.config/mc6/filehighlight.ini).
 Name of section in this file must be equal to parameters names in
 [filehighlight] section (in current skin\-file).
+
 .PP
 Keys in these groups are:
+
 .TP
-.I type
+\fItype\fP
 file type. If present, all other options are ignored.
+
 .TP
-.I regexp
+\fIregexp\fP
 regular expression. If present, 'extensions' option is ignored.
+
 .TP
-.I extensions
+\fIextensions\fP
 list of extensions of files. Separated by ';' sign.
+
 .TP
-.I extensions_case
+\fIextensions_case\fP
 (make sense only with 'extensions' parameter) make 'extensions'
 rule case sensitive (true) or not (false).
+
 .PP
 `type' key may have values:
-.nf
+
+.EX
 \- FILE (all files)
   \- FILE_EXE
 \- DIR (all directories)
@@ -4224,161 +4815,190 @@ rule case sensitive (true) or not (false).
   \- SPECIAL_SOCKET
   \- SPECIAL_FIFO
   \- SPECIAL_DOOR
-.fi
-.PP
 
-.\"NODE "Special Settings"
-.SH "Special Settings"
+.EE
+
+
+.SH Special Settings
+.PP
 Most of M\-Commander settings can be changed from the
 menus. However, there are a small number of settings which can only be
 changed by editing the setup file.
+
 .PP
 These variables may be set in your ~/.config/mc6/ini file:
+
 .TP
-.I clear_before_exec
+\fIclear_before_exec\fP
 By default, M\-Commander clears the screen before executing a
 command.  If you would prefer to see the output of the command at the
 bottom of the screen, edit your ~/.config/mc6/ini file and change the value of
 the field clear_before_exec to 0.
+
 .TP
-.I confirm_view_dir
+\fIconfirm_view_dir\fP
 If you press F3 on a directory, normally M\-Commander enters that directory.  If
 this flag is set to 1, then M\-Commander will ask for confirmation before changing
 the directory if you have files tagged.
+
 .TP
-.I ftpfs_retry_seconds
+\fIftpfs_retry_seconds\fP
 This value is the number of seconds M\-Commander will wait
 before attempting to reconnect to an FTP server that has denied the
 login.  If the value is zero, the login will no be retried.
+
 .TP
-.I only_leading_plus_minus
-Allow special treatment for '+', '\-', '*' in the command line (select,
+\fIonly_leading_plus_minus\fP
+Allow special treatment for '+', '\-', '*\&' in the command line (select,
 unselect, reverse selection) only if the command line is empty.  You
 don't need to quote those characters in the middle of the command line.
 On the other hand, you cannot use them to change selection when the
 command line is not empty.
+
 .TP
-.I alternate_plus_minus
-If true, use '+', '\-', '\e' and '*' keys normally. For select/unselect,
-use 'Alt\-+', 'Alt\--' and 'Alt\-*'.
+\fIalternate_plus_minus\fP
+If true, use '+', '\-', '\e\&' and '*\&' keys normally. For select/unselect,
+use 'Alt\-+', 'Alt\-\-' and 'Alt\-*\&'.
+
 .TP
-.I show_output_starts_shell
+\fIshow_output_starts_shell\fP
 When you use the C\-o keystroke to go back to the user screen, if this
 one is set, you will get a fresh shell.  Otherwise, pressing any key
 will bring you back to M\-Commander.
+
 .TP
-.I timeformat_recent
+\fItimeformat_recent\fP
 Change the time format used to display dates less than 6 months from
 now.
 See strftime or date man page for the format specification. If this
 option is absent, default timeformat is used.
+
 .TP
-.I timeformat_old
+\fItimeformat_old\fP
 Change the time format used to display  dates older than 6 months from
 now or for dates in the future.
 See strftime or date man page for the format specification. If this
 option is absent, default timeformat is used.
+
 .TP
-.I use_file_to_guess_type
+\fIuse_file_to_guess_type\fP
 If this variable is on (the default) it will spawn the file command to
 match the file types listed on the
-.\"LINK2"
 extensions.ini file\&.
-.\"Edit Extension File"
+
 .TP
-.I xtree_mode
+\fIxtree_mode\fP
 If this variable is on (default is off) when you browse the file system
 on a Tree panel, it will automatically reload the other panel with the
 contents of the selected directory.
+
 .TP
-.I shell_directory_timeout
+\fIshell_directory_timeout\fP
 This variable holds the lifetime of a directory cache entry in seconds. The
 default value is 900 seconds.
+
 .TP
-.I clipboard_store
+\fIclipboard_store\fP
 This variable contains path (with options) to the external clipboard
 utility like 'xclip' to read text into X selection from file.
 For example:
-.PP
-.nf
+
+.EX
 clipboard_store=xclip \-i
-.fi
+
+.EE
+
 .TP
-.I clipboard_paste
+\fIclipboard_paste\fP
 This variable contains path (with options) to the external clipboard
 utility like 'xclip' to print the selection to standard out.
 For example:
-.PP
-.nf
+
+.EX
 clipboard_paste=xclip \-o
-.fi
+
+.EE
+
 .TP
-.I autodetect_codeset
+\fIautodetect_codeset\fP
 This option allows use the `enca' command to autodetect codeset of text files
 in internal viewer and editor. List of valid values can be obtain by the
 `enca \-\-list languages | cut \-d : \-f1' command. Option must be located
 in the [Misc] section.
+
 .PP
 For example:
-.PP
-.nf
+
+.EX
 autodetect_codeset=russian
-.fi
+
+.EE
+
 .PP
 The settings of the internal file viewer are in the [Viewer] section of the
 same file. They are all in the
-.\"LINK2"
 Viewer options
-.\"Viewer options"
 dialog as well; the names here are what that dialog writes.
+
 .TP
-.I wrap
+\fIwrap\fP
 Wrap a line wider than the screen onto the next screen line. True by default.
+
 .TP
-.I syntax
+\fIsyntax\fP
 Color the text by the syntax rules of the editor. False by default.
+
 .TP
-.I mouse_move_pages
+\fImouse_move_pages\fP
 Scroll with the mouse by pages rather than line by line. In ASCII mode the
 left button selects text, so this scrolling uses the right or middle button
 there. True by default.
+
 .TP
-.I remember_file_position
+\fIremember_file_position\fP
 Open a file at the place it was left the last time. False by default.
+
 .TP
-.I structured_auto
+\fIstructured_auto\fP
 Open supported files (json, yaml, yml, xml, html, htm) in the structured
 (tree) mode right away. When a file fails to parse, the plain text view is
 used silently. False by default.
+
 .TP
-.I eof
+\fIeof\fP
 The text printed after the last line of the file. Empty by default.
+
 .TP
-.I structured_max_size
+\fIstructured_max_size\fP
 The largest file the structured (tree) view parses, in bytes. A larger one is
 refused before it is read. 67108864 (64 MB) by default.
+
 .TP
-.I structured_max_nodes
+\fIstructured_max_nodes\fP
 The largest tree the structured view builds, counted in nodes. A dense
 document, such as XML of small tags, meets this limit before the size one: it
 spends about a node per twelve bytes, and every node costs memory. 10000000 by
 default, which holds some 120 MB of such a file in about 1.5 GB.
+
 .TP
-.I dirt_limit
+\fIdirt_limit\fP
 How many screen updates may be skipped at most while a file is being read.
 Normally this value is not significant, because the code adjusts the number
 of updates to skip according to the rate of incoming keystrokes. However, on
 very slow machines, or terminals with a fast keyboard auto repeat, a big
 value can make screen updates too jumpy. The default is 10, which behaves
 best.
+
 .PP
 Older versions kept these settings in the main section under longer names
 (wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
 mcview_remember_file_position, mcview_structured_auto, mcview_eof and
 max_dirt_limit). They are read from there once and written back to the
 [Viewer] section.
-.\"NODE "Parameters for external editor or viewer"
-.SH "Parameters for external editor or viewer"
+
+
+.SH Parameters for external editor or viewer
+.PP
 M\-Commander provides a way for specify an options for external editors
 and viewers. M\-Commander tries to search the
 "[External editor or viewer parameters]" section in the system initialization file
@@ -4386,48 +5006,55 @@ and viewers. M\-Commander tries to search the
 and then in the ~/.config/mc6/ini file. The option name should be equal to the name
 (full pathname) of external editor or viewer. The option value can contain following
 variables:
+
 .TP
-.I %filename
+\fI%filename\fP
 The filename to edit/view.
+
 .TP
-.I %lineno
+\fI%lineno\fP
 The start line in the opening file.
+
 .PP
 For example:
-.PP
-.nf
+
+.EX
 [External editor or viewer parameters]
     vi=%filename +%lineno
     joe=%filename +%lineno
     more=%filename +%lineno
-.fi
+
+.EE
+
 .PP
 Start line is passed to the external editor/viewer only if it is called from the
-.\"LINK2"
 Find file
-.\"Find File"
 results window.
+
 .PP
 If external editor/viewer is launched via F4/F3 keys, M\-Commander hopes that program
 (at least "joe", but probably others too) has an own feature that by default
 opens the file where it was last open. M\-Commander doesn't prevent external editor/viewer
 to save and restore position in opened files.
-.\"NODE "Terminal databases"
-.SH "Terminal databases"
+
+
+.SH Terminal databases
+.PP
 M\-Commander provides a way to fix your system terminal
 database without requiring root privileges. M\-Commander
 searches in the system initialization file (the defaults.ini file located in
-M\-Commander's library directory) and in the 
-~/.config/mc6/ini file for the section 
+M\-Commander's library directory) and in the
+~/.config/mc6/ini file for the section
 "terminal:your\-terminal\-name" and then for the section
 "terminal:general", each line of the section contains a key symbol that
 you want to define, followed by an equal sign and the definition for the
 key.  You can use the special \ee form to represent the escape character
 and the ^x to represent the control\-x character.
+
 .PP
 The possible key symbols are:
-.PP
-.nf
+
+.EX
 f0 to f20     Function keys f0\-f20
 bs            backspace
 home          home key
@@ -4441,24 +5068,28 @@ pgup          page up key
 insert        the insert character
 delete        the delete character
 complete      to do completion
-.fi
+
+.EE
+
 .PP
 For example, to define the key insert to be the Escape + [ + O + p, you
 set this in the ini file:
-.PP
-.nf
+
+.EX
 insert=\ee[Op
-.fi
+
+.EE
 
 .PP
 Also now you can use
-.I extended learn keys.
+\fIextended learn keys.\fP
 For example:
 
-.nf
+.EX
     ctrl\-alt\-right=\ee[[1;6C
     ctrl\-alt\-left=\ee[[1;6D
-.fi
+
+.EE
 
 .PP
 This means that ctrl+alt+left sends a \ee[[1;6D escape sequence
@@ -4466,118 +5097,129 @@ and therefore M\-Commander interprets "\ee[[1;6D" as C\-Alt\-Left.
 
 .PP
 The
-.I complete
+\fIcomplete\fP
 key symbol represents the escape sequences used to invoke the completion
 process, this is invoked with Alt\-tab, but you can define other keys to do
 the same work (on those keyboard with tons of nice and unused keys
 everywhere).
-.SH ""
-.\"NODE "FILES"
-.SH "FILES"
+
+
+.SH FILES
+.PP
 Full paths below may vary between installations.  They are also affected
 by the
-.B MC_DATADIR
+\fBMC_DATADIR\fP
 environment variable. If it's set, its value is used instead of
-%pkgdatadir% in the paths below.
-.PP
-.I %pkgdatadir%/help/mcommander.hlp
-.IP
+{{pkgdatadir}} in the paths below.
+
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
 The help file for the program.
-.PP
-.I %pkgdatadir%/extensions.ini
-.IP
+
+.TP
+\fI{{pkgdatadir}}/extensions.ini\fP
 The default system\-wide extensions file.
-.PP
-.I ~/.config/mc6/extensions.ini
-.IP
+
+.TP
+\fI~/.config/mc6/extensions.ini\fP
 User's own extension, view configuration and edit configuration
 file.  They override the contents of the system wide files if present.
-.PP
-.I %sysconfdir%/mcommander/mc.ini
-.RE
-.I %pkgdatadir%/mc.ini
-.IP
+
+.TP
+\fI{{sysconfdir}}/mcommander/mc.ini\fP \fI{{pkgdatadir}}/mc.ini\fP
 System\-wide setup files for M\-Commander, used only if the user
 doesn't have his own
-.B ~/.config/mc6/ini
-file. If %sysconfdir%/mcommander/mc.ini exists, %pkgdatadir%/mc.ini isn't used.
-.PP
-.I %pkgdatadir%/defaults.ini
-.IP
+\fB~/.config/mc6/ini\fP
+file. If {{sysconfdir}}/mcommander/mc.ini exists, {{pkgdatadir}}/mc.ini isn't used.
+
+.TP
+\fI{{pkgdatadir}}/defaults.ini\fP
 Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.  Currently, only
-.\"LINK2"
 terminal settings
-.\"Terminal databases"
 are loaded from defaults.ini.
-.PP
-.I ~/.config/mc6/ini
-.IP
+
+.TP
+\fI~/.config/mc6/ini\fP
 User's own setup. If this file is present then the setup is loaded
 from here instead of the system\-wide startup file.
-.PP
-.I %pkgdatadir%/hints/hint
-.IP
+
+.TP
+\fI{{pkgdatadir}}/hints/hint\fP
 This file contains the hints displayed by the program.
-.PP
-.I ~/.config/mc6/menu
-.IP
+
+.TP
+\fI~/.config/mc6/menu\fP
 User's own application menu. If this file is present it is used instead
 of the system\-wide applications menu.
-.PP
-.I ~/.config/mc6/menu.ini
-.IP
+
+.TP
+\fI~/.config/mc6/menu.ini\fP
 The user menu that edits itself, one group per entry. Where this file
 exists, it is the menu F2 opens, and a .mc6menu of the current directory
 is shown along with it.
-.PP
-.I ~/.cache/mc6/Tree
-.IP
+
+.TP
+\fI~/.cache/mc6/Tree\fP
 The directory list for the directory tree and tree view features.
-.PP
-.I ./.usermenu
-.IP
+
+.TP
+\fI\&./.usermenu\fP
 Local user\-defined menu. If this file is present in the current
 directory, it is used instead of the home or system\-wide applications
 menu.
+
 .PP
 To change default root directory of M\-Commander, you can use
-.B MC_PROFILE_ROOT
+\fBMC_PROFILE_ROOT\fP
 environment variable. The value of MC_PROFILE_ROOT must be an absolute path.
 If MC_PROFILE_ROOT is unset or empty, HOME variable is used. If HOME is unset
 or empty, M\-Commander directories are get from GLib library.
-.\"SKIP_SECTION"
-.SH "LICENSE"
+
+
+.SH LICENSE
+.PP
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation. See the built\-in
 help for details on the License and the lack of warranty.
-.\"NODE "AVAILABILITY"
-.SH "AVAILABILITY"
+
+
+.SH AVAILABILITY
+.PP
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
-.\"NODE "SEE ALSO"
-.SH "SEE ALSO"
+
+
+.SH SEE ALSO
+.PP
 ed(1), gpm(1), terminfo(1), view(1), sh(1), bash(1),
 tcsh(1), zsh(1).
-.PP
-.nf
+
+.EX
 M\-Commander's page on the World Wide Web:
-	\X'tty: link https://github.com/blue\-panels/mcommander'https://github.com/blue\-panels/mcommander\X'tty: link'
-.fi
-.\"NODE "AUTHORS"
-.SH "AUTHORS"
+	https://github.com/blue\-panels/mcommander
+
+.EE
+
+
+.SH AUTHORS
+.PP
 Authors and contributors are listed in the AUTHORS file in the source
 distribution.
-.\"NODE "BUGS"
-.SH "BUGS"
+
+
+.SH BUGS
+.PP
 See the file TODO in the distribution for information on what remains to
 be done.
+
 .PP
 If you want to report a problem with the program, please create bugreport at
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
+
 .PP
 Provide a detailed description of the bug, the version of the program
 you are running
-.RI ( "mcommander \-V"
+\fI(mcommander \-V\fP
 displays this information), the operating system you are running the
 program on.  If the program crashes, we would appreciate a stack trace.

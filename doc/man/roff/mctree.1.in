@@ -1,54 +1,78 @@
-.TH MCTREE 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
+.\" Generated from mctree.md by maint/update-man-in.sh. Do not edit.
+.TH MCTREE 1 "September 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
 .SH NAME
+.PP
 mctree \- Structured view of a file in M\-Commander.
+
+
 .SH SYNOPSIS
-.B mctree
+.PP
+\fBmctree\fP
 [\-bcdfstVx?] file
+
+
 .SH DESCRIPTION
-.LP
+.PP
 mctree is a link to
-.BR mcommander ,
+\fBmcommander\fP,
 the main M\-Commander executable.  Under this name the program opens the
 internal viewer on the
-.I file
+\fIfile\fP
 given on the command line and puts it in structured mode at once, which is
 what
-.B F3
+\fBF3\fP
 followed by the display mode key does inside the program.
-.LP
+
+.PP
 In structured mode the viewer reads the file as a tree instead of a stream of
 lines: a directory tree for an archive, a document outline for markup, a list
 of sections for a program.  What a file turns into is decided by the display
 modes the viewer has for its type.
-.LP
+
+.PP
 The name needs a file.  Without one the program says so and stops.
+
+
 .SH OPTIONS
-.LP
+.PP
 The options are those of
-.BR mcommander ,
+\fBmcommander\fP,
 and only the ones that concern the viewer have an effect.  See
-.BR mcommander (1)
+\fBmcommander\fP(1)
 for the full list.
+
+
 .SH FILES
-.I %pkgdatadir%/help/mcommander.hlp
-.IP
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
 The help file for the program.
-.PP
-.I ~/.config/mc6/ini
-.IP
+
+.TP
+\fI~/.config/mc6/ini\fP
 User's own setup, the viewer options among it.
-.PP
+
+
 .SH LICENSE
+.PP
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built\-in
 help of M\-Commander for details on the License and the lack
 of warranty.
+
+
 .SH AVAILABILITY
+.PP
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
 .SH SEE ALSO
-mcommander(1), mview(1), mcstruct(1)
 .PP
+mcommander(1), mview(1), mcstruct(1)
+
+
 .SH BUGS
+.PP
 Bugs should be reported to
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

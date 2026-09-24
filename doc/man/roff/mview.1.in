@@ -1,86 +1,112 @@
-.TH MDIFF 1 "%DATE_OF_MAN_PAGE%" "MCommander %MAN_VERSION%" "M\-Commander"
+.\" Generated from mview.md by maint/update-man-in.sh. Do not edit.
+.TH MVIEW 1 "September 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
 .SH NAME
-mdiff \- Internal diff viewer of M\-Commander.
-.SH USAGE
-.B mdiff
-[\-bcCdfhstVx?] file1 file2
+.PP
+mview \- Internal file viewer of M\-Commander.
+
+
+.SH SYNOPSIS
+.PP
+\fBmview\fP
+[\-bcCdfhstVx?] file
+
+
 .SH DESCRIPTION
-.LP
-mdiff is a link to
-.BR mcommander ,
+.PP
+mview is a link to
+\fBmcommander\fP,
 the main M\-Commander executable.  Executing
-M\-Commander under this name requests starting the internal diff viewer
-which compares
-.I file1
-and
-.I file2
+M\-Commander under this name requests staring the internal viewer and
+opening the
+\fIfile\fP
 specified on the command line.
+
+
 .SH OPTIONS
 .TP
-.I "\-b"
+\fI\-b\fP
 Force black and white display.
+
 .TP
-.I "\-c"
+\fI\-c\fP
 Force color mode on terminals where
-.B mdiff
+\fBmview\fP
 defaults to black and white.
+
 .TP
-.I "\-d"
+\fI\-d\fP
 Disable mouse support.
+
 .TP
-.I "\-f"
+\fI\-f\fP
 Display the compiled\-in search paths for M\-Commander files.
+
 .TP
-.I \-S arg, \-\-skin=arg
+\fI\-S arg, \-\-skin=arg\fP
 Specify a name of skin in the command line.  See the
-.B Skins
+\fBSkins\fP
 section in mcommander(1) for more information.
+
 .TP
-.I "\-t"
+\fI\-t\fP
 Used only if the code was compiled with S\-Lang and terminfo: it makes
-the M\-Commander use the value of the
-.B TERMCAP
+M\-Commander use the value of the
+\fBTERMCAP\fP
 variable for the terminal information instead of the information on
 the system wide terminal database
+
 .TP
-.I "\-V"
+\fI\-V\fP
 Displays the version of the program.
+
 .TP
-.I "\-x"
+\fI\-x\fP
 Forces xterm mode.  Used when running on xterm\-capable terminals (two
 screen modes, and able to send mouse escape sequences).
-.PP
+
+
 .SH FILES
-.I %pkgdatadir%/mcommander.hlp
-.IP
+.TP
+\fI{{pkgdatadir}}/help/mcommander.md\fP
 The help file for the program.
-.PP
-.I %pkgdatadir%/mc.ini
-.IP
+
+.TP
+\fI{{pkgdatadir}}/mc.ini\fP
 The default system\-wide setup for M\-Commander, used only if
 the user's own ~/.config/mc6/ini file is missing.
-.PP
-.I %pkgdatadir%/defaults.ini
-.IP
-Global settings for the M\-Commander.  Settings in this file
+
+.TP
+\fI{{pkgdatadir}}/defaults.ini\fP
+Global settings for M\-Commander. Settings in this file
 affect all users, whether they have ~/.config/mc6/ini or not.
-.PP
-.I ~/.config/mc6/ini
-.IP
+
+.TP
+\fI~/.config/mc6/ini\fP
 User's own setup.  If this file is present, the setup is loaded from
 here instead of the system\-wide startup file.
-.PP
+
+
 .SH LICENSE
+.PP
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built\-in
-help of the M\-Commander for details on the License and the lack
+help of M\-Commander for details on the License and the lack
 of warranty.
+
+
 .SH AVAILABILITY
+.PP
 The latest version of this program can be found at
 \X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
 .SH SEE ALSO
-mcommander(1), mcedit6(1), mview(1)
 .PP
+mcommander(1), mcedit6(1)
+
+
 .SH BUGS
+.PP
 Bugs should be reported to
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

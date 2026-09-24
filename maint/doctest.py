@@ -7,8 +7,8 @@ from pathlib import Path
 
 MC_SOURCE_ROOT = Path(__file__).parent.parent
 
-if not (MC_SOURCE_ROOT / "doc/man/mcommander.1.in").exists():
-    raise FileNotFoundError("cannot read doc/man/mcommander.1.in")
+if not (MC_SOURCE_ROOT / "doc/man/roff/mcommander.1.in").exists():
+    raise FileNotFoundError("cannot read doc/man/roff/mcommander.1.in")
 
 warnings = []
 
@@ -42,7 +42,7 @@ for manpage in (MC_SOURCE_ROOT / "doc").glob("**/*.1.*"):
         warnings.append(f"{manpage}: escaped quote ('\"')")
 
 # Check that English manuals are in ASCII
-for manpage in (MC_SOURCE_ROOT / "doc/man").glob("*.1.in"):
+for manpage in (MC_SOURCE_ROOT / "doc/man/roff").glob("*.1.in"):
     if manpage.read_text().strip().startswith(".so "):
         continue
 

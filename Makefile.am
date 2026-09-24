@@ -19,7 +19,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 CONFIG_STATUS_DEPENDENCIES = $(top_srcdir)/mc-version.h
 
-.PHONY: update-version
+.PHONY: update-version man-in
 
 update-version:
 	@if test -x $(top_srcdir)/version.sh; then \
@@ -39,6 +39,11 @@ INDENT_DIRS = \
     "$(top_srcdir)/lib" \
     "$(top_srcdir)/src" \
     "$(top_srcdir)/tests"
+
+# The roff of the man pages, made from their markdown before a commit.
+# Needs go-md2man; the build itself does not.
+man-in:
+	$(top_srcdir)/maint/update-man-in.sh $(top_srcdir)
 
 indent:
 	for directory in $(INDENT_DIRS); do \
