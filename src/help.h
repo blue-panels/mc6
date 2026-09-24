@@ -1,28 +1,13 @@
 /** \file help.h
  *  \brief Header: hypertext file browser
  *
- *  Implements the hypertext file viewer.
- *  The hypertext file is a file that may have one or more nodes.  Each
- *  node ends with a ^D character and starts with a bracket, then the
- *  name of the node and then a closing bracket. Right after the closing
- *  bracket a newline is placed. This newline is not to be displayed by
- *  the help viewer and must be skipped - its sole purpose is to facilitate
- *  the work of the people managing the help file template (xnc.hlp) .
- *
- *  Links in the hypertext file are specified like this: the text that
- *  will be highlighted should have a leading ^A, then it comes the
- *  text, then a ^B indicating that highlighting is done, then the name
- *  of the node you want to link to and then a ^C.
- *
- *  The file must contain a ^D at the beginning and at the end of the
- *  file or the program will not be able to detect the end of file.
+ *  The help file is markdown: src/help_md.c turns it into nodes, links
+ *  between them and a contents page, and this browser paints that.
  *
  *  Laziness/widgeting attack: This file does use the dialog manager
  *  and uses mainly the dialog to achieve the help work.  there is only
  *  one specialized widget and it's only used to forward the mouse messages
  *  to the appropriate routine.
- *
- *  This file is included by help.c and man2hlp.c
  */
 
 #ifndef MC__HELP_H
@@ -30,7 +15,7 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-/* Markers used in the help files */
+/* Markers of the text the help window paints, put there by help_md.c */
 #define CHAR_LINK_START   '\01'   // Ctrl-A
 #define CHAR_LINK_POINTER '\02'   // Ctrl-B
 #define CHAR_LINK_END     '\03'   // Ctrl-C
@@ -41,6 +26,9 @@
 #define CHAR_FONT_BOLD    '\010'  // Ctrl-H
 #define CHAR_FONT_NORMAL  '\013'  // Ctrl-K
 #define CHAR_FONT_ITALIC  '\024'  // Ctrl-T
+/* A place inside a node that a link can lead to; the name of it follows and
+   another one closes it */
+#define CHAR_ANCHOR '\016'  // Ctrl-N
 
 /*** enums ***************************************************************************************/
 

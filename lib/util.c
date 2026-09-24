@@ -582,6 +582,27 @@ extension (const char *filename)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/** The name a file of a given language has: the tag goes before the extension where there is
+ * one, so that mcommander.md becomes mcommander.ru.md and hint stays hint.ru.
+ */
+
+static char *
+mc_localized_file_name (const char *path, const char *lang)
+{
+    const char *base;
+    const char *dot;
+
+    base = strrchr (path, PATH_SEP);
+    base = base == NULL ? path : base + 1;
+    dot = strrchr (base, '.');
+
+    if (dot == NULL || dot == base)
+        return g_strconcat (path, ".", lang, (char *) NULL);
+
+    return g_strdup_printf ("%.*s.%s%s", (int) (dot - path), path, lang, dot);
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 char *
 load_mc_home_file (const char *from, const char *filename, char **allocated_filename,
@@ -594,14 +615,14 @@ load_mc_home_file (const char *from, const char *filename, char **allocated_file
     hintfile_base = g_build_filename (from, filename, (char *) NULL);
     lang = guess_message_value ();
 
-    hintfile = g_strconcat (hintfile_base, ".", lang, (char *) NULL);
+    hintfile = mc_localized_file_name (hintfile_base, lang);
     if (!g_file_get_contents (hintfile, &data, length, NULL))
     {
         // Fall back to the two-letter language code
         if (lang[0] != '\0' && lang[1] != '\0')
             lang[2] = '\0';
         g_free (hintfile);
-        hintfile = g_strconcat (hintfile_base, ".", lang, (char *) NULL);
+        hintfile = mc_localized_file_name (hintfile_base, lang);
         if (!g_file_get_contents (hintfile, &data, length, NULL))
         {
             g_free (hintfile);

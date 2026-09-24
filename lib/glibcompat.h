@@ -31,6 +31,7 @@ void g_queue_clear_full (GQueue *queue, GDestroyNotify free_func);
 
 #if !GLIB_CHECK_VERSION(2, 68, 0)
 gpointer g_memdup2 (gconstpointer mem, gsize byte_size);
+guint g_string_replace (GString *string, const gchar *find, const gchar *replace, guint limit);
 #endif
 
 #if !GLIB_CHECK_VERSION(2, 70, 0)

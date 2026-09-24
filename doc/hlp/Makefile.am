@@ -4,10 +4,15 @@ SUBDIRS = $(DOC_LINGUAS)
 endif
 
 hlpdir = $(pkgdatadir)/help
-hlp_DATA = mcommander.hlp
+hlp_DATA = mcommander.md
+# the license is a source file: it is installed as it stands, and make clean
+# has no business with it
+dist_hlp_DATA = gnu-gpl-v3.0.md
 
-EXTRA_DIST = xnc.hlp
+EXTRA_DIST = xnc.md
 CLEANFILES = $(hlp_DATA)
 
-mcommander.hlp: $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp $(top_builddir)/src/man2hlp/man2hlp
-	- $(top_builddir)/src/man2hlp/man2hlp $(top_builddir)/doc/man/mcommander.1 $(srcdir)/xnc.hlp mcommander.hlp
+# The help window reads the markdown of the man page, with the screens that
+# belong to the program itself, and to nothing else, appended to it.
+mcommander.md: $(top_srcdir)/doc/man/mcommander.md $(srcdir)/xnc.md
+	cat $(top_srcdir)/doc/man/mcommander.md $(srcdir)/xnc.md > $@
