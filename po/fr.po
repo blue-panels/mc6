@@ -15,13 +15,14 @@
 # Wallon Wallon, 2022-2026
 # Yury V. Zaytsev <yury@shurup.com>, 2016,2025
 # Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2026-09-25 21:46+0000\n"
-"Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: French <https://translate.codeberg.org/projects/mc6/mc6/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
