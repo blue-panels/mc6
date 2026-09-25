@@ -15,22 +15,25 @@
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Vlad Anisimov <uniss@ua.fm>, 2019
 # Yury V. Zaytsev <yury@shurup.com>, 2016,2025
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Andrij Mizyk <andm1zyk@proton.me>, 2022,2025\n"
-"Language-Team: Ukrainian (http://app.transifex.com/mc/mc/language/uk/)\n"
+"PO-Revision-Date: 2026-09-25 22:17+0000\n"
+"Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
+"Language-Team: Ukrainian <https://translate.codeberg.org/projects/mc6/mc6/"
+"uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 "
+"? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > "
+"14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % "
+"100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -5195,8 +5198,7 @@ msgid "Cannot read directory contents"
 msgstr "Не вдалося отримати зміст каталога"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr ""
-"Формат користувача виглядає неправильним, використовується стандартний."
+msgstr "Формат користувача виглядає неправильним, використовується стандартний."
 
 msgid "Column types must not be empty."
 msgstr ""
