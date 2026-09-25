@@ -1345,11 +1345,6 @@ command allows you to specify programs to executed when you try to
 execute, view, edit and do a bunch of other thing on files
 with certain extensions (filename endings).
 
-The
-["Edit Menu File"](#edit-menu-file)
-command may be used for editing the user menu (which appears by
-pressing F2).
-
 ### Directory Tree
 
 The Directory Tree command shows a tree figure of the directories. You

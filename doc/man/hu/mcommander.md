@@ -1185,11 +1185,7 @@ A
 lehetővé teszik számodra a futtatandó programok meghatározását, a
 kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
 futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni. A
-[Menu editor edit](#edit-menu-file)
-parancs a felhasználói menü szerkesztésére használható (ami az F2
-lenyomásával elérhető).
-
+szeretnél vele csinálni.
 ### Könyvtárfa <a id="directory-tree"></a>
 
 A Könyvtárfa parancs fa formában mutatja meg a könyvtárakat. Ebből a

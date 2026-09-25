@@ -1103,9 +1103,7 @@ komenda.
 
 Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
 programów, które mają być używane do wykonywania plików z podanymi
-rozszerzeniami. Komenda edycji pliku menu (Edit Menu File) może być używana do
-edytowania menu użytkownika (tego, które pojawia się po naciśnięciu kombinacji
-F2).
+rozszerzeniami.
 
 ### Drzewo katalogów (Directory Tree) <a id="directory-tree"></a>
 

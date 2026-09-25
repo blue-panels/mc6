@@ -320,7 +320,6 @@ create_command_menu (void)
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries,
                               menu_entry_new (_ ("Edit &extension file"), CK_EditExtensionsFile));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Edit &menu file"), CK_EditUserMenu));
     entries = g_list_prepend (
         entries, menu_entry_new (_ ("Edit hi&ghlighting group file"), CK_EditFileHighlightFile));
 

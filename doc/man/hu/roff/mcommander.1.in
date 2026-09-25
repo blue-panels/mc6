@@ -1394,10 +1394,7 @@ Társítások
 lehetővé teszik számodra a futtatandó programok meghatározását, a
 kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
 futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni. A
-Menu editor edit
-parancs a felhasználói menü szerkesztésére használható (ami az F2
-lenyomásával elérhető).
+szeretnél vele csinálni.
 
 .SS Könyvtárfa
 .PP

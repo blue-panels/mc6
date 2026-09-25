@@ -1310,10 +1310,6 @@ nos permite especificar los programas a ejecutar para intentar
 ejecutar, ver, editar y realizar un montón de cosas sobre archivos
 con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
 de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
-[Editar archivo de menú](#edit-menu-file)
-se puede utilizar para editar el menú de usuario (el que aparece al
-pulsar F2).
-
 ### Árbol de Directorios <a id="directory-tree"></a>
 
 El comando Árbol de directorios muestra una figura con la estructura de los directorios.

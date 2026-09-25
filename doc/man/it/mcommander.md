@@ -1174,10 +1174,6 @@ Il comando
 permette di specificare i programmi che devono essere eseguiti quando
 si prova ad eseguire, visualizzare, modificare e un mucchio di altre
 cose, file con una specifica estensione (la fine del nome del file).
-Il comando
-[modifica file menu](#edit-menu-file)
-serve a modificare il menu utente (che appare premendo F2).
-
 ### Albero directory <a id="directory-tree"></a>
 
 Il comando albero directory mostra una rappresentazione ad albero delle
