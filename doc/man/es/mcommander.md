@@ -4039,6 +4039,99 @@ o infrautilizadas).
 
 <!-- help:break -->
 
+# VARIABLES DE ENTORNO <a id="environment"></a>
+
+Las variables siguientes son las que M-Commander lee y las que establece para
+los programas que arranca. Variables como **TERM**, **SHELL**, **HOME** o
+**PATH** no figuran aquí: el programa las lee para saber dónde se ejecuta, no
+para configurarse con ellas.
+
+## Leídas al arrancar <a id="read-at-start-up"></a>
+
+**MC_DATADIR**
+: El directorio del que se toman los archivos de datos, en lugar del
+integrado. Véase [ARCHIVOS AUXILIARES](#files).
+
+**MC_PROFILE_ROOT**
+: La raíz de los archivos del usuario, como ruta absoluta. Véase
+[ARCHIVOS AUXILIARES](#files).
+
+**MC_SKIN**
+: El skin a usar, por nombre o por ruta. Véase [Skins](#skins).
+
+**MC_KEYMAP**
+: El archivo de asignación de teclas a usar. Véase [Teclas](#keys).
+
+**MC_TMPDIR**
+: El directorio de los archivos temporales del programa.
+
+**MC_NO_LUA**
+: Con el valor 1 el programa arranca sin el entorno de ejecución Lua. No se
+carga ningún paquete Lua y nada que lo necesite está disponible.
+
+**MC_SIXEL**
+: Con el valor 0 se indica que el terminal no tiene gráficos sixel; con 1, que
+sí los tiene. Sin la variable se pregunta al propio terminal.
+
+**KEYBOARD_KEY_TIMEOUT_US**
+: Cuánto esperar el resto de una secuencia de escape, en microsegundos.
+
+**COLORTERM**
+: Se lee al elegir los colores. Véase [Colores](#colors).
+
+**CDPATH**
+: Los directorios en los que busca la orden cd interna.
+
+**EDITOR**, **VIEWER**, **PAGER**
+: Los programas externos que se usan cuando el editor o el visor internos
+están desactivados. Véase
+[Parámetros para editor o visor externo](#parameters-for-external-editor-or-viewer).
+
+## Establecidas para los programas que arranca M-Commander <a id="set-for-the-programs-m-commander-starts"></a>
+
+No están pensadas para ponerlas a mano. El programa las escribe para que una
+copia de sí mismo arrancada desde el terminal incorporado pueda saber que ya
+se está ejecutando dentro de uno.
+
+**MC_SID**
+: La sesión en la que se ejecuta el programa. Una copia arrancada desde esa
+sesión no abre paneles propios.
+
+**MC_PID**
+: El identificador de proceso del programa en ejecución.
+
+**MC_TTY**
+: El terminal en el que se arrancó el programa.
+
+## Registros de depuración <a id="debug-logs"></a>
+
+El registro solo se escribe cuando está activado, y el interruptor toma el
+valor 1. Las variables de los complementos recurren a las generales, así que
+basta con poner el par general para registrarlo todo.
+
+**MC_LOG_ENABLE**, **MC_LOG_FILE**
+: El registro general. Sin **MC_LOG_FILE** se usa el archivo indicado por
+*logfile* en la sección *[Logging]* del archivo *ini*, y sin esa entrada
+*mc.log* junto a los demás archivos del usuario.
+
+**MC_FTP_LOG_ENABLE**, **MC_FTP_LOG_FILE**
+: El registro del complemento de panel ftp. El archivo recurre a
+*/tmp/mc-ftp.log*.
+
+**MC_SMB_LOG_ENABLE**, **MC_SMB_LOG_FILE**
+: El registro del complemento de panel samba. El archivo recurre a
+*/tmp/mc-samba.log*.
+
+**MC_SPELL_LOG**
+: El archivo en el que escribe el corrector ortográfico. No tiene interruptor
+propio: el registro se escribe cuando la variable nombra un archivo.
+
+Para conservar el registro de una conexión ftp que falla:
+
+```
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+```
+
 # ARCHIVOS AUXILIARES <a id="files"></a>
 
 Los directorios indicados a continuación pueden variar de una

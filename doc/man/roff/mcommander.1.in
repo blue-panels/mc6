@@ -4472,6 +4472,117 @@ the same work (on those keyboard with tons of nice and unused keys
 everywhere).
 
 
+.SH ENVIRONMENT
+.PP
+The variables below are the ones M\-Commander reads, and the ones it sets for
+the programs it starts. Variables such as \fBTERM\fP, \fBSHELL\fP, \fBHOME\fP or
+\fBPATH\fP are not listed here: the program reads them to find out where it
+runs, not to be configured by them.
+
+.SH Read at start up
+.TP
+\fBMC_DATADIR\fP
+The directory the data files are taken from, in place of the one built in.
+See FILES\&.
+
+.TP
+\fBMC_PROFILE_ROOT\fP
+The root of the user files, as an absolute path. See FILES\&.
+
+.TP
+\fBMC_SKIN\fP
+The skin to use, by name or by path. See Skins\&.
+
+.TP
+\fBMC_KEYMAP\fP
+The keymap file to use. See Keys\&.
+
+.TP
+\fBMC_TMPDIR\fP
+The directory for the temporary files of the program.
+
+.TP
+\fBMC_NO_LUA\fP
+Set to 1 to start without the Lua runtime. No Lua package is loaded, and
+nothing that needs one is available.
+
+.TP
+\fBMC_SIXEL\fP
+Set to 0 to say the terminal has no sixel graphics, or to 1 to say it has.
+Without the variable the terminal itself is asked.
+
+.TP
+\fBKEYBOARD_KEY_TIMEOUT_US\fP
+How long to wait for the rest of an escape sequence, in microseconds.
+
+.TP
+\fBCOLORTERM\fP
+Read when the colours are chosen. See Colors\&.
+
+.TP
+\fBCDPATH\fP
+The directories the internal cd command searches.
+
+.TP
+\fBEDITOR\fP, \fBVIEWER\fP, \fBPAGER\fP
+The external programs used when the built\-in editor or viewer is turned
+off. See
+Parameters for external editor or viewer\&.
+
+.SH Set for the programs M\-Commander starts
+.PP
+These are not meant to be set by hand. The program writes them so that a copy
+of itself started from the built\-in terminal can tell that it is already
+running inside one.
+
+.TP
+\fBMC_SID\fP
+The session the program runs in. A copy started from that session opens no
+panels of its own.
+
+.TP
+\fBMC_PID\fP
+The process id of the running program.
+
+.TP
+\fBMC_TTY\fP
+The terminal the program was started on.
+
+.SH Debug logs
+.PP
+A log is written only when it is turned on, and the switch takes the value 1.
+The plugin variables fall back to the general ones, so setting the general
+pair alone logs everything.
+
+.TP
+\fBMC_LOG_ENABLE\fP, \fBMC_LOG_FILE\fP
+The general log. Without \fBMC_LOG_FILE\fP the file named by \fIlogfile\fP in the
+\fI[Logging]\fP section of the \fIini\fP file is used, and without that entry
+\fImc.log\fP beside the other user files.
+
+.TP
+\fBMC_FTP_LOG_ENABLE\fP, \fBMC_FTP_LOG_FILE\fP
+The log of the ftp panel plugin. The file falls back to \fI/tmp/mc\-ftp.log\fP\&.
+
+.TP
+\fBMC_SMB_LOG_ENABLE\fP, \fBMC_SMB_LOG_FILE\fP
+The log of the samba panel plugin. The file falls back to
+\fI/tmp/mc\-samba.log\fP\&.
+
+.TP
+\fBMC_SPELL_LOG\fP
+The file the spell checker writes to. It has no switch of its own: the log
+is written when the variable names a file.
+
+.PP
+To keep the log of a failing ftp connection:
+
+.EX
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+
+.EE
+
+
 .SH FILES
 .PP
 Full paths below may vary between installations.  They are also affected

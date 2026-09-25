@@ -4220,6 +4220,120 @@ per fare lo stesso lavoro (su quelle tastiere con tonnellate di
 simpatici tasti dappertutto).
 
 
+.SH VARIABILI D'AMBIENTE
+.PP
+Le variabili elencate qui sotto sono quelle che M\-Commander legge e quelle che
+imposta per i programmi che avvia. Variabili come \fBTERM\fP, \fBSHELL\fP, \fBHOME\fP
+o \fBPATH\fP non compaiono qui: il programma le legge per capire dove sta
+girando, non per esserne configurato.
+
+.SH Lette all'avvio
+.TP
+\fBMC_DATADIR\fP
+La directory da cui vengono presi i file di dati, al posto di quella
+incorporata. Vedere FILE\&.
+
+.TP
+\fBMC_PROFILE_ROOT\fP
+La radice dei file dell'utente, come percorso assoluto. Vedere
+FILE\&.
+
+.TP
+\fBMC_SKIN\fP
+Lo skin da usare, per nome o per percorso. Vedere Skin\&.
+
+.TP
+\fBMC_KEYMAP\fP
+Il file di associazione dei tasti da usare. Vedere Tasti\&.
+
+.TP
+\fBMC_TMPDIR\fP
+La directory dei file temporanei del programma.
+
+.TP
+\fBMC_NO_LUA\fP
+Con il valore 1 il programma parte senza l'ambiente di esecuzione Lua. Non
+viene caricato alcun pacchetto Lua e niente che ne abbia bisogno è
+disponibile.
+
+.TP
+\fBMC_SIXEL\fP
+Con il valore 0 si dichiara che il terminale non ha la grafica sixel, con 1
+che ce l'ha. Senza la variabile viene interrogato il terminale stesso.
+
+.TP
+\fBKEYBOARD_KEY_TIMEOUT_US\fP
+Quanto attendere il resto di una sequenza di escape, in microsecondi.
+
+.TP
+\fBCOLORTERM\fP
+Letta quando vengono scelti i colori. Vedere Colori\&.
+
+.TP
+\fBCDPATH\fP
+Le directory in cui cerca il comando cd interno.
+
+.TP
+\fBEDITOR\fP, \fBVIEWER\fP, \fBPAGER\fP
+I programmi esterni usati quando l'editor o il visualizzatore incorporati
+sono disattivati. Vedere
+Parametri per editor o visualizzatore esterni\&.
+
+.SH Impostate per i programmi che M\-Commander avvia
+.PP
+Non sono pensate per essere impostate a mano. Il programma le scrive perché
+una copia di sé stesso avviata dal terminale incorporato possa capire che sta
+già girando dentro a uno.
+
+.TP
+\fBMC_SID\fP
+La sessione in cui gira il programma. Una copia avviata da quella sessione
+non apre pannelli propri.
+
+.TP
+\fBMC_PID\fP
+L'identificatore di processo del programma in esecuzione.
+
+.TP
+\fBMC_TTY\fP
+Il terminale su cui il programma è stato avviato.
+
+.SH Registri di debug
+.PP
+Un registro viene scritto solo quando è attivato, e l'interruttore prende il
+valore 1. Le variabili dei componenti aggiuntivi ricadono su quelle generali,
+per cui impostare la sola coppia generale registra tutto.
+
+.TP
+\fBMC_LOG_ENABLE\fP, \fBMC_LOG_FILE\fP
+Il registro generale. Senza \fBMC_LOG_FILE\fP viene usato il file indicato da
+\fIlogfile\fP nella sezione \fI[Logging]\fP del file \fIini\fP, e senza quella voce
+\fImc.log\fP accanto agli altri file dell'utente.
+
+.TP
+\fBMC_FTP_LOG_ENABLE\fP, \fBMC_FTP_LOG_FILE\fP
+Il registro del componente aggiuntivo di pannello ftp. Il file ricade su
+\fI/tmp/mc\-ftp.log\fP\&.
+
+.TP
+\fBMC_SMB_LOG_ENABLE\fP, \fBMC_SMB_LOG_FILE\fP
+Il registro del componente aggiuntivo di pannello samba. Il file ricade su
+\fI/tmp/mc\-samba.log\fP\&.
+
+.TP
+\fBMC_SPELL_LOG\fP
+Il file su cui scrive il correttore ortografico. Non ha un interruttore
+proprio: il registro viene scritto quando la variabile nomina un file.
+
+.PP
+Per conservare il registro di una connessione ftp che non riesce:
+
+.EX
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+
+.EE
+
+
 .SH FILE
 .PP
 Il programma recupera tutte le informazioni relative al proprio funzionamento

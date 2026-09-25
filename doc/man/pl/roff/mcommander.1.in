@@ -4095,6 +4095,116 @@ do wykonywania tych samych funkcji (na tych klawiaturach z toną fajnych i
 zupełnie bezużytecznych klawiszy).
 
 
+.SH ZMIENNE ŚRODOWISKOWE
+.PP
+Poniżej wymieniono zmienne, które M\-Commander czyta, oraz te, które ustawia
+dla uruchamianych przez siebie programów. Zmienne takie jak \fBTERM\fP,
+\fBSHELL\fP, \fBHOME\fP czy \fBPATH\fP nie są tu wymienione: program czyta je po to,
+by rozpoznać środowisko, a nie po to, by się nimi konfigurować.
+
+.SH Czytane przy uruchomieniu
+.TP
+\fBMC_DATADIR\fP
+Katalog, z którego brane są pliki danych, zamiast wbudowanego. Zobacz
+PLIKI\&.
+
+.TP
+\fBMC_PROFILE_ROOT\fP
+Korzeń plików użytkownika, jako ścieżka bezwzględna. Zobacz PLIKI\&.
+
+.TP
+\fBMC_SKIN\fP
+Skórka, nazwa albo ścieżka. Zobacz Skórki\&.
+
+.TP
+\fBMC_KEYMAP\fP
+Plik przypisań klawiszy. Zobacz Klawisze\&.
+
+.TP
+\fBMC_TMPDIR\fP
+Katalog plików tymczasowych programu.
+
+.TP
+\fBMC_NO_LUA\fP
+Wartość 1 uruchamia program bez środowiska Lua. Żaden pakiet Lua nie jest
+wczytywany i nic, co go potrzebuje, nie jest dostępne.
+
+.TP
+\fBMC_SIXEL\fP
+Wartość 0 oznacza, że terminal nie ma grafiki sixel, wartość 1 \- że ma. Bez
+tej zmiennej pytany jest sam terminal.
+
+.TP
+\fBKEYBOARD_KEY_TIMEOUT_US\fP
+Jak długo czekać na resztę sekwencji sterującej, w mikrosekundach.
+
+.TP
+\fBCOLORTERM\fP
+Czytana przy wyborze kolorów. Zobacz Kolory\&.
+
+.TP
+\fBCDPATH\fP
+Katalogi, w których szuka wbudowane polecenie cd.
+
+.TP
+\fBEDITOR\fP, \fBVIEWER\fP, \fBPAGER\fP
+Programy zewnętrzne używane, gdy wbudowany edytor lub podgląd są wyłączone.
+Zobacz
+Parametry zewnętrznego edytora lub podglądu\&.
+
+.SH Ustawiane dla uruchamianych programów
+.PP
+Nie są przeznaczone do ustawiania ręcznie. Program zapisuje je po to, by jego
+własna kopia uruchomiona z wbudowanego terminala rozpoznała, że działa już
+wewnątrz niego.
+
+.TP
+\fBMC_SID\fP
+Sesja, w której działa program. Kopia uruchomiona z tej sesji nie otwiera
+własnych paneli.
+
+.TP
+\fBMC_PID\fP
+Identyfikator procesu działającego programu.
+
+.TP
+\fBMC_TTY\fP
+Terminal, na którym program został uruchomiony.
+
+.SH Dzienniki diagnostyczne
+.PP
+Dziennik jest zapisywany tylko wtedy, gdy jest włączony, a przełącznik
+przyjmuje wartość 1. Zmienne wtyczek odwołują się do ogólnych, więc ustawienie
+samej pary ogólnej zapisuje wszystko.
+
+.TP
+\fBMC_LOG_ENABLE\fP, \fBMC_LOG_FILE\fP
+Dziennik ogólny. Bez \fBMC_LOG_FILE\fP używany jest plik wskazany przez
+\fIlogfile\fP w sekcji \fI[Logging]\fP pliku \fIini\fP, a bez tego wpisu \fImc.log\fP obok
+pozostałych plików użytkownika.
+
+.TP
+\fBMC_FTP_LOG_ENABLE\fP, \fBMC_FTP_LOG_FILE\fP
+Dziennik wtyczki panelu ftp. Plik domyślnie \fI/tmp/mc\-ftp.log\fP\&.
+
+.TP
+\fBMC_SMB_LOG_ENABLE\fP, \fBMC_SMB_LOG_FILE\fP
+Dziennik wtyczki panelu samba. Plik domyślnie \fI/tmp/mc\-samba.log\fP\&.
+
+.TP
+\fBMC_SPELL_LOG\fP
+Plik, do którego pisze sprawdzanie pisowni. Nie ma własnego przełącznika:
+dziennik powstaje, gdy zmienna wskazuje plik.
+
+.PP
+Aby zachować dziennik nieudanego połączenia ftp:
+
+.EX
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+
+.EE
+
+
 .SH PLIKI
 .PP
 Program będzie pobierał wszystkie swoje informacje ze zmiennej
