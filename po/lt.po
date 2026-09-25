@@ -11,13 +11,14 @@
 # Zygimantus <zygimantus@gmail.com>, 2016
 # Zygimantus <zygimantus@gmail.com>, 2016-2017
 # Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2026-09-25 22:00+0000\n"
-"Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Lithuanian <https://translate.codeberg.org/projects/mc6/mc6/"
 "lt/>\n"
 "Language: lt\n"
