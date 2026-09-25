@@ -14,7 +14,7 @@ Starting it:
                            .stl, or a path
   F3 in the file panel     on a file that a magic.ini group hands to the
                            plugin (uImage, DTB, MBR out of the box)
-  F9 -> Command -> Struct look   for any file
+  F9 -> File -> Struct look  for any file
   Shift-F4 in the viewer   opens the file here at the current offset;
                            Shift-F4 goes back to the viewer at the
                            byte you were on, F10 closes both

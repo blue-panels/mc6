@@ -714,8 +714,8 @@ végzi.
 # Menüsor <a id="menu-bar"></a>
 
 A menüsor akkor jelenik meg, ha az F9-es gombot lenyomod, vagy ha a
-képernyő legfelső sorára kattintasz. A menüsor öt menüt tartalmaz:
-"Bal", "Fájl", "Parancsok", "Beállítások" és "Jobb".
+képernyő legfelső sorára kattintasz. A menüsor hat menüt tartalmaz:
+"Bal", "Fájl", "Attribútumok", "Parancsok", "Beállítások" és "Jobb".
 
 A
 [Bal és jobboldali menük](#left-and-right-menus)
@@ -726,6 +726,11 @@ A
 [Fájl menü](#file-menu)
 felsorolja a kiválasztott fájlon, vagy a kijelölt fájlokon végrehajtható
 parancsokat.
+
+Az
+[Attribútumok menü](#attributes-menu)
+azokat a parancsokat sorolja fel, amelyek ugyanezeken a fájlokon a
+jogosultságokat, a tulajdonost és a fájlrendszer jelzőit módosítják.
 
 A
 [Parancsok menü](#command-menu)
@@ -1110,6 +1115,33 @@ parancs után begépeltél volna, és ezután használd az entert.Ez az eszkőz
 mindenben ugyanaz, mint a
 [belső cd parancs](#the-cd-internal-command).
 
+## Attribútumok menü <a id="attributes-menu"></a>
+
+Ennek a menünek a parancsai nem a fájl tartalmát változtatják, hanem azt, amit
+a fájlrendszer tud róla: a hozzáférési jogosultságokat, a tulajdonost és a
+csoportot, valamint a fájlrendszer jelzőit. Mindegyik a kiválasztott fájlon
+dolgozik, vagy a kijelölt fájlokon, ha vannak.
+
+**Chmod... (C-x c)**
+: A hozzáférési jogosultságok beállítása a
+[Chmod](#chmod)
+ablakban.
+
+**Chown... (C-x o)**
+: A tulajdonos és a csoport beállítása a
+[Chown](#chown)
+ablakban.
+
+**Haladó chown...**
+: A jogosultságok, a tulajdonos és a csoport beállítása egy ablakban, lásd
+[Haladó (bővített) Chown](#advanced-chown).
+
+**Chattr jelzők... (C-x e)**
+: Az ext2, ext3 vagy ext4 fájlrendszer jelzőinek beállítása a
+[Fájlattribútumok](#chattr)
+ablakban. A menüpont csak akkor van meg, ha a program ezek támogatásával
+készült.
+
 ## Parancsok menü <a id="command-menu"></a>
 
 A
@@ -1147,16 +1179,6 @@ A
 [Parancskimenet panel](#external-panelize)
 lehetővé teszi számodra külső parancsok futtatását, majd a program
 tartalmát a jellegi panelbe teszi.
-
-A
-[Társítások](#edit-extension-file)
-lehetővé teszik számodra a futtatandó programok meghatározását, a
-kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
-futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni. A
-[Menu editor edit](#edit-menu-file)
-parancs a felhasználói menü szerkesztésére használható (ami az F2
-lenyomásával elérhető).
 
 ### Könyvtárfa <a id="directory-tree"></a>
 
@@ -1381,19 +1403,6 @@ Ezzel a gyakran használt könyvtárakhoz ugorhatunk. A CDPATH változó
 használatát megtekintheted a
 [A cd belső parancs](#the-cd-internal-command)
 leírásánál.
-
-### Társítások <a id="edit-extension-file"></a>
-
-Ez az
-*~/.config/mc6/extensions.ini*
-szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Háttérmunkák <a id="background-jobs"></a>
 
@@ -1672,10 +1681,6 @@ A
 megmutatja, mit küld a terminál a leütött billentyűre, és azt a műveletet,
 amelyhez az a billentyű tartozik.
 
-A
-[Csatolt fájlrendszer](#virtual-fs)
-a VFS beállításait nyitja meg.
-
 Az
 **Összehasonlító beállításai**,
 a
@@ -1693,6 +1698,19 @@ A
 [Bővítmények kezelése](#panel-plugins)
 felsorolja a betöltött bővítményeket, ki tud kapcsolni egyet, és megnyitja a
 beállításait.
+
+A
+[Társítások](#edit-extension-file)
+lehetővé teszik számodra a futtatandó programok meghatározását, a
+kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
+futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
+szeretnél vele csinálni.
+
+A
+**Fájltípus színkiemelés szerkesztése**
+parancs azt a fájlt nyitja meg, amely megadja, hogy a panel mely neveket és
+mely fájltípusokat milyen színnel mutatja, lásd
+[Fájlnevek kiemelése](#filenames-highlight).
 
 A
 [Beállítások mentése](#save-setup)
@@ -1942,20 +1960,6 @@ szerkesztőben.
 A ~/.config/mc6/ini fájl [terminal:TERM] szakaszában levő régi definíciók az
 első indításkor maguktól átkerülnek.
 
-### Csatolt (látszólagos) fájlrendszer <a id="virtual-fs"></a>
-
-Ez a pont a
-[csatolt fájlrendszerek](#virtual-file-system)
-beállításait kezeli.
-
-A párbeszédablakban egy beállítás van,
-*A VFS felszabadításának ideje,*
-és ez a fájlrendszer gyorsítótárának élettartama: egy archívumból vagy
-tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes fájl
-még ennyi másodpercig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60 másodperc, a 0 pedig azonnal
-felszabadítja őket.
-
 ### Bővítmények kezelése <a id="manage-plugins"></a>
 
 A program által betöltött bővítmények táblázatban: a fajtája, a neve és az,
@@ -2146,6 +2150,19 @@ amelyek a
 könyvtárban vannak; a kiválasztott azonnal életbe lép. A skinek felépítését az angol kézikönyv
 [Skins](mcommander.md#skins)
 szakasza írja le.
+
+### Társítások <a id="edit-extension-file"></a>
+
+Ez az
+*~/.config/mc6/extensions.ini*
+szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Beállítások mentése <a id="save-setup"></a>
 
@@ -3444,8 +3461,7 @@ mielőtt könyvtárat váltana.
 : A virtuális fájlrendszer gyorstárának élettartama másodpercben. Archívumból
 vagy tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes
 fájl ennyi ideig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja. A
-Beállítások menü Csatolt fájlrendszer ablaka ugyanezt az értéket állítja.
+felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja.
 
 *only_leading_plus_minus*
 : A '+', '-' és '\*' karaktert csak akkor kezeli külön a parancssorban

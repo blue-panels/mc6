@@ -1180,54 +1180,6 @@ tree_box (const char *current_dir)
 
 /* --------------------------------------------------------------------------------------------- */
 
-#ifdef ENABLE_VFS
-void
-configure_vfs_box (void)
-{
-    char buffer2[BUF_TINY];
-
-    g_snprintf (buffer2, sizeof (buffer2), "%i", vfs_timeout);
-
-    {
-        char *ret_timeout;
-
-        quick_widget_t quick_widgets[] = {
-            QUICK_LABELED_INPUT (_ ("Timeout for freeing VFSs (sec):"), input_label_left, buffer2,
-                                 "input-timo-vfs", &ret_timeout, NULL, FALSE, FALSE,
-                                 INPUT_COMPLETE_NONE),
-            QUICK_BUTTONS_OK_CANCEL,
-            QUICK_END,
-        };
-
-        WRect r = { -1, -1, 0, 56 };
-
-        quick_dialog_t qdlg = {
-            .rect = r,
-            .title = _ ("Virtual File System Setting"),
-            .help = "[Virtual FS]",
-            .widgets = quick_widgets,
-            .callback = NULL,
-            .mouse_callback = NULL,
-        };
-
-        if (quick_dialog (&qdlg) != B_CANCEL)
-        {
-            if (ret_timeout[0] == '\0')
-                vfs_timeout = 0;
-            else
-                vfs_timeout = atoi (ret_timeout);
-            g_free (ret_timeout);
-
-            if (vfs_timeout < 0 || vfs_timeout > 10000)
-                vfs_timeout = 10;
-        }
-    }
-}
-
-#endif
-
-/* --------------------------------------------------------------------------------------------- */
-
 char *
 cd_box (const WPanel *panel)
 {

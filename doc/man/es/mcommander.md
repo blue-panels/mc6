@@ -797,8 +797,8 @@ del nombre de archivo, comando, variable, nombre de usuario o host.
 # Barra de Menú <a id="menu-bar"></a>
 
 La barra de menú aparece cuando pulsamos F9 o pulsamos el botón del ratón
-sobre la primera fila de la pantalla. La barra de menú tiene cinco submenús: "Izquierdo", "Archivo",
-"Utilidades", "Opciones" y "Derecho".
+sobre la primera fila de la pantalla. La barra de menú tiene seis submenús: "Izquierdo", "Archivo",
+"Atributos", "Utilidades", "Opciones" y "Derecho".
 
 Los
 [Menús Izquierdo y Derecho](#left-and-right-menus)
@@ -809,6 +809,11 @@ El
 [Menú de Archivo](#file-menu)
 lista las acciones que podemos realizar sobre el archivo actualmente seleccionado
 o sobre los archivos marcados.
+
+El
+[Menú de Atributos](#attributes-menu)
+lista las órdenes que cambian los permisos, el dueño y los atributos del
+sistema de archivos de esos mismos archivos.
 
 El
 [Menú de Utilidades](#command-menu)
@@ -1243,6 +1248,31 @@ en la línea de órdenes y después pulsamos intro. Este comando caracteriza
 todas las cualidades incluidas en el
 [comando cd interno](#the-cd-internal-command).
 
+## Menú de Atributos <a id="attributes-menu"></a>
+
+Las órdenes de este menú cambian lo que el sistema de archivos sabe del
+archivo, no su contenido: los permisos de acceso, el dueño y el grupo, y los
+atributos del sistema de archivos. Todas actúan sobre el archivo seleccionado,
+o sobre los archivos marcados si los hay.
+
+**Cambiar permisos... (Ctrl-x c)**
+: Cambiar los permisos de acceso en el diálogo
+[Cambiar Permisos](#chmod).
+
+**Cambiar dueño... (Ctrl-x o)**
+: Cambiar el dueño y el grupo en el diálogo
+[Cambiar Dueño](#chown).
+
+**Cambiar dueño y permisos...**
+: Cambiar los permisos, el dueño y el grupo en un solo diálogo, ver
+[Cambiar Dueño y Permisos](#advanced-chown).
+
+**Atributos chattr... (Ctrl-x e)**
+: Cambiar los atributos de un sistema de archivos ext2, ext3 o ext4 en el
+diálogo
+[Atributos de archivo](#chattr). La entrada está solo si el programa se
+compiló con soporte para esos atributos.
+
 ## Menú de Utilidades <a id="command-menu"></a>
 
 [Árbol de directorios](#directory-tree)
@@ -1274,15 +1304,6 @@ permite acceder con facilidad a directorios y sitios utilizados con frecuencia.
 [Búsquedas Externas](#external-panelize)
 nos permite ejecutar un programa externo, y llevar la salida de ese
 programa al panel actual.
-
-[Editar el archivo de extensiones](#edit-extension-file)
-nos permite especificar los programas a ejecutar para intentar
-ejecutar, ver, editar y realizar un montón de cosas sobre archivos
-con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
-de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
-[Editar archivo de menú](#edit-menu-file)
-se puede utilizar para editar el menú de usuario (el que aparece al
-pulsar F2).
 
 ### Árbol de Directorios <a id="directory-tree"></a>
 
@@ -1506,19 +1527,6 @@ Esto hace más rápido el posicionamiento en los directorios usados
 frecuentemente. Deberíamos considerar también el uso de la variable CDPATH
 tal y como se describe en
 [comando cd interno](#the-cd-internal-command).
-
-### Editar el Archivo de Extensiones <a id="edit-extension-file"></a>
-
-Abre el archivo
-*~/.config/mc6/extensions.ini*
-en nuestro editor.
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Trabajos en Segundo Plano <a id="background-jobs"></a>
 
@@ -1790,11 +1798,6 @@ reasigna una tecla y el resultado se escribe en el archivo de asignación.
 muestra lo que envía el terminal para la tecla que se pulsa, y la acción a la
 que esa tecla está asignada.
 
-En
-[Sistema de Archivos Virtual (VFS)](#virtual-fs)
-podemos especificar algunas opciones relacionadas con el VFS (Sistema de
-Archivos Virtual).
-
 **Opciones del comparador**,
 [Opciones del visor](mview.md#viewer-options)
 y
@@ -1807,6 +1810,18 @@ en pantalla conserva las que tenía al abrirse.
 
 [Administrar complementos](#panel-plugins)
 lista los complementos cargados, permite desactivar uno y abre sus ajustes.
+
+[Editar el archivo de extensiones](#edit-extension-file)
+nos permite especificar los programas a ejecutar para intentar
+ejecutar, ver, editar y realizar un montón de cosas sobre archivos
+con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
+de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
+
+La orden
+**editar Grupos de resaltado**
+abre el archivo que dice qué nombres y qué tipos de archivo muestra el panel en
+qué color, ver
+[Resaltado de nombres](#filenames-highlight).
 
 [Guardar Configuración](#save-setup)
 guarda los valores actuales de los menús Izquierdo, Derecho y Opciones.
@@ -2162,19 +2177,6 @@ aparece junto al botón.
 Las definiciones antiguas de la sección [terminal:TERM] de
 ~/.config/mc6/ini se migran automáticamente la primera vez.
 
-### Sistema de Archivos Virtual (VFS) <a id="virtual-fs"></a>
-
-Esta entrada controla la configuración de los
-[Sistemas de Archivos Virtuales](#virtual-file-system).
-
-El diálogo tiene un solo ajuste,
-*Tiempo para liberar VFS,*
-que es el tiempo de vida de la caché de un sistema de archivos: al salir de un
-archivo comprimido, la lista que se leyó y el archivo temporal que se
-desempaquetó se guardan durante esos segundos, de modo que volver a entrar es
-inmediato, y se liberan cuando se cumple el plazo. De forma predeterminada son
-60 segundos, y 0 los libera en el acto.
-
 ### Administrar complementos <a id="manage-plugins"></a>
 
 Los complementos que el programa ha cargado, en una tabla: la clase, el nombre
@@ -2230,6 +2232,19 @@ abre para la línea donde está el cursor. Enter pone en la línea la entrada
 donde está el cursor, Esc deja la línea como estaba y
 **F8, Del**
 borra esa entrada de la historia.
+
+### Editar el Archivo de Extensiones <a id="edit-extension-file"></a>
+
+Abre el archivo
+*~/.config/mc6/extensions.ini*
+en nuestro editor.
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Guardar Configuración <a id="save-setup"></a>
 
@@ -3804,8 +3819,7 @@ archivos marcados.
 segundos. Al salir de un archivo comprimido, la lista que se leyó y el archivo
 temporal que se desempaquetó se guardan durante ese tiempo, de modo que
 volver a entrar es inmediato, y se liberan cuando se cumple. 60 de forma
-predeterminada; 0 los libera en el acto. El diálogo Sistemas de Archivos
-Virtuales del menú Opciones cambia el mismo valor.
+predeterminada; 0 los libera en el acto.
 
 *only_leading_plus_minus*
 : Produce un tratamiento especial para '+', '-', '\*' en la línea de órdenes (seleccionar,

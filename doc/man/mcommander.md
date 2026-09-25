@@ -723,8 +723,8 @@ for you.
 # Menu Bar
 
 The menu bar pops up when you press F9 or click the mouse on the top
-row of the screen. The menu bar has five menus: "Left", "File",
-"Command", "Options" and "Right".
+row of the screen. The menu bar has six menus: "Left", "File",
+"Attributes", "Command", "Options" and "Right".
 
 The
 [Left and Right Menus](#left-and-right-menus)
@@ -735,6 +735,11 @@ The
 [File Menu](#file-menu)
 lists the actions you can perform on the currently selected file or
 the tagged files.
+
+The
+[Attributes Menu](#attributes-menu)
+lists the commands that change the permissions, the owner and the file system
+flags of the same files.
 
 The
 [Command Menu](#command-menu)
@@ -1265,6 +1270,33 @@ on the command line and then you press enter. This features all the things
 that are already in the
 [internal cd command](#the-cd-internal-command).
 
+## Attributes Menu
+
+The commands of this menu change what the file system knows about a file, not
+what the file holds: the access permissions, the owner and the group, and the
+flags of the file system. Each of them works on the selected file, or on the
+tagged files when there are any.
+
+**Chmod... (C-x c)**
+: Set the access permissions in the
+[Chmod](#chmod)
+dialog.
+
+**Chown... (C-x o)**
+: Set the owner and the group in the
+[Chown](#chown)
+dialog.
+
+**Advanced chown...**
+: Set the permissions, the owner and the group in one dialog, see
+[Advanced Chown](#advanced-chown).
+
+**Chattr flags... (C-x e)**
+: Set the flags of an ext2, ext3 or ext4 file system in the
+[Chattr](#chattr)
+dialog. The item is there only when the program is built with support for
+those flags.
+
 ## Command Menu
 
 The
@@ -1306,17 +1338,6 @@ The
 ["Screen list"](#screen-selector)
 command shows a dialog window with the list of currently running
 internal editors, viewers and other M-Commander modules that support this mode.
-
-The
-["Edit extension file"](#edit-extension-file)
-command allows you to specify programs to executed when you try to
-execute, view, edit and do a bunch of other thing on files
-with certain extensions (filename endings).
-
-The
-["Edit Menu File"](#edit-menu-file)
-command may be used for editing the user menu (which appears by
-pressing F2).
 
 ### Directory Tree
 
@@ -1545,18 +1566,6 @@ This makes cd to often used directories faster. You may consider using the
 CDPATH variable as described in
 [internal cd command](#the-cd-internal-command)
 description.
-
-### Edit Extension File
-
-This will invoke your editor on the file
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Background Jobs
 
@@ -1836,10 +1845,6 @@ command shows what a terminal sends for the key that is pressed, and the
 action that key is bound to.
 
 The
-[Virtual FS](#virtual-fs)
-command pops up a dialog from which you specify some VFS related options.
-
-The
 **Diff viewer options**,
 [Viewer options](mview.md#viewer-options)
 and
@@ -1854,6 +1859,18 @@ The
 [Manage plugins](#panel-plugins)
 command lists the plugins that are loaded, switches one off and opens its
 settings.
+
+The
+["Edit extension file"](#edit-extension-file)
+command allows you to specify programs to executed when you try to
+execute, view, edit and do a bunch of other thing on files
+with certain extensions (filename endings).
+
+The
+**Edit highlighting group file**
+command opens the file that says which names and which file types the panel
+shows in which color, see
+[Filenames Highlight](#filenames-highlight).
 
 The
 [Save setup](#save-setup)
@@ -2256,19 +2273,6 @@ sequence appears next to the button.
 The old terminal key definitions from [terminal:TERM] in
 ~/.config/mc6/ini are migrated automatically on first run.
 
-### Virtual FS
-
-This option gives you control over the settings of the
-[Virtual File System](#virtual-file-system).
-
-The dialog holds one setting,
-*Timeout for freeing VFSs,*
-which is the lifetime of the cache of a file system: after leaving an archive
-or a compressed file, the listing that was read and the temporary file that
-was unpacked are kept for that many seconds, so that going back in is
-immediate, and are released when the time is up. The default is 60 seconds,
-and 0 releases them at once.
-
 ### Manage plugins <a id="manage-plugins"></a>
 
 The plugins the program has loaded, in a table: the kind, the name and what the
@@ -2328,6 +2332,18 @@ opens for the line the cursor is in. Enter takes the entry the cursor is on
 into the line, Esc leaves the line as it was, and
 **F8, Del**
 removes the entry the cursor is on from the history.
+
+### Edit Extension File
+
+This will invoke your editor on the file
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Save Setup
 
@@ -3597,7 +3613,7 @@ the directory if you have files tagged.
 an archive or a compressed file, the listing that was read and the temporary
 file that was unpacked are kept for that long, so that going back in is
 immediate, and are released when the time is up. 60 by default; 0 releases them
-at once. The Virtual FS dialog of the Options menu holds the same value.
+at once.
 
 *only_leading_plus_minus*
 : Allow special treatment for '+', '-', '\*' in the command line (select,

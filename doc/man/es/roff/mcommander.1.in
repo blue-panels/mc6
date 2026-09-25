@@ -942,8 +942,8 @@ del nombre de archivo, comando, variable, nombre de usuario o host.
 .SH Barra de Menú
 .PP
 La barra de menú aparece cuando pulsamos F9 o pulsamos el botón del ratón
-sobre la primera fila de la pantalla. La barra de menú tiene cinco submenús: "Izquierdo", "Archivo",
-"Utilidades", "Opciones" y "Derecho".
+sobre la primera fila de la pantalla. La barra de menú tiene seis submenús: "Izquierdo", "Archivo",
+"Atributos", "Utilidades", "Opciones" y "Derecho".
 
 .PP
 Los
@@ -956,6 +956,12 @@ El
 Menú de Archivo
 lista las acciones que podemos realizar sobre el archivo actualmente seleccionado
 o sobre los archivos marcados.
+
+.PP
+El
+Menú de Atributos
+lista las órdenes que cambian los permisos, el dueño y los atributos del
+sistema de archivos de esos mismos archivos.
 
 .PP
 El
@@ -1464,6 +1470,35 @@ en la línea de órdenes y después pulsamos intro. Este comando caracteriza
 todas las cualidades incluidas en el
 comando cd interno\&.
 
+.SH Menú de Atributos
+.PP
+Las órdenes de este menú cambian lo que el sistema de archivos sabe del
+archivo, no su contenido: los permisos de acceso, el dueño y el grupo, y los
+atributos del sistema de archivos. Todas actúan sobre el archivo seleccionado,
+o sobre los archivos marcados si los hay.
+
+.TP
+\fBCambiar permisos... (Ctrl\-x c)\fP
+Cambiar los permisos de acceso en el diálogo
+Cambiar Permisos\&.
+
+.TP
+\fBCambiar dueño... (Ctrl\-x o)\fP
+Cambiar el dueño y el grupo en el diálogo
+Cambiar Dueño\&.
+
+.TP
+\fBCambiar dueño y permisos...\fP
+Cambiar los permisos, el dueño y el grupo en un solo diálogo, ver
+Cambiar Dueño y Permisos\&.
+
+.TP
+\fBAtributos chattr... (Ctrl\-x e)\fP
+Cambiar los atributos de un sistema de archivos ext2, ext3 o ext4 en el
+diálogo
+Atributos de archivo\&. La entrada está solo si el programa se
+compiló con soporte para esos atributos.
+
 .SH Menú de Utilidades
 .PP
 Árbol de directorios
@@ -1501,16 +1536,6 @@ permite acceder con facilidad a directorios y sitios utilizados con frecuencia.
 Búsquedas Externas
 nos permite ejecutar un programa externo, y llevar la salida de ese
 programa al panel actual.
-
-.PP
-Editar el archivo de extensiones
-nos permite especificar los programas a ejecutar para intentar
-ejecutar, ver, editar y realizar un montón de cosas sobre archivos
-con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
-de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
-Editar archivo de menú
-se puede utilizar para editar el menú de usuario (el que aparece al
-pulsar F2).
 
 .SS Árbol de Directorios
 .PP
@@ -1776,19 +1801,6 @@ Esto hace más rápido el posicionamiento en los directorios usados
 frecuentemente. Deberíamos considerar también el uso de la variable CDPATH
 tal y como se describe en
 comando cd interno\&.
-
-.SS Editar el Archivo de Extensiones
-.PP
-Abre el archivo
-\fI~/.config/mc6/extensions.ini\fP
-en nuestro editor.
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Trabajos en Segundo Plano
 .PP
@@ -2103,12 +2115,6 @@ muestra lo que envía el terminal para la tecla que se pulsa, y la acción a la
 que esa tecla está asignada.
 
 .PP
-En
-Sistema de Archivos Virtual (VFS)
-podemos especificar algunas opciones relacionadas con el VFS (Sistema de
-Archivos Virtual).
-
-.PP
 \fBOpciones del comparador\fP,
 Opciones del visor
 y
@@ -2122,6 +2128,20 @@ en pantalla conserva las que tenía al abrirse.
 .PP
 Administrar complementos
 lista los complementos cargados, permite desactivar uno y abre sus ajustes.
+
+.PP
+Editar el archivo de extensiones
+nos permite especificar los programas a ejecutar para intentar
+ejecutar, ver, editar y realizar un montón de cosas sobre archivos
+con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
+de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
+
+.PP
+La orden
+\fBeditar Grupos de resaltado\fP
+abre el archivo que dice qué nombres y qué tipos de archivo muestra el panel en
+qué color, ver
+Resaltado de nombres\&.
 
 .PP
 Guardar Configuración
@@ -2532,20 +2552,6 @@ aparece junto al botón.
 Las definiciones antiguas de la sección [terminal:TERM] de
 ~/.config/mc6/ini se migran automáticamente la primera vez.
 
-.SS Sistema de Archivos Virtual (VFS)
-.PP
-Esta entrada controla la configuración de los
-Sistemas de Archivos Virtuales\&.
-
-.PP
-El diálogo tiene un solo ajuste,
-\fITiempo para liberar VFS,\fP
-que es el tiempo de vida de la caché de un sistema de archivos: al salir de un
-archivo comprimido, la lista que se leyó y el archivo temporal que se
-desempaquetó se guardan durante esos segundos, de modo que volver a entrar es
-inmediato, y se liberan cuando se cumple el plazo. De forma predeterminada son
-60 segundos, y 0 los libera en el acto.
-
 .SS Administrar complementos
 .PP
 Los complementos que el programa ha cargado, en una tabla: la clase, el nombre
@@ -2604,6 +2610,19 @@ abre para la línea donde está el cursor. Enter pone en la línea la entrada
 donde está el cursor, Esc deja la línea como estaba y
 \fBF8, Del\fP
 borra esa entrada de la historia.
+
+.SS Editar el Archivo de Extensiones
+.PP
+Abre el archivo
+\fI~/.config/mc6/extensions.ini\fP
+en nuestro editor.
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Guardar Configuración
 .PP
@@ -4471,8 +4490,7 @@ El tiempo de vida de la caché de un sistema de archivos virtual, en
 segundos. Al salir de un archivo comprimido, la lista que se leyó y el archivo
 temporal que se desempaquetó se guardan durante ese tiempo, de modo que
 volver a entrar es inmediato, y se liberan cuando se cumple. 60 de forma
-predeterminada; 0 los libera en el acto. El diálogo Sistemas de Archivos
-Virtuales del menú Opciones cambia el mismo valor.
+predeterminada; 0 los libera en el acto.
 
 .TP
 \fIonly_leading_plus_minus\fP

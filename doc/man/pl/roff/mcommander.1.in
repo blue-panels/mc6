@@ -789,9 +789,9 @@ nazw plików, poleceń, zmiennych, użytkowników i nazw hostów.
 .SH Linia menu
 .PP
 Linia menu uaktywnia się kiedy wciskasz klawisz F9 lub kiedy klikasz myszką
-na najwyższy wiersz ekranu. Linia menu ma pięć podmenu: "left", "file", command",
-"options" i "right" (po polsku to jest "lewe", "plik", "komendy", "opcje",
-"prawe").
+na najwyższy wiersz ekranu. Linia menu ma sześć podmenu: "left", "file",
+"attributes", command", "options" i "right" (po polsku to jest "lewe", "plik",
+"atrybuty", "komendy", "opcje", "prawe").
 
 .PP
 Lewe i prawe menu pozwalają ci na modyfikacje wyglądu lewego i prawego panelu
@@ -799,6 +799,10 @@ katalogowego.
 
 .PP
 Menu plik pozwala na wykonanie akcji na aktualnym lub zaznaczonych plikach.
+
+.PP
+Menu atrybutów zmienia prawa dostępu, właściciela i atrybuty systemu plików
+tych samych plików.
 
 .PP
 Menu komend mieści w sobie możliwe do wykonania akcje, które są dużo bardziej
@@ -1248,6 +1252,33 @@ którym podajesz to, co podałbyś po poleceniu
 w wierszu poleceń, i naciskasz Enter. Działa w nim wszystko to, co daje
 wewnętrzne polecenie cd\&.
 
+.SH Menu atrybutów (Attributes Menu)
+.PP
+Komendy tego menu zmieniają nie zawartość pliku, a to, co wie o nim system
+plików: prawa dostępu, właściciela i grupę oraz atrybuty systemu plików. Każda
+z nich działa na aktualnym pliku albo na zaznaczonych plikach, jeśli takie są.
+
+.TP
+\fBChmod... (C\-x c)\fP
+Zmiana praw dostępu w oknie
+Chmod\&.
+
+.TP
+\fBChown... (C\-x o)\fP
+Zmiana właściciela i grupy w oknie
+Chown\&.
+
+.TP
+\fBZaawansowane chown...\fP
+Zmiana praw dostępu, właściciela i grupy w jednym oknie, zobacz
+Zaawansowane chown (Advanced Chown)\&.
+
+.TP
+\fBFlagi chattr... (C\-x e)\fP
+Zmiana atrybutów systemu plików ext2, ext3 albo ext4 w oknie
+Atrybuty pliku\&. Pozycja jest tylko wtedy, gdy program zbudowano z
+obsługą tych atrybutów.
+
 .SH Menu komend (Command Menu)
 .PP
 Komenda drzewo katalogów (Directory tree) pokazuje drzewo katalogów.
@@ -1282,13 +1313,6 @@ katalogów do tych najczęściej używanych dużo szybciej.
 Komenda panelu zewnętrznego (External panelize) pozwala na wykonywania programów
 zewnętrznych i ustawienia zawartości paneli na to co zwróciła wywołana
 komenda.
-
-.PP
-Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
-programów, które mają być używane do wykonywania plików z podanymi
-rozszerzeniami. Komenda edycji pliku menu (Edit Menu File) może być używana do
-edytowania menu użytkownika (tego, które pojawia się po naciśnięciu kombinacji
-F2).
 
 .SS Drzewo katalogów (Directory Tree)
 .PP
@@ -1545,19 +1569,6 @@ Right, Left  wchodzi do grupy i z niej wychodzi
 Dzięki temu przechodzenie do często używanych katalogów jest szybsze. Można
 też skorzystać ze zmiennej CDPATH, opisanej przy
 wewnętrznym poleceniu cd\&.
-
-.SS Edycja rozszerzeń pliów (Edit Extension File)
-.PP
-Ta komenda wywoła twój edytor na plik
-\fI~/.config/mc6/extensions.ini.\fP
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
-PP
 
 .SS Prace w tle (Background jobs)
 .PP
@@ -1859,11 +1870,6 @@ pokazuje, co terminal wysyła dla naciśniętego klawisza, i działanie, do
 którego ten klawisz jest przypisany.
 
 .PP
-Polecenie
-Wirtualny FS
-otwiera okno z ustawieniami dotyczącymi VFS.
-
-.PP
 Polecenia
 \fBOpcje podglądu różnic\fP,
 Opcje przeglądarki
@@ -1878,6 +1884,18 @@ otwarte zostaje przy tych, z którymi je otwarto.
 Polecenie
 Zarządzanie wtyczkami
 wypisuje wczytane wtyczki, wyłącza wybraną i otwiera jej ustawienia.
+
+.PP
+Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
+programów, które mają być używane do wykonywania plików z podanymi
+rozszerzeniami.
+
+.PP
+Komenda
+\fBModyfikuj plik wyróżniania grup\fP
+otwiera plik, który mówi, jakie nazwy i jakie typy plików panel pokazuje jakim
+kolorem, zobacz
+Podświetlanie nazw plików\&.
 
 .PP
 Polecenie
@@ -2156,19 +2174,6 @@ przycisku.
 Stare definicje z sekcji [terminal:TERM] pliku ~/.config/mc6/ini są
 przenoszone same przy pierwszym uruchomieniu.
 
-.SS Wirtualny system plików (Virtual FS)
-.PP
-Ta pozycja steruje ustawieniami
-wirtualnych systemów plików\&.
-
-.PP
-W oknie jest jedno ustawienie,
-\fICzas zwalniania VFS,\fP
-czyli czas życia pamięci podręcznej systemu plików: po wyjściu z archiwum lub
-pliku skompresowanego wczytana lista i rozpakowany plik tymczasowy zostają
-jeszcze przez tyle sekund, żeby ponowne wejście było natychmiastowe, a po
-upływie tego czasu są zwalniane. Domyślnie 60 sekund, a 0 zwalnia je od razu.
-
 .SS Zarządzanie wtyczkami
 .PP
 Wtyczki, które program wczytał, w tabeli: rodzaj, nazwa i to, co wtyczka mówi
@@ -2376,6 +2381,19 @@ i
 wybrana zaczyna obowiązywać od razu. Budowę skór opisuje dział
 Skins
 podręcznika angielskiego.
+
+.SS Edycja rozszerzeń pliów (Edit Extension File)
+.PP
+Ta komenda wywoła twój edytor na plik
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
+PP
 
 .SS Zapisz ustawienia (Save Setup)
 .PP
@@ -3900,7 +3918,6 @@ Czas życia pamięci podręcznej wirtualnego systemu plików w sekundach. Po
 wyjściu z archiwum albo pliku skompresowanego wczytana lista i rozpakowany
 plik tymczasowy zostają przez ten czas, żeby ponowne wejście było
 natychmiastowe, a potem są zwalniane. Domyślnie 60; 0 zwalnia je od razu.
-Okno Wirtualny FS z menu Opcje zmienia tę samą wartość.
 
 .TP
 \fIonly_leading_plus_minus\fP

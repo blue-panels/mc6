@@ -231,28 +231,56 @@ create_file_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Filtered view"), CK_ViewFiltered));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Edit"), CK_Edit));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Copy"), CK_Copy));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("C&hmod"), CK_ChangeMode));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Link"), CK_Link));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Symlink"), CK_LinkSymbolic));
     entries =
         g_list_prepend (entries, menu_entry_new (_ ("Relative symlin&k"), CK_LinkSymbolicRelative));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Edit s&ymlink"), CK_LinkSymbolicEdit));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Ch&own"), CK_ChangeOwn));
-    entries =
-        g_list_prepend (entries, menu_entry_new (_ ("&Advanced chown"), CK_ChangeOwnAdvanced));
-#ifdef ENABLE_EXT2FS_ATTR
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Cha&ttr"), CK_ChangeAttributes));
-#endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Rename/Move"), CK_Move));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Mkdir"), CK_MakeDir));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Delete"), CK_Delete));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Quick cd"), CK_CdQuick));
+
+    /* Add file-menu entries published by panel plugins. */
+    {
+        GList *plugin_entries = panel_plugin_collect_menu_entries (MC_PP_MENU_FILE);
+
+        if (plugin_entries != NULL)
+        {
+            GList *p;
+
+            entries = g_list_prepend (entries, menu_separator_new ());
+            for (p = plugin_entries; p != NULL; p = g_list_next (p))
+                entries = g_list_prepend (entries, p->data);
+            g_list_free (plugin_entries);
+        }
+    }
+
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Select &group"), CK_Select));
     entries = g_list_prepend (entries, menu_entry_new (_ ("U&nselect group"), CK_Unselect));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Invert selection"), CK_SelectInvert));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("E&xit"), CK_Quit));
+
+    return g_list_reverse (entries);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static GList *
+create_attributes_menu (void)
+{
+    GList *entries = NULL;
+
+    entries = g_list_prepend (entries, menu_entry_new (_ ("C&hmod..."), CK_ChangeMode));
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Ch&own..."), CK_ChangeOwn));
+    entries =
+        g_list_prepend (entries, menu_entry_new (_ ("&Advanced chown..."), CK_ChangeOwnAdvanced));
+#ifdef ENABLE_EXT2FS_ATTR
+    entries =
+        g_list_prepend (entries, menu_entry_new (_ ("Cha&ttr flags..."), CK_ChangeAttributes));
+#endif
 
     return g_list_reverse (entries);
 }
@@ -290,13 +318,6 @@ create_command_menu (void)
 #endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("Screen lis&t"), CK_ScreenList));
     entries = g_list_prepend (entries, menu_separator_new ());
-    entries = g_list_prepend (entries,
-                              menu_entry_new (_ ("Edit &extension file"), CK_EditExtensionsFile));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Edit &menu file"), CK_EditUserMenu));
-    entries = g_list_prepend (
-        entries, menu_entry_new (_ ("Edit hi&ghlighting group file"), CK_EditFileHighlightFile));
-
-    entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Pl&ugin panel..."), CK_PanelPlugin));
 
     /* Plugin Command-menu entries (plugins with cmd_menu_entries.menu_name
@@ -332,12 +353,21 @@ create_options_menu (void)
         g_list_prepend (entries, menu_entry_new (_ ("File panel m&odes..."), CK_PanelModesManage));
     entries = g_list_prepend (entries, menu_entry_new (_ ("C&onfirmation..."), CK_OptionsConfirm));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Appearance..."), CK_OptionsAppearance));
+
+    /* Add options-menu entries published by panel plugins. */
+    {
+        GList *plugin_entries = panel_plugin_collect_menu_entries (MC_PP_MENU_OPTIONS);
+        GList *p;
+
+        for (p = plugin_entries; p != NULL; p = g_list_next (p))
+            entries = g_list_prepend (entries, p->data);
+        g_list_free (plugin_entries);
+    }
+
+    entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Learn &keys..."), CK_LearnKeys));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &bindings..."), CK_KeyBindings));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &sniffer..."), CK_KeySniffer));
-#ifdef ENABLE_VFS
-    entries = g_list_prepend (entries, menu_entry_new (_ ("&Virtual FS..."), CK_OptionsVfs));
-#endif
     entries = g_list_prepend (entries, menu_separator_new ());
 #ifdef USE_DIFF_VIEW
     entries = g_list_prepend (entries,
@@ -348,6 +378,10 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Editor options..."), CK_OptionsEditor));
 #endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Manage plugins..."), CK_ManagePlugins));
+    entries = g_list_prepend (entries,
+                              menu_entry_new (_ ("Edit e&xtension file"), CK_EditExtensionsFile));
+    entries = g_list_prepend (
+        entries, menu_entry_new (_ ("Edit hi&ghlighting group file"), CK_EditFileHighlightFile));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Save setup"), CK_SaveSetup));
     entries = g_list_prepend (entries, menu_separator_new ());
@@ -364,6 +398,8 @@ init_menu (void)
     left_menu = menu_new ("", create_panel_menu (FALSE), "[Left and Right Menus]");
     menubar_add_menu (the_menubar, left_menu);
     menubar_add_menu (the_menubar, menu_new (_ ("&File"), create_file_menu (), "[File Menu]"));
+    menubar_add_menu (the_menubar,
+                      menu_new (_ ("&Attributes"), create_attributes_menu (), "[Attributes Menu]"));
     menubar_add_menu (the_menubar,
                       menu_new (_ ("&Command"), create_command_menu (), "[Command Menu]"));
     menubar_add_menu (the_menubar,
@@ -1272,11 +1308,6 @@ midnight_execute_cmd (Widget *sender, long command)
     case CK_Options:
         configure_box ();
         break;
-#ifdef ENABLE_VFS
-    case CK_OptionsVfs:
-        configure_vfs_box ();
-        break;
-#endif
     case CK_OptionsConfirm:
         confirm_box ();
         break;

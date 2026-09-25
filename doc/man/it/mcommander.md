@@ -691,8 +691,8 @@ automatico.
 # Barra dei menu <a id="menu-bar"></a>
 
 La barra dei menu compare premendo F9 o cliccando con il mouse sopra la riga
-superiore dello schermo. La barra menu possiede cinque menu: "Sinistra", "File",
-"Comando", "Opzioni" e "Destra".
+superiore dello schermo. La barra menu possiede sei menu: "Sinistra", "File",
+"Attributi", "Comando", "Opzioni" e "Destra".
 
 I
 [menu sinistra e destra](#left-and-right-menus)
@@ -703,6 +703,11 @@ Il
 [menu file](#file-menu)
 elenca le azioni che possono essere condotte sui file correntemente selezionati
 o marcati.
+
+Il
+[menu attributi](#attributes-menu)
+elenca i comandi che cambiano i permessi, il proprietario e gli attributi del
+filesystem degli stessi file.
 
 Il
 [menu comando](#command-menu)
@@ -1103,6 +1108,30 @@ a riga di comando. Questo ha le stesse caratteristiche già presenti nel
 comando
 [comando interno cd](#the-cd-internal-command).
 
+## Menu attributi <a id="attributes-menu"></a>
+
+I comandi di questo menu cambiano ciò che il filesystem sa del file, non il suo
+contenuto: i permessi di accesso, il proprietario e il gruppo, e gli attributi
+del filesystem. Ognuno agisce sul file selezionato, o sui file marcati se ce ne
+sono.
+
+**Permessi... (C-x c)**
+: Cambia i permessi di accesso nella finestra
+[Permessi](#chmod).
+
+**Proprietario... (C-x o)**
+: Cambia il proprietario e il gruppo nella finestra
+[Proprietario](#chown).
+
+**Proprietario avanzato...**
+: Cambia i permessi, il proprietario e il gruppo in una sola finestra, vedere
+[Proprietario avanzato](#advanced-chown).
+
+**Attributi chattr... (C-x e)**
+: Cambia gli attributi di un filesystem ext2, ext3 o ext4 nella finestra
+[Attributi dei file](#chattr). La voce c'è solo se il programma è compilato con
+il supporto per quegli attributi.
+
 ## Menu comando <a id="command-menu"></a>
 
 Il comando
@@ -1139,15 +1168,6 @@ Il comando
 [pannellizza comando](#external-panelize)
 permette di eseguire un coamndo esterno e di mettere il risultato nel pannello
 corrente.
-
-Il comando
-[modifica file estensioni](#edit-extension-file)
-permette di specificare i programmi che devono essere eseguiti quando
-si prova ad eseguire, visualizzare, modificare e un mucchio di altre
-cose, file con una specifica estensione (la fine del nome del file).
-Il comando
-[modifica file menu](#edit-menu-file)
-serve a modificare il menu utente (che appare premendo F2).
 
 ### Albero directory <a id="directory-tree"></a>
 
@@ -1369,18 +1389,6 @@ Destra, Sin  entra in un gruppo ed esce da esso
 Questo rende più veloce il cd verso directory usate spesso. Considera l'uso
 della variabile CDPATH come descritto in
 [comando cd interno](#the-cd-internal-command).
-
-### Modifica file estensioni <a id="edit-extension-file"></a>
-
-Questo comando invocherà l'editor sul file
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Processi in background <a id="background-jobs"></a>
 
@@ -1656,10 +1664,6 @@ Il comando
 mostra che cosa invia il terminale per il tasto premuto, e l'azione a cui
 quel tasto è associato.
 
-Il comando
-[FS virtuale](#virtual-fs)
-apre una finestra con alcune opzioni relative al VFS.
-
 I comandi
 **Opzioni del confronto**,
 [Opzioni del visualizzatore](mview.md#viewer-options)
@@ -1674,6 +1678,18 @@ mantiene quelle con cui è stato aperto.
 Il comando
 [gestione dei componenti](#panel-plugins)
 elenca i componenti caricati, ne disattiva uno e ne apre le impostazioni.
+
+Il comando
+[modifica file estensioni](#edit-extension-file)
+permette di specificare i programmi che devono essere eseguiti quando
+si prova ad eseguire, visualizzare, modificare e un mucchio di altre
+cose, file con una specifica estensione (la fine del nome del file).
+
+Il comando
+**Modifica file gruppo di evidenziazione**
+apre il file che dice quali nomi e quali tipi di file il pannello mostra con
+quale colore, vedere
+[Evidenziazione dei nomi](#filenames-highlight).
 
 Il comando
 [salva configurazione](#save-setup)
@@ -1922,18 +1938,6 @@ imparata compare accanto al pulsante.
 Le vecchie definizioni della sezione [terminal:TERM] di ~/.config/mc6/ini
 vengono trasferite da sole al primo avvio.
 
-### FS virtuale <a id="virtual-fs"></a>
-
-Questa voce controlla le impostazioni del
-[file system virtuale](#virtual-file-system).
-
-La finestra ha una sola impostazione,
-*Tempo di rilascio dei VFS,*
-che è il tempo di vita della cache di un file system: uscendo da un archivio o
-da un file compresso, l'elenco letto e il file temporaneo scompattato restano
-per quei secondi, così rientrare è immediato, e vengono rilasciati allo
-scadere. Il valore predefinito è 60 secondi, e 0 li rilascia subito.
-
 ### Gestione dei componenti <a id="manage-plugins"></a>
 
 I componenti aggiuntivi che il programma ha caricato, in una tabella: il tipo,
@@ -2129,6 +2133,18 @@ quella scelta entra in vigore subito. La struttura delle skin è descritta
 nella sezione
 [Skins](mcommander.md#skins)
 del manuale inglese.
+
+### Modifica file estensioni <a id="edit-extension-file"></a>
+
+Questo comando invocherà l'editor sul file
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Salva configurazione <a id="save-setup"></a>
 
@@ -3432,8 +3448,7 @@ directory quando ci sono file marcati.
 : Il tempo di vita della cache di un filesystem virtuale, in secondi. Uscendo
 da un archivio o da un file compresso, l'elenco letto e il file temporaneo
 scompattato restano per quel tempo, così rientrare è immediato, e poi vengono
-rilasciati. Predefinito 60; 0 li rilascia subito. La finestra FS virtuale del
-menu Opzioni cambia lo stesso valore.
+rilasciati. Predefinito 60; 0 li rilascia subito.
 
 *only_leading_plus_minus*
 : Permette una gestione speciale per '+', '-' e '\*' nella riga di comando

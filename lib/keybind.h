@@ -158,7 +158,6 @@ enum
     CK_PanelModes,
     CK_PanelModesManage,
     CK_CompareDirs,
-    CK_OptionsVfs,
     CK_OptionsConfirm,
     CK_PutCurrentLink,
     CK_PutOtherLink,

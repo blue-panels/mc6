@@ -51,10 +51,10 @@ static const mc_pp_action_t skineditor_actions[] = {
 };
 
 static const mc_pp_cmd_menu_entry_t skineditor_menu[] = {
-    { N_ ("S&kin editor..."), 0, NULL, 0, MC_PP_MENU_COMMAND },
+    { N_ ("Ski&n editor..."), 0, NULL, 0, MC_PP_MENU_OPTIONS },
 };
 
-/* no panel: one dialog, reached from the Command menu, the plugin list and Manage Plugins */
+/* no panel: one dialog, reached from the Options menu, the plugin list and Manage Plugins */
 static const mc_panel_plugin_t skineditor_plugin = {
     .api_version = MC_PANEL_PLUGIN_API_VERSION,
     .name = "skineditor",

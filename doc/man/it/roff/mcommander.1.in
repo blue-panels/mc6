@@ -812,8 +812,8 @@ automatico.
 .SH Barra dei menu
 .PP
 La barra dei menu compare premendo F9 o cliccando con il mouse sopra la riga
-superiore dello schermo. La barra menu possiede cinque menu: "Sinistra", "File",
-"Comando", "Opzioni" e "Destra".
+superiore dello schermo. La barra menu possiede sei menu: "Sinistra", "File",
+"Attributi", "Comando", "Opzioni" e "Destra".
 
 .PP
 I
@@ -826,6 +826,12 @@ Il
 menu file
 elenca le azioni che possono essere condotte sui file correntemente selezionati
 o marcati.
+
+.PP
+Il
+menu attributi
+elenca i comandi che cambiano i permessi, il proprietario e gli attributi del
+filesystem degli stessi file.
 
 .PP
 Il
@@ -1299,6 +1305,34 @@ a riga di comando. Questo ha le stesse caratteristiche già presenti nel
 comando
 comando interno cd\&.
 
+.SH Menu attributi
+.PP
+I comandi di questo menu cambiano ciò che il filesystem sa del file, non il suo
+contenuto: i permessi di accesso, il proprietario e il gruppo, e gli attributi
+del filesystem. Ognuno agisce sul file selezionato, o sui file marcati se ce ne
+sono.
+
+.TP
+\fBPermessi... (C\-x c)\fP
+Cambia i permessi di accesso nella finestra
+Permessi\&.
+
+.TP
+\fBProprietario... (C\-x o)\fP
+Cambia il proprietario e il gruppo nella finestra
+Proprietario\&.
+
+.TP
+\fBProprietario avanzato...\fP
+Cambia i permessi, il proprietario e il gruppo in una sola finestra, vedere
+Proprietario avanzato\&.
+
+.TP
+\fBAttributi chattr... (C\-x e)\fP
+Cambia gli attributi di un filesystem ext2, ext3 o ext4 nella finestra
+Attributi dei file\&. La voce c'è solo se il programma è compilato con
+il supporto per quegli attributi.
+
 .SH Menu comando
 .PP
 Il comando
@@ -1341,16 +1375,6 @@ Il comando
 pannellizza comando
 permette di eseguire un coamndo esterno e di mettere il risultato nel pannello
 corrente.
-
-.PP
-Il comando
-modifica file estensioni
-permette di specificare i programmi che devono essere eseguiti quando
-si prova ad eseguire, visualizzare, modificare e un mucchio di altre
-cose, file con una specifica estensione (la fine del nome del file).
-Il comando
-modifica file menu
-serve a modificare il menu utente (che appare premendo F2).
 
 .SS Albero directory
 .PP
@@ -1614,18 +1638,6 @@ Destra, Sin  entra in un gruppo ed esce da esso
 Questo rende più veloce il cd verso directory usate spesso. Considera l'uso
 della variabile CDPATH come descritto in
 comando cd interno\&.
-
-.SS Modifica file estensioni
-.PP
-Questo comando invocherà l'editor sul file
-\fI~/.config/mc6/extensions.ini.\fP
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Processi in background
 .PP
@@ -1943,11 +1955,6 @@ mostra che cosa invia il terminale per il tasto premuto, e l'azione a cui
 quel tasto è associato.
 
 .PP
-Il comando
-FS virtuale
-apre una finestra con alcune opzioni relative al VFS.
-
-.PP
 I comandi
 \fBOpzioni del confronto\fP,
 Opzioni del visualizzatore
@@ -1963,6 +1970,20 @@ mantiene quelle con cui è stato aperto.
 Il comando
 gestione dei componenti
 elenca i componenti caricati, ne disattiva uno e ne apre le impostazioni.
+
+.PP
+Il comando
+modifica file estensioni
+permette di specificare i programmi che devono essere eseguiti quando
+si prova ad eseguire, visualizzare, modificare e un mucchio di altre
+cose, file con una specifica estensione (la fine del nome del file).
+
+.PP
+Il comando
+\fBModifica file gruppo di evidenziazione\fP
+apre il file che dice quali nomi e quali tipi di file il pannello mostra con
+quale colore, vedere
+Evidenziazione dei nomi\&.
 
 .PP
 Il comando
@@ -2260,19 +2281,6 @@ imparata compare accanto al pulsante.
 Le vecchie definizioni della sezione [terminal:TERM] di ~/.config/mc6/ini
 vengono trasferite da sole al primo avvio.
 
-.SS FS virtuale
-.PP
-Questa voce controlla le impostazioni del
-file system virtuale\&.
-
-.PP
-La finestra ha una sola impostazione,
-\fITempo di rilascio dei VFS,\fP
-che è il tempo di vita della cache di un file system: uscendo da un archivio o
-da un file compresso, l'elenco letto e il file temporaneo scompattato restano
-per quei secondi, così rientrare è immediato, e vengono rilasciati allo
-scadere. Il valore predefinito è 60 secondi, e 0 li rilascia subito.
-
 .SS Gestione dei componenti
 .PP
 I componenti aggiuntivi che il programma ha caricato, in una tabella: il tipo,
@@ -2491,6 +2499,18 @@ quella scelta entra in vigore subito. La struttura delle skin è descritta
 nella sezione
 Skins
 del manuale inglese.
+
+.SS Modifica file estensioni
+.PP
+Questo comando invocherà l'editor sul file
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Salva configurazione
 .PP
@@ -4014,8 +4034,7 @@ directory quando ci sono file marcati.
 Il tempo di vita della cache di un filesystem virtuale, in secondi. Uscendo
 da un archivio o da un file compresso, l'elenco letto e il file temporaneo
 scompattato restano per quel tempo, così rientrare è immediato, e poi vengono
-rilasciati. Predefinito 60; 0 li rilascia subito. La finestra FS virtuale del
-menu Opzioni cambia lo stesso valore.
+rilasciati. Predefinito 60; 0 li rilascia subito.
 
 .TP
 \fIonly_leading_plus_minus\fP

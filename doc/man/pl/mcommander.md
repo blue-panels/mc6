@@ -668,14 +668,17 @@ nazw plików, poleceń, zmiennych, użytkowników i nazw hostów.
 # Linia menu <a id="menu-bar"></a>
 
 Linia menu uaktywnia się kiedy wciskasz klawisz F9 lub kiedy klikasz myszką
-na najwyższy wiersz ekranu. Linia menu ma pięć podmenu: "left", "file", command",
-"options" i "right" (po polsku to jest "lewe", "plik", "komendy", "opcje",
-"prawe").
+na najwyższy wiersz ekranu. Linia menu ma sześć podmenu: "left", "file",
+"attributes", command", "options" i "right" (po polsku to jest "lewe", "plik",
+"atrybuty", "komendy", "opcje", "prawe").
 
 Lewe i prawe menu pozwalają ci na modyfikacje wyglądu lewego i prawego panelu
 katalogowego.
 
 Menu plik pozwala na wykonanie akcji na aktualnym lub zaznaczonych plikach.
+
+Menu atrybutów zmienia prawa dostępu, właściciela i atrybuty systemu plików
+tych samych plików.
 
 Menu komend mieści w sobie możliwe do wykonania akcje, które są dużo bardziej
 globalne i nie mają związku z aktualnym i zaznaczonymi plikami.
@@ -1046,6 +1049,29 @@ którym podajesz to, co podałbyś po poleceniu
 w wierszu poleceń, i naciskasz Enter. Działa w nim wszystko to, co daje
 [wewnętrzne polecenie cd](#the-cd-internal-command).
 
+## Menu atrybutów (Attributes Menu) <a id="attributes-menu"></a>
+
+Komendy tego menu zmieniają nie zawartość pliku, a to, co wie o nim system
+plików: prawa dostępu, właściciela i grupę oraz atrybuty systemu plików. Każda
+z nich działa na aktualnym pliku albo na zaznaczonych plikach, jeśli takie są.
+
+**Chmod... (C-x c)**
+: Zmiana praw dostępu w oknie
+[Chmod](#chmod).
+
+**Chown... (C-x o)**
+: Zmiana właściciela i grupy w oknie
+[Chown](#chown).
+
+**Zaawansowane chown...**
+: Zmiana praw dostępu, właściciela i grupy w jednym oknie, zobacz
+[Zaawansowane chown (Advanced Chown)](#advanced-chown).
+
+**Flagi chattr... (C-x e)**
+: Zmiana atrybutów systemu plików ext2, ext3 albo ext4 w oknie
+[Atrybuty pliku](#chattr). Pozycja jest tylko wtedy, gdy program zbudowano z
+obsługą tych atrybutów.
+
 ## Menu komend (Command Menu) <a id="command-menu"></a>
 
 Komenda drzewo katalogów (Directory tree) pokazuje drzewo katalogów.
@@ -1074,12 +1100,6 @@ katalogów do tych najczęściej używanych dużo szybciej.
 Komenda panelu zewnętrznego (External panelize) pozwala na wykonywania programów
 zewnętrznych i ustawienia zawartości paneli na to co zwróciła wywołana
 komenda.
-
-Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
-programów, które mają być używane do wykonywania plików z podanymi
-rozszerzeniami. Komenda edycji pliku menu (Edit Menu File) może być używana do
-edytowania menu użytkownika (tego, które pojawia się po naciśnięciu kombinacji
-F2).
 
 ### Drzewo katalogów (Directory Tree) <a id="directory-tree"></a>
 
@@ -1294,19 +1314,6 @@ Right, Left  wchodzi do grupy i z niej wychodzi
 Dzięki temu przechodzenie do często używanych katalogów jest szybsze. Można
 też skorzystać ze zmiennej CDPATH, opisanej przy
 [wewnętrznym poleceniu cd](#the-cd-internal-command).
-
-### Edycja rozszerzeń pliów (Edit Extension File) <a id="edit-extension-file"></a>
-
-Ta komenda wywoła twój edytor na plik
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
-PP
 
 ### Prace w tle (Background jobs) <a id="background-jobs"></a>
 
@@ -1566,10 +1573,6 @@ Polecenie
 pokazuje, co terminal wysyła dla naciśniętego klawisza, i działanie, do
 którego ten klawisz jest przypisany.
 
-Polecenie
-[Wirtualny FS](#virtual-fs)
-otwiera okno z ustawieniami dotyczącymi VFS.
-
 Polecenia
 **Opcje podglądu różnic**,
 [Opcje przeglądarki](mview.md#viewer-options)
@@ -1583,6 +1586,16 @@ otwarte zostaje przy tych, z którymi je otwarto.
 Polecenie
 [Zarządzanie wtyczkami](#panel-plugins)
 wypisuje wczytane wtyczki, wyłącza wybraną i otwiera jej ustawienia.
+
+Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
+programów, które mają być używane do wykonywania plików z podanymi
+rozszerzeniami.
+
+Komenda
+**Modyfikuj plik wyróżniania grup**
+otwiera plik, który mówi, jakie nazwy i jakie typy plików panel pokazuje jakim
+kolorem, zobacz
+[Podświetlanie nazw plików](#filenames-highlight).
 
 Polecenie
 [Zapisz ustawienia](#save-setup)
@@ -1812,18 +1825,6 @@ przycisku.
 Stare definicje z sekcji [terminal:TERM] pliku ~/.config/mc6/ini są
 przenoszone same przy pierwszym uruchomieniu.
 
-### Wirtualny system plików (Virtual FS) <a id="virtual-fs"></a>
-
-Ta pozycja steruje ustawieniami
-[wirtualnych systemów plików](#virtual-file-system).
-
-W oknie jest jedno ustawienie,
-*Czas zwalniania VFS,*
-czyli czas życia pamięci podręcznej systemu plików: po wyjściu z archiwum lub
-pliku skompresowanego wczytana lista i rozpakowany plik tymczasowy zostają
-jeszcze przez tyle sekund, żeby ponowne wejście było natychmiastowe, a po
-upływie tego czasu są zwalniane. Domyślnie 60 sekund, a 0 zwalnia je od razu.
-
 ### Zarządzanie wtyczkami <a id="manage-plugins"></a>
 
 Wtyczki, które program wczytał, w tabeli: rodzaj, nazwa i to, co wtyczka mówi
@@ -2008,6 +2009,19 @@ i
 wybrana zaczyna obowiązywać od razu. Budowę skór opisuje dział
 [Skins](mcommander.md#skins)
 podręcznika angielskiego.
+
+### Edycja rozszerzeń pliów (Edit Extension File) <a id="edit-extension-file"></a>
+
+Ta komenda wywoła twój edytor na plik
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
+PP
 
 ### Zapisz ustawienia (Save Setup) <a id="save-setup"></a>
 
@@ -3303,7 +3317,6 @@ katalogu.
 wyjściu z archiwum albo pliku skompresowanego wczytana lista i rozpakowany
 plik tymczasowy zostają przez ten czas, żeby ponowne wejście było
 natychmiastowe, a potem są zwalniane. Domyślnie 60; 0 zwalnia je od razu.
-Okno Wirtualny FS z menu Opcje zmienia tę samą wartość.
 
 *only_leading_plus_minus*
 : Traktuje znaki '+', '-' i '\*' w wierszu poleceń osobno (zaznaczanie,

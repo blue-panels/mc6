@@ -732,6 +732,7 @@ menubar_get_menu_by_x_coord (const WMenuBar *menubar, int x)
 
 /* --------------------------------------------------------------------------------------------- */
 
+/* The mouse is inside the frame of the dropped down menu. */
 static gboolean
 menubar_mouse_on_menu (const WMenuBar *menubar, int y, int x)
 {
@@ -754,6 +755,22 @@ menubar_mouse_on_menu (const WMenuBar *menubar, int y, int x)
     bottom_y = g_list_length (menu->entries) + 2;  // skip bar and top frame
 
     return (x >= left_x && x < right_x && y > 1 && y < bottom_y);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The mouse is on an entry of the dropped down menu; a separator line is not one. */
+static gboolean
+menubar_mouse_on_menu_entry (const WMenuBar *menubar, int y, int x)
+{
+    const menu_t *menu;
+
+    if (!menubar_mouse_on_menu (menubar, y, x))
+        return FALSE;
+
+    menu = MENU (g_list_nth_data (menubar->menu, menubar->current));
+
+    return (MENUENTRY (g_list_nth_data (menu->entries, y - 2)) != NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -785,8 +802,10 @@ menubar_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
 
     WMenuBar *menubar = MENUBAR (w);
     gboolean mouse_on_drop;
+    gboolean mouse_on_entry;
 
     mouse_on_drop = menubar_mouse_on_menu (menubar, event->y, event->x);
+    mouse_on_entry = menubar_mouse_on_menu_entry (menubar, event->y, event->x);
 
     switch (msg)
     {
@@ -827,7 +846,7 @@ menubar_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
         break;
 
     case MSG_MOUSE_UP:
-        if (was_drag && mouse_on_drop)
+        if (was_drag && mouse_on_entry)
             menubar_execute (menubar);
         was_drag = FALSE;
         break;
@@ -840,9 +859,9 @@ menubar_mouse_callback (Widget *w, mouse_msg_t msg, mouse_event_t *event)
             // middle click -- everywhere
             menubar_execute (menubar);
         }
-        else if (mouse_on_drop)
+        else if (mouse_on_entry)
             menubar_execute (menubar);
-        else if (event->y > 0)
+        else if (!mouse_on_drop && event->y > 0)
             // releasing the mouse button outside the menu -- close menu
             menubar_finish (menubar);
         break;

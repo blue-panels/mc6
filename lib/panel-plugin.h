@@ -24,6 +24,8 @@
    backward compatibility with plugins built before this field existed. */
 #define MC_PP_MENU_COMMAND "Command"
 #define MC_PP_MENU_PANEL   "Panel"
+#define MC_PP_MENU_FILE    "File"
+#define MC_PP_MENU_OPTIONS "Options"
 
 /*** enums ***************************************************************************************/
 

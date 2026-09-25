@@ -837,8 +837,8 @@ végzi.
 .SH Menüsor
 .PP
 A menüsor akkor jelenik meg, ha az F9\-es gombot lenyomod, vagy ha a
-képernyő legfelső sorára kattintasz. A menüsor öt menüt tartalmaz:
-"Bal", "Fájl", "Parancsok", "Beállítások" és "Jobb".
+képernyő legfelső sorára kattintasz. A menüsor hat menüt tartalmaz:
+"Bal", "Fájl", "Attribútumok", "Parancsok", "Beállítások" és "Jobb".
 
 .PP
 A
@@ -851,6 +851,12 @@ A
 Fájl menü
 felsorolja a kiválasztott fájlon, vagy a kijelölt fájlokon végrehajtható
 parancsokat.
+
+.PP
+Az
+Attribútumok menü
+azokat a parancsokat sorolja fel, amelyek ugyanezeken a fájlokon a
+jogosultságokat, a tulajdonost és a fájlrendszer jelzőit módosítják.
 
 .PP
 A
@@ -1307,6 +1313,37 @@ parancs után begépeltél volna, és ezután használd az entert.Ez az eszkőz
 mindenben ugyanaz, mint a
 belső cd parancs\&.
 
+.SH Attribútumok menü
+.PP
+Ennek a menünek a parancsai nem a fájl tartalmát változtatják, hanem azt, amit
+a fájlrendszer tud róla: a hozzáférési jogosultságokat, a tulajdonost és a
+csoportot, valamint a fájlrendszer jelzőit. Mindegyik a kiválasztott fájlon
+dolgozik, vagy a kijelölt fájlokon, ha vannak.
+
+.TP
+\fBChmod... (C\-x c)\fP
+A hozzáférési jogosultságok beállítása a
+Chmod
+ablakban.
+
+.TP
+\fBChown... (C\-x o)\fP
+A tulajdonos és a csoport beállítása a
+Chown
+ablakban.
+
+.TP
+\fBHaladó chown...\fP
+A jogosultságok, a tulajdonos és a csoport beállítása egy ablakban, lásd
+Haladó (bővített) Chown\&.
+
+.TP
+\fBChattr jelzők... (C\-x e)\fP
+Az ext2, ext3 vagy ext4 fájlrendszer jelzőinek beállítása a
+Fájlattribútumok
+ablakban. A menüpont csak akkor van meg, ha a program ezek támogatásával
+készült.
+
 .SH Parancsok menü
 .PP
 A
@@ -1350,17 +1387,6 @@ A
 Parancskimenet panel
 lehetővé teszi számodra külső parancsok futtatását, majd a program
 tartalmát a jellegi panelbe teszi.
-
-.PP
-A
-Társítások
-lehetővé teszik számodra a futtatandó programok meghatározását, a
-kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
-futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni. A
-Menu editor edit
-parancs a felhasználói menü szerkesztésére használható (ami az F2
-lenyomásával elérhető).
 
 .SS Könyvtárfa
 .PP
@@ -1627,19 +1653,6 @@ Ezzel a gyakran használt könyvtárakhoz ugorhatunk. A CDPATH változó
 használatát megtekintheted a
 A cd belső parancs
 leírásánál.
-
-.SS Társítások
-.PP
-Ez az
-\fI~/.config/mc6/extensions.ini\fP
-szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Háttérmunkák
 .PP
@@ -1961,11 +1974,6 @@ megmutatja, mit küld a terminál a leütött billentyűre, és azt a műveletet
 amelyhez az a billentyű tartozik.
 
 .PP
-A
-Csatolt fájlrendszer
-a VFS beállításait nyitja meg.
-
-.PP
 Az
 \fBÖsszehasonlító beállításai\fP,
 a
@@ -1984,6 +1992,21 @@ A
 Bővítmények kezelése
 felsorolja a betöltött bővítményeket, ki tud kapcsolni egyet, és megnyitja a
 beállításait.
+
+.PP
+A
+Társítások
+lehetővé teszik számodra a futtatandó programok meghatározását, a
+kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
+futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
+szeretnél vele csinálni.
+
+.PP
+A
+\fBFájltípus színkiemelés szerkesztése\fP
+parancs azt a fájlt nyitja meg, amely megadja, hogy a panel mely neveket és
+mely fájltípusokat milyen színnel mutatja, lásd
+Fájlnevek kiemelése\&.
 
 .PP
 A
@@ -2274,21 +2297,6 @@ szerkesztőben.
 A ~/.config/mc6/ini fájl [terminal:TERM] szakaszában levő régi definíciók az
 első indításkor maguktól átkerülnek.
 
-.SS Csatolt (látszólagos) fájlrendszer
-.PP
-Ez a pont a
-csatolt fájlrendszerek
-beállításait kezeli.
-
-.PP
-A párbeszédablakban egy beállítás van,
-\fIA VFS felszabadításának ideje,\fP
-és ez a fájlrendszer gyorsítótárának élettartama: egy archívumból vagy
-tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes fájl
-még ennyi másodpercig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60 másodperc, a 0 pedig azonnal
-felszabadítja őket.
-
 .SS Bővítmények kezelése
 .PP
 A program által betöltött bővítmények táblázatban: a fajtája, a neve és az,
@@ -2502,6 +2510,19 @@ amelyek a
 könyvtárban vannak; a kiválasztott azonnal életbe lép. A skinek felépítését az angol kézikönyv
 Skins
 szakasza írja le.
+
+.SS Társítások
+.PP
+Ez az
+\fI~/.config/mc6/extensions.ini\fP
+szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Beállítások mentése
 .PP
@@ -4025,8 +4046,7 @@ mielőtt könyvtárat váltana.
 A virtuális fájlrendszer gyorstárának élettartama másodpercben. Archívumból
 vagy tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes
 fájl ennyi ideig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja. A
-Beállítások menü Csatolt fájlrendszer ablaka ugyanezt az értéket állítja.
+felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja.
 
 .TP
 \fIonly_leading_plus_minus\fP
