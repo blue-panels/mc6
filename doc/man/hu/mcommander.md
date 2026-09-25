@@ -3621,6 +3621,96 @@ valamelyik gomb nem használható).
 
 <!-- help:break -->
 
+# Környezeti változók <a id="environment"></a>
+
+Az alábbi változókat olvassa az M-Commander, illetve ezeket állítja be az
+általa indított programok számára. Az olyan változók, mint a **TERM**, a
+**SHELL**, a **HOME** vagy a **PATH**, nem szerepelnek itt: a program azért
+olvassa őket, hogy megtudja, hol fut, nem azért, hogy beállítsák vele.
+
+## Induláskor olvasott változók <a id="read-at-start-up"></a>
+
+**MC_DATADIR**
+: A könyvtár, ahonnan az adatfájlok jönnek, a beépített helyett. Lásd
+[Fájlok](#files).
+
+**MC_PROFILE_ROOT**
+: A felhasználói fájlok gyökere, abszolút útvonalként. Lásd [Fájlok](#files).
+
+**MC_SKIN**
+: A használandó skin, névvel vagy útvonallal. Lásd [Skinek](#skins).
+
+**MC_KEYMAP**
+: A használandó billentyűkiosztás-fájl. Lásd [Billentyűzet](#keys).
+
+**MC_TMPDIR**
+: A program ideiglenes fájljainak könyvtára.
+
+**MC_NO_LUA**
+: Az 1 érték hatására a program Lua futtatókörnyezet nélkül indul. Egyetlen
+Lua csomag sem töltődik be, és semmi nem érhető el, aminek szüksége van rá.
+
+**MC_SIXEL**
+: A 0 érték azt mondja, hogy a terminál nem tud sixel grafikát, az 1 pedig
+azt, hogy tud. A változó nélkül a program magát a terminált kérdezi meg.
+
+**KEYBOARD_KEY_TIMEOUT_US**
+: Mennyit várjon egy vezérlőszekvencia hátralévő részére, mikroszekundumban.
+
+**COLORTERM**
+: A színek kiválasztásakor olvasódik. Lásd [Színek](#colors).
+
+**CDPATH**
+: Azok a könyvtárak, amelyekben a beépített cd parancs keres.
+
+**EDITOR**, **VIEWER**, **PAGER**
+: A külső programok, amelyeket a program akkor használ, ha a beépített
+szerkesztő vagy fájlnéző ki van kapcsolva. Lásd
+[Külső szerkesztő vagy fájlnéző paraméterei](#parameters-for-external-editor-or-viewer).
+
+## Az indított programok számára beállított változók <a id="set-for-the-programs-m-commander-starts"></a>
+
+Ezeket nem kézzel kell beállítani. A program azért írja ki őket, hogy a
+beépített terminálból indított saját másolata felismerje: már fut egy ilyenen
+belül.
+
+**MC_SID**
+: A munkamenet, amelyben a program fut. Az ebből a munkamenetből indított
+másolat nem nyit saját paneleket.
+
+**MC_PID**
+: A futó program folyamatazonosítója.
+
+**MC_TTY**
+: A terminál, amelyen a programot elindították.
+
+## Hibakeresési naplók <a id="debug-logs"></a>
+
+A napló csak akkor íródik, ha be van kapcsolva, és a kapcsoló értéke 1. A
+bővítmények változói az általánosakra esnek vissza, így az általános pár
+beállítása mindent naplóz.
+
+**MC_LOG_ENABLE**, **MC_LOG_FILE**
+: Az általános napló. **MC_LOG_FILE** nélkül az *ini* fájl *[Logging]*
+szakaszának *logfile* bejegyzése szerinti fájl használódik, e bejegyzés nélkül
+pedig az *mc.log* a többi felhasználói fájl mellett.
+
+**MC_FTP_LOG_ENABLE**, **MC_FTP_LOG_FILE**
+: Az ftp panelbővítmény naplója. A fájl alapértelmezése */tmp/mc-ftp.log*.
+
+**MC_SMB_LOG_ENABLE**, **MC_SMB_LOG_FILE**
+: A samba panelbővítmény naplója. A fájl alapértelmezése */tmp/mc-samba.log*.
+
+**MC_SPELL_LOG**
+: A fájl, amelybe a helyesírás-ellenőrzés ír. Nincs saját kapcsolója: a napló
+akkor keletkezik, ha a változó megnevez egy fájlt.
+
+Egy sikertelen ftp kapcsolat naplójának megőrzéséhez:
+
+```
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+```
+
 # Fájlok <a id="files"></a>
 
 A progam minden ezzel kapcsolatos infomációt az

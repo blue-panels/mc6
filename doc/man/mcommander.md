@@ -3819,6 +3819,97 @@ everywhere).
 
 <!-- help:break -->
 
+# ENVIRONMENT
+
+The variables below are the ones M-Commander reads, and the ones it sets for
+the programs it starts. Variables such as **TERM**, **SHELL**, **HOME** or
+**PATH** are not listed here: the program reads them to find out where it
+runs, not to be configured by them.
+
+## Read at start up
+
+**MC_DATADIR**
+: The directory the data files are taken from, in place of the one built in.
+See [FILES](#files).
+
+**MC_PROFILE_ROOT**
+: The root of the user files, as an absolute path. See [FILES](#files).
+
+**MC_SKIN**
+: The skin to use, by name or by path. See [Skins](#skins).
+
+**MC_KEYMAP**
+: The keymap file to use. See [Keys](#keys).
+
+**MC_TMPDIR**
+: The directory for the temporary files of the program.
+
+**MC_NO_LUA**
+: Set to 1 to start without the Lua runtime. No Lua package is loaded, and
+nothing that needs one is available.
+
+**MC_SIXEL**
+: Set to 0 to say the terminal has no sixel graphics, or to 1 to say it has.
+Without the variable the terminal itself is asked.
+
+**KEYBOARD_KEY_TIMEOUT_US**
+: How long to wait for the rest of an escape sequence, in microseconds.
+
+**COLORTERM**
+: Read when the colours are chosen. See [Colors](#colors).
+
+**CDPATH**
+: The directories the internal cd command searches.
+
+**EDITOR**, **VIEWER**, **PAGER**
+: The external programs used when the built-in editor or viewer is turned
+off. See
+[Parameters for external editor or viewer](#parameters-for-external-editor-or-viewer).
+
+## Set for the programs M-Commander starts
+
+These are not meant to be set by hand. The program writes them so that a copy
+of itself started from the built-in terminal can tell that it is already
+running inside one.
+
+**MC_SID**
+: The session the program runs in. A copy started from that session opens no
+panels of its own.
+
+**MC_PID**
+: The process id of the running program.
+
+**MC_TTY**
+: The terminal the program was started on.
+
+## Debug logs
+
+A log is written only when it is turned on, and the switch takes the value 1.
+The plugin variables fall back to the general ones, so setting the general
+pair alone logs everything.
+
+**MC_LOG_ENABLE**, **MC_LOG_FILE**
+: The general log. Without **MC_LOG_FILE** the file named by *logfile* in the
+*[Logging]* section of the *ini* file is used, and without that entry
+*mc.log* beside the other user files.
+
+**MC_FTP_LOG_ENABLE**, **MC_FTP_LOG_FILE**
+: The log of the ftp panel plugin. The file falls back to */tmp/mc-ftp.log*.
+
+**MC_SMB_LOG_ENABLE**, **MC_SMB_LOG_FILE**
+: The log of the samba panel plugin. The file falls back to
+*/tmp/mc-samba.log*.
+
+**MC_SPELL_LOG**
+: The file the spell checker writes to. It has no switch of its own: the log
+is written when the variable names a file.
+
+To keep the log of a failing ftp connection:
+
+```
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+```
+
 # FILES
 
 Full paths below may vary between installations.  They are also affected

@@ -4229,6 +4229,116 @@ gombokat is ugyanerre a folyamatra (azokon a billentyűzeteken, ahol
 valamelyik gomb nem használható).
 
 
+.SH Környezeti változók
+.PP
+Az alábbi változókat olvassa az M\-Commander, illetve ezeket állítja be az
+általa indított programok számára. Az olyan változók, mint a \fBTERM\fP, a
+\fBSHELL\fP, a \fBHOME\fP vagy a \fBPATH\fP, nem szerepelnek itt: a program azért
+olvassa őket, hogy megtudja, hol fut, nem azért, hogy beállítsák vele.
+
+.SH Induláskor olvasott változók
+.TP
+\fBMC_DATADIR\fP
+A könyvtár, ahonnan az adatfájlok jönnek, a beépített helyett. Lásd
+Fájlok\&.
+
+.TP
+\fBMC_PROFILE_ROOT\fP
+A felhasználói fájlok gyökere, abszolút útvonalként. Lásd Fájlok\&.
+
+.TP
+\fBMC_SKIN\fP
+A használandó skin, névvel vagy útvonallal. Lásd Skinek\&.
+
+.TP
+\fBMC_KEYMAP\fP
+A használandó billentyűkiosztás\-fájl. Lásd Billentyűzet\&.
+
+.TP
+\fBMC_TMPDIR\fP
+A program ideiglenes fájljainak könyvtára.
+
+.TP
+\fBMC_NO_LUA\fP
+Az 1 érték hatására a program Lua futtatókörnyezet nélkül indul. Egyetlen
+Lua csomag sem töltődik be, és semmi nem érhető el, aminek szüksége van rá.
+
+.TP
+\fBMC_SIXEL\fP
+A 0 érték azt mondja, hogy a terminál nem tud sixel grafikát, az 1 pedig
+azt, hogy tud. A változó nélkül a program magát a terminált kérdezi meg.
+
+.TP
+\fBKEYBOARD_KEY_TIMEOUT_US\fP
+Mennyit várjon egy vezérlőszekvencia hátralévő részére, mikroszekundumban.
+
+.TP
+\fBCOLORTERM\fP
+A színek kiválasztásakor olvasódik. Lásd Színek\&.
+
+.TP
+\fBCDPATH\fP
+Azok a könyvtárak, amelyekben a beépített cd parancs keres.
+
+.TP
+\fBEDITOR\fP, \fBVIEWER\fP, \fBPAGER\fP
+A külső programok, amelyeket a program akkor használ, ha a beépített
+szerkesztő vagy fájlnéző ki van kapcsolva. Lásd
+Külső szerkesztő vagy fájlnéző paraméterei\&.
+
+.SH Az indított programok számára beállított változók
+.PP
+Ezeket nem kézzel kell beállítani. A program azért írja ki őket, hogy a
+beépített terminálból indított saját másolata felismerje: már fut egy ilyenen
+belül.
+
+.TP
+\fBMC_SID\fP
+A munkamenet, amelyben a program fut. Az ebből a munkamenetből indított
+másolat nem nyit saját paneleket.
+
+.TP
+\fBMC_PID\fP
+A futó program folyamatazonosítója.
+
+.TP
+\fBMC_TTY\fP
+A terminál, amelyen a programot elindították.
+
+.SH Hibakeresési naplók
+.PP
+A napló csak akkor íródik, ha be van kapcsolva, és a kapcsoló értéke 1. A
+bővítmények változói az általánosakra esnek vissza, így az általános pár
+beállítása mindent naplóz.
+
+.TP
+\fBMC_LOG_ENABLE\fP, \fBMC_LOG_FILE\fP
+Az általános napló. \fBMC_LOG_FILE\fP nélkül az \fIini\fP fájl \fI[Logging]\fP
+szakaszának \fIlogfile\fP bejegyzése szerinti fájl használódik, e bejegyzés nélkül
+pedig az \fImc.log\fP a többi felhasználói fájl mellett.
+
+.TP
+\fBMC_FTP_LOG_ENABLE\fP, \fBMC_FTP_LOG_FILE\fP
+Az ftp panelbővítmény naplója. A fájl alapértelmezése \fI/tmp/mc\-ftp.log\fP\&.
+
+.TP
+\fBMC_SMB_LOG_ENABLE\fP, \fBMC_SMB_LOG_FILE\fP
+A samba panelbővítmény naplója. A fájl alapértelmezése \fI/tmp/mc\-samba.log\fP\&.
+
+.TP
+\fBMC_SPELL_LOG\fP
+A fájl, amelybe a helyesírás\-ellenőrzés ír. Nincs saját kapcsolója: a napló
+akkor keletkezik, ha a változó megnevez egy fájlt.
+
+.PP
+Egy sikertelen ftp kapcsolat naplójának megőrzéséhez:
+
+.EX
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+
+.EE
+
+
 .SH Fájlok
 .PP
 A progam minden ezzel kapcsolatos infomációt az

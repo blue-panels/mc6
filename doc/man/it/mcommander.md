@@ -3611,6 +3611,100 @@ simpatici tasti dappertutto).
 
 <!-- help:break -->
 
+# VARIABILI D'AMBIENTE <a id="environment"></a>
+
+Le variabili elencate qui sotto sono quelle che M-Commander legge e quelle che
+imposta per i programmi che avvia. Variabili come **TERM**, **SHELL**, **HOME**
+o **PATH** non compaiono qui: il programma le legge per capire dove sta
+girando, non per esserne configurato.
+
+## Lette all'avvio <a id="read-at-start-up"></a>
+
+**MC_DATADIR**
+: La directory da cui vengono presi i file di dati, al posto di quella
+incorporata. Vedere [FILE](#files).
+
+**MC_PROFILE_ROOT**
+: La radice dei file dell'utente, come percorso assoluto. Vedere
+[FILE](#files).
+
+**MC_SKIN**
+: Lo skin da usare, per nome o per percorso. Vedere [Skin](#skins).
+
+**MC_KEYMAP**
+: Il file di associazione dei tasti da usare. Vedere [Tasti](#keys).
+
+**MC_TMPDIR**
+: La directory dei file temporanei del programma.
+
+**MC_NO_LUA**
+: Con il valore 1 il programma parte senza l'ambiente di esecuzione Lua. Non
+viene caricato alcun pacchetto Lua e niente che ne abbia bisogno è
+disponibile.
+
+**MC_SIXEL**
+: Con il valore 0 si dichiara che il terminale non ha la grafica sixel, con 1
+che ce l'ha. Senza la variabile viene interrogato il terminale stesso.
+
+**KEYBOARD_KEY_TIMEOUT_US**
+: Quanto attendere il resto di una sequenza di escape, in microsecondi.
+
+**COLORTERM**
+: Letta quando vengono scelti i colori. Vedere [Colori](#colors).
+
+**CDPATH**
+: Le directory in cui cerca il comando cd interno.
+
+**EDITOR**, **VIEWER**, **PAGER**
+: I programmi esterni usati quando l'editor o il visualizzatore incorporati
+sono disattivati. Vedere
+[Parametri per editor o visualizzatore esterni](#parameters-for-external-editor-or-viewer).
+
+## Impostate per i programmi che M-Commander avvia <a id="set-for-the-programs-m-commander-starts"></a>
+
+Non sono pensate per essere impostate a mano. Il programma le scrive perché
+una copia di sé stesso avviata dal terminale incorporato possa capire che sta
+già girando dentro a uno.
+
+**MC_SID**
+: La sessione in cui gira il programma. Una copia avviata da quella sessione
+non apre pannelli propri.
+
+**MC_PID**
+: L'identificatore di processo del programma in esecuzione.
+
+**MC_TTY**
+: Il terminale su cui il programma è stato avviato.
+
+## Registri di debug <a id="debug-logs"></a>
+
+Un registro viene scritto solo quando è attivato, e l'interruttore prende il
+valore 1. Le variabili dei componenti aggiuntivi ricadono su quelle generali,
+per cui impostare la sola coppia generale registra tutto.
+
+**MC_LOG_ENABLE**, **MC_LOG_FILE**
+: Il registro generale. Senza **MC_LOG_FILE** viene usato il file indicato da
+*logfile* nella sezione *[Logging]* del file *ini*, e senza quella voce
+*mc.log* accanto agli altri file dell'utente.
+
+**MC_FTP_LOG_ENABLE**, **MC_FTP_LOG_FILE**
+: Il registro del componente aggiuntivo di pannello ftp. Il file ricade su
+*/tmp/mc-ftp.log*.
+
+**MC_SMB_LOG_ENABLE**, **MC_SMB_LOG_FILE**
+: Il registro del componente aggiuntivo di pannello samba. Il file ricade su
+*/tmp/mc-samba.log*.
+
+**MC_SPELL_LOG**
+: Il file su cui scrive il correttore ortografico. Non ha un interruttore
+proprio: il registro viene scritto quando la variabile nomina un file.
+
+Per conservare il registro di una connessione ftp che non riesce:
+
+```
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+```
+
 # FILE <a id="files"></a>
 
 Il programma recupera tutte le informazioni relative al proprio funzionamento

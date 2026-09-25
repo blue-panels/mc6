@@ -3471,6 +3471,96 @@ zupełnie bezużytecznych klawiszy).
 
 <!-- help:break -->
 
+# ZMIENNE ŚRODOWISKOWE <a id="environment"></a>
+
+Poniżej wymieniono zmienne, które M-Commander czyta, oraz te, które ustawia
+dla uruchamianych przez siebie programów. Zmienne takie jak **TERM**,
+**SHELL**, **HOME** czy **PATH** nie są tu wymienione: program czyta je po to,
+by rozpoznać środowisko, a nie po to, by się nimi konfigurować.
+
+## Czytane przy uruchomieniu <a id="read-at-start-up"></a>
+
+**MC_DATADIR**
+: Katalog, z którego brane są pliki danych, zamiast wbudowanego. Zobacz
+[PLIKI](#files).
+
+**MC_PROFILE_ROOT**
+: Korzeń plików użytkownika, jako ścieżka bezwzględna. Zobacz [PLIKI](#files).
+
+**MC_SKIN**
+: Skórka, nazwa albo ścieżka. Zobacz [Skórki](#skins).
+
+**MC_KEYMAP**
+: Plik przypisań klawiszy. Zobacz [Klawisze](#keys).
+
+**MC_TMPDIR**
+: Katalog plików tymczasowych programu.
+
+**MC_NO_LUA**
+: Wartość 1 uruchamia program bez środowiska Lua. Żaden pakiet Lua nie jest
+wczytywany i nic, co go potrzebuje, nie jest dostępne.
+
+**MC_SIXEL**
+: Wartość 0 oznacza, że terminal nie ma grafiki sixel, wartość 1 - że ma. Bez
+tej zmiennej pytany jest sam terminal.
+
+**KEYBOARD_KEY_TIMEOUT_US**
+: Jak długo czekać na resztę sekwencji sterującej, w mikrosekundach.
+
+**COLORTERM**
+: Czytana przy wyborze kolorów. Zobacz [Kolory](#colors).
+
+**CDPATH**
+: Katalogi, w których szuka wbudowane polecenie cd.
+
+**EDITOR**, **VIEWER**, **PAGER**
+: Programy zewnętrzne używane, gdy wbudowany edytor lub podgląd są wyłączone.
+Zobacz
+[Parametry zewnętrznego edytora lub podglądu](#parameters-for-external-editor-or-viewer).
+
+## Ustawiane dla uruchamianych programów <a id="set-for-the-programs-m-commander-starts"></a>
+
+Nie są przeznaczone do ustawiania ręcznie. Program zapisuje je po to, by jego
+własna kopia uruchomiona z wbudowanego terminala rozpoznała, że działa już
+wewnątrz niego.
+
+**MC_SID**
+: Sesja, w której działa program. Kopia uruchomiona z tej sesji nie otwiera
+własnych paneli.
+
+**MC_PID**
+: Identyfikator procesu działającego programu.
+
+**MC_TTY**
+: Terminal, na którym program został uruchomiony.
+
+## Dzienniki diagnostyczne <a id="debug-logs"></a>
+
+Dziennik jest zapisywany tylko wtedy, gdy jest włączony, a przełącznik
+przyjmuje wartość 1. Zmienne wtyczek odwołują się do ogólnych, więc ustawienie
+samej pary ogólnej zapisuje wszystko.
+
+**MC_LOG_ENABLE**, **MC_LOG_FILE**
+: Dziennik ogólny. Bez **MC_LOG_FILE** używany jest plik wskazany przez
+*logfile* w sekcji *[Logging]* pliku *ini*, a bez tego wpisu *mc.log* obok
+pozostałych plików użytkownika.
+
+**MC_FTP_LOG_ENABLE**, **MC_FTP_LOG_FILE**
+: Dziennik wtyczki panelu ftp. Plik domyślnie */tmp/mc-ftp.log*.
+
+**MC_SMB_LOG_ENABLE**, **MC_SMB_LOG_FILE**
+: Dziennik wtyczki panelu samba. Plik domyślnie */tmp/mc-samba.log*.
+
+**MC_SPELL_LOG**
+: Plik, do którego pisze sprawdzanie pisowni. Nie ma własnego przełącznika:
+dziennik powstaje, gdy zmienna wskazuje plik.
+
+Aby zachować dziennik nieudanego połączenia ftp:
+
+```
+MC_FTP_LOG_ENABLE=1 MC_FTP_LOG_FILE=/tmp/ftp.log mcommander
+```
+
 # PLIKI <a id="files"></a>
 
 Program będzie pobierał wszystkie swoje informacje ze zmiennej
