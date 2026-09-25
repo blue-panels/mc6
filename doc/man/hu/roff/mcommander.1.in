@@ -837,8 +837,8 @@ végzi.
 .SH Menüsor
 .PP
 A menüsor akkor jelenik meg, ha az F9\-es gombot lenyomod, vagy ha a
-képernyő legfelső sorára kattintasz. A menüsor öt menüt tartalmaz:
-"Bal", "Fájl", "Parancsok", "Beállítások" és "Jobb".
+képernyő legfelső sorára kattintasz. A menüsor hat menüt tartalmaz:
+"Bal", "Fájl", "Attribútumok", "Parancsok", "Beállítások" és "Jobb".
 
 .PP
 A
@@ -851,6 +851,12 @@ A
 Fájl menü
 felsorolja a kiválasztott fájlon, vagy a kijelölt fájlokon végrehajtható
 parancsokat.
+
+.PP
+Az
+Attribútumok menü
+azokat a parancsokat sorolja fel, amelyek ugyanezeken a fájlokon a
+jogosultságokat, a tulajdonost és a fájlrendszer jelzőit módosítják.
 
 .PP
 A
@@ -1306,6 +1312,37 @@ ablakot jelenít meg, amelybe bármit begépelhetsz, amit a parancssorban a
 parancs után begépeltél volna, és ezután használd az entert.Ez az eszkőz
 mindenben ugyanaz, mint a
 belső cd parancs\&.
+
+.SH Attribútumok menü
+.PP
+Ennek a menünek a parancsai nem a fájl tartalmát változtatják, hanem azt, amit
+a fájlrendszer tud róla: a hozzáférési jogosultságokat, a tulajdonost és a
+csoportot, valamint a fájlrendszer jelzőit. Mindegyik a kiválasztott fájlon
+dolgozik, vagy a kijelölt fájlokon, ha vannak.
+
+.TP
+\fBChmod... (C\-x c)\fP
+A hozzáférési jogosultságok beállítása a
+Chmod
+ablakban.
+
+.TP
+\fBChown... (C\-x o)\fP
+A tulajdonos és a csoport beállítása a
+Chown
+ablakban.
+
+.TP
+\fBHaladó chown...\fP
+A jogosultságok, a tulajdonos és a csoport beállítása egy ablakban, lásd
+Haladó (bővített) Chown\&.
+
+.TP
+\fBChattr jelzők... (C\-x e)\fP
+Az ext2, ext3 vagy ext4 fájlrendszer jelzőinek beállítása a
+Fájlattribútumok
+ablakban. A menüpont csak akkor van meg, ha a program ezek támogatásával
+készült.
 
 .SH Parancsok menü
 .PP

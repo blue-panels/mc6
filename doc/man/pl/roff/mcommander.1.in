@@ -789,9 +789,9 @@ nazw plików, poleceń, zmiennych, użytkowników i nazw hostów.
 .SH Linia menu
 .PP
 Linia menu uaktywnia się kiedy wciskasz klawisz F9 lub kiedy klikasz myszką
-na najwyższy wiersz ekranu. Linia menu ma pięć podmenu: "left", "file", command",
-"options" i "right" (po polsku to jest "lewe", "plik", "komendy", "opcje",
-"prawe").
+na najwyższy wiersz ekranu. Linia menu ma sześć podmenu: "left", "file",
+"attributes", command", "options" i "right" (po polsku to jest "lewe", "plik",
+"atrybuty", "komendy", "opcje", "prawe").
 
 .PP
 Lewe i prawe menu pozwalają ci na modyfikacje wyglądu lewego i prawego panelu
@@ -799,6 +799,10 @@ katalogowego.
 
 .PP
 Menu plik pozwala na wykonanie akcji na aktualnym lub zaznaczonych plikach.
+
+.PP
+Menu atrybutów zmienia prawa dostępu, właściciela i atrybuty systemu plików
+tych samych plików.
 
 .PP
 Menu komend mieści w sobie możliwe do wykonania akcje, które są dużo bardziej
@@ -1247,6 +1251,33 @@ którym podajesz to, co podałbyś po poleceniu
 \fBcd\fP
 w wierszu poleceń, i naciskasz Enter. Działa w nim wszystko to, co daje
 wewnętrzne polecenie cd\&.
+
+.SH Menu atrybutów (Attributes Menu)
+.PP
+Komendy tego menu zmieniają nie zawartość pliku, a to, co wie o nim system
+plików: prawa dostępu, właściciela i grupę oraz atrybuty systemu plików. Każda
+z nich działa na aktualnym pliku albo na zaznaczonych plikach, jeśli takie są.
+
+.TP
+\fBChmod... (C\-x c)\fP
+Zmiana praw dostępu w oknie
+Chmod\&.
+
+.TP
+\fBChown... (C\-x o)\fP
+Zmiana właściciela i grupy w oknie
+Chown\&.
+
+.TP
+\fBZaawansowane chown...\fP
+Zmiana praw dostępu, właściciela i grupy w jednym oknie, zobacz
+Zaawansowane chown (Advanced Chown)\&.
+
+.TP
+\fBFlagi chattr... (C\-x e)\fP
+Zmiana atrybutów systemu plików ext2, ext3 albo ext4 w oknie
+Atrybuty pliku\&. Pozycja jest tylko wtedy, gdy program zbudowano z
+obsługą tych atrybutów.
 
 .SH Menu komend (Command Menu)
 .PP

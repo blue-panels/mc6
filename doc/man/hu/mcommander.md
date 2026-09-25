@@ -714,8 +714,8 @@ végzi.
 # Menüsor <a id="menu-bar"></a>
 
 A menüsor akkor jelenik meg, ha az F9-es gombot lenyomod, vagy ha a
-képernyő legfelső sorára kattintasz. A menüsor öt menüt tartalmaz:
-"Bal", "Fájl", "Parancsok", "Beállítások" és "Jobb".
+képernyő legfelső sorára kattintasz. A menüsor hat menüt tartalmaz:
+"Bal", "Fájl", "Attribútumok", "Parancsok", "Beállítások" és "Jobb".
 
 A
 [Bal és jobboldali menük](#left-and-right-menus)
@@ -726,6 +726,11 @@ A
 [Fájl menü](#file-menu)
 felsorolja a kiválasztott fájlon, vagy a kijelölt fájlokon végrehajtható
 parancsokat.
+
+Az
+[Attribútumok menü](#attributes-menu)
+azokat a parancsokat sorolja fel, amelyek ugyanezeken a fájlokon a
+jogosultságokat, a tulajdonost és a fájlrendszer jelzőit módosítják.
 
 A
 [Parancsok menü](#command-menu)
@@ -1109,6 +1114,33 @@ ablakot jelenít meg, amelybe bármit begépelhetsz, amit a parancssorban a
 parancs után begépeltél volna, és ezután használd az entert.Ez az eszkőz
 mindenben ugyanaz, mint a
 [belső cd parancs](#the-cd-internal-command).
+
+## Attribútumok menü <a id="attributes-menu"></a>
+
+Ennek a menünek a parancsai nem a fájl tartalmát változtatják, hanem azt, amit
+a fájlrendszer tud róla: a hozzáférési jogosultságokat, a tulajdonost és a
+csoportot, valamint a fájlrendszer jelzőit. Mindegyik a kiválasztott fájlon
+dolgozik, vagy a kijelölt fájlokon, ha vannak.
+
+**Chmod... (C-x c)**
+: A hozzáférési jogosultságok beállítása a
+[Chmod](#chmod)
+ablakban.
+
+**Chown... (C-x o)**
+: A tulajdonos és a csoport beállítása a
+[Chown](#chown)
+ablakban.
+
+**Haladó chown...**
+: A jogosultságok, a tulajdonos és a csoport beállítása egy ablakban, lásd
+[Haladó (bővített) Chown](#advanced-chown).
+
+**Chattr jelzők... (C-x e)**
+: Az ext2, ext3 vagy ext4 fájlrendszer jelzőinek beállítása a
+[Fájlattribútumok](#chattr)
+ablakban. A menüpont csak akkor van meg, ha a program ezek támogatásával
+készült.
 
 ## Parancsok menü <a id="command-menu"></a>
 

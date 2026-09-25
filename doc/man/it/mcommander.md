@@ -691,8 +691,8 @@ automatico.
 # Barra dei menu <a id="menu-bar"></a>
 
 La barra dei menu compare premendo F9 o cliccando con il mouse sopra la riga
-superiore dello schermo. La barra menu possiede cinque menu: "Sinistra", "File",
-"Comando", "Opzioni" e "Destra".
+superiore dello schermo. La barra menu possiede sei menu: "Sinistra", "File",
+"Attributi", "Comando", "Opzioni" e "Destra".
 
 I
 [menu sinistra e destra](#left-and-right-menus)
@@ -703,6 +703,11 @@ Il
 [menu file](#file-menu)
 elenca le azioni che possono essere condotte sui file correntemente selezionati
 o marcati.
+
+Il
+[menu attributi](#attributes-menu)
+elenca i comandi che cambiano i permessi, il proprietario e gli attributi del
+filesystem degli stessi file.
 
 Il
 [menu comando](#command-menu)
@@ -1102,6 +1107,30 @@ l'immissione degli stessi argomenti che si darebbero al comando
 a riga di comando. Questo ha le stesse caratteristiche già presenti nel
 comando
 [comando interno cd](#the-cd-internal-command).
+
+## Menu attributi <a id="attributes-menu"></a>
+
+I comandi di questo menu cambiano ciò che il filesystem sa del file, non il suo
+contenuto: i permessi di accesso, il proprietario e il gruppo, e gli attributi
+del filesystem. Ognuno agisce sul file selezionato, o sui file marcati se ce ne
+sono.
+
+**Permessi... (C-x c)**
+: Cambia i permessi di accesso nella finestra
+[Permessi](#chmod).
+
+**Proprietario... (C-x o)**
+: Cambia il proprietario e il gruppo nella finestra
+[Proprietario](#chown).
+
+**Proprietario avanzato...**
+: Cambia i permessi, il proprietario e il gruppo in una sola finestra, vedere
+[Proprietario avanzato](#advanced-chown).
+
+**Attributi chattr... (C-x e)**
+: Cambia gli attributi di un filesystem ext2, ext3 o ext4 nella finestra
+[Attributi dei file](#chattr). La voce c'è solo se il programma è compilato con
+il supporto per quegli attributi.
 
 ## Menu comando <a id="command-menu"></a>
 

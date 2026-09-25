@@ -942,8 +942,8 @@ del nombre de archivo, comando, variable, nombre de usuario o host.
 .SH Barra de Menú
 .PP
 La barra de menú aparece cuando pulsamos F9 o pulsamos el botón del ratón
-sobre la primera fila de la pantalla. La barra de menú tiene cinco submenús: "Izquierdo", "Archivo",
-"Utilidades", "Opciones" y "Derecho".
+sobre la primera fila de la pantalla. La barra de menú tiene seis submenús: "Izquierdo", "Archivo",
+"Atributos", "Utilidades", "Opciones" y "Derecho".
 
 .PP
 Los
@@ -956,6 +956,12 @@ El
 Menú de Archivo
 lista las acciones que podemos realizar sobre el archivo actualmente seleccionado
 o sobre los archivos marcados.
+
+.PP
+El
+Menú de Atributos
+lista las órdenes que cambian los permisos, el dueño y los atributos del
+sistema de archivos de esos mismos archivos.
 
 .PP
 El
@@ -1463,6 +1469,35 @@ es válido como argumento del comando
 en la línea de órdenes y después pulsamos intro. Este comando caracteriza
 todas las cualidades incluidas en el
 comando cd interno\&.
+
+.SH Menú de Atributos
+.PP
+Las órdenes de este menú cambian lo que el sistema de archivos sabe del
+archivo, no su contenido: los permisos de acceso, el dueño y el grupo, y los
+atributos del sistema de archivos. Todas actúan sobre el archivo seleccionado,
+o sobre los archivos marcados si los hay.
+
+.TP
+\fBCambiar permisos... (Ctrl\-x c)\fP
+Cambiar los permisos de acceso en el diálogo
+Cambiar Permisos\&.
+
+.TP
+\fBCambiar dueño... (Ctrl\-x o)\fP
+Cambiar el dueño y el grupo en el diálogo
+Cambiar Dueño\&.
+
+.TP
+\fBCambiar dueño y permisos...\fP
+Cambiar los permisos, el dueño y el grupo en un solo diálogo, ver
+Cambiar Dueño y Permisos\&.
+
+.TP
+\fBAtributos chattr... (Ctrl\-x e)\fP
+Cambiar los atributos de un sistema de archivos ext2, ext3 o ext4 en el
+diálogo
+Atributos de archivo\&. La entrada está solo si el programa se
+compiló con soporte para esos atributos.
 
 .SH Menú de Utilidades
 .PP

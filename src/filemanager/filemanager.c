@@ -231,18 +231,11 @@ create_file_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Filtered view"), CK_ViewFiltered));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Edit"), CK_Edit));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Copy"), CK_Copy));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("C&hmod"), CK_ChangeMode));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Link"), CK_Link));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Symlink"), CK_LinkSymbolic));
     entries =
         g_list_prepend (entries, menu_entry_new (_ ("Relative symlin&k"), CK_LinkSymbolicRelative));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Edit s&ymlink"), CK_LinkSymbolicEdit));
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Ch&own"), CK_ChangeOwn));
-    entries =
-        g_list_prepend (entries, menu_entry_new (_ ("&Advanced chown"), CK_ChangeOwnAdvanced));
-#ifdef ENABLE_EXT2FS_ATTR
-    entries = g_list_prepend (entries, menu_entry_new (_ ("Cha&ttr"), CK_ChangeAttributes));
-#endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Rename/Move"), CK_Move));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Mkdir"), CK_MakeDir));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Delete"), CK_Delete));
@@ -269,6 +262,25 @@ create_file_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Invert selection"), CK_SelectInvert));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("E&xit"), CK_Quit));
+
+    return g_list_reverse (entries);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static GList *
+create_attributes_menu (void)
+{
+    GList *entries = NULL;
+
+    entries = g_list_prepend (entries, menu_entry_new (_ ("C&hmod..."), CK_ChangeMode));
+    entries = g_list_prepend (entries, menu_entry_new (_ ("Ch&own..."), CK_ChangeOwn));
+    entries =
+        g_list_prepend (entries, menu_entry_new (_ ("&Advanced chown..."), CK_ChangeOwnAdvanced));
+#ifdef ENABLE_EXT2FS_ATTR
+    entries =
+        g_list_prepend (entries, menu_entry_new (_ ("Cha&ttr flags..."), CK_ChangeAttributes));
+#endif
 
     return g_list_reverse (entries);
 }
@@ -389,6 +401,8 @@ init_menu (void)
     left_menu = menu_new ("", create_panel_menu (FALSE), "[Left and Right Menus]");
     menubar_add_menu (the_menubar, left_menu);
     menubar_add_menu (the_menubar, menu_new (_ ("&File"), create_file_menu (), "[File Menu]"));
+    menubar_add_menu (the_menubar,
+                      menu_new (_ ("&Attributes"), create_attributes_menu (), "[Attributes Menu]"));
     menubar_add_menu (the_menubar,
                       menu_new (_ ("&Command"), create_command_menu (), "[Command Menu]"));
     menubar_add_menu (the_menubar,

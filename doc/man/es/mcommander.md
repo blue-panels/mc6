@@ -797,8 +797,8 @@ del nombre de archivo, comando, variable, nombre de usuario o host.
 # Barra de Menú <a id="menu-bar"></a>
 
 La barra de menú aparece cuando pulsamos F9 o pulsamos el botón del ratón
-sobre la primera fila de la pantalla. La barra de menú tiene cinco submenús: "Izquierdo", "Archivo",
-"Utilidades", "Opciones" y "Derecho".
+sobre la primera fila de la pantalla. La barra de menú tiene seis submenús: "Izquierdo", "Archivo",
+"Atributos", "Utilidades", "Opciones" y "Derecho".
 
 Los
 [Menús Izquierdo y Derecho](#left-and-right-menus)
@@ -809,6 +809,11 @@ El
 [Menú de Archivo](#file-menu)
 lista las acciones que podemos realizar sobre el archivo actualmente seleccionado
 o sobre los archivos marcados.
+
+El
+[Menú de Atributos](#attributes-menu)
+lista las órdenes que cambian los permisos, el dueño y los atributos del
+sistema de archivos de esos mismos archivos.
 
 El
 [Menú de Utilidades](#command-menu)
@@ -1242,6 +1247,31 @@ es válido como argumento del comando
 en la línea de órdenes y después pulsamos intro. Este comando caracteriza
 todas las cualidades incluidas en el
 [comando cd interno](#the-cd-internal-command).
+
+## Menú de Atributos <a id="attributes-menu"></a>
+
+Las órdenes de este menú cambian lo que el sistema de archivos sabe del
+archivo, no su contenido: los permisos de acceso, el dueño y el grupo, y los
+atributos del sistema de archivos. Todas actúan sobre el archivo seleccionado,
+o sobre los archivos marcados si los hay.
+
+**Cambiar permisos... (Ctrl-x c)**
+: Cambiar los permisos de acceso en el diálogo
+[Cambiar Permisos](#chmod).
+
+**Cambiar dueño... (Ctrl-x o)**
+: Cambiar el dueño y el grupo en el diálogo
+[Cambiar Dueño](#chown).
+
+**Cambiar dueño y permisos...**
+: Cambiar los permisos, el dueño y el grupo en un solo diálogo, ver
+[Cambiar Dueño y Permisos](#advanced-chown).
+
+**Atributos chattr... (Ctrl-x e)**
+: Cambiar los atributos de un sistema de archivos ext2, ext3 o ext4 en el
+diálogo
+[Atributos de archivo](#chattr). La entrada está solo si el programa se
+compiló con soporte para esos atributos.
 
 ## Menú de Utilidades <a id="command-menu"></a>
 

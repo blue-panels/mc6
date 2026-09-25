@@ -723,8 +723,8 @@ for you.
 # Menu Bar
 
 The menu bar pops up when you press F9 or click the mouse on the top
-row of the screen. The menu bar has five menus: "Left", "File",
-"Command", "Options" and "Right".
+row of the screen. The menu bar has six menus: "Left", "File",
+"Attributes", "Command", "Options" and "Right".
 
 The
 [Left and Right Menus](#left-and-right-menus)
@@ -735,6 +735,11 @@ The
 [File Menu](#file-menu)
 lists the actions you can perform on the currently selected file or
 the tagged files.
+
+The
+[Attributes Menu](#attributes-menu)
+lists the commands that change the permissions, the owner and the file system
+flags of the same files.
 
 The
 [Command Menu](#command-menu)
@@ -1264,6 +1269,33 @@ pops up a small dialog, where you enter everything you would enter after
 on the command line and then you press enter. This features all the things
 that are already in the
 [internal cd command](#the-cd-internal-command).
+
+## Attributes Menu
+
+The commands of this menu change what the file system knows about a file, not
+what the file holds: the access permissions, the owner and the group, and the
+flags of the file system. Each of them works on the selected file, or on the
+tagged files when there are any.
+
+**Chmod... (C-x c)**
+: Set the access permissions in the
+[Chmod](#chmod)
+dialog.
+
+**Chown... (C-x o)**
+: Set the owner and the group in the
+[Chown](#chown)
+dialog.
+
+**Advanced chown...**
+: Set the permissions, the owner and the group in one dialog, see
+[Advanced Chown](#advanced-chown).
+
+**Chattr flags... (C-x e)**
+: Set the flags of an ext2, ext3 or ext4 file system in the
+[Chattr](#chattr)
+dialog. The item is there only when the program is built with support for
+those flags.
 
 ## Command Menu
 

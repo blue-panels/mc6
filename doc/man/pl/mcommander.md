@@ -668,14 +668,17 @@ nazw plików, poleceń, zmiennych, użytkowników i nazw hostów.
 # Linia menu <a id="menu-bar"></a>
 
 Linia menu uaktywnia się kiedy wciskasz klawisz F9 lub kiedy klikasz myszką
-na najwyższy wiersz ekranu. Linia menu ma pięć podmenu: "left", "file", command",
-"options" i "right" (po polsku to jest "lewe", "plik", "komendy", "opcje",
-"prawe").
+na najwyższy wiersz ekranu. Linia menu ma sześć podmenu: "left", "file",
+"attributes", command", "options" i "right" (po polsku to jest "lewe", "plik",
+"atrybuty", "komendy", "opcje", "prawe").
 
 Lewe i prawe menu pozwalają ci na modyfikacje wyglądu lewego i prawego panelu
 katalogowego.
 
 Menu plik pozwala na wykonanie akcji na aktualnym lub zaznaczonych plikach.
+
+Menu atrybutów zmienia prawa dostępu, właściciela i atrybuty systemu plików
+tych samych plików.
 
 Menu komend mieści w sobie możliwe do wykonania akcje, które są dużo bardziej
 globalne i nie mają związku z aktualnym i zaznaczonymi plikami.
@@ -1045,6 +1048,29 @@ którym podajesz to, co podałbyś po poleceniu
 **cd**
 w wierszu poleceń, i naciskasz Enter. Działa w nim wszystko to, co daje
 [wewnętrzne polecenie cd](#the-cd-internal-command).
+
+## Menu atrybutów (Attributes Menu) <a id="attributes-menu"></a>
+
+Komendy tego menu zmieniają nie zawartość pliku, a to, co wie o nim system
+plików: prawa dostępu, właściciela i grupę oraz atrybuty systemu plików. Każda
+z nich działa na aktualnym pliku albo na zaznaczonych plikach, jeśli takie są.
+
+**Chmod... (C-x c)**
+: Zmiana praw dostępu w oknie
+[Chmod](#chmod).
+
+**Chown... (C-x o)**
+: Zmiana właściciela i grupy w oknie
+[Chown](#chown).
+
+**Zaawansowane chown...**
+: Zmiana praw dostępu, właściciela i grupy w jednym oknie, zobacz
+[Zaawansowane chown (Advanced Chown)](#advanced-chown).
+
+**Flagi chattr... (C-x e)**
+: Zmiana atrybutów systemu plików ext2, ext3 albo ext4 w oknie
+[Atrybuty pliku](#chattr). Pozycja jest tylko wtedy, gdy program zbudowano z
+obsługą tych atrybutów.
 
 ## Menu komend (Command Menu) <a id="command-menu"></a>
 
