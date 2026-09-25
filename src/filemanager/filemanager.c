@@ -247,6 +247,22 @@ create_file_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Mkdir"), CK_MakeDir));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Delete"), CK_Delete));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Quick cd"), CK_CdQuick));
+
+    /* Add file-menu entries published by panel plugins. */
+    {
+        GList *plugin_entries = panel_plugin_collect_menu_entries (MC_PP_MENU_FILE);
+
+        if (plugin_entries != NULL)
+        {
+            GList *p;
+
+            entries = g_list_prepend (entries, menu_separator_new ());
+            for (p = plugin_entries; p != NULL; p = g_list_next (p))
+                entries = g_list_prepend (entries, p->data);
+            g_list_free (plugin_entries);
+        }
+    }
+
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Select &group"), CK_Select));
     entries = g_list_prepend (entries, menu_entry_new (_ ("U&nselect group"), CK_Unselect));

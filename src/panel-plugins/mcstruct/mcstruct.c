@@ -274,7 +274,7 @@ static const mc_pp_action_t mcstruct_actions[] = {
 };
 
 static const mc_pp_cmd_menu_entry_t mcstruct_menu[] = {
-    { N_ ("Struct loo&k"), 0, NULL, 0, MC_PP_MENU_COMMAND },
+    { N_ ("Struct loo&k"), 0, NULL, 0, MC_PP_MENU_FILE },
 };
 
 static const mc_panel_plugin_t mcstruct_plugin = {
