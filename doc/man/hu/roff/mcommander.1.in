@@ -3,7 +3,7 @@
 
 .SH NÉV
 .PP
-mcommander \- Fájlkezelő Unix típusú rendszerekhez
+mcommander \- kétpaneles, szöveges módú fájlkezelő
 
 
 .SH ALKALMAZÁSA
@@ -14,12 +14,13 @@ mcommander \- Fájlkezelő Unix típusú rendszerekhez
 
 .SH LEÍRÁS
 .PP
-A M\-Commander kétpaneles, szöveges módú fájlkezelő Unix típusú operációs
-rendszerekhez, a GNU Midnight Commanderre épülve. Magja kicsi, a panel
-bővítményeit futás közben tölti be, így egy archívum, egy távoli gép vagy egy
-verziókezelt könyvtár állapota a panelben ugyanúgy kezelhető, mint a közönséges
-fájlok. A parancsok beépített terminálban futnak, és a programhoz
-szintaxiskiemelő szerkesztő és bináris fájlokat is olvasó megjelenítő tartozik.
+Az M\-Commander kétpaneles, szöveges módú fájlkezelő, amely a GNU Midnight
+Commanderre épül. Architektúrájának alapja egy tömör mag és a dinamikusan
+betöltődő panelbővítmények. A bővítmények egységes panelfelületet adnak
+archívumokhoz, távoli fájlrendszerekhez, verziókezelt tárolókhoz és egyéb
+adatforrásokhoz. A parancsok beépített terminálban futnak. Az M\-Commander
+tartalmaz továbbá szintaxiskiemelő szövegszerkesztőt és szöveges, valamint
+bináris formátumokat kezelő megjelenítőt.
 
 
 .SH OPCIÓK

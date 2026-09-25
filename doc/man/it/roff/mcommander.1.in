@@ -3,7 +3,7 @@
 
 .SH NOME
 .PP
-mcommander \- interfaccia visuale per sistemi tipo Unix.
+mcommander \- file manager a due pannelli in modalità testo
 
 
 .SH USO
@@ -14,13 +14,14 @@ mcommander \- interfaccia visuale per sistemi tipo Unix.
 
 .SH DESCRIZIONE
 .PP
-M\-Commander è un file manager a due pannelli in modalità testo per sistemi
-operativi di tipo Unix, basato su GNU Midnight Commander. Il nucleo è piccolo e
-i componenti aggiuntivi dei pannelli vengono caricati durante l'esecuzione, per
-cui un archivio, un sistema remoto o lo stato di un repository si gestiscono in
-un pannello come file qualsiasi. I comandi girano in un terminale incorporato,
-e con il programma arrivano un editor con evidenziazione della sintassi e un
-visualizzatore che legge anche i file binari.
+M\-Commander è un file manager a due pannelli in modalità testo, basato su GNU
+Midnight Commander. L'architettura è costruita attorno a un nucleo compatto e
+a componenti aggiuntivi dei pannelli caricati dinamicamente. I componenti
+aggiuntivi offrono un'interfaccia a pannelli uniforme per archivi, file system
+remoti, repository e altre fonti di dati. I comandi vengono eseguiti in un
+terminale incorporato. M\-Commander comprende inoltre un editor di testo con
+evidenziazione della sintassi e un visualizzatore che supporta formati di
+testo e binari.
 
 
 .SH OPZIONI

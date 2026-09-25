@@ -5,7 +5,7 @@ date: September 2026
 <!-- help:topics "Topics:" -->
 # NAME <!-- help:skip -->
 
-mcommander, mc6 - Visual shell for Unix-like systems.
+mcommander - twin-panel text-mode file manager
 
 # SYNOPSIS <!-- help:skip -->
 
@@ -14,12 +14,12 @@ mcommander, mc6 - Visual shell for Unix-like systems.
 
 # DESCRIPTION
 
-M-Commander is a two-pane text-mode file manager for Unix-like operating
-systems, based on GNU Midnight Commander. It keeps a small core and loads its
-panel plugins at run time, so an archive, a remote system or the state of a
-repository is handled in a panel like ordinary files. Commands run in a
-built-in terminal, and the program comes with an editor with syntax
-highlighting and a viewer that also reads binary files.
+M-Commander is a twin-panel text-mode file manager based on GNU Midnight
+Commander. Its architecture is built around a compact core and dynamically
+loaded panel plugins. The plugins provide a uniform panel interface for
+archives, remote file systems, repositories, and other data sources. Commands
+are run in a built-in terminal. M-Commander also includes a text editor with
+syntax highlighting and a viewer that supports both text and binary formats.
 
 
 # OPTIONS

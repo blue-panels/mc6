@@ -3,7 +3,7 @@
 
 .SH NOMBRE
 .PP
-mcommander \- entorno visual para sistemas tipo Unix.
+mcommander \- gestor de archivos de dos paneles en modo texto
 
 
 .SH SINOPSIS
@@ -19,13 +19,13 @@ mcommander \- entorno visual para sistemas tipo Unix.
 
 .SH DESCRIPCIÓN
 .PP
-M\-Commander es un gestor de archivos de dos paneles en modo texto para
-sistemas operativos tipo Unix, basado en GNU Midnight Commander. Su núcleo es
-pequeño y carga sus complementos de panel en tiempo de ejecución, de modo que
-un archivo comprimido, un sistema remoto o el estado de un repositorio se
-manejan en un panel como archivos corrientes. Las órdenes se ejecutan en un
-terminal incorporado, y el programa trae un editor con resaltado de sintaxis y
-un visor que lee también archivos binarios.
+M\-Commander es un gestor de archivos de dos paneles en modo texto, basado en
+GNU Midnight Commander. Su arquitectura se articula en torno a un núcleo
+compacto y complementos de panel de carga dinámica. Los complementos ofrecen
+una interfaz de panel uniforme para archivos comprimidos, sistemas de archivos
+remotos, repositorios y otras fuentes de datos. Las órdenes se ejecutan en un
+terminal incorporado. M\-Commander incluye además un editor de texto con
+resaltado de sintaxis y un visor compatible con formatos de texto y binarios.
 
 
 .SH OPCIONES

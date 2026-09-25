@@ -4,7 +4,7 @@ date: wrzesień 2026
 
 # NAZWA <!-- help:skip -->
 
-mcommander - wizualny interpetator poleceń dla systemów Unixopodobnych
+mcommander - dwupanelowy menedżer plików w trybie tekstowym
 
 # UŻYTKOWANIE <!-- help:skip -->
 
@@ -13,12 +13,13 @@ mcommander - wizualny interpetator poleceń dla systemów Unixopodobnych
 
 # OPIS <a id="description"></a>
 
-M-Commander jest dwupanelowym menedżerem plików w trybie tekstowym dla
-systemów uniksopodobnych, opartym na GNU Midnight Commanderze. Jego jądro jest
-małe, a wtyczki paneli wczytuje w czasie pracy, dzięki czemu archiwum, zdalny
-system albo stan repozytorium obsługuje się w panelu jak zwykłe pliki.
-Polecenia działają we wbudowanym terminalu, a wraz z programem otrzymujemy
-edytor z podświetlaniem składni i przeglądarkę czytającą także pliki binarne.
+M-Commander jest dwupanelowym menedżerem plików w trybie tekstowym, opartym na
+GNU Midnight Commanderze. Jego architekturę tworzy zwarte jądro i dynamicznie
+wczytywane wtyczki paneli. Wtyczki zapewniają jednolity interfejs panelowy dla
+archiwów, zdalnych systemów plików, repozytoriów i innych źródeł danych.
+Polecenia są wykonywane we wbudowanym terminalu. M-Commander zawiera także
+edytor tekstu z podświetlaniem składni oraz przeglądarkę obsługującą formaty
+tekstowe i binarne.
 
 
 # OPCJE <a id="options"></a>

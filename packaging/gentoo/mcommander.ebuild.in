@@ -5,7 +5,7 @@ EAPI=8
 
 inherit optfeature
 
-DESCRIPTION="Two-pane text-mode file manager with loadable panel plugins"
+DESCRIPTION="Twin-panel text-mode file manager with loadable panel plugins"
 HOMEPAGE="https://blue-panels.github.io/mcommander/"
 SRC_URI="https://github.com/blue-panels/mcommander/releases/download/v${PV}/mcommander-${PV}.tar.gz"
 S="${WORKDIR}/mcommander-${PV}"
