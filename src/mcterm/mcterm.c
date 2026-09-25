@@ -91,6 +91,17 @@ mcterm_search_dir_t mcterm_search_direction = MCTERM_SEARCH_DOWN;
    step the columns of terminal output tend to fall on. */
 #define MCTERM_JUMP_COLS 8
 
+/* The view as it stood when the typing of a pattern began: what Escape puts back. */
+typedef struct
+{
+    gboolean cursor_valid;
+    gint64 cursor_row;
+    int cursor_col;
+    int scrollback;
+    mcterm_sel_t sel;
+    mcterm_filter_t filter;  // the filter that was on; it owns its rows while it is kept here
+} mcterm_query_undo_t;
+
 struct WMcTerm
 {
     Widget base;
@@ -151,6 +162,7 @@ struct WMcTerm
     char *last_filter;  // what was filtered by last, for the filter to go back on
     /* A pattern typed the way the panels take one, on the top row: the output is searched for
        it, or cut down to the rows that match it, as it grows. */
+    mcterm_query_undo_t query_undo;
     gboolean query_active;
     gboolean query_filtering;
     GString *query;
@@ -1915,8 +1927,9 @@ mcterm_query_step_row (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Done typing. @keep leaves the output cut down to what was typed; without it the filter goes,
-   the way Escape lifts the quick filter of a panel. */
+/* Done typing. With @keep the view stays on what was found, the way Enter leaves it; without
+   it Escape puts back the view of before the typing: the cursor where it was reading, or at
+   the prompt where it was not, and the filter and the mark it found there. */
 static void
 mcterm_query_stop (WMcTerm *t, gboolean keep)
 {
@@ -1932,8 +1945,20 @@ mcterm_query_stop (WMcTerm *t, gboolean keep)
         t->last_search = g_strdup (t->query->str);
     }
 
-    if (t->query_filtering && !keep)
+    if (keep)
+        mcterm_filter_clear (&t->query_undo.filter);
+    else
+    {
         mcterm_filter_clear (&t->filter);
+        t->filter = t->query_undo.filter;
+        t->sel = t->query_undo.sel;
+        t->cursor_row = t->query_undo.cursor_row;
+        t->cursor_col = t->query_undo.cursor_col;
+        t->cursor_valid = t->query_undo.cursor_valid;
+        t->scrollback = t->query_undo.scrollback;
+    }
+
+    memset (&t->query_undo, 0, sizeof (t->query_undo));
 
     // Under a panel there is nothing of it to draw.
     if (t->scroll_allowed)
@@ -1975,6 +2000,16 @@ mcterm_query_start (WMcTerm *t, gboolean filtering)
         g_string_set_size (t->query, 0);
         t->query_chpoint = 0;
         t->query_active = TRUE;
+
+        /* What Escape puts back. The filter that is on goes into it whole: the typing builds
+           one of its own, and these rows are either taken back or dropped at the end. */
+        t->query_undo.cursor_valid = t->cursor_valid;
+        t->query_undo.cursor_row = t->cursor_row;
+        t->query_undo.cursor_col = t->cursor_col;
+        t->query_undo.scrollback = t->scrollback;
+        t->query_undo.sel = t->sel;
+        t->query_undo.filter = t->filter;
+        memset (&t->filter, 0, sizeof (t->filter));
 
         // Its cursor is where the text is typed.
         if (!widget_get_state (WIDGET (t), WST_FOCUSED))
@@ -2724,6 +2759,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
         mcterm_filter_clear (&t->filter);
+        mcterm_filter_clear (&t->query_undo.filter);
         g_clear_pointer (&t->last_filter, g_free);
         if (t->query != NULL)
         {

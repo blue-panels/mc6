@@ -2842,9 +2842,11 @@ beállítás mindkettőt megfordítja, és a keresés felfelé megy, ahogy a
 keres, és ahogy korábban ment. Begépelt minta nélkül
 megnyomva mindkettő az előző mintát veszi elő. A Backspace egy karaktert
 töröl, az a karakter pedig, amelyre semmi nem illeszkedik, nem kerül be. Az
-Enter befejezi a gépelést és a képet úgy hagyja, ahogy van, az Esc befejezi
-és leveszi a szűrőt, minden más billentyű pedig befejezi, és azt teszi, amit
-egyébként tenne.
+Enter befejezi a gépelést, és a képet a találaton hagyja, a kijelöléssel
+együtt; az Esc befejezi, és visszaadja a gépelés előtti képet: a kurzort oda,
+ahol olvastak, vagy a parancssorba, ha semmit sem olvastak, és az addigi
+szűrőt meg kijelölést. Minden más billentyű befejezi a gépelést, és azt
+teszi, amit egyébként tenne.
 
 .PP
 Félretett panelek mellett a funkcióbillentyűk többsége a terminálé, és a

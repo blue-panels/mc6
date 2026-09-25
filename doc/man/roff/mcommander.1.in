@@ -3054,9 +3054,11 @@ setting turns both round, to run up the output the way
 \fBless\fP
 does.  Pressed with nothing typed, either key takes the
 pattern it had last.  Backspace takes a character back, and a character
-that nothing matches is not taken.  Enter ends the typing and leaves
-the view as it is, Esc ends it and lifts the filter; any other key ends
-it and then does what it does.
+that nothing matches is not taken.  Enter ends the typing and leaves the
+view on what was found, the match still marked; Esc ends it and puts back
+the view of before the typing: the cursor where it was reading, or at the
+prompt where nothing was read, and the filter and the mark that were there.
+Any other key ends the typing and then does what it does.
 
 .PP
 With no panel on screen most function keys are the terminal's own and the

@@ -2404,8 +2404,11 @@ inverte entrambi, e la ricerca va verso l'alto come in
 e come faceva prima. Premuti senza nulla di scritto, entrambi i tasti riprendono il modello
 precedente. Backspace toglie un carattere, e un carattere a cui non
 corrisponde nulla non viene accettato. Invio termina la scrittura e lascia la
-vista com'è, Esc la termina e toglie il filtro, qualsiasi altro tasto la
-termina e poi fa quello che fa.
+vista su quel che si è trovato, con l'occorrenza ancora selezionata; Esc la
+termina e rimette la vista com'era prima della scrittura: il cursore dove si
+stava leggendo, o al prompt se non si leggeva nulla, e il filtro e la
+selezione che c'erano. Qualsiasi altro tasto termina la scrittura e poi fa
+quello che fa.
 
 Con i pannelli via, la maggior parte dei tasti funzione è del terminale, e la
 barra dei pulsanti li nomina. Vedi, Modifica, Copia, Sposta ed Elimina del

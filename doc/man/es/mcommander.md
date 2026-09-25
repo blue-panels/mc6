@@ -2518,9 +2518,11 @@ invierte ambas, y la búsqueda sube por la salida como en
 **less**
 y como hacía antes. Pulsadas sin nada tecleado, ambas teclas recuperan el patrón
 anterior. Retroceso quita un carácter, y un carácter con el que no coincide
-nada no se acepta. Intro termina el tecleo y deja la vista como está, Esc lo
-termina y quita el filtro, y cualquier otra tecla termina el tecleo y hace lo
-que le toca.
+nada no se acepta. Intro termina el tecleo y deja la vista en lo encontrado,
+con la coincidencia aún seleccionada; Esc lo termina y devuelve la vista a
+como estaba antes del tecleo: el cursor donde se leía, o en el indicador si no
+se leía nada, y el filtro y la selección que hubiera. Cualquier otra tecla
+termina el tecleo y hace lo que le toca.
 
 Con los paneles ocultos, la mayoría de las teclas de función son del terminal
 y la barra de botones las nombra. Ver, Editar, Copiar, Renombrar y Borrar del
