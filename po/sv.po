@@ -18,13 +18,14 @@
 # Yury V. Zaytsev <yury@shurup.com>, 2025
 # yeager <yeager@noreply.codeberg.org>, 2026.
 # Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:53+0000\n"
-"Last-Translator: yeager <yeager@noreply.codeberg.org>\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Swedish <https://translate.codeberg.org/projects/mc6/mc6/sv/>"
 "\n"
 "Language: sv\n"
