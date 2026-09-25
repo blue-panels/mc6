@@ -2,17 +2,18 @@
 date: September 2026
 ---
 
-# NAME
+<!-- help:topics "Topics:" -->
+# NAME <!-- help:skip -->
 
 mcedit6 - Internal file editor of M-Commander.
 
-# SYNOPSIS
+# SYNOPSIS <!-- help:skip -->
 
 **mcedit6**
-[-bcCdfhstVx?] [+lineno] [file1] [file2] ...
+[-bcdfhstVx?] [+lineno] [file1] [file2] ...
 
 **mcedit6**
-[-bcCdfhstVx?] file1:lineno[:] file2:lineno[:] ...
+[-bcdfhstVx?] file1:lineno[:] file2:lineno[:] ...
 
 # DESCRIPTION
 
@@ -42,6 +43,9 @@ support.
 *-d*
 : Disable mouse support.
 
+*-h, -?, --help*
+: Show the options and what they do.
+
 *-f*
 : Display the compiled-in search path for M-Commander data
 files.
@@ -50,6 +54,9 @@ files.
 : Specify a name of skin in the command line.  See the
 **Skins**
 section in mcommander(1) for more information.
+
+*-s*
+: Run on a slow terminal: the screen is drawn with fewer updates.
 
 *-t*
 : Force using termcap database instead of terminfo.  This option is only
@@ -66,8 +73,10 @@ screen modes, and able to send mouse escape sequences).
 # FEATURES
 
 The internal file editor is a full-featured windowed editor.  It can
-edit several files at the same time. Maximum size of each file is 64
-megabytes. It is possible to edit binary files. The features it presently
+edit several files at the same time. A file larger than
+*editor_filesize_threshold*
+(64 MB by default) is opened after a question, not refused. It is possible
+to edit binary files. The features it presently
 supports are: block copy, move, delete, cut, paste; key for key undo;
 pull-down menus; file insertion; macro commands; regular expression
 search and replace; shift-arrow text highlighting (if supported by
@@ -92,13 +101,11 @@ In addition to that, Shift combined with arrows does text highlighting
 (if supported by the terminal):
 **Ctrl-Ins**
 copies to the file
-**~/.cache/mc6/mcedit6/mcedit6.clip**,
+**~/.local/share/mc6/mcedit/mcedit.clip**,
 **Shift-Ins**
-pastes from
-**~/.cache/mc6/mcedit6/mcedit6.clip**,
+pastes from it,
 **Shift-Del**
-cuts to
-**~/.cache/mc6/mcedit6/mcedit6.clip**,
+cuts to it,
 and
 **Ctrl-Del**
 deletes highlighted text.  Mouse highlighting also works on some
@@ -112,6 +119,23 @@ The completion key (usually
 or
 **Escape Tab**)
 completes the word under the cursor using the words used in the file.
+
+These commands have keys but no menu entry of their own:
+**Meta-t**
+sorts the selected lines,
+**Meta-u**
+runs a shell command and puts its output in,
+**Meta-p**
+formats the paragraph the cursor is in,
+**Ctrl-q**
+inserts the next key, or a code point written as U+XXXX, as it stands,
+**Meta-m**
+mails the file, and
+**Ctrl-p**
+checks the spelling of the word under the cursor.  The first five are Lua
+scripts of the editor and go away with them; the last one belongs to the
+spell plugin, which also has an entry in the Plugins menu, as every editor
+plugin that carries one does.
 
 The
 **Filter**
@@ -152,11 +176,11 @@ ctrl-W=ExecuteScript:25;
 This means that ctrl-W hotkey initiates the
 *ExecuteScript(25)*
 action, then editor handler translates this into execution of
-**~/.local/share/mc6/mcedit6/macros.d/macro.25.sh**
+**~/.local/share/mc6/mcedit/macros.d/macro.25.sh**
 shell script.
 
 External scripts are stored in
-**~/.local/share/mc6/mcedit6/macros.d/**
+**~/.local/share/mc6/mcedit/macros.d/**
 directory and must be named as
 **macro.XXXX.sh**
 where
@@ -257,14 +281,15 @@ ctags -e --language-force=C -R ./
 
 **Meta-Enter**
 shows list box to select item under cursor (cursor should stand at the end
-of the word).
+of the word).  The tags are read by the etags plugin of the editor, so the
+key does nothing where that plugin is switched off.
 
 **Meta-Minus**
 where minus is symbol "-" goes to previous function in navigation list
 (like browser's Back button).
 
-**Meta-Equal**
-where equal is symbol "=" goes to next function in navigation list
+**Meta-Plus**
+where plus is symbol "+" goes to next function in navigation list
 (like browser's Forward button).
 
 # SYNTAX HIGHLIGHTING
@@ -614,10 +639,14 @@ The "Toggle control characters" item of the Command menu switches this option.
 : Show confirmation dialog on save.
 
 *editor_option_typewriter_wrap*
-: to be described
+: Break the line at
+**editor_word_wrap_line_length**
+while it is typed, the way a typewriter does. One of the three wrap modes of
+the options dialog.
 
 *editor_option_auto_para_formatting*
-: to be described
+: Format the paragraph the cursor is in while it is typed. The other of the
+three wrap modes; off means no wrapping at all.
 
 *editor_option_save_position*
 : Save file position on exit.
@@ -655,6 +684,243 @@ will be untouched. Default value is
 : Show full path name in the status line. If disabled (default), only base name of the
 file is shown.
 
+*editor_filesize_threshold*
+: The size above which a file is opened only after a question. The value takes
+a suffix, as in 64M or 512K. Default is 64M.
+
+*editor_show_right_margin*
+: Mark the column of
+**editor_word_wrap_line_length**
+as the right margin. The "Toggle right margin" item of the Command menu
+switches this option. Disabled by default.
+
+*editor_simple_statusbar*
+: Show a shorter status line, without the offset and the character under the
+cursor. Disabled by default.
+
+*editor_check_new_line*
+: Ask about the missing newline at the end of the file when it is saved. The
+"Check POSIX new line" option of the save mode dialog switches it. Disabled
+by default.
+
+*editor_ask_filename_before_edit*
+: Ask for the name of the file before the editor is started from the file
+manager. The "Ask new file name" option of the Configuration dialog switches
+it. Disabled by default.
+
+# Internal File Editor
+
+The internal file editor is a full-featured full screen editor.  A file
+larger than
+*editor_filesize_threshold*
+(64 MB by default) is opened after a question.  It is possible to edit
+binary files.
+The internal file editor is invoked using
+**F4**
+if the
+*use_internal_edit*
+option is set in the initialization file.
+
+The features it presently supports are: block copy, move, delete, cut,
+paste; key for key undo; pull-down menus; file insertion; macro
+commands; regular expression search and replace; S-arrow text highlighting
+(if supported by the terminal); insert-overwrite toggle; word wrap;
+autoindent; tunable tab size; syntax highlighting for various file
+types; and an option to pipe text blocks through shell commands like
+indent and ispell.
+
+Sections:
+: [The keys](#keys)
+: [Macros](#macro)
+: [Options of editor in ini-file](#internal-file-editor-options)
+: [Editor options](#editor-options)
+
+The editor is very easy to use and requires no tutoring. To see what
+keys do what, just consult the appropriate pull-down menu. Other keys
+are: Shift movement keys do text highlighting.
+**C-Ins**
+copies to the clipfile
+**~/.local/share/mc6/mcedit/mcedit.clip**,
+**S-Ins**
+pastes from it,
+**S-Del**
+cuts to it, and
+**C-Del**
+deletes highlighted text. Mouse highlighting also works, and you
+can override the mouse as usual by holding down the shift key
+while dragging the mouse to let normal terminal mouse highlighting
+work.
+
+To define a macro, press
+**C-R**
+and then type out the key strokes you want to be executed. Press
+**C-R**
+again when finished, and assign the macro to a key by pressing that key. The
+macro is executed by that key, and by
+**C-A**
+and the assigned key. The macros are kept in the section
+**[editor]**
+of the file
+**~/.local/share/mc6/macros**,
+and a macro is deleted by deleting its line there; the
+[Macros](#macro)
+section says how a macro calls a script of its own.
+
+To change charset of displayed text may use Alt-e (M-e).
+Recoding is made from selected codepage into system codepage. To
+cancel the recoding you may select "\<No translation>" in charset
+selection dialog.
+
+The
+**Filter**
+button of the search dialog
+(**F7**)
+hides every line that does not match the search string, using the same
+type, case and whole-word settings as the search.  Line numbers keep
+their original values and the line state gutter marks each hidden run.
+The set of hidden lines is fixed at the moment the button is pressed:
+editing never re-applies the match, so a shown line that is split or
+joined stays shown, and lines typed afterwards stay shown even if they
+do not match.
+**M-s**
+lifts the filter; pressed again it puts the last search back on as a
+filter.  "Unfold all" in the Command menu lifts it as well.
+
+# Editor options <a id="editor-options"></a>
+
+The settings of the
+[internal editor](#internal-file-editor),
+as the
+**Options**
+menu of the editor and the
+**Editor options**
+entry of the Options menu of the file manager open them. They are written to
+the ini file under the names the OPTIONS section of this page describes.
+
+*Wrap mode.*
+Off, dynamic paragraph formatting, or the typewriter wrap that breaks a line
+at the word wrap line length while it is typed.
+
+*Fake half tabs.*
+Move and indent by half a tab between the text and the left margin, with
+spaces, while a tab stays a tab everywhere else.
+
+*Backspace through tabs.*
+One backspace deletes all the space to the left margin when there is no text
+between the cursor and the margin.
+
+*Fill tabs with spaces.*
+Insert spaces up to the next tab stop instead of a tab character.
+
+*Tab spacing.*
+The width a tab character stands for. 8 by default, and other editors and
+viewers assume 8 as well.
+
+*Return does autoindent.*
+A new line starts at the indentation of the line above.
+
+*Confirm before saving.*
+Ask before the file is written.
+
+*Save file position.*
+Open a file at the place it was left the last time.
+
+*Visible trailing spaces.*
+Mark the spaces at the end of a line.
+
+*Visible tabs.*
+Mark the tab characters.
+
+*Show control characters.*
+Print the control characters of the text instead of hiding them.
+
+*Syntax highlighting.*
+Color the text by the syntax rules of its file type.
+
+*Cursor after inserted block.*
+Leave the cursor at the end of a block that was just inserted, not at its
+start.
+
+*Persistent selection.*
+A selection stays when the cursor moves, instead of being dropped.
+
+*Cursor beyond end of line.*
+The cursor may stand past the last character of a line.
+
+*Group undo.*
+One undo takes back a run of the same kind of change, not a single key.
+
+*Word wrap line length.*
+The column the wrap modes break a line at. 72 by default.
+
+# Save As <a id="save-file-as"></a>
+
+The name to write the file under, and the line breaks to write it with: as the
+file has them, Unix (LF), Windows and DOS (CR LF), or Macintosh (CR). The
+choice holds for that save; the file keeps what it is given.
+
+# Edit Save Mode <a id="edit-save-mode"></a>
+
+How a file is written, the same three modes the
+*editor_option_save_mode*
+setting takes:
+
+**Quick save**
+: Write over the file at once. Fast, and a failure in the middle leaves the
+file half written.
+
+**Safe save**
+: Write a temporary file first and rename it over the original when it is
+whole, so a failure leaves the original untouched.
+
+**Do backups with following extension**
+: Safe save, and the original is kept under its name with the extension of the
+input line added, "~" by default. Saving twice replaces the backup as well.
+
+**Check POSIX new line**
+: Ask about the missing newline at the end of the file before it is written.
+
+# Macro Explorer <a id="macro-explorer"></a>
+
+The macros that are recorded, with the key each one answers to and what it
+does. The buttons are
+
+**Run**
+: Play the macro the cursor is on.
+
+**Delete**
+: Remove it, after a question.
+
+**Edit file**
+: Open the file the macros live in, which the
+[Macros](#macro)
+section describes.
+
+# Open files <a id="open-files"></a>
+
+The files the editor has open, one to a line. Enter goes to the file the
+cursor is on, Esc leaves the file that is shown where it is. The same list is
+the
+**List...**
+item of the Window menu.
+
+# Plugin info <a id="plugin-info"></a>
+
+The plugins the editor has loaded: the name, whether it is on, what it
+provides and what it does. It is a list to look at; a plugin is switched off
+and its settings are opened in the
+[Manage plugins](mcommander.md#manage-plugins)
+dialog of the file manager.
+
+# Options of editor in ini-file <a id="internal-file-editor-options"></a>
+
+Some editor options of ini-file are described in this section.
+Options are placed in [Midnight-Commander] section
+
+*editor_wordcompletion_collect_entire_file*
+: Search autocomplete candidates in entire of file or just from
+begin of file to cursor position (0)
+
 # FILES
 
 *{{pkgdatadir}}/help/mcommander.md*
@@ -682,7 +948,7 @@ from here instead of the system-wide setup file.
 : User's own directory where block commands are processed and saved and
 user's own syntax files are located.
 
-# LICENSE
+# LICENSE <!-- help:skip -->
 
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built-in

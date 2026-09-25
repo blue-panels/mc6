@@ -1,0 +1,242 @@
+.\" Generated from mdiff.md by maint/update-man-in.sh. Do not edit.
+.TH MDIFF 1 "settembre 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOME
+.PP
+mdiff \- Visualizzatore di differenze interno.
+
+
+.SH USO
+.PP
+\fBmdiff\fP
+[\-bcCdfhstVx?] file1 file2
+
+
+.SH DESCRIZIONE
+.PP
+mdiff è un collegamento a
+\fBmcommander\fP,
+il programma principale del gestore di file. Eseguito con questo nome, apre
+il visualizzatore di differenze interno, che confronta
+\fIfile1\fP
+con
+\fIfile2\fP,
+indicati sulla riga di comando.
+
+
+.SH Visualizzatore di differenze interno
+.PP
+mdiff è uno strumento visuale di confronto. Permette di confrontare due file
+e di modificarli sul posto, e la differenza viene ricalcolata dopo ogni
+modifica. Lo apre anche il componente di pannello git, con il file come lo
+tiene HEAD da una parte e il file della copia di lavoro dall'altra.
+
+.PP
+Nel visualizzatore di differenze interno sono disponibili i tasti seguenti:
+
+.TP
+\fBF1\fP
+Invoca il visualizzatore ipertestuale dell'aiuto.
+
+.TP
+\fBF2\fP
+Salva i file modificati.
+
+.TP
+\fBF4\fP
+Modifica il file del pannello sinistro nell'editor interno.
+
+.TP
+\fBF14\fP
+Modifica il file del pannello destro nell'editor interno.
+
+.TP
+\fBF5\fP
+Porta la differenza corrente nel file di destra. Viene unita solo la
+differenza corrente, e il confronto viene rifatto.
+
+.TP
+\fBF15\fP
+Porta la differenza corrente nel verso opposto, nel file di sinistra.
+
+.TP
+\fBF7\fP
+Inizia una ricerca.
+
+.TP
+\fBF17\fP
+Continua la ricerca.
+
+.TP
+\fBF9\fP
+Apre le
+opzioni del confronto\&.
+
+.TP
+\fBAlt\-e\fP
+Sceglie il set di caratteri con cui i due file vengono letti.
+
+.TP
+\fBF10, Esc, q, Q\fP
+Esce dal visualizzatore di differenze.
+
+.TP
+\fBAlt\-s, s\fP
+Mostra o nasconde lo stato delle differenze.
+
+.TP
+\fBAlt\-n, l\fP
+Mostra o nasconde i numeri di riga.
+
+.TP
+\fBCtrl\-s\fP
+Attiva o disattiva l'evidenziazione della sintassi. Il testo di ogni riga
+viene colorato con le regole di sintassi, come nell'editor interno, e lo
+stato della riga resta allo sfondo e alla colonna dei segni. Dove uno skin
+distingue una parola cambiata dal resto della riga solo con il colore del
+testo, la parola viene invece sottolineata. L'impostazione viene ricordata
+separatamente da quella dell'editor.
+
+.TP
+\fBf\fP
+Ingrandisce al massimo il pannello sinistro.
+
+.TP
+\fB=\fP
+Rende i pannelli di uguale larghezza.
+
+.TP
+\fB>\fP
+Restringe il pannello destro.
+
+.TP
+\fB<\fP
+Restringe il pannello sinistro.
+
+.TP
+\fB2, 3, 4, 8\fP
+Imposta la dimensione della tabulazione.
+
+.TP
+\fBC\-u\fP
+Scambia il contenuto dei due pannelli.
+
+.TP
+\fBC\-r\fP
+Rilegge entrambi i file e ricalcola la differenza.
+
+.TP
+\fBC\-o\fP
+Mostra lo schermo dei comandi.
+
+.TP
+\fBInvio, spazio, n\fP
+Va alla differenza successiva.
+
+.TP
+\fBBackspace, p\fP
+Va alla differenza precedente.
+
+.TP
+\fBg, G\fP
+Va alla riga indicata.
+
+.TP
+\fBGiù\fP
+Scorre di una riga in avanti.
+
+.TP
+\fBSu\fP
+Scorre di una riga indietro.
+
+.TP
+\fBPagSu\fP
+Indietreggia di una pagina.
+
+.TP
+\fBPagGiù\fP
+Avanza di una pagina.
+
+.TP
+\fBSinistra, Destra\fP
+Spostano il testo di una colonna di lato.
+
+.TP
+\fBC\-Sinistra, C\-Destra\fP
+Spostano il testo di otto colonne di lato.
+
+.TP
+\fBInizio\fP
+Torna alla prima colonna.
+
+.TP
+\fBC\-Inizio\fP
+Va all'inizio del file.
+
+.TP
+\fBC\-Fine\fP
+Va alla fine del file.
+
+
+.SH Opzioni del confronto
+.PP
+Le impostazioni del
+visualizzatore di differenze,
+aperte lì da
+\fBF9\fP
+e, nel gestore di file, dalla voce
+\fBOpzioni del confronto\fP
+del menu Opzioni. Il visualizzatore le prende quando parte, quindi un
+confronto già sullo schermo mantiene quelle con cui è stato aperto.
+
+.PP
+\fIAlgoritmo di confronto.\fP
+Normale confronta i file come sono. Il più veloce presume file grandi e si
+accontenta di un risultato più grossolano. Minimo impiega più tempo per
+trovare un insieme più piccolo di differenze.
+
+.PP
+\fIIgnora maiuscole.\fP
+Maiuscole e minuscole contano come lo stesso carattere.
+
+.PP
+\fIIgnora l'espansione delle tabulazioni.\fP
+Le righe che differiscono solo per come è scritto lo stesso rientro, con
+tabulazioni o con spazi, contano come uguali.
+
+.PP
+\fIIgnora i cambiamenti di spaziatura.\fP
+Una sequenza di spazi vale quanto qualsiasi altra sequenza di spazi.
+
+.PP
+\fIIgnora tutti gli spazi.\fP
+Gli spazi restano fuori dal confronto.
+
+.PP
+\fITogli il ritorno a capo finale.\fP
+Toglie il carattere di ritorno carrello a fine riga, così un file con fine
+riga DOS si confronta con uno con fine riga Unix.
+
+
+.SH LICENZA
+.PP
+Questo programma è distribuito secondo i termini della GNU General Public
+License pubblicata dalla Free Software Foundation. Per i dettagli sulla
+licenza e sull'assenza di garanzia si veda l'aiuto interno.
+
+
+.SH DISPONIBILITÀ
+.PP
+L'ultima versione di questo programma si trova all'indirizzo
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
+.SH VEDERE ANCHE
+.PP
+mcommander(1), mview(1), mcedit6(1), diff(1).
+
+
+.SH BACHI
+.PP
+I bachi vanno segnalati all'indirizzo
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

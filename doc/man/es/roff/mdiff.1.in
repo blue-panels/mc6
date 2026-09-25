@@ -1,0 +1,211 @@
+.\" Generated from mdiff.md by maint/update-man-in.sh. Do not edit.
+.TH MDIFF 1 "septiembre de 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOMBRE
+.PP
+mdiff \- Comparador de Archivos Interno.
+
+
+.SH SINOPSIS
+.PP
+\fBmdiff\fP
+[\-bcCdfhstVx?] arch
+
+
+.SH Comparador de Archivos Interno
+.PP
+mdiff es una herramienta visual de comparación. Permite comparar dos
+archivos y editarlos en el sitio, y la diferencia se calcula de nuevo tras
+cada cambio. El complemento de panel git también lo abre, con el archivo tal
+como lo tiene HEAD a un lado y el archivo del árbol de trabajo al otro.
+
+.PP
+El comparador ofrece los siguientes atajos de teclado:
+
+.TP
+\fBF1\fP
+Invoca el visor de ayuda y muestra esta sección.
+
+.TP
+\fBF2\fP
+Guarda los archivos modificados.
+
+.TP
+\fBF4\fP
+Edita el archivo del panel izquierdo en el editor interno.
+
+.TP
+\fBF14\fP
+Edita el archivo del panel derecho en el editor interno.
+
+.TP
+\fBF5\fP
+Lleva el fragmento actual al archivo de la derecha. Solo se combina el
+fragmento actual y la diferencia se calcula de nuevo.
+
+.TP
+\fBF15\fP
+Lleva el fragmento actual en sentido contrario, al archivo de la izquierda.
+
+.TP
+\fBF7\fP
+Comenzar una búsqueda.
+
+.TP
+\fBF17\fP
+Repetir la búsqueda previa.
+
+.TP
+\fBF9\fP
+Abre las
+opciones de la comparación\&.
+
+.TP
+\fBAlt\-e\fP
+Elegir el juego de caracteres con el que se leen los dos archivos.
+
+.TP
+\fBF10, Esc, q, Q\fP
+Salir del comparador.
+
+.TP
+\fBAlt\-s, s\fP
+Mostrar/ocultar el estado de los fragmentos.
+
+.TP
+\fBAlt\-n, l\fP
+Mostrar/ocultar números de línea.
+
+.TP
+\fBCtrl\-s\fP
+Activar o desactivar el realce de sintaxis. El texto de cada línea se
+colorea según las reglas de sintaxis, igual que en el editor interno, y el
+estado de la línea queda a cargo del fondo y de la columna de marcas. Donde
+un skin distingue una palabra cambiada del resto de su línea solo por el
+color del texto, la palabra se subraya en su lugar. El ajuste se recuerda
+aparte del mismo ajuste del editor.
+
+.TP
+\fBf\fP
+Maximizar el panel izquierdo.
+
+.TP
+\fB=\fP
+Igualar el ancho de los paneles.
+
+.TP
+\fB>\fP
+Reducir el panel derecho.
+
+.TP
+\fB<\fP
+Reducir el panel izquierdo.
+
+.TP
+\fB2, 3, 4, 8\fP
+Fijar ancho de tabulaciones.
+
+.TP
+\fBCtrl\-u\fP
+Intercambia el contenido de los paneles.
+
+.TP
+\fBCtrl\-r\fP
+Vuelve a leer los dos archivos y calcula la diferencia de nuevo.
+
+.TP
+\fBCtrl\-o\fP
+Alternar con la pantalla de órdenes del sistema.
+
+.TP
+\fBIntro, Espacio, n\fP
+Avanzar al siguiente fragmento diferente.
+
+.TP
+\fBBackspace, p\fP
+Retroceder al fragmento diferente anterior.
+
+.TP
+\fBg, G\fP
+Saltar a la línea indicada.
+
+.TP
+\fBAbajo\fP
+Avanzar una línea.
+
+.TP
+\fBArriba\fP
+Retroceder una línea.
+
+.TP
+\fBRePág\fP
+Retrocede una página.
+
+.TP
+\fBAvPág\fP
+Avanza una página.
+
+.TP
+\fBIzquierda, Derecha\fP
+Desplaza el texto una columna a los lados.
+
+.TP
+\fBCtrl\-Izquierda, Ctrl\-Derecha\fP
+Desplaza el texto ocho columnas a los lados.
+
+.TP
+\fBInicio\fP
+Vuelve a la primera columna.
+
+.TP
+\fBCtrl\-Inicio\fP
+Va al comienzo del archivo.
+
+.TP
+\fBCtrl\-Fin\fP
+Va al final del archivo.
+
+
+.SH Opciones de la comparación
+.PP
+Los ajustes de la
+comparación interna,
+que abre
+\fBF9\fP
+allí mismo y la entrada
+\fBOpciones de la comparación\fP
+del menú Opciones del gestor de archivos. La comparación toma sus ajustes al
+arrancar, así que una ventana ya abierta conserva los que tenía.
+
+.PP
+\fIAlgoritmo de comparación.\fP
+El normal compara los archivos tal como son. El rápido da por supuesto que son
+grandes y se conforma con un resultado más grueso. El mínimo dedica más tiempo
+a encontrar un conjunto de diferencias más pequeño.
+
+.PP
+\fIIgnorar mayúsculas.\fP
+Mayúsculas y minúsculas cuentan como el mismo carácter.
+
+.PP
+\fIIgnorar expansión de tabuladores.\fP
+Las líneas que solo se diferencian en cómo está escrita la misma sangría, con
+tabuladores o con espacios, cuentan como iguales.
+
+.PP
+\fIIgnorar cambios de espacios.\fP
+Una serie de espacios cuenta como igual a cualquier otra.
+
+.PP
+\fIIgnorar todos los espacios.\fP
+Los espacios quedan fuera de la comparación.
+
+.PP
+\fIQuitar el retorno de carro final.\fP
+Se descarta el retorno de carro al final de la línea, de modo que un archivo
+con fin de línea de DOS se compara con uno de Unix.
+
+
+.SH VÉASE TAMBIÉN
+.PP
+mcommander(1), mview(1), mcedit6(1).

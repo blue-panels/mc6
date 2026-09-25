@@ -1,0 +1,241 @@
+.\" Generated from mdiff.md by maint/update-man-in.sh. Do not edit.
+.TH MDIFF 1 "wrzesień 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NAZWA
+.PP
+mdiff \- Wbudowany podgląd różnic.
+
+
+.SH UŻYTKOWANIE
+.PP
+\fBmdiff\fP
+[\-bcCdfhstVx?] plik1 plik2
+
+
+.SH OPIS
+.PP
+mdiff to dowiązanie do
+\fBmcommander\fP,
+głównego programu menedżera plików. Uruchomiony pod tą nazwą otwiera
+wbudowany podgląd różnic, który porównuje
+\fIplik1\fP
+z
+\fIplik2\fP,
+podanymi w wierszu poleceń.
+
+
+.SH Wbudowany podgląd różnic
+.PP
+mdiff to narzędzie do poglądowego porównywania. Dwa pliki można porównać i od
+razu edytować, a różnica jest liczona na nowo po każdej zmianie. Otwiera go
+też wtyczka panelu git, z plikiem takim, jaki widzi go HEAD, po jednej
+stronie i plikiem z katalogu roboczego po drugiej.
+
+.PP
+We wbudowanym podglądzie różnic dostępne są następujące klawisze:
+
+.TP
+\fBF1\fP
+Wywołuje wbudowaną przeglądarkę pomocy.
+
+.TP
+\fBF2\fP
+Zapisuje zmienione pliki.
+
+.TP
+\fBF4\fP
+Edytuje plik z lewego panelu we wbudowanym edytorze.
+
+.TP
+\fBF14\fP
+Edytuje plik z prawego panelu we wbudowanym edytorze.
+
+.TP
+\fBF5\fP
+Przenosi bieżącą różnicę do pliku po prawej. Przenoszona jest tylko bieżąca
+różnica, po czym porównanie liczone jest na nowo.
+
+.TP
+\fBF15\fP
+Przenosi bieżącą różnicę w drugą stronę, do pliku po lewej.
+
+.TP
+\fBF7\fP
+Zaczyna szukanie.
+
+.TP
+\fBF17\fP
+Szuka dalej.
+
+.TP
+\fBF9\fP
+Otwiera
+opcje porównania\&.
+
+.TP
+\fBAlt\-e\fP
+Wybiera zestaw znaków, w którym czytane są oba pliki.
+
+.TP
+\fBF10, Esc, q, Q\fP
+Wychodzi z podglądu różnic.
+
+.TP
+\fBAlt\-s, s\fP
+Przełącza pokazywanie stanu różnic.
+
+.TP
+\fBAlt\-n, l\fP
+Przełącza pokazywanie numerów wierszy.
+
+.TP
+\fBCtrl\-s\fP
+Przełącza podświetlanie składni. Tekst każdego wiersza jest kolorowany
+regułami składni, tak samo jak we wbudowanym edytorze, a stan wiersza zostaje
+przy tle i kolumnie znaczników. Tam, gdzie skórka odróżnia zmienione słowo od
+reszty wiersza samym kolorem tekstu, słowo jest zamiast tego podkreślane.
+Ustawienie jest zapamiętywane osobno od tego samego ustawienia edytora.
+
+.TP
+\fBf\fP
+Powiększa lewy panel na maksimum.
+
+.TP
+\fB=\fP
+Wyrównuje szerokość paneli.
+
+.TP
+\fB>\fP
+Zwęża prawy panel.
+
+.TP
+\fB<\fP
+Zwęża lewy panel.
+
+.TP
+\fB2, 3, 4, 8\fP
+Ustawia szerokość tabulacji.
+
+.TP
+\fBC\-u\fP
+Zamienia zawartość paneli.
+
+.TP
+\fBC\-r\fP
+Czyta oba pliki na nowo i liczy różnicę od początku.
+
+.TP
+\fBC\-o\fP
+Pokazuje ekran poleceń.
+
+.TP
+\fBEnter, spacja, n\fP
+Idzie do następnej różnicy.
+
+.TP
+\fBBackspace, p\fP
+Idzie do poprzedniej różnicy.
+
+.TP
+\fBg, G\fP
+Idzie do wskazanego wiersza.
+
+.TP
+\fBDown\fP
+Przewija o wiersz w przód.
+
+.TP
+\fBUp\fP
+Przewija o wiersz wstecz.
+
+.TP
+\fBPageUp\fP
+Przewija o stronę wstecz.
+
+.TP
+\fBPageDown\fP
+Przewija o stronę w przód.
+
+.TP
+\fBLeft, Right\fP
+Przesuwają tekst o kolumnę w bok.
+
+.TP
+\fBC\-Left, C\-Right\fP
+Przesuwają tekst o osiem kolumn w bok.
+
+.TP
+\fBHome\fP
+Wraca do pierwszej kolumny.
+
+.TP
+\fBC\-Home\fP
+Idzie na początek pliku.
+
+.TP
+\fBC\-End\fP
+Idzie na koniec pliku.
+
+
+.SH Opcje porównania
+.PP
+Ustawienia
+podglądu różnic,
+które otwiera tam
+\fBF9\fP,
+a w menedżerze plików pozycja
+\fBOpcje podglądu różnic\fP
+menu Opcje. Podgląd bierze je przy starcie, więc porównanie już otwarte
+zostaje przy tych, z którymi je otwarto.
+
+.PP
+\fIAlgorytm porównania.\fP
+Zwykły porównuje pliki takimi, jakie są. Najszybszy zakłada duże pliki i
+zadowala się zgrubnym wynikiem. Najmniejszy poświęca więcej czasu, aby
+znaleźć mniejszy zbiór zmian.
+
+.PP
+\fIPomijaj wielkość liter.\fP
+Duże i małe litery liczą się jako ten sam znak.
+
+.PP
+\fIPomijaj rozwijanie tabulacji.\fP
+Wiersze różniące się tylko tym, czy to samo wcięcie zapisano tabulacjami czy
+spacjami, liczą się jako równe.
+
+.PP
+\fIPomijaj zmiany odstępów.\fP
+Ciąg białych znaków jest równoważny każdemu innemu ciągowi białych znaków.
+
+.PP
+\fIPomijaj wszystkie białe znaki.\fP
+Białe znaki nie biorą udziału w porównaniu.
+
+.PP
+\fIUsuwaj znak powrotu karetki.\fP
+Zdejmuje znak powrotu karetki z końca wiersza, dzięki czemu plik z końcami
+wierszy DOS porównuje się z plikiem z końcami uniksowymi.
+
+
+.SH LICENCJA
+.PP
+Ten program jest rozpowszechniany na warunkach Powszechnej Licencji
+Publicznej GNU opublikowanej przez Free Software Foundation. Szczegóły o
+licencji i o braku gwarancji podaje wbudowana pomoc.
+
+
+.SH DOSTĘPNOŚĆ
+.PP
+Najnowsza wersja tego programu znajduje się pod adresem
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link' .
+
+
+.SH ZOBACZ TAKŻE
+.PP
+mcommander(1), mview(1), mcedit6(1), diff(1).
+
+
+.SH BŁĘDY
+.PP
+Błędy należy zgłaszać pod adresem
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

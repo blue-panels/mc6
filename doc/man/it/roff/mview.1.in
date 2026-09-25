@@ -1,0 +1,433 @@
+.\" Generated from mview.md by maint/update-man-in.sh. Do not edit.
+.TH MVIEW 1 "settembre 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOME
+.PP
+mview \- Visualizzatore di file interno.
+
+
+.SH USO
+.PP
+\fBmview\fP
+[\-bcCdfhstVx?] file
+
+
+.SH Visualizzatore di file interno
+.PP
+Il visualizzatore di file interno fornisce tre modalità di visualizzazione:
+ASCII, esadecimale e strutturata (albero). Per passare dalla modalità ASCII a
+quella esadecimale si usa il tasto F4, per entrare in quella strutturata
+Alt\-s o t. In modalità ASCII F9 percorre tre rappresentazioni degli stessi
+byte: testo semplice, i colori ANSI contenuti nel file, e un emulatore di
+terminale a cui il file viene dato in pasto.
+
+.PP
+Il visualizzatore tenterà di usare il metodo migliore fornito dal sistema o a
+seconda del tipo di file, per mostrare le informazioni.
+Nella modalità nroff, che il
+file delle estensioni
+attiva per le pagine di manuale, le sequenze di sovrascrittura di una pagina
+preformattata vengono mostrate in grassetto e sottolineato invece che alla
+lettera.
+
+.PP
+In modalità ASCII i tasti freccia spostano la vista finché non si accende il
+cursore di lettura. Invio lo accende e lo spegne di nuovo; lo accendono anche
+un clic e i tasti che selezionano. Con il cursore acceso, i tasti freccia
+percorrono il testo e Maiusc\-freccia, Maiusc\-Inizio, Maiusc\-Fine,
+Maiusc\-PagSu e Maiusc\-PagGiù lo selezionano.
+
+.PP
+Trascinando con il tasto sinistro del mouse si seleziona del testo. Un doppio
+clic seleziona una parola, un triplo clic una riga visiva. Un clic singolo
+mette soltanto il cursore su un carattere: segna il punto da cui i tasti con
+Maiusc estendono la selezione. Quando il testo scorre (PagGiù, rotellina del
+mouse), il cursore resta sullo schermo, nella stessa riga e colonna. Ctrl\-Ins
+o Invio copiano la selezione nel file di scambio e da lì negli appunti del
+sistema; C\-u toglie la selezione e spegne il cursore, e lo stesso fa la
+copia. Dove non c'è cursore da accendere, in modalità esadecimale e ad
+albero, Invio si comporta come Giù. Ogni movimento del cursore senza Maiusc
+perde la selezione e mantiene il cursore. Quello che viene copiato è il testo
+mostrato: la formattazione ANSI e nroff viene tolta, le tabulazioni diventano
+spazi e, in modalità filtro, si copiano solo le righe visibili.
+
+.PP
+Poiché il tasto sinistro seleziona il testo, lo scorrimento con un clic nel
+terzo superiore o inferiore della vista (vedere
+\fImouse_move_pages\fP
+nella sezione [Viewer]) in modalità ASCII si fa con il tasto destro o
+centrale. La rotellina del mouse scorre due righe alla volta, in ogni
+modalità.
+
+.PP
+F6 filtra la vista come fa grep: si vedono solo le righe che corrispondono a
+un modello, e la riga di stato le conta. La finestra chiede il modello e le
+stesse impostazioni di tipo di ricerca, maiuscole e parola intera della
+ricerca; il pulsante Verifica elenca le righe che il modello sceglie prima
+che il filtro venga applicato, e F1 lì apre il
+riferimento rapido delle espressioni regolari\&.
+Un modello vuoto toglie il filtro, e finché nulla corrisponde la vista lo
+dice e resta dov'è. I tasti ] e [ percorrono le occorrenze, e C\-t attiva la
+modalità di inseguimento, in cui la vista resta sull'ultima occorrenza mentre
+il file cresce, come fa tail \-f. Un file grande viene letto in secondo piano,
+e la riga di stato lo indica mentre dura.
+
+.PP
+In modalità esadecimale, la funzione di ricerca accetta testo tra virgolette
+e costanti numeriche. Il testo tra virgolette viene cercato esattamente,
+tolte le virgolette. Ogni numero rappresenta un byte. È possibile mescolare
+testo tra virgolette e costanti come nell'esempio:
+
+.EX
+"Stringa" 34 0xBB 012 "ancora testo"
+
+.EE
+
+.PP
+I numeri sono sempre esadecimali. Nell'esempio sopra "34" vale 0x34. Il
+prefisso "0x" non serve davvero: si può scrivere "BB" invece di "0xBB". E
+"012" vale 0x12, non è un numero ottale.
+
+.PP
+La modalità strutturata mostra i file JSON, YAML e XML come un albero che si
+apre; un file HTML viene letto dallo stesso analizzatore dell'XML. Il formato
+si ricava dal nome del file, da ciò che ne dice il comando file e dal testo
+stesso. Alt\-s (o t) su un file supportato entra nella modalità; se il file
+non si può analizzare, o è più grande di quanto la vista ad albero accetti,
+viene mostrato un messaggio e il visualizzatore resta in modalità ASCII.
+L'albero funziona solo con file locali, e l'ingresso mette da parte il filtro
+delle righe e la modalità terminale. Lo YAML è gestito da un analizzatore
+interno che copre il sottoinsieme di uso comune (mappature e sequenze a
+blocchi, scalari a blocchi, scalari tra virgolette, ancore e alias). Gli
+alias vengono espansi copiando; un alias ciclico, o un'espansione oltre il
+limite interno di nodi, viene mostrato come riferimento *nome invece che
+come copia. I tag e le raccolte in linea ([] e {}) non vengono analizzati e
+appaiono come valori di testo; i documenti fuori da quel sottoinsieme
+(scalari semplici su più righe, tabulazioni nel rientro) vengono segnalati e
+mostrati come testo. Dentro l'albero F4, Alt\-s e t riportano alla modalità
+ASCII. La riga di stato mostra il tipo di contenuto e il percorso in stile jq
+del nodo corrente (per esempio
+\fB\&.spec.containers[0].image\fP).
+Un clic sposta il cursore dell'albero, e un clic sulla riga del cursore apre
+o chiude quel nodo.
+La modalità funziona anche nel pannello di vista rapida (C\-x q), dove
+l'albero segue il cursore del pannello. Con l'opzione
+\fIstructured_auto\fP
+della sezione [Viewer] attiva, i file supportati si aprono subito
+nell'albero. Tasti disponibili dentro l'albero:
+
+.EX
+Invio        apre/chiude il nodo corrente; su una foglia
+             mostra il valore intero
+Destra/Sin   apre / chiude (su un nodo chiuso Sinistra salta
+             al padre)
+*            apre tutto il sottoalbero corrente
++ / \-        apre / chiude l'intero albero
+1 .. 9       apre il documento fino alla profondità data
+Alt\-Invio    copia il percorso del nodo corrente
+F7, /        cerca in tutto il documento, anche nei nodi
+             chiusi; il percorso dell'occorrenza si apre
+F17, n       continua la ricerca
+F6           filtra l'albero con un modello
+] / [        va all'occorrenza successiva / precedente
+
+.EE
+
+.PP
+Il filtro (F6) chiede il modello nella stessa finestra della modalità ASCII,
+con le stesse impostazioni di tipo, maiuscole e parola intera, e tiene solo i
+nodi la cui chiave o valore corrisponde. Il percorso fino a ogni occorrenza
+resta visibile, e così anche ciò che sta dentro un'occorrenza, quindi un nodo
+trovato si può aprire e percorrere. La riga di stato conta le occorrenze; ] e
+[ le percorrono. Un modello vuoto toglie il filtro, e lo stesso fa uscire
+dall'albero. Un nodo corrisponde in base al testo che la sua riga mostra,
+quindi un valore lungo corrisponde solo fino alla lunghezza che l'albero
+conserva per l'anteprima (160 caratteri).
+
+.PP
+I tasti che muovono nel testo muovono anche nell'albero: le frecce e h, j, k
+e l, i tasti di pagina, e quelli che vanno all'inizio e alla fine. Alt\-e
+sceglie il set di caratteri e C\-o mostra lo schermo dei comandi, come nel
+testo.
+
+.PP
+Ecco un elenco di azioni associate a ogni tasto nel visualizzatore di file
+interno.
+
+.TP
+\fBF1\fP
+Invoca il visualizzatore ipertestuale dell'aiuto.
+
+.TP
+\fBF2\fP
+Abilita/disabilita la funzione di a capo automatico. In modalità
+esadecimale passa alla modifica dei byte e ritorna; F6 scrive le modifiche
+nel file.
+
+.TP
+\fBF4\fP
+Abilita/disabilita la modalità esadecimale.
+
+.TP
+\fBAlt\-s, t\fP
+Attiva la modalità strutturata (albero) per i file JSON, YAML e XML.
+
+.TP
+\fBF14\fP
+Mostra il file nel visualizzatore di strutture, il componente mcstruct, al
+byte su cui sta il cursore. Funziona solo con file locali.
+
+.TP
+\fBF6\fP
+Filtra la vista con un modello. In modalità esadecimale salva le modifiche
+fatte ai byte.
+
+.TP
+\fBC\-t\fP
+Attiva o disattiva la modalità di inseguimento del filtro.
+
+.TP
+\fB], [\fP
+Va all'occorrenza successiva o precedente del filtro.
+
+.TP
+\fBF5\fP
+Vai a. La finestra accetta un numero di riga, una percentuale della
+dimensione del file, o una posizione scritta in decimale o in esadecimale,
+secondo quale delle quattro è scelta.
+
+.TP
+\fBF7, /, ?\fP
+Inizia una ricerca. Questi tasti aprono la finestra con le opzioni di
+ricerca. Con il tasto ? l'opzione "All'indietro" è attiva.
+
+.TP
+\fBC\-s\fP
+Continua la ricerca in avanti.
+
+.TP
+\fBC\-r\fP
+Continua la ricerca all'indietro.
+
+.TP
+\fBF17, n\fP
+Continua la ricerca nella direzione scelta.
+
+.TP
+\fBN\fP
+Inverte per una volta la direzione della ricerca: all'indietro se è scelta
+la ricerca in avanti, e viceversa.
+
+.TP
+\fBMaiusc\-F8\fP
+Attiva o disattiva l'evidenziazione della sintassi: il testo viene colorato
+con le regole di sintassi, le stesse e nello stesso modo dell'editor interno.
+Oltre i 4 MB il file riceve le regole locali di riga, che colorano numeri,
+stringhe tra virgolette e punteggiatura senza dover leggere tutto ciò che sta
+sopra la riga mostrata. Il testo mantiene i propri colori mentre è attiva la
+modalità ANSI, quella esadecimale o quella terminale, e lì le regole di
+sintassi si fanno da parte.
+
+.TP
+\fBMaiusc\-F9\fP
+Attiva o disattiva l'interpretazione delle sequenze di colore ANSI presenti
+nel testo.
+
+.TP
+\fBF8\fP
+Passa tra la modalità grezza e quella elaborata: mostra il file com'è sul
+disco oppure, se nel file extensions.ini è indicato un filtro di
+visualizzazione, l'uscita di quel filtro. La modalità corrente è sempre
+l'altra rispetto a quella scritta sul pulsante, perché sul pulsante c'è la
+modalità in cui quel tasto porta.
+
+.TP
+\fBF9\fP
+Percorre i modi in cui il testo viene mostrato: semplice, poi con i colori
+ANSI del file, poi la modalità terminale, in cui il file viene dato a un
+emulatore di terminale e il visualizzatore mostra lo schermo che quello
+disegna. L'etichetta del pulsante nomina la modalità in cui il tasto porta,
+non quella in cui il visualizzatore si trova. La modalità terminale è
+costruita dal flusso di byte e non dalle righe del file, quindi lì l'a capo,
+il salto a una riga, il filtro e la ricerca non hanno su cosa lavorare, e la
+barra dei pulsanti lo dice.
+
+.TP
+\fBF3, F10, Esc, q\fP
+Esce dal visualizzatore di file interno.
+
+.TP
+\fBPagGiù, spazio, f, C\-v\fP
+Avanza di una pagina.
+
+.TP
+\fBPagSu, b, Alt\-v, Backspace\fP
+Indietreggia di una pagina.
+
+.TP
+\fBd, u\fP
+Avanza o indietreggia di mezza pagina.
+
+.TP
+\fBC\-a, C\-e\fP
+Va all'inizio o alla fine della riga.
+
+.TP
+\fBInizio, C\-Inizio, C\-PagSu, g\fP
+Va all'inizio del file.
+
+.TP
+\fBFine, C\-Fine, C\-PagGiù, G\fP
+Va alla fine del file.
+
+.TP
+\fBGiù, Su\fP
+Spostano il cursore di testo di una riga in giù o in su; al bordo della
+vista il testo scorre di una riga. In modalità esadecimale scorrono di una
+riga.
+
+.TP
+\fBSinistra, Destra\fP
+Spostano il cursore di testo di un carattere mostrato; a fine riga passano
+alla successiva. In modalità esadecimale spostano il cursore esadecimale.
+
+.TP
+\fBh, j, k, l\fP
+Spostano a sinistra, in giù, in su e a destra, come i tasti freccia. Anche
+Ins e Canc, C\-p e C\-n, y ed e spostano di una riga in su e in giù.
+
+.TP
+\fBTab\fP
+In modalità esadecimale passa tra la colonna esadecimale e quella di testo.
+
+.TP
+\fBC\-Sinistra, C\-Destra\fP
+Spostano il cursore di testo di otto caratteri mostrati. Con il cursore
+spento e senza a capo automatico, scorrono la vista di dieci colonne di lato.
+
+.TP
+\fBMaiusc\-Sinistra, Maiusc\-Destra, Maiusc\-Su, Maiusc\-Giù\fP
+Estendono la selezione di un carattere mostrato o di una riga.
+
+.TP
+\fBMaiusc\-Inizio, Maiusc\-Fine\fP
+Estendono la selezione all'inizio o alla fine della riga visiva.
+
+.TP
+\fBMaiusc\-PagSu, Maiusc\-PagGiù\fP
+Estendono la selezione alla prima o all'ultima riga visibile.
+
+.TP
+\fBCtrl\-Ins, Invio\fP
+Copiano il testo selezionato nel file di scambio e negli appunti del
+sistema. Senza selezione, Invio si comporta come Giù.
+
+.TP
+\fBC\-u\fP
+Toglie la selezione del testo.
+
+.TP
+\fBC\-l\fP
+Ridisegna lo schermo.
+
+.TP
+\fBC\-o\fP
+Mostra lo schermo dei comandi.
+
+.TP
+\fB[n] m\fP
+Imposta il segno n.
+
+.TP
+\fB[n] r\fP
+Salta al segno n.
+
+.TP
+\fBC\-f\fP
+Salta al file successivo. Non nel pannello di vista rapida, che segue il
+cursore dell'altro pannello.
+
+.TP
+\fBC\-b\fP
+Salta al file precedente. Nemmeno nel pannello di vista rapida.
+
+.TP
+\fBAlt\-r\fP
+Percorre le posizioni del righello: in cima alla vista, in fondo, e spento.
+
+.TP
+\fBAlt\-Maiusc\-e\fP
+Apre l'elenco dei file visti in precedenza e mostra quello scelto.
+
+.TP
+\fBAlt\-e\fP
+Cambia il set di caratteri del testo mostrato. La riconversione avviene dal
+set scelto a quello di sistema. Per annullarla, scegliere
+"<No translation>" nella finestra di scelta del set di caratteri.
+
+.PP
+È possibile insegnare al visualizzatore come mostrare un file, vedere la
+sezione
+Modifica file estensioni\&.
+
+
+.SH Opzioni del visualizzatore
+.PP
+Le impostazioni del
+visualizzatore interno
+che valgono per ogni file che apre.
+
+.PP
+\fIA capo automatico.\fP
+Se attiva, una riga più larga dello schermo prosegue nella riga successiva;
+altrimenti viene tagliata e la vista scorre di lato. Attiva in modo
+predefinito.
+
+.PP
+\fIEvidenziazione della sintassi.\fP
+Se attiva, il visualizzatore colora il testo con le regole di sintassi
+dell'editor. Un file aperto in una modalità che porta i propri colori, come
+una pagina di manuale o un Markdown composto, conserva quei colori. Non attiva
+in modo predefinito.
+
+.PP
+\fIScorrimento a pagine con il mouse.\fP
+Quanto scorre un clic nel terzo superiore o inferiore della vista: mezzo
+schermo se attiva, una riga se no. La rotella non ne risente, scorre sempre di
+due righe. Attiva in modo predefinito.
+
+.PP
+\fIRicorda la posizione nel file.\fP
+Se attiva, il file si apre dove è stato lasciato l'ultima volta. Non attiva in
+modo predefinito.
+
+.PP
+\fIVista ad albero di JSON, YAML e XML.\fP
+Se attiva, un file di questi formati si apre subito come un albero richiudibile
+invece che come testo. La stessa vista è sempre disponibile con il tasto che
+cambia modalità. Non attiva in modo predefinito.
+
+.PP
+\fISegno di fine file.\fP
+Il testo stampato dopo l'ultima riga del file. Vuoto in modo predefinito.
+
+.PP
+\fIRidisegni che si possono saltare.\fP
+Mentre il file viene letto, il visualizzatore salta dei ridisegni per stare al
+passo con i dati. Qui si dice quanti può saltarne di seguito. 10 in modo
+predefinito.
+
+.PP
+\fILimite di dimensione per la vista ad albero, MB.\fP
+Il file più grande che la vista ad albero analizza. Uno più grande viene
+rifiutato prima di leggerlo. 64 in modo predefinito.
+
+.PP
+\fILimite di nodi della vista ad albero.\fP
+L'albero più grande che questa modalità costruisce, contato in nodi. 10000000
+in modo predefinito.
+
+
+.SH VEDERE ANCHE
+.PP
+mcommander(1), mcedit6(1).

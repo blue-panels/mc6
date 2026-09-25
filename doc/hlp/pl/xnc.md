@@ -47,3 +47,49 @@ Pełna lista klawiszy przeglądarki pomocy:
 Local variables:
 fill-column: 58
 end:
+
+# Przypisania klawiszy <!-- help:notitle --><a id="key-bindings"></a>
+
+**Przypisania klawiszy**
+
+Przeglądanie i zmiana skrótów klawiszowych dla działań programu.
+
+**Klawisze**
+
+**Enter**
+: Zmienia skrót: naciśnij klawisz, który chcesz przypisać.
+
+**F5**
+: Dodaje kolejny skrót dla tego działania.
+
+**F8, Del**
+: Usuwa skrót.
+
+**Zapisz**
+: Zapisuje zmiany w pliku
+*~/.config/mc6/keymap.ini*.
+
+**Edytuj plik klawiszy**
+: Otwiera
+*keymap.ini*
+w edytorze.
+
+**Edytuj plik terminala**
+: Otwiera definicje klawiszy terminala.
+
+Działania oznaczone \* różnią się od domyślnych.
+
+# Podsłuch klawiszy <!-- help:notitle --><a id="key-sniffer"></a>
+
+**Podsłuch klawiszy**
+
+Naciśnij Przechwyć, a potem dowolny klawisz. Pokazuje:
+
+```
+Skrót       Nazwa symboliczna (na przykład Ctrl-F5)
+Działanie   Działanie przypisane w bieżącej mapie
+Surowo      Sekwencja sterująca i bajty szesnastkowo
+Kod         Wewnętrzny kod liczbowy
+```
+
+Przydatne przy szukaniu przyczyn kłopotów z klawiszami terminala.

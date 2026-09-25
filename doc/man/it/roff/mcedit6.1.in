@@ -1,0 +1,246 @@
+.\" Generated from mcedit6.md by maint/update-man-in.sh. Do not edit.
+.TH MCEDIT6 1 "settembre 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOME
+.PP
+mcedit6 \- Editor di file interno.
+
+
+.SH USO
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] file
+
+
+.SH Editor di file interno
+.PP
+L'editor di file interno è un editor a pieno schermo con tutte le funzioni
+consuete. Un file più grande di
+\fIeditor_filesize_threshold\fP
+(64 MB come impostazione predefinita) viene aperto dopo una domanda. I file
+binari si possono modificare.
+Viene invocato tramite
+\fBF4\fP
+sempre che l'opzione
+\fIuse_internal_edit\fP
+sia impostata nel file di inizializzazione.
+
+.PP
+Le funzioni che allo stato attuale supporta sono: copia, spostamento,
+cancellazione, taglia e incolla di blocchi; annullamento tasto per tasto;
+menu a discesa; inserimento file; definizione di macro; ricerca e
+sostituzione con espressioni regolari; selezione del testo con
+maiuscole\-freccia (se il terminale le distingue); scambio tra inserimento e
+sovrascrittura; a capo automatico; rientro automatico; dimensione della
+tabulazione regolabile; evidenziazione della sintassi per vari tipi di file;
+e la possibilità di passare blocchi di testo a comandi di shell come indent o
+ispell.
+
+.TP
+Sezioni:
+Opzioni dell'editor
+
+.PP
+L'editor è molto semplice da usare e non richiede apprendimento. Per vedere
+cosa fanno i tasti, basta consultare il menu a discesa appropriato. Gli altri
+tasti sono: maiuscole più i tasti freccia selezionano il testo.
+\fBCtrl\-Ins\fP
+copia nel file di scambio
+\fB~/.local/share/mc6/mcedit/mcedit.clip\fP,
+\fBShift\-Ins\fP
+incolla da esso,
+\fBShift\-Del\fP
+vi taglia dentro e
+\fBCtrl\-Del\fP
+cancella il testo selezionato.
+Funziona anche la selezione con il mouse che, come al solito, si può
+scavalcare premendo il tasto Maiuscole mentre si trascina, lasciando al
+terminale la propria gestione del mouse.
+
+.PP
+Per definire una macro, premere
+\fBCtrl\-R\fP,
+poi premere i tasti che si vuole vengano eseguiti. Premere nuovamente
+\fBCtrl\-R\fP
+quando si ha finito e assegnare la macro a un tasto premendolo. La macro
+viene eseguita con quel tasto e anche premendo
+\fBCtrl\-A\fP
+seguito dal tasto assegnato. Le macro stanno nella sezione
+\fB[editor]\fP
+del file
+\fB~/.local/share/mc6/macros\fP,
+e si cancella una macro cancellando la sua riga in quel file.
+
+.PP
+Il set di caratteri del testo mostrato si cambia con Alt\-e (M\-e). La
+riconversione avviene dal set scelto a quello di sistema. Per annullarla,
+scegliere "<No translation>" nella finestra di scelta del set di caratteri.
+
+.PP
+Il pulsante
+\fBFiltro\fP
+della finestra di ricerca
+(\fBF7\fP)
+nasconde tutte le righe che non contengono il testo cercato, con le stesse
+impostazioni di tipo, maiuscole e parola intera della ricerca. I numeri di
+riga restano quelli originali e la colonna di stato segna ogni tratto
+nascosto. L'insieme delle righe nascoste viene fissato nel momento in cui si
+preme il pulsante: la modifica non riapplica la condizione, quindi una riga
+visibile che venga divisa o unita resta visibile, e le righe scritte dopo
+restano visibili anche se non corrispondono. Il tasto
+\fBM\-s\fP
+toglie il filtro; premuto di nuovo rimette l'ultima ricerca come filtro.
+Anche "Espandi tutto" del menu Comandi lo toglie.
+
+
+.SH Opzioni dell'editor
+.PP
+Le impostazioni dell'
+editor interno\&.
+Le apre il menu
+\fBOpzioni\fP
+dell'editor stesso e la voce
+\fBOpzioni dell'editor\fP
+del menu Opzioni del file manager.
+
+.PP
+\fIModalità di a capo.\fP
+Disattivata, formattazione continua del paragrafo, oppure l'a capo da macchina
+da scrivere, che spezza la riga alla lunghezza fissata mentre si scrive.
+
+.PP
+\fIMezze tabulazioni finte.\fP
+Tra il testo e il margine sinistro il movimento e il rientro vanno di mezza
+tabulazione e si riempiono di spazi; altrove la tabulazione è quella normale.
+
+.PP
+\fIBackspace attraverso le tabulazioni.\fP
+Un solo backspace cancella tutto il rientro fino al margine sinistro quando
+tra il cursore e il margine non c'è testo.
+
+.PP
+\fIRiempi le tabulazioni con spazi.\fP
+Invece del carattere di tabulazione vengono inseriti spazi fino alla
+tabulazione successiva.
+
+.PP
+\fIAmpiezza della tabulazione.\fP
+L'ampiezza che vale il carattere di tabulazione. 8 in modo predefinito.
+
+.PP
+\fIInvio fa il rientro automatico.\fP
+La riga nuova comincia con il rientro della riga sopra.
+
+.PP
+\fIConferma prima di salvare.\fP
+Chiede prima di scrivere il file.
+
+.PP
+\fIRicorda la posizione nel file.\fP
+Il file si apre dove è stato lasciato l'ultima volta.
+
+.PP
+\fIMostra gli spazi finali.\fP
+Gli spazi a fine riga vengono segnati.
+
+.PP
+\fIMostra le tabulazioni.\fP
+I caratteri di tabulazione vengono segnati.
+
+.PP
+\fIMostra i caratteri di controllo.\fP
+I caratteri di controllo del testo vengono stampati invece che nascosti.
+
+.PP
+\fIEvidenziazione della sintassi.\fP
+Il testo viene colorato con le regole di sintassi del suo tipo di file.
+
+.PP
+\fICursore dopo il blocco inserito.\fP
+Dopo aver inserito un blocco il cursore resta alla fine e non all'inizio.
+
+.PP
+\fISelezione persistente.\fP
+La selezione resta quando il cursore si muove, invece di perdersi.
+
+.PP
+\fICursore oltre la fine della riga.\fP
+Il cursore può stare dopo l'ultimo carattere della riga.
+
+.PP
+\fIAnnulla in gruppo.\fP
+Un solo annullamento riporta indietro una serie di modifiche dello stesso
+tipo, non un singolo tasto.
+
+.PP
+\fILunghezza della riga per l'a capo.\fP
+La colonna in cui le modalità di a capo spezzano la riga. 72 in modo
+predefinito.
+
+
+.SH Salva come
+.PP
+Il nome con cui scrivere il file e i fine riga con cui scriverlo: come li ha
+il file, Unix (LF), Windows e DOS (CR LF) oppure Macintosh (CR).
+
+
+.SH Modalità di salvataggio
+.PP
+Come viene scritto il file:
+
+.TP
+\fBSalvataggio rapido\fP
+Scrive subito sopra il file. Veloce, e un guasto a metà lascia il file
+scritto a metà.
+
+.TP
+\fBSalvataggio sicuro\fP
+Scrive prima un file temporaneo e lo rinomina sopra l'originale quando è
+intero, così un guasto non tocca l'originale.
+
+.TP
+\fBCrea copie di sicurezza con l'estensione\fP
+Salvataggio sicuro, e l'originale resta con il suo nome più l'estensione
+della riga di ingresso, "~" in modo predefinito.
+
+.TP
+\fBControlla il fine riga POSIX\fP
+Chiede del fine riga che manca alla fine del file prima di scriverlo.
+
+
+.SH Esploratore di macro
+.PP
+Le macro registrate, con il tasto a cui ciascuna risponde e ciò che fa. I
+pulsanti sono
+
+.TP
+\fBEsegui\fP
+Riproduce la macro su cui è il cursore.
+
+.TP
+\fBElimina\fP
+La toglie, dopo una domanda.
+
+.TP
+\fBModifica file\fP
+Apre il file in cui stanno le macro.
+
+
+.SH File aperti
+.PP
+I file che l'editor ha aperti, uno per riga. Invio va al file su cui è il
+cursore, Esc lascia quello mostrato.
+
+
+.SH Informazioni sui componenti
+.PP
+I componenti aggiuntivi che l'editor ha caricato: il nome, se è attivo, cosa
+offre e cosa fa. È un elenco da guardare; si disattiva un componente e se ne
+aprono le impostazioni nella finestra
+Gestione dei componenti
+del file manager.
+
+
+.SH VEDERE ANCHE
+.PP
+mcommander(1), mview(1).

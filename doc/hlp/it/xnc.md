@@ -50,3 +50,49 @@ F10, esc      Esce dal visualizzatore della guida.
 Local variables:
 fill-column: 58
 end:
+
+# Associazioni dei tasti <!-- help:notitle --><a id="key-bindings"></a>
+
+**Associazioni dei tasti**
+
+Vedere e cambiare le combinazioni di tasti delle azioni del programma.
+
+**Tasti**
+
+**Invio**
+: Sostituisce la combinazione: premere il tasto da assegnare.
+
+**F5**
+: Aggiunge un'altra combinazione per questa azione.
+
+**F8, Canc**
+: Toglie la combinazione.
+
+**Salva**
+: Scrive le modifiche in
+*~/.config/mc6/keymap.ini*.
+
+**Modifica file dei tasti**
+: Apre
+*keymap.ini*
+nell'editor.
+
+**Modifica file del terminale**
+: Apre le definizioni dei tasti del terminale.
+
+Le azioni segnate con \* si scostano da quelle di serie.
+
+# Analizzatore di tasti <!-- help:notitle --><a id="key-sniffer"></a>
+
+**Analizzatore di tasti**
+
+Premere Cattura e poi un tasto qualsiasi. Mostra:
+
+```
+Combinazione   Nome simbolico (per esempio Ctrl-F5)
+Azione         Azione associata nella mappa attuale
+Grezzo         Sequenza di escape e byte in esadecimale
+Codice         Codice numerico interno
+```
+
+Utile per capire i problemi con i tasti del terminale.

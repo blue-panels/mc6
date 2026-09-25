@@ -24,13 +24,39 @@ tree of named fields, with the value of each field beside its name and the
 place it was read from.
 
 .PP
-Without a second argument the definition is chosen by the contents of the
-file, from the ones that come with the package.  Give
+Without a second argument the definition is chosen by the name and the
+contents of the file.  Give
 \fIdefinition\fP
-to name one instead; a relative path is taken from the current directory.
+to name one instead: a bare name is looked for in the directories of
+definitions, while a name with a slash in it is a path, taken from the
+current directory when it is relative.
+
+.PP
+The name and the first bytes are matched against the table in
+\fIstl.als\fP
+of each directory; where nothing matches, a definition named after the
+extension of the file is tried, and
+\fIstl.def\fP
+last of all.
+
+.PP
+The definitions are looked for in
+\fI~/.config/mc6/mcstruct\fP
+first, then in
+\fI{{sysconfdir}}/mcommander/mcstruct\fP,
+and last among the ones that come with the package, so a definition of your
+own hides the one of the same name below it.
 
 .PP
 The name needs a file.  Without one the program says so and stops.
+
+
+.SH OPTIONS
+.PP
+The options are those of
+\fBmcommander\fP\&.  See
+\fBmcommander\fP(1)
+for the full list.
 
 
 .SH FILES
@@ -39,10 +65,14 @@ The name needs a file.  Without one the program says so and stops.
 The definitions that come with the package, one file per format.
 
 .TP
-\fI{{panel_plugins_dir}}/mcstruct/mcstruct_panel.hlp\fP
-The help text of the panel, also reachable with
+\fI{{panel_plugins_dir}}/mcstruct/mcstruct_panel.md\fP
+The help text of the panel, which
 \fBF1\fP
-inside it.
+opens inside it.
+
+.TP
+\fI~/.config/mc6/mcstruct/\fP, \fI{{sysconfdir}}/mcommander/mcstruct/\fP
+Definitions of your own, read before the ones of the package.
 
 
 .SH LICENSE

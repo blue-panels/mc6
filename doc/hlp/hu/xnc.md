@@ -49,3 +49,50 @@ gördíti.
 Local variables:
 fill-column: 58
 end:
+
+# Billentyűtársítások <!-- help:notitle --><a id="key-bindings"></a>
+
+**Billentyűtársítások**
+
+A program műveleteihez tartozó billentyűk megtekintése és módosítása.
+
+**Billentyűk**
+
+**Enter**
+: A társítás cseréje: nyomja le a billentyűt, amelyet hozzá akar rendelni.
+
+**F5**
+: Újabb billentyű hozzáadása ehhez a művelethez.
+
+**F8, Del**
+: A társítás eltávolítása.
+
+**Mentés**
+: A változtatások kiírása a
+*~/.config/mc6/keymap.ini*
+fájlba.
+
+**Billentyűfájl szerkesztése**
+: A
+*keymap.ini*
+megnyitása a szerkesztőben.
+
+**Terminálfájl szerkesztése**
+: A terminál billentyűdefinícióinak megnyitása.
+
+A \* jellel jelölt műveletek eltérnek az alapértelmezettől.
+
+# Billentyűfigyelő <!-- help:notitle --><a id="key-sniffer"></a>
+
+**Billentyűfigyelő**
+
+Nyomja meg az Elfogás gombot, majd egy tetszőleges billentyűt. Megmutatja:
+
+```
+Társítás   Jelképes név (például Ctrl-F5)
+Művelet    A jelenlegi kiosztásban hozzá tartozó művelet
+Nyers      Vezérlősorozat és a bájtok hexadecimálisan
+Kód        Belső számkód
+```
+
+Hasznos a terminál billentyűivel kapcsolatos gondok felderítéséhez.

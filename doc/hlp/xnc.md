@@ -46,47 +46,68 @@ The full key list of the help viewer:
 
 # Key Bindings <!-- help:notitle --><a id="key-bindings"></a>
 
- Key Bindings
+**Key Bindings**
 
 View and change keyboard shortcuts for mc actions.
 
- Keys
+**Keys**
 
-  Enter    Replace shortcut (press the key to assign)
-  F5       Add extra shortcut for this action
-  F8/Del   Remove shortcut
-  Save     Write changes to ~/.config/mc6/keymap.ini
-  Edit keymap file   Open keymap.ini in editor
-  Edit term file     Open terminal key definitions
+**Enter**
+: Replace the shortcut: press the key to assign.
+
+**F5**
+: Add an extra shortcut for this action.
+
+**F8, Del**
+: Remove the shortcut.
+
+**Save**
+: Write the changes to
+*~/.config/mc6/keymap.ini*.
+
+**Edit keymap file**
+: Open
+*keymap.ini*
+in the editor.
+
+**Edit term file**
+: Open the terminal key definitions.
 
 Actions marked with \* differ from defaults.
 
 # Learn keys <!-- help:notitle --><a id="learn-keys"></a>
 
- Learn Terminal Keys
+**Learn Terminal Keys**
 
 Teach mc the escape sequences your terminal sends
 for function keys, arrows and navigation keys.
 
- Usage
+**Usage**
 
-  1. Check the modifier (Ctrl, Alt, Shift)
-  2. Click a key button -- press that key
-  3. Wait until the capture message disappears
-  4. Save when done
+```
+1. Check the modifier (Ctrl, Alt, Shift)
+2. Click a key button -- press that key
+3. Wait until the capture message disappears
+4. Save when done
+```
 
-  Del      Clear a learned key
-  Save     Write to ~/.config/mc6/term/<TERM>
-  Edit term file   Open the file in editor
+```
+Del              Clear a learned key
+Save             Write to ~/.config/mc6/term/<TERM>
+Edit term file   Open the file in editor
+```
 
 # Key Sniffer <!-- help:notitle --><a id="key-sniffer"></a>
 
- Key Sniffer
+**Key Sniffer**
 
 Press Capture, then any key. Shows:
-  Shortcut   Symbolic name (e.g. Ctrl-F5)
-  Action     Bound action in current keymap
-  Raw        Escape sequence and hex bytes
-  Keycode    Internal numeric code
+
+```
+Shortcut   Symbolic name (e.g. Ctrl-F5)
+Action     Bound action in current keymap
+Raw        Escape sequence and hex bytes
+Keycode    Internal numeric code
+```
 
 Useful for diagnosing terminal key problems.

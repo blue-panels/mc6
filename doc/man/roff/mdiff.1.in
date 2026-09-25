@@ -9,7 +9,7 @@ mdiff \- Internal diff viewer of M\-Commander.
 .SH USAGE
 .PP
 \fBmdiff\fP
-[\-bcCdfhstVx?] file1 file2
+[\-bcdfhstVx?] file1 file2
 
 
 .SH DESCRIPTION
@@ -41,6 +41,10 @@ defaults to black and white.
 Disable mouse support.
 
 .TP
+\fI\-h, \-?, \-\-help\fP
+Show the options and what they do.
+
+.TP
 \fI\-f\fP
 Display the compiled\-in search paths for M\-Commander files.
 
@@ -49,6 +53,10 @@ Display the compiled\-in search paths for M\-Commander files.
 Specify a name of skin in the command line.  See the
 \fBSkins\fP
 section in mcommander(1) for more information.
+
+.TP
+\fI\-s\fP
+Run on a slow terminal: the screen is drawn with fewer updates.
 
 .TP
 \fI\-t\fP
@@ -66,6 +74,202 @@ Displays the version of the program.
 \fI\-x\fP
 Forces xterm mode.  Used when running on xterm\-capable terminals (two
 screen modes, and able to send mouse escape sequences).
+
+
+.SH Internal Diff Viewer
+.PP
+The mdiff is a visual diff tool. You can compare two files and edit them
+in place; the difference is computed anew after every change. The git panel
+plugin opens it as well, with the file as HEAD has it on one side and the
+file of the working tree on the other.
+
+.PP
+Following shortcuts are available in internal diff viewer of
+M\-Commander.
+
+.TP
+\fBF1\fP
+Invoke the built\-in hypertext help viewer.
+
+.TP
+\fBF2\fP
+Save modified files.
+
+.TP
+\fBF4\fP
+Edit file of the left panel in the internal editor.
+
+.TP
+\fBF14\fP
+Edit file of the right panel in the internal editor.
+
+.TP
+\fBF5\fP
+Merge the current hunk into the file on the right. Only the current hunk is
+merged, and the difference is computed again.
+
+.TP
+\fBF15\fP
+Merge the current hunk the other way, into the file on the left.
+
+.TP
+\fBF7\fP
+Start search.
+
+.TP
+\fBF17\fP
+Continue search.
+
+.TP
+\fBF9\fP
+Open the
+options of the compare view\&.
+
+.TP
+\fBAlt\-e\fP
+Choose the charset the two files are read in.
+
+.TP
+\fBF10, Esc, q, Q\fP
+Exit from diff viewer.
+
+.TP
+\fBAlt\-s, s\fP
+Toggle show of hunk status.
+
+.TP
+\fBAlt\-n, l\fP
+Toggle show of line numbers.
+
+.TP
+\fBCtrl\-s\fP
+Toggle syntax highlighting. The text of each line is then colored by the
+syntax rules, the way the internal editor colors it, and the state of the line
+is left to the background and to the marker column. Where a skin tells a
+changed word from the rest of its line by the color of the text alone, the word
+is underlined instead. The setting is remembered separately from the editor's
+own.
+
+.TP
+\fBf\fP
+Maximize left panel.
+
+.TP
+\fB=\fP
+Make panels equal in width.
+
+.TP
+\fB>\fP
+Reduce the size of the right panel.
+
+.TP
+\fB<\fP
+Reduce the size of the left panel.
+
+.TP
+\fB2, 3, 4, 8\fP
+Set tabulation size
+
+.TP
+\fBC\-u\fP
+Swap contents of diff panels.
+
+.TP
+\fBC\-r\fP
+Read both files again and compute the difference anew.
+
+.TP
+\fBC\-o\fP
+Toggle the terminal and show the command screen.
+
+.TP
+\fBEnter, Space, n\fP
+Find next diff hunk.
+
+.TP
+\fBBackspace, p\fP
+Find previous diff hunk.
+
+.TP
+\fBg, G\fP
+Go to line.
+
+.TP
+\fBDown\fP
+Scroll one line forward.
+
+.TP
+\fBUp\fP
+Scroll one line backward.
+
+.TP
+\fBPageUp\fP
+Move one page up.
+
+.TP
+\fBPageDown\fP
+Moves one page down.
+
+.TP
+\fBLeft, Right\fP
+Scroll the text one column sideways.
+
+.TP
+\fBC\-Left, C\-Right\fP
+Scroll the text eight columns sideways.
+
+.TP
+\fBHome\fP
+Scroll back to the first column.
+
+.TP
+\fBC\-Home\fP
+Move to the file beginning.
+
+.TP
+\fBC\-End\fP
+Move to the file end.
+
+
+.SH Diff options
+.PP
+The settings of the
+compare view,
+as
+\fBF9\fP
+there and the
+\fBDiff viewer options\fP
+entry of the Options menu of the file manager open them. The compare view
+takes them when it starts, so a view already on the screen keeps the ones it
+was opened with.
+
+.PP
+\fIDiff algorithm.\fP
+Normal compares the files as they are. Fastest assumes large files and
+settles for a coarser result. Minimal spends more time to find a smaller set
+of changes.
+
+.PP
+\fIIgnore case.\fP
+Upper and lower case letters count as the same character.
+
+.PP
+\fIIgnore tab expansion.\fP
+Lines that differ only in how the same indentation is written, with tabs or
+with spaces, count as equal.
+
+.PP
+\fIIgnore space change.\fP
+A run of whitespace counts as equal to any other run of whitespace.
+
+.PP
+\fIIgnore all whitespace.\fP
+Whitespace is left out of the comparison.
+
+.PP
+\fIStrip trailing carriage return.\fP
+Drop the carriage return at the end of a line, so a file with DOS line ends
+compares to one with Unix line ends.
 
 
 .SH FILES

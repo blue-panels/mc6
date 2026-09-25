@@ -9,11 +9,11 @@ mcedit6 \- Internal file editor of M\-Commander.
 .SH SYNOPSIS
 .PP
 \fBmcedit6\fP
-[\-bcCdfhstVx?] [+lineno] [file1] [file2] ...
+[\-bcdfhstVx?] [+lineno] [file1] [file2] ...
 
 .PP
 \fBmcedit6\fP
-[\-bcCdfhstVx?] file1:lineno[:] file2:lineno[:] ...
+[\-bcdfhstVx?] file1:lineno[:] file2:lineno[:] ...
 
 
 .SH DESCRIPTION
@@ -49,6 +49,10 @@ support.
 Disable mouse support.
 
 .TP
+\fI\-h, \-?, \-\-help\fP
+Show the options and what they do.
+
+.TP
 \fI\-f\fP
 Display the compiled\-in search path for M\-Commander data
 files.
@@ -58,6 +62,10 @@ files.
 Specify a name of skin in the command line.  See the
 \fBSkins\fP
 section in mcommander(1) for more information.
+
+.TP
+\fI\-s\fP
+Run on a slow terminal: the screen is drawn with fewer updates.
 
 .TP
 \fI\-t\fP
@@ -78,8 +86,10 @@ screen modes, and able to send mouse escape sequences).
 .SH FEATURES
 .PP
 The internal file editor is a full\-featured windowed editor.  It can
-edit several files at the same time. Maximum size of each file is 64
-megabytes. It is possible to edit binary files. The features it presently
+edit several files at the same time. A file larger than
+\fIeditor_filesize_threshold\fP
+(64 MB by default) is opened after a question, not refused. It is possible
+to edit binary files. The features it presently
 supports are: block copy, move, delete, cut, paste; key for key undo;
 pull\-down menus; file insertion; macro commands; regular expression
 search and replace; shift\-arrow text highlighting (if supported by
@@ -107,13 +117,11 @@ In addition to that, Shift combined with arrows does text highlighting
 (if supported by the terminal):
 \fBCtrl\-Ins\fP
 copies to the file
-\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+\fB~/.local/share/mc6/mcedit/mcedit.clip\fP,
 \fBShift\-Ins\fP
-pastes from
-\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+pastes from it,
 \fBShift\-Del\fP
-cuts to
-\fB~/.cache/mc6/mcedit6/mcedit6.clip\fP,
+cuts to it,
 and
 \fBCtrl\-Del\fP
 deletes highlighted text.  Mouse highlighting also works on some
@@ -128,6 +136,24 @@ The completion key (usually
 or
 \fBEscape Tab\fP)
 completes the word under the cursor using the words used in the file.
+
+.PP
+These commands have keys but no menu entry of their own:
+\fBMeta\-t\fP
+sorts the selected lines,
+\fBMeta\-u\fP
+runs a shell command and puts its output in,
+\fBMeta\-p\fP
+formats the paragraph the cursor is in,
+\fBCtrl\-q\fP
+inserts the next key, or a code point written as U+XXXX, as it stands,
+\fBMeta\-m\fP
+mails the file, and
+\fBCtrl\-p\fP
+checks the spelling of the word under the cursor.  The first five are Lua
+scripts of the editor and go away with them; the last one belongs to the
+spell plugin, which also has an entry in the Plugins menu, as every editor
+plugin that carries one does.
 
 .PP
 The
@@ -174,12 +200,12 @@ ctrl\-W=ExecuteScript:25;
 This means that ctrl\-W hotkey initiates the
 \fIExecuteScript(25)\fP
 action, then editor handler translates this into execution of
-\fB~/.local/share/mc6/mcedit6/macros.d/macro.25.sh\fP
+\fB~/.local/share/mc6/mcedit/macros.d/macro.25.sh\fP
 shell script.
 
 .PP
 External scripts are stored in
-\fB~/.local/share/mc6/mcedit6/macros.d/\fP
+\fB~/.local/share/mc6/mcedit/macros.d/\fP
 directory and must be named as
 \fBmacro.XXXX.sh\fP
 where
@@ -303,7 +329,8 @@ ctags \-e \-\-language\-force=C \-R ./
 .PP
 \fBMeta\-Enter\fP
 shows list box to select item under cursor (cursor should stand at the end
-of the word).
+of the word).  The tags are read by the etags plugin of the editor, so the
+key does nothing where that plugin is switched off.
 
 .PP
 \fBMeta\-Minus\fP
@@ -311,8 +338,8 @@ where minus is symbol "\-" goes to previous function in navigation list
 (like browser's Back button).
 
 .PP
-\fBMeta\-Equal\fP
-where equal is symbol "=" goes to next function in navigation list
+\fBMeta\-Plus\fP
+where plus is symbol "+" goes to next function in navigation list
 (like browser's Forward button).
 
 
@@ -718,11 +745,15 @@ Show confirmation dialog on save.
 
 .TP
 \fIeditor_option_typewriter_wrap\fP
-to be described
+Break the line at
+\fBeditor_word_wrap_line_length\fP
+while it is typed, the way a typewriter does. One of the three wrap modes of
+the options dialog.
 
 .TP
 \fIeditor_option_auto_para_formatting\fP
-to be described
+Format the paragraph the cursor is in while it is typed. The other of the
+three wrap modes; off means no wrapping at all.
 
 .TP
 \fIeditor_option_save_position\fP
@@ -767,6 +798,290 @@ will be untouched. Default value is
 \fIeditor_state_full_filename\fP
 Show full path name in the status line. If disabled (default), only base name of the
 file is shown.
+
+.TP
+\fIeditor_filesize_threshold\fP
+The size above which a file is opened only after a question. The value takes
+a suffix, as in 64M or 512K. Default is 64M.
+
+.TP
+\fIeditor_show_right_margin\fP
+Mark the column of
+\fBeditor_word_wrap_line_length\fP
+as the right margin. The "Toggle right margin" item of the Command menu
+switches this option. Disabled by default.
+
+.TP
+\fIeditor_simple_statusbar\fP
+Show a shorter status line, without the offset and the character under the
+cursor. Disabled by default.
+
+.TP
+\fIeditor_check_new_line\fP
+Ask about the missing newline at the end of the file when it is saved. The
+"Check POSIX new line" option of the save mode dialog switches it. Disabled
+by default.
+
+.TP
+\fIeditor_ask_filename_before_edit\fP
+Ask for the name of the file before the editor is started from the file
+manager. The "Ask new file name" option of the Configuration dialog switches
+it. Disabled by default.
+
+
+.SH Internal File Editor
+.PP
+The internal file editor is a full\-featured full screen editor.  A file
+larger than
+\fIeditor_filesize_threshold\fP
+(64 MB by default) is opened after a question.  It is possible to edit
+binary files.
+The internal file editor is invoked using
+\fBF4\fP
+if the
+\fIuse_internal_edit\fP
+option is set in the initialization file.
+
+.PP
+The features it presently supports are: block copy, move, delete, cut,
+paste; key for key undo; pull\-down menus; file insertion; macro
+commands; regular expression search and replace; S\-arrow text highlighting
+(if supported by the terminal); insert\-overwrite toggle; word wrap;
+autoindent; tunable tab size; syntax highlighting for various file
+types; and an option to pipe text blocks through shell commands like
+indent and ispell.
+
+.TP
+Sections:
+The keys
+
+Macros
+
+Options of editor in ini\-file
+
+Editor options
+
+.PP
+The editor is very easy to use and requires no tutoring. To see what
+keys do what, just consult the appropriate pull\-down menu. Other keys
+are: Shift movement keys do text highlighting.
+\fBC\-Ins\fP
+copies to the clipfile
+\fB~/.local/share/mc6/mcedit/mcedit.clip\fP,
+\fBS\-Ins\fP
+pastes from it,
+\fBS\-Del\fP
+cuts to it, and
+\fBC\-Del\fP
+deletes highlighted text. Mouse highlighting also works, and you
+can override the mouse as usual by holding down the shift key
+while dragging the mouse to let normal terminal mouse highlighting
+work.
+
+.PP
+To define a macro, press
+\fBC\-R\fP
+and then type out the key strokes you want to be executed. Press
+\fBC\-R\fP
+again when finished, and assign the macro to a key by pressing that key. The
+macro is executed by that key, and by
+\fBC\-A\fP
+and the assigned key. The macros are kept in the section
+\fB[editor]\fP
+of the file
+\fB~/.local/share/mc6/macros\fP,
+and a macro is deleted by deleting its line there; the
+Macros
+section says how a macro calls a script of its own.
+
+.PP
+To change charset of displayed text may use Alt\-e (M\-e).
+Recoding is made from selected codepage into system codepage. To
+cancel the recoding you may select "<No translation>" in charset
+selection dialog.
+
+.PP
+The
+\fBFilter\fP
+button of the search dialog
+(\fBF7\fP)
+hides every line that does not match the search string, using the same
+type, case and whole\-word settings as the search.  Line numbers keep
+their original values and the line state gutter marks each hidden run.
+The set of hidden lines is fixed at the moment the button is pressed:
+editing never re\-applies the match, so a shown line that is split or
+joined stays shown, and lines typed afterwards stay shown even if they
+do not match.
+\fBM\-s\fP
+lifts the filter; pressed again it puts the last search back on as a
+filter.  "Unfold all" in the Command menu lifts it as well.
+
+
+.SH Editor options
+.PP
+The settings of the
+internal editor,
+as the
+\fBOptions\fP
+menu of the editor and the
+\fBEditor options\fP
+entry of the Options menu of the file manager open them. They are written to
+the ini file under the names the OPTIONS section of this page describes.
+
+.PP
+\fIWrap mode.\fP
+Off, dynamic paragraph formatting, or the typewriter wrap that breaks a line
+at the word wrap line length while it is typed.
+
+.PP
+\fIFake half tabs.\fP
+Move and indent by half a tab between the text and the left margin, with
+spaces, while a tab stays a tab everywhere else.
+
+.PP
+\fIBackspace through tabs.\fP
+One backspace deletes all the space to the left margin when there is no text
+between the cursor and the margin.
+
+.PP
+\fIFill tabs with spaces.\fP
+Insert spaces up to the next tab stop instead of a tab character.
+
+.PP
+\fITab spacing.\fP
+The width a tab character stands for. 8 by default, and other editors and
+viewers assume 8 as well.
+
+.PP
+\fIReturn does autoindent.\fP
+A new line starts at the indentation of the line above.
+
+.PP
+\fIConfirm before saving.\fP
+Ask before the file is written.
+
+.PP
+\fISave file position.\fP
+Open a file at the place it was left the last time.
+
+.PP
+\fIVisible trailing spaces.\fP
+Mark the spaces at the end of a line.
+
+.PP
+\fIVisible tabs.\fP
+Mark the tab characters.
+
+.PP
+\fIShow control characters.\fP
+Print the control characters of the text instead of hiding them.
+
+.PP
+\fISyntax highlighting.\fP
+Color the text by the syntax rules of its file type.
+
+.PP
+\fICursor after inserted block.\fP
+Leave the cursor at the end of a block that was just inserted, not at its
+start.
+
+.PP
+\fIPersistent selection.\fP
+A selection stays when the cursor moves, instead of being dropped.
+
+.PP
+\fICursor beyond end of line.\fP
+The cursor may stand past the last character of a line.
+
+.PP
+\fIGroup undo.\fP
+One undo takes back a run of the same kind of change, not a single key.
+
+.PP
+\fIWord wrap line length.\fP
+The column the wrap modes break a line at. 72 by default.
+
+
+.SH Save As
+.PP
+The name to write the file under, and the line breaks to write it with: as the
+file has them, Unix (LF), Windows and DOS (CR LF), or Macintosh (CR). The
+choice holds for that save; the file keeps what it is given.
+
+
+.SH Edit Save Mode
+.PP
+How a file is written, the same three modes the
+\fIeditor_option_save_mode\fP
+setting takes:
+
+.TP
+\fBQuick save\fP
+Write over the file at once. Fast, and a failure in the middle leaves the
+file half written.
+
+.TP
+\fBSafe save\fP
+Write a temporary file first and rename it over the original when it is
+whole, so a failure leaves the original untouched.
+
+.TP
+\fBDo backups with following extension\fP
+Safe save, and the original is kept under its name with the extension of the
+input line added, "~" by default. Saving twice replaces the backup as well.
+
+.TP
+\fBCheck POSIX new line\fP
+Ask about the missing newline at the end of the file before it is written.
+
+
+.SH Macro Explorer
+.PP
+The macros that are recorded, with the key each one answers to and what it
+does. The buttons are
+
+.TP
+\fBRun\fP
+Play the macro the cursor is on.
+
+.TP
+\fBDelete\fP
+Remove it, after a question.
+
+.TP
+\fBEdit file\fP
+Open the file the macros live in, which the
+Macros
+section describes.
+
+
+.SH Open files
+.PP
+The files the editor has open, one to a line. Enter goes to the file the
+cursor is on, Esc leaves the file that is shown where it is. The same list is
+the
+\fBList...\fP
+item of the Window menu.
+
+
+.SH Plugin info
+.PP
+The plugins the editor has loaded: the name, whether it is on, what it
+provides and what it does. It is a list to look at; a plugin is switched off
+and its settings are opened in the
+Manage plugins
+dialog of the file manager.
+
+
+.SH Options of editor in ini\-file
+.PP
+Some editor options of ini\-file are described in this section.
+Options are placed in [Midnight\-Commander] section
+
+.TP
+\fIeditor_wordcompletion_collect_entire_file\fP
+Search autocomplete candidates in entire of file or just from
+begin of file to cursor position (0)
 
 
 .SH FILES

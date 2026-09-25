@@ -14,8 +14,12 @@ mcommander, mc6 - Visual shell for Unix-like systems.
 
 # DESCRIPTION
 
-M-Commander is a directory browser/file manager for
-Unix-like operating systems.
+M-Commander is a two-pane text-mode file manager for Unix-like operating
+systems, based on GNU Midnight Commander. It keeps a small core and loads its
+panel plugins at run time, so an archive, a remote system or the state of a
+repository is handled in a panel like ordinary files. Commands run in a
+built-in terminal, and the program comes with an editor with syntax
+highlighting and a viewer that also reads binary files.
 
 
 # OPTIONS
@@ -55,9 +59,6 @@ xterm-capable terminals (tmux/screen).
 
 *-K file, --keymap=file*
 : Specify a name of keymap file in the command line.
-
-*-l file, --ftplog=file*
-: Save the ftpfs dialog with the server in file.
 
 *--nokeymap*
 : Don't load key bindings from any file, use default hardcoded keys.
@@ -249,6 +250,22 @@ the input lines in the query dialogs.
 
 ## Redefine hotkey bindings <a id="keys_redefine"></a>
 
+The same can be done in the program itself, from the
+**Options**
+menu. The
+[Key bindings](#key-bindings)
+dialog lists every action with the keys it answers to, changes them and writes
+the result to
+**~/.config/mc6/keymap.ini**,
+so the file the option looks for is the file that dialog keeps. The
+[Learn keys](#learn-keys)
+dialog is about the other end of the problem: it teaches the program the
+sequences a terminal sends for keys it gets wrong. The
+[Key sniffer](#key-sniffer)
+shows what arrives for a key that is pressed, with the action it is bound to
+in the current keymap, which is what to look at when a binding seems to do
+nothing.
+
 Hotkey bindings may be read from external file (keymap-file).
 Initially, M-Commander creates key bindings using keymap defined
 in the source code. Then, two files
@@ -256,32 +273,47 @@ in the source code. Then, two files
 and
 **{{sysconfdir}}/mcommander/keymap.ini**
 are loaded always, sequentially reassigned key bindings defined earlier.
-User-defined keymap-file is searched on the following algorithm (to the first one found):
+The package puts its own keymaps in
+**{{sysconfdir}}/mcommander**:
+**keymap.default.ini**,
+**keymap.emacs.ini**
+and
+**keymap.vim.ini**,
+with
+**keymap.ini**
+a link to the default one.
+The option
+**--nokeymap**
+leaves every file out and keeps the bindings of the source code.
 
-> 1) command line option
-> **-K \<keymap>**
-> or
-> **--keymap=\<keymap>**  
-> 2) Environment variable
-> **MC_KEYMAP**  
-> 3) Parameter
-> **keymap**
-> in section
-> **[Midnight-Commander]**
-> of config file.  
-> 4) File
-> **~/.config/mc6/keymap.ini**  
+User-defined keymap-file is searched on the following algorithm
+(to the first one found):
 
-Command line option, environment variable and parameter in config file may
-contain the absolute path to the keymap-file (with the extension .keymap
-or without it). Search of keymap-file will occur in (to the first one found):
+```
+1) command line option -K <keymap>, --keymap=<keymap>
+2) environment variable MC_KEYMAP
+3) parameter keymap of the [Midnight-Commander] section
+4) file ~/.config/mc6/keymap.ini
+```
 
-> 1)
-> **~/.config/mc6**  
-> 2)
-> **{{sysconfdir}}/mcommander/**  
-> 3)
-> **{{pkgdatadir}}/**
+The first three take a name or an absolute path. A name that does not end in
+**.keymap**
+gets that extension added, and is looked for in (to the first one found):
+
+```
+1) ~/.config/mc6/
+2) {{pkgdatadir}}/
+```
+
+Because of that extension the keymaps of the package, whose names end in
+**.ini**,
+cannot be chosen this way. To take one of them, copy or link it to
+**~/.config/mc6/keymap.ini**,
+which is read last and needs no option:
+
+```
+ln -s {{sysconfdir}}/mcommander/keymap.vim.ini ~/.config/mc6/keymap.ini
+```
 
 ## Miscellaneous Keys
 
@@ -342,7 +374,7 @@ command.
 
 **Alt-!**
 : executes the Filtered view command, described in the
-[view command](#internal-file-viewer).
+[view command](mview.md#internal-file-viewer).
 
 **Alt-?**
 : executes the
@@ -485,11 +517,11 @@ the mouse.
 
 The Quick search mode allows you to perform fast file search in a file panel.
 Press
-*C-s*
+**C-s**
 or
-*Alt-s*
+**Alt-s**
 to start a filename search in the directory listing. Press
-*Alt-Shift-s*
+**Alt-Shift-s**
 to start Quick filter, which uses the same pattern but hides entries that do
 not contain it. The parent directory entry is always shown.
 
@@ -499,18 +531,28 @@ instead of the command line. If the
 option is enabled, the pattern is shown on the mini-status line. When typing,
 the selection bar will move to the next file starting with the typed letters;
 in Quick filter mode the list is also reduced to matching entries. The
-*Backspace*
+**Backspace**
 or
-*DEL*
+**DEL**
 keys can be used to correct typing mistakes.
 
-Pressing C-s or Alt-s while Quick filter is active switches to Quick search
-and shows all entries without losing the pattern or current file. Pressing
-Alt-Shift-s while Quick search is active switches back to Quick filter.
+Pressing
+**C-s**
+or
+**Alt-s**
+while Quick filter is active switches to Quick search and shows all entries
+without losing the pattern or current file. Pressing
+**Alt-Shift-s**
+while Quick search is active switches back to Quick filter.
 Repeating the shortcut of the active mode searches for the next match.
 
-Navigation keys such as the arrow, Home, End, Page Up and Page Down keys move
-within the filtered list without closing Quick filter.
+Navigation keys such as the arrows,
+**Home**,
+**End**,
+**PageUp**
+and
+**PageDown**
+move within the filtered list without closing Quick filter.
 
 Files can be marked and unmarked while Quick filter is active. Their marks are
 preserved when switching modes or closing the filter.
@@ -859,7 +901,7 @@ Panels may also be set to the following modes:
 
 **Quick View**
 : In this mode, the panel will switch to a reduced
-[viewer](#internal-file-viewer)
+[viewer](mview.md#internal-file-viewer)
 that displays the contents of the currently selected file, if you
 select the panel (with the tab key or the mouse), you will have access
 to the usual viewer commands.
@@ -1020,7 +1062,7 @@ add extra features to M-Commander.
 **View (F3, F13)**
 
 View the currently selected file. By default this invokes the
-[Internal File Viewer](#internal-file-viewer)
+[Internal File Viewer](mview.md#internal-file-viewer)
 but if the option "Use internal view" is off, it invokes an external
 file viewer specified by the
 **VIEWER**
@@ -1055,7 +1097,7 @@ Currently they invoke the
 editor, or the editor specified in the
 **EDITOR**
 environment variable, or the
-[Internal File Editor](#internal-file-editor)
+[Internal File Editor](mcedit6.md#internal-file-editor)
 if the use_internal_edit option is on.
 
 See
@@ -1747,7 +1789,8 @@ with '#', space or tab.
 
 M-Commander has some options that may be toggled on and
 off in several dialogs which are accessible from this menu. Options
-are enabled if they have an asterisk or "x" in front of them.
+are enabled if they have an asterisk or "x" in front of them. The menu holds,
+in this order:
 
 The
 [Configuration](#configuration)
@@ -1764,20 +1807,14 @@ The
 command pops up a dialog from which you specify options of file manager panels.
 
 The
+[File panel modes](#panel-modes)
+command opens the list of the named listing formats, where one is created,
+edited and removed.
+
+The
 [Confirmation](#confirmation)
 command pops up a dialog from which you specify which actions you want to
 confirm.
-
-The
-**Diff viewer options**,
-[Viewer options](#viewer-options)
-and
-**Editor options**
-commands pop up the dialogs of the three programs that show a file: the
-compare view, the viewer and the editor. The same dialogs are in the Options
-menu of each of them; here they are reachable without opening a file first.
-The compare view takes its options when it starts, so a view already on the
-screen keeps the ones it was opened with.
 
 The
 [Appearance](#appearance)
@@ -1789,13 +1826,43 @@ command pops up a dialog from which you test some keys which are not working
 on some terminals and you may fix them.
 
 The
+[Key bindings](#key-bindings)
+command opens the list of the actions with the keys they answer to, where a
+key is reassigned and the result written to the keymap file.
+
+The
+[Key sniffer](#key-sniffer)
+command shows what a terminal sends for the key that is pressed, and the
+action that key is bound to.
+
+The
 [Virtual FS](#virtual-fs)
 command pops up a dialog from which you specify some VFS related options.
+
+The
+**Diff viewer options**,
+[Viewer options](mview.md#viewer-options)
+and
+**Editor options**
+commands pop up the dialogs of the three programs that show a file: the
+compare view, the viewer and the editor. The same dialogs are in the Options
+menu of each of them; here they are reachable without opening a file first.
+The compare view takes its options when it starts, so a view already on the
+screen keeps the ones it was opened with.
+
+The
+[Manage plugins](#panel-plugins)
+command lists the plugins that are loaded, switches one off and opens its
+settings.
 
 The
 [Save setup](#save-setup)
 command saves the current settings of the Left, Right and Options
 menus. A small number of other settings is saved, too.
+
+The
+**About**
+command shows the version of the program and who wrote it.
 
 ### Configuration
 
@@ -1883,7 +1950,7 @@ environment variable is used.
 If no editor is specified,
 **vi**
 is used.  See the section on the
-[internal file editor](#internal-file-editor).
+[internal file editor](mcedit6.md#internal-file-editor).
 
 *Use internal viewer.*
 If this option is enabled, the built-in file viewer is used to view
@@ -1893,7 +1960,7 @@ environment variable is used.
 If no pager is specified, the
 **view**
 command is used.  See the section on the
-[internal file viewer](#internal-file-viewer).
+[internal file viewer](mview.md#internal-file-viewer).
 
 *Ask new file name.*
 If this option is enabled, file name is asked before open new file in editor.
@@ -2149,43 +2216,6 @@ You can specify how the
 and Quick filter modes should work: case insensitively, case sensitively or be matched
 to the panel sort order: case sensitive or not.
 
-### Viewer options
-
-The options of the
-[internal viewer](#internal-file-viewer)
-that hold for every file it opens.
-
-*Wrap long lines.*
-If enabled, a line wider than the screen is continued on the next screen
-line; otherwise it is cut and the view scrolls sideways. Enabled by default.
-
-*Syntax highlighting.*
-If enabled, the viewer colors the text by the syntax rules of the editor.
-A file opened in a mode that brings its own colors, such as a man page or
-rendered Markdown, keeps those colors. Disabled by default.
-
-*Mouse page scrolling.*
-If enabled, the mouse wheel scrolls by a page; otherwise it scrolls by a
-few lines. Enabled by default.
-
-*Remember file position.*
-If enabled, the viewer opens a file at the place it was left the last time.
-Disabled by default.
-
-*Tree view of JSON, YAML and XML.*
-If enabled, a file of one of these formats opens as a tree that can be
-folded, instead of plain text. The same view is always available with the
-key that switches the display mode. Disabled by default.
-
-*End of file marker.*
-The text printed after the last line of the file. Empty by default, which
-prints nothing.
-
-*Redraws to skip at most.*
-While a file is still being read, the viewer skips redraws to keep up with
-the data. This is how many it may skip in a row before it draws anyway. The
-default is 10.
-
 ### Confirmation
 
 In this dialog you configure the confirmation options for file deletion,
@@ -2231,81 +2261,73 @@ The old terminal key definitions from [terminal:TERM] in
 This option gives you control over the settings of the
 [Virtual File System](#virtual-file-system).
 
-M-Commander keeps in memory the information related to some
-of the virtual file systems to speed up the access to the files in the
-file system (for example, directory listings fetched from FTP servers).
+The dialog holds one setting,
+*Timeout for freeing VFSs,*
+which is the lifetime of the cache of a file system: after leaving an archive
+or a compressed file, the listing that was read and the temporary file that
+was unpacked are kept for that many seconds, so that going back in is
+immediate, and are released when the time is up. The default is 60 seconds,
+and 0 releases them at once.
 
-Also, in order to access the contents of compressed files (for example,
-compressed tar files), M-Commander needs to create temporary
-uncompressed files on your disk.
+### Manage plugins <a id="manage-plugins"></a>
 
-Since both the information in memory and the temporary files on disk
-take up resources, you may want to tune the parameters of the cached
-information to decrease your resource usage or to maximize the speed of
-access to frequently used file systems.
+The plugins the program has loaded, in a table: the kind, the name and what the
+plugin says about itself. A plugin is switched off and on with the checkbox of
+its row, and what is switched off is not loaded the next time either.
 
-Because of the format of the tar archives, the
-*Tar filesystem*
-needs to read the whole file just to load the file entries.  Since most
-tar files are usually kept compressed (plain tar files are species in
-extinction), the tar file system has to uncompress the file on the disk
-in a temporary location and then access the uncompressed file as a
-regular tar file.
-
-Now, since we all love to browse files and tar files all over the disk,
-it's common that you will leave a tar file and then re-enter it later.
-Since decompression is slow, M-Commander will cache the
-information in memory for a limited time.  When the timeout expires, all
-the resources associated with the file system are released.  The default
-timeout is set to one minute.
+**Enter, F4**
+: Open the settings of the plugin the cursor is on. A plugin that has none says
+so.
 
 The
-[FTP File System](#ftp-file-system)
-(ftpfs) allows you to browse directories on remote FTP servers.  It has
-several options.
+[panel plugins](#panel-plugins)
+are listed here together with the editor plugins and the packages of Lua
+scripts; the scripts of a package are listed by the
+[Lua scripts](#lua-scripts)
+dialog of its settings.
 
-*ftp anonymous password*
-is the password used when you login as "anonymous".  Some sites require
-a valid e-mail address.  On the other hand, you probably don't want to
-give your real e-mail address to untrusted sites, especially if you are
-not using spam filtering.
+### Lua scripts <a id="lua-scripts"></a>
 
-ftpfs keeps the directory listing it fetches from a FTP server in a cache.
-The cache expire time is configurable with the
-*ftpfs directory cache timeout*
-option.  A low value for this option may slow down every operation on
-the ftpfs because every operation would require sending a request to the
-FTP server.
+The scripts of a Lua package, in a table: the name, the identifier, where the
+script lives, what it provides and what it does. A script is switched off and
+on with the checkbox of its row.
 
-You can define an FTP proxy host for doing FTP.  Note that most modern
-firewalls are fully transparent at least for passive FTP (see below), so
-FTP proxies are considered obsolete.
+**Settings**
+: Run the script that carries the settings of the package, where it has one.
 
-If
-*Always use ftp proxy*
-is not set, you can use the exclamation sign to enable proxy for certain
-hosts.  See
-[FTP File System](#ftp-file-system)
-for examples.
+### Send to panel <a id="panel-plugins"></a>
 
-If this option is set, the program will do two things: consult the
-{{sysconfdir}}/mcommander/mc.no_proxy file for lines containing host names that
-are local (if the host name starts with a dot, it is assumed to be a
-domain) and to assume that any hostnames without dots in their names are
-directly accessible.  All other hosts will be accessed through the
-specified FTP proxy.
+When a file can be opened by more than one panel plugin, this list asks which
+one to send it to. Enter takes the plugin the cursor is on, Esc leaves the
+file where it is.
 
-You can enable using
-*~/.netrc*
-file, which keeps login names and passwords for ftp servers.  See netrc
-(5) for the description of the .netrc format.
+### File exists <a id="plugin-file-exists"></a>
 
-*Use passive mode*
-enables using FTP passive mode, when the connection for data transfer is
-initiated by the client, not by the server.  This option is recommended
-and enabled by default.  If this option is turned off, the data
-connection is initiated by the server.  This may not work with some
-firewalls.
+A copy into a panel plugin found a file of that name there. The dialog shows
+the path, the size and the time of what is being copied and of what is already
+there, and asks what to do: overwrite it, skip it, resume the copy where it
+stopped, when the plugin can continue one, or stop the whole operation.
+
+### Choose codepage <a id="codepages-translation"></a>
+
+The list of the codepages the program knows, from
+**{{pkgdatadir}}/charsets**.
+Choosing one tells the program in which codepage the names or the text at hand
+are written, and
+**\<No translation>**
+leaves them as bytes. The list is opened by
+**Alt-e**
+in a panel, in the viewer and in the editor, and by the Encoding item of their
+menus.
+
+### History <a id="history-query"></a>
+
+The list of what was typed into an input line before, newest first, which
+**Alt-h**
+opens for the line the cursor is in. Enter takes the entry the cursor is on
+into the line, Esc leaves the line as it was, and
+**F8, Del**
+removes the entry the cursor is on from the history.
 
 ### Save Setup
 
@@ -2774,6 +2796,8 @@ The error dialog informs about error conditions and has four choices:
 **[Retry]**
 : button to continue if you fixed the problem from another terminal.
 
+### Replace <a id="replace"></a>
+
 The replace dialog is shown when you attempt to copy or move a file on
 the top of an existing file.  The dialog shows the dates and sizes of
 the both files. There are the following buttons in this dialog:
@@ -2988,336 +3012,7 @@ If
 *Case sensitive*
 is off, the case will be ignored.
 
-# Internal Diff Viewer <a id="diff-viewer"></a>
-
-The mdiff is a visual diff tool. You can compare two files and edit them
-in-place (diffs are updated dynamically). You can browse and view a working
-copy from popular version control systems (GIT, Subversion, etc).
-
-Following shortcuts are available in internal diff viewer of
-M-Commander.
-
-**F1**
-: Invoke the built-in hypertext help viewer.
-
-**F2**
-: Save modified files.
-
-**F4**
-: Edit file of the left panel in the internal editor.
-
-**F14**
-: Edit file of the right panel in the internal editor.
-
-**F5**
-: Merge the current hunk. Only the current hunk will be merged.
-
-**F7**
-: Start search.
-
-**F17**
-: Continue search.
-
-**F10, Esc, q**
-: Exit from diff viewer.
-
-**Alt-s, s**
-: Toggle show of hunk status.
-
-**Alt-n, l**
-: Toggle show of line numbers.
-
-**Ctrl-s**
-: Toggle syntax highlighting. The text of each line is then colored by the
-syntax rules, the way the internal editor colors it, and the state of the line
-is left to the background and to the marker column. Where a skin tells a
-changed word from the rest of its line by the color of the text alone, the word
-is underlined instead. The setting is remembered separately from the editor's
-own.
-
-**f**
-: Maximize left panel.
-
-**=**
-: Make panels equal in width.
-
-**>**
-: Reduce the size of the right panel.
-
-**<**
-: Reduce the size of the left panel.
-
-**c**
-: Toggle show of trailing carriage return (CR) symbol as ^M.
-
-**2, 3, 4, 8**
-: Set tabulation size
-
-**C-u**
-: Swap contents of diff panels.
-
-**C-r**
-: Refresh the screen.
-
-**C-o**
-: Toggle the terminal and show the command screen.
-
-**Enter, Space, n**
-: Find next diff hunk.
-
-**Backspace, p**
-: Find previous diff hunk.
-
-**g**
-: Go to line.
-
-**Down**
-: Scroll one line forward.
-
-**Up**
-: Scroll one line backward.
-
-**PageUp**
-: Move one page up.
-
-**PageDown**
-: Moves one page down.
-
-**Home, A1**
-: Moves to the line beginning.
-
-**End**
-: Moves to the line end.
-
-**C-Home**
-: Move to the file beginning.
-
-**C-End, C1**
-: Move to the file end.
-
-# Internal File Viewer
-
-The internal file viewer provides three display modes: ASCII, hex and
-structured (tree).  To toggle between ASCII and hex, use the F4 key.
-To toggle the structured mode, use Alt-s or t.
-
-The viewer will try to use the best method provided by your system or
-the file type to display the information.
-Some character sequences, which appear most often in preformatted manual
-pages, are displayed bold and underlined, thus making a pretty display
-of your files.
-
-In ASCII mode the arrow keys move the view until the reading cursor is
-turned on.  Enter turns it on, and off again; a click and the keys that
-mark turn it on as well.  With the cursor on, the arrow keys walk the
-text and the Shift-arrow, Shift-Home, Shift-End, Shift-PageUp and
-Shift-PageDown keys mark it.
-
-Drag with the left mouse button to select text.  A double click selects
-a word and a triple click selects a visual line.  A single click only
-places the cursor on a character; it marks the point the shifted keys
-extend the selection from.  When the text scrolls (PageDown, the mouse
-wheel), the cursor stays on the screen in the same row and column.
-Press Ctrl-Insert or Enter to copy the selection to the clipfile and
-then to the external clipboard; C-u clears the selection and turns the
-cursor off, and so does copying.  Enter acts as Down where there is no
-cursor to turn on, in hex and tree modes.  Any cursor movement without
-Shift drops the selection and keeps the cursor.  The copied value is the
-displayed text: ANSI and nroff formatting is removed, tabs are expanded
-to spaces, and in filter mode only the visible lines are copied.
-
-Since the left button selects text, scrolling by clicking in the upper
-or lower third of the view (see
-*mouse_move_pages*
-in the [Viewer] section) is done with the right or middle mouse button in ASCII mode.
-The mouse wheel scrolls in every mode.
-
-When in hex mode, the search function accepts text in quotes and
-constant numbers.  Text in quotes is matched exactly after removing
-the quotes.  Each number matches one byte.  You can mix quoted text
-with constants like this:
-
-```
-"String" 34 0xBB 012 "more text"
-```
-
-Numbers are always interpreted in hex. In the example above, "34" is
-interpreted as 0x34. The prefix "0x" isn't really needed: we could type
-"BB" instead of "0xBB". And "012" is interpreted as 0x12, not as an octal
-number.
-
-The structured mode renders JSON, YAML and XML files as an
-expandable tree.  Press Alt-s (or t) on a supported file to enter it;
-if the file cannot be parsed, a diagnostic is shown and the viewer
-stays in ASCII mode.  YAML is handled by a built-in parser that
-covers the commonly used subset (block mappings and sequences, block
-scalars, quoted scalars, anchors and aliases).  Aliases are expanded
-by copying; a cyclic alias, or expansion beyond an internal node
-budget, is displayed as a \*name reference instead of a copy.  Tags and
-flow collections ([] and {}) are not parsed and appear as plain text
-values; documents outside the subset (multi-line plain scalars, tab
-characters in indentation) are reported and shown as plain text.  Inside the tree F4, Alt-s and t return to the
-ASCII mode.  The status line shows the content type and the jq-style
-path of the current node (for example
-**.spec.containers[0].image**).
-The mode also works in the quick view panel (C-x q), where the tree
-follows the panel cursor.  With the
-*structured_auto*
-option of the [Viewer] section enabled supported files open in the tree
-right away.  Keys
-available inside the tree:
-
-```
-Enter        expand/collapse the current node; on a leaf show
-             the full value
-Right/Left   expand / collapse (on a collapsed node Left jumps
-             to the parent)
-*            expand the current subtree recursively
-+ / -        expand / collapse the whole tree
-1 .. 9       expand the whole document to the given depth
-Alt-Enter    copy the path of the current node to the clipboard
-F7, /        search the whole document, including collapsed
-             nodes; the path to a match is expanded
-F17, n       continue the search
-F6           filter the tree by a pattern
-] / [        go to the next / previous match of the filter
-```
-
-The filter (F6) takes the pattern in the same dialog as the one of the
-ASCII mode, with the same type, case and whole-word settings, and keeps
-only the nodes whose key or value matches it.  The path down to every
-match stays visible, and so does what is inside a match, so a matched
-node can still be opened and browsed.  The status line counts the
-matches; ] and [ walk them.  An empty pattern clears the filter, and so
-does leaving the tree.  A node matches on the text its row shows, so a
-long value is matched only up to the length the tree keeps for the
-preview (160 characters).
-
-Here is a listing of the actions associated with each key that the
-M-Commander handles in the internal file viewer.
-
-**F1**
-: Invoke the built-in hypertext help viewer.
-
-**F2**
-: Toggle the wrap mode.
-
-**F4**
-: Toggle the hex mode.
-
-**Alt-s, t**
-: Toggle the structured (tree) mode for JSON, YAML and XML files.
-
-**F5**
-: Goto. You can specify a line number, offset or percentage of file size
-of position that you want to view.
-
-**F7, /, ?**
-: Start search. These keys call the dialog window that allows you to set up
-the search options. If key is ? the "Backwards" option is on.
-
-**C-s**
-: Continue forward search.
-
-**C-r**
-: Continue reverse search.
-
-**F17, n**
-: Continue search in the chosen direction.
-
-**N**
-: Temporary change the search direction: backwards if forward search is chosen,
-and vice versa.
-
-**Shift-F8**
-: Toggle syntax highlighting: the text is colored by the syntax rules, the same
-ones and the same way the internal editor uses. Above a few megabytes a file
-gets the line-local rules instead, which color numbers, quoted strings and
-punctuation without having to read everything above the line being shown.
-
-**Shift-F9**
-: Toggle interpretation of ANSI color escape sequences found in the text.
-
-**F8**
-: Toggle Raw/Parsed mode: This will show the file as found on disk or if
-a processing filter has been specified in the extensions.ini file, then the
-output from the filter. Current mode is always the other than written
-on the button label, since on the button is the mode which you enter
-by that key.
-
-**F9**
-: Toggle the format/unformat mode: when format mode is on the viewer
-will interpret some string sequences to show bold and underline with
-different colors. Also, on button label is the other mode than current.
-
-**F10, Esc.**
-: Exit the internal file viewer.
-
-**PageDown, space, C-v.**
-: Scroll one page forward.
-
-**PageUp, Alt-v, C-b, Backspace.**
-: Scroll one page backward.
-
-**Down, Up**
-: Move the text cursor one row down or up; on the edge of the view the
-text scrolls by one line.  In hex mode they scroll one line.
-
-**Left, Right**
-: Move the text cursor by one displayed character; at the end of the row
-it goes on to the next one.  In hex mode they move the hex cursor.
-
-**C-Left, C-Right**
-: Move the text cursor by eight displayed characters.
-
-**Shift-Left, Shift-Right, Shift-Up, Shift-Down**
-: Extend the text selection by one displayed character or row.
-
-**Shift-Home, Shift-End**
-: Extend the text selection to the start or end of the visual row.
-
-**Shift-PageUp, Shift-PageDown**
-: Extend the text selection to the first or last visible row.
-
-**Ctrl-Insert, Enter**
-: Copy selected text to the clipfile and external clipboard.  With no
-selection, Enter acts as Down.
-
-**C-u**
-: Clear the text selection.
-
-**C-l**
-: Refresh the screen.
-
-**C-o**
-: Toggle the terminal and show the command screen.
-
-**[n] m**
-: Set the mark n.
-
-**[n] r**
-: Jump to the mark n.
-
-**C-f**
-: Jump to the next file.
-
-**C-b**
-: Jump to the previous file.
-
-**Alt-r**
-: Toggle the ruler.
-
-**Alt-e**
-: to change charset of displayed text may use Alt-e (M-e).
-Recoding is made from selected codepage into system codepage. To
-cancel the recoding you may select "\<No translation>" in charset
-selection dialog.
-
-It's possible to instruct the file viewer how to display a file, look
-at the
-[Edit Extension File section](#edit-extension-file)
-
-## Regex Quick Reference
+# Regex Quick Reference
 
 **Common Tokens**
 
@@ -3516,100 +3211,6 @@ Control verb                        (*SKIP)
 Control verb                        (*THEN)
 ```
 
-# Internal File Editor
-
-The internal file editor is a full-featured full screen editor.  It can
-edit files up to 64 megabytes.  It is possible to edit binary files.
-The internal file editor is invoked using
-**F4**
-if the
-*use_internal_edit*
-option is set in the initialization file.
-
-The features it presently supports are: block copy, move, delete, cut,
-paste; key for key undo; pull-down menus; file insertion; macro
-commands; regular expression search and replace; S-arrow text highlighting
-(if supported by the terminal); insert-overwrite toggle; word wrap;
-autoindent; tunable tab size; syntax highlighting for various file
-types; and an option to pipe text blocks through shell commands like
-indent and ispell.
-
-Sections:
-: [Options of editor in ini-file](#internal-file-editor-options)
-
-The editor is very easy to use and requires no tutoring. To see what
-keys do what, just consult the appropriate pull-down menu. Other keys
-are: Shift movement keys do text highlighting.
-**C-Ins**
-copies to the file
-**mcedit6.clip**
-and
-**S-Ins**
-pastes from mcedit6.clip.
-**S-Del**
-cuts to
-**mcedit6.clip**,
-and
-**C-Del**
-deletes highlighted text. Mouse highlighting also works, and you
-can override the mouse as usual by holding down the shift key
-while dragging the mouse to let normal terminal mouse highlighting
-work.
-
-To define a macro, press
-**C-R**
-and then type out the key
-strokes you want to be executed. Press
-**C-R**
-again when finished. You can then assign the macro to any key you
-like by pressing that key. The macro is executed when you press
-**C-A**
-and then the assigned key. The macro is also executed if
-you press Meta, Ctrl, or Esc and the assigned key, provided that the
-key is not used for any other function. Once defined, the macro
-commands go into the file
-**~/.local/share/mc6/mcedit6/mcedit6.macros**
-You can delete a macro by deleting the
-appropriate line in this file.
-
-To change charset of displayed text may use Alt-e (M-e).
-Recoding is made from selected codepage into system codepage. To
-cancel the recoding you may select "\<No translation>" in charset
-selection dialog.
-
-The
-**Filter**
-button of the search dialog
-(**F7**)
-hides every line that does not match the search string, using the same
-type, case and whole-word settings as the search.  Line numbers keep
-their original values and the line state gutter marks each hidden run.
-The set of hidden lines is fixed at the moment the button is pressed:
-editing never re-applies the match, so a shown line that is split or
-joined stays shown, and lines typed afterwards stay shown even if they
-do not match.
-**M-s**
-lifts the filter; pressed again it puts the last search back on as a
-filter.  "Unfold all" in the Command menu lifts it as well.
-
-**F19**
-will format the currently highlighted block (plain text or C or C++
-code or another). This is controlled by the
-file
-**{{pkgdatadir}}/edit.indent.rc**
-which is copied to
-**~/.local/share/mc6/mcedit6/edit.indent.rc**
-in your home directory the first time you use it.
-
-# Options of editor in ini-file <a id="internal-file-editor-options"></a>
-
-Some editor options of ini-file are described in this section.
-Options are placed in [Midnight-Commander] section
-
-*editor_wordcompletion_collect_entire_file*
-: Search autocomplete candidates in entire of file or just from
-begin of file to cursor position (0)
-
 # Screen selector
 
 M-Commander supports running many internal modules (such as
@@ -3684,171 +3285,53 @@ system; this code layer is known as the virtual file system switch.  The
 virtual file system switch allows M-Commander to manipulate
 files not located on the Unix file system.
 
-Currently, M-Commander is packaged with some Virtual File
-Systems (VFS): the
+Two virtual file systems are built into the program besides the
 *local*
-file system, used for accessing the regular Unix file system; the
-*ftpfs,*
-used to manipulate files on remote systems with the FTP protocol; the
-*undelfs,*
-used to recover deleted files on ext2 file systems (the default file
-system for Linux systems),
-*shell*
-(for manipulating files over shell connections such as rsh and ssh).
-If the code was compiled with
-*sftpfs*
-(for manipulating files over SFTP connections).
-
-A generic
-*extfs*
-(EXTernal virtual File System) is provided in order to easily expand
-VFS capabilities using scripts and external software.
+one, which is the regular Unix file system:
+*extfs,*
+which turns a file or a system-wide list into a directory tree with a script
+of its own, and
+*sfs,*
+which passes a single file through a command and shows what comes out.
+Everything that needs a connection to another machine, and the archives, are
+[panel plugins](#panel-plugins)
+now, not file systems of the switch.
 
 The VFS switch code will interpret all of the path names used and will
 forward them to the correct file system, the formats used for each one
 of the file systems is described later in their own section.
 
-## FTP File System
+## Panel plugins <a id="panel-plugins"></a>
 
-The FTP File System (ftpfs) allows you to manipulate files on remote
-machines.  To actually use it, you can use the
-*FTP link*
-item in the menu or directly change your current directory using the
-*cd*
-command to a path name that looks like this:
-
-*ftp://[!][user[:pass]@]machine[:port]/[remote-dir]*
-
-The
-*user,*
-*port*
-and
-*remote-dir*
-elements are optional.  If you specify the
-*user*
-element, M-Commander will login to the remote machine as that
-user, otherwise it will use anonymous login or the login name from the
-*~/.netrc*
-file.  The optional
-*pass*
-element is the password used for the connection.  Using the password in
-the VFS directory name is not recommended, because it can appear on the
-screen in clear text and can be saved to the directory history.
-
-To enable using FTP proxy, prepend
-**!**
-(an exclamation sign) to the hostname.
-
-Examples:
+A panel is not bound to a file system: a plugin can fill it with whatever it
+can list. The plugins that come with the program are
 
 ```
-    ftp://ftp.nuclecu.unam.mx/linux/local
-    ftp://tsx-11.mit.edu/pub/linux/packages
-    ftp://!behind.firewall.edu/pub
-    ftp://guest@remote-host.com:40/pub
-    ftp://miguel:xxx@server/pub
+arcmc        archives, and what is inside them
+ftp, sftp    files on another machine
+shell-link   files on another machine over ssh
+samba        shares of an SMB server
+s3           buckets of an S3 storage
+git          the state of a repository
+docker       containers, images and their logs
+k8s          the objects of a cluster
+mongo        the collections of a database
+sqlite       the tables of a database
+systemd      the units of the system
+panelize     the result of a command as a panel
+mcpeek       a look inside a file
+mcstruct     a binary file as a tree of named fields
+skineditor   the skin of the program
 ```
 
-Please check the
-[Virtual File System](#virtual-fs)
-dialog box for ftpfs options.
-
-## FIle transfer over SHell filesystem
-
-The shell file system is a network based file system that allows you to
-manipulate the files in a remote machine as if they were local. To use
-this, the other side has to have bash-compatible shell.
-
-To connect to a remote machine, you just need to chdir
-into a special directory which name is in the following
-format:
-
-*sh://[user@]machine[:options]/[remote-dir]*
-
-The
-*user,*
-*options*
-and
-*remote-dir*
-elements are optional.  If you specify the
-*user*
-element, M-Commander will try to login on the remote
-machine as that user, otherwise it will use your login name.
-
-The available
-*options*
-are:
-
-```
-  'C' - use compression;
-  'r' - use rsh instead of ssh;
-  port - specify the port used by remote server.
-```
-
-If the
-*remote-dir*
-element is present, your current directory on the remote machine will be
-set to this one.
-
-Examples:
-
-```
-    sh://onlyrsh.mx:r/linux/local
-    sh://joe@want.compression.edu:C/private
-    sh://joe@noncompressed.ssh.edu/private
-    sh://joe@somehost.ssh.edu:2222/private
-```
-
-## SFTP (SSH File Transfer Protocol) filesystem
-
-The SFTP file system is a network based file system that allows you to
-manipulate the files in a remote machine as if they were local.
-
-To connect to a remote machine, you just need to chdir
-into a special directory which name is in the following
-format:
-
-*sftp://[user@]machine:[port]/[remote-dir]*
-
-The
-*user,*
-*port*
-and
-*remote-dir*
-elements are optional.  If you specify the
-*user*
-element, M-Commander will try to login on the remote
-machine as that user, otherwise it will use your login name.
-*port*
-\- specify the port used by remote server (22 by default).
-If the
-*remote-dir*
-element is present, your current directory on the remote machine will be
-set to this one.
-
-Examples:
-
-```
-    sftp://onlyrsh.mx/linux/local
-    sftp://joe:password@want.compression.edu/private
-    sftp://joe@noncompressed.ssh.edu/private
-    sftp://joe@somehost.ssh.edu:2222/private
-```
-
-When establishing the connection, server key fingerprint is verified using
-the ~/.ssh/known_hosts file. If the host/key pair is not found or the host is found,
-but the key doesn't match, an appropriate message is shown.
-There are three buttons in the message dialog:
-
-**[Yes]**
-add new host/key pair to the ~/.ssh/known_hosts file and continue.
-
-**[Ignore]**
-do not add new host/key pair to the ~/.ssh/known_hosts file, but continue
-nevertheless (at you own risk).
-
-**[No]**
-abort connection.
+Every plugin carries its own help, which
+**F1**
+opens inside its panel or its dialog. The
+**Manage plugins**
+item of the Options menu lists what is loaded, switches a plugin off and opens
+its settings. A plugin panel is reached from the
+[Left and Right menus](#left-and-right-menus),
+from the hotlist, or by typing the address of the plugin on the command line.
 
 ## EXTernal File System
 
@@ -3960,6 +3443,27 @@ section.  Here is an example entry for Debian packages:
           Open=%cd %p/deb://
 ```
 
+## Single File fileSystem
+
+**sfs**
+passes one file through a command and shows the result as a file of its own,
+which is how a compressed file is read without unpacking it by hand. The name
+of the file system is appended to the name of the file, as with extfs:
+
+```
+  cd documents.gz/ugz://
+```
+
+The commands are listed in
+**{{sysconfdir}}/mcommander/sfs.ini**,
+one to a line: the name of the file system, a slash, the number of the
+command, a tab, and the command itself, where
+*%1*
+is the file the panel is on and
+*%3*
+the file to write. The file that comes with the program holds the pairs that
+pack and unpack gz, bz2, lz, lz4, lzma, lzo, xz and zst, and a few more.
+
 # Colors
 
 M-Commander will try to detect if your terminal supports
@@ -4001,33 +3505,25 @@ If your skin contains any true-color definitions, you should define
 the 'truecolors' key set to TRUE value in [skin] section. If true-color
 is not used but 256-color is, you should define '256colors' instead.
 
-A skin-file is searched on the following algorithm (to the first one found):  
-: 1) command line option
-**-S \<skin>**
-or
-**--skin=\<skin>**  
-2) Environment variable
-**MC_SKIN**  
-3) Parameter
-**skin**
-in section
-**[Midnight-Commander]**
-in config file.  
-4) File
-**{{sysconfdir}}/mcommander/skins/default.ini**  
-5) File
-**{{pkgdatadir}}/skins/default.ini**
+A skin-file is searched on the following algorithm
+(to the first one found):
+```
+1) command line option -S <skin>, --skin=<skin>
+2) environment variable MC_SKIN
+3) parameter skin of the [Midnight-Commander] section
+4) file {{sysconfdir}}/mcommander/skins/default.ini
+5) file {{pkgdatadir}}/skins/default.ini
+```
 
 Command line option, environment variable and parameter in config file may
 contain the absolute path to the skin-file (with the extension .ini
 or without it). Search of skin-file will occur in (to the first one found):
 
-> 1)
-> **~/.local/share/mc6/skins/**  
-> 2)
-> **{{sysconfdir}}/mcommander/skins/**  
-> 3)
-> **{{pkgdatadir}}/skins/**  
+```
+1) ~/.local/share/mc6/skins/
+2) {{sysconfdir}}/mcommander/skins/
+3) {{pkgdatadir}}/skins/
+```
 
 The format of skin files is described in
 **{{pkgdatadir}}/skins/README.txt**.
@@ -4096,10 +3592,12 @@ the field clear_before_exec to 0.
 this flag is set to 1, then M-Commander will ask for confirmation before changing
 the directory if you have files tagged.
 
-*ftpfs_retry_seconds*
-: This value is the number of seconds M-Commander will wait
-before attempting to reconnect to an FTP server that has denied the
-login.  If the value is zero, the login will no be retried.
+*vfs_timeout*
+: The lifetime of the cache of a virtual file system, in seconds. After leaving
+an archive or a compressed file, the listing that was read and the temporary
+file that was unpacked are kept for that long, so that going back in is
+immediate, and are released when the time is up. 60 by default; 0 releases them
+at once. The Virtual FS dialog of the Options menu holds the same value.
 
 *only_leading_plus_minus*
 : Allow special treatment for '+', '-', '\*' in the command line (select,
@@ -4179,7 +3677,7 @@ autodetect_codeset=russian
 
 The settings of the internal file viewer are in the [Viewer] section of the
 same file. They are all in the
-[Viewer options](#viewer-options)
+[Viewer options](mview.md#viewer-options)
 dialog as well; the names here are what that dialog writes.
 
 *wrap*

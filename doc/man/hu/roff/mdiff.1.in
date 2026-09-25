@@ -1,0 +1,243 @@
+.\" Generated from mdiff.md by maint/update-man-in.sh. Do not edit.
+.TH MDIFF 1 "2026. szeptember" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NÉV
+.PP
+mdiff \- Belső összehasonlító.
+
+
+.SH ALKALMAZÁSA
+.PP
+\fBmdiff\fP
+[\-bcCdfhstVx?] fájl1 fájl2
+
+
+.SH LEÍRÁS
+.PP
+Az mdiff az
+\fBmcommander\fP
+program, a fájlkezelő fő programja felé mutató link. A program ezen a néven
+indítva a belső összehasonlítót nyitja meg, amely a parancssorban megadott
+\fIfájl1\fP
+és
+\fIfájl2\fP
+tartalmát veti össze.
+
+
+.SH Belső összehasonlító
+.PP
+Az mdiff szemléletes összehasonlító eszköz. Két fájlt lehet vele összevetni
+és helyben szerkeszteni, a különbség pedig minden változtatás után újra
+kiszámolódik. A git panelbővítmény is ezt nyitja meg, az egyik oldalon a
+fájllal úgy, ahogy a HEAD tartalmazza, a másikon a munkapéldánnyal.
+
+.PP
+A belső összehasonlítóban a következő billentyűk használhatók:
+
+.TP
+\fBF1\fP
+Elindítja a beépített hypertext súgót.
+
+.TP
+\fBF2\fP
+Menti a módosított fájlokat.
+
+.TP
+\fBF4\fP
+A bal oldali fájlt szerkeszti a belső szerkesztőben.
+
+.TP
+\fBF14\fP
+A jobb oldali fájlt szerkeszti a belső szerkesztőben.
+
+.TP
+\fBF5\fP
+Átviszi az aktuális eltérést a jobb oldali fájlba. Csak az aktuális eltérés
+kerül át, a különbség pedig újra kiszámolódik.
+
+.TP
+\fBF15\fP
+Átviszi az aktuális eltérést a másik irányba, a bal oldali fájlba.
+
+.TP
+\fBF7\fP
+Keresés indítása.
+
+.TP
+\fBF17\fP
+A keresés folytatása.
+
+.TP
+\fBF9\fP
+Megnyitja az
+összehasonlítás beállításait\&.
+
+.TP
+\fBAlt\-e\fP
+Kiválasztja a kódlapot, amellyel a két fájlt beolvassa.
+
+.TP
+\fBF10, Esc, q, Q\fP
+Kilép az összehasonlítóból.
+
+.TP
+\fBAlt\-s, s\fP
+Az eltérések állapotának megjelenítését kapcsolja.
+
+.TP
+\fBAlt\-n, l\fP
+A sorszámok megjelenítését kapcsolja.
+
+.TP
+\fBCtrl\-s\fP
+Szintaxiskiemelést kapcsol. A sorok szövegét a szintaxisszabályok színezik,
+ugyanúgy, ahogy a belső szerkesztőben, a sor állapota pedig a háttérre és a
+jelölőoszlopra marad. Ahol a skin a megváltozott szót csak a szöveg színével
+különbözteti meg a sor többi részétől, ott a szó aláhúzva jelenik meg. A
+beállítás a szerkesztő ugyanilyen beállításától függetlenül őrződik meg.
+
+.TP
+\fBf\fP
+Teljes méretűre nyitja a bal oldali panelt.
+
+.TP
+\fB=\fP
+Egyforma szélességűre állítja a paneleket.
+
+.TP
+\fB>\fP
+Szűkíti a jobb oldali panelt.
+
+.TP
+\fB<\fP
+Szűkíti a bal oldali panelt.
+
+.TP
+\fB2, 3, 4, 8\fP
+Beállítja a tabulátor méretét.
+
+.TP
+\fBC\-u\fP
+Felcseréli a két panel tartalmát.
+
+.TP
+\fBC\-r\fP
+Újraolvassa mindkét fájlt, és újra kiszámolja a különbséget.
+
+.TP
+\fBC\-o\fP
+Megmutatja a parancsképernyőt.
+
+.TP
+\fBEnter, szóköz, n\fP
+A következő eltérésre lép.
+
+.TP
+\fBBackspace, p\fP
+Az előző eltérésre lép.
+
+.TP
+\fBg, G\fP
+Ugrás a megadott sorra.
+
+.TP
+\fBDown\fP
+Egy sort gördít előre.
+
+.TP
+\fBUp\fP
+Egy sort gördít vissza.
+
+.TP
+\fBPageUp\fP
+Egy lapot lapoz vissza.
+
+.TP
+\fBPageDown\fP
+Egy lapot lapoz előre.
+
+.TP
+\fBLeft, Right\fP
+Egy oszloppal tolja el a szöveget oldalra.
+
+.TP
+\fBC\-Left, C\-Right\fP
+Nyolc oszloppal tolja el a szöveget oldalra.
+
+.TP
+\fBHome\fP
+Visszatér az első oszlophoz.
+
+.TP
+\fBC\-Home\fP
+A fájl elejére lép.
+
+.TP
+\fBC\-End\fP
+A fájl végére lép.
+
+
+.SH Az összehasonlítás beállításai
+.PP
+A
+belső összehasonlító
+beállításai, amelyeket ott az
+\fBF9\fP,
+a fájlkezelő Beállítások menüjében pedig az
+\fBÖsszehasonlító beállításai\fP
+tétel nyit meg. Az összehasonlító az indulásakor veszi át őket, így a már
+megnyitott összevetés azokkal dolgozik tovább, amelyekkel elindult.
+
+.PP
+\fIÖsszehasonlító algoritmus.\fP
+A Normál a fájlokat úgy veti össze, ahogy vannak. A Leggyorsabb nagy
+fájlokat feltételez, és durvább eredménnyel is beéri. A Legkisebb több időt
+tölt azzal, hogy kevesebb változást találjon.
+
+.PP
+\fIKis\- és nagybetű mellőzése.\fP
+A kis\- és a nagybetű ugyanannak a betűnek számít.
+
+.PP
+\fITabulátorra bontás mellőzése.\fP
+Azok a sorok, amelyek csak abban térnek el, hogy ugyanaz a behúzás
+tabulátorral vagy szóközökkel van írva, egyformának számítanak.
+
+.PP
+\fISzóközváltozás mellőzése.\fP
+Egy összefüggő üres rész bármely másik üres résszel egyenértékű.
+
+.PP
+\fIMinden szóköz mellőzése.\fP
+Az üres helyek kimaradnak az összehasonlításból.
+
+.PP
+\fISoremelés előtti kocsivissza levágása.\fP
+A sor végén álló kocsivissza karakter lekerül, így a DOS sorvégű fájl
+összevethető a Unix sorvégűvel.
+
+
+.SH LICENC
+.PP
+Ez a program a Free Software Foundation által közzétett GNU General Public
+License feltételei szerint terjeszthető. A licencről és a garancia hiányáról
+a beépített súgó ad részletes tájékoztatást.
+
+
+.SH Az M\-Commander frissítése
+.PP
+Az M\-Commander legfrissebb változata a
+\X'tty: link https://github.com/blue\-panels/mcommander/releases'https://github.com/blue\-panels/mcommander/releases\X'tty: link'
+címen érhető el.
+
+
+.SH Lásd még...
+.PP
+mcommander(1), mview(1), mcedit6(1), diff(1).
+
+
+.SH Hibák bejelentése
+.PP
+A hibákat a
+\X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link'
+címen lehet bejelenteni.
