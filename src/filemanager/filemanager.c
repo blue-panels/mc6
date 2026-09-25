@@ -359,6 +359,7 @@ create_options_menu (void)
         g_list_free (plugin_entries);
     }
 
+    entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Learn &keys..."), CK_LearnKeys));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &bindings..."), CK_KeyBindings));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &sniffer..."), CK_KeySniffer));
