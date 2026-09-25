@@ -50,6 +50,7 @@
 #endif
 
 #include "lib/global.h"
+#include "lib/mcconfig.h"
 #include "lib/strutil.h"
 #include "lib/widget.h"
 #include "lib/tty/tty.h"
@@ -66,6 +67,11 @@
 #include "mcterm_proto.h"
 #include "mcterm_select.h"
 #include "mcterm_setup.h"
+
+/*** global variables ****************************************************************************/
+
+/* Which way Alt-S looks for what is typed, and the filter for its next row. */
+mcterm_search_dir_t mcterm_search_direction = MCTERM_SEARCH_DOWN;
 
 /*** file scope variables ************************************************************************/
 
@@ -84,6 +90,17 @@
 /* How far Ctrl-Left and Ctrl-Right take the cursor: a tab stop, which is the
    step the columns of terminal output tend to fall on. */
 #define MCTERM_JUMP_COLS 8
+
+/* The view as it stood when the typing of a pattern began: what Escape puts back. */
+typedef struct
+{
+    gboolean cursor_valid;
+    gint64 cursor_row;
+    int cursor_col;
+    int scrollback;
+    mcterm_sel_t sel;
+    mcterm_filter_t filter;  // the filter that was on; it owns its rows while it is kept here
+} mcterm_query_undo_t;
 
 struct WMcTerm
 {
@@ -145,6 +162,7 @@ struct WMcTerm
     char *last_filter;  // what was filtered by last, for the filter to go back on
     /* A pattern typed the way the panels take one, on the top row: the output is searched for
        it, or cut down to the rows that match it, as it grows. */
+    mcterm_query_undo_t query_undo;
     gboolean query_active;
     gboolean query_filtering;
     GString *query;
@@ -1413,27 +1431,34 @@ mcterm_after_reflow (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The cursor starts where the shell is typing, or on the last row the
+/* Where reading starts: where the shell is typing, or the last row the
    terminal draws when the shell is typing on the command line. */
 static void
-mcterm_cursor_reset (WMcTerm *t)
+mcterm_cursor_home (WMcTerm *t, gint64 *row, int *col)
 {
     const gint64 shell_row =
         mcview_vterm_scrolled_rows (t->vterm) + mcview_vterm_cursor_row (t->vterm);
     mcterm_geom_t g;
 
-    t->cursor_valid = TRUE;
-
     if (!mcterm_geometry (t, &g) || (shell_row <= g.newest_abs && shell_row != g.skip_abs))
     {
-        t->cursor_row = shell_row;
-        t->cursor_col = mcview_vterm_cursor_col (t->vterm);
+        *row = shell_row;
+        *col = mcview_vterm_cursor_col (t->vterm);
     }
     else
     {
-        t->cursor_row = g.newest_abs;
-        t->cursor_col = 0;
+        *row = g.newest_abs;
+        *col = 0;
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static void
+mcterm_cursor_reset (WMcTerm *t)
+{
+    mcterm_cursor_home (t, &t->cursor_row, &t->cursor_col);
+    t->cursor_valid = TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1668,9 +1693,10 @@ mcterm_filter_set (WMcTerm *t, const char *pattern)
 {
     const WRect *r = &WIDGET (t)->rect;
     const gint64 newest = mcterm_newest_row (t);
-    gint64 cursor_row;
-    int index, len, lines;
+    gint64 cursor_row, home_row;
+    int index, len, lines, home_col;
 
+    mcterm_cursor_home (t, &home_row, &home_col);
     if (!t->cursor_valid)
         mcterm_cursor_reset (t);
     cursor_row = t->cursor_row;
@@ -1689,10 +1715,14 @@ mcterm_filter_set (WMcTerm *t, const char *pattern)
     mcterm_sel_clear (&t->sel);
     t->scrollback = 0;
 
-    /* The cursor stays where it was reading: on the row it was on, or on the
-       first row that matched below it. */
+    /* The cursor stays where it was reading: on the row it was on, or on the first row that
+       matched below it. Where the shell types nothing has been read, and it goes to the row
+       the search would have found first. */
     len = mcterm_filter_len (&t->filter);
-    index = mcterm_filter_index (&t->filter, cursor_row);
+    if (cursor_row == home_row)
+        index = mcterm_search_direction == MCTERM_SEARCH_UP ? len - 1 : 0;
+    else
+        index = mcterm_filter_index (&t->filter, cursor_row);
     lines = r->lines - mcterm_query_rows (t);
     t->filter.top = CLAMP (index - lines / 2, 0, MAX (len - lines, 0));
     t->cursor_row = mcterm_filter_row (&t->filter, index);
@@ -1756,26 +1786,36 @@ mcterm_query_redraw (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Mark the match of @pattern nearest the cursor going up, the cursor on its first cell. The
-   search starts from the end of the cursor row, and once it has marked a match, from that
-   match: it stays while it still matches, unless it is the @next one that is wanted. FALSE,
-   nothing moved, when there is none. */
+/* Mark the match of @pattern nearest the cursor on the side search_direction names, the cursor
+   on its first cell. The search starts from the far end of the cursor row, and once it has
+   marked a match, from that match: it stays while it still matches, unless it is the @next one
+   that is wanted. FALSE, nothing moved, when there is none. */
 static gboolean
 mcterm_query_search (WMcTerm *t, const char *pattern, gboolean next)
 {
     const WRect *r = &WIDGET (t)->rect;
-    gint64 row;
-    int from, col, width;
+    const gboolean up = mcterm_search_direction == MCTERM_SEARCH_UP;
+    gint64 row, from_row, home_row;
+    int from, col, width, home_col;
 
+    mcterm_cursor_home (t, &home_row, &home_col);
     if (!t->cursor_valid)
         mcterm_cursor_reset (t);
 
-    if (!t->query_found)
-        from = r->cols;
-    else
-        from = next ? t->cursor_col - 1 : t->cursor_col;
+    /* The cursor is where the shell types and nothing has matched yet: there is nothing being
+       read below, so a search that runs down starts at the oldest row of the output. Upwards
+       the cursor is already at the end it starts from. */
+    from_row = (!up && !t->query_found && t->cursor_row == home_row) ? mcterm_newest_row (t) + 1
+                                                                     : t->cursor_row;
 
-    if (!mcterm_filter_find (t->vterm, r->cols, mcterm_newest_row (t), pattern, t->cursor_row, from,
+    if (!t->query_found)
+        from = up ? r->cols : 0;
+    else if (!next)
+        from = t->cursor_col;
+    else
+        from = up ? t->cursor_col - 1 : t->cursor_col + 1;
+
+    if (!mcterm_filter_find (t->vterm, r->cols, mcterm_newest_row (t), pattern, from_row, from, up,
                              &row, &col, &width))
         return FALSE;
 
@@ -1863,9 +1903,10 @@ mcterm_query_drop_char (WMcTerm *t)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* The row that matched above the cursor, and past the first one round to the last. */
+/* The row that matched next to the cursor, on the side the search runs to, and past the last
+   one round to the other end. */
 static void
-mcterm_query_prev_row (WMcTerm *t)
+mcterm_query_step_row (WMcTerm *t)
 {
     const int len = mcterm_filter_len (&t->filter);
     int index;
@@ -1873,16 +1914,22 @@ mcterm_query_prev_row (WMcTerm *t)
     if (len == 0)
         return;
 
-    index = mcterm_filter_index (&t->filter, t->cursor_row) - 1;
-    t->cursor_row = mcterm_filter_row (&t->filter, index < 0 ? len - 1 : index);
+    index = mcterm_filter_index (&t->filter, t->cursor_row);
+    if (mcterm_search_direction == MCTERM_SEARCH_UP)
+        index = index > 0 ? index - 1 : len - 1;
+    else
+        index = index < len - 1 ? index + 1 : 0;
+
+    t->cursor_row = mcterm_filter_row (&t->filter, index);
     t->cursor_valid = TRUE;
     mcterm_show_row (t, t->cursor_row);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Done typing. @keep leaves the output cut down to what was typed; without it the filter goes,
-   the way Escape lifts the quick filter of a panel. */
+/* Done typing. With @keep the view stays on what was found, the way Enter leaves it; without
+   it Escape puts back the view of before the typing: the cursor where it was reading, or at
+   the prompt where it was not, and the filter and the mark it found there. */
 static void
 mcterm_query_stop (WMcTerm *t, gboolean keep)
 {
@@ -1898,8 +1945,20 @@ mcterm_query_stop (WMcTerm *t, gboolean keep)
         t->last_search = g_strdup (t->query->str);
     }
 
-    if (t->query_filtering && !keep)
+    if (keep)
+        mcterm_filter_clear (&t->query_undo.filter);
+    else
+    {
         mcterm_filter_clear (&t->filter);
+        t->filter = t->query_undo.filter;
+        t->sel = t->query_undo.sel;
+        t->cursor_row = t->query_undo.cursor_row;
+        t->cursor_col = t->query_undo.cursor_col;
+        t->cursor_valid = t->query_undo.cursor_valid;
+        t->scrollback = t->query_undo.scrollback;
+    }
+
+    memset (&t->query_undo, 0, sizeof (t->query_undo));
 
     // Under a panel there is nothing of it to draw.
     if (t->scroll_allowed)
@@ -1909,8 +1968,9 @@ mcterm_query_stop (WMcTerm *t, gboolean keep)
 /* --------------------------------------------------------------------------------------------- */
 
 /* Alt-S searches and Alt-Shift-S filters, the keys of the panels. Pressed again, the key goes on
-   to the match above; with nothing typed, to what was looked for last. The other key turns a
-   search into a filter by the same text, and a filter back into a search. */
+   to the next match, down the output or up it as search_direction says; with nothing typed, to
+   what was looked for last. The other key turns a search into a filter by the same text, and a
+   filter back into a search. */
 static void
 mcterm_query_start (WMcTerm *t, gboolean filtering)
 {
@@ -1925,7 +1985,7 @@ mcterm_query_start (WMcTerm *t, gboolean filtering)
                 g_string_set_size (t->query, 0);
         }
         else if (filtering)
-            mcterm_query_prev_row (t);
+            mcterm_query_step_row (t);
         else if (t->query->len != 0)
             (void) mcterm_query_search (t, t->query->str, TRUE);
 
@@ -1940,6 +2000,16 @@ mcterm_query_start (WMcTerm *t, gboolean filtering)
         g_string_set_size (t->query, 0);
         t->query_chpoint = 0;
         t->query_active = TRUE;
+
+        /* What Escape puts back. The filter that is on goes into it whole: the typing builds
+           one of its own, and these rows are either taken back or dropped at the end. */
+        t->query_undo.cursor_valid = t->cursor_valid;
+        t->query_undo.cursor_row = t->cursor_row;
+        t->query_undo.cursor_col = t->cursor_col;
+        t->query_undo.scrollback = t->scrollback;
+        t->query_undo.sel = t->sel;
+        t->query_undo.filter = t->filter;
+        memset (&t->filter, 0, sizeof (t->filter));
 
         // Its cursor is where the text is typed.
         if (!widget_get_state (WIDGET (t), WST_FOCUSED))
@@ -2689,6 +2759,7 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
         mcview_terminal_buffer_free (t->sync_snapshot_buf);
         t->sync_snapshot_buf = NULL;
         mcterm_filter_clear (&t->filter);
+        mcterm_filter_clear (&t->query_undo.filter);
         g_clear_pointer (&t->last_filter, g_free);
         if (t->query != NULL)
         {
@@ -2705,6 +2776,29 @@ mcterm_callback (Widget *w, Widget *sender, widget_msg_t msg, int parm, void *da
 }
 
 /*** public functions ****************************************************************************/
+
+void
+mcterm_load_options (void)
+{
+    char *dir;
+
+    dir = mc_config_get_string (mc_global.main_config, CONFIG_TERMINAL_SECTION, "search_direction",
+                                "down");
+    mcterm_search_direction =
+        g_ascii_strcasecmp (dir, "up") == 0 ? MCTERM_SEARCH_UP : MCTERM_SEARCH_DOWN;
+    g_free (dir);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+mcterm_save_options (void)
+{
+    mc_config_set_string (mc_global.main_config, CONFIG_TERMINAL_SECTION, "search_direction",
+                          mcterm_search_direction == MCTERM_SEARCH_UP ? "up" : "down");
+}
+
+/* --------------------------------------------------------------------------------------------- */
 
 WMcTerm *
 mcterm_new (const WRect *r, const char *start_dir)

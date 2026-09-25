@@ -17,13 +17,28 @@
 
 /*** enums ***************************************************************************************/
 
+/* Which way a search of the output runs from the cursor. */
+typedef enum
+{
+    MCTERM_SEARCH_DOWN = 0,  // down the output and round to the oldest row, as a panel searches
+    MCTERM_SEARCH_UP         // up the output and round to the newest row, as less searches
+} mcterm_search_dir_t;
+
 /*** structures declarations (and typedefs of structures)*****************************************/
 
 typedef struct WMcTerm WMcTerm;
 
+/*** global variables defined in .c file *********************************************************/
+
+extern mcterm_search_dir_t mcterm_search_direction;
+
 /*** declarations of public functions ************************************************************/
 
 #ifdef ENABLE_MCTERM
+
+/* The settings of the terminal, in the [Terminal] section of the ini file. */
+void mcterm_load_options (void);
+void mcterm_save_options (void);
 
 WMcTerm *mcterm_new (const WRect *r, const char *start_dir);
 void mcterm_free (WMcTerm *t);

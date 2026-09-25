@@ -42,12 +42,14 @@ gint64 mcterm_filter_row (const mcterm_filter_t *f, int index);
    first row after it. The last index when it is past them all. */
 int mcterm_filter_index (const mcterm_filter_t *f, gint64 row);
 
-/* Look for @pattern up the output from @col of @row: the nearest match that starts there or
-   before it on that row, then on the rows above, and past the oldest row round from @newest
-   down. A negative @col leaves the row itself out until the round comes back to it. The match
-   as its row, its first column and its width in columns; FALSE when there is none. */
+/* Look for @pattern from @col of @row, up the output with @up and down it without: the nearest
+   match that starts at that column or before it on that row and then on the rows above, or the
+   nearest one that starts there or after it and then on the rows below. Past the last row of the
+   side it runs to, it rounds to the other end. A @col outside the row leaves the row itself out
+   until the round comes back to it. The match as its row, its first column and its width in
+   columns; FALSE when there is none. */
 gboolean mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pattern,
-                             gint64 row, int col, gint64 *found_row, int *found_col,
+                             gint64 row, int col, gboolean up, gint64 *found_row, int *found_col,
                              int *found_width);
 
 /* The text of @row, its trailing blanks left out. Caller frees. */

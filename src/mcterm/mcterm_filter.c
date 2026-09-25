@@ -85,6 +85,29 @@ mcterm_filter_last_match (mc_search_t *search, const char *text, gsize limit, gs
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
+/* The first match in @text that starts at byte @limit or after it, as its first byte and its
+   length in bytes. */
+static gboolean
+mcterm_filter_first_match (mc_search_t *search, const char *text, gsize limit, gsize *start,
+                           gsize *len)
+{
+    const gsize text_len = strlen (text);
+    gsize found_len = 0;
+
+    if (limit >= text_len)
+        return FALSE;
+
+    if (!mc_search_run (search, text, (off_t) limit, (off_t) text_len, &found_len))
+        return FALSE;
+
+    *start = (gsize) search->normal_offset;
+    *len = found_len;
+
+    return TRUE;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -208,7 +231,7 @@ mcterm_filter_index (const mcterm_filter_t *f, gint64 row)
 
 gboolean
 mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pattern, gint64 row,
-                    int col, gint64 *found_row, int *found_col, int *found_width)
+                    int col, gboolean up, gint64 *found_row, int *found_col, int *found_width)
 {
     mc_search_t *search;
     gint64 oldest, left;
@@ -218,10 +241,11 @@ mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pat
         return FALSE;
 
     oldest = mcview_vterm_scrolled_rows (vt) - mcview_vterm_history_len (vt);
+    // The cursor is off the output: start from the end the search runs away from.
     if (row < oldest || row > newest)
     {
-        row = newest;
-        col = cols;
+        row = up ? newest : oldest;
+        col = up ? cols : 0;
     }
 
     search = mcterm_filter_search_new (pattern);
@@ -229,7 +253,7 @@ mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pat
         return FALSE;
 
     /* Every row once, and the row it starts on a second time at the end of the round: the part
-       of it after @col comes last. */
+       of it the search has already run over comes last. */
     for (left = newest - oldest + 2; left > 0 && !found; left--)
     {
         char *text;
@@ -242,8 +266,11 @@ mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pat
                 ? strlen (text)
                 : (gsize) (g_utf8_offset_to_pointer (text, col) - text);
             gsize start, len;
+            gboolean hit;
 
-            if (mcterm_filter_last_match (search, text, limit, &start, &len))
+            hit = up ? mcterm_filter_last_match (search, text, limit, &start, &len)
+                     : mcterm_filter_first_match (search, text, limit, &start, &len);
+            if (hit)
             {
                 *found_row = row;
                 *found_col = (int) g_utf8_pointer_to_offset (text, text + start);
@@ -253,9 +280,17 @@ mcterm_filter_find (mcview_vterm_t *vt, int cols, gint64 newest, const char *pat
         }
         g_free (text);
 
-        // The rows above, and past the oldest one round to the newest.
-        row = (row > oldest) ? row - 1 : newest;
-        col = cols;
+        // The next row on that side, and past the last one round to the other end.
+        if (up)
+        {
+            row = (row > oldest) ? row - 1 : newest;
+            col = cols;
+        }
+        else
+        {
+            row = (row < newest) ? row + 1 : oldest;
+            col = 0;
+        }
     }
 
     mc_search_free (search);

@@ -2598,16 +2598,23 @@ Ctrl-Shift-l   clear the screen and the scrollback both
 
 Alt-s and Alt-Shift-s take a pattern the way they do in the panels: it is
 typed on the top row of the screen, and the output follows it as it
-grows.  Case does not matter.  A search goes up the output from the
-cursor and marks the nearest match; Alt-s again marks the one above it,
-and past the oldest row the search goes round to the newest.  A filter
-shows the rows that match and no others, and the cursor keys walk them
-while the pattern is still being typed; Alt-Shift-s again moves the cursor
-to the row above.  Pressed with nothing typed, either key takes the
+grows.  Case does not matter.  A search goes down the output from the
+cursor and marks the nearest match; Alt-s again marks the one below it,
+and past the newest row the search goes round to the oldest.  Where the
+shell is typing nothing has been read yet, and the search takes the
+output from its oldest row.  A filter shows the rows that match and no
+others, and the cursor keys walk them while the pattern is still being
+typed; Alt-Shift-s again moves the cursor to the row below.  The
+*search_direction*
+setting turns both round, to run up the output the way
+**less**
+does.  Pressed with nothing typed, either key takes the
 pattern it had last.  Backspace takes a character back, and a character
-that nothing matches is not taken.  Enter ends the typing and leaves
-the view as it is, Esc ends it and lifts the filter; any other key ends
-it and then does what it does.
+that nothing matches is not taken.  Enter ends the typing and leaves the
+view on what was found, the match still marked; Esc ends it and puts back
+the view of before the typing: the cursor where it was reading, or at the
+prompt where nothing was read, and the filter and the mark that were there.
+Any other key ends the typing and then does what it does.
 
 With no panel on screen most function keys are the terminal's own and the
 button bar names them.  The file manager's View, Edit, Copy, RenMov and
@@ -3741,6 +3748,20 @@ Older versions kept these settings in the main section under longer names
 mcview_remember_file_position, mcview_structured_auto, mcview_eof and
 max_dirt_limit). They are read from there once and written back to the
 [Viewer] section.
+
+The settings of the terminal that runs the shell behind the panels are in
+the [Terminal] section of the same file. No dialog writes them.
+
+*search_direction*
+: Which way
+**Alt-s**
+looks through the output of the shell, and which way
+**Alt-Shift-s**
+steps from one row of a filter to the next: "down" goes from the cursor
+towards the newest row and past it round to the oldest, "up" goes towards
+the oldest row and round to the newest, the way
+**less**
+searches. "down" by default.
 
 # Parameters for external editor or viewer
 

@@ -65,6 +65,10 @@
 
 #include "src/viewer/mcviewer.h"  // For the externs
 
+#ifdef ENABLE_MCTERM
+#include "src/mcterm/mcterm.h"
+#endif
+
 #include "setup.h"
 
 /*** global variables ****************************************************************************/
@@ -502,6 +506,9 @@ load_config (void)
     const char *kt;
 
     mcview_load_options ();
+#ifdef ENABLE_MCTERM
+    mcterm_load_options ();
+#endif
 
     // Load boolean options
     for (i = 0; bool_options[i].opt_name != NULL; i++)
@@ -742,6 +749,9 @@ save_config (void)
     size_t i;
 
     mcview_save_options ();
+#ifdef ENABLE_MCTERM
+    mcterm_save_options ();
+#endif
 
     // Save boolean options
     for (i = 0; bool_options[i].opt_name != NULL; i++)
