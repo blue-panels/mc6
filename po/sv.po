@@ -19,13 +19,14 @@
 # yeager <yeager@noreply.codeberg.org>, 2026.
 # Anonymous <anonymous@noreply.codeberg.org>, 2026.
 # GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
+# yeager <user-6596@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:53+0000\n"
-"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Last-Translator: yeager <user-6596@noreply.codeberg.org>\n"
 "Language-Team: Swedish <https://translate.codeberg.org/projects/mc6/mc6/sv/>"
 "\n"
 "Language: sv\n"
@@ -382,15 +383,11 @@ msgstr "Panellistningsläge"
 msgid "Panel options"
 msgstr "Panelalternativ"
 
-#, fuzzy
-#| msgid "General options"
 msgid "Viewer options"
-msgstr "Allmänna inställningar"
+msgstr "Visningsinställningar"
 
-#, fuzzy
-#| msgid "Diff extra options"
 msgid "Diff viewer options"
-msgstr "Extraalternativ till diff"
+msgstr "Alternativ för diff-visare"
 
 msgid "Editor options"
 msgstr "Redigerarinställningar"
@@ -936,10 +933,9 @@ msgstr "Importerade %s till %s\n"
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr "Varning: importen av %s till %s är ofullständig\n"
 
-#, fuzzy, c-format
-#| msgid "Imported %s to %s\n"
+#, c-format
 msgid "Renamed %s to %s\n"
-msgstr "Importerade %s till %s\n"
+msgstr "Döpte om %s till %s\n"
 
 msgid "FATAL: not a directory:"
 msgstr "ALLVARLIGT FEL: inte en katalog:"
@@ -3130,10 +3126,8 @@ msgstr "Enkelt &platsbyte"
 msgid "A&uto save panels setup"
 msgstr "A&utospara panelinställn"
 
-#, fuzzy
-#| msgid "directories"
 msgid "Watch &directories"
-msgstr "kataloger"
+msgstr "Bevaka &kataloger"
 
 msgid "Navigation"
 msgstr "Navigering"
@@ -3180,20 +3174,16 @@ msgstr ""
 "för detaljer."
 
 msgid "&Wrap long lines"
-msgstr ""
+msgstr "&Radbryt långa rader"
 
 msgid "&Syntax highlighting"
 msgstr "Synta&xmarkering"
 
-#, fuzzy
-#| msgid "Save file &position"
 msgid "Remember file &position"
-msgstr "Spara fil&position"
+msgstr "Kom ihåg fil&position"
 
-#, fuzzy
-#| msgid "Structured view of JSON, YAML and the like"
 msgid "&Tree view of JSON, YAML and XML"
-msgstr "Strukturerad vy av JSON, YAML och liknande"
+msgstr "&Trädvy för JSON, YAML och XML"
 
 #, fuzzy
 #| msgid "Enter file name:"
@@ -4422,10 +4412,8 @@ msgstr "Extraalternativ till diff"
 msgid "Vie&wer options..."
 msgstr "&Panelalternativ..."
 
-#, fuzzy
-#| msgid "Editor options"
 msgid "&Editor options..."
-msgstr "Redigerarinställningar"
+msgstr "&Redigerarinställningar..."
 
 msgid "&Manage plugins..."
 msgstr "&Hantera insticksmoduler..."
@@ -5133,10 +5121,8 @@ msgstr "Flytten lyckades men borttagning från insticksmodulen misslyckades"
 msgid "%s: the copy does not match the source"
 msgstr "%s: kopian stämmer inte överens med källan"
 
-#, fuzzy
-#| msgid "This plugin has no settings."
 msgid "This plugin takes files, not directories"
-msgstr "Denna insticksmodul saknar inställningar."
+msgstr "Denna insticksmodul tar filer, inte kataloger"
 
 msgid "This plugin does not support receiving files"
 msgstr "Denna insticksmodul stöder inte mottagning av filer"
@@ -6151,37 +6137,29 @@ msgstr "Proxy"
 msgid "Pass:"
 msgstr "Lösenord:"
 
-#, fuzzy
-#| msgid "Connected."
 msgid "Connected"
-msgstr "Ansluten."
+msgstr "Ansluten"
 
 #, c-format
 msgid "Logging in as %s..."
-msgstr ""
+msgstr "Loggar in som %s..."
 
-#, fuzzy
-#| msgid "&Listing format..."
 msgid "Asking for TLS..."
-msgstr "&Listformat..."
+msgstr "Frågar efter TLS..."
 
-#, fuzzy, c-format
-#| msgid "Connecting to %s..."
+#, c-format
 msgid "Opening %s..."
-msgstr "Ansluter till %s..."
+msgstr "Öppnar %s..."
 
-#, fuzzy, c-format
-#| msgid "Error: %s"
+#, c-format
 msgid "Server: %s"
-msgstr "Fel: %s"
+msgstr "Server: %s"
 
-#, fuzzy
-#| msgid "ftpfs: logged in"
 msgid "Logged in"
-msgstr "ftpfs: inloggad"
+msgstr "Inloggad"
 
 msgid "TLS accepted"
-msgstr ""
+msgstr "TLS accepterades"
 
 msgid "FTP connection"
 msgstr "FTP-anslutning"
@@ -7096,10 +7074,9 @@ msgstr "Användarnamn (DOMÄN\\användare):"
 msgid "SMB Connection"
 msgstr "SMB-anslutning"
 
-#, fuzzy, c-format
-#| msgid "Cannot remove %s"
+#, c-format
 msgid "Cannot resolve %s: %s"
-msgstr "Kan inte ta bort %s"
+msgstr "Kan inte slå upp %s: %s"
 
 msgid "SFTP connection"
 msgstr "SFTP-anslutning"
