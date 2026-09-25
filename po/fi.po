@@ -8,13 +8,14 @@
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # hondakassi <kasvain@gmail.com>, 2015
 # Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
 "PO-Revision-Date: 2026-09-25 21:45+0000\n"
-"Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Finnish <https://translate.codeberg.org/projects/mc6/mc6/fi/>"
 "\n"
 "Language: fi\n"
