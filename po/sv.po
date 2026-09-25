@@ -17,21 +17,24 @@
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Yury V. Zaytsev <yury@shurup.com>, 2025
 # yeager <yeager@noreply.codeberg.org>, 2026.
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
+# yeager <user-6596@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-12 16:22+0000\n"
-"Last-Translator: yeager <yeager@noreply.codeberg.org>\n"
-"Language-Team: Swedish <https://translate.codeberg.org/projects/mc6/mc6/sv/"
-">\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: yeager <user-6596@noreply.codeberg.org>\n"
+"Language-Team: Swedish <https://translate.codeberg.org/projects/mc6/mc6/sv/>"
+"\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.8.1\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -329,9 +332,6 @@ msgstr "Jämför kataloger"
 msgid "Compare files (diff)"
 msgstr "Jämför filer (diff)"
 
-msgid "VFS settings"
-msgstr "VFS-inställningar"
-
 msgid "Confirmation settings"
 msgstr "Bekräftelseinställningar"
 
@@ -382,6 +382,15 @@ msgstr "Panellistningsläge"
 
 msgid "Panel options"
 msgstr "Panelalternativ"
+
+msgid "Viewer options"
+msgstr "Visningsinställningar"
+
+msgid "Diff viewer options"
+msgstr "Alternativ för diff-visare"
+
+msgid "Editor options"
+msgstr "Redigerarinställningar"
 
 msgid "Quick cd"
 msgstr "Snabb cd"
@@ -923,6 +932,10 @@ msgstr "Importerade %s till %s\n"
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr "Varning: importen av %s till %s är ofullständig\n"
+
+#, c-format
+msgid "Renamed %s to %s\n"
+msgstr "Döpte om %s till %s\n"
 
 msgid "FATAL: not a directory:"
 msgstr "ALLVARLIGT FEL: inte en katalog:"
@@ -2775,9 +2788,6 @@ msgstr "&Gruppera ångra"
 msgid "Word wrap line length:"
 msgstr "Radbrytning vid längd:"
 
-msgid "Editor options"
-msgstr "Redigerarinställningar"
-
 msgid "In se&lection"
 msgstr "&I markerat"
 
@@ -3116,6 +3126,9 @@ msgstr "Enkelt &platsbyte"
 msgid "A&uto save panels setup"
 msgstr "A&utospara panelinställn"
 
+msgid "Watch &directories"
+msgstr "Bevaka &kataloger"
+
 msgid "Navigation"
 msgstr "Navigering"
 
@@ -3159,6 +3172,34 @@ msgstr ""
 "exakta innehåll. I så fall behöver du läsa\n"
 "om katalogen manuellt. Se manualsidan\n"
 "för detaljer."
+
+msgid "&Wrap long lines"
+msgstr "&Radbryt långa rader"
+
+msgid "&Syntax highlighting"
+msgstr "Synta&xmarkering"
+
+msgid "Remember file &position"
+msgstr "Kom ihåg fil&position"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr "&Trädvy för JSON, YAML och XML"
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Ange filnamn:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Kortfattad fillista:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "&Fullständig fillista"
@@ -3211,12 +3252,6 @@ msgstr "Confirmation|&Historikrensning"
 
 msgid "Confirmation"
 msgstr "Bekräftelse"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Tidsgräns för att frigöra alla VFS (sek):"
-
-msgid "Virtual File System Setting"
-msgstr "Inställningar för virtuella filsystem"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Existerande filnamn (filnamnet som symlänken kommer att peka mot):"
@@ -4245,9 +4280,6 @@ msgstr "Filtrerad v&y"
 msgid "&Copy"
 msgstr "&Kopiera"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Länk"
 
@@ -4259,15 +4291,6 @@ msgstr "&Relativ symlänk"
 
 msgid "Edit s&ymlink"
 msgstr "Redigera sy&mlänk"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "Ava&ncerad chown"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Döp om/flytta"
@@ -4289,6 +4312,26 @@ msgstr "&Invertera markering"
 
 msgid "E&xit"
 msgstr "&Avsluta"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Ava&ncerad chown"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "&Användarmeny"
@@ -4332,15 +4375,6 @@ msgstr "&Bakgrundsjobb"
 msgid "Screen lis&t"
 msgstr "Skä&rmlista"
 
-msgid "Edit &extension file"
-msgstr "Redigera &filändelsefil"
-
-msgid "Edit &menu file"
-msgstr "Redigera &menyfilen"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Redigera &gruppmarkeringsfil"
-
 msgid "Pl&ugin panel..."
 msgstr "In&sticksmodulpanel..."
 
@@ -4368,11 +4402,34 @@ msgstr "Tangent&bindningar..."
 msgid "Key &sniffer..."
 msgstr "Tangent&avläsare..."
 
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Extraalternativ till diff"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "&Panelalternativ..."
+
+msgid "&Editor options..."
+msgstr "&Redigerarinställningar..."
+
 msgid "&Manage plugins..."
 msgstr "&Hantera insticksmoduler..."
 
-msgid "&Virtual FS..."
-msgstr "&Virtuellt FS..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Redigera &filändelsefil"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Redigera &gruppmarkeringsfil"
+
+#, fuzzy
+#| msgid "Attributes:"
+msgid "&Attributes"
+msgstr "Attribut:"
 
 msgid "Panels:"
 msgstr "Paneler:"
@@ -4759,9 +4816,6 @@ msgstr "Ofiltr"
 msgid "ButtonBar|ClrAll"
 msgstr "RensA"
 
-msgid "ButtonBar|Clear"
-msgstr "Rensa"
-
 msgid "The terminal is already running a command"
 msgstr "Terminalen kör redan ett kommando"
 
@@ -5049,6 +5103,11 @@ msgstr "Flytta markerade filer till insticksmodulpanelen?"
 msgid "Copy tagged files to plugin panel?"
 msgstr "Kopiera markerade filer till insticksmodulpanelen?"
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr "Denna insticksmodul stöder inte flyttning av filer"
 
@@ -5061,6 +5120,9 @@ msgstr "Flytten lyckades men borttagning från insticksmodulen misslyckades"
 #, c-format
 msgid "%s: the copy does not match the source"
 msgstr "%s: kopian stämmer inte överens med källan"
+
+msgid "This plugin takes files, not directories"
+msgstr "Denna insticksmodul tar filer, inte kataloger"
 
 msgid "This plugin does not support receiving files"
 msgstr "Denna insticksmodul stöder inte mottagning av filer"
@@ -5370,27 +5432,43 @@ msgstr ""
 msgid "unspecified"
 msgstr "ospecificerad"
 
-msgid "Lua editor scripts"
-msgstr "Lua-skript för redigeraren"
+#, fuzzy
+#| msgid "Lua scripts:"
+msgid "Lua scripts"
+msgstr "Lua-skript:"
 
-msgid "No global or user Lua editor scripts were found."
+#, fuzzy
+#| msgid "This plugin has no settings."
+msgid "This script has no entry file."
+msgstr "Denna insticksmodul saknar inställningar."
+
+msgid "Lua"
+msgstr "Lua"
+
+msgid "Unknown error"
+msgstr "Okänt fel"
+
+#, fuzzy
+#| msgid "This plugin has no settings."
+msgid "This script has no settings."
+msgstr "Denna insticksmodul saknar inställningar."
+
+#, fuzzy
+#| msgid "No global or user Lua editor scripts were found."
+msgid "No global or user Lua scripts were found."
 msgstr ""
 "Inga globala eller användarspecifika Lua-skript för redigeraren hittades."
 
 msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
 msgstr "Lua-körmiljön är inaktiverad. Aktivera Lua-motorn och starta om MC."
 
-msgid "&Run"
-msgstr "&Kör"
+#, fuzzy
+#| msgid "VFS settings"
+msgid "&Settings"
+msgstr "VFS-inställningar"
 
 msgid "Lua action failed"
 msgstr "Lua-åtgärden misslyckades"
-
-msgid "Unknown error"
-msgstr "Okänt fel"
-
-msgid "Lua"
-msgstr "Lua"
 
 msgid "The selected script has no runnable actions."
 msgstr "Det valda skriptet saknar körbara åtgärder."
@@ -6059,22 +6137,36 @@ msgstr "Proxy"
 msgid "Pass:"
 msgstr "Lösenord:"
 
+msgid "Connected"
+msgstr "Ansluten"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr "Loggar in som %s..."
+
+msgid "Asking for TLS..."
+msgstr "Frågar efter TLS..."
+
+#, c-format
+msgid "Opening %s..."
+msgstr "Öppnar %s..."
+
+#, c-format
+msgid "Server: %s"
+msgstr "Server: %s"
+
+msgid "Logged in"
+msgstr "Inloggad"
+
+msgid "TLS accepted"
+msgstr "TLS accepterades"
+
 msgid "FTP connection"
 msgstr "FTP-anslutning"
 
 #, c-format
 msgid "Connecting to %s:%d..."
 msgstr "Ansluter till %s:%d..."
-
-msgid "Initializing network session..."
-msgstr "Initierar nätverkssession..."
-
-msgid "Authenticating and probing directory..."
-msgstr "Autentiserar och undersöker katalog..."
-
-#, c-format
-msgid "Initial attempt failed: %s"
-msgstr "Första försöket misslyckades: %s"
 
 #, c-format
 msgid "Enter password for %s@%s"
@@ -6087,8 +6179,12 @@ msgid "Retrying with password..."
 msgstr "Försöker igen med lösenord..."
 
 #, c-format
-msgid "Retry failed: %s"
-msgstr "Nytt försök misslyckades: %s"
+msgid "Authentication with %s:%d failed"
+msgstr "Autentisering mot %s:%d misslyckades"
+
+#, c-format
+msgid "Cannot connect to %s:%d"
+msgstr "Kan inte ansluta till %s:%d"
 
 msgid "Connection successful, loading entries..."
 msgstr "Anslutningen lyckades, läser in poster..."
@@ -6978,12 +7074,12 @@ msgstr "Användarnamn (DOMÄN\\användare):"
 msgid "SMB Connection"
 msgstr "SMB-anslutning"
 
+#, c-format
+msgid "Cannot resolve %s: %s"
+msgstr "Kan inte slå upp %s: %s"
+
 msgid "SFTP connection"
 msgstr "SFTP-anslutning"
-
-#, c-format
-msgid "Cannot connect to %s:%d"
-msgstr "Kan inte ansluta till %s:%d"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7015,10 +7111,6 @@ msgstr "Autentiserar med lösenord..."
 msgid "SFTP password"
 msgstr "SFTP-lösenord"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr "Autentisering mot %s:%d misslyckades"
-
 msgid "Initializing SFTP session..."
 msgstr "Initierar SFTP-session..."
 
@@ -7028,9 +7120,6 @@ msgstr "Kan inte starta SFTP-sessionen med %s:%d"
 
 msgid "Connected."
 msgstr "Ansluten."
-
-msgid "SFTP"
-msgstr "SFTP"
 
 msgid "&Connection"
 msgstr "&Anslutning"
@@ -7058,6 +7147,9 @@ msgstr "SSH-&livstecken"
 
 msgid "IP version"
 msgstr "IP-version"
+
+msgid "SFTP"
+msgstr "SFTP"
 
 msgid "Abort current transfer?"
 msgstr "Avbryt aktuell överföring?"
@@ -8132,7 +8224,9 @@ msgstr "Aktivitetsindikator"
 msgid "Skin &editor"
 msgstr "Tema&redigerare"
 
-msgid "S&kin editor..."
+#, fuzzy
+#| msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr "Te&maredigerare..."
 
 msgid "Skin editor"
@@ -8780,16 +8874,16 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr "Filter: %s  %u träffar"
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr "Filter: %s  %u träffar  söker..."
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
 msgstr "Filter: %s  %u träffar  FÖLJER"
-
-#, c-format
-msgid "Filter: %s  %u matches"
-msgstr "Filter: %s  %u träffar"
 
 msgid "Quick view"
 msgstr "Snabbvy"
@@ -8884,8 +8978,16 @@ msgstr "Sökning klar"
 msgid "Continue from beginning?"
 msgstr "Fortsätt från början?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr "Källspecifikationen måste ange antingen kommando eller fil."
+
+#, fuzzy
+#| msgid "Cannot open source."
+msgid "Cannot open source pipe."
+msgstr "Kan inte öppna källa."
 
 msgid "Cannot open source process."
 msgstr "Kan inte öppna källprocess."
@@ -8939,6 +9041,41 @@ msgstr "Kan inte bygga strukturerad vy"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Kan inte hämta en lokal kopia av /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Tidsgräns för att frigöra alla VFS (sek):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Inställningar för virtuella filsystem"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Redigera &menyfilen"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtuellt FS..."
+
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "Rensa"
+
+#~ msgid "Lua editor scripts"
+#~ msgstr "Lua-skript för redigeraren"
+
+#~ msgid "&Run"
+#~ msgstr "&Kör"
+
+#~ msgid "Initializing network session..."
+#~ msgstr "Initierar nätverkssession..."
+
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "Autentiserar och undersöker katalog..."
+
+#, c-format
+#~ msgid "Initial attempt failed: %s"
+#~ msgstr "Första försöket misslyckades: %s"
+
+#, c-format
+#~ msgid "Retry failed: %s"
+#~ msgstr "Nytt försök misslyckades: %s"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Aktiverar stöd för underskal (standardval)"
@@ -9391,9 +9528,6 @@ msgstr "Kan inte hämta en lokal kopia av /ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: skickar användarkonto"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: inloggad"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

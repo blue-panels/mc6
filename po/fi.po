@@ -7,19 +7,23 @@
 # Nikolay Korotkiy <sikmir@disroot.org>, 2017-2019
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # hondakassi <kasvain@gmail.com>, 2015
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Kimmo Kujansuu <mrkujansuu@gmail.com>, 2021\n"
-"Language-Team: Finnish (http://app.transifex.com/mc/mc/language/fi/)\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Language-Team: Finnish <https://translate.codeberg.org/projects/mc6/mc6/fi/>"
+"\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -399,9 +403,6 @@ msgstr ""
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confir&m before saving"
 msgid "Confirmation settings"
@@ -471,6 +472,19 @@ msgstr ""
 
 msgid "Panel options"
 msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Viewer options"
+msgstr "Terminaalin asetukset"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff lisäominaisuudet"
+
+msgid "Editor options"
+msgstr "Editorin asetukset"
 
 msgid "Quick cd"
 msgstr "Pikainen hakemistonvaihto"
@@ -1127,6 +1141,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Kääntäminen kielestä %s kieleen %s epäonnistui"
 
 msgid "FATAL: not a directory:"
 msgstr "FATAL: ei hakemistoa:"
@@ -2986,9 +3005,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr "Sanan rivityksen pituus:"
 
-msgid "Editor options"
-msgstr "Editorin asetukset"
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3314,6 +3330,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "Show directory s&izes"
+msgid "Watch &directories"
+msgstr "Näytä hakem&iston koot"
+
 msgid "Navigation"
 msgstr ""
 
@@ -3354,6 +3375,34 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "syntaks&Ikorostus"
+
+msgid "Remember file &position"
+msgstr ""
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Anna tiedostonimi:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3406,12 +3455,6 @@ msgid "Confirmation|&History cleanup"
 msgstr ""
 
 msgid "Confirmation"
-msgstr ""
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
 msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
@@ -4320,9 +4363,6 @@ msgstr "&Suodatettu näkymä"
 msgid "&Copy"
 msgstr "&Kopioi"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Linkki"
 
@@ -4334,15 +4374,6 @@ msgstr ""
 
 msgid "Edit s&ymlink"
 msgstr "Muokkaa s&ymlinkkiä"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "Cha&ttr"
-msgstr ""
 
 msgid "&Rename/Move"
 msgstr "&Nimeä/Siirrä"
@@ -4364,6 +4395,24 @@ msgstr "&Käänteinen valinta"
 
 msgid "E&xit"
 msgstr "P&oistu"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Cancel"
+msgid "&Advanced chown..."
+msgstr "&Peruuta"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr "&Käyttäjän valikko"
@@ -4409,15 +4458,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr ""
 
-msgid "Edit &extension file"
-msgstr ""
-
-msgid "Edit &menu file"
-msgstr ""
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4448,12 +4488,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff lisäominaisuudet"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "&Paneelin asetukset..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Editorin asetukset"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "&Paneelin asetukset..."
 
-msgid "&Virtual FS..."
+#, fuzzy
+#| msgid "Extension file edit"
+msgid "Edit e&xtension file"
+msgstr "Laajennustiedoston muokkaus"
+
+msgid "Edit hi&ghlighting group file"
 msgstr ""
+
+#, fuzzy
+#| msgid "&Size only"
+msgid "&Attributes"
+msgstr "&Vain koko"
 
 msgid "Panels:"
 msgstr "Paneelit:"
@@ -4845,9 +4910,6 @@ msgstr ""
 msgid "ButtonBar|ClrAll"
 msgstr ""
 
-msgid "ButtonBar|Clear"
-msgstr ""
-
 #, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
@@ -5163,6 +5225,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5176,6 +5243,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5500,30 +5570,38 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgid "Lua"
 msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-#, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Luku epäonnistui"
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Tuntematon virhe aliprosessissa"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Aseta"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Luku epäonnistui"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6269,21 +6347,41 @@ msgstr ""
 msgid "Pass:"
 msgstr "Salasana:"
 
+msgid "Connected"
+msgstr ""
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Luettelomuoto..."
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Pakkaa..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Virhe"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: sisäänkirjauduttu"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6298,10 +6396,14 @@ msgstr "Salasana:"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Luku epäonnistui"
+#| msgid "ftpfs: making connection to %s"
+msgid "Cannot connect to %s:%d"
+msgstr "ftpfs: luodaan yhteyttä kohteeseen %s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7278,13 +7380,13 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot save file"
+msgid "Cannot resolve %s: %s"
+msgstr "Tiedostoa ei voi tallentaa"
+
 msgid "SFTP connection"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "ftpfs: making connection to %s"
-msgid "Cannot connect to %s:%d"
-msgstr "ftpfs: luodaan yhteyttä kohteeseen %s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7323,10 +7425,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Salasana:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7335,9 +7433,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 msgid "&Connection"
@@ -7372,6 +7467,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Oikeudet"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8562,8 +8660,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "Valikon muokkaus"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9214,15 +9314,15 @@ msgid "ButtonBar|Format"
 msgstr ""
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9329,8 +9429,16 @@ msgstr ""
 msgid "Continue from beginning?"
 msgstr ""
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid "Cannot parse:"
+msgid "Cannot open source pipe."
+msgstr "Ei voi jäsentää:"
 
 #, fuzzy
 #| msgid "Cannot operate on \"..\"!"
@@ -9395,6 +9503,11 @@ msgstr "Tiedostoa ei voi lisätä"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Luku epäonnistui"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Ottaa subshell tuen käyttöön (oletus) "
@@ -9524,9 +9637,6 @@ msgstr ""
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: lähetetään tilitietoja"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: sisäänkirjauduttu"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

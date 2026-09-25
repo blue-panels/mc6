@@ -9,20 +9,23 @@
 # heskjestad, 2019-2021
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Yury V. Zaytsev <yury@shurup.com>, 2025
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: heskjestad, 2024-2025\n"
-"Language-Team: Norwegian Bokmål (http://app.transifex.com/mc/mc/language/"
-"nb/)\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Language-Team: Norwegian Bokmål <https://translate.codeberg.org/projects/mc6/"
+"mc6/nb_NO/>\n"
 "Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -430,9 +433,6 @@ msgstr "Sammenlign mapper"
 msgid "Compare files (diff)"
 msgstr "Sammenlign &filer"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -510,6 +510,19 @@ msgstr "&Panelets sorteringsrekkef."
 
 msgid "Panel options"
 msgstr "Panelinnstillinger"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Panelinnstillinger"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Flere diff-innstillinger"
+
+msgid "Editor options"
+msgstr "Redigeringsinnstillinger"
 
 msgid "Quick cd"
 msgstr "Bytt til en annen mappe"
@@ -1224,6 +1237,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Kan ikke oversette fra %s til %s"
 
 msgid "FATAL: not a directory:"
 msgstr "FATALT: ikke en mappe:"
@@ -3159,9 +3177,6 @@ msgstr "An&gre grupperte handlinger"
 msgid "Word wrap line length:"
 msgstr "Bryt tekst etter:"
 
-msgid "Editor options"
-msgstr "Redigeringsinnstillinger"
-
 msgid "In se&lection"
 msgstr "I &utvalg"
 
@@ -3505,6 +3520,11 @@ msgstr "&Enkel panelombytting"
 msgid "A&uto save panels setup"
 msgstr "Au&tolagre paneloppsettet"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "mapper"
+
 msgid "Navigation"
 msgstr "Navigasjon"
 
@@ -3550,6 +3570,38 @@ msgstr ""
 "utlistinga ikke nødvendigvis gjenspeiler mappeinnholdet.\n"
 "I så fall må du oppdatere utlistinga manuelt.\n"
 "Se manualsiden for mer informasjon."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "S&yntaksutheving"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "&Lagre filposisjon"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Angi filnavn:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Kort filliste:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "&Full filliste"
@@ -3602,12 +3654,6 @@ msgstr "Confirmation|Tømming av &historikk"
 
 msgid "Confirmation"
 msgstr "Be om bekreftelse før"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Tidsavbrudd for VFS-frakobling (sek):"
-
-msgid "Virtual File System Setting"
-msgstr "Innstillinger for virtuelt filsystem"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Eksisterende filnavn (filnavnet symlenken skal peke til):"
@@ -4644,9 +4690,6 @@ msgstr "Vis &filtrert"
 msgid "&Copy"
 msgstr "&Kopier"
 
-msgid "C&hmod"
-msgstr "Chm&od"
-
 msgid "&Link"
 msgstr "&Lag lenke"
 
@@ -4658,15 +4701,6 @@ msgstr "Lag relativ s&ymlenke"
 
 msgid "Edit s&ymlink"
 msgstr "Redi&ger symlenke"
-
-msgid "Ch&own"
-msgstr "Cho&wn"
-
-msgid "&Advanced chown"
-msgstr "&Avansert chown"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Endre navn/flytt"
@@ -4688,6 +4722,26 @@ msgstr "I&nverter utvalg"
 
 msgid "E&xit"
 msgstr "Avslu&tt"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "Chm&od"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Cho&wn"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "&Avansert chown"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "&Brukermeny"
@@ -4737,15 +4791,6 @@ msgstr "Bakgrunns&jobber"
 msgid "Screen lis&t"
 msgstr "Kjørende mo&duler"
 
-msgid "Edit &extension file"
-msgstr "Rediger &utvidelsesfil"
-
-msgid "Edit &menu file"
-msgstr "Rediger men&yfil"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Rediger uthevings&grupper"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4778,12 +4823,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Flere diff-innstillinger"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "&Panelinnstillinger ..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Redigeringsinnstillinger"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "&Panelinnstillinger ..."
 
-msgid "&Virtual FS..."
-msgstr "&Virtuelt FS ..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Rediger &utvidelsesfil"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Rediger uthevings&grupper"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Attributter: %s"
 
 msgid "Panels:"
 msgstr "Paneler:"
@@ -5193,11 +5263,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|TrkNed"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Søk"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "Skallet kjører allerede en kommando"
@@ -5516,6 +5581,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5529,6 +5599,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5895,30 +5968,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Lesing mislyktes"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "Programtillegg og skript for VFS:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Ukjent feil i barneprosess"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Bruk"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Lesing mislyktes"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6723,23 +6806,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Passord:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Be om bekreftelse før"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Utlistingsformat ..."
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "Tegn&koding for filnavn ..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Feil"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: logget inn"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-#, fuzzy
-#| msgid "shell: Reading directory %s..."
-msgid "Authenticating and probing directory..."
-msgstr "skall: Leser mappa %s ..."
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6757,10 +6860,18 @@ msgstr "Passord:"
 msgid "Retrying with password..."
 msgstr "skall: Sender passord ..."
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Lesing mislyktes"
+#| msgid ""
+#| "Cannot change directory to\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr ""
+"Kan ikke endre mappe til\n"
+"%s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7816,19 +7927,19 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
+msgstr ""
+"Klarte ikke slette fila\n"
+"%s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "Koble til SFTP"
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Cannot change directory to\n"
-#| "%s"
-msgid "Cannot connect to %s:%d"
-msgstr ""
-"Kan ikke endre mappe til\n"
-"%s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7870,10 +7981,6 @@ msgstr "skall: Sender passord ..."
 msgid "SFTP password"
 msgstr "Passord:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7887,9 +7994,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7930,6 +8034,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Rettigheter"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9314,8 +9421,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Ski&n editor..."
+msgstr "Med innebygget tekstprogram"
 
 #, fuzzy
 #| msgid "With builtin editor"
@@ -10019,15 +10128,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -10146,8 +10255,20 @@ msgstr "Søket er ferdig"
 msgid "Continue from beginning?"
 msgstr "Fortsett fra begynnelsen?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Klarte ikke åpne kildefila\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -10228,6 +10349,33 @@ msgstr "Klarte ikke sette inn fil"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Klarte ikke hente en lokal kopi av /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Tidsavbrudd for VFS-frakobling (sek):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Innstillinger for virtuelt filsystem"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Rediger men&yfil"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtuelt FS ..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Søk"
+
+#, fuzzy
+#~| msgid "shell: Reading directory %s..."
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "skall: Leser mappa %s ..."
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Lesing mislyktes"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Slå på støtte for underskall (standard)"
@@ -10678,9 +10826,6 @@ msgstr "Klarte ikke hente en lokal kopi av /ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: sender brukers konto"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: logget inn"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

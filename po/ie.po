@@ -3,19 +3,23 @@
 # This file is distributed under the same license as the mc package.
 #
 # Translators:
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Interlingue (http://app.transifex.com/mc/mc/language/ie/)\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Language-Team: Occidental <https://translate.codeberg.org/projects/mc6/mc6/"
+"ie/>\n"
 "Language: ie\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -371,9 +375,6 @@ msgstr "Comparar directorias"
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -443,6 +444,19 @@ msgstr "Separar paneles"
 
 msgid "Panel options"
 msgstr "Optiones de panel"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Optiones de panel"
+
+#, fuzzy
+#| msgid "Diff Options"
+msgid "Diff viewer options"
+msgstr "Parametres de diff"
+
+msgid "Editor options"
+msgstr "Parametres del redactor"
 
 msgid "Quick cd"
 msgstr "Rapid cd"
@@ -1051,6 +1065,10 @@ msgstr ""
 
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
+msgstr ""
+
+#, c-format
+msgid "Renamed %s to %s\n"
 msgstr ""
 
 msgid "FATAL: not a directory:"
@@ -2863,9 +2881,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr ""
 
-msgid "Editor options"
-msgstr "Parametres del redactor"
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3190,6 +3205,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "directorias"
+
 msgid "Navigation"
 msgstr "Navigation"
 
@@ -3230,6 +3250,32 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Choose syntax highlighting"
+msgid "&Syntax highlighting"
+msgstr "Selecter li coloration de sintaxe"
+
+msgid "Remember file &position"
+msgstr ""
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+msgid "End of file marker:"
+msgstr ""
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3283,12 +3329,6 @@ msgstr ""
 
 msgid "Confirmation"
 msgstr "Confirmation"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
-msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
@@ -4189,9 +4229,6 @@ msgstr ""
 msgid "&Copy"
 msgstr "&Copiar"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Ligament"
 
@@ -4202,15 +4239,6 @@ msgid "Relative symlin&k"
 msgstr ""
 
 msgid "Edit s&ymlink"
-msgstr ""
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "&Avansat chown"
-
-msgid "Cha&ttr"
 msgstr ""
 
 msgid "&Rename/Move"
@@ -4233,6 +4261,24 @@ msgstr "&Inverter li selection"
 
 msgid "E&xit"
 msgstr "S&urtir"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "&Avansat chown"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr ""
@@ -4276,15 +4322,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr ""
 
-msgid "Edit &extension file"
-msgstr ""
-
-msgid "Edit &menu file"
-msgstr ""
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4314,11 +4351,36 @@ msgstr "&Codification:"
 msgid "Key &sniffer..."
 msgstr ""
 
+#, fuzzy
+#| msgid "Diff Options"
+msgid "&Diff viewer options..."
+msgstr "Parametres de diff"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Vie&wer options..."
+msgstr "Optiones de panel"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Parametres del redactor"
+
 msgid "&Manage plugins..."
 msgstr ""
 
-msgid "&Virtual FS..."
-msgstr "&Virtual FS..."
+#, fuzzy
+#| msgid "E&xtension"
+msgid "Edit e&xtension file"
+msgstr "E&xtension"
+
+msgid "Edit hi&ghlighting group file"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Attributes"
+msgstr "Solmen &files"
 
 msgid "Panels:"
 msgstr "Paneles:"
@@ -4716,11 +4778,6 @@ msgstr "Redact"
 msgid "ButtonBar|ClrAll"
 msgstr "Menú"
 
-#, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "Srchar"
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -5028,6 +5085,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5041,6 +5103,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5364,19 +5429,13 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-msgid "Lua action failed"
+msgid "Lua"
 msgstr ""
 
 #, fuzzy
@@ -5384,7 +5443,19 @@ msgstr ""
 msgid "Unknown error"
 msgstr "<Ínconosset usator>"
 
-msgid "Lua"
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+msgid "&Settings"
+msgstr ""
+
+msgid "Lua action failed"
 msgstr ""
 
 msgid "The selected script has no runnable actions."
@@ -6122,21 +6193,41 @@ msgstr ""
 msgid "Pass:"
 msgstr "Contrasigne:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Confirmation"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+msgid "Asking for TLS..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Codification:"
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Errore"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: session apertet"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6152,7 +6243,11 @@ msgid "Retrying with password..."
 msgstr ""
 
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
+#, c-format
+msgid "Cannot connect to %s:%d"
 msgstr ""
 
 msgid "Connection successful, loading entries..."
@@ -7108,11 +7203,12 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
-msgid "SFTP connection"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "Cannot parse:"
+msgid "Cannot resolve %s: %s"
+msgstr "Ne successat analisar:"
 
-#, c-format
-msgid "Cannot connect to %s:%d"
+msgid "SFTP connection"
 msgstr ""
 
 #, c-format
@@ -7147,10 +7243,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Contrasigne:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7159,9 +7251,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7194,6 +7283,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Permission"
+
+msgid "SFTP"
+msgstr ""
 
 msgid "Abort current transfer?"
 msgstr ""
@@ -8353,7 +8445,7 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr ""
 
 msgid "Skin editor"
@@ -8991,15 +9083,15 @@ msgid "ButtonBar|Format"
 msgstr "Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9106,8 +9198,20 @@ msgstr ""
 msgid "Continue from beginning?"
 msgstr ""
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Ne successat aperter li archive cpio\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9184,6 +9288,14 @@ msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtual FS..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "Srchar"
 
 #~ msgid "Run sort"
 #~ msgstr "Lansar sort"
@@ -9263,9 +9375,6 @@ msgstr ""
 
 #~ msgid "Account:"
 #~ msgstr "Conto:"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: session apertet"
 
 #, c-format
 #~ msgid "ftpfs: %s"

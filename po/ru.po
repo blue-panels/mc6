@@ -30,15 +30,16 @@
 # adem4ik <adem4ik@noreply.codeberg.org>, 2026.
 # smind <smind@noreply.codeberg.org>, 2026.
 # Andrei Stepanov <adem4ik@gmail.com>, 2026.
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2026-09-16 04:27+0000\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
 "Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
-"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/"
-">\n"
+"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
-"X-Generator: Weblate 2026.8.1\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -344,9 +345,6 @@ msgstr "Сравнить каталоги"
 msgid "Compare files (diff)"
 msgstr "Сравнить файлы (diff)"
 
-msgid "VFS settings"
-msgstr "Настройки ВФС"
-
 msgid "Confirmation settings"
 msgstr "Настройки подтверждений"
 
@@ -397,6 +395,15 @@ msgstr "Режим отображения панели"
 
 msgid "Panel options"
 msgstr "Настройки панели"
+
+msgid "Viewer options"
+msgstr "Настройки просмотрщика"
+
+msgid "Diff viewer options"
+msgstr "Настройки просмотрщика различий"
+
+msgid "Editor options"
+msgstr "Настройки редактора"
 
 msgid "Quick cd"
 msgstr "Смена рабочего каталога"
@@ -938,6 +945,10 @@ msgstr "Импортировано %s в %s\n"
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr "Предупреждение: импорт %s в %s неполный\n"
+
+#, c-format
+msgid "Renamed %s to %s\n"
+msgstr "Переименовано %s в %s\n"
 
 msgid "FATAL: not a directory:"
 msgstr "ОШИБКА: не является каталогом:"
@@ -2795,9 +2806,6 @@ msgstr "&Групповая отмена"
 msgid "Word wrap line length:"
 msgstr "Позиция переноса строк:"
 
-msgid "Editor options"
-msgstr "Настройки редактора"
-
 msgid "In se&lection"
 msgstr "В в&ыделенном"
 
@@ -3138,6 +3146,9 @@ msgstr "Прос&тая перестановка"
 msgid "A&uto save panels setup"
 msgstr "&Автосохранять настройки панелей"
 
+msgid "Watch &directories"
+msgstr "Отслеживать &каталоги"
+
 msgid "Navigation"
 msgstr "Навигация"
 
@@ -3181,6 +3192,32 @@ msgstr ""
 "текущего содержимого каталога. В этом случае требуется вручную\n"
 "перезагрузить каталог. Для дополнительной информации смотрите\n"
 "руководство (man)."
+
+msgid "&Wrap long lines"
+msgstr "&Переносить длинные строки"
+
+msgid "&Syntax highlighting"
+msgstr "Подс&ветка синтаксиса"
+
+msgid "Remember file &position"
+msgstr "Сох&ранять позицию в файле"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr "&Древовидное представление JSON, YAML и XML"
+
+msgid "End of file marker:"
+msgstr "Маркер конца файла:"
+
+msgid "Redraws to skip at most:"
+msgstr "Максимум пропускаемых перерисовок:"
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Укороченный:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "&Стандартный"
@@ -3233,12 +3270,6 @@ msgstr "О&чистка истории"
 
 msgid "Confirmation"
 msgstr "Подтверждение"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Тайм-аут высвобождения ВФС (сек):"
-
-msgid "Virtual File System Setting"
-msgstr "Настройки виртуальной файловой системы"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Имя существующего файла (для ссылки):"
@@ -4268,9 +4299,6 @@ msgstr "Просмотр вывода команд&ы"
 msgid "&Copy"
 msgstr "&Копирование"
 
-msgid "C&hmod"
-msgstr "Права &доступа"
-
 msgid "&Link"
 msgstr "&Жёсткая ссылка"
 
@@ -4282,15 +4310,6 @@ msgstr "Относител&ьная символьная ссылка"
 
 msgid "Edit s&ymlink"
 msgstr "Правка ссы&лки"
-
-msgid "Ch&own"
-msgstr "&Владелец/группа"
-
-msgid "&Advanced chown"
-msgstr "Права (рас&ширенные)"
-
-msgid "Cha&ttr"
-msgstr "А&трибуты"
 
 msgid "&Rename/Move"
 msgstr "Пере&именование/Перенос"
@@ -4312,6 +4331,26 @@ msgstr "О&братить выделение"
 
 msgid "E&xit"
 msgstr "Вы&ход"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "Права &доступа"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "&Владелец/группа"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Права (рас&ширенные)"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "А&трибуты"
 
 msgid "&User menu"
 msgstr "&Меню пользователя"
@@ -4355,15 +4394,6 @@ msgstr "Фоновые &задания"
 msgid "Screen lis&t"
 msgstr "Список &экранов"
 
-msgid "Edit &extension file"
-msgstr "Править файл рас&ширений"
-
-msgid "Edit &menu file"
-msgstr "Править файл мен&ю"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Править файл рас&цветки имён"
-
 msgid "Pl&ugin panel..."
 msgstr "Панель пла&гина..."
 
@@ -4391,11 +4421,30 @@ msgstr "&Привязки клавиш..."
 msgid "Key &sniffer..."
 msgstr "Анализатор &клавиш..."
 
+msgid "&Diff viewer options..."
+msgstr "&Настройки просмотрщика различий…"
+
+msgid "Vie&wer options..."
+msgstr "Настройки просмотрщи&ка…"
+
+msgid "&Editor options..."
+msgstr "&Настройки редактора…"
+
 msgid "&Manage plugins..."
 msgstr "&Управление плагинами..."
 
-msgid "&Virtual FS..."
-msgstr "Виртуальные &ФС..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Править файл рас&ширений"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Править файл рас&цветки имён"
+
+#, fuzzy
+#| msgid "Attributes:"
+msgid "&Attributes"
+msgstr "Атрибуты:"
 
 msgid "Panels:"
 msgstr "Панели:"
@@ -4790,9 +4839,6 @@ msgstr "СнФильт"
 msgid "ButtonBar|ClrAll"
 msgstr "ОчистВсё"
 
-msgid "ButtonBar|Clear"
-msgstr "Очистить"
-
 msgid "The terminal is already running a command"
 msgstr "Терминал уже выполняет команду"
 
@@ -5082,6 +5128,13 @@ msgstr "Переместить помеченные файлы в панель �
 msgid "Copy tagged files to plugin panel?"
 msgstr "Скопировать помеченные файлы в панель плагина?"
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+"Эта панель не является локальной файловой системой.\n"
+"Каждый файл удаляется здесь, как только плагин сообщает, что получил его."
+
 msgid "This plugin does not support moving files"
 msgstr "Этот плагин не поддерживает перемещение файлов"
 
@@ -5094,6 +5147,9 @@ msgstr "Перемещение выполнено, но удаление из п
 #, c-format
 msgid "%s: the copy does not match the source"
 msgstr "%s: копия не совпадает с источником"
+
+msgid "This plugin takes files, not directories"
+msgstr "Этот плагин принимает файлы, а не каталоги"
 
 msgid "This plugin does not support receiving files"
 msgstr "Этот плагин не поддерживает приём файлов"
@@ -5402,26 +5458,42 @@ msgstr ""
 msgid "unspecified"
 msgstr "не указано"
 
-msgid "Lua editor scripts"
-msgstr "Скрипты редактора Lua"
+#, fuzzy
+#| msgid "Lua scripts:"
+msgid "Lua scripts"
+msgstr "Скрипты Lua:"
 
-msgid "No global or user Lua editor scripts were found."
+#, fuzzy
+#| msgid "This plugin has no settings."
+msgid "This script has no entry file."
+msgstr "У этого плагина нет настроек."
+
+msgid "Lua"
+msgstr "Lua"
+
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#, fuzzy
+#| msgid "This plugin has no settings."
+msgid "This script has no settings."
+msgstr "У этого плагина нет настроек."
+
+#, fuzzy
+#| msgid "No global or user Lua editor scripts were found."
+msgid "No global or user Lua scripts were found."
 msgstr "Глобальные или пользовательские скрипты редактора Lua не найдены."
 
 msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
 msgstr "Среда Lua отключена. Включите движок Lua и перезапустите MC."
 
-msgid "&Run"
-msgstr "&Выполнить"
+#, fuzzy
+#| msgid "VFS settings"
+msgid "&Settings"
+msgstr "Настройки ВФС"
 
 msgid "Lua action failed"
 msgstr "Действие Lua не выполнено"
-
-msgid "Unknown error"
-msgstr "Неизвестная ошибка"
-
-msgid "Lua"
-msgstr "Lua"
 
 msgid "The selected script has no runnable actions."
 msgstr "У выбранного скрипта нет действий для выполнения."
@@ -6090,22 +6162,36 @@ msgstr "Прокси"
 msgid "Pass:"
 msgstr "Пароль:"
 
+msgid "Connected"
+msgstr "Подключено"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr "Вход как %s…"
+
+msgid "Asking for TLS..."
+msgstr "Запрос TLS…"
+
+#, c-format
+msgid "Opening %s..."
+msgstr "Открытие %s…"
+
+#, c-format
+msgid "Server: %s"
+msgstr "Сервер: %s"
+
+msgid "Logged in"
+msgstr "Выполнен вход"
+
+msgid "TLS accepted"
+msgstr "TLS принят"
+
 msgid "FTP connection"
 msgstr "Подключение FTP"
 
 #, c-format
 msgid "Connecting to %s:%d..."
 msgstr "Подключение к %s:%d..."
-
-msgid "Initializing network session..."
-msgstr "Инициализация сетевого сеанса..."
-
-msgid "Authenticating and probing directory..."
-msgstr "Аутентификация и проверка каталога..."
-
-#, c-format
-msgid "Initial attempt failed: %s"
-msgstr "Первая попытка не удалась: %s"
 
 #, c-format
 msgid "Enter password for %s@%s"
@@ -6118,8 +6204,12 @@ msgid "Retrying with password..."
 msgstr "Повтор с паролем..."
 
 #, c-format
-msgid "Retry failed: %s"
-msgstr "Повтор не удался: %s"
+msgid "Authentication with %s:%d failed"
+msgstr "Аутентификация с %s:%d не удалась"
+
+#, c-format
+msgid "Cannot connect to %s:%d"
+msgstr "Не удаётся подключиться к %s:%d"
 
 msgid "Connection successful, loading entries..."
 msgstr "Подключение успешно, загрузка элементов..."
@@ -7012,12 +7102,12 @@ msgstr "Имя пользователя (ДОМЕН\\пользователь):"
 msgid "SMB Connection"
 msgstr "Подключение SMB"
 
+#, c-format
+msgid "Cannot resolve %s: %s"
+msgstr "Не удаётся разрешить %s: %s"
+
 msgid "SFTP connection"
 msgstr "Подключение SFTP"
-
-#, c-format
-msgid "Cannot connect to %s:%d"
-msgstr "Не удаётся подключиться к %s:%d"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7049,10 +7139,6 @@ msgstr "Аутентификация с паролем..."
 msgid "SFTP password"
 msgstr "Пароль SFTP"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr "Аутентификация с %s:%d не удалась"
-
 msgid "Initializing SFTP session..."
 msgstr "Инициализация сеанса SFTP..."
 
@@ -7062,9 +7148,6 @@ msgstr "Не удаётся запустить сеанс SFTP с %s:%d"
 
 msgid "Connected."
 msgstr "Подключено."
-
-msgid "SFTP"
-msgstr "SFTP"
 
 msgid "&Connection"
 msgstr "&Подключение"
@@ -7092,6 +7175,9 @@ msgstr "SSH &Keepalive"
 
 msgid "IP version"
 msgstr "Версия IP"
+
+msgid "SFTP"
+msgstr "SFTP"
 
 msgid "Abort current transfer?"
 msgstr "Прервать текущую передачу?"
@@ -8171,7 +8257,9 @@ msgstr "Счётчик"
 msgid "Skin &editor"
 msgstr "&Редактор тем"
 
-msgid "S&kin editor..."
+#, fuzzy
+#| msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr "Редактор &тем..."
 
 msgid "Skin editor"
@@ -8819,16 +8907,16 @@ msgid "ButtonBar|Format"
 msgstr "Формат"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr "Фильтр: %s  совпадений: %u"
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr "Фильтр: %s  совпадений: %u  сканирование..."
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
 msgstr "Фильтр: %s  совпадений: %u  СЛЕЖЕНИЕ"
-
-#, c-format
-msgid "Filter: %s  %u matches"
-msgstr "Фильтр: %s  совпадений: %u"
 
 msgid "Quick view"
 msgstr "Быстрый просмотр"
@@ -8923,8 +9011,14 @@ msgstr "Поиск закончен"
 msgid "Continue from beginning?"
 msgstr "Продолжить с начала?"
 
+msgid "Not found in the text rendered so far."
+msgstr "Не найдено в отображённом на данный момент тексте."
+
 msgid "Source spec must set either command or file."
 msgstr "Спецификация источника должна задавать либо команду, либо файл."
+
+msgid "Cannot open source pipe."
+msgstr "Не удаётся открыть исходный канал."
 
 msgid "Cannot open source process."
 msgstr "Не удаётся открыть процесс-источник."
@@ -8978,6 +9072,41 @@ msgstr "Не удаётся построить структурированно�
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Не удалось получить локальную копию /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Тайм-аут высвобождения ВФС (сек):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Настройки виртуальной файловой системы"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Править файл мен&ю"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Виртуальные &ФС..."
+
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "Очистить"
+
+#~ msgid "Lua editor scripts"
+#~ msgstr "Скрипты редактора Lua"
+
+#~ msgid "&Run"
+#~ msgstr "&Выполнить"
+
+#~ msgid "Initializing network session..."
+#~ msgstr "Инициализация сетевого сеанса..."
+
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "Аутентификация и проверка каталога..."
+
+#, c-format
+#~ msgid "Initial attempt failed: %s"
+#~ msgstr "Первая попытка не удалась: %s"
+
+#, c-format
+#~ msgid "Retry failed: %s"
+#~ msgstr "Повтор не удался: %s"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Включить поддержку встроенной командной оболочки (по умолчанию)"
@@ -9434,9 +9563,6 @@ msgstr "Не удалось получить локальную копию /ftp:
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: посылается учётная запись пользователя"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: зарегистрирован"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

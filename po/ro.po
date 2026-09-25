@@ -13,20 +13,24 @@
 # Sorin Sfirlogea, 2016
 # Vitalie Ciubotaru <vitalie@ciubotaru.tk>, 2015
 # Yury V. Zaytsev <yury@shurup.com>, 2025
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Yury V. Zaytsev <yury@shurup.com>, 2025\n"
-"Language-Team: Romanian (http://app.transifex.com/mc/mc/language/ro/)\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Language-Team: Romanian <https://translate.codeberg.org/projects/mc6/mc6/ro/>"
+"\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
-"2:1));\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2;\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -430,9 +434,6 @@ msgstr "Compară dosarele"
 msgid "Compare files (diff)"
 msgstr "C&ompară fișiere"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -506,6 +507,19 @@ msgstr "Folosește mo&dul de sortare al panoului"
 
 msgid "Panel options"
 msgstr "Opțiuni panou"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Opțiuni panou"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Opțiuni extra diff"
+
+msgid "Editor options"
+msgstr "Opțiuni editor"
 
 msgid "Quick cd"
 msgstr "Cd rapid"
@@ -1212,6 +1226,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Nu pot face trecerea din %s în %s"
 
 msgid "FATAL: not a directory:"
 msgstr "FATAL: nu este un dosar:"
@@ -3111,9 +3130,6 @@ msgstr "&Group undo"
 msgid "Word wrap line length:"
 msgstr "Lungime linie pentru curgere cuvinte:"
 
-msgid "Editor options"
-msgstr "Opțiuni editor"
-
 msgid "In se&lection"
 msgstr "În se&lecție"
 
@@ -3445,6 +3461,11 @@ msgstr "Permutare simplă"
 msgid "A&uto save panels setup"
 msgstr "Salvare a&utomată a configurației panourilor"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "dosare"
+
 msgid "Navigation"
 msgstr "Navigare"
 
@@ -3490,6 +3511,38 @@ msgstr ""
 "este posibil să nu reflecte realitatea. În astfel de cazuri va fi nevoie\n"
 "de o reîncărcare manuală a dosarului. Vezi pagina de manual\n"
 "pentru detalii."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "&Evidențiere sintaxă"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Salvează &poziția în fișier"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Introdu numele de fișier:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "Listă &scurtă de fișiere:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Listă de &fișiere completă"
@@ -3542,12 +3595,6 @@ msgstr "Confirmation|Curățare &istoric"
 
 msgid "Confirmation"
 msgstr "Confirmare"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Intervalul de timp pentru eliberarea VFS (sec):"
-
-msgid "Virtual File System Setting"
-msgstr "Setări sistem virtual de fișiere"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Fișier existent (către care va indica legătura):"
@@ -4478,9 +4525,6 @@ msgstr "Vizualizare &filtrată"
 msgid "&Copy"
 msgstr "&Copiază"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Legătură"
 
@@ -4492,15 +4536,6 @@ msgstr "Legătură simbolică relati&vă"
 
 msgid "Edit s&ymlink"
 msgstr "Editează legătura s&imbolică"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "Chown &avansat"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Redenumește/Mută"
@@ -4522,6 +4557,26 @@ msgstr "&Inversează selecția"
 
 msgid "E&xit"
 msgstr "&Ieșire"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Chown &avansat"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "Meniu &utilizator"
@@ -4571,15 +4626,6 @@ msgstr "Sarcini în &fundal"
 msgid "Screen lis&t"
 msgstr "Lis&ta ecranelor"
 
-msgid "Edit &extension file"
-msgstr "Editare fișier &extensii"
-
-msgid "Edit &menu file"
-msgstr "Editare fișier &meniuri"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Editează fișierul de evidențiere &grup"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4612,12 +4658,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Opțiuni extra diff"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Opțiuni &panou..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Opțiuni editor"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Opțiuni &panou..."
 
-msgid "&Virtual FS..."
-msgstr "Sistem &virtual de fișiere..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Editare fișier &extensii"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Editează fișierul de evidențiere &grup"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Atribute: %s"
 
 msgid "Panels:"
 msgstr "Panouri:"
@@ -5031,11 +5102,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|ÎnJos"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Caută"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "Terminalul deja rulează o comandă"
@@ -5352,6 +5418,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5365,6 +5436,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5710,30 +5784,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Citirea a eșuat"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "Pluginuri si scripturi VFS:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Eroare necunoscută în procesul copil"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Setez"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Citirea a eșuat"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6523,21 +6607,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Parola:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Confirmare"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "formatul de  &listare "
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "Codificar&e"
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Eroare"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: conectat"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6553,10 +6659,14 @@ msgstr "Parola:"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Citirea a eșuat"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "Nu se poate deschide fișierul %s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7584,15 +7694,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "Nu se poate deschide fișierul %s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP către mașina"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "Nu se poate deschide fișierul %s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7632,10 +7742,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Parola:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7649,9 +7755,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7692,6 +7795,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Permisiuni"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9012,8 +9118,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "Editare meniu"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9702,15 +9810,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9826,8 +9934,20 @@ msgstr "Căutarea a fost efectuată"
 msgid "Continue from beginning?"
 msgstr "Continuă de la început?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Nu pot deschide arhiva cpio\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9900,6 +10020,28 @@ msgstr "Nu se poate insera fișierul"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Nu se poate aduce o copie locală a /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Intervalul de timp pentru eliberarea VFS (sec):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Setări sistem virtual de fișiere"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Editare fișier &meniuri"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Sistem &virtual de fișiere..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Caută"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Citirea a eșuat"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Activează suportul pentru subshell (implicit)"
@@ -10282,9 +10424,6 @@ msgstr "Nu se poate aduce o copie locală a /ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: se trimite contul de utilizator"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: conectat"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

@@ -11,19 +11,22 @@
 # toniotonba <TonioTonBa@gmail.com>, 2011
 # bucovaina78 <wannessmet@gmail.com>, 2012
 # Yury V. Zaytsev <yury@shurup.com>, 2016-2017,2025
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
+# GitHub webhook <noreply-webhook-github@weblate.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: Jaap Kramer <jaap-kramer@ziggo.nl>, 2023,2025\n"
-"Language-Team: Dutch (http://app.transifex.com/mc/mc/language/nl/)\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
+"Language-Team: Dutch <https://translate.codeberg.org/projects/mc6/mc6/nl/>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -427,9 +430,6 @@ msgstr "Mappen vergelijken"
 msgid "Compare files (diff)"
 msgstr "Vergelij&ken bestanden"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -503,6 +503,19 @@ msgstr "Gebruik venster-sorteermo&dus"
 
 msgid "Panel options"
 msgstr "Vensteropties "
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Vensteropties "
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff extra opties"
+
+msgid "Editor options"
+msgstr "Editor-opties"
 
 msgid "Quick cd"
 msgstr "Snelle cd"
@@ -1208,6 +1221,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Kan niet van %s naar %s vertalen"
 
 msgid "FATAL: not a directory:"
 msgstr "FATAAL: geen directory:"
@@ -3099,9 +3117,6 @@ msgstr "&Groep ongedaan maken"
 msgid "Word wrap line length:"
 msgstr "Regellengte voor afbreken:"
 
-msgid "Editor options"
-msgstr "Editor-opties"
-
 msgid "In se&lection"
 msgstr "In se&lectie"
 
@@ -3433,6 +3448,11 @@ msgstr "Simpel s&wap"
 msgid "A&uto save panels setup"
 msgstr "A&utomatisch opslaan vensterinstellingen"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "mappen"
+
 msgid "Navigation"
 msgstr "Navigatie"
 
@@ -3479,6 +3499,38 @@ msgstr ""
 "geval moet u de map handmatig opnieuw\n"
 "inlezen. Zie de 'man'-pagina voor \n"
 "details."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "Synta&x oplichting"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "&Positie van bestand opslaan"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Vul bestandsnaam in:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Korte bestandenlijst:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "&Complete bestandenlijst"
@@ -3531,12 +3583,6 @@ msgstr "&Geschiedenis opschonen"
 
 msgid "Confirmation"
 msgstr "Bevestiging"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Timeout bij vrijgegeven VFS'en (sec):"
-
-msgid "Virtual File System Setting"
-msgstr " Instellingen voor het Virtuele Bestandssysteem - VFS "
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Bestaand bestand (Symbolische link moet wijzen naar):"
@@ -4463,9 +4509,6 @@ msgstr "&Gefilterde weergave"
 msgid "&Copy"
 msgstr "&Kopiëren"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Link"
 
@@ -4477,15 +4520,6 @@ msgstr "Relatieve symli&nk"
 
 msgid "Edit s&ymlink"
 msgstr "S&ymlink bewerken"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "&Uitgebreide chown"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Hernoemen"
@@ -4507,6 +4541,26 @@ msgstr "&Inverteren selectie"
 
 msgid "E&xit"
 msgstr "&Afsluiten"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "&Uitgebreide chown"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "&Gebruikersmenu"
@@ -4556,15 +4610,6 @@ msgstr "&Achtergrondtaken"
 msgid "Screen lis&t"
 msgstr "Schermopsommin&g"
 
-msgid "Edit &extension file"
-msgstr "Bewerken &extensie                  "
-
-msgid "Edit &menu file"
-msgstr "&Bewerken menubestand               "
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Aanpassen hi&ghlighting-groepsbestand"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4597,12 +4642,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff extra opties"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Venstero&pties "
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Editor-opties"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Venstero&pties "
 
-msgid "&Virtual FS..."
-msgstr "&Virtueel FS..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Bewerken &extensie                  "
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Aanpassen hi&ghlighting-groepsbestand"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Attributies: %s"
 
 msgid "Panels:"
 msgstr "Vensters:"
@@ -5012,11 +5082,6 @@ msgid "ButtonBar|ClrAll"
 msgstr " Menu"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr " Zoeken"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "De shell voert al een opdracht uit"
@@ -5332,6 +5397,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5345,6 +5415,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5690,30 +5763,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Lezen mislukt"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "VFS-plugins en -scripts:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Onbekende fout in child"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Zetten"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Lezen mislukt"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6503,21 +6586,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Wachtwoord:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Bevestiging"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Lijstformaat..."
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Encoderen..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Fout"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: ingelogd"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6533,10 +6638,14 @@ msgstr "Wachtwoord:"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Lezen mislukt"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "Kan bestand %s niet openen"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7560,15 +7669,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "Kan bestand %s niet openen"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP naar machine"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "Kan bestand %s niet openen"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7608,10 +7717,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Wachtwoord:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7625,9 +7730,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7668,6 +7770,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Rechten"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8990,8 +9095,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "Menu bewerken"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9678,15 +9785,15 @@ msgid "ButtonBar|Format"
 msgstr "Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9798,8 +9905,20 @@ msgstr "Zoeken afgerond"
 msgid "Continue from beginning?"
 msgstr "Doorgaan vanaf het begin?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Openen cpio-archief mislukt:\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9870,6 +9989,28 @@ msgstr "Kan bestand niet invoegen"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Kan geen lokale versie van /ftp://some.host/editme.txt ophalen"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Timeout bij vrijgegeven VFS'en (sec):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr " Instellingen voor het Virtuele Bestandssysteem - VFS "
+
+#~ msgid "Edit &menu file"
+#~ msgstr "&Bewerken menubestand               "
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtueel FS..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr " Zoeken"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Lezen mislukt"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Zet subshell-ondersteuning aan (standaard)"
@@ -10256,9 +10397,6 @@ msgstr "Kan geen lokale versie van /ftp://some.host/editme.txt ophalen"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: account wordt verstuurd"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: ingelogd"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "
