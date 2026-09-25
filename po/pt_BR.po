@@ -11,21 +11,23 @@
 # Slava Zanko <slavazanko@gmail.com>, 2011
 # Van Der Fran <transifex@vanderland.com>, 2011
 # Yury V. Zaytsev <yury@shurup.com>, 2025
+# Anonymous <anonymous@noreply.codeberg.org>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-12 14:55+0200\n"
-"PO-Revision-Date: 2010-12-29 10:19+0000\n"
-"Last-Translator: marcelo cripe <marcelocripe@gmail.com>, 2022-2025\n"
-"Language-Team: Portuguese (Brazil) (http://app.transifex.com/mc/mc/language/"
-"pt_BR/)\n"
+"PO-Revision-Date: 2026-09-25 22:08+0000\n"
+"Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
+"Language-Team: Portuguese (Brazil) <https://translate.codeberg.org/projects/"
+"mc6/mc6/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % "
-"1000000 == 0 ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : ((n != 0 && n % "
+"1000000 == 0) ? 1 : 2);\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 msgid "No translation"
@@ -1685,8 +1687,8 @@ msgid ""
 "Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
 msgstr ""
 "\n"
-"Não foi possível configurar o final da leitura do canal do SIGWINCH: %s "
-"(%d)\n"
+"Não foi possível configurar o final da leitura do canal do SIGWINCH: %s (%d)"
+"\n"
 
 #, c-format
 msgid ""
@@ -1976,8 +1978,8 @@ msgstr "Nenhum argumento foi passado para o visualizador"
 
 msgid "Two files are required to invoke the diffviewer."
 msgstr ""
-"Dois arquivos são necessários para invocar o visualizador de diferenças "
-"‘diffviewer’."
+"Dois arquivos são necessários para invocar o visualizador de diferenças ‘"
+"diffviewer’."
 
 msgid "Background protocol error"
 msgstr "Ocorreu um erro no protocolo que está sendo executado em segundo plano"
