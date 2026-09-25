@@ -161,3 +161,102 @@ The releases of this fork, newest first.
 - Large pastes no longer freeze the UI; screen repaints are limited while input is arriving.
 - The arcmc 'Create archive' hotkey is now reassignable via arcmc.ini.
 - The legacy built-in tarfs and cpiofs VFS modules have been removed; arcmc handles archive browsing when available.
+
+## 6.0.1 - 2026-07-20
+
+- Panel contents can come from a dynamically loaded plugin instead of the
+  local filesystem or the built-in VFS. Twelve plugins ship on top of it.
+- The same idea applies to mcedit: an editor plugin registers with the editor
+  and adds commands of its own.
+- Plugins load from the user directory as well as the system one.
+- A plugin can open its own help file and its own settings dialog.
+- Alt-F1 and Alt-F2 list the plugins that ask to appear there.
+- Directory history works across plugin panels the way it works on a local
+  one.
+- Files can be copied into a plugin panel through the put_file and save_file
+  callbacks.
+- A plugin can re-drive the viewer's data source.
+- arcmc browses, creates, packs and extracts archives through libarchive, and
+  treats .jar, .war and .ear as archives.
+- A git panel lists commits, branches and changed files, and keeps favorites.
+- A docker panel groups containers by compose project and shows image sizes;
+  Alt-s configures what the container log shows.
+- A kubernetes panel backed by kubectl covers pods, nodes, services and more.
+- A MongoDB browser covers connections, databases, collections and documents.
+- An S3 panel covers connections, buckets and objects over libcurl, Cloudflare
+  R2 among the providers.
+- An FTP and FTPS plugin on libcurl replaces the old VFS module, with saved
+  connections.
+- An SFTP plugin manages connections, compressed sessions and public-key
+  authentication.
+- A Samba plugin browses SMB shares.
+- A shell-link plugin keeps saved local and SSH connection profiles, reachable
+  from the panel menus.
+- External Panelize is a plugin now instead of code in the core.
+- A ctags navigator for mcedit jumps to definitions and declarations.
+- Fold a block of code by bracket scope from the gutter, the Command menu or
+  Alt+Shift+F. A folded line keeps its text and gains a summary with the
+  matching bracket and the line count, and the indicator comes from the skin.
+- Alt+Shift+U opens the undo history: undoable and redoable groups with line,
+  action, character count and a preview, and a jump to any point in it.
+- Alt+Shift+M opens the macro explorer, which lists every recorded macro with
+  its hotkey, shows the action sequence, runs it, deletes it with
+  confirmation, or opens mc.macros at its definition.
+- Saving a file you have no write permission for asks for a password and
+  retries through sudo, instead of failing with EACCES and leaving Save As as
+  the only way out.
+- A file with no syntax definition is no longer flat: numbers, quoted strings
+  and a configurable set of symbols are coloured line by line.
+- A per-line layout cache keeps cursor movement, marking and redraw from
+  rescanning the line, so logs, CSV and minified files become usable.
+- Double click starts selection by words and dragging extends it by words;
+  triple click does the same by lines.
+- The viewer shows JSON, YAML, XML and HTML as a tree.
+- A grep-style filter hides non-matching lines over the same data source, with
+  the full set of search options and a dialog that tests a pattern before it
+  is applied.
+- The viewer replays escape-coded files as a virtual screen, covering
+  scrolling regions, absolute vertical moves and the rest of the wider
+  terminal emulation.
+- Shift+F9 turns ANSI colour on and off in the viewer.
+- Output of a command that never ends can be viewed: the stream is read
+  without blocking.
+- Markdown files are formatted in the viewer rather than shown raw.
+- An optional terminal widget runs an interactive shell inside the file
+  manager.
+- Alt-t opens a list of named listing formats that can be edited and saved.
+- A diff opened from a panel goes to the internal diff viewer instead of the
+  external mcdiff.
+- Key Bindings, Learn keys and Key Sniffer dialogs, and Learn keys understands
+  Ctrl, Alt and Shift.
+- Typing in a history popup narrows the list.
+- Copy and paste works between input lines and the editor.
+- Procyon is tried first when a .class file is viewed.
+- A column block is a real rectangle: the highlight no longer stops at the end
+  of each line.
+- Pasting the output of an external command works in the TUI.
+- A file whose first bytes look like an archive no longer crashes the viewer.
+- The viewer filter no longer stalls on a huge line, and horizontal scrolling
+  on such a line is no longer slow in unwrap mode.
+- The cursor is restored when an application leaves the alternate screen, and
+  a log with two alternate-screen brackets no longer comes out blank.
+- Ctrl-F1 and Ctrl-F2 work when the panel shows Quick View instead of a
+  listing.
+- The panel gets its column format back after a plugin panel closes.
+- A temporary copy made by a plugin keeps the file extension.
+- The git panel listed the wrong range of commits.
+- The samba plugin could not get back to the connection list.
+- Esc and F10 did not close the viewer and the diff viewer.
+- The old ftpfs and sftpfs VFS modules are gone, superseded by the FTP and
+  SFTP panel plugins.
+- WTable is model-backed: the widget no longer owns its rows.
+- One hotkey parser serves the sftp, ftp, git, s3 and shell-link plugins
+  instead of five.
+- The docker plugin is split into domain modules, with test coverage.
+- The spell plugin logs where it is told to, not to a hard-coded path in /tmp.
+- libsmbclient is found with pkg-config, where the header check missed it.
+
+## Before the fork
+
+M-Commander is based on GNU Midnight Commander 4.8.33. The upstream NEWS up to
+that release is kept in doc/NEWS.
