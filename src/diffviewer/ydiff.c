@@ -2904,6 +2904,7 @@ diff_options_dialog (diff_options_t *opt)
         .rect = r,
         .title = _ ("Diff Options"),
         .help = "[Diff Options]",
+        .help_file = MCDIFF_HELP_FILE,
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,
@@ -3639,7 +3640,7 @@ dview_ok_to_exit (WDiff *dview)
 static void
 dview_help (const WDiff *dview)
 {
-    ev_help_t event_data = { NULL, "[Diff Viewer]", NULL };
+    ev_help_t event_data = { MCDIFF_HELP_FILE, "[Diff Viewer]", NULL };
 
     (void) dview;
 
@@ -3997,6 +3998,7 @@ diff_view (const char *file1, const char *file2, const char *label1, const char 
     // Create dialog and widgets, put them on the dialog
     dview_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, dview_dialog_callback,
                             NULL, "[Diff Viewer]", NULL);
+    dview_dlg->help_file = MCDIFF_HELP_FILE;
     dw = WIDGET (dview_dlg);
     widget_want_tab (dw, TRUE);
     r = dw->rect;

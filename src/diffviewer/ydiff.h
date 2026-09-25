@@ -1,6 +1,9 @@
 #ifndef MC__DIFFVIEW_YDIFF_H
 #define MC__DIFFVIEW_YDIFF_H
 
+/* The help of the compare view, which its dialogs name when they ask for a node */
+#define MCDIFF_HELP_FILE "mdiff.md"
+
 /*** typedefs(not structures) and defined constants **********************************************/
 
 /*** enums ***************************************************************************************/

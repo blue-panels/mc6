@@ -536,8 +536,11 @@ static void
 menubar_help (const WMenuBar *menubar)
 {
     ev_help_t event_data;
+    const Widget *w = CONST_WIDGET (menubar);
 
-    event_data.filename = NULL;
+    /* the help file of the program the menu bar belongs to, so a menu of the editor opens
+       the help of the editor and the core needs to know nothing about it */
+    event_data.filename = w->owner != NULL ? CONST_DIALOG (w->owner)->help_file : NULL;
     event_data.parent_node = NULL;
 
     if (menubar->is_dropped)

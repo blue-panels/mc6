@@ -293,6 +293,12 @@ md_flush (md_ctx_t *ctx)
     if (ctx->para->len == 0)
         return;
 
+    // a break at the end of the last line of a paragraph: the flush ends it anyway
+    while (ctx->para->len != 0 && ctx->para->str[ctx->para->len - 1] == '\n')
+        g_string_set_size (ctx->para, ctx->para->len - 1);
+    if (ctx->para->len == 0)
+        return;
+
     if (ctx->term)
     {
         // the markdown of a term carries its own emphasis
@@ -318,7 +324,17 @@ md_flush (md_ctx_t *ctx)
 static void
 md_collect (md_ctx_t *ctx, const char *text, const char *indent)
 {
-    if (ctx->para->len == 0)
+    size_t len = strlen (text);
+    gboolean hard;
+
+    /* two spaces at the end of a line are a line break markdown keeps, and the help window
+       breaks a line at a newline of its own, so the break is carried over */
+    hard = len >= 2 && text[len - 1] == ' ' && text[len - 2] == ' ';
+    while (len > 0 && text[len - 1] == ' ')
+        len--;
+
+    // after a break the next line starts where the broken one started
+    if (ctx->para->len == 0 || ctx->para->str[ctx->para->len - 1] == '\n')
     {
         if (indent != NULL)
             g_string_append (ctx->para, indent);
@@ -326,7 +342,10 @@ md_collect (md_ctx_t *ctx, const char *text, const char *indent)
     else
         g_string_append_c (ctx->para, ' ');
 
-    g_string_append (ctx->para, text);
+    g_string_append_len (ctx->para, text, len);
+
+    if (hard)
+        g_string_append_c (ctx->para, '\n');
 }
 
 /* --------------------------------------------------------------------------------------------- */

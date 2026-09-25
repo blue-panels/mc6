@@ -888,6 +888,7 @@ viewer_options_box (void)
             .rect = r,
             .title = _ ("Viewer options"),
             .help = "[Viewer options]",
+            .help_file = MCVIEW_HELP_FILE,
             .widgets = quick_widgets,
             .callback = NULL,
             .mouse_callback = NULL,

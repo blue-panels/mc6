@@ -14,6 +14,9 @@
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
+/* The help of the viewer, which its dialogs name when they ask for a node */
+#define MCVIEW_HELP_FILE "mview.md"
+
 struct WView;
 typedef struct WView WView;
 typedef struct mcview_generator mcview_generator_t;

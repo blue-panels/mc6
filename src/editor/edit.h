@@ -18,6 +18,9 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
+/* The help of the editor, which its dialogs name when they ask for a node */
+#define MCEDIT_HELP_FILE         "mcedit6.md"
+
 #define DEFAULT_WRAP_LINE_LENGTH 72
 
 #define EDIT(x)                  ((WEdit *) (x))
