@@ -843,6 +843,7 @@ edit_macro_explorer_cmd (WEdit *edit)
 
     dlg = dlg_create (TRUE, 0, 0, MEXPL_DLG_H, MEXPL_DLG_W, WPOS_CENTER | WPOS_TRYUP, FALSE,
                       dialog_colors, mexpl_dlg_cb, NULL, "[Macro Explorer]", _ ("Macro Explorer"));
+    dlg->help_file = MCEDIT_HELP_FILE;
     g = GROUP (dlg);
     dlg->data.p = &state;
     widget_want_tab (WIDGET (dlg), TRUE);

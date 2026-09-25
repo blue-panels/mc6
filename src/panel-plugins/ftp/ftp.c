@@ -151,6 +151,9 @@ static mc_pp_result_t ftp_connection_to_local_copy (const ftp_connection_t *conn
 static mc_pp_result_t ftp_get_quick_view (void *plugin_data, const char *fname,
                                           const struct stat *st, char **local_path);
 static mc_pp_result_t ftp_handle_key (void *plugin_data, int key);
+static const char *ftp_help_file (void);
+static mc_pp_result_t ftp_get_help_info (void *plugin_data, const char **filename,
+                                         const char **node);
 
 static void ftp_connect_status_init_cb (status_msg_t *sm);
 static int ftp_connect_status_update_cb (status_msg_t *sm);
@@ -306,6 +309,7 @@ static const mc_panel_plugin_t ftp_plugin = {
     .handle_key = ftp_handle_key,
     .create_item = ftp_create_item,
     .get_quick_view = ftp_get_quick_view,
+    .get_help_info = ftp_get_help_info,
 };
 
 /*** file scope functions ************************************************************************/
@@ -1688,6 +1692,7 @@ show_connection_tab_basic (ftp_connection_t *conn)
         .rect = r,
         .title = N_ ("FTP Connection"),
         .help = "[FTP Plugin]",
+        .help_file = ftp_help_file (),
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,
@@ -1784,6 +1789,7 @@ show_connection_tab_security (ftp_connection_t *conn)
         .rect = r,
         .title = N_ ("FTP Connection"),
         .help = "[FTP Plugin]",
+        .help_file = ftp_help_file (),
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,
@@ -1869,6 +1875,7 @@ show_connection_tab_advanced (ftp_connection_t *conn)
         .rect = r,
         .title = N_ ("FTP Connection"),
         .help = "[FTP Plugin]",
+        .help_file = ftp_help_file (),
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,
@@ -3389,6 +3396,42 @@ ftp_clone_connection (ftp_data_t *data)
 
     g_ptr_array_add (data->connections, clone);
     save_connections (data->connections_file, data->connections);
+
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The path of the help file, built once. */
+static const char *
+ftp_help_file (void)
+{
+    static char *path = NULL;
+
+    if (path == NULL)
+        path = g_build_filename (MC_PLUGIN_DIR, "ftp_panel.md", (char *) NULL);
+
+    return g_file_test (path, G_FILE_TEST_IS_REGULAR) ? path : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The help of the plugin lives beside the plugin, so F1 in its panel and in its
+   dialogs opens that file and not the help of the file manager. */
+static mc_pp_result_t
+ftp_get_help_info (void *plugin_data, const char **filename, const char **node)
+{
+    (void) plugin_data;
+
+    if (node != NULL)
+        *node = "[FTP Plugin]";
+
+    if (filename != NULL)
+    {
+        *filename = ftp_help_file ();
+        if (*filename == NULL)
+            return MC_PPR_NOT_SUPPORTED;
+    }
 
     return MC_PPR_OK;
 }

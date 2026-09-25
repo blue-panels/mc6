@@ -958,6 +958,7 @@ edit_plugins_info (WDialog *h)
     dlg = dlg_create (TRUE, (LINES - dialog_height) / 2, (COLS - dialog_width) / 2, dialog_height,
                       dialog_width, WPOS_KEEP_DEFAULT, TRUE, dialog_colors, NULL, NULL,
                       "[Plugin info]", _ ("Plugin info"));
+    dlg->help_file = MCEDIT_HELP_FILE;
     header = table_new (1, 1, 1, table_width, 7, header_columns);
     header->scrollbar = FALSE;
     header->scrollbar_on_frame = FALSE;
@@ -1012,7 +1013,7 @@ edit_plugins_info (WDialog *h)
 static void
 edit_help (const WDialog *h)
 {
-    ev_help_t event_data = { NULL, h->help_ctx, NULL };
+    ev_help_t event_data = { h->help_file, h->help_ctx, NULL };
 
     mc_event_raise (MCEVENT_GROUP_CORE, "help", &event_data);
 }
@@ -1151,6 +1152,7 @@ edit_window_list (const WDialog *h)
     cols = COLS * 2 / 3;
 
     listbox = listbox_window_new (lines, cols, _ ("Open files"), "[Open files]");
+    listbox->dlg->help_file = MCEDIT_HELP_FILE;
 
     for (w = g->widgets; w != NULL; w = g_list_next (w))
         if (edit_widget_is_editor (CONST_WIDGET (w->data)))
@@ -2252,6 +2254,7 @@ edit_files (const GList *files)
     // Create a new dialog and add it widgets to it
     edit_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, edit_dialog_callback,
                            edit_dialog_mouse_callback, "[Internal File Editor]", NULL);
+    edit_dlg->help_file = MCEDIT_HELP_FILE;
     wd = WIDGET (edit_dlg);
     widget_want_tab (wd, TRUE);
     wd->keymap = editor_map;

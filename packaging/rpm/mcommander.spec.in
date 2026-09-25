@@ -1,7 +1,7 @@
 Name:           mcommander
 Version:         @VERSION@
 Release:         1%{?dist}
-Summary:         Two-pane text-mode file manager with loadable panel plugins
+Summary:         Twin-panel text-mode file manager with loadable panel plugins
 License:         GPL-3.0-or-later
 URL:             https://blue-panels.github.io/mcommander/
 Source0:         https://github.com/blue-panels/mcommander/releases/download/v%{version}/mcommander-%{version}.tar.gz
@@ -40,11 +40,14 @@ Suggests:        aspell
 Suggests:        ctags
 
 %description
-M-Commander is a file manager for the terminal, based on GNU Midnight
-Commander.  It keeps a small core and loads its panel plugins at run time.
-Commands run in a built-in terminal, and the program comes with an editor
-with syntax highlighting and a viewer that also reads binary files.  Its
-files carry its own name, so it installs beside the distribution mc.
+M-Commander is a twin-panel text-mode file manager based on GNU Midnight
+Commander.  Its architecture is built around a compact core and dynamically
+loaded panel plugins.  The plugins provide a uniform panel interface for
+archives, remote file systems, repositories, and other data sources.
+Commands are run in a built-in terminal.  M-Commander also includes a text
+editor with syntax highlighting and a viewer that supports both text and
+binary formats.  Its files carry its own name, so it installs beside the
+distribution mc.
 
 %package plugins
 Summary:         Archive and remote system panels for M-Commander

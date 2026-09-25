@@ -1,0 +1,251 @@
+.\" Generated from mcedit6.md by maint/update-man-in.sh. Do not edit.
+.TH MCEDIT6 1 "septiembre de 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NOMBRE
+.PP
+mcedit6 \- Editor de Archivos Interno.
+
+
+.SH SINOPSIS
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] arch
+
+
+.SH Editor de Archivos Interno
+.PP
+El editor de archivos interno es un editor a pantalla completa de avanzadas
+prestaciones. Un archivo mayor que
+\fIeditor_filesize_threshold\fP
+(64 MB por omisión) se abre tras una pregunta. También permite modificar
+archivos binarios.
+Se inicia pulsando
+\fBF4\fP,
+supuesto que la variable
+\fIuse_internal_edit\fP
+esté presente en el archivo de inicialización.
+
+.PP
+Las características soportadas actualmente son: copia, desplazamiento,
+borrado, corte y pegado de bloques; deshacer paso a paso; menús
+desplegables; inserción de archivos; definición de macros; buscar y
+reemplazar usando expresiones regulares; selección de texto con
+mayúsculas\-cursor (si el terminal lo soporta); alternancia
+insertar\-sobreescribir; plegado de líneas; sangrado automático; tamaño
+de tabulación configurable; realce de sintaxis para varios tipos de
+archivos; y la opción de pasar bloques de texto por filtros externos
+como indent o ispell.
+
+.TP
+Secciones:
+Opciones del editor
+
+.PP
+El editor es muy fácil de usar y no requiere aprendizaje alguno.
+Para conocer las teclas asignadas a cada función, basta consultar los
+menús correspondientes. Además, las teclas de desplazamiento con la
+tecla de mayúsculas seleccionan texto. Se puede seleccionar con el ratón,
+aunque podemos recuperar su funcionamiento habitual en terminales (copiar
+y pegar) manteniendo pulsada la tecla mayúsculas.
+\fBCtrl\-Ins\fP
+copia al archivo de intercambio
+\fB~/.local/share/mc6/mcedit/mcedit.clip\fP,
+\fBMayús\-Ins\fP
+pega desde él,
+\fBMayús\-Supr\fP
+corta hacia él y
+\fBCtrl\-Supr\fP
+elimina el texto resaltado.
+
+.PP
+Para definir una macro, pulsar
+\fBCtrl\-r\fP
+y entonces teclearemos las secuencias de teclas que deseamos sean
+ejecutadas. Pulsaremos
+\fBCtrl\-r\fP
+de nuevo al finalizar y asignaremos la macro a una tecla pulsando sobre
+ella. La macro se ejecuta con esa tecla y también con
+\fBCtrl\-a\fP
+seguido de la tecla asignada. Las macros se guardan en la sección
+\fB[editor]\fP
+del archivo
+\fB~/.local/share/mc6/macros\fP,
+y se borra una macro eliminando su línea en ese archivo; cómo una macro
+llama a un guion propio se explica en la sección MACRO de
+\fBman mcedit6\fP\&.
+
+.PP
+El juego de caracteres del texto mostrado se cambia con Alt\-e (M\-e). La
+recodificación va del juego elegido al del sistema. Para anularla,
+elegir "<No translation>" en el diálogo de juegos de caracteres.
+
+.PP
+El botón
+\fBFiltro\fP
+del diálogo de búsqueda
+(\fBF7\fP)
+oculta todas las líneas que no contienen el texto buscado, con los mismos
+ajustes de tipo, mayúsculas y palabra completa que la búsqueda. Los números
+de línea conservan su valor original y la columna de estado marca cada
+tramo oculto. El conjunto de líneas ocultas queda fijado en el momento de
+pulsar el botón: la edición no vuelve a aplicar la condición, de modo que
+una línea visible que se parte o se une sigue visible, y las líneas
+tecleadas después siguen visibles aunque no cumplan la condición.
+\fBM\-s\fP
+quita el filtro; pulsada de nuevo vuelve a poner la última búsqueda como
+filtro. "Desplegar todo" del menú Utilidades también lo quita.
+
+
+.SH Opciones del editor
+.PP
+Los ajustes del
+editor interno\&.
+Los abre el menú
+\fBOpciones\fP
+del propio editor y la entrada
+\fBOpciones del editor\fP
+del menú Opciones del gestor de archivos. Se guardan en el archivo ini con los
+nombres que describe el manual en inglés.
+
+.PP
+\fIModo de ajuste de línea.\fP
+Desactivado, formateo dinámico del párrafo, o el ajuste de máquina de escribir
+que corta la línea a la longitud fijada mientras se teclea.
+
+.PP
+\fISimular medias tabulaciones.\fP
+Entre el texto y el margen izquierdo el movimiento y la sangría van de media
+tabulación y se rellenan con espacios; en el resto la tabulación es normal.
+
+.PP
+\fIRetroceso a través de tabulaciones.\fP
+Un solo retroceso borra toda la sangría hasta el margen izquierdo cuando entre
+el cursor y el margen no hay texto.
+
+.PP
+\fIRellenar tabulaciones con espacios.\fP
+En lugar del carácter de tabulación se insertan espacios hasta la siguiente
+posición.
+
+.PP
+\fIAncho de tabulación.\fP
+El ancho que ocupa el carácter de tabulación. 8 de forma predeterminada.
+
+.PP
+\fIAuto sangría con Enter.\fP
+La línea nueva empieza con la sangría de la línea de arriba.
+
+.PP
+\fIConfirmar antes de guardar.\fP
+Preguntar antes de escribir el archivo.
+
+.PP
+\fIRecordar la posición en el archivo.\fP
+Abrir el archivo donde se dejó la última vez.
+
+.PP
+\fIMostrar espacios finales.\fP
+Se marcan los espacios al final de la línea.
+
+.PP
+\fIMostrar tabulaciones.\fP
+Se marcan los caracteres de tabulación.
+
+.PP
+\fIMostrar caracteres de control.\fP
+Los caracteres de control del texto se imprimen en lugar de ocultarse.
+
+.PP
+\fIResaltado de sintaxis.\fP
+El texto se colorea con las reglas de sintaxis de su tipo de archivo.
+
+.PP
+\fICursor tras el bloque insertado.\fP
+Después de insertar un bloque el cursor queda al final y no al principio.
+
+.PP
+\fISelección persistente.\fP
+La selección se mantiene al mover el cursor en lugar de perderse.
+
+.PP
+\fICursor más allá del fin de línea.\fP
+El cursor puede estar después del último carácter de la línea.
+
+.PP
+\fIDeshacer en grupo.\fP
+Un solo deshacer devuelve una serie de cambios del mismo tipo y no una tecla.
+
+.PP
+\fILongitud de línea para el ajuste.\fP
+La columna por la que los modos de ajuste cortan la línea. 72 de forma
+predeterminada.
+
+
+.SH Guardar como
+.PP
+El nombre con el que escribir el archivo y los fines de línea con los que
+escribirlo: como los tiene el archivo, Unix (LF), Windows y DOS (CR LF) o
+Macintosh (CR).
+
+
+.SH Modo de guardar
+.PP
+Cómo se escribe el archivo:
+
+.TP
+\fBGuardado rápido\fP
+Escribir sobre el archivo en el acto. Rápido, y un fallo a mitad deja el
+archivo escrito a medias.
+
+.TP
+\fBGuardado seguro\fP
+Escribir primero un archivo temporal y renombrarlo sobre el original cuando
+está entero, de modo que un fallo no toca el original.
+
+.TP
+\fBCrear copias de seguridad con la extensión\fP
+Guardado seguro, y el original se conserva con su nombre más la extensión de
+la línea de entrada, "~" de forma predeterminada.
+
+.TP
+\fBComprobar fin de línea POSIX\fP
+Preguntar por el fin de línea que falta al final del archivo antes de
+escribirlo.
+
+
+.SH Explorador de macros
+.PP
+Las macros grabadas, con la tecla a la que responde cada una y lo que hace.
+Los botones son
+
+.TP
+\fBEjecutar\fP
+Reproducir la macro donde está el cursor.
+
+.TP
+\fBBorrar\fP
+Quitarla, tras una pregunta.
+
+.TP
+\fBEditar archivo\fP
+Abrir el archivo donde viven las macros.
+
+
+.SH Archivos abiertos
+.PP
+Los archivos que el editor tiene abiertos, uno por línea. Enter va al archivo
+donde está el cursor, Esc deja el que se muestra.
+
+
+.SH Información de complementos
+.PP
+Los complementos que el editor ha cargado: el nombre, si está activo, qué
+ofrece y qué hace. Es una lista para mirar; se desactiva un complemento y se
+abre su configuración en el diálogo
+Administrar complementos
+del gestor de archivos.
+
+
+.SH VÉASE TAMBIÉN
+.PP
+mcommander(1), mview(1), mdiff(1).

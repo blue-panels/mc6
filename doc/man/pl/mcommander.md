@@ -4,7 +4,7 @@ date: wrzesień 2026
 
 # NAZWA <!-- help:skip -->
 
-mcommander - wizualny interpetator poleceń dla systemów Unixopodobnych
+mcommander - dwupanelowy menedżer plików w trybie tekstowym
 
 # UŻYTKOWANIE <!-- help:skip -->
 
@@ -13,8 +13,13 @@ mcommander - wizualny interpetator poleceń dla systemów Unixopodobnych
 
 # OPIS <a id="description"></a>
 
-M-Commander jest przeszukiwarką katalogów/menedżerem plików dla systemów
-Unixopodobnych
+M-Commander jest dwupanelowym menedżerem plików w trybie tekstowym, opartym na
+GNU Midnight Commanderze. Jego architekturę tworzy zwarte jądro i dynamicznie
+wczytywane wtyczki paneli. Wtyczki zapewniają jednolity interfejs panelowy dla
+archiwów, zdalnych systemów plików, repozytoriów i innych źródeł danych.
+Polecenia są wykonywane we wbudowanym terminalu. M-Commander zawiera także
+edytor tekstu z podświetlaniem składni oraz przeglądarkę obsługującą formaty
+tekstowe i binarne.
 
 
 # OPCJE <a id="options"></a>
@@ -225,6 +230,76 @@ są używane do edytowania linii na wejściu (przy wpisywaniu). Oznacza,
 to że stosuje się je zarówno
 do linii poleceń jak do okien dialogowych.
 
+## Zmiana przypisań klawiszy <a id="keys_redefine"></a>
+
+To samo można zrobić w samym programie, z menu
+**Opcje**.
+Okno
+[Przypisania klawiszy](#key-bindings)
+wypisuje każde działanie wraz z klawiszami, na które ono odpowiada, zmienia
+je i zapisuje wynik do
+**~/.config/mc6/keymap.ini**,
+czyli do tego pliku, którego szuka opcja. Okno
+[Nauka klawiszy](#learn-keys)
+zajmuje się drugą stroną sprawy: uczy program tych ciągów, które terminal
+wysyła dla źle rozpoznawanych klawiszy.
+[Podsłuch klawiszy](#key-sniffer)
+pokazuje, co przychodzi po naciśnięciu klawisza, wraz z działaniem, do
+którego ten klawisz jest przypisany w bieżącej mapie; od tego warto zacząć,
+kiedy przypisanie zdaje się nic nie robić.
+
+Przypisania klawiszy można wczytać z zewnętrznego pliku. Na początku program
+tworzy mapę z przypisań podanych w kodzie źródłowym. Potem zawsze wczytywane
+są dwa pliki,
+**{{pkgdatadir}}/keymap.ini**
+i
+**{{sysconfdir}}/mcommander/keymap.ini**,
+kolejno zmieniając wcześniejsze przypisania.
+Pakiet trzyma własne mapy w
+**{{sysconfdir}}/mcommander**:
+**keymap.default.ini**,
+**keymap.emacs.ini**
+i
+**keymap.vim.ini**,
+przy czym
+**keymap.ini**
+jest dowiązaniem do domyślnej.
+Opcja
+**--nokeymap**
+nie czyta żadnego pliku i zostawia przypisania z kodu źródłowego.
+
+Plik użytkownika szukany jest w następującej kolejności (do pierwszego
+znalezionego):
+
+```
+1) opcja wiersza poleceń -K <mapa>, --keymap=<mapa>
+2) zmienna środowiskowa MC_KEYMAP
+3) parametr keymap sekcji [Midnight-Commander]
+4) plik ~/.config/mc6/keymap.ini
+```
+
+Pierwsze trzy przyjmują nazwę albo ścieżkę bezwzględną. Do nazwy, która nie
+kończy się na
+**.keymap**,
+dodawane jest to rozszerzenie, a plik szukany jest w (do pierwszego
+znalezionego):
+
+```
+1) ~/.config/mc6/
+2) {{pkgdatadir}}/
+```
+
+Przez to rozszerzenie map z pakietu, których nazwy kończą się na
+**.ini**,
+nie da się wybrać w ten sposób. Aby użyć jednej z nich, skopiuj ją albo
+zrób dowiązanie do
+**~/.config/mc6/keymap.ini**,
+który czytany jest jako ostatni i nie wymaga żadnej opcji:
+
+```
+ln -s {{sysconfdir}}/mcommander/keymap.vim.ini ~/.config/mc6/keymap.ini
+```
+
 ## Klawisze różne <a id="miscellaneous-keys"></a>
 
 Jest tu kilka klawiszy, które nie kwalifikują się do żadnej z wymienionych
@@ -391,22 +466,54 @@ w '>'.
 **M-S-h**, **M-H**.
 Wyświetla historię katalogów, podobne działanie do kliknięcia myszką 'v'.
 
-## Quick search
+## Szybkie wyszukiwanie i szybki filtr <a id="quick-search"></a>
 
-**C-s**, **M-s**.
-Uruchamia szukanie pliku w katalogu na podstawie jego nazwy. Kiedy szukanie
-jest aktywne, każde naciśnięcie klawisza doda jeden znak do poszukiwania
-zamiast wypisania go linii poleceń. Jeśli opcja
-*Show mini-status*
-jest włączona, szukany ciąg znaków pojawia się w linii mini-statusu. Kiedy
-wpisujemy znak, linia wyboru przemieszcza się do następnego pliku zaczynającego
-się od podanych liter. Klawisze
-*backspace*
-lub
-*del*
-mogą być używane do poprawiania błędów. Jeśli C-s zostanie naciśnięte ponownie,
-M-Commander rozpoczyna szukanie następnego pliku
-zaczynającego się od podanych znaków.
+Tryb szybkiego wyszukiwania pozwala szybko znaleźć plik w panelu.
+**C-s**
+albo
+**Alt-s**
+zaczyna szukanie nazwy w liście katalogu.
+**Alt-Shift-s**
+włącza szybki filtr, który używa tego samego wzorca, ale ukrywa pozycje,
+które go nie zawierają. Pozycja katalogu nadrzędnego widoczna jest zawsze.
+
+Kiedy jeden z tych trybów jest włączony, naciskane klawisze dopisują się do
+wspólnego wzorca, a nie do wiersza poleceń. Jeśli opcja
+*Pokaż mini-status*
+jest włączona, wzorzec widać w wierszu mini-statusu. W trakcie pisania linia
+wyboru przechodzi do następnego pliku, którego nazwa zaczyna się od wpisanych
+liter; w trybie filtra lista dodatkowo zawęża się do pasujących pozycji.
+Klawisze
+**Backspace**
+albo
+**Del**
+służą do poprawiania błędów.
+
+Naciśnięcie
+**C-s**
+albo
+**Alt-s**
+przy włączonym szybkim filtrze przełącza na szybkie wyszukiwanie i pokazuje
+wszystkie pozycje, nie gubiąc ani wzorca, ani bieżącego pliku. Naciśnięcie
+**Alt-Shift-s**
+przy włączonym szybkim wyszukiwaniu wraca do filtra. Powtórzenie skrótu
+włączonego trybu przechodzi do następnego trafienia.
+
+Klawisze ruchu, strzałki,
+**Home**,
+**End**,
+**PageUp**
+i
+**PageDown**,
+poruszają się wewnątrz przefiltrowanej listy, nie zamykając filtra.
+
+Pliki można zaznaczać i odznaczać przy włączonym filtrze. Zaznaczenia
+zostają po zmianie trybu i po zamknięciu filtra.
+
+Jeśli któryś z trybów włączysz podwójnym naciśnięciem jego skrótu, wróci
+poprzedni wzorzec.
+
+Poza znakami nazwy pliku można używać także znaków wieloznacznych '\*' i '?'.
 
 ## Linia Powłoki <a id="shell-command-line"></a>
 
@@ -486,59 +593,75 @@ Przechodzi do początku lub do końca.
 
 ## Linia wejściowa klawiszy <a id="input-line-keys"></a>
 
-Linie wejściowe (te używane w linii komend i w oknach dialogowych), akceptują
-następujące klawisze:
+Linie wejściowe (te używane w
+[wierszu poleceń](#shell-command-line)
+i w oknach dialogowych) przyjmują następujące klawisze:
 
-**C-a**.
-umieszcza kursor na początku linii.
+**C-a**
+: umieszcza kursor na początku wiersza.
 
-**C-e**.
-umieszcza kursor na końcu linii.
+**C-e**
+: umieszcza kursor na końcu wiersza.
 
-**C-b**, **move-left**.
-przenosi kursor o jedną pozycję w lewo.
+**C-b, Left**
+: przenosi kursor o jedną pozycję w lewo.
 
-**C-f**, **move-right**.
-przenosi kursor o jedną pozycję w prawo.
+**C-f, Right**
+: przenosi kursor o jedną pozycję w prawo.
 
-**M-f**.
-przesuwa kursor o jedno słowo naprzód.
+**M-f**
+: przesuwa kursor o jedno słowo naprzód.
 
-**M-b**.
-przesuwa kursor o jedno słowo wstecz.
+**M-b**
+: przesuwa kursor o jedno słowo wstecz.
 
-**C-h**, **backspace**.
-kasuje poprzedni znak.
+**C-h, Backspace**
+: kasuje poprzedni znak.
 
-**C-d**, **Delete**.
-kasuje znak w miejscu kursora (nad nim).
+**C-d, Delete**
+: kasuje znak w miejscu kursora.
 
-**C-@**.
-wstawia zaznaczenie do kasowanie (patrz następne pozycje).
+**C-@**
+: wstawia zaznaczenie do wycinania.
 
-**C-w**.
-kopiuje tekst spomiędzy kursora i zaznaczenia do bufora i usuwa go z linii
-poleceń.
+**C-w**
+: kopiuje tekst między kursorem a zaznaczeniem do bufora i usuwa go z wiersza
+wprowadzania.
 
-**M-w**.
-to samo co C-w tylko, że nie usuwa tekstu z linii.
+**M-w**
+: to samo co C-w, tylko bez usuwania tekstu z wiersza.
 
-**C-y**.
-wstawia spowrotem zawartość wyciętego bufora.
+**C-y**
+: wstawia z powrotem zawartość bufora.
 
-**C-k**.
-wycina tekst od kursora do końca linii.
+**C-k**
+: wycina tekst od kursora do końca wiersza.
 
-**M-p**, **M-n**.
-Używaj tych klawiszy, żeby przeglądać historię komend. M-p wyświetla poprzednią,
-a M-n następną.
+**Ctrl-Insert**
+: kopiuje zaznaczony tekst do pliku wymiany i do schowka systemu. Bez
+zaznaczenia: zaznaczone pliki panelu widocznego na ekranie, po jednym w
+wierszu; inaczej cały wiersz; inaczej plik pod kursorem panelu.
 
-**M-C-h**, **M-Backspace**.
-kasuje jedno słowo wstecz (poprzednie).
+**Shift-Delete**
+: wycina zaznaczony tekst do pliku wymiany i do schowka systemu.
 
-**M-Tab**.
-Wykonuje dokończenie nazw plików, komend, zmiennych, użytkowników, nazw hostów
-za Ciebie.
+**Shift-Insert**
+: wkleja plik wymiany do wiersza jako jeden wiersz: końce wierszy i pozostałe
+znaki sterujące zamieniają się w spacje. W wierszu poleceń działa i przy
+widocznych, i przy schowanych panelach. Więcej niż 2 KB tekstu wkleja się
+dopiero po potwierdzeniu.
+
+**M-p, M-n**
+: używaj tych klawiszy, żeby przeglądać historię poleceń. M-p pokazuje
+poprzednie, a M-n następne.
+
+**M-C-h, M-Backspace**
+: kasuje jedno słowo wstecz.
+
+**M-Tab**
+: wykonuje
+[dokończenie](#completion)
+nazw plików, poleceń, zmiennych, użytkowników i nazw hostów.
 
 <!-- help:break -->
 
@@ -711,10 +834,22 @@ przez opcję
 
 ### Filtry (Filter...) <a id="filter"></a>
 
-Komenda filtra pozwala ci na podanie rozszerzenia, które musi być spełnione,
-żeby pliki były widoczne (na przykład
-**\*.tar.gz**).
-Niezależnie od filtru katalalogi i dowiązania do katalogów są zawsze pokazywane.
+Polecenie filtra pozwala podać wzorzec (na przykład
+**\*.tar.gz**),
+do którego pliki i katalogi muszą pasować, aby były pokazane.
+[Wiersz wprowadzania](#input-line-keys)
+przyjmuje wzorzec nazw pokazywanych w panelu.
+
+Przy włączonym polu
+*Tylko pliki*
+filtr dotyczy tylko plików, a wszystkie katalogi są widoczne. Inaczej
+filtrowane są zarówno pliki, jak i katalogi. Przy włączonym polu
+*Wzorce powłoki*
+wzorzec działa jak rozwijanie nazw w powłoce (\* oznacza zero lub więcej
+znaków, a ? jeden). Inaczej porównanie idzie zwykłymi wyrażeniami regularnymi
+(zobacz ed(1)). Przy włączonym polu
+*Rozróżniaj wielkość liter*
+filtr odróżnia duże i małe litery, inaczej ich nie rozróżnia.
 
 ### Odśwież (Reread) <a id="reread"></a>
 
@@ -766,26 +901,37 @@ Ta kombinacja klawiszy oczekuje na komendę i jej argument (argumentem standardo
 jest wybrany aktualnie plik), całe wyjście programu przekierowywane jest do pliku,
 który zostaje automatycznie wyświetlony na ekranie w trybie podglądu.
 
-**Edycja (F4)**
+**Edycja (F4, F14)**
 
-Aktualnie ta komenda wywołuje edytor
-**vi**(1)
-lub edytor wybrany w zmiennej środowiskowej, lub wbudowany wewnętrzny edytor
-plików jeśli opcja use_internal_edit jest włączona.
+F4 edytuje plik pod kursorem, a F14 uruchamia edytor z nowym, pustym plikiem.
+Wywoływany jest edytor
+**vi**(1),
+edytor podany w zmiennej środowiskowej
+**EDITOR**
+albo
+[wbudowany edytor plików](mcedit6.md#internal-file-editor),
+jeśli opcja use_internal_edit jest włączona.
 
-**Kopiuj (F5)**
+O tym, jak podać dodatkowe opcje wiersza poleceń zewnętrznych edytorów, mówi
+rozdział
+[parametry zewnętrznego edytora](#parameters-for-external-editor-or-viewer).
+
+**Kopiuj (F5, F15)**
 
 Włącza okno dialogowe, w którym standardowo znajduje się ścieżka do
 katalogu w
 nieaktywnym panelu, po czym kopiuje aktualny plik (lub wybrane
 jeśli wybrano jakiekolwiek) do katalogu, który wybraliśmy w oknie dialogowym.
-Space for destination file may be preallocated relative to preallocate_space
-configure option.
+Miejsce na plik docelowy może być z góry zajęte, zależnie od opcji
+konfiguracji preallocate_space.
 Podczas procesu kopiowania możesz go w każdej chwili przerwać wciskając C-c lub
 Esc. Żeby dowiedzieć się czegoś więcej na temat jokerów w ścieżce źródłowej
 (którymi najczęściej będą \* lub ^\\(.\*\\)$) i innych możliwych określeń w
-katalogu docelowym zobacz kategorię
-**Maski kopiowania/przenoszenia**
+katalogu docelowym zobacz rozdział
+[Maski kopiowania/przenoszenia](#mask-copyrename).
+
+F15 działa podobnie, ale domyślnie podpowiada katalog panelu aktywnego, i
+zawsze dotyczy pliku pod kursorem, niezależnie od zaznaczonych plików.
 
 Na niektórych systemach możliwe jest kopiowanie w tle, robi się to klikając
 na przycisk backgorund (lub naciskając kombinację M-b w oknie dialogowym).
@@ -795,9 +941,15 @@ Background Jobs jest używane do kontrolowania prac w tle.
 
 Tworzy sztywne dowiązanie do aktualnego pliku.
 
-**SymLink (C-x s)**
+**Dowiązanie bezwzględne (C-x s)**
 
-Tworzy symboliczne dowiązanie do aktualnego pliku. Dla tych, którzy nie wiedzą
+Tworzy bezwzględne dowiązanie symboliczne do aktualnego pliku.
+
+**Dowiązanie względne (C-x v)**
+
+Tworzy względne dowiązanie symboliczne do aktualnego pliku.
+
+Dla tych, którzy nie wiedzą
 co to jest dowiązanie: tworzenie dowiązania do pliku jest tak jak kopiowanie
 pliku, z tym tylko,
 że zarówno plik źródłowy i docelowy reprezentują ten sam plik. Na przykład,
@@ -824,7 +976,7 @@ przez dowiązanie jest pokazywany w linii mini-statusu, jeśli opcja
 jest włączona. Używaj dowiązań symbolicznych, jeśli chcesz unikąć problemów z
 rozpoznawaniem twardych dowiązań.
 
-**Zmiana nazwy/przeniesienie (F6)**
+**Zmiana nazwy/przeniesienie (F6, F16)**
 
 Włącza okno dialogowe, gdzie standardowo wpisana jest nazwa katalogu w
 nieaktywnym panelu, i przenosi aktualnie wybrany plik (lub zaznaczone jeśli
@@ -848,6 +1000,11 @@ Kasuje aktualnie wybrany lub zaznaczone pliki w aktywnym panelu. Podczas
 procesu możesz nacisnąć C-C lub Esc żeby przerwać operację. [skasowane pliki
 nie będą jednak odzyskane - przyp. tłumacza].
 
+**Szybka zmiana katalogu (Alt-c)**
+
+Otwiera okno
+[szybkiej zmiany katalogów](#quick-cd).
+
 **Zaznacz grupę (+)**
 
 Używane do zaznaczania grupy plików. M-Commander będzie żądał tekstu
@@ -864,6 +1021,14 @@ zewnętrznych (zobacz ed (1)).
 Używane do odznaczania grupy plików. Jest przeciwieństwem komendy
 *Zaznacz pliki.*
 
+**Odwróć zaznaczenie (\*)**
+
+Odwraca zaznaczenie: zaznaczone pliki zostają odznaczone, a pozostałe
+zaznaczone. Czy dotyczy to także katalogów, zależy od opcji
+*Odwracaj tylko pliki*
+w
+[opcjach paneli](#panel-options).
+
 **Wyjdź (F10, Shift-F10)**
 
 Zamyka M-Commandera. Shift-F10 jest używany jeśli używasz
@@ -873,12 +1038,13 @@ z którego uruchomiłeś program.
 
 ### Szybka zmiana katalogów (Quick cd) M-c <a id="quick-cd"></a>
 
-Ta komenda jest bardzo użyteczna, jeśli masz już pełną linię poleceń, a
-chcesz przejść do innego katalogu. Uruchamia ona małe okno dialogowe,
-w którym podajesz to co po normalnej komendzie
+To polecenie przydaje się, kiedy masz już pełny wiersz poleceń, a chcesz
+[zmienić katalog](#the-cd-internal-command),
+nie wycinając i nie wklejając tego, co w nim stoi. Otwiera małe okno, w
+którym podajesz to, co podałbyś po poleceniu
 **cd**
-po czym naciskasz Enter. Wszystkie opcje są dokładnie takie same jak we
-wbudowanej komendzie cd.
+w wierszu poleceń, i naciskasz Enter. Działa w nim wszystko to, co daje
+[wewnętrzne polecenie cd](#the-cd-internal-command).
 
 ## Menu komend (Command Menu) <a id="command-menu"></a>
 
@@ -1003,49 +1169,62 @@ klawisza Enter. Zobacz również sekcję
 
 ### Znajdź plik (Find File) <a id="find-file"></a>
 
-Komenda znajdź plik najpierw pyta się o startowy katalog do przeszukiwania
-i o nazwę pliku, który ma być znaleziony. Wciskając przycisk "Tree" (drzewo)
-możesz wybrać katalog startowy z drzewa katalogów.
+Polecenie Znajdź plik najpierw pyta o katalog, od którego zacząć szukanie, a
+potem o nazwę szukanego pliku. Przyciskiem Drzewo można wybrać katalog
+początkowy z
+[drzewa katalogów](#directory-tree).
 
-Pole trzecie akceptuje wszystkie wyrażenia podobne do tych w egrep(1).
-Oznacza to, że musisz rozpoczynać znaki o specjalnym znaczeniu kombinacją
-"\\" np. szukając "strcmp (" będziesz musiał wpisać "strcmp \\(" (bez
-cudzysłowów oczywiście).
+Pole "Nazwa pliku" zawiera wzorzec szukanej nazwy. Program rozumie go jako
+wzorzec powłoki albo jako wyrażenie regularne, zależnie od stanu pola "Wzorce
+powłoki". Pusta wartość też jest poprawna i pasuje do każdej nazwy.
 
-Możesz zacząć przeszukiwanie naciskając przycisk Ok. Podczas szukania możesz
-zatrzymać proces przy użyciu przycisku Stop i kontynuować po naciśnięciu
-Startu.
+Pole "Zawartość" zawiera tekst szukany wewnątrz plików. Puste pole oznacza,
+że program nie szuka w zawartości.
 
-Możesz przeglądać liste znalezionych plików za pomocą strzałek do dołu
-i do góry. Komenda Chdir przejdzie do katalogu aktualnie wybranego. Przycisk
-Again zapyta się o nowe parametry do szukania (rozpocznie proces od nowa).
-Przycisk Quit kończy przeszukiwanie. Przycisk Panelize umieści znalezione
-pliki w aktywnym panelu katalogowym tak, że będziesz mógł wykonywać na nich
-standardowe czynności (podgląd, kopiowanie, przenoszenie, kasowanie itp.).
-Po spanelizowaniu wystarczy naciśnąć C-r żeby powrócić do normalnego trybu.
+Opcja "Całe słowa" zawęża szukanie do plików, w których znaleziona część
+tworzy całe słowo, tak jak robi to grep -w.
 
-Możliwe jest posiadanie listy katalogów, których szukanie plików nie
-powinno uwzględniać (na przykład możesz chcieć ominąć przeszukiwanie CDROMu
-i innych podmontowanych systemów plików).
+Szukanie zaczyna przycisk Ok. W trakcie można je zatrzymać przyciskiem Stop i
+wznowić przyciskiem Kontynuuj.
 
-Katalogi do omijania powinny być umieszczone w zmiennej
-**ignore_dirs**
-w sekcji
-**FindFile**
-twojego pliku ~/.config/mc6/ini.
+Lista pokazuje przy każdym znalezionym pliku czas zmiany, rozmiar i prawa
+obok nazwy. Przy szukaniu w zawartości plik pojawia się raz: pojedyncze
+trafienie widać obok nazwy jako "plik.c:12", a plik z więcej niż jednym
+trafieniem podaje ich liczbę i jest oznaczony "[+]". Trafienia takiego pliku
+rozwija klawisz Left albo kliknięcie w znacznik: numer wiersza i sam wiersz.
+Tam Enter przechodzi do pliku, F3 go pokazuje, a F4 edytuje na wybranym
+trafieniu.
 
-Składowe katalogów powinny być oddzielone od siebie przez średniki, to jest
-przykład:
+Po liście można chodzić strzałkami. Przycisk Zmień katalog przechodzi do
+katalogu wybranego pliku. Przycisk Jeszcze raz pyta o parametry nowego
+szukania. Przycisk Wyjdź kończy szukanie. Przycisk Panelizuj wstawia
+znalezione pliki do bieżącego panelu, dzięki czemu można na nich wykonywać
+dalsze operacje (podgląd, kopiowanie, przenoszenie, kasowanie i tak dalej).
+Aby wrócić do zwykłej listy, przejdź do katalogu ".."; aby znów zobaczyć
+wynik, wybierz tryb Panelizuj w menu lewego albo prawego panelu.
+
+Pole "Pomijaj katalogi" i pole pod nim podają listę katalogów, które szukanie
+ma pominąć (na przykład CD-ROM albo katalog NFS zamontowany po wolnym łączu).
+Elementy listy rozdziela się dwukropkiem:
 
 ```
-[FindFile]
-ignore_dirs=/cdrom:/nfs/wuarchive:/afs
+/cdrom:/nfs/wuarchive:/afs
 ```
 
-Możesz woleć używać panelu zewnętrznego do wykonywania niektórych operacji.
-Szukanie pliku jest dobre tylko dla prostych zapytań. Używając panelu
-zewnętrznego możesz dokonywać tak skomplikowanych wyszukiwań jak tylko
-pragniesz.
+Ścieżki względne też są dozwolone. Poniższy przykład pomija dodatkowo
+katalogi systemów kontroli wersji:
+
+```
+/cdrom:/nfs/wuarchive:/afs:.svn:.git:CVS
+```
+
+Uwaga: pole może zawierać kropkę (.), która oznacza bieżącą ścieżkę
+bezwzględną.
+
+Do niektórych zadań warto użyć polecenia
+[Panel zewnętrzny](#external-panelize).
+Znajdź plik służy do prostych zapytań, a Panelem zewnętrznym można zrobić
+dowolnie złożone szukanie.
 
 ### Panel zewnętrzny <a id="external-panelize"></a>
 
@@ -1078,19 +1257,43 @@ w linii wejściowej, a potem naciskająć przycisk Add. Potem wpisujesz nazwę,
 pod jaką ta komenda ma być widoczna. Następnym razem po prostu wybierasz
 tę komendę z listy i nie musisz już wpisywać jej ponownie.
 
-### Hotlist
+### Hotlista katalogów <a id="hotlist"></a>
 
-Hotlista katalogów pokazuje nazwy katalogów wprowadzonych do hotlisty.
-M-Commander zmieni miejsce do tego, które wskazuje nazwa katalogu.
-Z hotlisty możesz wyrzucać już dodane pozycje par nazw/wskazań i dodawać nowe.
-Dla dodawania możesz wykorzystać kombinację (C-x h), która dodaje
-ścieżkę
-aktualnego katalogu do hotlisty. Użytkownik musi tylko podać pod jaką
-nazwą ma być ten katalog widoczny.
+Hotlista pokazuje nazwy miejsc wprowadzonych do niej, a program przechodzi do
+miejsca wybranej nazwy. Miejscem może być katalog, ścieżka wewnątrz
+wirtualnego systemu plików albo adres wtyczki panelu, na przykład
+*sftp:host/katalog.*
+Z okna można wyrzucać już dodane pary nazwa/miejsce i dodawać nowe. Bieżące
+miejsce, katalog albo panel wtyczki, najszybciej dodaje polecenie Dodaj do
+hotlisty (C-x h), które pyta tylko o nazwę. Miejsce, które już jest na
+liście, nie jest dodawane drugi raz: okno pokazuje istniejącą pozycję.
 
-Powoduje to przechodzenie do częściej przeglądanych katalogów znacznie szybciej.
-Możesz używać ciągle wartości CDPATH opisanej w sekcji Wewnętrzne
-przemieszczanie.
+Klawisze okna:
+
+```
+Enter        przechodzi do wybranego miejsca
+Alt-o        otwiera wybrane miejsce w drugim panelu
+Ctrl-Enter   wstawia "cd miejsce" do wiersza poleceń
+Alt-Enter    to samo, dla terminali bez Ctrl-Enter
+Insert       dodaje bieżące miejsce
+Shift-F4     nowa pozycja: pyta o nazwę i miejsce
+F7           nowa grupa
+F4           edytuje nazwę i miejsce pozycji
+Delete       kasuje pozycję
+Ctrl-Up      przesuwa pozycję o wiersz w górę
+Ctrl-Down    przesuwa pozycję o wiersz w dół
+F6           przenosi pozycję do innej grupy: okno wypisuje
+             grupy, Enter otwiera grupę, Przenieś albo kolejne
+             F6 wstawia pozycję na koniec pokazanej grupy,
+             także tej wyjściowej
+F9           porządkuje bieżącą grupę po nazwie, grupy pierwsze
+Ctrl-s       szuka na liście w trakcie pisania, Ctrl-s dalej
+Right, Left  wchodzi do grupy i z niej wychodzi
+```
+
+Dzięki temu przechodzenie do często używanych katalogów jest szybsze. Można
+też skorzystać ze zmiennej CDPATH, opisanej przy
+[wewnętrznym poleceniu cd](#the-cd-internal-command).
 
 ### Edycja rozszerzeń pliów (Edit Extension File) <a id="edit-extension-file"></a>
 
@@ -1115,13 +1318,81 @@ proces w tle.
 
 ### Edycja menu użytkownika (Edit Menu File) <a id="edit-menu-file"></a>
 
-Menu użytkownika jest bardzo użytecznym menu, które może być tworzone
-w sposób dowolny, przez użytkownika. Kiedy tylko próbujesz coś zrobić
-przy użyciu tego menu, ładowany jest plik .usermenu z aktualnego katalogu, ale
-tylko wtedy kiedy jest on w posiadaniu użytkownika lub roota i mamy do niego
-prawa zapisu. Jeśli takiego nie ma próbuje się z plikiem ~/.config/mc6/menu z tymi
-samymi założeniami, jeśli jego też nie ma - używa się standardowego pliku
-systemowego, który znajduje się w {{pkgdatadir}}/usermenu.
+Menu użytkownika to menu przydatnych działań, które użytkownik sam sobie
+układa. Występuje w dwóch postaciach: menu, które samo siebie edytuje,
+trzymane w pliku kluczy, oraz starszy plik menu pisany ręcznie. Tam, gdzie
+plik kluczy istnieje, to jego otwiera F2; gdzie go nie ma, czytany jest stary
+plik jak dawniej.
+
+**Menu, które samo siebie edytuje**
+
+Pozycje stoją w pliku .mc6menu bieżącego katalogu oraz w
+~/.config/mc6/menu.ini i pokazywane są razem. Plik .mc6menu czytany jest
+tylko wtedy, gdy należy do tego użytkownika albo do roota i nikt inny nie
+może do niego pisać, bo jego pozycje uruchamiają polecenia. Nic innego nie
+jest czytane: w menu stoi to, co włożył jego właściciel, a program nie wnosi
+żadnej pozycji, więc menu nowego użytkownika jest puste i prosi o pierwszą.
+Wewnątrz menu:
+
+```
+Enter        uruchamia pozycję
+Ins          dodaje pozycję
+F4           edytuje pozycję
+F5           wnosi pozycje z menu pisanego ręcznie
+Shift-F4     otwiera plik, w którym stoi pozycja
+Del          kasuje pozycję
+Ctrl-Up      przesuwa pozycję wyżej
+Ctrl-Down    przesuwa pozycję niżej
+```
+
+Pozycja to klawisz skrótu, napis i polecenia, i o nic więcej okno nie pyta:
+nie ma w nim warunków ani masek plików. W poleceniach działają te same
+podstawienia co w starym menu, %f, %s, %{prompt} i pozostałe, opisane w
+rozdziale
+[obsługa makr](#macro-substitution).
+Dwa pola wyboru mówią, co zrobić z wyjściem: czy ma iść do podglądu i czy
+polecenie ma działać bez powłoki panelu.
+
+Napis pokazywany jest już z wykonanymi podstawieniami, więc napis "print %f"
+stoi na liście z nazwą pliku pod kursorem. To, co zawiera plik, przy tym się
+nie zmienia, a %{...} zostaje tak, jak zapisano: lista nie jest miejscem na
+pytania.
+
+Pozycja może być podmenu zamiast polecenia: Ins pyta, które z dwojga dodać.
+Podmenu widać z ukośnikiem po nazwie, tak jak katalog; Enter je otwiera, a
+tytuł nazywa te podmenu, w których się znajdujesz. Esc wychodzi o poziom
+wyżej, a na najwyższym wychodzi z menu. Skasowanie podmenu kasuje też to, co
+w nim stoi. W pliku podmenu to grupa z submenu=true i bez polecenia, a
+pozycja w nim nazywa podmenu w parent=.
+
+Polecenia to pole z wielu wierszy: Enter otwiera nowy, a strzałki, Home i End
+chodzą po tekście. Shift z ruchem zaznacza to, po czym ruch przechodzi, mysz
+zaznacza przeciąganiem, a Ctrl-Insert, Shift-Insert i Shift-Delete kopiują,
+wklejają i wycinają przez plik wymiany, tak samo jak w wierszu wprowadzania.
+Przycisk Edytor wychodzi z okna i otwiera plik, w którym stoi pozycja, do
+tego, co łatwiej napisać tam.
+
+Pozycja zapisywana jest z powrotem do pliku, z którego przyszła, a kolejność
+listy to kolejność pliku. Warunki i maski należą do starszej postaci: to,
+czego okno nie umie powiedzieć, umie plik, a Shift-F4 go otwiera.
+
+**Plik menu pisany ręcznie**
+
+Instalacja już takiego nie wnosi; to, co następuje, czytane jest tam, gdzie
+ktoś trzyma własne menu w starszej postaci: brany jest plik .usermenu z
+bieżącego katalogu, jeśli istnieje, ale tylko wtedy, gdy należy do
+użytkownika albo do roota i nie każdy może do niego pisać. Jeśli takiego
+pliku nie ma, tak samo próbuje się z ~/.config/mc6/menu.
+
+Jeśli menu, które samo siebie edytuje, nie ma jeszcze pliku, a znajdzie się
+inne menu (własne pisane ręcznie, usermenu zainstalowanego programu albo
+menu.ini starszej wersji), program raz na sesję proponuje jego wniesienie; F5
+w menu i przycisk Wnieś w pustym menu proszą o to w dowolnej chwili, dla tego
+pliku albo dla wskazanego ręcznie. Potem pokazuje, co plik zawiera: spacja
+zaznacza pozycję, Ins zaznacza ją i schodzi niżej, '\*' odwraca wszystkie
+zaznaczenia, a Enter przenosi zaznaczone do ~/.config/mc6/menu.ini, gdzie
+można je już edytować oknem. Plik źródłowy zostaje na miejscu, a warunki i
+maski są odrzucane, bo w oknie nie ma na nie miejsca.
 
 Format pliku z menu użytkownika jest bardzo prosty. Linie zaczynające się
 od czegokolwiek innego niż spacja lub tabulacja, są traktowane jako
@@ -1251,38 +1522,76 @@ Wszelkie komentarze rozpoczynają się od znaku '#'.
 
 ## Menu opcji (Options Menu) <a id="options-menu"></a>
 
-M-Commander ma niektóre opcje, które mogą być włączane lyb wyłączane
-w różnych oknach dialogowych z tego menu. Opcja jest włączona jeśli widnieje
-przed nią gwiazdka lyb "x".
+Program ma opcje, które można włączać i wyłączać w oknach dostępnych z tego
+menu. Opcja jest włączona, jeśli stoi przed nią gwiazdka albo "x". Menu
+zawiera, w tej kolejności:
 
-Komenda
-*Configuration*
-włącza okno dialogowe, z którego możesz zmienić
-większość ustawień M-Commandera.
+Polecenie
+[Konfiguracja](#configuration)
+otwiera okno, w którym można zmienić większość ustawień programu.
 
-Menu
-*Layout*
-pozwala na zmianę wielu ustawień, które mają znaczący wpływ
-na to jak M-Commander będzie wyglądał na ekranie.
+Polecenie
+[Układ](#layout)
+otwiera okno z ustawieniami tego, jak program wygląda na ekranie.
 
-Menu
-*Confirmation*
-włącza okno dialogowe, w którym możesz ustawić przy wykonaniu
-których operacji chcesz być pytany o potwierdzenie.
+Polecenie
+[Opcje paneli](#panel-options)
+otwiera ustawienia paneli menedżera plików.
 
-Menu
-*Learn Keys*
-pokazuje okno dialogowe, w którym możesz poznać
-które klawisze nie działają i w razie problemów naprawić to.
+Polecenie
+[Tryby panelu plików](#panel-modes)
+otwiera listę nazwanych układów listy, gdzie się je tworzy, edytuje i usuwa.
 
-Menu
-*Virtual FS*
-pokazuje okno, w którym możesz zmienić niektóre ustawienia
-dotyczące systemów VFS.
+Polecenie
+[Potwierdzenia](#confirmation)
+otwiera okno, w którym ustala się, przy których działaniach program ma pytać
+o potwierdzenie.
 
-Komenda
-*Save Setup*
-zachowuje wszystkie ustawienia z menu Lewego, Prawego i Opcji.
+Polecenie
+[Wygląd](#appearance)
+służy do wyboru skórki.
+
+Polecenie
+[Nauka klawiszy](#learn-keys)
+uczy program tych klawiszy, których niektóre terminale nie wysyłają jak
+trzeba.
+
+Polecenie
+[Przypisania klawiszy](#key-bindings)
+otwiera listę działań wraz z klawiszami, na które odpowiadają; tam zmienia
+się klawisz, a wynik trafia do pliku przypisań.
+
+Polecenie
+[Podsłuch klawiszy](#key-sniffer)
+pokazuje, co terminal wysyła dla naciśniętego klawisza, i działanie, do
+którego ten klawisz jest przypisany.
+
+Polecenie
+[Wirtualny FS](#virtual-fs)
+otwiera okno z ustawieniami dotyczącymi VFS.
+
+Polecenia
+**Opcje podglądu różnic**,
+[Opcje przeglądarki](mview.md#viewer-options)
+i
+**Opcje edytora**
+otwierają okna trzech programów, które pokazują plik: porównania, podglądu i
+edytora. Te same okna są w menu Opcje każdego z nich; tutaj sięga się do nich
+bez otwierania pliku. Porównanie bierze swoje opcje przy starcie, więc to już
+otwarte zostaje przy tych, z którymi je otwarto.
+
+Polecenie
+[Zarządzanie wtyczkami](#panel-plugins)
+wypisuje wczytane wtyczki, wyłącza wybraną i otwiera jej ustawienia.
+
+Polecenie
+[Zapisz ustawienia](#save-setup)
+zapisuje bieżące ustawienia menu Lewy, Prawy i Opcje. Zapisywana jest też
+niewielka liczba innych ustawień.
+
+Polecenie
+**O programie**
+pokazuje wersję programu i to, kto go napisał.
 
 ### Konfiguracja <a id="configuration"></a>
 
@@ -1426,38 +1735,54 @@ Jeśli ta opcja jest włączona, nieumyślne kasowanie plików stanie się
 dużo trudniejsze. Standardowy wybór w linii potwierdzenia zmienia się z
 "Yes" na "No". Standardowo ta opcja jest wyłączona.
 
-### Wygląd (Layout) <a id="layout"></a>
+### Układ (Layout) <a id="layout"></a>
 
-Meny wygląd pozwala ci na różne warianty zmieniania ogólnego wyglądu
-zewnętrznego ekranu. Możesz wybrać, czy linia menu, linia poleceń, linia
-hintów (pomocy) i linia klawiszy funkcyjnych mają być widoczne. Na
-konsolach typu Linux lub FreeBSD możesz wybrać ile linii ma być
-pokazywanych na wyjściu okna.
+To okno pozwala zmienić ogólny układ ekranu. Ustawienia podzielone są na trzy
+grupy: "Podział paneli", "Wyjście konsoli" i "Inne ustawienia".
 
-Reszta powierzchni ekranu jest używana przez dwa panele katalogowe. Możesz
-wybrać nawet czy panele mają być ułożone poziomo czy pionowo.
-Kolejną możliwością jest zmiana ich standardowej szerokości (bądź wysokości).
-Jest ona standardowo równa, ale można to zmienić.
+**Podział paneli**
 
-Standardowo cała zawartość panelu katalogowego jest wyświetlana tą samą barwą,
-ale możesz zmienić to tak aby
-*uprawnienia*
-i
-*typy plików*
-były wyświetlane specjalnym podświetlonym kolorem.
-Jeśli podświetlanie uprawnień jest włączone, część pól (ta z
-*uprawnieniami*
-i
-*typami plików)*
-będzie podświetlona przy użyciu koloru wybranego jako
-*selected.*
-Jeśli podświetlanie jest włączone, pliki są kolorowane w zależnośći od swojego
-typu (np. katalogi, pliki typu core, wykonywalne, ...).
+Resztę ekranu zajmują dwa panele. Można podać, czy podział ma być
+*pionowy*
+czy
+*poziomy*.
+Podział zmienia też skrót Alt-, (Alt-przecinek).
 
-Jeśli opcja
-*Show Mini-Status*
-jest włączona, jeden wiersz informacji statusowych na temat aktualnie
-wybranej rzeczy w panelu, będzie pokazany na dole panelu.
+*Równy podział.*
+Domyślnie panele mają ten sam rozmiar. Tą opcją można podzielić ekran
+nierówno.
+
+**Wyjście konsoli**
+
+Na konsoli Linuksa albo FreeBSD można podać, ile wierszy widać w oknie
+wyjścia. Ta opcja jest dostępna tylko na konsoli systemowej.
+
+**Inne ustawienia**
+
+*Pasek menu widoczny.*
+Przy włączonej opcji menu główne jest zawsze widoczne w górnym wierszu
+ekranu, nad panelami. Domyślnie włączona.
+
+*Wiersz poleceń.*
+Przy włączonej opcji wiersz poleceń jest dostępny. Domyślnie włączona.
+
+*Pasek klawiszy widoczny.*
+Przy włączonej opcji dziesięć napisów klawiszy F1-F10 stoi w dolnym wierszu
+ekranu. Domyślnie włączona.
+
+*Pasek podpowiedzi widoczny.*
+Przy włączonej opcji jednowierszowe podpowiedzi widać pod panelami.
+Domyślnie włączona.
+
+*Tytuł okna XTerm.*
+W emulatorze terminala dla X11 program ustawia tytuł okna na bieżący katalog
+i uaktualnia go, kiedy trzeba. Jeśli twój emulator terminala jest zepsuty i
+przy starcie albo zmianie katalogu widać dziwne wyjście, wyłącz tę opcję.
+Domyślnie włączona.
+
+*Pokaż wolne miejsce.*
+Przy włączonej opcji wolne i całkowite miejsce bieżącego systemu plików widać
+w dolnej ramce panelu. Domyślnie włączona.
 
 ### Potwierdzanie (Confirmation) <a id="confirmation"></a>
 
@@ -1467,80 +1792,222 @@ wychodzenia z programu.
 
 ### Nauka klawiszy (Learn keys) <a id="learn-keys"></a>
 
-W tym oknie możesz przetestować czy twoje klawisz F1-F20, Home, End itp.
-pracują poprawnie na twoim terminalu. Często nie działają tak, ponieważ
-bazy danych terminali są poniszczone.
+To okno uczy program tych ciągów sterujących, które twój terminal wysyła dla
+klawiszy funkcyjnych, strzałek i klawiszy ruchu.
 
-Przemieszczać się możesz za pomocą klawisza Tab, za pomocą klawiszy ruchu
-edytora vi ('h' lewo, 'j' dół, 'k' góra i 'l' prawo) i po tym jak już raz
-naciśniesz daną strzałkę (zaznaczy się ona na OK), za ich pomocą również.
+Wybierz polami wyboru zestaw modyfikatorów (Ctrl, Alt, Shift), a potem
+naciśnij przycisk szukanego klawisza. Naciśnij sam klawisz na klawiaturze i
+poczekaj, aż komunikat o przechwyceniu zniknie. Nauczony ciąg pojawi się obok
+przycisku.
 
-Klawisze testujesz po prostu naciskając każdy z nich. Jak tylko naciśniesz
-klawisz i pracuje on zupełnie poprawnie, obok nazwy klawisza powinno pojawić
-się OK. Kiedy klawisz jest już sprawdzony, zaczyna pracować normalnie (np. F1
-wciśnięty po raz pierwszy po prostu pokaże, że ten klawisz działa, ale
-naciśnięty po raz drugi pokaże pomoc). Taka sama sytuacja powtarza się przy strzałkach.
-Klawisz Tab powinien pracować zawsze.
+**Del**
+\- zapomina nauczony klawisz.
 
-Jeśli niektóre klawisze nie pracują poprawnie, nie zobaczysz OK obok ich nazwy
-po naciśnięciu ich. Możesz chcieć je naprawić. Robisz to najeżdżając na
-odpowiedni przycisk dla tego klawisza i naciskając Enter. Pokaże się wtedy
-czerwona wiadomość i zostaniesz poproszony o podanie odpowiedniego klawisza.
-Jeśli chcesz zrezygnować, po prostu naciśnij Esc i poczekaj do czasu kiedy
-wiadomość zniknie. W przeciwnym wypadku wciśnij klawisz, który sobie życzysz
-i również poczekaj na zniknięcie okna.
+**Zapisz**
+\- zapisuje nauczone klawisze do ~/.config/mc6/term/\<TERM>.
 
-Kiedy skończysz już ze wszystkimi klawiszami, możesz nacisnąć Save
-żeby zachować zmiany do pliku ~/.config/mc6/ini do sekcji \[terminal:TERM\] (gdzie
-TERM jest nazwą twojego aktualnego terminala) lub po prostu odrzucić je.
+**Edytuj plik terminala**
+\- otwiera w edytorze plik z definicjami klawiszy terminala.
+
+Stare definicje z sekcji [terminal:TERM] pliku ~/.config/mc6/ini są
+przenoszone same przy pierwszym uruchomieniu.
 
 ### Wirtualny system plików (Virtual FS) <a id="virtual-fs"></a>
 
-Ta opcja daje ci kontrolę nad ustawieniami informacji wirtualnego systemu
-plików.
-M-Commander zachowuje w pamięci informacje związane z niektórymi
-wirtualnymi systemami plików, po to żeby kolejne połączenia przebiegały dużo
-szybciej (np. ściągane listy katalogów z serwerów ftp).
+Ta pozycja steruje ustawieniami
+[wirtualnych systemów plików](#virtual-file-system).
 
-Niemniej jednak, żeby mieć dostęp do zawartości skompresowanego
-pliku (np. skompresowanego pliku tar) M-Commander musi
-stworzyć tymczasowy nieskompresowany plik na twoim dysku.
+W oknie jest jedno ustawienie,
+*Czas zwalniania VFS,*
+czyli czas życia pamięci podręcznej systemu plików: po wyjściu z archiwum lub
+pliku skompresowanego wczytana lista i rozpakowany plik tymczasowy zostają
+jeszcze przez tyle sekund, żeby ponowne wejście było natychmiastowe, a po
+upływie tego czasu są zwalniane. Domyślnie 60 sekund, a 0 zwalnia je od razu.
 
-Dopiero kiedy informacje w pamięci i tymczasowe pliki na dysku są zgodne z
-zasobami, możesz chcieć zmienić parametry informacji znajdujących się w
-buforze podręcznym po to, żeby zmniejszyć obciążenie dysku do mninimum albo do
-zmaksymalizowania prędkości dostępu do najczęściej używanych systemów
-plików.
+### Zarządzanie wtyczkami <a id="manage-plugins"></a>
 
-System plików tar jest całkiem inteligentny jeśli chodzi o przechowywanie
-plików: po prostu ściąga wejścia do katalogów i kiedy chcemy więcej
-szczegółów o nim to system je dla nas ściąga.
+Wtyczki, które program wczytał, w tabeli: rodzaj, nazwa i to, co wtyczka mówi
+o sobie. Pole wyboru w wierszu wyłącza ją i włącza; to, co wyłączone, nie
+wczytuje się także następnym razem.
 
-W rzeczywistości jednak, pliki tar najczęściej trzymane są jako
-skompresowane i jako iż natura tych plików nie pozwala na oglądanie ich bez
-dekompresji (nie ma tam
-widocznych od razu wejść do katalogów), system plików musi być najpierw
-zdekompresowany na dysk do pliku tymczasowego i dopiero potem M-Commander ma do niego
-dostęp taki jak do normalnego pliku typu tar.
+**Enter, F4**
+: Otwiera ustawienia wtyczki, na której stoi kursor. Ta, która ich nie ma, sama
+o tym mówi.
 
-Teraz, kiedy tak kochamy odwiedzać różne pliki i zwiedzać systemy
-plików typu tar na całym dysku, jest całkiem prawdopodobne, że wyjdziesz
-z takiego pliku, a po krótkim czasie będziesz chciał wejdść
-do niego spowrotem.
-Ponieważ dekompresja jest powolna, M-Commander będzie robił
-kopie plików w pamięci na określony czas, po upływie którego pliki
-zostaną skasowane a miejsce zajmowane przez nie zwolnione. Standardowo ten
-czas ustawiony jest na jedną minutę.
+Wymienione są tu
+[wtyczki paneli](#panel-plugins)
+razem z wtyczkami edytora i pakietami skryptów Lua; skrypty pakietu pokazuje
+okno
+[Skrypty Lua](#lua-scripts)
+z jego ustawień.
 
-System plików FTP trzyma listę katalogów z odwiedzanego przez nas
-serwera w buforze podręcznym. Jego ważność konfigurowana jest za pomocą opcji
-*ftpfsdirectorycachetimeout.*
-Mała wartość dla tej opcji może spowolnić wszystkie operacje na systemach
-ftp ponieważ każda operacja będzie wymagać kolejnych zapytań do serwera.
+### Skrypty Lua <a id="lua-scripts"></a>
 
-Ponadto możesz zdefiniować serwer proxy dla transferów ftp i skonfigurować
-M-Commandera tak, aby zawsze go używał. Zobacz sekcję
-System plików FTP (FTP File System) po więcej szczegółów.
+Skrypty pakietu Lua w tabeli: nazwa, identyfikator, gdzie skrypt się znajduje,
+co daje i co robi. Pole wyboru w wierszu wyłącza go i włącza.
+
+**Ustawienia**
+: Uruchamia skrypt z ustawieniami pakietu, jeśli taki jest.
+
+### Plik istnieje <a id="plugin-file-exists"></a>
+
+Kopiowanie do panelu wtyczki zastało tam plik o tej samej nazwie. Okno pokazuje
+ścieżkę, rozmiar i czas tego, co jest kopiowane, oraz tego, co już tam jest, i
+pyta, co zrobić: nadpisać, pominąć, wznowić kopiowanie od miejsca przerwania,
+jeśli wtyczka to potrafi, albo przerwać całą operację.
+
+### Wybór kodowania <a id="codepages-translation"></a>
+
+Lista kodowań, które program zna, z pliku
+**{{pkgdatadir}}/charsets**.
+Wybór kodowania mówi programowi, w jakim zapisane są nazwy lub tekst, a pozycja
+**\<Bez tłumaczenia>**
+zostawia je jako bajty. Listę otwiera
+**Alt-e**
+w panelu, w przeglądarce i w edytorze, a także odpowiednia pozycja ich menu.
+
+### Historia linii wejściowej <a id="history-query"></a>
+
+Lista tego, co wpisywano wcześniej w linię wejściową, od ostatniego wpisu;
+otwiera ją
+**Alt-h**
+dla tej linii, w której stoi kursor. Enter wstawia do linii wpis, na którym
+stoi kursor, Esc zostawia linię bez zmian, a
+**F8, Del**
+usuwa wpis z historii.
+
+### Opcje paneli <a id="panel-options"></a>
+
+**Główne opcje paneli**
+
+*Pokaż mini-status.*
+Przy włączonej opcji na dole paneli widać wiersz informacji o pozycji pod
+kursorem. Domyślnie włączona.
+
+*Jednostki SI.*
+Przy włączonej opcji program używa przedrostków SI (podstawa 10) przy
+pokazywaniu rozmiarów. Przy wyłączonej (domyślnie) używa przedrostków IEC
+(podstawa 2).
+
+*Mieszaj wszystkie pliki.*
+Przy włączonej opcji pliki i katalogi widać wymieszane. Przy wyłączonej
+(domyślnie) katalogi (i dowiązania do katalogów) stoją na początku listy, a
+pozostałe pliki pod nimi.
+
+*Pokaż pliki zapasowe.*
+Przy włączonej opcji widać też pliki kończące się tyldą, inaczej nie (jak
+opcja -B polecenia ls). Domyślnie włączona.
+
+*Pokaż pliki ukryte.*
+Przy włączonej opcji widać też pliki zaczynające się kropką (jak ls -a).
+Domyślnie wyłączona.
+
+*Szybkie odświeżanie katalogów.*
+Przy włączonej opcji program używa sztuczki, aby stwierdzić, czy zawartość
+katalogu się zmieniła: czyta katalog na nowo tylko wtedy, gdy zmienił się
+jego i-węzeł, czyli gdy powstał albo zniknął plik. Jeśli zmienia się i-węzeł
+pliku (rozmiar, prawa, właściciel), obraz nie jest odświeżany; wtedy trzeba
+odczytać katalog ręcznie (C-r). Domyślnie wyłączona.
+
+*Zaznaczanie przesuwa w dół.*
+Przy włączonej opcji linia wyboru schodzi niżej, gdy zaznaczasz plik
+(klawiszem Insert). Domyślnie włączona.
+
+*Odwracaj tylko pliki.*
+Przy włączonej opcji "Odwróć zaznaczenie" z menu Plik dotyczy tylko plików, a
+nie także katalogów. Domyślnie włączona.
+
+*Prosta zamiana.*
+Jeśli oba panele pokazują listę plików, prosta zamiana oznacza, że panele
+zamieniają się miejscami na ekranie: lewy staje się prawym i odwrotnie. Przy
+wyłączonej opcji panele zamieniają się zawartością, zachowując układ listy i
+sortowanie. Domyślnie wyłączona.
+
+*Automatyczny zapis ustawień paneli.*
+Przy włączonej opcji przy wyjściu program zapisuje bieżące ustawienia paneli
+do pliku ~/.config/mc6/panels.ini. Domyślnie wyłączona.
+
+*Obserwuj katalogi.*
+Przy włączonej opcji program prosi jądro, aby informowało go o zmianach w
+katalogach pokazywanych przez panele, i czyta panel na nowo, gdy plik w nim
+powstaje, znika albo zmienia się za sprawą czegoś innego: innego terminala,
+kompilacji albo powłoki z okna terminala. Panel poza ekranem jest czytany na
+nowo, gdy wraca. Jedna obserwacja obejmuje cały katalog, więc koszt nie
+zależy od liczby plików, a seria zmian daje jedno ponowne czytanie. Katalogi
+wirtualnego systemu plików i te na systemie plików, którego jądro nie potrafi
+obserwować, takim jak NFS, działają jak wcześniej: tam robi to C-r. Dopóki ta
+opcja jest włączona, szybkie odświeżanie nie ma czego oszczędzać i widać je
+jako wyłączone. Domyślnie włączona.
+
+**Poruszanie się**
+
+*Ruch w stylu lynksa.*
+Przy włączonej opcji strzałkami można zmieniać katalog, gdy pod kursorem stoi
+podkatalog, a wiersz poleceń jest pusty. Domyślnie wyłączona.
+
+*Przewijanie stronami.*
+Przy włączonej opcji (domyślnie) panel przewija się o pół ekranu, gdy kursor
+dojdzie do końca albo początku panelu, inaczej przewija się po jednym pliku.
+
+*Przewijanie wyśrodkowane.*
+Przy włączonej opcji panel przewija się, gdy kursor dojdzie do środka, a do
+góry albo do dołu panelu dochodzi tylko na pierwszym albo ostatnim pliku.
+Dotyczy przewijania po jednym pliku, nie klawiszy stron.
+
+*Przewijanie stronami myszą.*
+Określa, czy kółko myszy przewija panele stronami, czy wiersz po wierszu.
+
+**Podświetlanie plików**
+
+Można podać, czy
+*prawa*
+i
+*typy plików*
+mają być podświetlane osobnymi
+[kolorami](#colors).
+Jeśli podświetlanie praw jest włączone, te części pól
+*perm*
+i
+*mode*
+[układu listy](#listing-format),
+które dotyczą użytkownika uruchamiającego program, dostają kolor podany
+słowem kluczowym
+*marked*.
+Jeśli włączone są
+*kolory praw*,
+każdy znak pola
+*perm*
+dostaje kolor tego, co oznacza: kolory
+*permread ,*
+*permwrite ,*
+*permexec ,*
+*permspecial*
+i
+*permnone*
+skórki dla r, w, x, s/t i -. Oba ustawienia mogą działać naraz; trójka
+dotycząca użytkownika zachowuje wtedy kolor
+*marked*.
+Jeśli podświetlanie typów jest włączone, nazwy plików są kolorowane według
+reguł opisanych w pliku {{sysconfdir}}/mcommander/filehighlight.ini. Więcej
+podaje rozdział
+[Podświetlanie nazw plików](#filenames-highlight).
+
+**Szybkie wyszukiwanie i szybki filtr**
+
+Można podać, jak mają działać
+[szybkie wyszukiwanie](#quick-search)
+i szybki filtr: bez rozróżniania wielkości liter, z rozróżnianiem, albo
+zgodnie z porządkiem sortowania panelu, który też może je rozróżniać lub nie.
+
+### Wygląd (skin) <a id="appearance"></a>
+
+Wybór skóry nadającej programowi wygląd. Lista pokazuje skóry z katalogów
+**{{pkgdatadir}}/skins**
+i
+**~/.local/share/mc6/skins**;
+wybrana zaczyna obowiązywać od razu. Budowę skór opisuje dział
+[Skins](mcommander.md#skins)
+podręcznika angielskiego.
 
 ### Zapisz ustawienia (Save Setup) <a id="save-setup"></a>
 
@@ -1610,22 +2077,47 @@ przeniesie cię do katalogu /usr/src/linux).
 
 ## Obsługa makr (Macro Substitution) <a id="macro-substitution"></a>
 
-Kiedy używamy menu użytkownika, wykonujemy plik o znajomym rozszerzeniu, lub
-wykonujemy komendę z linii poleceń, możemy użyć kilku bardzo prostych makr.
+Kiedy korzystamy z
+[menu użytkownika](#edit-menu-file),
+wykonujemy
+[polecenie zależne od rozszerzenia](#edit-extension-file)
+albo polecenie z wiersza poleceń, wykonywane jest proste podstawianie makr.
 
-Są to:
+Makra to:
 
-*%f*
-: Nazwa aktualnego pliku.
+*%i*
+: Wcięcie z białych znaków, równe kolumnie kursora. Tylko w menu edytora.
+
+*%y*
+: Rodzaj składni bieżącego pliku. Tylko w menu edytora.
+
+*%b*
+: Nazwa pliku bloku.
+
+*%e*
+: Nazwa pliku błędów.
+
+*%m*
+: Nazwa bieżącego menu.
+
+*%f* i *%p*
+: W menu użytkownika menedżera plików: nazwa bieżącego pliku w aktywnym
+panelu. W menu użytkownika mcedit6: nazwa otwartego pliku.
+
+*%x*
+: Rozszerzenie nazwy bieżącego pliku.
+
+*%n*
+: Nazwa bieżącego pliku bez rozszerzenia.
 
 *%d*
-: Nazwa aktulnego katalogu.
+: Nazwa bieżącego katalogu.
 
 *%F*
-: Nazwa pliku w niewybranym panelu.
+: Bieżący plik w nieaktywnym panelu.
 
 *%D*
-: Nazwa katalogu w niewybranym panelu.
+: Nazwa katalogu nieaktywnego panelu.
 
 *%t*
 : Aktualnie zaznaczone pliki.
@@ -1633,30 +2125,26 @@ Są to:
 *%T*
 : Pliki zaznaczone w nieaktywnym panelu.
 
-*%u*
-i
-*%U*
+*%v* i *%V*
+: Jak %t i %T, ale podstawiane są pełne nazwy zaznaczonych plików.
 
-> Podobne w działaniu do %t i do %T jednak z tą różnicą, że pliki po ich
-> użyciu zostaną odznaczone. Oznacza to, że można ich użyć tylko raz w jednym
-> menu, ponieważ potem nie będzie już żadnych plików zaznaczonych.
+*%u* i *%U*
+: Jak %t i %T, z tym że pliki zostają odznaczone. Tego makra można użyć tylko
+raz na pozycję pliku menu albo pliku rozszerzeń, bo następnym razem nie
+będzie już zaznaczonych plików.
 
-*%s*
-i
-*%S*
-
-> Wybiera: zaznaczone pliki jeśli są jakieś, w przeciwnym razie aktualny
-> plik.
+*%s* i *%S*
+: Wybrane pliki: zaznaczone, jeśli jakieś są, a w przeciwnym razie bieżący
+plik.
 
 *%cd*
-: To jest specjalne makro, które jest używane do zmieniania aktualnego katalogu
-na wybrany katalog, na którego froncie jesteśmy. Jest to używane przede
-wszystkim jako interfejs do wirtualnych systemów plików.
+: To jest specjalne makro, które zmienia bieżący katalog na ten podany przed
+nim. Używa się go przede wszystkim jako interfejsu do
+[wirtualnych systemów plików](#virtual-file-system).
 
 *%view*
-: To makro jest używane żeby włączać wbudowany podgląd plików. Może być
-ono pojedynczo lub z grupą argumentów. Jeśli postanawiasz używać któregokolwiek
-z tych argumentów musisz je koniecznie wziąć w nawiasy.
+: To makro uruchamia wbudowany podgląd. Może stać samo albo z argumentami.
+Jeśli podajesz argumenty, trzeba je wziąć w nawiasy.
 
 > Argumentami są:
 > *ascii*
@@ -1664,54 +2152,148 @@ z tych argumentów musisz je koniecznie wziąć w nawiasy.
 > *hex*
 > aby wymusić podgląd w trybie szesnastkowym;
 > *nroff*
-> przekazuje podglądowi, że powinien interpretować pogrubione
-> i podkreślone sekwencje programu nroff;
-> *unformated*
-> aby przekazać podglądowi, żeby nie interpretował komend nroff aby zrobić
-> tekst pogrubiony lub podkreślony.
+> aby podgląd interpretował pogrubienie i podkreślenie programu nroff;
+> *unformatted*
+> aby podgląd nie interpretował poleceń nroff robiących tekst pogrubiony albo
+> podkreślony;
+> *structured*
+> aby otworzyć plik w trybie strukturalnym (drzewo).
 
 *%%*
 : Znak %
 
 *%{jakiś tekst}*
-: Pyta się o zmienną. Pokazuje się okienko wejściowe i tekst wewnątrz klamerek
-używany jest jako zachęta (prompt). Makro jest zastępowane tekstem wpisanym
-przez użytkownika. Użytkownik może nacisnąć ESC lub F10 aby anulować. To
-makro nie działa jeszcze w linii poleceń.
+: Pyta o podstawienie. Pokazuje się okienko wejściowe, a tekst wewnątrz
+klamer służy jako zachęta. Makro zastępowane jest tekstem wpisanym przez
+użytkownika. Użytkownik może nacisnąć Esc albo F10, aby przerwać. To makro
+nie działa jeszcze w wierszu poleceń.
 
-## Obsługa podpowłoki (The subshell support) <a id="the-terminal"></a>
+*%var{ENV:wartość}*
+: Jeśli zmienna środowiskowa
+*ENV*
+nie jest ustawiona, podstawiana jest
+*wartość*.
+Jeśli jest, podstawiana jest wartość
+*ENV*.
 
-Podpowłoka (powłoka w tle) jest opcją, która musi być wybrana przy kompilacji,
-działa ona z powłokami: bash, tcsh i zsh.
+## Terminal <a id="the-terminal"></a>
 
-Jeśli powłoka w tle jest włączona do komplilacji, M-Commander będzie
-sobie tworzył kopie twojej powłoki (tej zdefiniowanej w zmiennej
+Program trzyma twoją powłokę w pseudoterminalu za panelami. Działa z
+powłokami bash, ash (BusyBox i Debian), (o/m)ksh, tcsh, zsh i fish.
+
+Powłoka to ta podana w zmiennej
 **SHELL**,
-a jeśli nie ma, to będzie czerpał bezpośrednio z pliku /etc/passwd)
-i odpalał pseudo terminal, zamiast wywoływać nową powłokę za każdym razem
-kiedy wywołujesz komendę, komenda będzie przekazana powłoce w tle,
-jak tylko ją napiszesz. To pozwala ci na zmianę wielu zmiennych, używanie
-funkcji powłoki i zdefiniowanych aliasów, które są ważne dopóki nie wyjdziesz
-z M-Commandera.
+a jeśli jej nie ma, ta z pliku /etc/passwd. Zamiast uruchamiać nową powłokę
+przy każdym poleceniu, program przekazuje polecenie tej powłoce tak, jakbyś
+sam je wpisał. Dzięki temu można zmieniać zmienne środowiskowe, korzystać z
+funkcji powłoki i zakładać aliasy, które są ważne do wyjścia z programu.
 
-Jeśli używasz
-**basha**
-możesz wybrać startowe komendy twojej powłoki w tle w pliku ~/.local/share/mc6/bashrc,
-a ustawienia klawiatury w ~/.local/share/mc6/inputrc.
-Użytkownicy
-**tcsh**
-mogą wstawiać komendy startowe do pliku ~/.local/share/mc6/tcshrc.
+**bash**
+: polecenia startowe w ~/.local/share/mc6/bashrc (inaczej ~/.bashrc), własna
+mapa klawiatury w ~/.local/share/mc6/inputrc (inaczej ~/.inputrc).
 
-Jeśli kod powłoki w tle jest użyty, możesz zawiesić aplikację w dowolnej chwili
-po prostu naciskając kombinację C-o i przeskakując spowrotem do
-M-Commandera, jeśli zawiesisz jakąś aplikację nie będziesz mógł używać innych
-zewnętrznych komend zanim nie wyjdziesz z aplikacji, którą przerwałeś.
+**ash/dash**
+: (BusyBox albo Debian) polecenia startowe w ~/.local/share/mc6/ashrc
+(inaczej ~/.profile).
 
-Extra dodatkiem do używania powłoki w tle jest to, że zachęta widoczna
-w M-Commanderze jest tą samą, którą aktualnie używasz w powłoce.
+**ksh/oksh**
+: polecenia startowe w ~/.local/share/mc6/kshrc (inaczej
+*ENV*
+albo ~/.profile).
 
-Zobacz sekcję Opcje po więcej informacji na temat tego, jak możesz
-kontrolować powłokę w tle.
+**mksh**
+: (MirBSD ksh) polecenia startowe w ~/.local/share/mc6/mkshrc (inaczej
+*ENV*
+albo ~/.mkshrc).
+
+**zsh**
+: polecenia startowe w ~/.local/share/mc6/.zshrc (inaczej ~/.zshrc).
+
+**tcsh, fish**
+: na razie nie mają własnych plików startowych dla tego programu, działają
+tylko pliki samej powłoki.
+
+Działającą aplikację można w każdej chwili odłożyć skrótem
+**C-o**
+i wrócić do programu. Jeśli w ten sposób przerwałeś polecenie, nie
+uruchomisz innego polecenia zewnętrznego, dopóki przerwana aplikacja się nie
+skończy.
+
+Za panelami terminal przechowuje wszystko, co powłoka wypisała, i dopóki
+panele są schowane, można to czytać, zaznaczać i czyścić. Strzałki chodzą po
+wyjściu, a te same z Shiftem je zaznaczają, jedno i drugie dopóki sam
+terminal dostaje klawisze; klawisze, które tylko przesuwają widok, działają
+niezależnie od tego, kto pisze. Każdy klawisz nie wymieniony poniżej trafia
+do powłoki.
+
+```
+Ctrl-Insert    kopiuje zaznaczenie do schowka
+Ctrl-Shift-u   zdejmuje zaznaczenie
+Alt-s          szuka w wyjściu tego, co wpiszesz dalej
+Alt-Shift-s    pokazuje tylko pasujące wiersze
+Ctrl-l         czyści ekran, zachowując wyjście
+Ctrl-Shift-l   czyści ekran i całe wyjście
+               (również Ctrl-Alt-l)
+```
+
+Alt-s i Alt-Shift-s biorą wzorzec tak samo jak w panelach: pisze się go w
+górnym wierszu ekranu, a wyjście podąża za nim, w miarę jak rośnie. Wielkość
+liter nie ma znaczenia. Szukanie idzie w górę od kursora i zaznacza
+najbliższe trafienie; kolejne Alt-s zaznacza to wyżej, a za najstarszym
+wierszem szukanie wraca do najnowszego. Filtr pokazuje tylko pasujące
+wiersze, a strzałki chodzą po nich jeszcze w trakcie pisania wzorca; kolejne
+Alt-Shift-s przenosi kursor o wiersz wyżej. Naciśnięte bez wpisanego wzorca,
+oba klawisze biorą poprzedni wzorzec. Backspace kasuje znak, a znak, do
+którego nic nie pasuje, nie jest przyjmowany. Enter kończy pisanie i zostawia
+widok taki, jaki jest, Esc kończy je i zdejmuje filtr, a każdy inny klawisz
+kończy pisanie i robi to, co robi.
+
+Przy schowanych panelach większość klawiszy funkcyjnych należy do terminala,
+a pasek przycisków je nazywa. Podglądu, edycji, kopiowania, przenoszenia i
+kasowania z menedżera plików tam nie ma: działają one na pliku pod kursorem
+panelu, a tego kursora nie widać. F8 jest celowo pusty, żeby odruch w stronę
+kasowania nie zrobił czegoś innego.
+F7 tworzy katalog, a Shift-F4 edytuje nowy plik, tak samo jak przy widocznych
+panelach: oba działają w katalogu panelu, a w nim stoi powłoka.
+
+```
+F2           kopiuje zaznaczenie do schowka
+F3           zaznacza całe wyjście albo zdejmuje zaznaczenie
+F4           zostawia tylko wiersze pasujące do zaznaczenia
+             albo do słowa pod kursorem
+F5           zdejmuje ten filtr i zakłada go z powrotem
+F6           czyści ekran i całe wyjście
+```
+
+Dopóki powłoka czeka przy swojej zachęcie, F1, F7, Shift-F4, F9 i F10 należą
+do menedżera plików, a F1 otwiera pomoc o tym rozdziale. Gdy tylko polecenie
+działa, ekran i wszystkie klawisze na nim należą do niego, te też. Pięć
+powyższych to wyjątek: dopóki polecenie pracuje, zostają przy terminalu.
+Aplikacja pełnoekranowa, edytor albo przeglądarka bierze sobie wszystkie
+klawisze, także te. Wszystkie są wymienione w sekcji
+**[mcterm]**
+pliku przypisań klawiszy i tam można je zmienić.
+
+Jeśli przy zachęcie powłoki, za schowanymi panelami, wpiszesz
+**mcommander**
+bez argumentów, działający program pokaże swoje panele z powrotem, zamiast
+uruchamiać drugą kopię. Z argumentem, na przykład nazwą katalogu, uruchamia
+się zagnieżdżony program, tak jak wcześniej.
+
+Zwykła zachęta, którą pokazuje program, ma postać
+"użytkownik@host:ścieżka$ ". Przy powłoce, która to potrafi, takiej jak Bash,
+zachęta będzie ta sama, której używasz w powłoce.
+
+(Znany problem z fish: zachęta widoczna jest tylko w trybie pełnoekranowym
+(Ctrl-o), a nie przy widocznych panelach.)
+
+Aby użyć powłoki innej niż ta ze zmiennej SHELL albo ta podana w
+/etc/passwd, uruchom program tak:
+**SHELL=/bin/mojapowloka mcommander**
+
+Rozdział
+[OPCJE](#options)
+zawiera więcej informacji o sterowaniu powłoką.
 
 # Chmod
 
@@ -1802,25 +2384,70 @@ pominąć wybrany plik, przycisk Abort żeby przerwać całą operacją,
 a Retry aby ponowić próbę (np. kiedy usunąłeś problem korzystając
 z innego terminala).
 
-Okno zastępowania jest pokazywane kiedy próbujesz przenieść lub
-przekopiować plik, a taki już w miejscu docelowym istnieje. Okno pokazuje
-daty i wielkości obu plików. Naciśnij przycisk Yes aby nadpisać (zastąpić)
-stary plik nowym, No aby pominąć ten plik, alL aby zastąpić wszystkie pliki,
-nonE aby nigdy nie zastępować i Update aby zastąpić ale tylko wtedy kiedy
-plik źródłowy jest nowszy niż docelowy. Całą operację możesz przerwać
-naciskając przycisk Abort.
+### Nadpisanie pliku <a id="replace"></a>
 
-Okno rekursywnego kasowania jest pokazywane kiedy próbujesz skasować
-katalog, który nie jest pusty. Naciśnij przycisk Yes aby skasować
-katalog rekursywnie, No aby pominąć katalog, alL aby skasować wszystkie
-katalogi rekursywnie i nonE aby pominąć wszystkie katalogi, które nie są
-puste. Możesz przerwać całą opecją naciskając przycisk Abort. Jeśli
-wybrałeś przycisk Yes lub alL będziesz zapytany o potwierdzenie. Wybierz
-"yes" tylko jeśli jesteś pewien, że chcesz skasować wszystko rekursywnie.
+To okno pokazuje się, kiedy próbujesz przenieść albo skopiować plik na
+miejsce już istniejącego. Okno pokazuje daty i rozmiary obu plików i daje
+następujące przyciski:
 
-Jeśli zaznaczyłeś pliki, i wykonujesz operacje tylko na nich, to jeśli
-operacja się udała zostaną one odznaczone, te, na których operacja
-nie przebiegła całkowicie pomyślnie, pozostaną zaznaczone.
+**[Tak]**
+: nadpisuje plik.
+
+**[Nie]**
+: pomija plik.
+
+**[Dopisz]**
+: dopisuje plik źródłowy na koniec docelowego.
+
+**[Kontynuuj]**
+: dopisuje do docelowego resztę pliku źródłowego. Ten przycisk widać tylko
+wtedy, gdy rozmiar pliku docelowego nie jest zerowy i jest mniejszy od
+źródłowego.
+
+**[Wszystkie]**
+: nadpisuje wszystkie pliki.
+
+**[Nowsze]**
+: nadpisuje, jeśli plik źródłowy jest nowszy od docelowego.
+
+**[Żaden]**
+: nie nadpisuje żadnego pliku.
+
+**[Mniejsze]**
+: nadpisuje, jeśli plik źródłowy jest mniejszy od docelowego.
+
+**[Inny rozmiar]**
+: nadpisuje pliki o różnym rozmiarze.
+
+**[Przerwij]**
+: przerywa całą operację.
+
+Przy włączonym polu
+**Nie nadpisuj plikiem o zerowej długości**
+plik źródłowy o zerowym rozmiarze nie nadpisuje pliku docelowego, który taki
+nie jest.
+
+Okno rekurencyjnego kasowania pokazuje się, kiedy próbujesz skasować katalog,
+który nie jest pusty. Jego przyciski to:
+
+**[Tak]**
+: kasuje katalog wraz z zawartością.
+
+**[Nie]**
+: pomija katalog.
+
+**[Wszystkie]**
+: kasuje wszystkie katalogi.
+
+**[Żaden]**
+: pomija wszystkie niepuste katalogi.
+
+**[Przerwij]**
+: przerywa całą operację.
+
+Jeśli masz zaznaczone pliki i wykonujesz na nich operację, odznaczane są
+tylko te, na których operacja się udała. Pliki pominięte i te, na których
+operacja się nie powiodła, zostają zaznaczone.
 
 # Maski kopiowania/przenoszenia (Mask Copy/Rename) <a id="mask-copyrename"></a>
 
@@ -1915,171 +2542,6 @@ nazwy.
 Możesz również używać '\\' aby "podkreślić" znak. Na przykład, '\\\\' jest
 backsleshem, a '\\\*' jest gwiazdką.
 
-# Wbudowany podgląd plików <a id="internal-file-viewer"></a>
-
-Wbudowany podgląd plików pozwala na dwa tryby wyśmietlania: ASCII i hex.
-Aby przełączać się pomiędzy tymi trybami używaj klawisza F4. Jeśli masz
-zainstalowany program GNU gzip, będzie on automatycznie używany do dekompresji
-plików w przypadku wystąpienia takiej potrzeby.
-
-Podgląd plików będzie próbował użyć najlepszej metody zalecanej przez system
-lub rozszerzenie pliku. Wbudowany podgląd plików będzie interpretował wiele
-ciągów znaków, i włączał podkreślenie lub pogrubienie, powodując tym samym
-dużo przyjemniejszy wygląd plików.
-
-Kiedy jesteś w trybie hex, funkcja szukania akceptuje tekst w cudzysłowach
-równie dobrze jak wartości szesnastkowe.
-
-Możesz mieszać ciągi znaków ze stałymi tak jak: "Ciąg" 0xFE 0xBB
-"więcej tekstu". Ciąg pomiędzy stałymi i cudzysłowami jest po prostu
-ignorowany.
-
-Tu jest lista akcji powiązanych z każdym klawiszem, który M-Commander
-obsługuje w wewnętrznym poglądzie.
-
-**F1**
-Wywołuje wbudowaną przeglądarkę pomocy.
-
-**F2**
-Przełącza tryb zawijania.
-
-**F4**
-Przełącza tryb wyświetlania.
-
-**F5**
-Idź do linii. Zostaniesz zapytany o numer linii i zostanie ona wyświetlona na
-ekranie twojego monitora.
-
-**F6**, **/**.
-Szukaj wyrażeń w dalszej części.
-
-**?,**
-Wsteczne wyszukiwanie wyrażenia.
-
-**F7**
-Normalne wyszukiwaniewyszukiwanie w trybie hex.
-
-**C-s**.
-Zaczyna normalne szukanie jeśli nie było żadnego wcześniej, w przeciwnym
-razie szuka następnego wystąpienia.
-
-**C-r**.
-Zaczyna szukanie wsteczne jeśli jeszcze żadnego nie było, w przeciwnym
-razie szuka następnego wystąpienia.
-
-**n**.
-Szuka następnego wystąpienia.
-
-**F8**
-Przełącza tryby Raw i Parsed. Pokaże to plik w postaci takiej w jakiej
-został znaleziony na dysku, lub jeśli został wybrany jakiś filtr, bądź
-też plik spełnia wymagania w pliku extensions.ini, wyświetlane jest to co
-przekazuje filtr. Aktualne ustawienie jest zawsze przeciwne niż to napisane
-na przycisku, przycisk wskazuje zawsze to co się stanie po jego
-naciśnięciu.
-
-**F9**
-Przełącza pomiędzy trybami format i unformat. Kiedy tryb formatu jest
-włączony podgląd będzie interpretował niektóre sentencje i pokazywał
-tekst pogrubiony i podkreślony innymi kolorami. Wynika z tego, że przycisk
-wskazuje co innego niż jest aktualnie (patrz wyżej).
-
-**F10**, **Esc**.
-Wychodzi z wbudowanego podglądu.
-
-**Page Down**, **space**, **C-v**.
-Przewija jedną stronę naprzód.
-
-**Page Up**, **M-v**, **C-b**, **backspace**.
-Przewija jedną stronę wstecz.
-
-**strzałka w dół**.
-Przewija jedną linię naprzód.
-
-**strzałka w górę**.
-Przewija jedną linię wstecz.
-
-**C-l**.
-Odświeża ekran.
-
-**C-f**.
-Przeskakuje do następnego pliku.
-
-**C-b**.
-Przeskakuje do poprzedniego pliku.
-
-**M-r**.
-Przełącza linijkę.
-
-Możliwe jest poinstruowanie podglądu pliku jak ma wyświetlać plik, zobacz
-sekcję Edycja pliku rozszerzeń.
-
-# Wbudowany edytor plików <a id="internal-file-editor"></a>
-
-Wbudowany edytor plików ma większość funkcji posiadanych przez inne
-edytory pełno-ekranowe. Jest wywoływany po naciśnięciu klawisza
-**F4**
-o ile opcja
-*use_internal_edit*
-jest ustawiona w pliku startowyn. Ma maksymalny rozmiar pliku wynoszący
-szesnaście megabajtów i potrafi bez skazy edytować pliki binarne.
-
-Opcje, które aktualnie posiada to: kopiowanie, przenoszenie, kasowanie,
-wycinanie i wklejanie bloków;
-*klawisz dla klawisza undo;*
-rozciągane menu; wklejanie plików; definiowanie makr; szukanie i
-zastępowanie wyrażeń regularnych; strzałki z Shiftem zaznaczające teksty
-w stylu MSW-MAC (tylko dla konsoli typu Linux); przełączanie trybu
-wstawiania-zastępowania; opcja pozwalająca na "przerzucenie" bloku tekstu
-przez komendę powłoki jak na przykład indent.
-
-Edytor jest bardzo prosty w użyciu i nie wymaga żadnego przygotowania. Aby
-zobaczyć jakie są klawisze po prostu obejrzyj odpowiednie menu
-rozwijalne. Inne klawisze to: przemieszczanie z Shiftem zaznaczające tekst.
-**Ctrl-Ins**
-kopiuje do pliku
-**mcedit6.clip**
-a
-**Shift-Ins**
-wkleja z pliku mcedit6.clip.
-**Shift-Del**
-Wycina do
-**mcedit6.clip**,
-a
-**Ctrl-Del**
-kasuje zaznaczony tekst. Klawisze dokończenia również dają Enter z
-automatycznym wcięciem. Podświetlanie myszą również działa,
-i możesz je przesłonić i spowodować normalne zaznaczanie tekstu (takie jak
-obsługuje terminal) po prostu trzymając klawisz Shift.
-
-Aby zdefiniować makro, naciśnij
-**Ctrl-R**
-i potem naciśnij klawisze, które chcesz aby były wykonywane. Naciśnij
-ponownie
-**Ctrl-R**
-kiedy skończysz. Możesz również przyporządkować makro do dowolnego klawisza
-jaki chcesz naciskając ten klawisz. Makro jest wykonywane kiedy naciśniesz
-**Ctrl-A**
-i przyporządkowany klawisz. Makro jest wykonywane również jeśli naciśniesz
-klawisz Meta, Ctrl, lub Esc i wybrany klawisz, jednak tylko jeśli ten
-klawisz nie jest używane przez inne funkcje. Raz zdefiniowane, makro
-wędruje sobie do pliku
-**~/.local/share/mc6/mcedit6/mcedit6.macros**
-w twoim katalogu domowym. Możesz skasować makro kasując odpowiednią linię z
-tego pliku.
-
-**F19**
-sformatuje format C jeśli jest podświetlony. Żeby to działało, stwórz
-wykonywalny plik
-**~/.local/share/mc6/mcedit6/edit.indent.rc**
-w twoim katalogu domowym zawierający poniższe:
-
-```
-#!/bin/sh
-/usr/bin/indent -kr -pcs ~/.cache/mc6/mcedit6/mcedit6.block>& /dev/null
-cat /dev/null > ~/.cache/mc6/mcedit6/cooledit.error
-```
-
 # Dokańczanie <a id="completion"></a>
 
 Pozwól M-Commanderowi pisać za ciebie.
@@ -2122,125 +2584,57 @@ po raz drugi. Za pierwszym razem M-Commander wydaje tylko krótki dźwięk.
 
 # Wirtualny system plików (Virtual File System) <a id="virtual-file-system"></a>
 
-M-Commander jest dostarczany z kodem pozwalający na dostęp do
-systemów plików. Ten kod nazywany jest wirtualnym systemem plików. Pozwala on
-M-Commanderowi manipulować plikami trzymanymi na systemach nie
-Unixowych.
+M-Commander zawiera warstwę kodu do dostępu do systemu plików; warstwa ta
+nazywa się przełącznikiem wirtualnych systemów plików. Pozwala ona pracować na
+plikach, które nie leżą w uniksowym systemie plików.
 
-Aktualnie M-Commander jest wyposażony w niektóre wirtualne systemy
-plików (VFS): lokalny system plików, używany do dostępu do typowych
-systemów plików Unixowych; ftpfs używanego do manipulowania plikami na
-zdalnych systemach na poprzez protokół FTP; undelfs, używany
-do odzyskiwania skasowanych plików na systemach typu ext2 (standardowy
-system pracy systemu Linux), fish (do manipulowania plikami poprzez
-połączenia powłok takich jak rsh czy ssh) i w końcu system mcfs (system
-plików M-Commandera), oparty o sieć.
+Oprócz systemu
+*local,*
+czyli zwykłego systemu plików Uniksa, w program wbudowane są dwa wirtualne:
+*extfs,*
+który za pomocą własnego skryptu pokazuje plik lub listę systemową jako drzewo
+katalogów, oraz
+*sfs,*
+który przepuszcza pojedynczy plik przez polecenie i pokazuje to, co z niego
+wychodzi. Wszystko, co wymaga połączenia z inną maszyną, a także archiwa, to
+teraz
+[wtyczki paneli](#panel-plugins),
+a nie systemy plików przełącznika.
 
-Kod VFS potrafi interpretować poprawnie wszystkie nazwy ścieżek i przekazuje
-je do właściwego systemu plików. Format używany dla każdego z systemów plików
-jest opisany w swojej oddzielnej sekcji.
+Przełącznik interpretuje wszystkie używane ścieżki i przekazuje je właściwemu
+systemowi plików; postać nazwy dla każdego z nich opisuje jego własny dział.
 
-## System plików FTP (FTP File System) <a id="ftp-file-system"></a>
+## Wtyczki paneli <a id="panel-plugins"></a>
 
-Ftpfs pozwala na manipulowanie plikami na zdalnych komputerach, do
-normalnego użytku, możesz próbować używać panelowych komend FTP i dowiązań
-(dostępnych z linii menu) lub zmienić ścieżkę bezpośrednio za pomocą zwykłej
-komendy cd wyglądającej tak jak poniżej:
-
-*ftp://[!][użytkownik[:hasło]@]komputer[:port]/[zdalny-katalog]*
-
-Parametry
-*użytkownik,*
-*port*
-i
-*zdalny katalog*
-są opcjonalne. Jeśli wybierzesz element
-*użytkownik*
-M-Commander spróbuje zalogować się na zdalnym komputerze jako
-zadany użytkownik, w przeciwnym razie użyje twojego loginu. Opcjonalne jest
-również
-*hasło,*
-jeśli jest obecne zostanie użyte do nawiązania połączenia. To użycie nie
-jest zalecane (tak samo jak trzymanie tego w twojej hotliście,
-dopóki nie ustawisz odpowiednich uprawnień, aby nikt niepowołany nie miał
-do tego dostępu).
-
-Przykłady:
+Panel nie jest związany z systemem plików: wtyczka może go wypełnić wszystkim,
+co potrafi wyliczyć. Wraz z programem dostarczane są
 
 ```
-    ftp://ftp.nuclecu.unam.mx/linux/local
-    ftp://tsx-11.mit.edu/pub/linux/packages
-    ftp://!behind.firewall.edu/pub
-    ftp://guest@remote-host.com:40/pub
-    ftp://miguel:xxx@server/pub
+arcmc        archiwa i ich zawartość
+ftp, sftp    pliki na innej maszynie
+shell-link   pliki na innej maszynie przez ssh
+samba        zasoby serwera SMB
+s3           kubełki magazynu S3
+git          stan repozytorium
+docker       kontenery, obrazy i ich dzienniki
+k8s          obiekty klastra
+mongo        kolekcje bazy danych
+sqlite       tabele bazy danych
+systemd      jednostki systemu
+panelize     wynik polecenia jako panel
+mcpeek       zajrzenie do wnętrza pliku
+mcstruct     plik binarny jako drzewo nazwanych pól
+skineditor   wygląd programu
 ```
 
-Aby połączyć się z serwerem znajdującym się za firewallem, będziesz musiał
-użyc przedrostka ftp://! aby wymusić na M-Commanderze używanie
-serwera proxy do transferu danch. Serwer proxy definiuje się w oknie
-dialogowym wirtualnego systemu plików.
-
-Inną możliwością jest ustawienie opcji
-*Always use ftp proxy*
-w oknie konfiguracyjnym wirtualnego systemu plików. Skonfiguruje
-to program tak, aby zawsze
-używał serwera proxy. Jeśli ta zmienna jest ustawiona, program będzie robił
-dwie rzeczy: konsultował plik {{sysconfdir}}/mcommander/mc.no_proxy w celu znalezienia linii
-zawierających nazwy serwerów, które są lokalne (jeśli nazwa hosta zaczyna
-się od kropki, uznaje się, że jest to domena) i sprawdza czy jakieś hosty
-bez kropek w nazwie są widoczne bezpośrednio.
-
-Jeśli używasz systemu ftpfs będąc za routerem filtrującym, który nie
-pozwala ci na używanie standardowej metody otwierania plików, możesz
-chcieć wymusić na programie używanie trybu passive-open. Aby tego używać
-ustaw opcję ftpfs_use_passive_connections w pliku inicjującym.
-
-M-Commander przechowuje listę katalogów w buforze podręcznym. Czas wyrzucania
-bufora jest ustawiany w oknie dialogowym Wirtualnego Systemu Plików. To ma
-śmieszną właściwość taką, że nawet kiedy wystąpią jakieś zmiany w katalogu, nie
-będą one pokazane w strukturze katalogów, dopóki nie wymusisz tego przy
-użyciu kombinacji C-r. To jest dobre rozwiązanie (jeśli myślisz, że to jest
-bug, to pomyśl o pracy na zdalnych systemach położonych po drugiej stronie
-Atlantyku przy użyciu ftpfs :) ).
-
-## Transfer plików pomiędzy systemami plików (FIle transfer over SHell filesystem) <a id="file-transfer-over-shell-filesystem"></a>
-
-System plików fish jest systemem opartym na sieci, który pozwala na
-manipulowanie plikami na obcej maszynie tak jakby były one lokalne. Aby
-tego używać, druga strona musi również mieć ustawiony serwer fish, lub musi
-mieć powłokę kompatybilną z bashem.
-
-Aby połączyć się z obcą maszyną, musisz tylko zmienić katalog do
-specjalnego katalogu, którego nazwa jest w następującym formacie:
-
-```
-sh://[użytkownik@]komputer[:opcje];/[zdalny-katalog];</em>
-```
-
-Elementy
-*użytkownik,*
-*opcje*
-i
-*zdalny katalog*
-są opcjonalne. Jeśli podasz
-*użytkownika*
-M-Commander spróuje zalogować się na obcy komputer jako zadany
-użytkownik w przeciwnym razie użyty zostanie twój login.
-
-Jako
-*opcja*
-może wystąpić 'C' - włącza kompresje i 'rsh' - włącza rsh zamist ssh. Jeśli
-*zdalny-katalog*
-istnieje, twój aktualny katalog na zdalnym komputerze będzie ustawiony
-na niego.
-
-Przykłady:
-
-```
-    sh://onlyrsh.mx:r/linux/local
-    sh://joe@want.compression.edu:C/private
-    sh://joe@noncompressed.ssh.edu/private
-```
+Każda wtyczka niesie własną pomoc, którą
+**F1**
+otwiera w jej panelu lub oknie. Pozycja
+**Zarządzanie wtyczkami**
+menu Opcje wylicza to, co jest wczytane, wyłącza wtyczkę i otwiera jej
+ustawienia. Panel wtyczki otwiera się z
+[menu lewego i prawego](#left-and-right-menus),
+z listy katalogów albo przez wpisanie adresu wtyczki w linii poleceń.
 
 ## EXTernal File System
 
@@ -2352,6 +2746,27 @@ section.  Here is an example entry for Debian packages:
           Open=%cd %p/deb://
 ```
 
+## System plików jednego pliku <a id="single-file-filesystem"></a>
+
+**sfs**
+przepuszcza jeden plik przez polecenie i pokazuje wynik jako osobny plik; w
+ten sposób czyta się plik skompresowany bez ręcznego rozpakowywania. Nazwa
+systemu plików dopisywana jest do nazwy pliku, tak jak w extfs:
+
+```
+  cd dokumenty.gz/ugz://
+```
+
+Polecenia wymienia plik
+**{{sysconfdir}}/mcommander/sfs.ini**,
+po jednym w wierszu: nazwa systemu plików, ukośnik, numer polecenia,
+tabulator i samo polecenie, gdzie
+*%1*
+to plik, na którym stoi panel, a
+*%3*
+plik, do którego należy pisać. Dostarczony plik zawiera pary pakujące i
+rozpakowujące gz, bz2, lz, lz4, lzma, lzo, xz i zst, oraz kilka innych.
+
 # Polskie znaki
 
 M-Commander bardzo dobrze radzi sobie z obsługą znaków
@@ -2390,6 +2805,339 @@ tu dopiszę  [ patrz tłumacz na dole ;)) ]].
 I gotowe - polskie literki działają również w podglądzie i wbudowanym
 edytorze plików.
 
+# Atrybuty pliku <a id="chattr"></a>
+
+To okno służy do zmiany atrybutów grupy plików i katalogów w linuksowym
+systemie plików. Otwiera je C-x e.
+
+Nie każdy system plików zna wszystkie atrybuty. Lista dostępnych atrybutów
+pokazana jest jako zestaw pól wyboru odpowiadających znacznikom atrybutów
+(szczegóły podaje
+**chattr(1)**).
+W miarę zmiany pól zmienia się wraz z nimi wartość symboliczna pod nazwą
+pliku.
+
+Po elementach okna porusza się
+*strzałkami*
+albo klawiszem
+*Tab*.
+Stan pola wyboru zmienia, a przycisk wybiera
+**spacja**.
+
+Atrybuty zapisuje Enter.
+
+Przy pracy na grupie plików albo katalogów wystarczy zaznaczyć te atrybuty,
+które chcesz włączyć albo skasować, a potem wybrać jeden z przycisków
+działania (Ustaw zaznaczone albo Wyczyść zaznaczone).
+
+**[Ustaw wszystkie]**
+: ustawia dokładnie podane atrybuty na wszystkich zaznaczonych plikach.
+
+**[Zaznacz wszystkie]**
+: ustawia tylko zaznaczone atrybuty na wszystkich wybranych plikach.
+
+**[Ustaw zaznaczone]**
+: włącza zaznaczone znaczniki w atrybutach wybranych plików.
+
+**[Wyczyść zaznaczone]**
+: wyłącza zaznaczone znaczniki w atrybutach wybranych plików.
+
+**[Ustaw]**
+: ustawia atrybuty jednego pliku.
+
+**[Anuluj]**
+: wychodzi z polecenia.
+
+# Lista ekranów <a id="screen-selector"></a>
+
+Program potrafi mieć uruchomionych naraz kilka części wewnętrznych (edytor,
+podgląd, porównanie) i przechodzić między nimi bez zamykania otwartych
+plików. Kilku menedżerów plików naraz na razie nie ma.
+
+Nazwijmy ekranem każdą z tych części. Są trzy sposoby przechodzenia między
+ekranami, tymi globalnymi skrótami:
+
+**Alt-}**
+: przechodzi do następnego ekranu;
+
+**Alt-{**
+: przechodzi do poprzedniego ekranu;
+
+**Alt-\`**
+: otwiera okno z listą otwartych ekranów (albo pozycja menu "Lista ekranów").
+
+# Zaznaczanie plików <a id="selectunselect-files"></a>
+
+Klawisze
+**+**
+i
+`\`
+proszą o wzorzec i zaznaczają lub odznaczają pliki, które do niego pasują, a
+**\***
+odwraca zaznaczenie. Okno pamięta ostatni wzorzec i pozwala określić, czy ma
+być wzorcem powłoki, czy ma rozróżniać wielkość liter i czy ma dotyczyć także
+katalogów.
+
+# Tryby panelu <a id="panel-modes"></a>
+
+Tryb panelu to nazwany układ listy, którego można używać wielokrotnie. Lista
+trybów jest wspólna dla obu paneli.
+
+**Alt-t**
+(oraz pozycja
+**Tryby panelu...**
+menu lewego i prawego) otwiera
+**przełącznik:**
+listę zdefiniowanych trybów. Enter stosuje do panelu tryb, na którym stoi
+kursor, Esc zostawia panel bez zmian.
+
+Pozycja
+**Tryby panelu plików...**
+menu
+**Opcje**
+otwiera
+**menedżera:**
+tę samą listę, edytowaną klawiszami.
+**Insert**
+tworzy nowy tryb,
+**F4**
+(lub
+**Enter**)
+edytuje wybrany,
+**F5**
+go powiela, a
+**Delete**
+(lub
+**F8**)
+usuwa. Przycisk
+**Domyślne**
+zastępuje listę trybami wbudowanymi,
+**Ok**
+ją zapisuje, a
+**Anuluj**
+(lub
+**Esc**)
+odrzuca wszystko, co zrobiono w oknie.
+
+Menedżer edytuje wspólną listę trybów; nie zmienia trybu żadnego panelu.
+
+Edytor trybu ma osobne pola na typy pól kolumn i ich szerokości oraz na
+wiersz mini-statusu, z nazwami pól opisanymi w rozdziale
+[Układ listy...](#listing-format)
+\. Lista typów rozdzielana jest przecinkami, po jednej pozycji na kolumnę;
+kolumna może zawierać kilka pól rozdzielonych spacjami (na przykład
+**type name**).
+Szerokość 0 (albo pusta) zostawia polu jego automatyczną szerokość.
+W pole typów można też wkleić pełny łańcuch układu (na przykład
+**half name | size:7**):
+rozdzielacze
+**|**
+i przyrostki
+**:szerokość**
+rozkładają się wtedy na dwie listy.
+
+Zdefiniowane tryby i ten wybrany przez każdy panel są zachowywane między
+sesjami.
+
+# Krótki przegląd wyrażeń regularnych <a id="regex-quick-reference"></a>
+
+**Zwykłe elementy**
+
+```
+Jeden ze znaków: a, b albo c            [abc]
+Znak inny niż a, b albo c               [^abc]
+Znak z zakresu a-z                      [a-z]
+Znak spoza zakresu a-z                  [^a-z]
+Znak z a-z albo A-Z                     [a-zA-Z]
+Dowolny znak                            .
+Alternatywa: a albo b                   a|b
+Dowolny biały znak                      \s
+Wszystko poza białym znakiem            \S
+Dowolna cyfra                           \d
+Wszystko poza cyfrą                     \D
+Znak słowa                              \w
+Wszystko poza znakiem słowa             \W
+Grupa bez przechwytywania               (?:...)
+Grupa przechwytująca                    (...)
+Zero albo jedno a                       a?
+Zero albo więcej a                      a*
+Jedno albo więcej a                     a+
+Dokładnie 3 a                           a{3}
+3 a albo więcej                         a{3,}
+Od 3 do 6 a                             a{3,6}
+Początek napisu                         ^
+Koniec napisu                           $
+Granica słowa                           \b
+Poza granicą słowa                      \B
+```
+
+**Kotwice**
+
+```
+Początek trafienia                      \G
+Początek napisu                         ^
+Koniec napisu                           $
+Początek napisu                         \A
+Koniec napisu                           \Z
+Bezwzględny koniec napisu               \z
+Granica słowa                           \b
+Poza granicą słowa                      \B
+```
+
+**Elementy ogólne**
+
+```
+Koniec wiersza                          \n
+Powrót karetki                          \r
+Tabulacja                               \t
+Znak zerowy                             \0
+```
+
+**Metaciągi**
+
+```
+Dowolny znak                            .
+Alternatywa: a albo b                   a|b
+Dowolny biały znak                      \s
+Wszystko poza białym znakiem            \S
+Dowolna cyfra                           \d
+Wszystko poza cyfrą                     \D
+Znak słowa                              \w
+Wszystko poza znakiem słowa             \W
+Ciąg Unicode, z końcami wierszy         \X
+Końce wierszy Unicode                   \R
+Wszystko poza końcem wiersza            \N
+Pionowy biały znak                      \v
+Zaprzeczenie \v                         \V
+Poziomy biały znak                      \h
+Zaprzeczenie \h                         \H
+Zerowanie trafienia                     \K
+Podwzorzec numer #                      \#
+Własność Unicode X                      \pX
+Własność Unicode albo kategoria pisma   \p{...}
+Zaprzeczenie \pX                        \PX
+Zaprzeczenie \p{...}                    \P{...}
+Cytat: bierz dosłownie                  \Q...\E
+Podwzorzec 'nazwa'                      \k{name}
+Podwzorzec 'nazwa'                      \k<name>
+Podwzorzec 'nazwa'                      \k'name'
+n-ty podwzorzec                         \gn
+n-ty podwzorzec                         \g{n}
+n-ty wcześniejszy podwzorzec wzgl.      \g{-n}
+Wyrażenie n-tej grupy                   \g<n>
+Wyrażenie n-tej kolejnej grupy          \g<+n>
+Wyrażenie n-tej grupy                   \g'n'
+Wyrażenie n-tego kolejnego podwzorca    \g'+n'
+Nazwana grupa przechwytująca            \g{letter}
+Wyrażenie nazwanej grupy                \g<letter>
+Wyrażenie nazwanej grupy                \g'letter'
+Znak szesnastkowy YY                    \xYY
+Znak szesnastkowy YYYY                  \x{YYYY}
+Znak ósemkowy ddd                       \ddd
+Znak sterujący Y                        \cY
+Znak backspace                          [\b]
+Czyni każdy znak dosłownym              \
+```
+
+**Kwantyfikatory**
+
+```
+Zero albo jedno a                       a?
+Zero albo więcej a                      a*
+Jedno albo więcej a                     a+
+Dokładnie 3 a                           a{3}
+3 a albo więcej                         a{3,}
+Od 3 do 6 a                             a{3,6}
+Kwantyfikator zachłanny                 a*
+Kwantyfikator leniwy                    a*?
+Kwantyfikator zaborczy                  a*+
+```
+
+**Klasy znaków**
+
+```
+Jeden ze znaków: a, b albo c            [abc]
+Znak inny niż a, b albo c               [^abc]
+Znak z zakresu a-z                      [a-z]
+Znak spoza zakresu a-z                  [^a-z]
+Znak z a-z albo A-Z                     [a-zA-Z]
+Litery i cyfry                          [[:alnum:]]
+Litery                                  [[:alpha:]]
+Kody ASCII 0-127                        [[:ascii:]]
+Tylko spacja albo tabulacja             [[:blank:]]
+Znaki sterujące                         [[:cntrl:]]
+Cyfry dziesiętne                        [[:digit:]]
+Znaki widoczne (bez spacji)             [[:graph:]]
+Małe litery                             [[:lower:]]
+Znaki widoczne                          [[:print:]]
+Widoczne znaki przestankowe             [[:punct:]]
+Białe znaki                             [[:space:]]
+Duże litery                             [[:upper:]]
+Znaki słowa                             [[:word:]]
+Cyfry szesnastkowe                      [[:xdigit:]]
+Początek słowa                          [[:<:]]
+Koniec słowa                            [[:>:]]
+```
+
+**Flagi i modyfikatory**
+
+```
+Wielowierszowo                          m
+Bez rozróżniania wielkości liter        i
+Pomijaj białe znaki / rozwlekle         x
+Jeden wiersz                            s
+Unicode                                 u
+eXtra                                   X
+Niezachłannie                           U
+Zakotwiczenie                           A
+Powtórzone nazwy grup                   J
+Grupy bez przechwytywania               n
+Pomijaj wszystkie białe / rozwlekle     xx
+```
+
+**Konstrukcje grup**
+
+```
+Grupa bez przechwytywania               (?:...)
+Grupa przechwytująca                    (...)
+Grupa atomowa (bez przechwytywania)     (?>...)
+Zerowanie numeru podwzorca              (?|...)
+Grupa komentarza                        (?#...)
+Nazwana grupa przechwytująca            (?'name'...)
+Nazwana grupa przechwytująca            (?<name>...)
+Nazwana grupa przechwytująca            (?P<name>...)
+Modyfikatory w wierszu                  (?imsxUJnxx)
+Miejscowe modyfikatory w wierszu        (?imsxUJnxx:...)
+Konstrukcja warunkowa                   (?(1)yes|no)
+Konstrukcja warunkowa                   (?(R)yes|no)
+Rekurencyjna konstrukcja warunkowa      (?(R#)yes|no)
+Konstrukcja warunkowa                   (?(R&name)yes|no)
+Warunek z wyprzedzeniem                 (?(?=...)yes|no)
+Warunek wstecz                          (?(?<=...)yes|no)
+Rekurencja całego wzorca                (?R)
+Wyrażenie grupy 1                       (?1)
+Pierwsza względna grupa                 (?+1)
+Wyrażenie nazwanej grupy                (?&name)
+Podwzorzec 'nazwa'                      (?P=name)
+Wyrażenie grupy '{nazwa}'               (?P>name)
+Wzorce zdefiniowane przed użyciem       (?(DEFINE)...)
+Dodatnie spojrzenie w przód             (?=...)
+Ujemne spojrzenie w przód               (?!...)
+Dodatnie spojrzenie wstecz              (?<=...)
+Ujemne spojrzenie wstecz                (?<!...)
+Literowe asercje spojrzenia             (*pla:...)
+Nieatomowa asercja spojrzenia           (*non_atomic_positive_lookahead:...)
+Asercja jednolitego pisma               (*script_run:...)
+Jednolite pismo (skrót)                 (*sr:...)
+Czasownik sterujący                     (*ACCEPT)
+Czasownik sterujący                     (*FAIL)
+Czasownik sterujący                     (*MARK:NAME)
+Czasownik sterujący                     (*COMMIT)
+Czasownik sterujący                     (*PRUNE)
+Czasownik sterujący                     (*SKIP)
+Czasownik sterujący                     (*THEN)
+```
+
 # Kolory <a id="colors"></a>
 
 M-Commander próbuje sprawdzić czy twój terminal obsługuje
@@ -2421,125 +3169,262 @@ Program może być skompilowany zarówno z bibliotekami S-Lang jak i ncurses.
 Ncurses nie obsługuje metody wymuszania wyświetlania, zawsze sprawdza w bazie danych
 terminali.
 
+# Skórki <a id="skins"></a>
+
+Wygląd programu można zmienić. Trzeba w tym celu podać plik, który zawiera
+opis kolorów i linii do rysowania ramek. Nowe ustalenie kolorów jest w pełni
+zgodne z przypisaniem opisanym w rozdziale
+[Kolory](#colors).
+
+Jeśli skórka zawiera definicje pełnego koloru (true-color), w sekcji [skin]
+należy ustawić klucz 'truecolors' na TRUE. Jeśli używa nie pełnego koloru, a
+256 kolorów, zamiast tego klucz '256colors'.
+
+Plik skórki szukany jest w następującej kolejności (do pierwszego
+znalezionego):
+
+```
+1) opcja wiersza poleceń -S <skórka>, --skin=<skórka>
+2) zmienna środowiskowa MC_SKIN
+3) parametr skin sekcji [Midnight-Commander]
+4) plik {{sysconfdir}}/mcommander/skins/default.ini
+5) plik {{pkgdatadir}}/skins/default.ini
+```
+
+Opcja wiersza poleceń, zmienna środowiskowa i parametr w pliku konfiguracji
+mogą zawierać bezwzględną ścieżkę do pliku skórki (z rozszerzeniem .ini albo
+bez). Szukanie odbywa się w (do pierwszego znalezionego):
+
+```
+1) ~/.local/share/mc6/skins/
+2) {{sysconfdir}}/mcommander/skins/
+3) {{pkgdatadir}}/skins/
+```
+
+Format plików skórek opisuje
+**{{pkgdatadir}}/skins/README.txt**.
+
+# Podświetlanie nazw plików <a id="filenames-highlight"></a>
+
+Sekcja [filehighlight] bieżącego pliku skórki zawiera jako klucze nazwy grup
+podświetlania, a jako wartości pary kolorów.
+
+Reguły podświetlania nazw stoją w pliku {{pkgdatadir}}/filehighlight.ini
+(~/.config/mc6/filehighlight.ini). Nazwa sekcji w tym pliku musi być taka
+sama jak nazwa parametru w sekcji [filehighlight] (bieżącego pliku skórki).
+
+Klucze tych grup to:
+
+*type*
+: typ pliku. Jeśli jest podany, pozostałe opcje są pomijane.
+
+*regexp*
+: wyrażenie regularne. Jeśli jest podane, opcja 'extensions' jest pomijana.
+
+*extensions*
+: lista rozszerzeń plików, rozdzielona znakiem ';'.
+
+*extensions_case*
+: (ma sens tylko z parametrem 'extensions') sprawia, że reguła 'extensions'
+rozróżnia wielkość liter (true) albo nie (false).
+
+Klucz 'type' może mieć wartości:
+
+```
+- FILE (wszystkie pliki)
+  - FILE_EXE
+- DIR (wszystkie katalogi)
+  - LINK_DIR
+- LINK (wszystkie dowiązania poza zerwanymi)
+  - HARDLINK
+  - SYMLINK
+- STALE_LINK
+- DEVICE (wszystkie pliki urządzeń)
+  - DEVICE_BLOCK
+  - DEVICE_CHAR
+- SPECIAL (wszystkie pliki specjalne)
+  - SPECIAL_SOCKET
+  - SPECIAL_FIFO
+  - SPECIAL_DOOR
+```
+
+# Parametry zewnętrznego edytora lub podglądu <a id="parameters-for-external-editor-or-viewer"></a>
+
+Program pozwala podać opcje dla zewnętrznych edytorów i podglądów. Sekcja
+"[External editor or viewer parameters]" szukana jest najpierw w systemowym
+pliku startowym (pliku defaults.ini w katalogu programu), a potem w pliku
+~/.config/mc6/ini. Nazwą opcji powinna być nazwa (pełna ścieżka)
+zewnętrznego edytora lub podglądu. Wartość może zawierać zmienne:
+
+*%filename*
+: nazwa pliku do edycji albo podglądu.
+
+*%lineno*
+: wiersz, na którym plik ma się otworzyć.
+
+Na przykład:
+
+```
+[External editor or viewer parameters]
+    vi=%filename +%lineno
+    joe=%filename +%lineno
+    more=%filename +%lineno
+```
+
+Wiersz początkowy przekazywany jest zewnętrznemu edytorowi albo podglądowi
+tylko wtedy, gdy uruchamia się go z okna wyników
+[szukania plików](#find-file).
+
+Jeśli zewnętrzny edytor albo podgląd uruchamia się klawiszem F4 lub F3,
+program liczy na to, że tamten program (przynajmniej "joe", ale pewnie i
+inne) sam otworzy plik tam, gdzie był ostatnio. Program nie przeszkadza
+zewnętrznemu edytorowi ani podglądowi w zapisywaniu i odtwarzaniu pozycji w
+otwartych plikach.
+
 # Specjalne ustawienia <a id="special-settings"></a>
 
-Większość ustawień M-Commandera może być zmieniana z poziomu menu.
-Pomimo tego jest pewna ilość ustawień, których zmiana możliwa jest jedynie
-poprzez zmianę w plikach konfiguracyjnych.
+Większość ustawień można zmienić z menu. Jest jednak niewielka liczba takich,
+które zmienia się tylko przez edycję pliku konfiguracji.
 
-Opcje mogą być ustawione w twoim pliku ~/.config/mc6/ini :
+Te zmienne można ustawić w pliku ~/.config/mc6/ini:
 
-*clear_before_exec.*
-: Standardowo M-Commander czyści ekran przed wykonaniem komendy.
-Jeśli chciałbyś widzieć wyjście komendy na dole ekranu, wyedytuj twój plik
-~/mc/ini i zmień pole clear_before_exec na 0.
+*clear_before_exec*
+: Domyślnie program czyści ekran przed wykonaniem polecenia. Jeśli wolisz
+widzieć wyjście polecenia na dole ekranu, zmień w pliku ~/.config/mc6/ini
+wartość pola clear_before_exec na 0.
 
-*confirm_view_dir.*
-: Jeśli naciskasz F3 na katalogu, normalnie M-Commander wchodzi do niego. Jeśli ta opcja
-ma wartość 1, M-Commander zapyta się o potwierdzenie przed wejściem do tego
-katalogu, jeśli masz zaznaczone jakieś pliki.
+*confirm_view_dir*
+: Jeśli naciskasz F3 na katalogu, program zwykle do niego wchodzi. Jeśli ta
+wartość to 1, przy zaznaczonych plikach zapyta o potwierdzenie przed zmianą
+katalogu.
 
-*drop_menus.*
-: Jeśli ta opcja jest ustawiona, kiedy naciskasz klawisz F9, rozciągane menu
-będzie od razu rozłożone, w przeciwnym wypadku znajdziesz się po prostu
-w najwyższym wierszu ekranu traktowanym jako menu. Będziesz musiał użyć strzałek
-lub pierwszych literek, aby wybrać konkretne menu.
-
-*ftpfs_retry_seconds.*
-: Wartość jest ilością sekund, przez które M-Commander będzie czekał
-cierpliwie zanim rozpocznie łączenie się z serwerem ftp od nowa. Dzieje
-się to wtedy kiedy serwer odmówił połączenia lub hasło jest nieprawidłowe.
-Jeśli wartość wynosi zero, nie nastąpi próba ponownego połączenia z serwerem.
-
-*ftpfs_use_passive_connections.*
-: Standardowo ta opcja jest wyłączona. Powoduje ona, że ftpfs otwiera połączenia
-pasywne dla transmisji danych. Jest to używane przez ludzi, którzy siedzą
-za ruterami filtrującymi. Działa to tylko wtedy, kiedy nie używasz serwera
-ftp proxy.
-
-*max_dirt_limit.*
-: Opisuje jak wiele odświeżeń ekranu może być maksymalnie ominięte we wbudowanym
-podglądzie plików. Normalnie ta wartość jest ważna, gdyż M-Commander automatycznie
-dostosowuje liczbę odświeżeń do liczby naciśniętych klawiszy. Chociaż na bardzo
-wolnych komputerach lub na klawiaturach z szybkim powtarzaniem klawiszy,
-duża wartość mogłaby spowodować skoki ekranu i utratę płynności.
-
-> Wydaje się, że wartość 10 dla max_dirt_limit jest najlepszym ustawieniem
-> i to jest wartość standardowa tej funkcji.
-
-*mouse_move_pages.*
-: Kontroluje czy przewijanie w panelu za pomocą myszki odbywa się strona po
-stronie czy linijka po linjce.
-
-*mouse_move_pages_viewer.*
-: Tak samo jak wyżej tylko, że we wbudowanym wewnętrznym podglądzie plików.
-
-*navigate_with_arrows.*
-: Jeśli ta opcja jest włączona, możesz używać strzałek do automatycznego
-przemieszczanie się pomiędzy katalogami, jeśli linia poleceń jest pusta.
-(dotyczy to strzełek w bok).
-
-*nice_rotating_dash*
-: Jeśli jest włączony, M-Commander będzie pokazywał w lewym górnym
-rogu obracający się myślnik kiedy będzie wykonywał jakiś proces.
-
-*old_esc_mode*
-: Standardowo M-Commander traktuje klawisz ESC jako przedrostek
-(old_esc_mode=0). Jeśli włączysz tę opcję (old_esc_mode=1), to klawisz
-ESC będzie przedrostkiem dla innego klawisza, ale jeśli ten nie nastąpi,
-będzie on zinterpretowany jako klawisz anulowania (tak jak ESC ESC).
+*vfs_timeout*
+: Czas życia pamięci podręcznej wirtualnego systemu plików w sekundach. Po
+wyjściu z archiwum albo pliku skompresowanego wczytana lista i rozpakowany
+plik tymczasowy zostają przez ten czas, żeby ponowne wejście było
+natychmiastowe, a potem są zwalniane. Domyślnie 60; 0 zwalnia je od razu.
+Okno Wirtualny FS z menu Opcje zmienia tę samą wartość.
 
 *only_leading_plus_minus*
-: zmienia znaczenia znaków '+', '-', '\*' w linii komend (wybór, odznaczenie,
-odwrócenie zaznaczenia). Standardowo działają one tylko wtedy kiedy linia
-poleceń jest pusta. Jeśli coś jest w niej już napisane, znaki te są traktowane
-jako normalne. Jest to przydatne gdyż najczęściej w trakcie pisania nie chcemy
-zmieniać zaznaczenia. Jednak czasami ... - wystarczy przestawić tę opcję
-i klawisze te będą zawsze działać.
-*panel_scroll_pages*
+: Traktuje znaki '+', '-' i '\*' w wierszu poleceń osobno (zaznaczanie,
+odznaczanie, odwracanie zaznaczenia) tylko wtedy, gdy wiersz poleceń jest
+pusty. Dzięki temu nie trzeba ich cytować w środku wiersza, ale przy
+niepustym wierszu nie zmienią zaznaczenia.
 
-> Jeśli ustawione (standardowo), panel będzie przewijany o połowę za każdym
-> razem kiedy kursor dochodzi do dolnej lub górnej linii, w przeciwnym wypadku
-> przewijanie będzie się odbywać linia po linii.
+*alternate_plus_minus*
+: Przy włączonej opcji klawisze '+', '-', '\\' i '\*' działają zwyczajnie. Do
+zaznaczania i odznaczania służą wtedy 'Alt-+', 'Alt--' i 'Alt-\*'.
 
 *show_output_starts_shell*
-: Ta opcja pracuje jeśli nie używasz obsługi powłoki w tle. Kiedy
-użyjesz kombinacji klawiszy C-o i ta opcja jest włączona, będziesz
-miał nową powłokę. Jeśli nie, dowolny klawisz przywróci znów
-M-Commandera (C-o działa jak podgląd).
+: Kiedy klawiszem C-o wracasz na ekran użytkownika, a ta opcja jest włączona,
+dostajesz nową powłokę. Inaczej dowolny klawisz przywraca program.
 
-*show_all_if_ambiguous.*
-: Standardowo M-Commander pokazuje wszystkie możliwe dokończenia
-jeśli jest ich więcej i naciśnięto kombinację
-**M-Tab**
-po raz drugi, za pierwszym razem dokończone zostanie tylko tyle ile jest to
-możliwe i jeśli będzie więcej możliwości słychać będzie krótkie bipnięcie.
-Jeśli chcesz widzieć wszystkie możliwe dokończenia już po pierwszym naciśnięciu
-**M-Tab**,
-zmień tę opcję na 1.
+*timeformat_recent*
+: Postać daty i czasu dla dat nie starszych niż sześć miesięcy. Opis formatu
+podaje strona podręcznika strftime albo date. Bez tej opcji obowiązuje postać
+domyślna.
 
-*highlight_mode*
-Standardowo wszystkie informacje w panelach są wyświetlane tym samym
-kolorem. Jeśli ta warość jest ustawiona na 1, to
-*uprawnienia*
-lub
-*tryb*
-będą wyświetlane przy użyciu podświetlonej barwy, tak aby pokazać
-ustawienia dla użytkownika. Tak więc prawa do odczytu, zapisu i wykonywania
-będą wyświetlane na żółto (tzn. kolorem
-*selected).*
-W dodatku jeśli ta zmienna jest ustawiona na 2, to całe linie są
-wyświetlane w kolorze odpowiadającym ich typowi (zobacz sekcję Kolory).
-Podświetlenie uprawnień również pracuje w tym trybie.
+*timeformat_old*
+: Postać daty i czasu dla dat starszych niż sześć miesięcy albo przyszłych.
+Opis formatu podaje strona podręcznika strftime albo date. Bez tej opcji
+obowiązuje postać domyślna.
 
 *use_file_to_guess_type*
-: Jeśli ta zmienna jest ustawiona (standardowo) próbuje się dostosować
-rozszerzenie pliku do tego wybranego w pliku extensions.ini.
+: Przy włączonej opcji (domyślnie) program wywołuje polecenie file, aby
+rozpoznać typy wymienione w
+[pliku extensions.ini](#edit-extension-file).
 
 *xtree_mode*
-: Jeśli ta opcja jest włączona (standardowo tak nie jest) kiedy przeglądasz plik
-w panelu drzewa, będzie on automatycznie przeładowywał drugi panel na
-zawartość wybranego katalogu.
+: Przy włączonej opcji (domyślnie wyłączona), kiedy przeglądasz system plików
+w panelu drzewa, drugi panel sam pokazuje zawartość wybranego katalogu.
+
+*shell_directory_timeout*
+: Czas życia pozycji pamięci podręcznej katalogów w sekundach. Wartość
+domyślna to 900 sekund.
+
+*clipboard_store*
+: Ścieżka (wraz z opcjami) do zewnętrznego programu obsługi schowka, takiego
+jak 'xclip', który czyta tekst z pliku do zaznaczenia X. Na przykład:
+
+<!-- -->
+
+```
+clipboard_store=xclip -i
+```
+
+*clipboard_paste*
+: Ścieżka (wraz z opcjami) do zewnętrznego programu obsługi schowka, takiego
+jak 'xclip', który wypisuje zaznaczenie na standardowe wyjście. Na przykład:
+
+<!-- -->
+
+```
+clipboard_paste=xclip -o
+```
+
+*autodetect_codeset*
+: Ta opcja pozwala użyć polecenia 'enca' do samodzielnego rozpoznania strony
+kodowej plików tekstowych we wbudowanym podglądzie i edytorze. Listę
+poprawnych wartości daje polecenie 'enca --list languages | cut -d : -f1'.
+Opcja musi stać w sekcji [Misc].
+
+Na przykład:
+
+```
+autodetect_codeset=russian
+```
+
+Ustawienia wbudowanego podglądu plików stoją w sekcji [Viewer] tego samego
+pliku. Wszystkie są też w oknie
+[Opcje przeglądarki](mview.md#viewer-options);
+nazwy tutaj to te, które to okno zapisuje.
+
+*wrap*
+: Zawija wiersz szerszy od ekranu do następnego wiersza ekranu. Domyślnie
+włączone.
+
+*syntax*
+: Koloruje tekst regułami składni edytora. Domyślnie wyłączone.
+
+*mouse_move_pages*
+: Przewijanie myszą idzie stronami, a nie wiersz po wierszu. W trybie ASCII
+lewy przycisk zaznacza tekst, więc tam to przewijanie robi się prawym albo
+środkowym przyciskiem. Domyślnie włączone.
+
+*remember_file_position*
+: Otwiera plik w tym miejscu, w którym ostatnio go zostawiono. Domyślnie
+wyłączone.
+
+*structured_auto*
+: Otwiera obsługiwane pliki (json, yaml, yml, xml, html, htm) od razu w
+trybie strukturalnym (drzewo). Jeśli pliku nie da się przeanalizować, bez
+słowa używany jest zwykły widok tekstowy. Domyślnie wyłączone.
+
+*eof*
+: Tekst wypisywany po ostatnim wierszu pliku. Domyślnie pusty.
+
+*structured_max_size*
+: Największy plik, który widok strukturalny analizuje, w bajtach. Większy
+jest odrzucany przed czytaniem. Domyślnie 67108864 (64 MB).
+
+*structured_max_nodes*
+: Największe drzewo, które widok strukturalny buduje, liczone w węzłach.
+Gęsty dokument, taki jak XML z drobnymi znacznikami, dochodzi do tej granicy
+wcześniej niż do granicy rozmiaru: zużywa około jednego węzła na dwanaście
+bajtów, a każdy węzeł kosztuje pamięć. Domyślnie 10000000, co mieści około
+120 MB takiego pliku w mniej więcej 1,5 GB.
+
+*dirt_limit*
+: Ile odświeżeń ekranu można najwyżej pominąć, dopóki plik jest czytany. Ta
+wartość zwykle nie ma znaczenia, bo program sam dobiera liczbę pominiętych
+odświeżeń do tempa nadchodzących klawiszy. Na bardzo wolnych komputerach albo
+na terminalach z szybkim powtarzaniem klawiszy duża wartość sprawia, że ekran
+skacze. Domyślnie 10, co zachowuje się najlepiej.
+
+Starsze wersje trzymały te ustawienia w głównej sekcji pod dłuższymi nazwami
+(wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
+mcview_remember_file_position, mcview_structured_auto, mcview_eof i
+max_dirt_limit). Są one stamtąd czytane raz i zapisywane do sekcji [Viewer].
 
 # Baza danych terminali (Terminal databases) <a id="terminal-databases"></a>
 
@@ -2701,9 +3586,6 @@ Sergey Ya. Korshunoff (seyko2@gmail.com), Thomas Pundt
 and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 # BŁĘDY <a id="bugs"></a>
-
-W pliku TODO dystrybucji znajdziesz informacje na temat tego, co
-pozostało jeszcze do zrobienia.
 
 Jeśli chcesz zgłosić kłopoty z programem [błędy w nim],
 zgłoś go [po angielsku] pod adresem

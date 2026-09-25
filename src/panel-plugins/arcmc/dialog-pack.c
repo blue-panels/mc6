@@ -301,6 +301,7 @@ sel_other_format_button (WButton *button, int action)
 
         fmt_dlg = dlg_create (TRUE, dlg_y, dlg_x, count + 2, dlg_w, WPOS_KEEP_DEFAULT, TRUE,
                               dialog_colors, NULL, NULL, "[arcmc]", _ ("Format"));
+        fmt_dlg->help_file = arcmc_help_file ();
     }
 
     fmt_list = listbox_new (1, 1, count, OTHER_FMT_DISPLAY_LEN + 2, FALSE, NULL);
@@ -481,6 +482,7 @@ arcmc_show_pack_dialog (arcmc_pack_opts_t *opts, const char *initial_path)
         .rect = r,
         .title = N_ ("Create archive"),
         .help = "[arcmc]",
+        .help_file = arcmc_help_file (),
         .widgets = quick_widgets,
         .callback = pack_dlg_callback,
         .mouse_callback = NULL,

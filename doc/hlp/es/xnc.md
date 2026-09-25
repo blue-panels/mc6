@@ -349,3 +349,49 @@ Las [teclas de desplazamiento genéricas](#general-movement-keys) son válidas.
 Local variables:
 fill-column: 58
 end:
+
+# Asociaciones de teclas <!-- help:notitle --><a id="key-bindings"></a>
+
+**Asociaciones de teclas**
+
+Ver y cambiar las combinaciones de teclas de las acciones de mc.
+
+**Teclas**
+
+**Enter**
+: Sustituir la combinación: pulse la tecla que quiere asignar.
+
+**F5**
+: Añadir otra combinación para esta acción.
+
+**F8, Del**
+: Quitar la combinación.
+
+**Guardar**
+: Escribir los cambios en
+*~/.config/mc6/keymap.ini*.
+
+**Editar archivo de teclas**
+: Abrir
+*keymap.ini*
+en el editor.
+
+**Editar archivo de terminal**
+: Abrir las definiciones de teclas del terminal.
+
+Las acciones marcadas con \* se apartan de las de serie.
+
+# Analizador de teclas <!-- help:notitle --><a id="key-sniffer"></a>
+
+**Analizador de teclas**
+
+Pulse Capturar y después cualquier tecla. Muestra:
+
+```
+Combinación   Nombre simbólico (por ejemplo Ctrl-F5)
+Acción        Acción asociada en el mapa actual
+En bruto      Secuencia de escape y bytes en hexadecimal
+Código        Código numérico interno
+```
+
+Útil para diagnosticar problemas con las teclas del terminal.

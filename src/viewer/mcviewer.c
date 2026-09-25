@@ -486,6 +486,7 @@ mcview_viewer (const char *command, const vfs_path_t *file_vpath, int start_line
     // Create dialog and widgets, put them on the dialog
     view_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, mcview_dialog_callback,
                            NULL, "[Internal File Viewer]", NULL);
+    view_dlg->help_file = MCVIEW_HELP_FILE;
     vw = WIDGET (view_dlg);
     widget_want_tab (vw, TRUE);
 
@@ -531,6 +532,7 @@ mcview_viewer_fd (int fd)
 
     view_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, mcview_dialog_callback,
                            NULL, "[Internal File Viewer]", NULL);
+    view_dlg->help_file = MCVIEW_HELP_FILE;
     vw = WIDGET (view_dlg);
     widget_want_tab (vw, TRUE);
 
@@ -582,6 +584,7 @@ mcview_viewer_stream (const char *command)
 
     view_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, mcview_dialog_callback,
                            NULL, "[Internal File Viewer]", NULL);
+    view_dlg->help_file = MCVIEW_HELP_FILE;
     vw = WIDGET (view_dlg);
     widget_want_tab (vw, TRUE);
 
@@ -647,6 +650,7 @@ mcview_viewer_with_controller (mcview_source_spec_t *initial_spec,
 
     view_dlg = dlg_create (FALSE, 0, 0, 1, 1, WPOS_FULLSCREEN, FALSE, NULL, mcview_dialog_callback,
                            NULL, "[Internal File Viewer]", NULL);
+    view_dlg->help_file = MCVIEW_HELP_FILE;
     vw = WIDGET (view_dlg);
     widget_want_tab (vw, TRUE);
 

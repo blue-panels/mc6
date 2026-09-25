@@ -5,7 +5,7 @@ date: 2026. szeptember
 <!-- help:topics "Tartalomjegyzék" -->
 # NÉV <!-- help:skip -->
 
-mcommander - Fájlkezelő Unix típusú rendszerekhez
+mcommander - kétpaneles, szöveges módú fájlkezelő
 
 # ALKALMAZÁSA <!-- help:skip -->
 
@@ -14,8 +14,13 @@ mcommander - Fájlkezelő Unix típusú rendszerekhez
 
 # LEÍRÁS <a id="description"></a>
 
-A M-Commander Unix típusú operációs rendszerekhez készített
-könyvtár böngésző és filekezelő eszköz
+Az M-Commander kétpaneles, szöveges módú fájlkezelő, amely a GNU Midnight
+Commanderre épül. Architektúrájának alapja egy tömör mag és a dinamikusan
+betöltődő panelbővítmények. A bővítmények egységes panelfelületet adnak
+archívumokhoz, távoli fájlrendszerekhez, verziókezelt tárolókhoz és egyéb
+adatforrásokhoz. A parancsok beépített terminálban futnak. Az M-Commander
+tartalmaz továbbá szintaxiskiemelő szövegszerkesztőt és szöveges, valamint
+bináris formátumokat kezelő megjelenítőt.
 
 
 # OPCIÓK <a id="options"></a>
@@ -236,6 +241,76 @@ a beviteli sorok szerkesztésére szolgálnak. Ezen eszközök a
 parancssorban és lekérdező dialógus (query dialog) beviteli soraihoz
 szükségesek.
 
+## A billentyűk átállítása <a id="keys_redefine"></a>
+
+Ugyanez magában a programban is elvégezhető, a
+**Beállítások**
+menüből. A
+[Billentyűtársítások](#key-bindings)
+párbeszédablak felsorolja az összes műveletet a hozzájuk tartozó
+billentyűkkel, átállítja őket, és az eredményt a
+**~/.config/mc6/keymap.ini**
+fájlba írja, vagyis abba, amelyet a beállítás keres. A
+[Billentyűzet tanítás](#learn-keys)
+a kérdés másik felével foglalkozik: megtanítja a programnak azokat a
+sorozatokat, amelyeket a terminál a rosszul felismert billentyűkre küld. A
+[Billentyűfigyelő](#key-sniffer)
+megmutatja, mi érkezik egy billentyű leütésekor, és azt a műveletet, amelyhez
+az adott billentyű az aktuális kiosztásban tartozik; ezt érdemes megnézni, ha
+egy társítás nem látszik működni.
+
+A billentyűtársítások külső fájlból is beolvashatók. A program először a
+forráskódban megadott kiosztásból építi fel őket. Ezután mindig betöltődik a
+**{{pkgdatadir}}/keymap.ini**
+és a
+**{{sysconfdir}}/mcommander/keymap.ini**
+fájl, ebben a sorrendben felülírva a korábbi társításokat.
+A csomag a saját kiosztásait a
+**{{sysconfdir}}/mcommander**
+könyvtárba teszi:
+**keymap.default.ini**,
+**keymap.emacs.ini**
+és
+**keymap.vim.ini**,
+ahol a
+**keymap.ini**
+az alapértelmezettre mutató link.
+A
+**--nokeymap**
+kapcsoló egyik fájlt sem olvassa be, és a forráskódbeli társításokat hagyja
+érvényben.
+
+A felhasználó saját kiosztásfájlját a program a következő sorrendben keresi
+(az elsőig, amelyet megtalál):
+
+```
+1) parancssori kapcsoló -K <kiosztás>, --keymap=<kiosztás>
+2) MC_KEYMAP környezeti változó
+3) a [Midnight-Commander] szakasz keymap paramétere
+4) a ~/.config/mc6/keymap.ini fájl
+```
+
+Az első három név vagy abszolút útvonal lehet. Ahhoz a névhez, amely nem
+**.keymap**
+végű, a program hozzáteszi ezt a kiterjesztést, és a fájlt itt keresi (az
+elsőig, amelyet megtalál):
+
+```
+1) ~/.config/mc6/
+2) {{pkgdatadir}}/
+```
+
+Emiatt a kiterjesztés miatt a csomag kiosztásait, amelyek neve
+**.ini**
+végű, így nem lehet kiválasztani. Ha valamelyiket használni akarod, másold
+vagy linkeld a
+**~/.config/mc6/keymap.ini**
+fájlba, amely utoljára olvasódik be, és nem kell hozzá kapcsoló:
+
+```
+ln -s {{sysconfdir}}/mcommander/keymap.vim.ini ~/.config/mc6/keymap.ini
+```
+
 ## Különleges gombok <a id="miscellaneous-keys"></a>
 
 Itt azon billentyűket találhatod meg, amelyek nem tartoznak bele
@@ -291,7 +366,7 @@ parancsot.
 
 **M-!**
 Futtatja a Szűrés (Filtered view) parancsot, a
-[Belső fájlnézőnek](#internal-file-viewer)
+[Belső fájlnézőnek](mview.md#internal-file-viewer)
 megfelelően.
 
 **M-?**
@@ -421,21 +496,58 @@ egérrel történő lenyomásával.
 Megjeleníti a könyvtár előzményeket, azonos a 'v' egérrel történő
 lenyomásával.
 
-## Quick search
+## Gyorskeresés és gyorsszűrő <a id="quick-search"></a>
 
-**C-s, M-s**
-Elindítja a fájl keresést a könyvtár listában.  Amikor a keresés
-aktív, a billentyűlenyomások hozzáadódnak a keresett szöveghez a
-parancssorban. Ha a
+A gyorskeresés a fájlpanelen való gyors kereséshez való. A
+**C-s**
+vagy az
+**Alt-s**
+indítja el a fájlnév keresését a könyvtárlistában. Az
+**Alt-Shift-s**
+a gyorsszűrőt indítja el, amely ugyanazt a mintát használja, de elrejti
+azokat a tételeket, amelyek nem tartalmazzák. A szülőkönyvtár tétele mindig
+látszik.
+
+Amíg a kettő valamelyike be van kapcsolva, a leütött billentyűk a közös
+mintához adódnak hozzá, nem a parancssorhoz. Ha a
 *Mini fájlinfó*
-opció engedélyezve van, a kereső szöveg a mini-fájlinfó sorban jelenik
-meg. Amikor gépelsz, a mini kiválasztó sáv átlép a következő fájlra,
-amely a begépelt szöveggel egyezik. A
-*backspace,*
-vagy a
-*DEL*
-gombokat használhatod a gépelési hibák javítására. Ha a C-s gombokat
-használod újra, új keresés kezdhető.
+beállítás be van kapcsolva, a minta a mini-állapotsorban látszik. Gépelés
+közben a kijelölősáv arra a fájlra lép, amelynek a neve a beírt betűkkel
+kezdődik; szűrő módban a lista ezenkívül az illeszkedő tételekre szűkül. A
+**Backspace**
+és a
+**DEL**
+billentyű a gépelési hibák javítására való.
+
+A
+**C-s**
+vagy az
+**Alt-s**
+bekapcsolt gyorsszűrő mellett a gyorskeresésre vált, és megmutat minden
+tételt anélkül, hogy a mintát vagy az aktuális fájlt elveszítené. Az
+**Alt-Shift-s**
+bekapcsolt gyorskeresés mellett visszakapcsolja a szűrőt. A bekapcsolt mód
+billentyűjének ismételt leütése a következő találatra lép.
+
+A mozgató billentyűk, a kurzorbillentyűk, a
+**Home**,
+az
+**End**,
+a
+**PageUp**
+és a
+**PageDown**
+a szűrt listán belül mozognak, és nem zárják be a szűrőt.
+
+A fájlokat a bekapcsolt szűrő mellett is ki lehet jelölni, és a kijelölést meg
+lehet szüntetni. A kijelölések megmaradnak a módváltáskor és a szűrő
+bezárásakor is.
+
+Ha bármelyik módot a billentyűjének kétszeri leütésével indítod el, az előző
+minta kerül elő.
+
+A fájlnév karakterein kívül a '\*' és a '?' helyettesítő karakter is
+használható.
 
 ## Shell parancssor <a id="shell-command-line"></a>
 
@@ -528,58 +640,74 @@ Az elejére, vagy a végére ugrik.
 A beviteli sorok (ezek azok, amelyeket a
 [Shell parancssor](#shell-command-line)
 és a programok lekérdező dialógusablakai használnak) a következő
-billyentyűk használatát engedélyezik:
+billentyűket fogadják el:
 
 **C-a**
-a kurzor a sor elejére ugrik.
+: a kurzor a sor elejére ugrik.
 
 **C-e**
-a kurzor a sor végére ugrik.
+: a kurzor a sor végére ugrik.
 
-**C-b, a kurzort egy pozícióval balra mozgatja.**
+**C-b, Balra**
+: a kurzort egy pozícióval balra mozgatja.
 
-**C-f, a kurzort egy pozicióval jobbra mozgatja.**
+**C-f, Jobbra**
+: a kurzort egy pozícióval jobbra mozgatja.
 
 **M-f**
-egy szónyit ugrik előre.
+: egy szónyit ugrik előre.
 
 **M-b**
-egy szónyit ugrik vissza.
+: egy szónyit ugrik vissza.
 
-**C-h, backspace**
-törli az előző (balra eső) karaktert.
+**C-h, Backspace**
+: törli az előző (balra eső) karaktert.
 
 **C-d, Delete**
-törli az adott pontban lévő karaktert (a kurzor alól).
+: törli az adott pontban levő karaktert (a kurzor alól).
 
 **C-@**
-beállítja a kijelölés helyét.
+: beállítja a kijelölés helyét.
 
 **C-w**
-kimásolja a szöveget a kurzor és a kijelölt rész közül a kill bufferbe
-és a bemeneti sorokat törli a szövegből.
+: kimásolja a kurzor és a kijelölés közötti szöveget a kill bufferbe, és
+törli azt a beviteli sorból.
 
 **M-w**
-kimásolja a szöveget a kurzor és a kijelölt rész közül a kill bufferbe.
+: kimásolja a kurzor és a kijelölés közötti szöveget a kill bufferbe.
 
 **C-y**
-visszateszi a kill bufferben lévő bejegyzést.
+: visszateszi a kill buffer tartalmát.
 
 **C-k**
-törli a szöveget a kurzortól a sor végéig.
+: törli a szöveget a kurzortól a sor végéig.
+
+**Ctrl-Insert**
+: a kijelölt szöveget a csereállományba és a rendszer vágólapjára másolja.
+Ha nincs kijelölés: a képen levő panel kijelölt fájljait, soronként egyet;
+egyébként az egész sort; egyébként a panel kurzora alatti fájlt.
+
+**Shift-Delete**
+: a kijelölt szöveget a csereállományba és a rendszer vágólapjára vágja.
+
+**Shift-Insert**
+: a csereállományt egyetlen sorként illeszti be: a sortörések és a többi
+vezérlőkarakter szóközzé válik. A parancssorban a panelek megjelenített és
+félretett állapotában is működik. 2 KB-nál több szöveg csak megerősítés után
+kerül be.
 
 **M-p, M-n**
-Ezen billentyűk segítségével közvetlenül böngészhetünk az előzőleg
-kiadott parancsok közt. Az M-p visszaléptet az előző bejegyzésre, az M-n
-pedig átléptet a következőre.
+: ezen billentyűk segítségével közvetlenül böngészhetünk az előzőleg kiadott
+parancsok közt. Az M-p visszaléptet az előző bejegyzésre, az M-n pedig
+átléptet a következőre.
 
 **M-C-h, M-Backspace**
-egy szót töröl visszafelé.
+: egy szót töröl visszafelé.
 
 **M-Tab**
-Fájlnév, parancs, változó, felhasználónév és hostname
-[Kiegészítést](#completion)
-csinál.
+: fájlnév, parancs, változó, felhasználónév és gépnév
+[kiegészítését](#completion)
+végzi.
 
 <!-- help:break -->
 
@@ -754,7 +882,7 @@ eszközzel. Lásd az erről szóló részt további információkért.
 
 **Gyorsnézőke**
 : Ebben a módban a panel átvált
-[Belső fájlnézőre](#internal-file-viewer),
+[Belső fájlnézőre](mview.md#internal-file-viewer),
 amely megjeleníti a jelenleg kiválasztott fájl tartalmát, ha a panelt
 választod ki (a tab billentyűvel, vagy az egérrel), elérhetővé válnak a
 fájlnéző parancsai.
@@ -780,9 +908,21 @@ opciójával).
 A szűrés parancs engedélyezi számodra azt, hogy meghatározhasd a shell
 mintát (például
 **\*.tar.gz**),
-ha csak az ilyen fájlokat szeretnéd megjeleníteni.  Tekintet nélkül
-a filter kiegészítésre, a könyvtárak, és a könyvtárakra mutató linkek
-megjelennek a könyvtár panelben.
+amelyre a megjelenítendő fájloknak és könyvtáraknak illeszkedniük kell. A
+[beviteli sor](#input-line-keys)
+veszi a panelen megjelenítendő nevek mintáját.
+
+Ha a
+*Csak fájlok*
+jelölőnégyzet be van kapcsolva, a szűrő csak a fájlokra vonatkozik, és minden
+könyvtár látszik. Egyébként a fájlok és a könyvtárak egyaránt szűrődnek. Ha a
+*Shell minták*
+jelölőnégyzet be van kapcsolva, a minta úgy működik, mint a shell
+fájlnévmintája (a \* nulla vagy több karaktert, a ? egyet jelent). Egyébként
+az illesztés szokásos reguláris kifejezéssel történik (lásd ed(1)). Ha a
+*Kis/nagybetű számít*
+jelölőnégyzet be van kapcsolva, a szűrő megkülönbözteti a kis- és a
+nagybetűket, egyébként nem.
 
 ### Frissít <a id="reread"></a>
 
@@ -824,7 +964,7 @@ extra eszközökkel a M-Commander-hez.
 **Megnéz (F3, Shift-F3)**
 
 Megmutatja a jelenlegi fájlt. Alapértelmezésben ehhez a
-[Belső fájlnézőt](#internal-file-viewer)
+[Belső fájlnézőt](mview.md#internal-file-viewer)
 használja, de ha a "Belső Nézegető" opció ki van kapcsolva, a
 **PAGER**
 környezeti változóban megadott külső fájlnézőt fogja használni. Ha a
@@ -847,7 +987,7 @@ Alapértelmezésben a
 editort használja, vagy az
 **EDITOR**
 környezeti változóban megadott szerkesztőt, vagy a
-[Belső fájl szerkesztőt](#internal-file-editor),
+[Belső fájl szerkesztőt](mcedit6.md#internal-file-editor),
 ha a belső szerkesztő be van kapcsolva.
 
 **Másol (F5)**
@@ -1107,55 +1247,66 @@ részben találhatsz.
 
 ### Fájl keresés <a id="find-file"></a>
 
-A Fájl keresés eszköz először megkérdezi a keresés induló könyvtárát,
-majd a keresett fájlnevet. A Könyvtárfa gomb lenyomásával kiválaszthatod
-az induló könyvtárat a
+A Fájl keresés eszköz először a keresés induló könyvtárát, majd a keresett
+fájlnevet kérdezi meg. A Könyvtárfa gomb lenyomásával kiválaszthatod az
+induló könyvtárat a
 [Könyvtárfa](#directory-tree)
 nézetből.
 
-A tartalom mezőben szabványos kifejezéseket is használhatunk megadásával
-(man egrep(1)). Használd az egrep escape (kilépés) karakterét (backslash,
-\\). Például, ha az "strcmp (" szöveget keresed, ezt így add meg:
-"strcmp \\(" (a dupla idézőjel nélkül).
+A "Fájlnév" mező a keresett név mintáját tartalmazza. A program shell
+mintaként vagy reguláris kifejezésként értelmezi, aszerint hogy a "Shell
+minták" jelölőnégyzet be van-e kapcsolva. Az üres érték is érvényes, az
+minden névre illeszkedik.
 
-Az Oké gomb lenyomásával indíthatod el a keresést. Keresés közben a
-keresés leállítható a Felfüggeszt gombbal és folytatható a Folytatás
-gombbal.
+A "Tartalom" mező azt a szöveget tartalmazza, amelyet a fájlokon belül kell
+keresni. Üresen hagyva a program nem keres a tartalomban.
 
-Böngészhetsz a fájllistában a le és fel gombok használatával. Az Ugrás
-gombbal a jelenlegi könyvtárat fel tudod cserélni a kiválasztott
-fájléval. Az Újra gomb az új keresés paramétereit megkérdezi tőled. A
-Kilép gomb bezárja a keresés műveletet. A Panelba gomb a elhelyezi a
-jelenlegi könyvtárban a keresett fájlokat, így további műveletek
-végezhetőek velük (megtekintés, másolás, mozgatás, törlés és a többi). A
-panelba helyezés művelet után a C-r lenyomásával visszatérhetsz a normál
-fájl listához.
+A "Teljes szavak" beállítással a keresés azokra a fájlokra szorítkozik,
+amelyekben a találat teljes szót alkot, mint a grep -w esetében.
 
-Lehetséges azon könyvtárak listájának megadása, amelyeket át szeretnénk
-ugrani a Fájl Keresés parancs használata során (például ha a keresés
-során el szeretnéd kerülni a CDROM-ot, vagy az NFS könyvtárait amelyeket
-slow linkkel csatoltak).
+A keresést az Oké gombbal indíthatod el. Közben a Megállít gombbal
+felfüggesztheted, a Folytatás gombbal pedig folytathatod.
 
-Az átlépendő könyvtárakat a
-**ignore_dirs**
-változó állítja be az ~/.config/mc6/ini fájlod
-**FindFile**
-részében.
+A lista minden megtalált fájlnál a módosítás idejét, a méretet és a
+jogosultságokat is mutatja a név mellett. Tartalomban való kereséskor egy
+fájl egyszer szerepel: az egyetlen találat a fájlnév mellett
+"fajl.c:12" alakban látszik, az egynél több találatot tartalmazó fájl pedig
+kiírja a találatok számát, és "[+]" jelet kap. Az ilyen fájl találatait a
+Balra billentyű vagy a jelre való kattintás nyitja ki: a sor száma és maga a
+sor. Ott az Enter a fájlhoz visz, az F3 megmutatja, az F4 pedig szerkeszti a
+választott találatnál.
 
-A könyvtár elemeket kettősponttal tudod elválasztani egymástól, emire
-itt egy példát is láthatsz:
+A listában a kurzorbillentyűkkel lehet böngészni. Az Ugrás gomb a kijelölt
+fájl könyvtárába lép. Az Újra gomb egy új keresés paramétereit kérdezi meg. A
+Kilép gomb bezárja a keresést. A Panelba gomb a megtalált fájlokat az
+aktuális panelbe teszi, így további műveletek végezhetők velük (megtekintés,
+másolás, mozgatás, törlés és a többi). A szokásos fájllistához a ".."
+könyvtárba lépve lehet visszatérni; a panelbe tett eredményt a bal vagy a
+jobb oldali menü Panelba pontja hozza vissza.
+
+Az "Ignorált könyvtárak" jelölőnégyzet és az alatta levő mező azoknak a
+könyvtáraknak a listáját adja meg, amelyeket a keresés kihagy (például egy
+CD-ROM-ot vagy egy lassú kapcsolaton csatolt NFS könyvtárat). A lista elemeit
+kettősponttal kell elválasztani:
 
 ```
-[FindFile]
-ignore_dirs=/cdrom:/nfs/wuarchive:/afs
+/cdrom:/nfs/wuarchive:/afs
 ```
 
-A
+Relatív útvonal is megadható. A következő példa a verziókezelők könyvtárait
+is kihagyja:
+
+```
+/cdrom:/nfs/wuarchive:/afs:.svn:.git:CVS
+```
+
+Figyelem: a mező tartalmazhat pontot (.), ami az aktuális abszolút útvonalat
+jelenti.
+
+Néhány művelethez érdemes a
 [Parancskimenet panel](#external-panelize)
-parancs használatos néhány műveletben.
-
-A Fájl keresés parancs egyszerű lekérdező eljárás, amely a
-Parancskimenet panelt használja a szükséges fájlok megkeresésére.
+parancsot használni. A Fájl keresés egyszerű lekérdezésekre való, a
+Parancskimenet panellel viszont tetszőlegesen összetett keresés végezhető.
 
 ### Parancskimenet panel <a id="external-panelize"></a>
 
@@ -1192,14 +1343,39 @@ mégegyszer begépelned azt.
 
 ### Könyvjelzők <a id="hotlist"></a>
 
-A Könyvjelzők parancs megmutatja a gyorslistában szereplő könyvtárakat.
-A M-Commander  a kiválasztott értéknek megfelelő könyvtárra
-váltja át a panel tartalmát. A Könyvjelzők dialógus ablakból kiveheted a
-már létező elnevezés--könyvtár párokat, és hozzáadhatsz újakat is.
-Továbbiak hozzáadásához a Hozzáadás a kedvencekhez parancsot
-használhatod (C-x h), amely a jelenlegi könyvtárat hozzáadja a
-könyvjelzőkhöz. A felhasználó ezután egyéni megnevezéssel hivatkozhat a
-könyvtárra.
+A Könyvjelzők parancs megmutatja a listában szereplő helyek neveit, és a
+program a kiválasztott névhez tartozó helyre lép. A hely lehet könyvtár, egy
+virtuális fájlrendszeren belüli útvonal, vagy egy panelbővítmény címe, például
+*sftp:gép/könyvtár.*
+A párbeszédablakból ki lehet venni a meglevő név-hely párokat, és újakat lehet
+hozzáadni. A jelenlegi helyet, akár könyvtár, akár bővítmény panelje, a
+Hozzáadás a könyvjelzőkhöz parancs (C-x h) adja hozzá a leggyorsabban, amely
+csak a nevet kérdezi meg. Azt a helyet, amely már szerepel a listában, nem
+veszi fel másodszor: a párbeszédablak a meglevő tételt mutatja meg.
+
+A párbeszédablak billentyűi:
+
+```
+Enter        a kiválasztott helyre lépés
+Alt-o        a kiválasztott hely megnyitása a másik panelen
+Ctrl-Enter   "cd hely" beírása a parancssorba
+Alt-Enter    ugyanez, Ctrl-Enter nélküli terminálokon
+Insert       a jelenlegi hely hozzáadása
+Shift-F4     új tétel: nevet és helyet kérdez
+F7           új csoport
+F4           a tétel nevének és helyének szerkesztése
+Delete       a tétel törlése
+Ctrl-Up      a tétel egy sorral feljebb
+Ctrl-Down    a tétel egy sorral lejjebb
+F6           a tétel másik csoportba tétele: az ablak felsorolja
+             a csoportokat, az Enter megnyit egyet, az Áthelyez
+             vagy az újabb F6 a mutatott csoport végére teszi a
+             tételt, a kiindulóéba is
+F9           az aktuális csoport rendezése név szerint, elöl a
+             csoportokkal
+Ctrl-s       keresés a listában gépelés közben, Ctrl-s tovább
+Right, Left  belépés a csoportba és kilépés belőle
+```
 
 Ezzel a gyakran használt könyvtárakhoz ugorhatunk. A CDPATH változó
 használatát megtekintheted a
@@ -1228,17 +1404,85 @@ linuxban futó background processzekre hatástalan.
 
 ### Menü szerkesztés <a id="edit-menu-file"></a>
 
-A felhasználói menüt a felhasználó testre szabhatja. Ez az aktulis
-könyvtár .usermenu fájlja, ha az létezik, de csak, ha az a felhasználó
-(illetve a root) a tulajdonosa, és nem lehet bárki számára írható. Ha
-nem talál ilyen fájlt, az
-*~/.config/mc6/menu*
-keresése a következő lépés, egyébként pedig az mcommander az alapértelmezett
-rendszerszintű menüt használja, pl.:
-*{{pkgdatadir}}/usermenu,*
-esetleg {{sysconfdir}}/mcommander/usermenu.
+A felhasználói menü hasznos műveletek menüje, amelyet a felhasználó maga
+állít össze. Kétféle alakban létezik: a menü, amely saját magát szerkeszti és
+egy kulcsfájlban áll, valamint a régebbi, kézzel írt menüfájl. Ahol
+kulcsfájl van, az F2 azt nyitja meg; ahol nincs, ott a régi fájl olvasódik
+be, mint eddig.
 
-A menü fájl formátuma nagyon egyszerű. A sorok, amelyek bármivel
+**A menü, amely saját magát szerkeszti**
+
+A tételek az aktuális könyvtár .mc6menu fájljában és a
+~/.config/mc6/menu.ini fájlban állnak, és együtt látszanak. A .mc6menu fájlt
+a program csak akkor olvassa be, ha a felhasználóé vagy a rooté, és rajta
+kívül senki nem írhatja, mert a tételei parancsokat futtatnak. Semmi mást nem
+olvas be: a menüben az van, amit a gazdája beletett, és a program egyetlen
+tételt sem hoz magával, így az új felhasználó menüje üres, és az elsőt kéri.
+A menün belül:
+
+```
+Enter        a tétel futtatása
+Ins          tétel hozzáadása
+F4           a tétel szerkesztése
+F5           tételek behozatala kézzel írt menüfájlból
+Shift-F4     a tételt tartalmazó fájl megnyitása
+Del          a tétel törlése
+Ctrl-Up      a tétel feljebb vitele
+Ctrl-Down    a tétel lejjebb vitele
+```
+
+A tétel egy gyorsbillentyűből, egy feliratból és a parancsokból áll, és a
+párbeszédablak ennél többet nem kérdez: nincsenek benne feltételek és
+fájlmaszkok. A parancsokban ugyanazok a helyettesítések működnek, mint a régi
+menüben, a %f, a %s, a %{prompt} és a többi, amelyeket a
+[makróhelyettesítés](#macro-substitution)
+ír le. Két jelölőnégyzet mondja meg, mi legyen a kimenettel: a fájlnézőbe
+kerüljön-e, és a parancs a panel shellje nélkül fusson-e.
+
+A felirat a helyettesítésekkel együtt látszik, így a "print %f" felirat a
+listában a kurzor alatti fájl nevével áll. Maga a fájl ettől nem változik, a
+%{...} pedig úgy marad, ahogy le van írva: a lista nem alkalmas kérdezésre.
+
+A tétel parancs helyett almenü is lehet: az Ins megkérdezi, melyiket adja
+hozzá. Az almenü a neve után perjellel látszik, mint a könyvtár; az Enter
+megnyitja, a címsor pedig megnevezi azokat az almenüket, amelyeken belül
+vagy. Az Esc egy szinttel feljebb visz, a legfelsőn pedig kilép a menüből. Az
+almenü törlése a benne levőket is törli. A fájlban az almenü egy csoport,
+amelyben submenu=true áll és nincs parancs, a benne levő tétel pedig a
+parent= kulcsban nevezi meg az almenüt.
+
+A parancsok több sorból álló mezőt alkotnak: az Enter új sort nyit, a
+kurzorbillentyűk, a Home és az End pedig a szövegben járnak. A Shift és egy
+mozgás kijelöli azt, amin a mozgás áthalad, az egér húzással jelöl ki, a
+Ctrl-Insert, a Shift-Insert és a Shift-Delete pedig a csereállományon
+keresztül másol, illeszt be és vág ki, ugyanúgy, mint a beviteli sorban. A
+Szerkesztő gomb kilép a párbeszédablakból, és megnyitja a tételt tartalmazó
+fájlt, arra, amit ott könnyebb megírni.
+
+A tétel abba a fájlba íródik vissza, amelyikből jött, a lista sorrendje pedig
+a fájl sorrendje. A feltételek és a maszkok a régebbi alakhoz tartoznak: amit
+a párbeszédablak nem tud megmondani, azt a fájl igen, és a Shift-F4 megnyitja.
+
+**A kézzel írt menüfájl**
+
+A telepítés már nem hoz magával ilyet; ami itt következik, ott olvasódik be,
+ahol valaki a régebbi alakban tartja a saját menüjét: az aktuális könyvtár
+\.usermenu fájlja, ha az létezik, de csak akkor, ha a felhasználóé vagy a
+rooté, és nem írhatja bárki. Ha nincs ilyen fájl, ugyanígy a
+~/.config/mc6/menu következik.
+
+Ha a saját magát szerkesztő menünek még nincs fájlja, és a program másik
+menüt talál (a sajátodat kézzel írva, egy telepített mcommander usermenu
+fájlját vagy egy korábbi változat menu.ini fájlját), munkamenetenként egyszer
+felajánlja a behozatalát; a menüben az F5, az üres menüben pedig a Behozatal
+gomb bármikor kéri, arra a fájlra vagy egy kézzel megnevezettre. Ezután
+megmutatja, mi van a fájlban: a szóköz kijelöl egy tételt, az Ins kijelöli és
+lelép, a '\*' megfordítja az összes kijelölést, az Enter pedig a
+kijelölteket a ~/.config/mc6/menu.ini fájlba viszi, ahol már a
+párbeszédablakkal szerkeszthetők. A forrásfájl a helyén marad, a feltételek
+és a maszkok pedig elvesznek, mert a párbeszédablakban nincs helyük.
+
+A menüfájl formátuma nagyon egyszerű. A sorok, amelyek bármivel
 kezdődhetnek, de a space, vagy a tab megkülönböztetett menübejegyzések
 (gyorsbillentyűként definiálható az első karakter). Minden olyan sor ami
 szóközzel, tabulátorral kezdődik, parancs, amit lefuttat az mcommander, ha
@@ -1383,40 +1627,81 @@ A magyarázat sorát '#'-kal kell kezdened. A kiegészítő magyarázat sorait
 
 ## Beállítások <a id="options-menu"></a>
 
-A M-Commander rendelkezik néhány olyan opcióval, amely lehetővé
-teszi a be- illetve a kikapcsolását néhány dialógus eszköznek, amely az
-adott menüből elérhető. Az opció engedélyezett, ha csillag, vagy "x" áll
-előtte.
+A programnak számos beállítása van, amelyeket az ebből a menüből elérhető
+párbeszédablakokban lehet ki- és bekapcsolni. A bekapcsolt beállítás előtt
+csillag vagy "x" áll. A menü sorrendben a következőket tartalmazza:
 
-A
-[Beállítások](#configuration)
-parancs dialógus ablakot nyit meg, amelyben a M-Commander főbb
-beállításait elvégezheted.
+Az
+[M-Commander konfigurálása](#configuration)
+a beállítások többségét tartalmazó ablakot nyitja meg.
 
 A
 [Megjelenés](#layout)
-parancs dialógus ablakot jelenít meg, amelyben az mcommander képernyőn történő
-megjelenésének opcióit találod egy csokorban.
+azt az ablakot nyitja meg, amelyben a képernyő felosztása állítható.
+
+A
+[Panel beállítások](#panel-options)
+a fájlkezelő paneljeinek beállításait nyitja meg.
+
+A
+[Fájlpanel módok](#panel-modes)
+a megnevezett listaformák listáját nyitja meg, ahol új hozható létre, a
+meglevő szerkeszthető és törölhető.
 
 A
 [Megerősítés](#confirmation)
-parancs dialógus ablakot jelenít meg, amelyben meg tudod adni azt, hogy
-mely műveletekhez kell megerősítést kérni.
+azt az ablakot nyitja meg, amelyben megadható, mely műveleteket kell
+megerősíteni.
+
+A
+[Megjelenés (skin)](#appearance)
+a skin kiválasztására való.
 
 A
 [Billentyűzet tanítás](#learn-keys)
-dialódus ablakot jelenít meg, amelyben megvizsgálhatod azokat a
-gombokat, amelyek nem működnek néhány terminálon, és kijavíthatod őket.
+megtanítja a programnak azokat a billentyűket, amelyeket egyes terminálok nem
+küldenek helyesen.
 
 A
-[Csatolt fájlrendszer...](#virtual-fs)
-parancs olyan dialógus ablakot jelenít meg, amelyben VFS-hez kapcsolódó
-opciókat adhatod meg.
+[Billentyűtársítások](#key-bindings)
+a műveletek listáját nyitja meg a hozzájuk tartozó billentyűkkel, ahol egy
+billentyű átállítható, az eredmény pedig a kiosztásfájlba kerül.
+
+A
+[Billentyűfigyelő](#key-sniffer)
+megmutatja, mit küld a terminál a leütött billentyűre, és azt a műveletet,
+amelyhez az a billentyű tartozik.
+
+A
+[Csatolt fájlrendszer](#virtual-fs)
+a VFS beállításait nyitja meg.
+
+Az
+**Összehasonlító beállításai**,
+a
+[Megjelenítő beállításai](mview.md#viewer-options)
+és a
+**Szerkesztő beállításai**
+annak a három programnak az ablakait nyitja meg, amelyek fájlt mutatnak: az
+összehasonlítóét, a fájlnézőét és a szerkesztőét. Ugyanezek az ablakok
+megtalálhatók mindegyikük saját Beállítások menüjében is; itt fájl megnyitása
+nélkül is elérhetők. Az összehasonlító az indulásakor veszi át a
+beállításait, így a már megnyitott összevetés azokkal dolgozik tovább,
+amelyekkel elindult.
+
+A
+[Bővítmények kezelése](#panel-plugins)
+felsorolja a betöltött bővítményeket, ki tud kapcsolni egyet, és megnyitja a
+beállításait.
 
 A
 [Beállítások mentése](#save-setup)
-parancs elmenti a Bal, Jobb és a Beállítások jelenlegi értékeit. Néhány
-egyéb beállítás is elmentődik.
+elmenti a Bal, a Jobb és a Beállítások menü jelenlegi értékeit. Néhány más
+beállítás is mentődik.
+
+A
+**Névjegy**
+megmutatja a program verzióját és azt, hogy kik írták.
 
 ### Az M-Commander konfigurálása <a id="configuration"></a>
 
@@ -1523,7 +1808,7 @@ fájlok szerkesztésére. Ha az opciót nem engedélyezzük, az mcommander az
 környezeti változóban megadottat használja. Ha ez sincs megadva, a
 **vi**-t
 fogja használni. Lásd a
-[Belső fájlszerkesztő](#internal-file-editor).
+[Belső fájlszerkesztő](mcedit6.md#internal-file-editor).
 részben.
 
 *Belső nézegető.*
@@ -1534,7 +1819,7 @@ környezeti változóban megadott pager értéket használja. Ha nincs megadva
 a pager értéke, a
 **Megnéz**
 parancsot használja. Lásd a
-[Belső fájlnéző](#internal-file-viewer)
+[Belső fájlnéző](mview.md#internal-file-viewer)
 részben.
 
 *Kiegészítés: minden mutat*
@@ -1576,42 +1861,56 @@ az opció nem engedélyezett.
 
 ### Megjelenés <a id="layout"></a>
 
-A Megjelenés dialógus ablakban megváltoztathatod a képernyő-megjelenés
-beállításait. Beállíthatod azt, hogy a menüsor, a parancssor, a tippek
-és a funkcióbillentyűk láthatóak legyenek-e. Linux, vagy FreeBSD
-konzolon megadhatod azt, hogy hány sorban legyen látható a megjelenő
-ablak.
+Ebben a párbeszédablakban a képernyő általános felosztása állítható. A
+beállítások három csoportba vannak osztva: "Panelfelosztás",
+"Konzolkimenet" és "Egyéb beállítások".
 
-A képernyő nyugalomban lévő részén két panelt használhatunk.  Megadhatod
-azt, hogy vízszintesen, vagy függőlegesen ossza-e fel a képernyőt a
-két panel. A felosztás lehet egyenlő arányú, vagy te is megadhatod az
-arány mértékét.
+**Panelfelosztás**
 
-Alapesetben a könyvtár panelokban lévő fájlok csak néhány színnel kerülnek
-megjelenítésre, de te azt is megadhatod, hogy a
-*jogosultságok*
-vagy a
-*fájltípusok*
-jelenjenek-e meg speciális
-[Színekkel](#colors).
-Ha pl. a jogosultságokat kérted, a
-*jogok*
-és a
-*mode*
-értékek a M-Commander-t futtató felhasználó jogainak megfelelően
-láthatók a
-[Fájllistában](#listing-format)
-a
-*kiválasztás*
-színével. Ez különösen előnyös, ha a könyvtárunkban más felhasználó
-fájljai is előfordulnak. Ha a fájltípus megjelölést engedélyezted,
-a fájlok a fájltípusuknak megfelelően jelennek meg (pl. könyvtár, core
-fájl, futtatható fájl, stb.).
+A képernyő többi részét a két fájlpanel foglalja el. Megadható, hogy a
+felosztás
+*Függőleges*
+vagy
+*Vízszintes*
+legyen. A felosztás az Alt-, (Alt-vessző) billentyűvel is váltható.
 
-Ha a
-*Mini fájlinfó*
-opciót engedélyezted, egy sor lesz látható a panel alján, a látható,
-jelenleg is kiválasztott bejegyzések információival.
+*Egyenlő felosztás.*
+Alapértelmezés szerint a két panel egyforma méretű. Ezzel a beállítással
+eltérő felosztás is megadható.
+
+**Konzolkimenet**
+
+Linux vagy FreeBSD konzolon megadható, hány sor látszik a kimeneti ablakban.
+Ez a beállítás csak natív konzolon futó programban érhető el.
+
+**Egyéb beállítások**
+
+*Menüsor látszik.*
+Bekapcsolva a főmenü mindig látszik a képernyő felső sorában, a panelek
+fölött. Alapértelmezés szerint be van kapcsolva.
+
+*Parancssor.*
+Bekapcsolva a parancssor használható. Alapértelmezés szerint be van
+kapcsolva.
+
+*Gombsor látszik.*
+Bekapcsolva az F1-F10 billentyűkhöz tartozó tíz felirat a képernyő alsó
+sorában látszik. Alapértelmezés szerint be van kapcsolva.
+
+*Tippsor látszik.*
+Bekapcsolva az egysoros tippek a panelek alatt látszanak. Alapértelmezés
+szerint be van kapcsolva.
+
+*XTerm ablakcím.*
+X11 alatti terminálemulátorban futva a program a terminálablak címét az
+aktuális könyvtárra állítja, és szükség szerint frissíti. Ha a
+terminálemulátorod hibás, és induláskor vagy könyvtárváltáskor zavaros
+kimenetet látsz, kapcsold ki ezt a beállítást. Alapértelmezés szerint be van
+kapcsolva.
+
+*Szabad hely mutatása.*
+Bekapcsolva az aktuális fájlrendszer szabad és teljes területe látszik a
+panel alsó keretén. Alapértelmezés szerint be van kapcsolva.
 
 ### Megerősítés <a id="confirmation"></a>
 
@@ -1621,83 +1920,232 @@ Megerősítésének opcióit.
 
 ### Billentyűzet tanítás <a id="learn-keys"></a>
 
-Ebben a dialógus ablakban tudod letesztelni azt, hogy terminálodon az
-F1-F20, Home, End, stb. gombok megfelelően működnek-e. Ezek gyakran nem
-működnek, mióta néhány Terminál adatbázis megváltozott.
+Ez a párbeszédablak megtanítja a programnak azokat a vezérlősorozatokat,
+amelyeket a terminálod a funkcióbillentyűkre, a kurzorbillentyűkre és a
+mozgató billentyűkre küld.
 
-A mezőket a Tab gombbal és a vi mozgató gombjaival ('h' balra, 'j' le,
-'k' fel és 'l' jobbra) járhatod körbe. Ha egy kurzor gombot legalább
-egyszer megnyomsz, OK-val jelöli; kilépéskor ez a állapot elmenthető.
+Válaszd ki a jelölőnégyzetekkel a módosítók együttesét (Ctrl, Alt, Shift),
+majd nyomd meg a keresett billentyű gombját. Üsd le magát a billentyűt, és
+várd meg, amíg a felvételt jelző üzenet eltűnik. A megtanult sorozat a gomb
+mellett jelenik meg.
 
-Ezek közül bármelyiket tesztelheted a gomb lenyomásával. Amint
-lenyomtad, a gomb megfelelően fog működni, és egy OK jelenik meg a gomb
-neve mellett. Amelyik gomb OK-val jelölődik meg, általában az
-használható. Az F1 az első alkalommal csak le fogja ellenőrizni, hogy
-megfelelően műkődik-e, másodszor már a súgót jeleníti meg. A tab gomb
-továbbra is működni fog.
+**Del**
+\- a megtanult billentyű elfelejtése.
 
-Ha néhány gomb nem működik megfelelően, akkor nem jelenik meg OK a gomb
-neve után. Ilyenkor lehetőséged van kijavítani ezt. Ezt ennek a gombnak
-a lenyomásával (egér, vagy a Tab gombbal és az Enter-rel) tudod
-kijavítani. Ekkor egy piros színű üzenet jelenik meg amely arra kér
-téged, hogy üsd le a megfelelő gombot. Ha ezt meg akarod szakítani, csak
-nyomd le az Esc-et, és várj amíg az üzenet el nem tűnik. Egyébként a
-begépelt gomb lesz az megkérdezett gombbal azonosított. Ezután a
-dialógus ablak eltűnik.
+**Mentés**
+\- a megtanult billentyűk kiírása a ~/.config/mc6/term/\<TERM> fájlba.
 
-Amikor végeztél minden gombbal, ezt elmentheted a Mentés gombbal az
-~/.config/mc6/ini fájlba, a [terminal:TERM] részbe (ahol a TERM a jelenlegi
-terminál neve), vagy elvetheted. Ha minden gombod megfelelően működik,
-és nem javítottál semmit, akkor (természetesen) nem fog menteni semmit
-sem.
+**Terminálfájl szerkesztése**
+\- a terminál billentyűdefinícióit tartalmazó fájl megnyitása a
+szerkesztőben.
+
+A ~/.config/mc6/ini fájl [terminal:TERM] szakaszában levő régi definíciók az
+első indításkor maguktól átkerülnek.
 
 ### Csatolt (látszólagos) fájlrendszer <a id="virtual-fs"></a>
 
-Ez az opció lehetővé teszi számodra a
-[Csatolt fájlrendszer](#virtual-file-system)
-informcáció cache-ének beállítását.
+Ez a pont a
+[csatolt fájlrendszerek](#virtual-file-system)
+beállításait kezeli.
 
-A M-Commander a memóriában tárolja a csatolt fájlrendszer
-információit a fájlrendszeren lévő fájlok gyorsabb elérése érdekében
-(Például, könyvtár listázás trükkje távoli ftp szerverek esetén).
+A párbeszédablakban egy beállítás van,
+*A VFS felszabadításának ideje,*
+és ez a fájlrendszer gyorsítótárának élettartama: egy archívumból vagy
+tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes fájl
+még ennyi másodpercig megmarad, hogy a visszalépés azonnali legyen, azután
+felszabadul. Alapértelmezés szerint 60 másodperc, a 0 pedig azonnal
+felszabadítja őket.
 
-Azonfelül a tömörített fájlok tartalmához való hozzáféréskor (például,
-tömörített tar fájlok) a M-Commander készít egy kitömörített temp
-fájlt a merevlemezeden.
+### Bővítmények kezelése <a id="manage-plugins"></a>
 
-A memóriában és a temp fájlban lévő információk között van némi időbeni
-különbség, te a hozzáférési sebesség maximalizálása miatt átállíthatod a
-cached információk újraolvasási paramétereit.
+A program által betöltött bővítmények táblázatban: a fajtája, a neve és az,
+amit a bővítmény magáról mond. A sor jelölőnégyzete ki- és bekapcsolja; ami ki
+van kapcsolva, legközelebb sem töltődik be.
 
-A Tar Fájlrendszer elég ügyesen kezeli a tar fájlokat:  csak beolvassa a
-könyvtár bejegyzéseket, és amikor szükséges a tar fájlban tárolt
-információk használata, újraolvassa azokat, és kinyeri a szükséges
-infókat.
+**Enter, F4**
+: Megnyitja annak a bővítménynek a beállításait, amelyen a kurzor áll. Amelyiknek
+nincs beállítása, azt megmondja.
 
-Igazából a tar fájlok tömörítettek maradnak (alap tar fájlok fajtái
-esetében), és mivel ezek a fájlok természetes fájlok (a tar fájlok
-könyvtár-bejegyzéseinek kiolvasására nem kell várni), a tar fájlrendszer
-a fájlt a lemez temp könyvtárba kitömöríti, ilyenkor a kitömörített
-tarfájl hozzáférhető, mint szabványos tar fájl.
+Itt szerepelnek a
+[panel bővítmények](#panel-plugins)
+a szerkesztő bővítményeivel és a Lua szkriptcsomagokkal együtt; egy csomag
+szkriptjeit a beállításaiból nyíló
+[Lua szkriptek](#lua-scripts)
+ablak mutatja.
 
-Ha elkezdjük böngészni a merevlemezen található tar fájlokat, majd
-elkezdjük nézni a többit, elveszne a rájuk vonatkozó információ. A
-M-Commander a memória cache-ben tárolja ezeket egy időre, hogy
-gyorsabb legyen az újraolvasásuk. Az alap frissítési idő egy perc.
+### Lua szkriptek <a id="lua-scripts"></a>
 
-Az
-[FTP fájlrendszer](#ftp-file-system)
-az ftp szerverről beolvasott könyvtárszerkezetet éppígy a cache-ben
-tárolja. A cache frissítési ideje az
-*ftpfs cache elévülési idő*
-opcióban konfigurálható. Alacsony érték esetén minden művelet nagyon
-lassúvá válhat az FTP fájlrendszeren, mivel minden művelet az ftp szerver
-lekérdezésével történik.
+Egy Lua csomag szkriptjei táblázatban: a név, az azonosító, hol van a szkript,
+mit nyújt és mit csinál. A sor jelölőnégyzete ki- és bekapcsolja.
 
-Ezenfelül definiálhatod a proxy host-ot az ftp adatforgalomhoz, és
-beállíthatod a M-Commander-t, hogy mindíg használja a proxy
-host-ot. Az ezzel kapcsolatos információkat lásd az
-[FTP fájlrendszernél](#ftp-file-system).
+**Beállítások**
+: Lefuttatja a csomag beállításait tartalmazó szkriptet, ha van ilyen.
+
+### A fájl létezik <a id="plugin-file-exists"></a>
+
+Egy bővítmény paneljébe másolás ott ilyen nevű fájlt talált. Az ablak mutatja
+annak az útvonalát, méretét és idejét, amit másolunk, és annak is, ami már ott
+van, majd megkérdezi, mi legyen: írja felül, hagyja ki, folytassa a másolást
+onnan, ahol abbamaradt, ha a bővítmény tudja folytatni, vagy szakítsa meg az
+egész műveletet.
+
+### Kódlap választása <a id="codepages-translation"></a>
+
+Azoknak a kódlapoknak a listája, amelyeket a program ismer, a
+**{{pkgdatadir}}/charsets**
+fájlból. A választás megmondja a programnak, milyen kódlapon vannak a nevek
+vagy a szöveg, a
+**\<Nincs átalakítás>**
+pont pedig bájtként hagyja őket. A listát az
+**Alt-e**
+nyitja meg a panelben, a megjelenítőben és a szerkesztőben, valamint a
+menüjük megfelelő pontja.
+
+### A beviteli sor előzményei <a id="history-query"></a>
+
+Annak a listája, amit korábban a beviteli sorba írtak, a legutóbbival kezdve;
+az
+**Alt-h**
+nyitja meg annak a sornak, amelyben a kurzor áll. Az Enter a kurzor alatti
+bejegyzést a sorba teszi, az Esc úgy hagyja a sort, ahogy volt, az
+**F8, Del**
+pedig törli a bejegyzést az előzményekből.
+
+### Panel beállítások <a id="panel-options"></a>
+
+**Fő panelbeállítások**
+
+*Mini-állapotsor.*
+Bekapcsolva a panelek alján egy sornyi tájékoztatás látszik a kurzor alatti
+tételről. Alapértelmezés szerint be van kapcsolva.
+
+*Tizedes mértékegységek.*
+Bekapcsolva a program SI előtagokat (tízes alap) használ a méretek
+kiírásakor. Kikapcsolva (ez az alapértelmezés) IEC előtagokat (kettes alap).
+
+*Vegyes fájllista.*
+Bekapcsolva a fájlok és a könyvtárak összekeverve látszanak. Kikapcsolva (ez
+az alapértelmezés) a könyvtárak (és a rájuk mutató linkek) a lista elején
+állnak, a többi fájl alattuk.
+
+*Biztonsági másolatok mutatása.*
+Bekapcsolva a hullámvonalra végződő fájlok is látszanak, egyébként nem (mint
+a GNU ls -B kapcsolója). Alapértelmezés szerint be van kapcsolva.
+
+*Rejtett fájlok mutatása.*
+Bekapcsolva a ponttal kezdődő fájlok is látszanak (mint az ls -a esetében).
+Alapértelmezés szerint ki van kapcsolva.
+
+*Gyors könyvtárfrissítés.*
+Bekapcsolva a program trükkel állapítja meg, változott-e a könyvtár tartalma:
+csak akkor olvassa újra, ha a könyvtár i-node-ja változott, vagyis ha fájl
+jött létre vagy szűnt meg. Ha egy fájl i-node-ja változik (mérete, módja,
+tulajdonosa), a kép nem frissül; ilyenkor kézzel kell újraolvasni (C-r).
+Alapértelmezés szerint ki van kapcsolva.
+
+*Kijelöléskor lefelé lép.*
+Bekapcsolva a kijelölősáv lefelé lép, amikor egy fájlt kijelölsz (az Insert
+billentyűvel). Alapértelmezés szerint be van kapcsolva.
+
+*Csak fájlok megfordítása.*
+Bekapcsolva a Fájl menü "Kijelölés megfordítása" pontja csak a fájlokra
+vonatkozik, nem a könyvtárakra is. Alapértelmezés szerint be van kapcsolva.
+
+*Egyszerű csere.*
+Ha mindkét panel fájllistát mutat, az egyszerű csere azt jelenti, hogy a
+panelek helyet cserélnek a képernyőn: a bal oldaliból jobb oldali lesz, és
+fordítva. Kikapcsolva a két panel a tartalmát cseréli, a listaformát és a
+rendezést megtartva. Alapértelmezés szerint ki van kapcsolva.
+
+*Panelbeállítások automatikus mentése.*
+Bekapcsolva a program kilépéskor a panelek jelenlegi beállításait a
+~/.config/mc6/panels.ini fájlba menti. Alapértelmezés szerint ki van
+kapcsolva.
+
+*Könyvtárak figyelése.*
+Bekapcsolva a program megkéri a rendszermagot, hogy szóljon a panelekben
+látszó könyvtárak változásairól, és újraolvassa a panelt, ha benne egy fájl
+létrejön, megszűnik vagy megváltozik valami mástól: egy másik terminálból,
+egy fordításból vagy a terminálablak shelljéből. A képen kívüli panel akkor
+olvasódik újra, amikor visszatér. Egy figyelés egy egész könyvtárra
+vonatkozik, így a költsége nem függ a benne levő fájlok számától, és sok
+gyors változás egyetlen újraolvasást eredményez. A virtuális fájlrendszerek
+könyvtárai és azok, amelyeket a rendszermag nem tud figyelni, például az NFS,
+a korábbi módon működnek: ott a C-r végzi el a munkát. Amíg ez a beállítás be
+van kapcsolva, a Gyors könyvtárfrissítésnek nincs mit megspórolnia, ezért
+kikapcsolva látszik. Alapértelmezés szerint be van kapcsolva.
+
+**Mozgás**
+
+*Lynx-szerű mozgás.*
+Bekapcsolva a kurzorbillentyűkkel lehet könyvtárat váltani, ha a kurzor alatt
+alkönyvtár áll és a parancssor üres. Alapértelmezés szerint ki van kapcsolva.
+
+*Lapozó görgetés.*
+Bekapcsolva (ez az alapértelmezés) a panel fél képernyőnyit gördül, amikor a
+kurzor a panel aljára vagy tetejére ér, egyébként fájlonként gördül.
+
+*Középre görgetés.*
+Bekapcsolva a panel akkor gördül, amikor a kurzor a panel közepére ér, és
+csak az első, illetve az utolsó fájlnál áll meg a panel tetején vagy alján.
+Ez fájlonkénti gördítéskor érvényes, a lapozó billentyűkre nem vonatkozik.
+
+*Lapozás egérrel.*
+Azt szabályozza, hogy az egérgörgő a paneleken lapokat vagy sorokat gördít-e.
+
+**Fájlok kiemelése**
+
+Megadható, hogy a
+*jogosultságok*
+és a
+*fájltípusok*
+külön
+[színekkel](#colors)
+legyenek-e kiemelve. Ha a jogosultságok kiemelése be van kapcsolva, a
+*perm*
+és a
+*mode*
+[megjelenítési mező](#listing-format)
+azon része, amely a programot futtató felhasználóra vonatkozik, a
+*marked*
+kulcsszóval megadott színt kapja. Ha a
+*jogosultságszínek*
+be vannak kapcsolva, a
+*perm*
+mező minden karaktere a jelentése szerinti színt kapja: a skin
+*permread ,*
+*permwrite ,*
+*permexec ,*
+*permspecial*
+és
+*permnone*
+színét az r, w, x, s/t és - karakterekhez. A kettő egyszerre is
+bekapcsolható; a felhasználóra vonatkozó hármas ilyenkor megtartja a
+*marked*
+színt. Ha a fájltípusok kiemelése be van kapcsolva, a fájlnevek a
+{{sysconfdir}}/mcommander/filehighlight.ini fájlban leírt szabályok szerint
+színeződnek. Bővebben lásd a
+[Fájlnevek kiemelése](#filenames-highlight)
+részt.
+
+**Gyorskeresés és gyorsszűrő**
+
+Megadható, hogyan működjön a
+[gyorskeresés](#quick-search)
+és a gyorsszűrő: a kis- és nagybetűt ne különböztesse meg, különböztesse meg,
+vagy igazodjon a panel rendezéséhez, amely szintén megkülönböztetheti vagy
+sem.
+
+### Megjelenés (skin) <a id="appearance"></a>
+
+A program kinézetét adó skin választása. A lista azokat a skineket mutatja,
+amelyek a
+**{{pkgdatadir}}/skins**
+és a
+**~/.local/share/mc6/skins**
+könyvtárban vannak; a kiválasztott azonnal életbe lép. A skinek felépítését az angol kézikönyv
+[Skins](mcommander.md#skins)
+szakasza írja le.
 
 ### Beállítások mentése <a id="save-setup"></a>
 
@@ -1881,43 +2329,133 @@ magyarázatként jelenik meg. A makró a felhasználó által begépelendő
 szöveget helyettesíti. Ezt az ESC, vagy az F10 lenyomásával tudja törölni
 a felhasználó.  Ez a makró jelenleg még nem működik a parancssorban.
 
-## A subshell támogatás <a id="the-terminal"></a>
+## A terminál <a id="the-terminal"></a>
 
-A subshell támogatás fordításkori opció, amely a shellek alkalmazásával
-működik: bash, tcsh and zsh.
+A program a shelledet egy ál-terminálban tartja a panelek mögött. A
+következő shellekkel működik: bash, ash (BusyBox és Debian), (o/m)ksh, tcsh,
+zsh és fish.
 
-Amikor a subshell kódot aktiváljuk, a M-Commander létrehozza a
-shell-ed másolatát (azét, amelyik a
+A shell az, amelyik a
 **SHELL**
-változóban definiálva van, vagy ilyen nincs, akkor az /etc/passwd fájlban
-találhatóét) és egy ál-terminált fog futtatni, ahelyett, hogy minden
-parancsfuttatáskor az új shellt aktiválná, a parancs a subshellt fogja
-használni, ha megadtál ilyet. Ez lehetővé teszi számodra azt is, hogy
-megváltoztasd a környezeti változókat is, a shell funkciók használatával
-és megadva az értéküket, amelyeket a M-Commander-ből való kilépésig
-használni fog.
+változóban meg van adva, és ha az nincs megadva, akkor az, amelyik az
+/etc/passwd fájlban szerepel. Ahelyett, hogy minden parancshoz új shellt
+indítana, a program a parancsot ennek a shellnek adja át, mintha te gépelted
+volna be. Így környezeti változókat lehet állítani, shell-függvényeket
+használni és aliasokat megadni, amelyek a programból való kilépésig
+érvényesek.
 
-Ha
-**bash**-t
-használsz, a subshell indító parancsait megadhatod az ~/.local/share/mc6/bashrc
-fájlban, és tetszőleges billentyűzet térképet az ~/.local/share/mc6/inputrc fájlban. A
-**tcsh**
-felhasználóknak az indítási parancsokat az ~/.local/share/mc6/tcshrc fájlban van
-lehetőségük megadni.
+**bash**
+: indítóparancsok a ~/.local/share/mc6/bashrc fájlban (egyébként ~/.bashrc),
+saját billentyűkiosztás a ~/.local/share/mc6/inputrc fájlban (egyébként
+~/.inputrc).
 
-Amikor a subshell kódot használod, bármikor megszakíthatod az
-alkalmazásokat
-**C-o**-val,
-és visszaugrasz a M-Commander-be. Ha félbeszakítod az alkalmazást,
-nincs lehetőséged más külső parancsot futtatni, amíg ki nem lépsz a
-megszakított alkalmazásból.
+**ash/dash**
+: (BusyBox vagy Debian) indítóparancsok a ~/.local/share/mc6/ashrc fájlban
+(egyébként ~/.profile).
 
-A subshell által használt további eszköz a M-Commander által
-megjelenített prompt, amely ugyanaz, mint amit a jelenleg használt shell
-is használ.
+**ksh/oksh**
+: indítóparancsok a ~/.local/share/mc6/kshrc fájlban (egyébként
+*ENV*
+vagy ~/.profile).
 
-Az OPTIONS részben további információkat olvashatsz arról, hogy hogyan
-vezérelheted a subshell kódot.
+**mksh**
+: (MirBSD ksh) indítóparancsok a ~/.local/share/mc6/mkshrc fájlban (egyébként
+*ENV*
+vagy ~/.mkshrc).
+
+**zsh**
+: indítóparancsok a ~/.local/share/mc6/.zshrc fájlban (egyébként ~/.zshrc).
+
+**tcsh, fish**
+: egyelőre nincs saját indítófájljuk ehhez a programhoz, csak magának a
+shellnek a fájljai érvényesek.
+
+A futó alkalmazást bármikor félre lehet tenni a
+**C-o**
+billentyűvel, és vissza lehet térni a programhoz. Ha egy parancsot így
+szakítottál félbe, addig nem tudsz másik külső parancsot indítani, amíg a
+félbeszakított alkalmazás be nem fejeződik.
+
+A panelek mögött a terminál megőrzi mindazt, amit a shell kiírt, és amíg a
+panelek félre vannak téve, ez olvasható, kijelölhető és törölhető. A
+kurzorbillentyűk a kimenetben járnak, Shifttel pedig kijelölik, mindkettő
+addig, amíg maga a terminál kapja a billentyűket; azok a billentyűk,
+amelyek csak a képet mozgatják, attól függetlenül működnek, hogy ki gépel.
+Minden billentyű, amely nincs alább felsorolva, a shellhez jut.
+
+```
+Ctrl-Insert    a kijelölés másolása a vágólapra
+Ctrl-Shift-u   a kijelölés megszüntetése
+Alt-s          keresés a kimenetben a most begépeltre
+Alt-Shift-s    csak az illeszkedő sorok mutatása
+Ctrl-l         a képernyő törlése, a kimenet megtartásával
+Ctrl-Shift-l   a képernyő és az egész kimenet törlése
+               (Ctrl-Alt-l is)
+```
+
+Az Alt-s és az Alt-Shift-s ugyanúgy veszi a mintát, mint a panelekben: a
+képernyő felső sorában gépelődik, a kimenet pedig követi, ahogy nő. A kis- és
+nagybetű nem számít. A keresés a kurzortól felfelé megy, és a legközelebbi
+találatot jelöli ki; az újabb Alt-s a fölötte levőt, a legrégebbi sor után
+pedig a keresés a legújabbra fordul. A szűrő csak az illeszkedő sorokat
+mutatja, és a kurzorbillentyűk már gépelés közben közöttük járnak; az újabb
+Alt-Shift-s a fölötte levő sorra viszi a kurzort. Begépelt minta nélkül
+megnyomva mindkettő az előző mintát veszi elő. A Backspace egy karaktert
+töröl, az a karakter pedig, amelyre semmi nem illeszkedik, nem kerül be. Az
+Enter befejezi a gépelést és a képet úgy hagyja, ahogy van, az Esc befejezi
+és leveszi a szűrőt, minden más billentyű pedig befejezi, és azt teszi, amit
+egyébként tenne.
+
+Félretett panelek mellett a funkcióbillentyűk többsége a terminálé, és a
+gombsor nevezi meg őket. A fájlkezelő megnézés, szerkesztés, másolás,
+átnevezés és törlés funkciói ott nincsenek felkínálva: azok a panel kurzora
+alatti fájllal dolgoznak, és ez a kurzor nem látszik. Az F8 szándékosan
+marad üresen, hogy a törlés felé induló mozdulat inkább ne csináljon semmit,
+mint valami mást.
+Az F7 könyvtárat hoz létre, a Shift-F4 pedig új fájlt szerkeszt, ugyanúgy,
+mint kint a panelekkel: mindkettő a panel könyvtárában dolgozik, és a shell
+is abban áll.
+
+```
+F2           a kijelölés másolása a vágólapra
+F3           az egész kimenet kijelölése, vagy a kijelölés
+             megszüntetése
+F4           csak a kijelölésre vagy a kurzor alatti szóra
+             illeszkedő sorok meghagyása
+F5           ennek a szűrőnek a levétele és visszatétele
+F6           a képernyő és az egész kimenet törlése
+```
+
+Amíg a shell a promptjánál vár, az F1, az F7, a Shift-F4, az F9 és az F10 a
+fájlkezelőé marad, és az F1 ezt a szakaszt nyitja meg a súgóban. Amint egy
+parancs fut, a képernyő és rajta minden billentyű azé, ezek is. A fenti öt a
+kivétel: amíg a parancs dolgozik, azok a terminálé maradnak. A teljes
+képernyős alkalmazás, a szerkesztő vagy a lapozó minden billentyűt magának
+vesz, ezeket is. Mindegyikük a billentyűkiosztás fájl
+**[mcterm]**
+szakaszában szerepel, és ott át is állítható.
+
+Ha a shell promptjánál, a félretett panelek mögött, argumentumok nélkül azt
+gépeled, hogy
+**mcommander**,
+a futó program újra megmutatja a paneleit, ahelyett hogy egy második példányt
+indítana. Argumentummal, például egy könyvtárnévvel, a korábbi módon egy
+beágyazott példány indul.
+
+Az alapértelmezett prompt, amelyet a program mutat,
+"felhasználó@gép:útvonal$ " alakú. Olyan shellel, amely erre képes, például a
+Bash-sel, ugyanaz a prompt látszik, amelyet egyébként is használsz.
+
+(Ismert hiba a fish esetében: a prompt csak teljes képernyős módban (Ctrl-o)
+látszik, a panelek mellett nem.)
+
+Ha a SHELL változótól vagy az /etc/passwd fájlban megadott bejelentkezési
+shelltől eltérő shellt akarsz, így indítsd a programot:
+**SHELL=/bin/mishell mcommander**
+
+Az
+[OPCIÓK](#options)
+rész további tájékoztatást ad arról, hogyan lehet a shellt vezérelni.
 
 # Chmod (hozzáférési jogosultság) <a id="chmod"></a>
 
@@ -1988,7 +2526,7 @@ kilép Chmod parancs módból.
 A Chown parancs a fájl tulajdonos, vagy csoport azonosítójának
 beállítására szolgál. A parancs gyorsbillentyűje a C-x o.
 
-# Haladó (bővített) Chown <a id="chown-advanced"></a>
+# Haladó (bővített) Chown <a id="advanced-chown"></a>
 
 A Haladó Chown parancs a
 [Chmod](#chmod)
@@ -2022,27 +2560,68 @@ megszakíthatod a további műveleteket, között választhatsz. Választhatod
 még az Újra gombot is, ha egy másik virtuális terminálról ki tudtad
 javítani a hibát.
 
-"A fájl már létezik" dialógus ablak jelenik meg, ha megpróbálod
-másolással, vagy áthelyezéssel felülírni a már létező fájlt. A dialógus
-ablak megmutatja mindkét fájl méretét és dátumát. Az Igen gombbal
-felüliratod a fájlt, a Nem gombbal átléped a fájlt, a Mind gombbal
-felüliratod az összes fájlt, a Nem gombbal átléped az összes hasonló
-fájlt és a Frissít gombbal felüliratod a fájlt, ha a célfájl nem azonos
-dátumú a forrás fájllal. A Megszakít gomb lenyomásával bárhol
-megszakíthatod a műveletet.
+### A fájl felülírása <a id="replace"></a>
 
-A rekurzív törlés dialógus ablak jelenik meg akkor, amikor egy olyan
-könyvtárat akarsz törölni, amely nem üres. Az Igen gomb lenyomásakor
-rekurzívan törli a könyvtárat, a Nem lenyomásakor átlépi a könyvtárat, a
-Mind gomb lenyomásakor törli az összes könyvtárat, és a nem gomb átlépi
-az összes olyan könyvtárat, amely nem üres. A Megszakít gomb
-lenoymásával bárhol megállíthatod a folyamatot. Ha az Igen, vagy a Mind
-gombot választod egy Megerősítés. Az "Igen"-t csak akkor válaszd, ha
-teljesen biztos vagy abban, hogy rekurzívan akarsz törölni.
+Ez a párbeszédablak akkor jelenik meg, ha másolással vagy áthelyezéssel egy
+már létező fájlt írnál felül. Az ablak megmutatja mindkét fájl dátumát és
+méretét, és a következő gombokat kínálja:
 
-Ha vannak kijelölt fájlok, azok kijelöltsége a művelet sikeres
-végrehajtása után megszűnik. A művelet megszakításkor a kihagyott fájlok
-kijelöltek maradnak.
+**[Igen]**
+: felülírja a fájlt.
+
+**[Nem]**
+: kihagyja a fájlt.
+
+**[Hozzáfűz]**
+: a forrásfájlt a célfájl végéhez fűzi.
+
+**[Folytat]**
+: a forrásfájl hátralevő részét fűzi a célfájlhoz. Ez a gomb csak akkor
+látszik, ha a célfájl mérete nem nulla, és kisebb a forrásénál.
+
+**[Mind]**
+: minden fájlt felülír.
+
+**[Frissít]**
+: akkor ír felül, ha a forrásfájl újabb a célfájlnál.
+
+**[Egyik sem]**
+: egyetlen fájlt sem ír felül.
+
+**[Kisebb]**
+: akkor ír felül, ha a forrásfájl kisebb a célfájlnál.
+
+**[Eltérő méretű]**
+: az eltérő méretű fájlokat írja felül.
+
+**[Megszakít]**
+: az egész műveletet megszakítja.
+
+Ha a
+**Ne írja felül nulla hosszúságú fájllal**
+jelölőnégyzet be van kapcsolva, a nulla méretű forrásfájl nem írja felül a
+nem nulla méretű célfájlt.
+
+A rekurzív törlés párbeszédablaka akkor jelenik meg, ha nem üres könyvtárat
+akarsz törölni. A gombjai:
+
+**[Igen]**
+: a könyvtárat a tartalmával együtt törli.
+
+**[Nem]**
+: kihagyja a könyvtárat.
+
+**[Mind]**
+: minden könyvtárat töröl.
+
+**[Egyik sem]**
+: minden nem üres könyvtárat kihagy.
+
+**[Megszakít]**
+: az egész műveletet megszakítja.
+
+Ha vannak kijelölt fájlok, csak azoknak a kijelöltsége szűnik meg, amelyeken
+a művelet sikerült. A kihagyott és a sikertelen fájlok kijelöltek maradnak.
 
 # Kijelölt fájlok másolása vagy áthelyezése <a id="mask-copyrename"></a>
 
@@ -2127,181 +2706,6 @@ Ezeken kívül még használhatod a '\\' karaktert, mint hivatkozó
 karaktert. Például a  '\\\\'-t a backslash-hez és a '\\\*'-et a
 csillaghoz.
 
-# Belső fájlnéző <a id="internal-file-viewer"></a>
-
-A Belső fájlnéző két megjelenítési módra képes: ASCII és hex. A két mód
-közötti váltásra használd az F4-es billentyűt. Ha a GNU gzip programot
-telepítetted, szükség esetén ezzel automatikusan kitömöríti a fájlokat.
-
-A fájlnéző megpróbálja megállapítani a legjobb módot az információk
-megjelenítéséhez a rendszerednek, vagy a fájl típusának megfelelően. A
-Belső fájlnéző használ néhány szövegrészletet a vastag, és az aláhúzott
-szövegattribútumok megjelenítésére azért, hogy a fájl megjelenítése
-szebb legyen.
-
-Amikor hex módban vagy, a keresés funkcióban lehetővé teszi
-hexadecimális értékek használatát.
-
-Használhatsz kevert hivatkozást is ezen értékeknek megfelelően: "Szöveg"
-0xFE 0xBB "további szöveg". A szöveg értékek közötti részt és a
-hivatkozás szövegét nem veszi figyelembe.
-
-Ez a lista tartalmazza azokat a gombokat, amelyekhez művelet kapcsolódik
-a M-Commander belső fájlnézőjében.
-
-**F1**
-Elindítja a beépített hypertext súgót.
-
-**F2**
-Átvált sortörés módba.
-
-**F4**
-Átvált hex módba.
-
-**F5**
-Sorra lép. Egy promptot jelenít meg a sor számának megadására, és
-magjeleníti azt.
-
-**F6, /.**
-Szabványos kifejezés keresése.
-
-**?,**
-Szabványosos kifejezés keresése visszafelé.
-
-**F7**
-Normál keresés / hex módú keresés.
-
-**C-s**
-Normál keresést indít el, ha nem volt megelőző kifejezés keresés,
-egyébként a következő előfordulást keresi meg.
-
-**C-r.**
-Keresés visszafelé, ha nem volt megelőző kifejezés keresés, egyébként a
-következő előfordulást keresi meg.
-
-**n.**
-A következő egyezőt keresi.
-
-**F8**
-Vált a Nyers és Feldolgozott mód között: ez a fájlt, úgy mutatja meg,
-ahogy megtalálta, vagy, ha folyamatszűrő meg van adva az extensions.ini fájlban,
-akkor a szűrő kimenetét. A Jelenlegi mód mindig a másik, mit amit a gomb
-felirata mutat.
-
-**F9**
-Vált a formázott-nem formázott mód között: amikor a formázott mód be van
-kapcsolva, néhány szöveg elemet, a vastagítást és az aláhúzást eltérő
-színnel jelenít meg. A menüsorban mindíg a másik felirat látható,
-jelezve, hogy milyen módba lehet átkapcsolni.
-
-**F10, Esc.**
-Kilép a Belső fájlnézőből.
-
-**next-page, space, C-v.**
-Egy lapot lapoz előre.
-
-**prev-page, M-v, C-b, backspace.**
-Egy lapot lapoz vissza.
-
-**down-gomb**
-Egy sort gördít elöre.
-
-**up-gomb**
-Egy sort gördít vissza.
-
-**C-l**
-Frissíti képernyőt.
-
-**[n] m**
-Beállítja az n kijelölést.
-
-**[n] r**
-Az n kijelölésre ugrik.
-
-**C-f**
-A következő fájlra ugrik.
-
-**C-b**
-Az elöző fájlra ugrik.
-
-**M-r**
-Ki- és bekapcsolja a vonalzót.
-
-Ez a rész a fájl fájlnézővel történő megjelenítésének leírását
-tartalmazta, lásd még a
-[Társítások](#edit-extension-file)
-részt.
-
-# Belső fájlszerkesztő <a id="internal-file-editor"></a>
-
-A Belső fájlszerkesztő egy rengeteg eszközzel ellátott, de egyszerű
-teljes képernyős szerkesztő. Az
-**F4**
-gomb segítségével lehet elindítani az inicializáló fájl
-*use_internal_edit*
-opciójának megfelelő beállításokkal. A kezelt fájlnál 16 MByte-os
-mérethatárral rendelkezik, és hibátlanul lekezeli a bináris fájlokat is.
-
-Az eszközök, amielyek használhatók: Blokk másolás, mozgatás, törlés,
-kivágás, beillesztés;
-*billentyű a billentyű visszavonására ;*
-legördülő menük; fájl beillesztés; makró készítés; szabványos kifejezés
-keresés és csere; shift-kurzor MSW-MAC szöveg kijelölés (csak linux konzolon);
-beillesztés-felülírás beállítás váltása; és a pipe szöveg blokkokkal a
-shell parancsok közvetlen elérése.
-
-A szerkesztő használata nagyon egyszerű és nem igényel magyarázatot.
-Annak megtekintéséhez, hogy melyik gomb mit csinál, a megfelelő
-legördülő menü megtekintése szükséges.  Egyéb gombok: Shift és nyíl
-billentyűk a szöveg kijelöléséhez. A
-**Ctrl-Ins**
-kimásolja a szöveget a
-**mcedit6.clip**-be
-és a
-**Shift-Ins**
-beilleszti azt a mcedit6.clip-ből. A
-**Shift-Del**
-kivágja a szöveget a
-**mcedit6.clip**-be,
-és a
-**Ctrl-Del**
-törli a kijelölt szöveget. A lezáró billentyűként szintén használható a
-Return az automatikus bekezdéssel. Az egér kijelölés is működik,
-kijelölhetsz egérrel a shift gomb lenyomásával, amíg a normál terminál
-egeret csak a szöveg megjelölésére használhatod.
-
-Macró megadásához nyomd le a
-**Ctrl-R**-t
-és ekkor add meg a vezérlő gombokat a futtatandó folyamat megadásához.
-Nyomd le a
-**Ctrl-R**-t
-újra, ha ezt be akarod fejezni. Ekkor a makróhoz bármilyen billentyűt
-hozzárendelhetsz az adott gomb lenyomásával. A makró lefut a
-**Ctrl-A**
-és a megadott gomb lenyomásakor. A makró lefuttatható még akkor is, ha
-lenyomod a Váltó (Alt), Ctrl, vagy az Esc-et és a megadott gombot,
-feltételezve azt, hogy a gombot nem használja más funkció. Miután
-megadtad, a makro parancs a home könyvtárad
-**~/.local/share/mc6/mcedit6/mcedit6.macros**
-fájljába kerül. A makrót a fájl megfelelő sorának törlésével végezheted
-el.
-
-Az
-**F19**
-formázza a szöveget
-(**C**, **C++**,
-vagy más kódra) amikor ez a rész
-**kijelölt**.
-Ennek használatához elöször egy futtatható fájlt kell készítened
-**~/.local/share/mc6/mcedit6/edit.indent.rc**
-néven. Szerkeszd ezt szkriptet, ha szükséges.
-
-A szerkesztő megjeleníti még a nem-amerikai karaktereket is (160
-fölött). Amikor bináris fájlokat szerkesztesz, a Beállításoknál
-beállíthatod a
-**Képernyőbiteket**
-7 bitre a térközök tisztasága miatt.
-
 # Kiegészítés <a id="completion"></a>
 
 A M-Commander begépeli neked a kívánt szöveget.
@@ -2348,134 +2752,57 @@ hangjelzést ad.
 
 # Csatolt (látszólagos) fájlrendszer <a id="virtual-file-system"></a>
 
-A M-Commander kód rétegekkel biztosítja azt, hozzáférj a
-fájlrednszerhez; Ez a kód réteg arra képes, hogy átváltson csatolt
-fájlrendszerre. A csatolt fájlrendszerre történő átváltás lehetővé teszi
-a M-Commander számára azt, hogy a fájl műveleteket végezzen akkor
-is, ha a fájlok nincsenek a UNIX fájlrendszeren.
-
-Jelenleg a M-Commander a következő Csatolt Fájlrendszerekkel
-rendelkezik (VFS): a helyi fájlrendszert a szokásos Unix fájlrendszeren
-lévő fájlokhoz használja; az ftpfs-t, az FTP protokollal rendelkező
-távoli gépek fájlainak módosítására használja; az undelfs-t, a
-törölt fájlok visszaállítására használja az ext2-es fájlrendszeren
-(az alapértelmezett fájlrendszer Linux rendszereken), a fish (a fájlok
-shellen keresztüli módosításához, mint pl. rsh és ssh) és végül az mcfs
-(a M-Commander fájlrendszere), amely hálózat alapú fájlrendszer.
-
-A VFS kódváltója minden elérési útvonal leírást értelmez és
-követi azt a megfelelő fájlrendszerrel, azt, hogy melyik
-rendszeren melyik használatos, azt a későbbiekben a
-megfelelő résznél találhatod meg.
-
-## FTP fájlrendszer <a id="ftp-file-system"></a>
-
-Az ftpfs lehetővé teszi számodra azt, hogy távoli gépeken
-használjunk fájlokat, ennek használatához, próbáld ki a
-panel FTP kapcsolat... parancsát (elérhető a menüből), vagy
-közvetlenül átválthatsz a jelenlegi könyvtárból a cd
-parancs használatával, valahogy így:
-
-*ftp://[!][felhasználó[:jelszó]@]machine[:port]/[távoli-könyvtár]*
+A M-Commander egy kódréteggel éri el a fájlrendszert; ezt a réteget a csatolt
+fájlrendszerek váltójának nevezzük. Ezzel a program olyan fájlokkal is
+dolgozhat, amelyek nem a Unix fájlrendszerén vannak.
 
 A
-*felhasználó, port*
-és a
-*távoli-könyvtár*
-elemek opcionálisak. Ha megadod a
-*felhasználó*
-elemet, akkor a M-Commander a távoli gépre megpróbál ezzel a
-felhasználónévvel belépni, egyébként a te bejelentkező nevedet fogja
-használni. Opcionális a
-*jelszó*
-elem, ha meg van adva akkor ezt a jelszót fogja használni a
-bejelentkezéshez. Ajánlott ennek használata (soha ne tartsd ezeket a
-gyorslistádban, kivéve ha beállítod a megfelelő jogosultságokat, és még
-ekkor sem lesz minden esetben tökéletesen biztonságos megoldás).
+*local*
+fájlrendszeren, vagyis a szokásos Unix fájlrendszeren kívül két csatolt
+fájlrendszer van beépítve:
+*extfs,*
+amely egy fájlt vagy a rendszer egy listáját saját szkripttel könyvtárfaként
+mutatja meg, és
+*sfs,*
+amely egyetlen fájlt átenged egy parancson, és azt mutatja, ami kijön. Minden,
+ami másik géphez való kapcsolatot kíván, és az archívumok is, már
+[panel bővítmények](#panel-plugins),
+nem a váltó fájlrendszerei.
 
-Példák:
+A váltó minden útvonalat értelmez, és a megfelelő fájlrendszernek adja át; az
+egyes fájlrendszerek névalakját a saját szakaszuk írja le.
 
-```
-    ftp://ftp.nuclecu.unam.mx/linux/local
-    ftp://tsx-11.mit.edu/pub/linux/packages
-    ftp://!behind.firewall.edu/pub
-    ftp://guest@remote-host.com:40/pub
-    ftp://miguel:xxx@server/pub
-```
+## Panel bővítmények <a id="panel-plugins"></a>
 
-Tűzfalon keresztüli kapcsolat létrehozásához, az ftp://!  kiegészítés
-használatára van szükséged (pl., felkiáltójel a dupla perjel után)
-ahhoz, hogy a M-Commander használni tudja a proxy host-ot az ftp
-átvitelhez. A
-[Csatolt fájlrendszer...](#virtual-fs)
-dialógus ablakban tudod beállítani a proxy host tulajdonságait.
-
-A
-[Csatolt fájlrendszer...](#virtual-fs)
-dialógus ablak másik beállítandó opciója az
-*ftp proxy-n keresztül*
-opció. Ez beállítja a program számára azt, hogy mindig használja a proxy
-host-ot. Ha ez a változó be van állítva, akkor a program két dolgot
-csinál: konzultál a {{sysconfdir}}/mcommander/mc.no_proxy fájl soraival, hogy azok
-tartalmazzák-e a host nevet, mint helyi eszközt (ha a host neve ponttal
-kezdődik, akkor ezt domainként tartja számon), és feltételezi azt, hogy
-a pont nélküli hostnevek közvetlenül felodhatók.
-
-Ha ftpfs kódot használsz csomagszűrő router esetén, akkor nincs
-lehetőséged a fájlok megszokott módon történő megnyitására, ezért neked
-kell a program számára megadnod azt, hogy a fájlokat passzív módon
-nyissa meg. Ennek használatához állítsd be az
-ftpfs_use_passive_connections opciót az indító fájlban.
-
-A M-Commander a könyvtárlistát a cache-ben tárolja. A
-cache frissítésének ideje a
-[Csatolt fájlrendszer...](#virtual-fs)
-dialógus ablakban végezhető el. Ez komikus helyzetet idézhet elő akkor,
-amikor változtatást hajtasz végre a könyvtárban, és az nem jelenik meg
-addíg, amíg a cache-t nem iratod újra a C-r gombbal. Ez sajátos
-jellegzetesség (amikor tapasztalod ezt a hibát, gondolj arra, hogy az
-ftpfs-el megváltoztatott fájlok esetleg az Atlanti-óceán másik oldalán
-vannak).
-
-## Fájl áthelyezése a Shell fájlrendszeren túlra <a id="file-transfer-over-shell-filesystem"></a>
-
-A fish fájlrendszer hálózat alapú fájlrendszer, amely lehetővé teszi
-műveletek végrehajtását a távoli gépeken, mintha azok a saját gépeden
-lennének. Ennek használatához a másik oldali gépnek futtatnia kell a
-fish szervert, vagy bash kompatibilis shellel kell rendelkeznie.
-
-A távoli géphez történő kapcsolódáshoz csak könyvtárat kell váltanod a
-következő formátumnak megfelelő könyvtárba:
+A panel nincs fájlrendszerhez kötve: egy bővítmény bármivel megtöltheti, amit
+fel tud sorolni. A programmal a következők érkeznek:
 
 ```
-sh://[felhasználó@]machine[:opciók];/[távoli-könyvtár];</em>
+arcmc        archívumok és a tartalmuk
+ftp, sftp    fájlok másik gépen
+shell-link   fájlok másik gépen ssh fölött
+samba        egy SMB kiszolgáló megosztásai
+s3           egy S3 tároló vödrei
+git          egy verziókezelt könyvtár állapota
+docker       konténerek, képek és a naplóik
+k8s          egy fürt objektumai
+mongo        egy adatbázis gyűjteményei
+sqlite       egy adatbázis táblái
+systemd      a rendszer egységei
+panelize     egy parancs eredménye panelként
+mcpeek       bepillantás egy fájlba
+mcstruct     bináris fájl megnevezett mezők fájaként
+skineditor   a program kinézete
 ```
 
-A
-*felhasználó,*
-*opciók*
-és a
-*távoli-könyvtár*
-elemek opcionálisak. Ha megadod a
-*felhasználó*
-elemet, akkor a M-Commander megpróbál belépni a távoli gépre
-ezzel a felhasználó névvel, egyébként pedig a te belépő nevedet
-használja.
-
-A 'C'
-*opció*
-a tömörítéshez használatos; a 'rsh' az rsh használatához az ssh helyett.
-Ha a
-*távoli-könyvtár*
-elemet beírtad, a távoli gépnek ezt a könyvtárát állítod be.
-
-Példák:
-
-```
-    sh://onlyrsh.mx:r/linux/local
-    sh://joe@want.compression.edu:C/private
-    sh://joe@noncompressed.ssh.edu/private
-```
+Minden bővítmény hozza a saját súgóját, amelyet az
+**F1**
+nyit meg a paneljében vagy a párbeszédablakában. A Beállítások menü
+**Bővítmények kezelése**
+pontja felsorolja, mi van betöltve, kikapcsol egy bővítményt és megnyitja a
+beállításait. A bővítmény panelje a
+[bal és jobb oldali menüből](#left-and-right-menus),
+a gyorslistából vagy a bővítmény címének a parancssorba írásával nyílik meg.
 
 ## EXTernal File System
 
@@ -2587,6 +2914,367 @@ section.  Here is an example entry for Debian packages:
           Open=%cd %p/deb://
 ```
 
+## Egyetlen fájl fájlrendszere <a id="single-file-filesystem"></a>
+
+Az
+**sfs**
+egyetlen fájlt átenged egy parancson, és az eredményt önálló fájlként mutatja
+meg; így olvasható egy tömörített fájl anélkül, hogy kézzel kicsomagolnánk. A
+fájlrendszer neve a fájl neve után kerül, akárcsak az extfs esetében:
+
+```
+  cd documents.gz/ugz://
+```
+
+A parancsok a
+**{{sysconfdir}}/mcommander/sfs.ini**
+fájlban vannak, soronként egy: a fájlrendszer neve, egy perjel, a parancs
+száma, egy tabulátor, majd maga a parancs, ahol a
+*%1*
+az a fájl, amelyen a panel áll, a
+*%3*
+pedig az, amelybe írni kell. A programmal érkező fájl a gz, bz2, lz, lz4,
+lzma, lzo, xz és zst tömörítő és kicsomagoló párjait tartalmazza, és még
+néhányat.
+
+# Fájlattribútumok <a id="chattr"></a>
+
+Ez az ablak egy fájl- és könyvtárcsoport attribútumainak megváltoztatására
+való Linux fájlrendszeren. A C-x e billentyűvel nyitható meg.
+
+Nem minden fájlrendszer ismer minden attribútumot. Az elérhető attribútumok
+jelölőnégyzetek halmazaként jelennek meg (a részleteket lásd a
+**chattr(1)**
+lapon). Ahogy a jelölőnégyzetek változnak, a fájlnév alatti jelöléssorozat is
+velük változik.
+
+Az ablak elemei között a
+*kurzorbillentyűkkel*
+vagy a
+*Tab*
+billentyűvel lehet mozogni. A jelölőnégyzet állapotát és a gombok
+kiválasztását a
+**szóköz**
+végzi.
+
+Az attribútumok beállítása az Enterrel történik.
+
+Fájl- vagy könyvtárcsoportnál elég bejelölni azokat az attribútumokat,
+amelyeket be akarsz kapcsolni vagy törölni akarsz, majd a műveleti gombok
+közül választani (Jelöltek beállítása vagy Jelöltek törlése).
+
+**[Mind beállít]**
+: pontosan a megadott attribútumokat állítja be az összes kijelölt fájlon.
+
+**[Mind jelölt]**
+: csak a bejelölt attribútumokat állítja be az összes kijelölt fájlon.
+
+**[Jelöltek beállítása]**
+: bekapcsolja a bejelölt attribútumokat a kijelölt fájlokon.
+
+**[Jelöltek törlése]**
+: kikapcsolja a bejelölt attribútumokat a kijelölt fájlokon.
+
+**[Beállít]**
+: egyetlen fájl attribútumait állítja be.
+
+**[Mégsem]**
+: kilép a parancsból.
+
+# Képernyőválasztó <a id="screen-selector"></a>
+
+A program több belső részt (szerkesztő, fájlnéző, összehasonlító) is tud
+egyszerre futtatni, és a megnyitott fájlok bezárása nélkül lehet köztük
+váltani. Több fájlkezelő egyidejű használata egyelőre nem támogatott.
+
+Nevezzük képernyőnek mindegyik ilyen részt. Háromféleképpen lehet köztük
+váltani, ezekkel a mindenhol érvényes billentyűkkel:
+
+**Alt-}**
+: a következő képernyőre vált;
+
+**Alt-{**
+: az előző képernyőre vált;
+
+**Alt-\`**
+: megnyitja a megnyitott képernyők listáját (vagy a menü "Képernyők listája"
+pontjával).
+
+# Fájlok kijelölése <a id="selectunselect-files"></a>
+
+A
+**+**
+és a
+`\`
+billentyű mintát kér, és kijelöli vagy leveszi a kijelölést azokról a
+fájlokról, amelyekre a minta illik; az
+**\***
+megfordítja a kijelölést. A párbeszédablak megjegyzi, mit kértek utoljára,
+és megkérdezhető, hogy a minta shell minta legyen-e, számít-e a kis- és
+nagybetű, és vonatkozzon-e a könyvtárakra is.
+
+# Panel módok <a id="panel-modes"></a>
+
+A panel módja egy megnevezett, újra felhasználható listaforma. A módok listája
+közös a két panel között.
+
+Az
+**Alt-t**
+(és a bal és jobb oldali menü
+**Panel módok...**
+pontja) a
+**váltót**
+nyitja meg: a megadott módok listáját. Az Enter a kurzor alatti módot
+alkalmazza a panelre, az Esc érintetlenül hagyja.
+
+A
+**Beállítások**
+menü
+**Fájlpanel módok...**
+pontja a
+**kezelőt**
+nyitja meg: ugyanazt a listát, billentyűkkel szerkesztve. Az
+**Insert**
+új módot hoz létre, az
+**F4**
+(vagy az
+**Enter**)
+szerkeszti a kijelöltet, az
+**F5**
+lemásolja, a
+**Delete**
+(vagy az
+**F8**)
+pedig törli. Az
+**Alapértelmezés**
+gomb a beépített módokra cseréli a listát, az
+**OK**
+menti, a
+**Mégsem**
+(vagy az
+**Esc**)
+eldobja az ablakban végzett összes változtatást.
+
+A kezelő a módok közös listáját szerkeszti; egyik panel módját sem váltja át.
+
+A módszerkesztőben külön mező tartozik az oszlopok mezőtípusaihoz és
+szélességeihez, és külön a mini-állapotsorhoz, a
+[Fájllista...](#listing-format)
+résznél leírt mezőnevekkel
+\. A típuslista vesszővel tagolt, oszloponként egy tétel; egy oszlop több,
+szóközzel elválasztott mezőt is tartalmazhat (például
+**type name**).
+A 0 (vagy üres) szélesség a mező automatikus szélességét hagyja meg.
+Teljes formátumszöveget is be lehet illeszteni a típusmezőbe (például
+**half name | size:7**):
+a
+**|**
+elválasztók és a
+**:szélesség**
+utótagok ilyenkor szétosztódnak a két lista között.
+
+A megadott módok és az, amelyiket az egyes panelek használják, megmaradnak a
+munkamenetek között.
+
+# Reguláris kifejezések gyors áttekintése <a id="regex-quick-reference"></a>
+
+**Gyakori elemek**
+
+```
+Egy karakter ezek közül: a, b, c        [abc]
+Egy karakter, de nem a, b vagy c        [^abc]
+Egy karakter az a-z tartományból        [a-z]
+Egy karakter az a-z tartományon kívül   [^a-z]
+Egy karakter a-z vagy A-Z közül         [a-zA-Z]
+Bármelyik karakter                      .
+Vagylagos: a vagy b                     a|b
+Bármely üres karakter                   \s
+Bármi, ami nem üres karakter            \S
+Bármely számjegy                        \d
+Bármi, ami nem számjegy                 \D
+Bármely szókarakter                     \w
+Bármi, ami nem szókarakter              \W
+Nem rögzítő csoport                     (?:...)
+Rögzítő csoport                         (...)
+Nulla vagy egy a                        a?
+Nulla vagy több a                       a*
+Egy vagy több a                         a+
+Pontosan 3 a                            a{3}
+3 vagy több a                           a{3,}
+3 és 6 közötti számú a                  a{3,6}
+A szöveg eleje                          ^
+A szöveg vége                           $
+Szóhatár                                \b
+Nem szóhatár                            \B
+```
+
+**Horgonyok**
+
+```
+A találat eleje                         \G
+A szöveg eleje                          ^
+A szöveg vége                           $
+A szöveg eleje                          \A
+A szöveg vége                           \Z
+A szöveg abszolút vége                  \z
+Szóhatár                                \b
+Nem szóhatár                            \B
+```
+
+**Általános elemek**
+
+```
+Soremelés                               \n
+Kocsivissza                             \r
+Tabulátor                               \t
+Nulla karakter                          \0
+```
+
+**Metasorozatok**
+
+```
+Bármelyik karakter                      .
+Vagylagos: a vagy b                     a|b
+Bármely üres karakter                   \s
+Bármi, ami nem üres karakter            \S
+Bármely számjegy                        \d
+Bármi, ami nem számjegy                 \D
+Bármely szókarakter                     \w
+Bármi, ami nem szókarakter              \W
+Unicode sorozat, sortörésekkel          \X
+Unicode sortörések                      \R
+Minden, kivéve a sortörést              \N
+Függőleges üres karakter                \v
+A \v tagadása                           \V
+Vízszintes üres karakter                \h
+A \h tagadása                           \H
+A találat törlése                       \K
+A # sorszámú részminta                  \#
+X Unicode tulajdonság                   \pX
+Unicode tulajdonság vagy kategória      \p{...}
+A \pX tagadása                          \PX
+A \p{...} tagadása                      \P{...}
+Idézet: betű szerint veendő             \Q...\E
+A 'név' nevű részminta                  \k{name}
+A 'név' nevű részminta                  \k<name>
+A 'név' nevű részminta                  \k'name'
+Az n. részminta                         \gn
+Az n. részminta                         \g{n}
+Az n. korábbi relatív részminta         \g{-n}
+Az n. rögzítő csoport kifejezése        \g<n>
+A köv. n. rögzítő csoport kifejezése    \g<+n>
+Az n. rögzítő csoport kifejezése        \g'n'
+A köv. n. részminta kifejezése          \g'+n'
+Megnevezett rögzítő csoport             \g{letter}
+Megnevezett csoport kifejezése          \g<letter>
+Megnevezett csoport kifejezése          \g'letter'
+YY hexadecimális karakter               \xYY
+YYYY hexadecimális karakter             \x{YYYY}
+ddd oktális karakter                    \ddd
+Y vezérlőkarakter                       \cY
+Backspace karakter                      [\b]
+Bármely karaktert betű szerintivé tesz  \
+```
+
+**Ismétlésjelek**
+
+```
+Nulla vagy egy a                        a?
+Nulla vagy több a                       a*
+Egy vagy több a                         a+
+Pontosan 3 a                            a{3}
+3 vagy több a                           a{3,}
+3 és 6 közötti számú a                  a{3,6}
+Mohó ismétlésjel                        a*
+Lusta ismétlésjel                       a*?
+Birtokos ismétlésjel                    a*+
+```
+
+**Karakterosztályok**
+
+```
+Egy karakter ezek közül: a, b, c        [abc]
+Egy karakter, de nem a, b vagy c        [^abc]
+Egy karakter az a-z tartományból        [a-z]
+Egy karakter az a-z tartományon kívül   [^a-z]
+Egy karakter a-z vagy A-Z közül         [a-zA-Z]
+Betűk és számjegyek                     [[:alnum:]]
+Betűk                                   [[:alpha:]]
+ASCII kódok 0-127                       [[:ascii:]]
+Csak szóköz vagy tabulátor              [[:blank:]]
+Vezérlőkarakterek                       [[:cntrl:]]
+Tízes számjegyek                        [[:digit:]]
+Látható karakterek (szóköz nélkül)      [[:graph:]]
+Kisbetűk                                [[:lower:]]
+Látható karakterek                      [[:print:]]
+Látható írásjelek                       [[:punct:]]
+Üres karakterek                         [[:space:]]
+Nagybetűk                               [[:upper:]]
+Szókarakterek                           [[:word:]]
+Hexadecimális számjegyek                [[:xdigit:]]
+Szó eleje                               [[:<:]]
+Szó vége                                [[:>:]]
+```
+
+**Jelzők és módosítók**
+
+```
+Többsoros                               m
+Kis- és nagybetű nem számít             i
+Üres karakterek mellőzése / bőbeszédű   x
+Egysoros                                s
+Unicode                                 u
+eXtra                                   X
+Nem mohó                                U
+Horgony                                 A
+Ismétlődő csoportnevek                  J
+Nem rögzítő csoportok                   n
+Minden üres mellőzése / bőbeszédű       xx
+```
+
+**Csoportszerkezetek**
+
+```
+Nem rögzítő csoport                     (?:...)
+Rögzítő csoport                         (...)
+Atomi csoport (nem rögzítő)             (?>...)
+A részminta sorszámának törlése         (?|...)
+Megjegyzéscsoport                       (?#...)
+Megnevezett rögzítő csoport             (?'name'...)
+Megnevezett rögzítő csoport             (?<name>...)
+Megnevezett rögzítő csoport             (?P<name>...)
+Soron belüli módosítók                  (?imsxUJnxx)
+Helyi soron belüli módosítók            (?imsxUJnxx:...)
+Feltételes szerkezet                    (?(1)yes|no)
+Feltételes szerkezet                    (?(R)yes|no)
+Rekurzív feltételes szerkezet           (?(R#)yes|no)
+Feltételes szerkezet                    (?(R&name)yes|no)
+Előretekintő feltétel                   (?(?=...)yes|no)
+Visszatekintő feltétel                  (?(?<=...)yes|no)
+Az egész minta rekurzív hívása          (?R)
+Az 1. rögzítő csoport kifejezése        (?1)
+Az első relatív rögzítő csoport         (?+1)
+Megnevezett csoport kifejezése          (?&name)
+A 'név' nevű részminta                  (?P=name)
+A '{név}' csoport kifejezése            (?P>name)
+Minták megadása használat előtt         (?(DEFINE)...)
+Pozitív előretekintés                   (?=...)
+Negatív előretekintés                   (?!...)
+Pozitív visszatekintés                  (?<=...)
+Negatív visszatekintés                  (?<!...)
+Betűs körbetekintő állítások            (*pla:...)
+Nem atomi körbetekintő állítás          (*non_atomic_positive_lookahead:...)
+Egységes írásrendszer állítás           (*script_run:...)
+Egységes írásrendszer (rövid)           (*sr:...)
+Vezérlőszó                              (*ACCEPT)
+Vezérlőszó                              (*FAIL)
+Vezérlőszó                              (*MARK:NAME)
+Vezérlőszó                              (*COMMIT)
+Vezérlőszó                              (*PRUNE)
+Vezérlőszó                              (*SKIP)
+Vezérlőszó                              (*THEN)
+```
+
 # Színek <a id="colors"></a>
 
 A M-Commander megpróbálja megállapítani azt, hogy a terminál
@@ -2616,88 +3304,277 @@ color_terminals=terminal-name1,terminal-name2...
 A program mindkét opcióval fordítható (ncurses és S-Lang).  Az ncurses nem
 jelent feltétlenül színes üzemmódot; csak a terminál adatbázist használja.
 
+# Skinek <a id="skins"></a>
+
+A program külsejét meg lehet változtatni. Ehhez olyan fájlt kell megadni,
+amely a színek és a keretek rajzolásához használt vonalak leírását
+tartalmazza. A színek újradefiniálása teljesen megfelel annak, amit a
+[Színek](#colors)
+rész ír le.
+
+Ha a skin valódi színeket (true-color) is megad, a [skin] szakaszban a
+'truecolors' kulcsot TRUE értékre kell állítani. Ha nem valódi színt, hanem
+256 színt használ, akkor helyette a '256colors' kulcsot.
+
+A skin-fájlt a program a következő sorrendben keresi (az elsőig, amelyet
+megtalál):
+
+```
+1) parancssori kapcsoló -S <skin>, --skin=<skin>
+2) MC_SKIN környezeti változó
+3) a [Midnight-Commander] szakasz skin paramétere
+4) a {{sysconfdir}}/mcommander/skins/default.ini fájl
+5) a {{pkgdatadir}}/skins/default.ini fájl
+```
+
+A parancssori kapcsoló, a környezeti változó és a konfigurációs fájlbeli
+paraméter a skin-fájl abszolút útvonalát is tartalmazhatja (.ini
+kiterjesztéssel vagy anélkül). A keresés itt történik (az elsőig, amelyet
+megtalál):
+
+```
+1) ~/.local/share/mc6/skins/
+2) {{sysconfdir}}/mcommander/skins/
+3) {{pkgdatadir}}/skins/
+```
+
+A skin-fájlok formátumát a
+**{{pkgdatadir}}/skins/README.txt**
+írja le.
+
+# Fájlnevek kiemelése <a id="filenames-highlight"></a>
+
+Az aktuális skin-fájl [filehighlight] szakasza a kiemelési csoportok nevét
+tartalmazza kulcsként, az értékek pedig színpárok.
+
+A fájlnevek kiemelésének szabályai a {{pkgdatadir}}/filehighlight.ini fájlban
+állnak (~/.config/mc6/filehighlight.ini). Az itteni szakaszok nevének meg
+kell egyeznie a (skin-fájlbeli) [filehighlight] szakasz paramétereinek
+nevével.
+
+A csoportokban használható kulcsok:
+
+*type*
+: a fájl típusa. Ha szerepel, a program a többi beállítást nem veszi
+figyelembe.
+
+*regexp*
+: reguláris kifejezés. Ha szerepel, az 'extensions' beállítás nem számít.
+
+*extensions*
+: a fájlkiterjesztések listája, ';' jellel elválasztva.
+
+*extensions_case*
+: (csak az 'extensions' beállítással együtt van értelme) az 'extensions'
+szabály megkülönbözteti-e a kis- és a nagybetűt (true), vagy nem (false).
+
+A 'type' kulcs értékei a következők lehetnek:
+
+```
+- FILE (minden fájl)
+  - FILE_EXE
+- DIR (minden könyvtár)
+  - LINK_DIR
+- LINK (minden link a törött linkek kivételével)
+  - HARDLINK
+  - SYMLINK
+- STALE_LINK
+- DEVICE (minden eszközfájl)
+  - DEVICE_BLOCK
+  - DEVICE_CHAR
+- SPECIAL (minden speciális fájl)
+  - SPECIAL_SOCKET
+  - SPECIAL_FIFO
+  - SPECIAL_DOOR
+```
+
+# Külső szerkesztő vagy fájlnéző paraméterei <a id="parameters-for-external-editor-or-viewer"></a>
+
+A program módot ad arra, hogy a külső szerkesztőkhöz és fájlnézőkhöz
+kapcsolókat adjunk meg. Az "[External editor or viewer parameters]" szakaszt
+először a rendszerszintű inicializáló fájlban (a program könyvtárában levő
+defaults.ini fájlban), majd a ~/.config/mc6/ini fájlban keresi. A beállítás
+neve a külső szerkesztő vagy fájlnéző neve (teljes útvonala) legyen. Az
+értékében a következő változók használhatók:
+
+*%filename*
+: a szerkesztendő vagy megnézendő fájl neve.
+
+*%lineno*
+: az a sor, amelynél a fájl megnyílik.
+
+Például:
+
+```
+[External editor or viewer parameters]
+    vi=%filename +%lineno
+    joe=%filename +%lineno
+    more=%filename +%lineno
+```
+
+A kezdősort a program csak akkor adja át a külső szerkesztőnek vagy
+fájlnézőnek, ha az a
+[Fájl keresés](#find-file)
+eredményablakából indul.
+
+Ha a külső szerkesztő vagy fájlnéző az F4, illetve az F3 billentyűvel indul,
+a program arra számít, hogy a program (legalábbis a "joe", de valószínűleg
+más is) maga nyitja meg a fájlt ott, ahol utoljára járt. A program nem
+akadályozza meg a külső szerkesztőt vagy fájlnézőt abban, hogy a megnyitott
+fájlokban a pozíciót elmentse és visszaállítsa.
+
 # Speciális Beállítások <a id="special-settings"></a>
 
-A legtöbb M-Commander beállítás a menükből is elérhető. Ám van
-néhány beállítás, ami csak a setup fájl szerkesztésével állítható be.
+A legtöbb beállítás a menükből is elérhető. Van azonban néhány, amelyet csak
+a beállításfájl szerkesztésével lehet megváltoztatni.
 
-Ezeket a változókat az ~/.config/mc6/ini fájlban állíthatod be:
+Ezeket a változókat a ~/.config/mc6/ini fájlban lehet megadni:
 
 *clear_before_exec*
-: Alapértelmezésben a M-Commander törli a képernyőt, mielőtt
-futtatna egy parancsot. Ha a parancs kimenetét a képernyő alján
-szeretnéd látni, az ~/mc.ini fájlban javítsd ki a clear_before_exec
-értékét 0-ra.
+: Alapértelmezésben a program törli a képernyőt, mielőtt parancsot futtatna.
+Ha a parancs kimenetét a képernyő alján szeretnéd látni, írd át a
+~/.config/mc6/ini fájlban a clear_before_exec értékét 0-ra.
 
 *confirm_view_dir*
-: Ha lenyomod az F3 gombot a könyvtár felett állva, normálisan a M-Commander belép
-a könyvtárba. Ha ez a flag 1-re van állítva, akkor az M-Commander kijelölt fájlok
-esetén megerősítő kérdést fog feltenni, mielőtt könyvtárat váltana.
+: Ha könyvtáron nyomsz F3-at, a program rendes körülmények között belép a
+könyvtárba. Ha ez az érték 1, akkor kijelölt fájlok esetén megerősítést kér,
+mielőtt könyvtárat váltana.
 
-*ftpfs_retry_seconds*
-: Ez az érték az a szám, amely megadja azt, hogy Commander mennyit várjon
-mielőtt megpróbál újra kapcsolódni az ftp szerverre, elutasítás esetén.
-Ha az érték nulla, akkor nem próbálkozik újra a kapcsolatteremtéssel.
-
-*ftpfs_use_passive_connections.*
-: Ez az opció alapesetben ki van kapcsolva. Ez teszi az ftpfs kódot
-használhatóvá passzív megnyitás módúvá a letöltött fájloknál. Ezt akkor
-használják, ha csomagszűrő routert használnak. Ez az opció csak akkor
-működik, ha a nem használsz ftp proxy-t.
-
-*max_dirt_limit*
-: Meghatározza azt, hogy hány képernyőfrissítést tudjon átlépni a Belső
-fájlnéző. Normálisan ez az érték nem meghatározott, mivel a kód
-automatikusan módosítja a képfrissítés sebességét, ha túl gyosran ütöd
-le egymás után a billentyűket. Habár a nagyon lassú gépeken, vagy, ha
-nagy billenty ismétlési sebességet állítottunk, a nagy érték tudja
-megfelelően frissíteni a képernyőt. A legjobb az ha a max_dirt_limit
-értékét 10-re állítod, és ez az alapértelmezett érték.
-
-*mouse_move_pages*
-: Vezérel akkor, amikor a panelben az egérrel legördítesz oldalanként,
-vagy sorról sorra.
-
-*mouse_move_pages_viewer*
-: Vezérel akkor, amikor a panelben az egérrel legördítesz egy oldala
-oldalanként, vagy sorról sorra a Belső fájlnézőben.
-
-*old_esc_mode*
-: Alapesetben a M-Commander az ESC gombot a gomb rendeltetésének
-megfelelően használja (Meta) (old_esc_mode=0), ha beállítod ezt az
-opciót, (old_esc_mode=1), akkor az ESC gomb egy másodpercig vár, és, ha
-ilyenkor nem nyomsz le egy kiegészítő gombot, az ESC műveletet
-megszakító gombként fog működni (ESC ESC).
+*vfs_timeout*
+: A virtuális fájlrendszer gyorstárának élettartama másodpercben. Archívumból
+vagy tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes
+fájl ennyi ideig megmarad, hogy a visszalépés azonnali legyen, azután
+felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja. A
+Beállítások menü Csatolt fájlrendszer ablaka ugyanezt az értéket állítja.
 
 *only_leading_plus_minus*
-: speciálisan kezeli a '+', '-', '\*' karaktereket a parancssorban
-(kiválasztás, kiválasztás megszüntetése, megfordítja a kiválasztást), de
-csak akkor, ha a parancssor üres. A parancssorban nem kell idézőjelek
-közé tenni. Amikor a parancssor nem üres, nem tudjuk megváltoztatni a
-kiválasztást.
+: A '+', '-' és '\*' karaktert csak akkor kezeli külön a parancssorban
+(kijelölés, kijelölés megszüntetése, megfordítása), ha a parancssor üres. Így
+a parancssor közepén nem kell idézőjelbe tenni őket, viszont nem üres
+parancssornál nem használhatók a kijelölés változtatására.
 
-*panel_scroll_pages*
-: Ha be van állítva (alapértelmezésben), a panel egy fél képernyőnyit fog
-fel-le gördülni, ha a kurzor eléri a panel végét, vagy elejét, egyébként
-csak egy fájlt fog legördítani ilyenkor.
+*alternate_plus_minus*
+: Bekapcsolva a '+', a '-', a '\\' és a '\*' billentyű a szokásos módon
+működik. Kijelölésre és a kijelölés megszüntetésére ilyenkor az 'Alt-+', az
+'Alt--' és az 'Alt-\*' való.
 
 *show_output_starts_shell*
-: Ez a változó csak akkor működik, ha a subshell támogatást nem használod.
-Amikor a C-o billentyű kombinációt használod, visszalépsz a felhasználói
-képernyőre, ha "egy" a beállítás, akkor a shellt frissíted. Egyébként
-bármely gomb lenyomásával visszatérhetsz a M-Commander-hez.
+: Ha a C-o billentyűvel a felhasználói képernyőre lépsz vissza, és ez be van
+kapcsolva, új shellt kapsz. Egyébként bármely billentyű visszahoz a
+programhoz.
+
+*timeformat_recent*
+: A hat hónapnál nem régebbi dátumok megjelenítési formája. A leírását lásd a
+strftime vagy a date kézikönyvlapján. Ha ez a beállítás hiányzik, az
+alapértelmezett forma érvényes.
+
+*timeformat_old*
+: A hat hónapnál régebbi vagy jövőbeli dátumok megjelenítési formája. A
+leírását lásd a strftime vagy a date kézikönyvlapján. Ha ez a beállítás
+hiányzik, az alapértelmezett forma érvényes.
 
 *use_file_to_guess_type*
-: Ha ez a változó be van állítva (alapértelmezésben) meg foja jelölni azt
-a fájl parancsot, amelyhez a
-[Társításokban](#edit-extension-file)
-a fájl típusnál egyezőt talált.
+: Bekapcsolva (ez az alapértelmezés) a program a file parancsot hívja, hogy
+megállapítsa a
+[társítások fájljában](#edit-extension-file)
+felsorolt típusokat.
 
 *xtree_mode*
-: Ha ez a változó be van kapcsolva (alapértelmezésben ki van kapcsolva),
-akkor, amikor a fájlrendszert a Fa panelben böngészed, az automatikusan
-újraolvassa a másik panelt a kiválasztott könyvtárnak megfelelő
-tartalommal.
+: Bekapcsolva (alapértelmezés szerint ki van kapcsolva), ha a fájlrendszert a
+Fa panelben böngészed, a másik panel magától a kijelölt könyvtár tartalmát
+mutatja.
+
+*shell_directory_timeout*
+: A könyvtár-gyorstár egy bejegyzésének élettartama másodpercben. Az
+alapértelmezett érték 900 másodperc.
+
+*clipboard_store*
+: Egy külső vágólapkezelő útvonala (kapcsolókkal együtt), például az 'xclip',
+amely fájlból olvas szöveget az X kijelölésébe. Például:
+
+<!-- -->
+
+```
+clipboard_store=xclip -i
+```
+
+*clipboard_paste*
+: Egy külső vágólapkezelő útvonala (kapcsolókkal együtt), például az 'xclip',
+amely a kijelölést a szabványos kimenetre írja. Például:
+
+<!-- -->
+
+```
+clipboard_paste=xclip -o
+```
+
+*autodetect_codeset*
+: Ezzel a beállítással a program az 'enca' paranccsal állapítja meg a
+szövegfájlok kódlapját a belső fájlnézőben és a szerkesztőben. Az érvényes
+értékek listáját az 'enca --list languages | cut -d : -f1' parancs adja meg.
+A beállításnak a [Misc] szakaszban kell állnia.
+
+Például:
+
+```
+autodetect_codeset=russian
+```
+
+A belső fájlnéző beállításai ugyanennek a fájlnak a [Viewer] szakaszában
+vannak. Mindegyikük megtalálható a
+[Megjelenítő beállításai](mview.md#viewer-options)
+ablakban is; az itteni nevek azok, amelyeket az az ablak ír ki.
+
+*wrap*
+: A képernyőnél szélesebb sort a következő képernyősorba töri.
+Alapértelmezés szerint be van kapcsolva.
+
+*syntax*
+: A szöveget a szerkesztő szintaxisszabályai szerint színezi.
+Alapértelmezés szerint ki van kapcsolva.
+
+*mouse_move_pages*
+: Az egérrel való gördítés lapokban történik, nem soronként. ASCII módban a
+bal gomb szöveget jelöl ki, ezért ott ez a gördítés a jobb vagy a középső
+gombbal megy. Alapértelmezés szerint be van kapcsolva.
+
+*remember_file_position*
+: A fájlt ott nyitja meg, ahol legutóbb abbamaradt. Alapértelmezés szerint ki
+van kapcsolva.
+
+*structured_auto*
+: A támogatott fájlokat (json, yaml, yml, xml, html, htm) rögtön a szerkezeti
+(fa) módban nyitja meg. Ha a fájl nem elemezhető, szó nélkül a sima szöveges
+képet használja. Alapértelmezés szerint ki van kapcsolva.
+
+*eof*
+: A fájl utolsó sora után kiírt szöveg. Alapértelmezés szerint üres.
+
+*structured_max_size*
+: A legnagyobb fájl, amelyet a szerkezeti (fa) nézet feldolgoz, bájtban. A
+nagyobbat olvasás előtt visszautasítja. Alapértelmezés szerint 67108864
+(64 MB).
+
+*structured_max_nodes*
+: A legnagyobb fa, amelyet a szerkezeti nézet felépít, csomópontokban. A sűrű
+dokumentum, például az apró címkékből álló XML, előbb ér ehhez a korláthoz,
+mint a mérethez: nagyjából tizenkét bájtonként fogyaszt egy csomópontot, és
+minden csomópont memóriába kerül. Alapértelmezés szerint 10000000, ami egy
+ilyen fájlból mintegy 120 MB-ot fogad be körülbelül 1,5 GB-ban.
+
+*dirt_limit*
+: Hány képernyőfrissítés maradhat ki legfeljebb, amíg egy fájl beolvasása
+tart. Ez az érték rendes körülmények között nem számít, mert a program a
+beérkező billentyűk ütemétől függően maga állítja a kihagyott frissítések
+számát. Nagyon lassú gépen vagy gyors billentyűismétlésű terminálon azonban a
+nagy érték ugrálóvá teszi a képet. Alapértelmezés szerint 10, ez viselkedik a
+legjobban.
+
+A korábbi változatok ezeket a beállításokat a fő szakaszban, hosszabb néven
+tartották (wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
+mcview_remember_file_position, mcview_structured_auto, mcview_eof és
+max_dirt_limit). A program egyszer onnan olvassa be, majd a [Viewer]
+szakaszba írja őket.
 
 # Terminál adatbázisok <a id="terminal-databases"></a>
 
@@ -2780,9 +3657,10 @@ helyett.
 : Ez a fájl tartalmazza a program által megjelenített útmutattásokat
 (cookie-kat).
 
-*{{pkgdatadir}}/usermenu*
-: Ez a fájl azonos a rendszerszintű alkalmazás menüvel.
-
+*~/.config/mc6/menu.ini*
+: A felhasználói menü, amely saját magát szerkeszti, tételenként egy
+csoporttal. Ahol ez a fájl létezik, az F2 ezt nyitja meg, és az aktuális
+könyvtár .mc6menu fájlja mellette látszik.
 *~/.config/mc6/menu*
 : A falhasználó saját alkalmazás menüje. Ha ez a fájl elérhető a
 rendszerszintű alkalmazás menü helyett ezt fogja használni.
@@ -2862,9 +3740,6 @@ Bakeyev (timur@goff.comtat.kazan.su), Tomasz Cholewo
 and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 # Hibák bejelentése <a id="bugs"></a>
-
-Nézd meg a disztribúció TODO fájlát, hogy megtudhasd, milyen teendők
-vannak még vissza.
 
 Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
 címre: <https://github.com/blue-panels/mcommander/issues> .

@@ -5,7 +5,7 @@ date: septiembre de 2026
 <!-- help:topics "Índice de Contenidos:" -->
 # NOMBRE <!-- help:skip -->
 
-mcommander - entorno visual para sistemas tipo Unix.
+mcommander - gestor de archivos de dos paneles en modo texto
 
 # SINOPSIS <!-- help:skip -->
 
@@ -19,9 +19,13 @@ mcommander - entorno visual para sistemas tipo Unix.
 
 # DESCRIPCIÓN <a id="description"></a>
 
-"M-Commander" (Comandante de Medianoche) es
-un navegador de directorios/gestor de archivos para
-sistemas operativos tipo Unix.
+M-Commander es un gestor de archivos de dos paneles en modo texto, basado en
+GNU Midnight Commander. Su arquitectura se articula en torno a un núcleo
+compacto y complementos de panel de carga dinámica. Los complementos ofrecen
+una interfaz de panel uniforme para archivos comprimidos, sistemas de archivos
+remotos, repositorios y otras fuentes de datos. Las órdenes se ejecutan en un
+terminal incorporado. M-Commander incluye además un editor de texto con
+resaltado de sintaxis y un visor compatible con formatos de texto y binarios.
 
 
 # OPCIONES <a id="options"></a>
@@ -61,9 +65,6 @@ terminales compatibles con xterm (tmux/screen).
 
 *-K arch, --keymap=arch*
 : Carga desde un archivo la configuración de teclas para la línea de órdenes.
-
-*-l reg, --ftplog=reg*
-: Guarda el diálogo FTPfs con el servidor en el archivo.
 
 *--nokeymap*
 : No cargar asociaciones de teclas desde ningún archivo, utilizar las
@@ -306,42 +307,73 @@ y las líneas de entrada en las ventanas de preguntas.
 
 ## Redefinición de teclas <a id="keys_redefine"></a>
 
+Lo mismo se puede hacer desde el propio programa, en el menú
+**Opciones**.
+El diálogo
+[Asociaciones de teclas](#key-bindings)
+lista cada acción con las teclas a las que responde, las cambia y escribe el
+resultado en
+**~/.config/mc6/keymap.ini**,
+de modo que el archivo que busca la opción es el que ese diálogo mantiene. El
+diálogo
+[Aprender teclas](#learn-keys)
+se ocupa del otro extremo del problema: enseña al programa las secuencias que
+el terminal envía para las teclas que no reconoce bien. El
+[Analizador de teclas](#key-sniffer)
+muestra lo que llega al pulsar una tecla, junto con la acción a la que está
+asignada en el mapa actual, que es lo que conviene mirar cuando una asignación
+parece no hacer nada.
+
 La función de ciertas teclas se puede alterar a partir de un mapa de teclado
-almacenado en un archivo externo. Inicialmente el programa asigna esas funciones
-según el mapa definido en el código fuente. Posteriormente se cargan siempre
-los archivos
+almacenado en un archivo externo. Inicialmente el programa asigna esas
+funciones según el mapa definido en el código fuente. Posteriormente se cargan
+siempre los archivos
 **{{pkgdatadir}}/keymap.ini**
 y
 **{{sysconfdir}}/mcommander/keymap.ini**,
-reasignando en el orden marcado las definiciones anteriores. Se cargan después
-posibles mapas de teclado creados por el usuario atendiendo por orden de prioridad
-a:
+reasignando en el orden marcado las definiciones anteriores.
+El paquete instala sus propios mapas en
+**{{sysconfdir}}/mcommander**:
+**keymap.default.ini**,
+**keymap.emacs.ini**
+y
+**keymap.vim.ini**,
+siendo
+**keymap.ini**
+un enlace al primero.
+La opción
+**--nokeymap**
+no lee ningún archivo y deja las asignaciones del código fuente.
 
-> 1) Opción de ejecución en línea de órdenes
-> **-K \<mapa>**
-> o
-> **--keymap=\<mapa>**  
-> 2) Variable de entorno
-> **MC_KEYMAP**  
-> 3) Parámetro
-> **keymap**
-> en la sección
-> **[Midnight-Commander]**
-> del archivo de configuración.  
-> 4) Archivo
-> **~/.config/mc6/keymap.ini**  
+Se carga después un mapa de teclado creado por el usuario, atendiendo por
+orden de prioridad a:
 
-La opción de línea de órdenes, la variable de entorno y el parámetro en el
-archivo de configuración pueden proporcionar la ruta absoluta al archivo
-de mapa de teclado (con o sin la extensión .keymap). En caso contrario
-se procede a realizar una búsqueda por directorios hasta encontrarlo en:
+```
+1) opción de línea de órdenes -K <mapa>, --keymap=<mapa>
+2) variable de entorno MC_KEYMAP
+3) parámetro keymap de la sección [Midnight-Commander]
+4) archivo ~/.config/mc6/keymap.ini
+```
 
-> 1)
-> **~/.config/mc6**  
-> 2)
-> **{{sysconfdir}}/mcommander/**  
-> 3)
-> **{{pkgdatadir}}/**
+Los tres primeros admiten un nombre o una ruta absoluta. A un nombre que no
+termine en
+**.keymap**
+se le añade esa extensión, y se busca en (hasta encontrarlo):
+
+```
+1) ~/.config/mc6/
+2) {{pkgdatadir}}/
+```
+
+Por esa extensión, los mapas del paquete, cuyos nombres terminan en
+**.ini**,
+no se pueden elegir así. Para usar uno de ellos, cópiese o enlácese a
+**~/.config/mc6/keymap.ini**,
+que se lee el último y no necesita opción alguna:
+
+```
+ln -s {{sysconfdir}}/mcommander/keymap.vim.ini ~/.config/mc6/keymap.ini
+```
 
 ## Otras Teclas <a id="miscellaneous-keys"></a>
 
@@ -401,7 +433,7 @@ sobre enlaces simbólicos véase la sección
 
 **Alt-!**
 : ejecuta una orden del sistema y muestra su salida en el
-[visor de archivos](#internal-file-viewer).
+[visor de archivos](mview.md#internal-file-viewer).
 
 **Alt-?**
 : [buscar archivos](#find-file).
@@ -550,35 +582,56 @@ con el ratón.
 *v*
 con el ratón.
 
-## Búsqueda rápida <a id="quick-search"></a>
+## Búsqueda rápida y filtro rápido <a id="quick-search"></a>
 
-El modo de Búsqueda rápida permite localizar rápidamente nombres de archivos en
-los paneles de directorio. Pulsando
-*Ctrl-s*
+El modo de Búsqueda rápida permite localizar rápidamente nombres de archivos
+en los paneles de directorio. Pulsando
+**Ctrl-s**
 o
-*Alt-s*
-se inicia la búsqueda de un archivo en el panel activo.
+**Alt-s**
+se inicia la búsqueda de un archivo en el panel activo. Con
+**Alt-Mayús-s**
+se inicia el filtro rápido, que usa el mismo patrón pero oculta las entradas
+que no lo contienen. La entrada del directorio padre se muestra siempre.
 
-Estando activada la búsqueda, las teclas pulsadas se van añadiendo a la cadena
-de texto en búsqueda y no a la línea de órdenes. Si la opción
+Con cualquiera de los dos modos activo, las teclas pulsadas se van añadiendo
+al patrón común y no a la línea de órdenes. Si la opción
 *Mostrar Mini-estado*
-está habilitada, la cadena a buscar se podrá ver en la línea de estado.
-Conforme tecleemos, dentro del panel activo la barra de selección se desplazará
-al siguiente archivo o directorio cuyo nombre coincida con las letras
-introducidas.  Se pueden usar las teclas
-*borrar*
+está habilitada, el patrón se podrá ver en la línea de mini-estado. Conforme
+tecleemos, la barra de selección se desplazará al siguiente archivo cuyo
+nombre empiece por las letras introducidas; en el modo de filtro la lista se
+reduce además a las entradas que coinciden. Las teclas
+**Retroceso**
 o
-*suprimir*
-para corregir errores de escritura.  Si pulsamos
-*Ctrl-s*
-de nuevo, se busca la siguiente coincidencia.
+**Supr**
+sirven para corregir errores de escritura.
 
-Si se inicia la búsqueda rápida pulsando dos veces
-*Ctrl-s*
-se recuperará el último patrón de búsqueda utilizado.
+Pulsar
+**Ctrl-s**
+o
+**Alt-s**
+con el filtro rápido activo pasa a la búsqueda rápida y muestra todas las
+entradas sin perder el patrón ni el archivo actual. Pulsar
+**Alt-Mayús-s**
+con la búsqueda rápida activa vuelve al filtro. Repetir el atajo del modo
+activo busca la siguiente coincidencia.
 
-Aparte de los caracteres propios de los nombres se pueden utilizar también los
-caracteres comodín '\*' y '?'.
+Las teclas de movimiento, los cursores,
+**Inicio**,
+**Fin**,
+**RePág**
+y
+**AvPág**
+se mueven dentro de la lista filtrada sin cerrar el filtro.
+
+Los archivos se pueden marcar y desmarcar con el filtro activo. Sus marcas se
+conservan al cambiar de modo o al cerrar el filtro.
+
+Si se inicia cualquiera de los dos modos pulsando dos veces su atajo, se
+recupera el patrón anterior.
+
+Aparte de los caracteres propios de los nombres se pueden utilizar también
+los caracteres comodín '\*' y '?'.
 
 ## Línea de Órdenes del Sistema <a id="shell-command-line"></a>
 
@@ -710,6 +763,22 @@ el texto de la línea de entrada.
 
 **Ctrl-k**
 : elimina el texto desde el cursor hasta el final de la línea.
+
+**Ctrl-Ins**
+: copia el texto seleccionado al archivo de intercambio y al portapapeles del
+sistema. Sin nada seleccionado: los archivos marcados del panel que esté a la
+vista, uno por línea; si no, la línea entera; si no, el archivo donde está el
+cursor del panel.
+
+**Mayús-Supr**
+: corta el texto seleccionado al archivo de intercambio y al portapapeles del
+sistema.
+
+**Mayús-Ins**
+: pega el archivo de intercambio en la línea como una sola línea: los saltos
+de línea y demás caracteres de control se convierten en espacios. En la línea
+de órdenes funciona con los paneles a la vista y ocultos. Más de 2 KB de
+texto se pega solo tras una confirmación.
 
 **Alt-p, Alt-n**
 : usaremos esas teclas para desplazarnos a través del historial de comandos. Alt-p nos lleva
@@ -906,7 +975,7 @@ Para más información véase la sección correspondiente.
 
 **Vista Rápida**
 : En este modo, en el panel aparece un
-[visor](#internal-file-viewer)
+[visor](mview.md#internal-file-viewer)
 reducido que muestra el contenido del archivo seleccionado.  Si se activa
 el panel (con el tabulador o con el ratón), se dispone de los funciones
 usuales del visor.
@@ -927,10 +996,25 @@ activando la opción
 
 ### Filtro... <a id="filter"></a>
 
-La utilidad filtro nos permite seleccionar con un patrón (por ejemplo
+La utilidad filtro nos permite indicar un patrón (por ejemplo
 **\*.tar.gz**)
-los archivos a listar. Indiferentes al patrón de filtro, siempre se
-muestran todos los directorios y enlaces a directorios.
+que los archivos y directorios deben cumplir para ser mostrados.
+La
+[línea de entrada](#input-line-keys)
+recibe el patrón de los nombres que se verán en el panel.
+
+Con la casilla
+*Solo archivos*
+activada, el filtro se aplica solo a los archivos y todos los directorios se
+muestran. Si no, se filtran tanto los archivos como los directorios. Con la
+casilla
+*Patrones del shell*
+activada, el patrón funciona como el englobado de nombres del shell (\* vale
+por cero o más caracteres y ? por uno). Si no, la comparación se hace con
+expresiones regulares normales (véase ed(1)). Con la casilla
+*Distinguir mayúsculas*
+activada, el filtro distingue mayúsculas de minúsculas; si no, no las tiene
+en cuenta.
 
 ### Releer <a id="reread"></a>
 
@@ -990,7 +1074,7 @@ y añadir asimismo características extra a M-Commander.
 **Ver (F3, Mayús-F3)**
 
 Visualiza el archivo seleccionado. Por defecto invoca el
-[Visor de Archivos Interno](#internal-file-viewer)
+[Visor de Archivos Interno](mview.md#internal-file-viewer)
 pero si la opción "Usar visor interno" está desactivada, invoca un visor
 de archivos externo especificado por la variable de entorno
 **VIEWER.**
@@ -1020,7 +1104,7 @@ Invoca el editor
 u otro especificado en la variable de entorno
 **EDITOR**,
 o el
-[Editor de Archivos Interno](#internal-file-editor)
+[Editor de Archivos Interno](mcedit6.md#internal-file-editor)
 si la opción
 *use_internal_edit*
 está activada.
@@ -1292,48 +1376,60 @@ Véase también la sección sobre
 ### Buscar Archivos <a id="find-file"></a>
 
 La utilidad para Buscar Archivos primero pregunta por el directorio de inicio
-y el nombre de archivo a buscar.  Pulsando el botón Árbol podemos seleccionar
+y el nombre de archivo a buscar. Pulsando el botón Árbol podemos seleccionar
 el directorio inicial en el
 [Árbol de directorios](#directory-tree).
 
-El campo de contenidos puede aceptar expresiones regulares similares a egrep(1). En
-ese caso podremos proteger caracteres con significado especial para egrep anteponiendo «\\»,
-p.ej. si buscamos «strcmp (» tendremos que introducir «strcmp \\(".
+El campo "Nombre de archivo" contiene el patrón de nombre que se busca. Se
+interpreta como patrón del shell o como expresión regular según el estado de
+la casilla "Usar patrones del shell". Un valor vacío es válido y vale para
+cualquier nombre.
 
-Con la opción «Palabras completas» se puede limitar la búsqueda a archivos donde
-la parte coincidente forme una palabra completa.  Eso se corresponde con la función
-de la opción «-w» de grep.
+El campo "Contenido" contiene el texto que se busca dentro de los archivos.
+Dejándolo vacío no se busca en el contenido.
 
-Podemos iniciar la búsqueda pulsando el botón Aceptar.
-Durante el proceso de búsqueda podemos detenerla desde el botón Terminar.
+Con la opción "Palabras completas" se limita la búsqueda a los archivos donde
+la parte coincidente forme una palabra completa, como hace grep -w.
 
-Podemos navegar por la lista de archivos con las teclas del cursor Arriba y Abajo. El botón Chdir
-cambiará al directorio del archivo actualmente seleccionado. El botón "Otra vez" preguntará los parámetros para una nueva
-búsqueda. El botón Terminar finaliza la operación de búsqueda. El botón Panelizar
-colocará los archivos encontrados en el panel actual y así
-podremos realizar más operaciones con ellos (ver, copiar, mover,
-borrar y demás). Después de panelizar podemos pulsar Ctrl-r para regresar al listado
-normal de archivos.
+Podemos iniciar la búsqueda pulsando el botón Aceptar. Durante el proceso
+podemos detenerla con el botón Parar y seguir con el botón Continuar.
 
-Es posible tener una lista de directorios que el comando Buscar Archivo
-debería saltar durante la búsqueda (por ejemplo, podemos querer
-evitar búsquedas en un CDROM o en un directorio NFS que está montado a través de un
-enlace lento).
+La lista muestra la fecha de modificación, el tamaño y los permisos de cada
+archivo encontrado junto a su nombre. Cuando se busca en el contenido, cada
+archivo aparece una sola vez: una coincidencia única se muestra junto al
+nombre como "archivo.c:12", y un archivo con más de una coincidencia muestra
+cuántas son y se marca con "[+]". Las coincidencias de ese archivo se
+despliegan con la tecla Izquierda o pulsando sobre la marca: el número de
+línea y la línea misma. Allí, Intro va al archivo, F3 lo muestra y F4 lo
+edita en la coincidencia elegida.
 
-Los directorios a ser omitidos deberían ser enumerados en la variable
-**ignore_dirs**
-en la sección
-**FindFile**
-de nuestro archivo
-*~/.config/mc6/ini.*
+Podemos navegar por la lista con las teclas del cursor. El botón Chdir cambia
+al directorio del archivo elegido. El botón "Otra vez" pregunta los
+parámetros de una nueva búsqueda. El botón Terminar finaliza la búsqueda. El
+botón Panelizar coloca los archivos encontrados en el panel actual y así
+podremos realizar más operaciones con ellos (ver, copiar, mover, borrar y
+demás). Para volver al listado normal, cambiar al directorio ".."; para ver
+de nuevo el resultado panelizado, elegir el modo Panelizar en el menú
+Izquierdo o Derecho.
 
-Los componentes del directorio deberían ser separados por dos puntos, como en
-el ejemplo que sigue:
+La casilla "Ignorar directorios" y el campo que hay debajo permiten indicar
+los directorios que la búsqueda debe saltar (por ejemplo, para evitar un
+CD-ROM o un directorio NFS montado a través de un enlace lento). Los
+componentes de la lista se separan con dos puntos:
 
 ```
-[FindFile]
-ignore_dirs=/cdrom:/nfs/wuarchive:/afs
+/cdrom:/nfs/wuarchive:/afs
 ```
+
+También se admiten rutas relativas. El ejemplo siguiente salta además los
+directorios propios de los sistemas de control de versiones:
+
+```
+/cdrom:/nfs/wuarchive:/afs:.svn:.git:CVS
+```
+
+Atención: el campo puede contener un punto (.), que significa la ruta
+absoluta actual.
 
 Debemos valorar la utilización de
 [Búsquedas externas](#external-panelize)
@@ -1374,15 +1470,41 @@ ese comando de la lista y no habrá que escribirlo de nuevo.
 
 ### Favoritos <a id="hotlist"></a>
 
-Muestra una lista de sitios y directorios guardados y abre en el panel
-el lugar seleccionado. Desde el cuadro de diálogo podemos también crear y
-eliminar entradas. Para añadir se puede igualmente utilizar Añadir Actual
-(Ctrl-x h), que añade el directorio actual (no el seleccionado) a la lista
-de favoritos. Se pide al usuario una etiqueta para identificar la entrada.
+Muestra las etiquetas de los sitios guardados y abre en el panel el lugar
+elegido. Un lugar puede ser un directorio, una ruta dentro de un sistema de
+archivos virtual o la dirección de un complemento de panel, como
+*sftp:equipo/dir.*
+Desde el cuadro de diálogo podemos crear y eliminar entradas. Para añadir el
+lugar actual, sea directorio o panel de un complemento, está Añadir Actual
+(Ctrl-x h), que solo pide la etiqueta. Un lugar que ya está en la lista no se
+añade dos veces: el diálogo muestra la entrada existente.
+
+Teclas del diálogo:
+
+```
+Intro        ir al lugar elegido
+Alt-o        abrir el lugar elegido en el otro panel
+Ctrl-Intro   poner "cd lugar" en la línea de órdenes
+Alt-Intro    lo mismo, en terminales sin Ctrl-Intro
+Ins          añadir el lugar actual
+Mayús-F4     nueva entrada: pide etiqueta y lugar
+F7           nuevo grupo
+F4           editar la etiqueta y el lugar de la entrada
+Supr         borrar la entrada
+Ctrl-Arriba  subir la entrada una línea
+Ctrl-Abajo   bajar la entrada una línea
+F6           mover la entrada a otro grupo: el diálogo lista los
+             grupos, Intro abre uno, Mover o F6 de nuevo pone la
+             entrada al final del grupo mostrado, incluido el de
+             partida
+F9           ordenar el grupo actual por etiqueta, grupos primero
+Ctrl-s       buscar en la lista según se teclea, Ctrl-s repite
+Derecha, Izq entrar en un grupo y salir de él
+```
 
 Esto hace más rápido el posicionamiento en los directorios usados
-frecuentemente.  Deberíamos considerar también el uso de la variable
-CDPATH tal y como se describe en
+frecuentemente. Deberíamos considerar también el uso de la variable CDPATH
+tal y como se describe en
 [comando cd interno](#the-cd-internal-command).
 
 ### Editar el Archivo de Extensiones <a id="edit-extension-file"></a>
@@ -1408,12 +1530,82 @@ aquí.
 ### Edición del Archivo de Menú <a id="edit-menu-file"></a>
 
 El menú de usuario es un menú de acciones útiles que puede ser personalizado
-por el usuario. Cuando accedemos al menú de usuario se utiliza, si existe,
-el archivo .usermenu del directorio actual, pero solo si es propiedad del
-usuario o del superusuario y no es modificable por todos.
-Si no se encuentra allí el archivo, se intenta de la misma manera con ~/.config/mc6/menu,
-y si no, mcommander utiliza el menú por defecto para todo el sistema
-{{pkgdatadir}}/usermenu.
+por el usuario. Se presenta de dos formas: un menú que se edita a sí mismo,
+guardado en un archivo de claves, y el antiguo archivo de menú escrito a
+mano. Donde existe un archivo de claves, ese es el menú que abre F2; donde no
+lo hay, se lee el archivo antiguo como siempre.
+
+**El menú que se edita a sí mismo**
+
+Las entradas se guardan en el archivo .mc6menu del directorio actual y en
+~/.config/mc6/menu.ini, y se muestran juntas. Un .mc6menu se lee solo si
+pertenece a este usuario o al superusuario y nadie más puede escribir en él,
+porque sus entradas ejecutan órdenes. No se lee nada más: el menú contiene lo
+que puso su dueño, y mcommander no trae ninguna entrada, así que el menú de un
+usuario nuevo está vacío y pide la primera. Dentro del menú:
+
+```
+Intro        ejecutar la entrada
+Ins          añadir una entrada
+F4           editar la entrada
+F5           importar entradas de un menú escrito a mano
+Mayús-F4     abrir el archivo donde está la entrada
+Supr         borrar la entrada
+Ctrl-Arriba  subir la entrada
+Ctrl-Abajo   bajar la entrada
+```
+
+Una entrada es una tecla de atajo, un rótulo y las órdenes, y el diálogo no
+pide más: no hay condiciones ni máscaras de archivo. Las órdenes admiten las
+mismas sustituciones que el menú antiguo, %f, %s, %{prompt} y las demás,
+descritas en
+[sustitución de macro](#macro-substitution).
+Dos casillas dicen qué hacer con la salida: si va al visor y si la orden se
+ejecuta sin el shell del panel.
+
+El rótulo se muestra ya con esas sustituciones hechas, de modo que un rótulo
+"print %f" aparece en la lista con el nombre del archivo donde está el
+cursor. Lo que guarda el archivo no cambia, y %{...} se deja tal cual: una
+lista no es lugar para preguntar nada.
+
+Una entrada puede ser un submenú en vez de una orden: Ins pregunta cuál de
+las dos cosas añadir. Un submenú se muestra con una barra después del nombre,
+como un directorio; Intro lo abre, y el título nombra los submenús en los que
+estamos. Esc sube un nivel, y en el primero sale del menú. Borrar un submenú
+borra lo que hay dentro. En el archivo, un submenú es un grupo con
+submenu=true y sin orden, y una entrada de dentro nombra al submenú en
+parent=.
+
+Las órdenes son un campo de varias líneas: Intro abre una nueva, y los
+cursores, Inicio y Fin recorren el texto. Mayús con un movimiento selecciona
+lo que el movimiento recorre, el ratón selecciona arrastrando, y Ctrl-Ins,
+Mayús-Ins y Mayús-Supr copian, pegan y cortan a través del archivo de
+intercambio, igual que en una línea de entrada. El botón Editor sale del
+diálogo y abre el archivo donde está la entrada, para lo que sea más cómodo
+escribir allí.
+
+Una entrada se escribe de vuelta en el archivo del que vino, y el orden de la
+lista es el del archivo. Las condiciones y las máscaras pertenecen a la forma
+antigua: lo que el diálogo no sabe decir, el archivo sí, y Mayús-F4 lo abre.
+
+**El archivo de menú escrito a mano**
+
+La instalación ya no trae ninguno; lo que sigue se lee donde alguien mantiene
+un menú propio en la forma antigua: se usa el archivo .usermenu del
+directorio actual si existe, pero solo si es propiedad del usuario o del
+superusuario y no es modificable por todos. Si no se encuentra allí, se
+intenta de la misma manera con ~/.config/mc6/menu.
+
+Si el menú que se edita a sí mismo aún no tiene archivo y se encuentra otro
+menú (el propio escrito a mano, el usermenu de un mcommander instalado o un
+menu.ini de un mcommander anterior), mcommander ofrece una vez por sesión
+importarlo; F5 en el menú, y el botón Importar del menú vacío, lo piden en
+cualquier momento, para ese archivo o para otro que se nombre. Entonces
+muestra lo que el archivo contiene: Espacio marca una entrada, Ins la marca y
+baja, '\*' invierte todas las marcas, e Intro lleva las marcadas a
+~/.config/mc6/menu.ini, donde ya se pueden editar con el diálogo. El archivo
+de origen se queda donde está, y las condiciones y las máscaras se descartan,
+porque el diálogo no tiene sitio para ellas.
 
 El formato del menú de archivo es muy simple.  Todas las líneas, salvo
 las que empiezan con espacio o tabulación, son consideradas entradas
@@ -1554,9 +1746,10 @@ con '#', espacio o tabulación.
 
 ## Menú de Opciones <a id="options-menu"></a>
 
-M-Commander tiene opciones que pueden ser activadas o desactivadas
-a través de una serie de diálogos a los que se accede desde este menú. Una
-opción está activada cuando tiene delante un asterisco o una "x".
+M-Commander tiene opciones que pueden ser activadas o desactivadas a través
+de una serie de diálogos a los que se accede desde este menú. Una opción está
+activada cuando tiene delante un asterisco o una "x". El menú contiene, por
+este orden:
 
 En
 [Configuración](#configuration)
@@ -1571,28 +1764,56 @@ En
 [Paneles](#panel-options)
 se pueden configurar los paneles del gestor de archivos.
 
+[Modos de panel de archivos](#panel-modes)
+abre la lista de los formatos de listado con nombre, donde se crea, se edita
+y se borra uno.
+
 En
 [Confirmación](#confirmation)
-podemos especificar qué acciones requieren una confirmación del usuario
-antes de ser realizadas.
+podemos especificar qué acciones requieren una confirmación del usuario antes
+de ser realizadas.
 
 En
 [Aspecto](#appearance)
 podemos seleccionar un «skin» o apariencia para el programa.
 
 En
-[Aprender Teclas](#learn-keys)
-podemos verificar teclas que no funcionan en algunos terminales y
-solucionarlo.
+[Aprender teclas](#learn-keys)
+podemos enseñar al programa las teclas que algunos terminales no envían como
+es debido.
+
+[Asociaciones de teclas](#key-bindings)
+abre la lista de las acciones con las teclas a las que responden, donde se
+reasigna una tecla y el resultado se escribe en el archivo de asignación.
+
+[Analizador de teclas](#key-sniffer)
+muestra lo que envía el terminal para la tecla que se pulsa, y la acción a la
+que esa tecla está asignada.
 
 En
 [Sistema de Archivos Virtual (VFS)](#virtual-fs)
-podemos especificar algunas opciones relacionadas con el VFS (Sistema
-de Archivos Virtual).
+podemos especificar algunas opciones relacionadas con el VFS (Sistema de
+Archivos Virtual).
+
+**Opciones del comparador**,
+[Opciones del visor](mview.md#viewer-options)
+y
+**Opciones del editor**
+abren los diálogos de los tres programas que muestran un archivo: el
+comparador, el visor y el editor. Los mismos diálogos están en el menú
+Opciones de cada uno de ellos; aquí se alcanzan sin abrir antes un archivo.
+El comparador toma sus opciones al arrancar, de modo que una comparación ya
+en pantalla conserva las que tenía al abrirse.
+
+[Administrar complementos](#panel-plugins)
+lista los complementos cargados, permite desactivar uno y abre sus ajustes.
 
 [Guardar Configuración](#save-setup)
 guarda los valores actuales de los menús Izquierdo, Derecho y Opciones.
 También se guardan algunos otros valores.
+
+**Acerca de**
+muestra la versión del programa y quién lo escribió.
 
 ### Configuración <a id="configuration"></a>
 
@@ -1679,7 +1900,7 @@ los archivos con el editor especificado por la variable de entorno
 y si no se especifica ninguno, se usará
 **vi.**
 Véase la sección sobre el
-[editor de archivos interno](#internal-file-editor).
+[editor de archivos interno](mcedit6.md#internal-file-editor).
 
 *Usar Visor Interno.*
 Emplear el visor de archivos interno. Si la opción está desactivada,
@@ -1689,7 +1910,7 @@ será el utilizado.
 Si no se especifica ninguno, se usará el comando
 **view.**
 Véase la sección sobre el
-[visor de archivos interno](#internal-file-viewer).
+[visor de archivos interno](mview.md#internal-file-viewer).
 
 *Pedir Nombre al Editar Nuevos.*
 Si está activada, se pedirá al usuario el nombre de archivo antes de abrir
@@ -1921,108 +2142,94 @@ para conocer los detalles de los archivos de definición de estos «skins».
 
 ### Aprender teclas <a id="learn-keys"></a>
 
-Este diálogo nos permite comprobar si nuestras teclas F1-F20, Inicio, Fin, etc. funcionan adecuadamente
-en nuestro terminal. A menudo fallan, dado que muchas bases de datos de terminales están mal.
+Este diálogo enseña a mcommander las secuencias de escape que nuestro terminal
+envía para las teclas de función, los cursores y las teclas de movimiento.
 
-Podemos movernos alrededor con la tecla Tab, con las teclas de movimiento de vi ('h' izquierda, 'j'
-abajo, 'k' arriba y 'l' derecha) y después de pulsar cualquier tecla del cursor (esto
-las marcará con OK), entonces podremos usar esa tecla también.
+Se elige una combinación de modificadores (Ctrl, Alt, Mayús) con las casillas
+y después se pulsa el botón de la tecla. Se pulsa entonces la tecla física y
+se espera a que desaparezca el mensaje de captura. La secuencia aprendida
+aparece junto al botón.
 
-Para probarlas basta con pulsar cada una de ellas. Tan pronto como pulsamos una tecla y
-esta funciona adecuadamente, la marca «✓» debería aparecer junto al nombre de la susodicha
-tecla. Una vez que cada tecla queda marcada vuelve a funcionar con normalidad, p. ej. F1 la
-primera vez comprobará que F1 funciona perfectamente, pero a partir de ese momento mostrará
-la ayuda.  Esto mismo es aplicable a las teclas del cursor.  La tecla Tab debería funcionar
-siempre.
+**Supr**
+\- olvidar una tecla aprendida.
 
-Si algunas teclas no funcionan adecuadamente, entonces no veremos el OK tras el nombre de la tecla
-después de haberla pulsado. Podemos entonces intentar solucionarlo. Haremos esto
-pulsando el botón de esa tecla (con el ratón o usando
-*Tab e Intro).*
-Entonces un mensaje rojo aparecerá y se nos pedirá que pulsemos la tecla en cuestión.
-Si deseamos abortar el proceso, bastará con pulsar
-*Esc*
-y esperar hasta que el mensaje
-desaparezca. Si no, pulsaremos la tecla que nos pide y esperaremos hasta que
-el diálogo desaparezca.
+**Guardar**
+\- escribir las teclas aprendidas en ~/.config/mc6/term/\<TERM>.
 
-Cuando acabemos con todas las teclas, podríamos Guardar nuestras teclas
-en nuestro archivo
-*~/.config/mc6/ini*
-dentro de la sección \[terminal:TERM\] (donde TERM es el
-nombre de nuestro terminal actual) o descartarlas. Si todas nuestras teclas funcionan
-correctamente y no debemos corregir ninguna, entonces (lógico) no se grabará.
+**Editar archivo de terminal**
+\- abrir en el editor el archivo con las definiciones de teclas del terminal.
+
+Las definiciones antiguas de la sección [terminal:TERM] de
+~/.config/mc6/ini se migran automáticamente la primera vez.
 
 ### Sistema de Archivos Virtual (VFS) <a id="virtual-fs"></a>
 
-Este diálogo permite ajustar opciones del
-[Sistema de Archivos Virtual (VFS)](#virtual-file-system).
+Esta entrada controla la configuración de los
+[Sistemas de Archivos Virtuales](#virtual-file-system).
 
-M-Commander guarda en memoria o en disco información de algunos
-de los sistemas de archivos virtuales con el fin de acelerar el acceso
-a sus archivos.  Ejemplo de esto son los listados descargados desde
-servidores FTP o los archivos temporales descomprimidos creados para
-acceder rápidamente a los contenidos de archivos tipo tar comprimidos.
+El diálogo tiene un solo ajuste,
+*Tiempo para liberar VFS,*
+que es el tiempo de vida de la caché de un sistema de archivos: al salir de un
+archivo comprimido, la lista que se leyó y el archivo temporal que se
+desempaquetó se guardan durante esos segundos, de modo que volver a entrar es
+inmediato, y se liberan cuando se cumple el plazo. De forma predeterminada son
+60 segundos, y 0 los libera en el acto.
 
-Esas informaciones se conservan para permitirnos navegar, salir y volver a
-entrar rápidamente en los correspondientes sistemas de archivos virtuales.
-Al cabo de un cierto tiempo sin usarlos deben ser liberados y recuperar
-los recursos utilizados.  Por defecto ese tiempo es de un minuto, pero
-se puede configurar por el usuario.
+### Administrar complementos <a id="manage-plugins"></a>
 
-También podemos adelantar la liberación de los VFS desde el diálogo de
-control de
-*Directorios virtuales (VFS).*
+Los complementos que el programa ha cargado, en una tabla: la clase, el nombre
+y lo que el complemento dice de sí mismo. La casilla de cada fila lo activa y
+lo desactiva; lo desactivado tampoco se carga la próxima vez.
 
-El
-[Sistema de Archivos FTP (FTPfs)](#ftp-file-system)
-permite navegar por los directorios de servidores FTP remotos. Admite
-diversas opciones.
+**Enter, F4**
+: Abrir la configuración del complemento donde está el cursor. El que no tiene
+configuración lo dice.
 
-*Contraseña de FTP anónimo*
-es la contraseña a utilizar en conexiones en modo anónimo, esto es,
-empleando el nombre de usuario "anonymous".  Algunos sitios exigen que
-esta sea una dirección de correo electrónico válida, pero tampoco es
-conveniente dar nuestra dirección real a desconocidos para protegernos
-de los envíos de correo masivo.
+Aquí aparecen los
+[complementos de panel](#panel-plugins)
+junto con los del editor y los paquetes de guiones Lua; los guiones de un
+paquete los muestra el diálogo
+[Guiones Lua](#lua-scripts)
+de su configuración.
 
-FTPfs conserva en caché los listados de los directorios consultados.
-La duración de la caché es el valor indicado tras
-*Descartar el caché FTPfs.*
-Un valor pequeño ralentiza el proceso porque cualquier pequeña operación
-iría siempre acompañada de una conexión con el servidor FTP.
+### Guiones Lua <a id="lua-scripts"></a>
 
-Se puede configurar un sistema proxy para FTP, aunque los cortafuegos
-modernos son transparentes (al menos para FTP pasivo, ver más abajo)
-y está opción es generalmente innecesaria.
+Los guiones de un paquete Lua, en una tabla: el nombre, el identificador,
+dónde vive el guion, qué ofrece y qué hace. La casilla de cada fila lo activa
+y lo desactiva.
 
-Si la opción
-*Usar siempre proxy*
-no está activa, aún se puede emplear el proxy en casos concretos. Véanse
-los ejemplos en la sección
-[Sistema de Archivos FTP (FTPfs)](#ftp-file-system).
+**Configuración**
+: Ejecutar el guion que lleva la configuración del paquete, si lo hay.
 
-Si la opción
-*Usar siempre proxy*
-está puesta, el programa asume que cualquier nombre de máquina
-sin puntos es accesible directamente y también consulta el archivo
-{{sysconfdir}}/mcommander/mc.no_proxy en busca de nombres de máquinas locales (o
-dominios completos si el nombre empieza con un punto).  En todos los
-demás casos se usará siempre el proxy de FTP indicado arriba.
+### El archivo existe <a id="plugin-file-exists"></a>
 
-Se puede usar el archivo
-*~/.netrc,*
-que contiene información de usuarios y contraseñas para determinados
-servidores FTP.  Para conocer el formato de los archivos .netrc véase la
-página de manual sobre
-**netrc (5)**.
+Una copia hacia un panel de complemento encontró allí un archivo con ese
+nombre. El diálogo muestra la ruta, el tamaño y la fecha de lo que se copia y
+de lo que ya está, y pregunta qué hacer: sobrescribirlo, saltarlo, continuar
+la copia donde se detuvo, cuando el complemento sabe continuarla, o abandonar
+la operación entera.
 
-*Usar FTP pasivo*
-habilita el modo de tranferencia FTP pasivo (la conexión para
-transferencia de datos es iniciada por la máquina cliente, no por el
-servidor).  Esta opción es la recomendada, y de hecho está activada
-por defecto.  Si se desactiva, la conexión la inicia el servidor,
-y puede ser impedida por algún cortafuegos.
+### Elegir juego de caracteres <a id="codepages-translation"></a>
+
+La lista de los juegos de caracteres que el programa conoce, tomada de
+**{{pkgdatadir}}/charsets**.
+Elegir uno indica en qué juego están escritos los nombres o el texto de que se
+trate, y
+**\<Sin traducción>**
+los deja como bytes. La lista se abre con
+**Alt-e**
+en un panel, en el visor y en el editor, y con la entrada correspondiente de
+sus menús.
+
+### Historia de la línea de entrada <a id="history-query"></a>
+
+La lista de lo que se escribió antes en una línea de entrada, empezando por lo
+último, que
+**Alt-h**
+abre para la línea donde está el cursor. Enter pone en la línea la entrada
+donde está el cursor, Esc deja la línea como estaba y
+**F8, Del**
+borra esa entrada de la historia.
 
 ### Guardar Configuración <a id="save-setup"></a>
 
@@ -2115,15 +2322,39 @@ cualquier lugar del sistema de archivos, usando solo su nombre relativo
 
 Cuando se accede al
 [menú de usuario](#edit-menu-file),
-o se ejecuta un
-[comando dependiente de extensión](#edit-extension-file),
-o se ejecuta un comando desde la línea de entrada de comandos,
-se realiza una simple sustitución de macro.
+o se ejecuta una
+[orden dependiente de extensión](#edit-extension-file),
+o se ejecuta una orden desde la línea de órdenes, se realiza una simple
+sustitución de macro.
 
 Las macros son:
 
-*%f*
-: Archivo actual.
+*%i*
+: La sangría de espacios en blanco, igual a la columna del cursor. Solo en el
+menú del editor.
+
+*%y*
+: El tipo de sintaxis del archivo actual. Solo en el menú del editor.
+
+*%b*
+: El nombre del archivo de bloque.
+
+*%e*
+: El nombre del archivo de errores.
+
+*%m*
+: El nombre del menú actual.
+
+*%f* y *%p*
+: En el menú de usuario del gestor de archivos, el nombre del archivo actual
+del panel activo. En el menú de usuario de mcedit6, el nombre del archivo
+abierto.
+
+*%x*
+: La extensión del nombre del archivo actual.
+
+*%n*
+: El nombre del archivo actual sin la extensión.
 
 *%d*
 : Nombre del directorio actual.
@@ -2140,32 +2371,30 @@ Las macros son:
 *%T*
 : Archivos marcados en el panel inactivo.
 
-*%u*
-y
-*%U*
+*%v* y *%V*
+: Como %t y %T, pero se sustituyen por los nombres completos de los archivos
+marcados.
 
-> Similar a las macros %t y %T, salvo que los archivos quedan desmarcados.
-> Solo se puede emplear esta macro una vez por cada entrada del archivo de menú
-> o archivo de extensiones, puesto que para la siguiente vez no quedaría ningún
-> archivo marcado.
+*%u* y *%U*
+: Como %t y %T, salvo que además los archivos quedan desmarcados. Solo se
+puede emplear esta macro una vez por cada entrada del archivo de menú o del
+archivo de extensiones, puesto que la siguiente vez no quedaría ningún
+archivo marcado.
 
-*%s*
-y
-*%S*
-
-> Archivos seleccionados: Los archivos marcados si los hay y si no el
-> archivo actual.
+*%s* y *%S*
+: Archivos seleccionados: los archivos marcados si los hay y, si no, el
+archivo actual.
 
 *%cd*
-: Esta es una macro especial usada para cambiar del directorio actual
-al directorio especificado frente a él. Esto se utiliza principalmente
-como interfaz con el
+: Esta es una macro especial usada para cambiar del directorio actual al
+directorio especificado frente a él. Esto se utiliza principalmente como
+interfaz con el
 [Sistema de Archivos Virtual](#virtual-file-system).
 
 *%view*
-: Esta macro es usada para invocar al visor interno. Puede ser utilizada
-en solitario, o bien con argumentos. Si pasamos algún argumento a esta
-macro, deberá ser entre paréntesis.
+: Esta macro es usada para invocar al visor interno. Puede ser utilizada en
+solitario o bien con argumentos. Si pasamos algún argumento a esta macro,
+deberá ir entre paréntesis.
 
 > Los argumentos son:
 > *ascii*
@@ -2175,58 +2404,152 @@ macro, deberá ser entre paréntesis.
 > *nroff*
 > para indicar al visor que debe interpretar las secuencias de negrita y
 > subrayado de nroff;
-> *unformated*
-> para indicar al visor que no interprete los comandos nroff referentes a texto
-> resaltado o subrayado.
+> *unformatted*
+> para indicar al visor que no interprete las órdenes nroff de negrita y
+> subrayado;
+> *structured*
+> para abrir el archivo en el modo estructurado (árbol).
 
 *%%*
 : El carácter %
 
 *%{cualquier texto}*
-: Pregunta sobre la sustitución. Un cuadro de entrada es mostrado y el texto dentro
-de las llaves se usa como mensaje. La macro es sustituida por el texto
+: Pregunta sobre la sustitución. Se muestra un cuadro de entrada y el texto
+dentro de las llaves se usa como mensaje. La macro es sustituida por el texto
 tecleado por el usuario. El usuario puede pulsar
 *Esc* o *F10*
 para cancelar. Esta macro no funciona aún sobre la línea de órdenes.
 
-## Soporte de Subshell <a id="the-terminal"></a>
+*%var{ENV:valor}*
+: Si la variable de entorno
+*ENV*
+no está definida, se sustituye por
+*valor*.
+Si lo está, se sustituye por el valor de
+*ENV*.
 
-El soporte del subshell es una opción de tiempo de compilación, que funciona con los
-shells: bash, tcsh y zsh.
+## El terminal <a id="the-terminal"></a>
 
-Cuando el código del subshell es activado M-Commander
-engendrará una copia de nuestro shell (la definida en la variable
+M-Commander mantiene nuestro shell en un pseudoterminal detrás de los
+paneles. Funciona con los shells bash, ash (BusyBox y Debian), (o/m)ksh,
+tcsh, zsh y fish.
+
+El shell es el definido en la variable
 **SHELL**
-y si no está definida, el que aparece en el archivo /etc/passwd)
-y lo ejecuta en un pseudoterminal, en lugar de invocar un nuevo shell
-cada vez que ejecutamos un comando, el comando será pasado al
-subshell como si lo hubiésemos escrito. Esto además permite cambiar las
-variables de entorno, usaremos las funciones del shell y los alias definidos
-que serán válidos hasta salir de M-Commander.
+y, si no está definida, el que aparece en el archivo /etc/passwd. En lugar de
+invocar un shell nuevo cada vez que ejecutamos una orden, la orden se pasa a
+ese shell como si la hubiésemos escrito. Esto permite además cambiar las
+variables de entorno, usar funciones del shell y definir alias que valen
+hasta salir de M-Commander.
 
-Si estamos usando
 **bash**
-podremos especificar comandos de arranque
-para el subshell en nuestro archivo ~/.local/share/mc6/bashrc y
-mapas de teclado especiales en el archivo ~/.local/share/mc6/inputrc.
-Los usuarios de
-**tcsh**
-podrán especificar los comandos de arranque en el archivo ~/.local/share/mc6/tcshrc.
+: órdenes de arranque en ~/.local/share/mc6/bashrc (si no, ~/.bashrc) y mapas
+de teclado propios en ~/.local/share/mc6/inputrc (si no, ~/.inputrc).
 
-Cuando utilizamos el código del subshell, podemos suspender aplicaciones en
-cualquier momento con la secuencia
-*Ctrl-o*
-y volver a M-Commander, si interrumpimos una aplicación, no
-podremos ejecutar otros comandos externos hasta que quitemos la
-aplicación que hemos interrumpido.
+**ash/dash**
+: (BusyBox o Debian) órdenes de arranque en ~/.local/share/mc6/ashrc (si no,
+~/.profile).
 
-Una característica extra añadida de uso del subshell es que el prompt
-mostrado por M-Commander es el mismo que estamos usando en
-nuestro shell.
+**ksh/oksh**
+: órdenes de arranque en ~/.local/share/mc6/kshrc (si no,
+*ENV*
+o ~/.profile).
+
+**mksh**
+: (MirBSD ksh) órdenes de arranque en ~/.local/share/mc6/mkshrc (si no,
+*ENV*
+o ~/.mkshrc).
+
+**zsh**
+: órdenes de arranque en ~/.local/share/mc6/.zshrc (si no, ~/.zshrc).
+
+**tcsh, fish**
+: por ahora no tienen archivos de arranque propios de mcommander; valen solo
+los del propio shell.
+
+Podemos suspender aplicaciones en cualquier momento con la secuencia
+**Ctrl-o**
+y volver a M-Commander. Si interrumpimos una aplicación, no podremos ejecutar
+otras órdenes externas hasta que terminemos la aplicación interrumpida.
+
+Detrás de los paneles, el terminal guarda todo lo que el shell ha escrito, y
+mientras los paneles están ocultos se puede leer, seleccionar y borrar. Las
+teclas del cursor recorren la salida y con Mayús la seleccionan, ambas cosas
+mientras el propio terminal tiene el foco; las teclas que solo mueven la
+vista funcionan sea quien sea el que teclea. Cualquier tecla no nombrada
+abajo va al shell.
+
+```
+Ctrl-Ins       copiar lo seleccionado al portapapeles
+Ctrl-Mayús-u   quitar la selección
+Alt-s          buscar en la salida lo que se teclee a continuación
+Alt-Mayús-s    mostrar solo las filas que coinciden
+Ctrl-l         limpiar la pantalla, conservando la salida
+Ctrl-Mayús-l   limpiar la pantalla y toda la salida
+               (también Ctrl-Alt-l)
+```
+
+Alt-s y Alt-Mayús-s toman el patrón igual que en los paneles: se teclea en la
+fila superior de la pantalla, y la salida lo sigue según crece. Las
+mayúsculas no importan. La búsqueda sube desde el cursor y selecciona la
+coincidencia más cercana; Alt-s otra vez selecciona la de más arriba, y
+pasada la fila más antigua la búsqueda vuelve a la más reciente. El filtro
+muestra solo las filas que coinciden, y las teclas del cursor las recorren
+mientras aún se teclea el patrón; Alt-Mayús-s otra vez lleva el cursor a la
+fila de arriba. Pulsadas sin nada tecleado, ambas teclas recuperan el patrón
+anterior. Retroceso quita un carácter, y un carácter con el que no coincide
+nada no se acepta. Intro termina el tecleo y deja la vista como está, Esc lo
+termina y quita el filtro, y cualquier otra tecla termina el tecleo y hace lo
+que le toca.
+
+Con los paneles ocultos, la mayoría de las teclas de función son del terminal
+y la barra de botones las nombra. Ver, Editar, Copiar, Renombrar y Borrar del
+gestor de archivos no están allí: trabajan sobre el archivo donde está el
+cursor del panel, y ese cursor no se ve. F8 se deja vacía a propósito, para
+que el gesto de borrar no haga otra cosa.
+F7 crea un directorio y Mayús-F4 edita un archivo nuevo, como con los paneles
+a la vista: ambas trabajan en el directorio del panel, que es en el que está
+el shell.
+
+```
+F2           copiar lo seleccionado al portapapeles
+F3           seleccionar toda la salida, o quitar la selección
+F4           dejar solo las filas que coinciden con la selección
+             o con la palabra bajo el cursor
+F5           quitar ese filtro y volver a ponerlo
+F6           limpiar la pantalla y toda la salida
+```
+
+Mientras el shell espera en su indicador, F1, F7, Mayús-F4, F9 y F10 siguen
+siendo del gestor de archivos, y F1 abre la ayuda de esta sección. En cuanto
+una orden está en marcha, la pantalla y todas las teclas son suyas, estas
+incluidas. Las cinco de arriba son la excepción: siguen siendo del terminal
+mientras la orden trabaja. Una aplicación a pantalla completa, un editor o un
+paginador, se queda con todas las teclas, también con esas. Todas ellas están
+en la sección
+**[mcterm]**
+del archivo de asignación de teclas y allí se pueden redefinir.
+
+Si en el indicador del shell, con los paneles ocultos, tecleamos
+**mcommander**
+sin argumentos, el M-Commander en marcha vuelve a mostrar sus paneles en vez
+de arrancar una segunda copia. Con un argumento, por ejemplo un nombre de
+directorio, arranca un M-Commander anidado, como antes.
+
+El indicador básico que muestra M-Commander es de la forma
+"usuario@equipo:ruta$ ". Con un shell capaz, como Bash, el indicador será el
+mismo que usamos en nuestro shell.
+
+(Hay un problema conocido con fish: el indicador solo se ve en modo pantalla
+completa (Ctrl-o), no con los paneles a la vista.)
+
+Para usar un shell distinto del de la variable SHELL o del definido en
+/etc/passwd, podemos llamar a M-Commander así:
+**SHELL=/bin/mishell mcommander**
 
 La sección
 [OPCIONES](#options)
-tiene más información sobre cómo controlar el código del subshell.
+tiene más información sobre cómo controlar el shell.
 
 # Cambiar Permisos <a id="chmod"></a>
 
@@ -2330,25 +2653,70 @@ posibilidades. Normalmente seleccionaremos el botón Saltar para evitar el archi
 o Abortar para detener la operación. También podemos seleccionar el botón
 Reintentar si hemos corregido el problema desde otro terminal.
 
+### Reemplazar <a id="replace"></a>
+
 El diálogo Reemplazar aparece cuando intentamos copiar o mover un archivo
-sobre otro ya existente. El mensaje muestra fechas y tamaños de ambos archivos.
-Pulsaremos el botón Sí para sobreescribir el archivo, el botón No
-para saltarlo, el botón Todos para sobreescribir todos los archivos,
-Ninguno para no sobreescribir en ningún caso y Actualizar para sobreescribir
-si el archivo origen es posterior al archivo objeto. Podemos abortar toda la
-operación pulsando el botón Abortar.
+sobre otro ya existente. El diálogo muestra fechas y tamaños de ambos
+archivos, y ofrece estos botones:
 
-El diálogo de eliminación recursiva aparece cuando intentamos borrar
-un directorio no vacío. Pulsaremos Sí para borrar el directorio recursivamente,
-No para saltar el directorio, Todo para borrar recursivamente todos los directorios
-marcados no vacíos y Ninguno para saltarlos todos. Podemos abortar toda la
-operación pulsando el botón Abortar. Si seleccionamos el botón Sí o Todo
-se nos pedirá confirmación. Diremos "sí" solo si estamos realmente seguros
-de que queremos una eliminación recursiva.
+**[Sí]**
+: sobrescribe el archivo.
 
-Si hemos marcado archivos y realizamos una operación sobre ellos, solo
-los archivos sobre los que la operación fue exitosa son desmarcados. Los archivos
-saltados y aquellos en los que la operación falló permanecen marcados.
+**[No]**
+: salta el archivo.
+
+**[Añadir]**
+: añade el archivo origen al final del archivo destino.
+
+**[Continuar]**
+: añade al destino lo que falta del archivo origen. Este botón solo aparece
+si el tamaño del destino no es cero y es menor que el del origen.
+
+**[Todos]**
+: sobrescribe todos los archivos.
+
+**[Actualizar]**
+: sobrescribe si el archivo origen es posterior al destino.
+
+**[Ninguno]**
+: no sobrescribe ningún archivo.
+
+**[Menores]**
+: sobrescribe si el tamaño del origen es menor que el del destino.
+
+**[Distinto tamaño]**
+: sobrescribe los archivos de tamaño distinto.
+
+**[Abortar]**
+: aborta toda la operación.
+
+Con la casilla
+**No sobrescribir con archivos de tamaño cero**
+activada, un archivo origen de tamaño cero no sobrescribe un destino que no
+lo tenga.
+
+El diálogo de eliminación recursiva aparece cuando intentamos borrar un
+directorio que no está vacío. Ofrece estos botones:
+
+**[Sí]**
+: borra el directorio y todo su contenido.
+
+**[No]**
+: salta el directorio.
+
+**[Todos]**
+: borra todos los directorios.
+
+**[Ninguno]**
+: salta todos los directorios no vacíos.
+
+**[Abortar]**
+: aborta toda la operación.
+
+Si hemos marcado archivos y realizamos una operación sobre ellos, solo los
+archivos sobre los que la operación tuvo éxito quedan desmarcados. Los
+archivos saltados y aquellos en los que la operación falló permanecen
+marcados.
 
 # Copiar/Renombrar con Máscara <a id="mask-copyrename"></a>
 
@@ -2465,300 +2833,6 @@ Finalmente, si no se activa
 *Distinguir May/min*
 la selección se hará sin distinguir caracteres en mayúsculas o minúsculas.
 
-# Comparador de Archivos Interno <a id="diff-viewer"></a>
-
-El comparador de archivos interno permite comparar dos archivos y editarlos
-en el sitio quedando la comparación actualizada sobre la marcha.  Se puede
-navegar y ver copias de trabajos desde los sistemas de control de versiones
-populares (GIT, Subversion, etc).
-
-El comparador ofrece los siguientes atajos de teclado:
-
-**F1**
-: Invoca el visor de ayuda y muestra esta sección.
-
-**F2**
-: Guarda los archivos modificados.
-
-**F4**
-: Edita el archivo del panel izquierdo.
-
-**F14**
-: Edita el archivo del panel derecho.
-
-**F5**
-: Combina el fragmento actual. Solo se combina el fragmento actual.
-
-**F7**
-: Comenzar una búsqueda.
-
-**F17**
-: Repetir la búsqueda previa.
-
-**F10, Esc, q**
-: Salir del comparador.
-
-**Alt-s, s**
-: Mostrar/ocultar el estado de los fragmentos.
-
-**Alt-n, l**
-: Mostrar/ocultar números de línea.
-
-**f**
-: Maximizar el panel izquierdo.
-
-**=**
-: Igualar el ancho de los paneles.
-
-**>**
-: Reducir el panel derecho.
-
-**<**
-: Reducir el panel izquierdo.
-
-**c**
-: Mostrar/ocultar «^M» para los saltos de línea con carácter de retorno (CR).
-
-**2, 3, 4, 8**
-: Fijar ancho de tabulaciones.
-
-**Ctrl-u**
-: Intercambia el contenido de los paneles.
-
-**Ctrl-r**
-: Actualizar la pantalla.
-
-**Ctrl-o**
-: Alternar con la pantalla de órdenes del sistema.
-
-**Intro, Espacio, n**
-: Avanzar al siguiente fragmento diferente.
-
-**Backspace, p**
-: Retroceder al fragmento diferente anterior.
-
-**g**
-: Saltar a la línea indicada.
-
-**Abajo**
-: Avanzar una línea.
-
-**Ariba**
-: Retroceder una línea.
-
-**AvPág (Página adelante)**
-: Avanza una página hacia abajo.
-
-**RePág (Página atrás)**
-: Retrocede una página hacia arriba.
-
-**Inicio, A1**
-: Va al comienzo de la línea.
-
-**Fin**
-: Va al final de la línea.
-
-**Ctrl-Inicio**
-: Vuelve al comienzo del archivo.
-
-**Ctrl-Fin, C1**
-: Avanza hasta el final del archivo.
-
-# Visor de Archivos Interno <a id="internal-file-viewer"></a>
-
-El visor de archivos interno ofrece dos modos de presentación: ASCII y
-hexadecimal. Para alternar entre ambos modos, se emplea la tecla F4.
-
-El visor intenta usar el mejor método disponible en el sistema, según
-el tipo de archivo, para mostrar información. Los archivos comprimidos
-se descomprimen automáticamente si los programas correspondientes (GNU
-gzip ó bzip2) están instalados en el sistema. El propio visor es capaz
-de interpretar ciertas secuencias de caracteres que se emplean para
-activar los atributos de negrita y subrayado, mejorando la presentación
-de los archivos.
-
-En modo hexadecimal, la función de búsqueda admite texto entre comillas o
-valores numéricos. El texto entrecomillado se busca tal cual (retirando
-las comillas) y cada número se corresponde a un byte. Unos y otros se
-pueden entremezclar como en:
-
-```
-"Cadena" -1 0xBB 012 "otro texto"
-```
-
-Nótese que 012 es un número octal y -1 se convierte en 0xFF.
-
-He aquí una lista de las acciones asociadas a cada tecla que
-M-Commander gestiona en el visor interno de archivos.
-
-**F1**
-Invoca el visor de ayuda de hipertexto interno.
-
-**F2**
-Cambia el modo de ajuste de líneas en pantalla.
-
-**\* N. del T.:**
-: Envuelta (Ajustada), se muestra toda la información de la línea en la pantalla, de
-modo que si esta ocupa más del ancho de la pantalla aparece como si fuese
-otra línea aparte o bien desenvuelta (desajustada), truncando el contenido
-de la línea que sobresale de la pantalla. Este contenido puede ser
-consultado utilizando las teclas del cursor.
-
-**F4**
-Cambia entre el modo hexadecimal y el Ascii.
-
-**F5**
-Ir a la línea. Nos pedirá el número de línea en el que deseamos posicionarnos y
-mostrará el archivo a partir de esa línea.
-
-**F6, /.**
-Búsqueda de expresión regular desde la posición actual hacia adelante.
-
-**?,**
-Búsqueda de expresión regular desde la posición actual hacia atrás.
-
-**F7**
-Búsqueda normal/ búsqueda en modo hexadecimal.
-
-**Ctrl-s.**
-Comienza una búsqueda normal si no existe una expresión de búsqueda previa si no
-busca la próxima coincidencia.
-
-**Ctrl-r.**
-Comienza una búsqueda hacia atrás si no había expresión de búsqueda anterior si no
-busca la próxima coincidencia.
-
-**n.**
-Buscar la próxima coincidencia.
-
-**F8**
-Intercambia entre el modo crudo y procesado: esto mostrará el archivo como se encuentra en disco
-o si se ha especificado un filtro de visualización en el archivo extensions.ini, entonces
-la salida filtrada. El modo actual es siempre el contrario al mostrado
-en la etiqueta del botón, en tanto que el botón muestra el modo en el que entraremos
-con la pulsación de esa tecla.
-
-**F9**
-Alterna entre la visualización con y sin formato: en el modo con formato
-se interpretan algunas secuencias de caracteres para mostrar texto en
-negrita y subrayado con diferentes colores. Como en el caso anterior,
-la etiqueta del botón muestra el estado contrario al actual.
-
-**F10, Esc.**
-Sale del visor interno.
-
-**AvPág, espacio, Ctrl-v.**
-Avanza una página hacia abajo.
-
-**RePág, Alt-v, Ctrl-b, Borrar.**
-Retrocede una página hacia arriba.
-
-**Cursor Abajo**
-Desplaza el texto una línea hacia arriba, mostrando en la línea inferior de
-la pantalla una nueva línea que antes quedaba oculta.
-
-**Cursor Arriba**
-Desplaza una línea hacia abajo.
-
-**Ctrl-l**
-Redibuja el contenido de la pantalla.
-
-**!**
-Engendra un nuevo shell en el directorio de trabajo actual.
-
-**[n] m**
-Coloca la marca n.
-
-**[n] r**
-Salta hasta la marca n.
-
-**Ctrl-f**
-Salta al archivo siguiente.
-
-**Ctrl-b**
-Ídem al archivo anterior.
-
-**Alt-r**
-Intercambia entre los diferentes modos de regla: desactivado, arriba, abajo.
-
-Es posible adiestrar al visor de archivos sobre cómo mostrar un archivo, mírese
-la sección
-[Editar Archivo de Extensiones](#edit-extension-file).
-
-# Editor de Archivos Interno <a id="internal-file-editor"></a>
-
-El editor de archivos interno es un editor a pantalla completa de
-avanzadas prestaciones. Puede editar archivos de hasta 64 MB y también
-permite modificar archivos binarios. Se inicia pulsando
-**F4**
-supuesto que la variable
-*use_internal_edit*
-esté presente en el archivo de inicialización.
-
-Las características soportadas actualmente son: copia, desplazamiento,
-borrado, corte, y pegado de bloques; deshacer paso a paso; menús
-desplegables; inserción de archivos; definición de macros; buscar y
-reemplazar usando expresiones regulares); selección de texto con
-mayúsculas-cursor (si el terminal lo soporta); alternancia
-insertar-sobreescribir; plegado de líneas; sangrado automático; tamaño
-de tabulación configurable; realce de sintaxis para varios tipos de
-archivos; y la opción de pasar bloques de texto por filtros externos
-como indent o ispell.
-
-El editor es muy fácil de usar y no requiere aprendizaje alguno.
-Para conocer las teclas asignadas a cada función, basta consultar los
-menús correspondientes. Además, las teclas de desplazamiento con la
-tecla de mayúsculas seleccionan texto. Se puede seleccionar con el ratón,
-aunque podemos recuperar su funcionamiento habitual en terminales (copiar
-y pegar) manteniendo pulsada la tecla mayúsculas.
-**Ctrl-Ins**
-copia al archivo
-**mcedit6.clip**
-y
-**Mayús-Ins**
-pega desde
-**mcedit6.clip**.
-**Mayús-Supr**
-corta y copia en
-**mcedit6.clip**,
-y
-**Ctrl-Supr**
-elimina el texto resaltado. La tecla
-**Intro**
-produce un salto de línea con sangrado automático opcional.
-
-Para definir una macro, pulsar
-**Ctrl-r**
-y entonces teclearemos las secuencias de teclas que deseamos sean
-ejecutadas. Pulsaremos
-**Ctrl-r**
-de nuevo al finalizar. Podemos asignar la macro a la tecla que queramos
-pulsando sobre ella. La macro será ejecutada cuando pulsemos
-**Ctrl-a**
-seguido de la tecla asignada. También será ejecutada si
-pulsamos Meta (Alt), Ctrl, o Escape y la tecla asignada, siempre y cuando
-la tecla no sea usada por ninguna otra función. Una vez definida, los comandos de
-macro irán al archivo
-**~/.local/share/mc6/mcedit6/mcedit6.macros**
-en nuestro directorio de inicio. Podemos eliminar una macro borrando
-la línea adecuada en este archivo.
-
-**F19**
-formateará el bloque seleccionado (sea texto, código
-**C**
-o
-**C++**
-u otro). Esto está controlado por el archivo
-**{{pkgdatadir}}/edit.indent.rc**
-que se copia la primera vez que se usa en
-**~/.local/share/mc6/mcedit6/edit.indent.rc**
-en el directorio personal.
-
-El editor también visualiza caracteres no estadounidenses (160+). Al editar
-archivos binarios, debemos configurar los
-**bits de pantalla**
-a 7 bits en el menú de opciones para mantener el espaciado saneado.
-
 # Terminación <a id="completion"></a>
 
 Permite a M-Commander escribir por nosotros.
@@ -2817,151 +2891,56 @@ de archivos; esta capa se denomina Sistema de Archivos Virtual (VFS).
 El Sistema de Archivos Virtual permite a M-Commander manipular
 archivos no ubicados en el sistema de archivos Unix.
 
-M-Commander incluye actualmente varios Sistemas de Archivos
-Virtuales: el sistema de archivos
+Además de
 *local,*
-utilizado para acceder al sistema de archivos Unix habitual;
-*undelfs*
-para recuperar archivos borrados en sistemas de archivos de tipo ext2
-(sistema de archivos habitual en Linux);
-*ftpfs*
-para manipular archivos en sistemas remotos a través de FTP;
-*fish*
-para manipular archivos a través de conexiones a shell como rsh o ssh.
+el sistema de archivos Unix habitual, el programa lleva dos sistemas
+virtuales incorporados:
+*extfs,*
+que presenta un archivo o una lista del sistema como un árbol de directorios
+mediante un guion propio, y
+*sfs,*
+que pasa un solo archivo por una orden y muestra lo que sale. Todo lo que
+necesita una conexión con otra máquina, y también los archivos comprimidos,
+son ahora
+[complementos de panel](#panel-plugins),
+no sistemas de archivos del conmutador.
 
-Dependiendo de la forma en que fue compilado, puede disponer también de:
-*sftpfs*
-para manipular archivos en sistemas remotos a través de SFTP.
+El conmutador VFS interpreta todos los nombres de ruta que se usan y los
+entrega al sistema de archivos que corresponde; el formato de cada uno se
+describe en su propia sección.
 
-Se facilita también un sistema de archivos genérico
-*extfs*
-(EXternal virtual File System) para extender con facilidad las
-posibilidades de VFS empleando guiones y programas externos.
+## Complementos de panel <a id="panel-plugins"></a>
 
-El código VFS interpretará todos los nombres de ruta usados y los dirigirá
-al sistema de archivos correcto. El formato usado para cada uno de los
-sistemas de archivos se describe más adelante en su propia sección.
-
-## Sistema de archivos FTP <a id="ftp-file-system"></a>
-
-FTPfs permite manipular archivos en máquinas remotas. Para utilizarlo
-se puede emplear la opción de menú
-*Conexión por FTP*
-o simplemente emplear la orden
-*cd*
-como cuando cambiamos habitualmente de directorio, pero indicando
-como ruta:
-
-*ftp://[!][usuario[:clave]@]maquina[:puerto]/[dir-remoto]*
-
-Los elementos
-*usuario,*
-*puerto*
-y
-*directorio-remoto*
-son opcionales. Si especificamos el elemento
-*usuario,*
-entonces M-Commander intentará conectarse con la máquina remota
-como ese usuario, y si no, establecerá una conexión en modo anónimo o
-con el nombre de usuario indicado en el archivo
-*~/.netrc.*
-El elemento
-*clave*
-también es opcional, y si está presente, se emplea como contraseña
-de acceso.  Esta forma de colocar la contraseña como parte del nombre
-del directorio virtual no es muy recomendable porque eventualmente puede
-aparecer en pantalla y guardarse en el histórico de directorios.
-
-Si es necesario utilizar un proxy de FTP, se añade un símbolo de exclamación
-**!**
-delante del nombre de la máquina.
-
-Ejemplos:
+Un panel no está atado a un sistema de archivos: un complemento puede
+llenarlo con todo lo que sepa enumerar. Los que vienen con el programa son
 
 ```
-    ftp://ftp.nuclecu.unam.mx/linux/local
-    ftp://tsx-11.mit.edu/pub/linux/packages
-    ftp://!detras.barrera.edu/pub
-    ftp://guest@pcremoto.com:40/pub
-    ftp://miguel:xxx@servidor/pub
-    ftp://ftp.um.es/pub
+arcmc        archivos comprimidos y su contenido
+ftp, sftp    archivos en otra máquina
+shell-link   archivos en otra máquina a través de ssh
+samba        recursos de un servidor SMB
+s3           cubos de un almacenamiento S3
+git          el estado de un repositorio
+docker       contenedores, imágenes y sus registros
+k8s          los objetos de un clúster
+mongo        las colecciones de una base de datos
+sqlite       las tablas de una base de datos
+systemd      las unidades del sistema
+panelize     el resultado de una orden como panel
+mcpeek       una mirada dentro de un archivo
+mcstruct     un archivo binario como árbol de campos con nombre
+skineditor   el aspecto del programa
 ```
 
-La opciones de FTPfs se encuentran entre las opciones de configuración del
-[Sistema de Archivos Virtual (VFS)](#virtual-fs).
-
-## Sistema de archivos a través de SHell <a id="file-transfer-over-shell-filesystem"></a>
-
-El FISH es un sistema de archivos por red que permite manipular archivos
-en una máquina remota como si estuvieran almacenados localmente.  Para
-ello es preciso que el sistema remoto esté ejecutando el servidor FISH
-o permitir la conexión a una shell de tipo bash.
-
-Para conectar con la máquina remota basta cambiar de directorio a un
-directorio virtual cuyo nombre sea de la forma:
-
-*sh://[usuario@]maquina[:opciones]/[directorio-remoto]*
-
-Los elementos
-*usuario,*
-*opciones*
-y
-*directorio-remoto*
-son opcionales. Si se especifica el elemento
-*usuario*
-M-Commander intentará entrar en la máquina remota como ese
-usuario, y si no usará nuestro nombre.
-
-Como
-*opciones*
-se puede poner 'C' para usar compresión y 'r' para utilizar una
-conexión rsh en vez de ssh. Si se indica el
-*directorio-remoto,*
-se buscará este como primer directorio al conectar con la máquina
-remota.
-
-Ejemplos:
-
-```
-    sh://solorsh.es:r/linux/local
-    sh://pepe@quiero.comprension.edu:C/privado
-    sh://pepe@sincomprimir.ssh.edu/privado
-```
-
-## Sistema de archivos SFTP (FTP sobre SSH) <a id="sftp-ssh-file-transfer-protocol-filesystem"></a>
-
-El sistema de archivos SFTP es un sistema de archivos sobre red
-que permite manipular archivos en una máquina remota como si fueran
-locales.
-
-Para conectar con la máquina remota basta cambiar de directorio a un
-directorio virtual cuyo nombre sea de la forma:
-
-*sftp://[usuario@]maquina:[puerto]/[directorio-remoto]*
-
-Los elementos
-*usuario,*
-*puerto*
-y
-*directorio-remoto*
-son opcionales. Si se especifica el elemento
-*usuario*
-M-Commander intentará acceder a la máquina remota como ese
-usuario, y si no usará nuestro nombre. El
-*puerto*
-indica el puerto utilizado por el servidor remoto, por defecto 22.
-El
-*directorio-remoto*
-será el directorio actual tras la conexión.
-
-Ejemplos:
-
-```
-    sftp://solorsh.es/linux/local
-    sftp://pepe:k1abe@quiero.comprension.edu/privado
-    sftp://pepe@sincomprimir.ssh.edu/privado
-    sftp://pepe@maquina.ssh.edu:2222/privado
-```
+Cada complemento trae su propia ayuda, que
+**F1**
+abre dentro de su panel o de su diálogo. La entrada
+**Administrar complementos**
+del menú Opciones enumera lo que está cargado, desactiva un complemento y abre
+su configuración. Un panel de complemento se abre desde los
+[menús izquierdo y derecho](#left-and-right-menus),
+desde el directorio de favoritos o escribiendo la dirección del complemento en
+la línea de órdenes.
 
 ## Sistema de archivos EXTerno (extfs) <a id="external-file-system"></a>
 
@@ -3079,6 +3058,355 @@ paquetes Debian:
   regex/\.deb$
           Open=%cd %p/deb://
 ```
+
+## Sistema de archivos de un solo archivo <a id="single-file-filesystem"></a>
+
+**sfs**
+pasa un archivo por una orden y muestra el resultado como un archivo propio,
+que es como se lee un archivo comprimido sin desempaquetarlo a mano. El nombre
+del sistema de archivos se añade al del archivo, igual que en extfs:
+
+```
+  cd documentos.gz/ugz://
+```
+
+Las órdenes están en
+**{{sysconfdir}}/mcommander/sfs.ini**,
+una por línea: el nombre del sistema de archivos, una barra, el número de la
+orden, un tabulador y la orden misma, donde
+*%1*
+es el archivo sobre el que está el panel y
+*%3*
+el archivo donde escribir. El archivo que viene con el programa trae las
+parejas que empaquetan y desempaquetan gz, bz2, lz, lz4, lzma, lzo, xz y zst,
+y algunas más.
+
+# Referencia rápida de expresiones regulares <a id="regex-quick-reference"></a>
+
+**Elementos corrientes**
+
+```
+Un carácter de: a, b o c             [abc]
+Un carácter que no sea a, b ni c     [^abc]
+Un carácter del rango: a-z           [a-z]
+Un carácter fuera del rango: a-z     [^a-z]
+Un carácter de a-z o de A-Z          [a-zA-Z]
+Un carácter cualquiera               .
+Alternativa: a o b                   a|b
+Un espacio en blanco                 \s
+Algo que no sea espacio en blanco    \S
+Un dígito                            \d
+Algo que no sea dígito               \D
+Un carácter de palabra               \w
+Algo que no sea carácter de palabra  \W
+Grupo sin captura                    (?:...)
+Grupo con captura                    (...)
+Cero o una a                         a?
+Cero o más a                         a*
+Una o más a                          a+
+Exactamente 3 a                      a{3}
+3 a o más                            a{3,}
+Entre 3 y 6 a                        a{3,6}
+Principio de la cadena               ^
+Final de la cadena                   $
+Límite de palabra                    \b
+Fuera de un límite de palabra        \B
+```
+
+**Anclas**
+
+```
+Principio de la coincidencia         \G
+Principio de la cadena               ^
+Final de la cadena                   $
+Principio de la cadena               \A
+Final de la cadena                   \Z
+Final absoluto de la cadena          \z
+Límite de palabra                    \b
+Fuera de un límite de palabra        \B
+```
+
+**Elementos generales**
+
+```
+Salto de línea                       \n
+Retorno de carro                     \r
+Tabulación                           \t
+Carácter nulo                        \0
+```
+
+**Metasecuencias**
+
+```
+Un carácter cualquiera               .
+Alternativa: a o b                   a|b
+Un espacio en blanco                 \s
+Algo que no sea espacio en blanco    \S
+Un dígito                            \d
+Algo que no sea dígito               \D
+Un carácter de palabra               \w
+Algo que no sea carácter de palabra  \W
+Secuencia Unicode, saltos incluidos  \X
+Saltos de línea Unicode              \R
+Todo menos un salto de línea         \N
+Espacio en blanco vertical           \v
+Negación de \v                       \V
+Espacio en blanco horizontal         \h
+Negación de \h                       \H
+Reiniciar la coincidencia            \K
+Subpatrón número #                   \#
+Propiedad Unicode X                  \pX
+Propiedad Unicode o categoría        \p{...}
+Negación de \pX                      \PX
+Negación de \p{...}                  \P{...}
+Citar: tratar como literales         \Q...\E
+Subpatrón 'nombre'                   \k{name}
+Subpatrón 'nombre'                   \k<name>
+Subpatrón 'nombre'                   \k'name'
+Subpatrón n                          \gn
+Subpatrón n                          \g{n}
+Subpatrón n anterior relativo        \g{-n}
+Expresión del grupo de captura n     \g<n>
+Expr. del grupo de captura n siguiente \g<+n>
+Expresión del grupo de captura n     \g'n'
+Expr. del subpatrón n siguiente      \g'+n'
+Grupo de captura con nombre          \g{letter}
+Expresión del grupo con nombre       \g<letter>
+Expresión del grupo con nombre       \g'letter'
+Carácter hexadecimal YY              \xYY
+Carácter hexadecimal YYYY            \x{YYYY}
+Carácter octal ddd                   \ddd
+Carácter de control Y                \cY
+Carácter de retroceso                [\b]
+Hace literal cualquier carácter      \
+```
+
+**Cuantificadores**
+
+```
+Cero o una a                         a?
+Cero o más a                         a*
+Una o más a                          a+
+Exactamente 3 a                      a{3}
+3 a o más                            a{3,}
+Entre 3 y 6 a                        a{3,6}
+Cuantificador voraz                  a*
+Cuantificador perezoso               a*?
+Cuantificador posesivo               a*+
+```
+
+**Clases de caracteres**
+
+```
+Un carácter de: a, b o c             [abc]
+Un carácter que no sea a, b ni c     [^abc]
+Un carácter del rango: a-z           [a-z]
+Un carácter fuera del rango: a-z     [^a-z]
+Un carácter de a-z o de A-Z          [a-zA-Z]
+Letras y dígitos                     [[:alnum:]]
+Letras                               [[:alpha:]]
+Códigos ASCII 0-127                  [[:ascii:]]
+Solo espacio o tabulación            [[:blank:]]
+Caracteres de control                [[:cntrl:]]
+Dígitos decimales                    [[:digit:]]
+Caracteres visibles (sin espacio)    [[:graph:]]
+Letras minúsculas                    [[:lower:]]
+Caracteres visibles                  [[:print:]]
+Signos de puntuación visibles        [[:punct:]]
+Espacio en blanco                    [[:space:]]
+Letras mayúsculas                    [[:upper:]]
+Caracteres de palabra                [[:word:]]
+Dígitos hexadecimales                [[:xdigit:]]
+Principio de palabra                 [[:<:]]
+Final de palabra                     [[:>:]]
+```
+
+**Indicadores y modificadores**
+
+```
+Multilínea                           m
+Sin distinguir mayúsculas            i
+Ignorar espacios / detallado         x
+Una sola línea                       s
+Unicode                              u
+eXtra                                X
+No voraz                             U
+Anclado                              A
+Nombres de grupo repetidos           J
+Grupos sin captura                   n
+Ignorar todo espacio / detallado     xx
+```
+
+**Construcciones de grupo**
+
+```
+Grupo sin captura                    (?:...)
+Grupo con captura                    (...)
+Grupo atómico (sin captura)          (?>...)
+Reiniciar el número de subpatrón     (?|...)
+Grupo de comentario                  (?#...)
+Grupo de captura con nombre          (?'name'...)
+Grupo de captura con nombre          (?<name>...)
+Grupo de captura con nombre          (?P<name>...)
+Modificadores en línea               (?imsxUJnxx)
+Modificadores en línea locales       (?imsxUJnxx:...)
+Condicional                          (?(1)yes|no)
+Condicional                          (?(R)yes|no)
+Condicional recursivo                (?(R#)yes|no)
+Condicional                          (?(R&name)yes|no)
+Condicional con vista adelante       (?(?=...)yes|no)
+Condicional con vista atrás          (?(?<=...)yes|no)
+Recursión de todo el patrón          (?R)
+Expr. del grupo de captura 1         (?1)
+Primer grupo de captura relativo     (?+1)
+Expresión del grupo con nombre       (?&name)
+Subpatrón 'nombre'                   (?P=name)
+Expr. del grupo '{nombre}'           (?P>name)
+Definir patrones antes de usarlos    (?(DEFINE)...)
+Vista adelante positiva              (?=...)
+Vista adelante negativa              (?!...)
+Vista atrás positiva                 (?<=...)
+Vista atrás negativa                 (?<!...)
+Aserciones de vista alfabéticas      (*pla:...)
+Aserción de vista no atómica         (*non_atomic_positive_lookahead:...)
+Aserción de escritura uniforme       (*script_run:...)
+Escritura uniforme (abreviado)       (*sr:...)
+Verbo de control                     (*ACCEPT)
+Verbo de control                     (*FAIL)
+Verbo de control                     (*MARK:NAME)
+Verbo de control                     (*COMMIT)
+Verbo de control                     (*PRUNE)
+Verbo de control                     (*SKIP)
+Verbo de control                     (*THEN)
+```
+
+# Modos de panel <a id="panel-modes"></a>
+
+Un modo de panel es un formato de listado con nombre que se puede volver a
+usar. La lista de modos es común a los dos paneles.
+
+**Alt-t**
+(y la entrada
+**Modos de panel...**
+de los menús izquierdo y derecho) abre el
+**selector:**
+la lista de los modos definidos. Enter aplica al panel el modo donde está el
+cursor, Esc lo deja como estaba.
+
+La entrada
+**Modos de panel de archivos...**
+del menú
+**Opciones**
+abre el
+**administrador:**
+la misma lista, que se edita con teclas.
+**Insert**
+crea un modo,
+**F4**
+(o
+**Enter**)
+edita el que está bajo el cursor,
+**F5**
+lo duplica y
+**Delete**
+(o
+**F8**)
+lo borra. El botón
+**Por omisión**
+sustituye la lista por los modos incorporados,
+**Aceptar**
+la guarda y
+**Cancelar**
+(o
+**Esc**)
+descarta todo lo hecho en el diálogo.
+
+El administrador edita la lista global de modos; no cambia el modo de ningún
+panel.
+
+El editor de modos tiene entradas separadas para los tipos de campo de las
+columnas y sus anchos, y para la línea de mini-estado, con los nombres de
+campo que describe
+[Listado...](#listing-format)
+\. La lista de tipos va separada por comas, una entrada por columna; una
+columna puede llevar varios campos separados por espacios (por ejemplo
+**type name**).
+Un ancho de 0 (o vacío) deja el campo con su ancho automático.
+También se puede pegar una cadena de formato completa (por ejemplo
+**half name | size:7**)
+en una entrada de tipos: los separadores
+**|**
+y los sufijos
+**:ancho**
+se reparten entre las dos listas.
+
+Los modos definidos y el que tiene elegido cada panel se conservan entre
+sesiones.
+
+# Selector de pantallas <a id="screen-selector"></a>
+
+M-Commander admite tener varios módulos internos en marcha a la vez (el
+editor, el visor, el comparador) y pasar de uno a otro sin cerrar los
+archivos abiertos. Tener varios gestores de archivos a la vez no está
+admitido por ahora.
+
+Llamemos pantalla a cada uno de esos módulos. Hay tres formas de cambiar de
+pantalla, con estos atajos globales:
+
+**Alt-}**
+: pasar a la pantalla siguiente;
+
+**Alt-{**
+: pasar a la pantalla anterior;
+
+**Alt-\`**
+: abrir un diálogo con la lista de las pantallas abiertas (o usar la entrada
+"Lista de pantallas" del menú).
+
+# Atributos de archivo <a id="chattr"></a>
+
+El diálogo de atributos se usa para cambiar los atributos de un grupo de
+archivos y directorios en un sistema de archivos de Linux. Se abre con
+C-x e.
+
+No todos los sistemas de archivos admiten todos los atributos. La lista de
+atributos disponibles se muestra como un conjunto de casillas que
+corresponden a los indicadores de atributo (véase
+**chattr(1)**
+para más detalle). Según se cambian las casillas, el valor simbólico que hay
+bajo el nombre del archivo cambia con ellas.
+
+Para moverse entre los elementos del diálogo se usan las
+*teclas del cursor*
+o
+*Tab*.
+Para cambiar una casilla o elegir un botón se usa
+**Espacio**.
+
+Para aplicar los atributos se pulsa Intro.
+
+Al trabajar con un grupo de archivos o directorios basta con marcar los
+atributos que se quieren poner o quitar y elegir después uno de los botones
+de acción (Poner marcados o Quitar marcados).
+
+**[Poner todos]**
+: pone exactamente los atributos indicados en todos los archivos marcados.
+
+**[Marcar todos]**
+: pone solo los atributos marcados en todos los archivos elegidos.
+
+**[Poner marcados]**
+: activa los indicadores marcados en los atributos de los archivos elegidos.
+
+**[Quitar marcados]**
+: desactiva los indicadores marcados en los atributos de los archivos
+elegidos.
+
+**[Poner]**
+: aplica los atributos a un solo archivo.
+
+**[Cancelar]**
+: cancela la orden.
 
 # Colores <a id="colors"></a>
 
@@ -3471,25 +3799,13 @@ en ese directorio.  Si este valor está a 1, entonces el programa
 nos pedirá confirmación antes de cambiar el directorio si tenemos
 archivos marcados.
 
-*ftpfs_retry_seconds*
-: Este valor es el número de segundos que M-Commander esperará
-antes de intentar volver a conectar con un servidor de ftp que ha denegado el
-acceso. Si el valor es cero, el programa no reintentará el acceso.
-
-*max_dirt_limit*
-: Especifica cuántas actualizaciones de pantalla pueden saltarse al menos en el visor
-de archivos interno. Normalmente este valor no es significativo, porque
-el código automáticamente ajusta el número de actualizaciones a saltar de acuerdo
-al volumen de pulsaciones de teclas recibidas. Empero, en máquinas muy lentas o
-en terminales con autorepetición de teclado rápida, un valor grande puede hacer
-que la pantalla se actualice dando saltos.
-
-> Parece ser que poniendo max_dirt_limit a 10 produce el mejor comportamiento,
-> y este es el valor por defecto.
-
-*mouse_move_pages_viewer*
-: Controla cuándo el desplazamiento de pantalla realizado con el ratón se realiza por páginas o línea
-a línea en el visor de archivos interno.
+*vfs_timeout*
+: El tiempo de vida de la caché de un sistema de archivos virtual, en
+segundos. Al salir de un archivo comprimido, la lista que se leyó y el archivo
+temporal que se desempaquetó se guardan durante ese tiempo, de modo que
+volver a entrar es inmediato, y se liberan cuando se cumple. 60 de forma
+predeterminada; 0 los libera en el acto. El diálogo Sistemas de Archivos
+Virtuales del menú Opciones cambia el mismo valor.
 
 *only_leading_plus_minus*
 : Produce un tratamiento especial para '+', '-', '\*' en la línea de órdenes (seleccionar,
@@ -3497,9 +3813,13 @@ deseleccionar, selección inversa) solo si la línea de órdenes está vacía. N
 entrecomillar estos caracteres en la línea de órdenes. Pero no podremos
 cambiar la selección cuando la línea de órdenes no esté vacía.
 
+*alternate_plus_minus*
+: Si está activada, las teclas '+', '-', '\\' y '\*' funcionan como
+caracteres normales. Para seleccionar y deseleccionar se usan entonces
+'Alt-+', 'Alt--' y 'Alt-\*'.
+
 *show_output_starts_shell*
-: Esta variable solo funciona si no se utiliza el soporte de subshell.
-Cuando utilizamos la combinación
+: Cuando utilizamos la combinación
 *Ctrl-o*
 para volver a la pantalla de usuario, si está activada, tendremos un
 nuevo shell.  De otro modo, pulsando cualquier tecla nos devolverá a
@@ -3526,9 +3846,9 @@ por el sistema de archivos en un panel en árbol, se irá actualizando
 automáticamente el otro panel con los contenidos del directorio
 seleccionado en cada momento.
 
-*fish_directory_timeout*
-: Tiempo de vida por defecto de la caché de directorio. El valor por defecto
-de 900 segundos.
+*shell_directory_timeout*
+: Tiempo de vida de una entrada de la caché de directorios, en segundos. El
+valor por omisión es 900 segundos.
 
 *clipboard_store*
 : Ruta de acceso y opciones a una utilidad de portapapeles externa como 'xclip'
@@ -3559,11 +3879,66 @@ lista de valores posibles se puede obtener con
 \`enca --list languages | cut -d : -f1'.  Esta opción tiene que estar
 dentro de la sección [Misc].
 
-For example:
+Por ejemplo:
 
 ```
 autodetect_codeset=russian
 ```
+
+Los ajustes del visor de archivos interno están en la sección [Viewer] del
+mismo archivo. Todos ellos están también en el diálogo
+[Opciones del visor](mview.md#viewer-options);
+los nombres de aquí son los que ese diálogo escribe.
+
+*wrap*
+: Ajustar en la línea siguiente lo que no cabe en el ancho de la pantalla.
+Activado por omisión.
+
+*syntax*
+: Colorear el texto con las reglas de sintaxis del editor. Desactivado por
+omisión.
+
+*mouse_move_pages*
+: Desplazar con el ratón por páginas en vez de línea a línea. En modo ASCII el
+botón izquierdo selecciona texto, así que allí ese desplazamiento se hace con
+el botón derecho o el central. Activado por omisión.
+
+*remember_file_position*
+: Abrir el archivo por donde se dejó la última vez. Desactivado por omisión.
+
+*structured_auto*
+: Abrir directamente en el modo estructurado (árbol) los archivos admitidos
+(json, yaml, yml, xml, html, htm). Si un archivo no se puede analizar, se usa
+la vista de texto sin avisar. Desactivado por omisión.
+
+*eof*
+: El texto que se escribe después de la última línea del archivo. Vacío por
+omisión.
+
+*structured_max_size*
+: El archivo más grande que analiza la vista estructurada, en bytes. Uno mayor
+se rechaza antes de leerlo. 67108864 (64 MB) por omisión.
+
+*structured_max_nodes*
+: El árbol más grande que construye la vista estructurada, contado en nodos. Un
+documento denso, como un XML de etiquetas pequeñas, llega a este límite antes
+que al del tamaño: gasta un nodo por cada doce bytes, y cada nodo cuesta
+memoria. 10000000 por omisión, que abarca unos 120 MB de un archivo así en
+torno a 1,5 GB.
+
+*dirt_limit*
+: Cuántas actualizaciones de pantalla se pueden saltar como mucho mientras se
+lee un archivo. Normalmente este valor no importa, porque el programa ajusta
+el número según el ritmo de las teclas que llegan. En máquinas muy lentas, o
+en terminales con repetición de teclado rápida, un valor grande hace que la
+pantalla dé saltos. El valor por omisión es 10, que es el que mejor se
+comporta.
+
+Las versiones anteriores guardaban estos ajustes en la sección principal con
+nombres más largos (wrap_mode, viewer_syntax_highlighting,
+mouse_move_pages_viewer, mcview_remember_file_position,
+mcview_structured_auto, mcview_eof y max_dirt_limit). Se leen de allí una vez
+y se escriben en la sección [Viewer].
 
 # Parámetros para editor o visor externo <a id="parameters-for-external-editor-or-viewer"></a>
 
@@ -3703,9 +4078,10 @@ configuración del sistema.
 : Este archivo contiene los mensajes cortos de ayuda mostrados por el
 programa.
 
-*{{pkgdatadir}}/usermenu*
-: Este archivo contiene el menú de aplicaciones por defecto para el sistema.
-
+*~/.config/mc6/menu.ini*
+: El menú de usuario que se edita a sí mismo, un grupo por entrada. Donde
+existe este archivo, es el menú que abre F2, y el .mc6menu del directorio
+actual se muestra junto a él.
 *~/.config/mc6/menu*
 : Menú de aplicaciones personal del usuario. Si está presente será utilizado
 en lugar del menú por defecto del sistema.
@@ -3765,8 +4141,6 @@ Los autores y contribuciones se recogen en el archivo AUTHORS de la
 distribución.
 
 # ERRORES <a id="bugs"></a>
-
-Véase el archivo "TODO" en la distribución para saber qué falta por hacer.
 
 Para informar de problemas con el programa, introducir una nueva incidencia en
 <https://github.com/blue-panels/mcommander/issues> .

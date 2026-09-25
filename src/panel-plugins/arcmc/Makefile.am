@@ -1,5 +1,6 @@
 arcmcdir = $(panel_plugins_dir)/arcmc
 arcmc_LTLIBRARIES = mc-panel-arcmc.la
+arcmc_DATA = arcmc_panel.md
 
 EXTRA_DIST = README.md
 
@@ -15,6 +16,8 @@ mc_panel_arcmc_la_SOURCES = \
     dialog-settings.c \
     $(top_srcdir)/lib/widget/table.c
 
-mc_panel_arcmc_la_CPPFLAGS = $(GLIB_CFLAGS) $(LIBARCHIVE_CFLAGS) -I$(top_srcdir) -DLIBEXECDIR=\""$(pkglibexecdir)"\" $(LIBMAGIC_CFLAGS)
+mc_panel_arcmc_la_CPPFLAGS = $(GLIB_CFLAGS) $(LIBARCHIVE_CFLAGS) -I$(top_srcdir) \
+	-DLIBEXECDIR=\""$(pkglibexecdir)"\" $(LIBMAGIC_CFLAGS) \
+	-DMC_PLUGIN_DIR=\""$(panel_plugins_dir)/arcmc"\"
 mc_panel_arcmc_la_LDFLAGS = -module -avoid-version
 mc_panel_arcmc_la_LIBADD = $(GLIB_LIBS) $(LIBARCHIVE_LIBS) $(LIBMAGIC_LIBS)

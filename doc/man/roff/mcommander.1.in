@@ -3,7 +3,7 @@
 
 .SH NAME
 .PP
-mcommander, mc6 \- Visual shell for Unix\-like systems.
+mcommander \- twin\-panel text\-mode file manager
 
 
 .SH SYNOPSIS
@@ -14,8 +14,12 @@ mcommander, mc6 \- Visual shell for Unix\-like systems.
 
 .SH DESCRIPTION
 .PP
-M\-Commander is a directory browser/file manager for
-Unix\-like operating systems.
+M\-Commander is a twin\-panel text\-mode file manager based on GNU Midnight
+Commander. Its architecture is built around a compact core and dynamically
+loaded panel plugins. The plugins provide a uniform panel interface for
+archives, remote file systems, repositories, and other data sources. Commands
+are run in a built\-in terminal. M\-Commander also includes a text editor with
+syntax highlighting and a viewer that supports both text and binary formats.
 
 
 .SH OPTIONS
@@ -64,10 +68,6 @@ xterm\-capable terminals (tmux/screen).
 .TP
 \fI\-K file, \-\-keymap=file\fP
 Specify a name of keymap file in the command line.
-
-.TP
-\fI\-l file, \-\-ftplog=file\fP
-Save the ftpfs dialog with the server in file.
 
 .TP
 \fI\-\-nokeymap\fP
@@ -290,6 +290,23 @@ the input lines in the query dialogs.
 
 .SH Redefine hotkey bindings
 .PP
+The same can be done in the program itself, from the
+\fBOptions\fP
+menu. The
+Key bindings
+dialog lists every action with the keys it answers to, changes them and writes
+the result to
+\fB~/.config/mc6/keymap.ini\fP,
+so the file the option looks for is the file that dialog keeps. The
+Learn keys
+dialog is about the other end of the problem: it teaches the program the
+sequences a terminal sends for keys it gets wrong. The
+Key sniffer
+shows what arrives for a key that is pressed, with the action it is bound to
+in the current keymap, which is what to look at when a binding seems to do
+nothing.
+
+.PP
 Hotkey bindings may be read from external file (keymap\-file).
 Initially, M\-Commander creates key bindings using keymap defined
 in the source code. Then, two files
@@ -297,50 +314,53 @@ in the source code. Then, two files
 and
 \fB{{sysconfdir}}/mcommander/keymap.ini\fP
 are loaded always, sequentially reassigned key bindings defined earlier.
-User\-defined keymap\-file is searched on the following algorithm (to the first one found):
+The package puts its own keymaps in
+\fB{{sysconfdir}}/mcommander\fP:
+\fBkeymap.default.ini\fP,
+\fBkeymap.emacs.ini\fP
+and
+\fBkeymap.vim.ini\fP,
+with
+\fBkeymap.ini\fP
+a link to the default one.
+The option
+\fB\-\-nokeymap\fP
+leaves every file out and keeps the bindings of the source code.
 
 .PP
-.RS
+User\-defined keymap\-file is searched on the following algorithm
+(to the first one found):
+
+.EX
+1) command line option \-K <keymap>, \-\-keymap=<keymap>
+2) environment variable MC_KEYMAP
+3) parameter keymap of the [Midnight\-Commander] section
+4) file ~/.config/mc6/keymap.ini
+
+.EE
 
 .PP
-1) command line option
-\fB\-K <keymap>\fP
-or
-\fB\-\-keymap=<keymap>\fP
-.br
-2) Environment variable
-\fBMC_KEYMAP\fP
-.br
-3) Parameter
-\fBkeymap\fP
-in section
-\fB[Midnight\-Commander]\fP
-of config file.
-.br
-4) File
-\fB~/.config/mc6/keymap.ini\fP
+The first three take a name or an absolute path. A name that does not end in
+\fB\&.keymap\fP
+gets that extension added, and is looked for in (to the first one found):
 
-.RE
+.EX
+1) ~/.config/mc6/
+2) {{pkgdatadir}}/
+
+.EE
 
 .PP
-Command line option, environment variable and parameter in config file may
-contain the absolute path to the keymap\-file (with the extension .keymap
-or without it). Search of keymap\-file will occur in (to the first one found):
+Because of that extension the keymaps of the package, whose names end in
+\fB\&.ini\fP,
+cannot be chosen this way. To take one of them, copy or link it to
+\fB~/.config/mc6/keymap.ini\fP,
+which is read last and needs no option:
 
-.PP
-.RS
+.EX
+ln \-s {{sysconfdir}}/mcommander/keymap.vim.ini ~/.config/mc6/keymap.ini
 
-.PP
-1)
-\fB~/.config/mc6\fP
-.br
-2)
-\fB{{sysconfdir}}/mcommander/\fP
-.br
-3)
-\fB{{pkgdatadir}}/\fP
-
-.RE
+.EE
 
 .SH Miscellaneous Keys
 .PP
@@ -581,11 +601,11 @@ the mouse.
 .PP
 The Quick search mode allows you to perform fast file search in a file panel.
 Press
-\fIC\-s\fP
+\fBC\-s\fP
 or
-\fIAlt\-s\fP
+\fBAlt\-s\fP
 to start a filename search in the directory listing. Press
-\fIAlt\-Shift\-s\fP
+\fBAlt\-Shift\-s\fP
 to start Quick filter, which uses the same pattern but hides entries that do
 not contain it. The parent directory entry is always shown.
 
@@ -596,20 +616,30 @@ instead of the command line. If the
 option is enabled, the pattern is shown on the mini\-status line. When typing,
 the selection bar will move to the next file starting with the typed letters;
 in Quick filter mode the list is also reduced to matching entries. The
-\fIBackspace\fP
+\fBBackspace\fP
 or
-\fIDEL\fP
+\fBDEL\fP
 keys can be used to correct typing mistakes.
 
 .PP
-Pressing C\-s or Alt\-s while Quick filter is active switches to Quick search
-and shows all entries without losing the pattern or current file. Pressing
-Alt\-Shift\-s while Quick search is active switches back to Quick filter.
+Pressing
+\fBC\-s\fP
+or
+\fBAlt\-s\fP
+while Quick filter is active switches to Quick search and shows all entries
+without losing the pattern or current file. Pressing
+\fBAlt\-Shift\-s\fP
+while Quick search is active switches back to Quick filter.
 Repeating the shortcut of the active mode searches for the next match.
 
 .PP
-Navigation keys such as the arrow, Home, End, Page Up and Page Down keys move
-within the filtered list without closing Quick filter.
+Navigation keys such as the arrows,
+\fBHome\fP,
+\fBEnd\fP,
+\fBPageUp\fP
+and
+\fBPageDown\fP
+move within the filtered list without closing Quick filter.
 
 .PP
 Files can be marked and unmarked while Quick filter is active. Their marks are
@@ -2069,7 +2099,8 @@ with '#', space or tab.
 .PP
 M\-Commander has some options that may be toggled on and
 off in several dialogs which are accessible from this menu. Options
-are enabled if they have an asterisk or "x" in front of them.
+are enabled if they have an asterisk or "x" in front of them. The menu holds,
+in this order:
 
 .PP
 The
@@ -2090,9 +2121,43 @@ command pops up a dialog from which you specify options of file manager panels.
 
 .PP
 The
+File panel modes
+command opens the list of the named listing formats, where one is created,
+edited and removed.
+
+.PP
+The
 Confirmation
 command pops up a dialog from which you specify which actions you want to
 confirm.
+
+.PP
+The
+Appearance
+command pops up a dialog from which you specify the skin.
+
+.PP
+The
+Learn keys
+command pops up a dialog from which you test some keys which are not working
+on some terminals and you may fix them.
+
+.PP
+The
+Key bindings
+command opens the list of the actions with the keys they answer to, where a
+key is reassigned and the result written to the keymap file.
+
+.PP
+The
+Key sniffer
+command shows what a terminal sends for the key that is pressed, and the
+action that key is bound to.
+
+.PP
+The
+Virtual FS
+command pops up a dialog from which you specify some VFS related options.
 
 .PP
 The
@@ -2108,25 +2173,20 @@ screen keeps the ones it was opened with.
 
 .PP
 The
-Appearance
-command pops up a dialog from which you specify the skin.
-
-.PP
-The
-Learn keys
-command pops up a dialog from which you test some keys which are not working
-on some terminals and you may fix them.
-
-.PP
-The
-Virtual FS
-command pops up a dialog from which you specify some VFS related options.
+Manage plugins
+command lists the plugins that are loaded, switches one off and opens its
+settings.
 
 .PP
 The
 Save setup
 command saves the current settings of the Left, Right and Options
 menus. A small number of other settings is saved, too.
+
+.PP
+The
+\fBAbout\fP
+command shows the version of the program and who wrote it.
 
 .SS Configuration
 .PP
@@ -2540,50 +2600,6 @@ Quick search
 and Quick filter modes should work: case insensitively, case sensitively or be matched
 to the panel sort order: case sensitive or not.
 
-.SS Viewer options
-.PP
-The options of the
-internal viewer
-that hold for every file it opens.
-
-.PP
-\fIWrap long lines.\fP
-If enabled, a line wider than the screen is continued on the next screen
-line; otherwise it is cut and the view scrolls sideways. Enabled by default.
-
-.PP
-\fISyntax highlighting.\fP
-If enabled, the viewer colors the text by the syntax rules of the editor.
-A file opened in a mode that brings its own colors, such as a man page or
-rendered Markdown, keeps those colors. Disabled by default.
-
-.PP
-\fIMouse page scrolling.\fP
-If enabled, the mouse wheel scrolls by a page; otherwise it scrolls by a
-few lines. Enabled by default.
-
-.PP
-\fIRemember file position.\fP
-If enabled, the viewer opens a file at the place it was left the last time.
-Disabled by default.
-
-.PP
-\fITree view of JSON, YAML and XML.\fP
-If enabled, a file of one of these formats opens as a tree that can be
-folded, instead of plain text. The same view is always available with the
-key that switches the display mode. Disabled by default.
-
-.PP
-\fIEnd of file marker.\fP
-The text printed after the last line of the file. Empty by default, which
-prints nothing.
-
-.PP
-\fIRedraws to skip at most.\fP
-While a file is still being read, the viewer skips redraws to keep up with
-the data. This is how many it may skip in a row before it draws anyway. The
-default is 10.
-
 .SS Confirmation
 .PP
 In this dialog you configure the confirmation options for file deletion,
@@ -2637,93 +2653,76 @@ This option gives you control over the settings of the
 Virtual File System\&.
 
 .PP
-M\-Commander keeps in memory the information related to some
-of the virtual file systems to speed up the access to the files in the
-file system (for example, directory listings fetched from FTP servers).
+The dialog holds one setting,
+\fITimeout for freeing VFSs,\fP
+which is the lifetime of the cache of a file system: after leaving an archive
+or a compressed file, the listing that was read and the temporary file that
+was unpacked are kept for that many seconds, so that going back in is
+immediate, and are released when the time is up. The default is 60 seconds,
+and 0 releases them at once.
 
+.SS Manage plugins
 .PP
-Also, in order to access the contents of compressed files (for example,
-compressed tar files), M\-Commander needs to create temporary
-uncompressed files on your disk.
+The plugins the program has loaded, in a table: the kind, the name and what the
+plugin says about itself. A plugin is switched off and on with the checkbox of
+its row, and what is switched off is not loaded the next time either.
 
-.PP
-Since both the information in memory and the temporary files on disk
-take up resources, you may want to tune the parameters of the cached
-information to decrease your resource usage or to maximize the speed of
-access to frequently used file systems.
-
-.PP
-Because of the format of the tar archives, the
-\fITar filesystem\fP
-needs to read the whole file just to load the file entries.  Since most
-tar files are usually kept compressed (plain tar files are species in
-extinction), the tar file system has to uncompress the file on the disk
-in a temporary location and then access the uncompressed file as a
-regular tar file.
-
-.PP
-Now, since we all love to browse files and tar files all over the disk,
-it's common that you will leave a tar file and then re\-enter it later.
-Since decompression is slow, M\-Commander will cache the
-information in memory for a limited time.  When the timeout expires, all
-the resources associated with the file system are released.  The default
-timeout is set to one minute.
+.TP
+\fBEnter, F4\fP
+Open the settings of the plugin the cursor is on. A plugin that has none says
+so.
 
 .PP
 The
-FTP File System
-(ftpfs) allows you to browse directories on remote FTP servers.  It has
-several options.
+panel plugins
+are listed here together with the editor plugins and the packages of Lua
+scripts; the scripts of a package are listed by the
+Lua scripts
+dialog of its settings.
 
+.SS Lua scripts
 .PP
-\fIftp anonymous password\fP
-is the password used when you login as "anonymous".  Some sites require
-a valid e\-mail address.  On the other hand, you probably don't want to
-give your real e\-mail address to untrusted sites, especially if you are
-not using spam filtering.
+The scripts of a Lua package, in a table: the name, the identifier, where the
+script lives, what it provides and what it does. A script is switched off and
+on with the checkbox of its row.
 
-.PP
-ftpfs keeps the directory listing it fetches from a FTP server in a cache.
-The cache expire time is configurable with the
-\fIftpfs directory cache timeout\fP
-option.  A low value for this option may slow down every operation on
-the ftpfs because every operation would require sending a request to the
-FTP server.
+.TP
+\fBSettings\fP
+Run the script that carries the settings of the package, where it has one.
 
+.SS Send to panel
 .PP
-You can define an FTP proxy host for doing FTP.  Note that most modern
-firewalls are fully transparent at least for passive FTP (see below), so
-FTP proxies are considered obsolete.
+When a file can be opened by more than one panel plugin, this list asks which
+one to send it to. Enter takes the plugin the cursor is on, Esc leaves the
+file where it is.
 
+.SS File exists
 .PP
-If
-\fIAlways use ftp proxy\fP
-is not set, you can use the exclamation sign to enable proxy for certain
-hosts.  See
-FTP File System
-for examples.
+A copy into a panel plugin found a file of that name there. The dialog shows
+the path, the size and the time of what is being copied and of what is already
+there, and asks what to do: overwrite it, skip it, resume the copy where it
+stopped, when the plugin can continue one, or stop the whole operation.
 
+.SS Choose codepage
 .PP
-If this option is set, the program will do two things: consult the
-{{sysconfdir}}/mcommander/mc.no_proxy file for lines containing host names that
-are local (if the host name starts with a dot, it is assumed to be a
-domain) and to assume that any hostnames without dots in their names are
-directly accessible.  All other hosts will be accessed through the
-specified FTP proxy.
+The list of the codepages the program knows, from
+\fB{{pkgdatadir}}/charsets\fP\&.
+Choosing one tells the program in which codepage the names or the text at hand
+are written, and
+\fB<No translation>\fP
+leaves them as bytes. The list is opened by
+\fBAlt\-e\fP
+in a panel, in the viewer and in the editor, and by the Encoding item of their
+menus.
 
+.SS History
 .PP
-You can enable using
-\fI~/.netrc\fP
-file, which keeps login names and passwords for ftp servers.  See netrc
-(5) for the description of the .netrc format.
-
-.PP
-\fIUse passive mode\fP
-enables using FTP passive mode, when the connection for data transfer is
-initiated by the client, not by the server.  This option is recommended
-and enabled by default.  If this option is turned off, the data
-connection is initiated by the server.  This may not work with some
-firewalls.
+The list of what was typed into an input line before, newest first, which
+\fBAlt\-h\fP
+opens for the line the cursor is in. Enter takes the entry the cursor is on
+into the line, Esc leaves the line as it was, and
+\fBF8, Del\fP
+removes the entry the cursor is on from the history.
 
 .SS Save Setup
 .PP
@@ -3282,6 +3281,7 @@ button to abort the operation altogether.
 \fB[Retry]\fP
 button to continue if you fixed the problem from another terminal.
 
+.SS Replace
 .PP
 The replace dialog is shown when you attempt to copy or move a file on
 the top of an existing file.  The dialog shows the dates and sizes of
@@ -3547,413 +3547,6 @@ If
 is off, the case will be ignored.
 
 
-.SH Internal Diff Viewer
-.PP
-The mdiff is a visual diff tool. You can compare two files and edit them
-in\-place (diffs are updated dynamically). You can browse and view a working
-copy from popular version control systems (GIT, Subversion, etc).
-
-.PP
-Following shortcuts are available in internal diff viewer of
-M\-Commander.
-
-.TP
-\fBF1\fP
-Invoke the built\-in hypertext help viewer.
-
-.TP
-\fBF2\fP
-Save modified files.
-
-.TP
-\fBF4\fP
-Edit file of the left panel in the internal editor.
-
-.TP
-\fBF14\fP
-Edit file of the right panel in the internal editor.
-
-.TP
-\fBF5\fP
-Merge the current hunk. Only the current hunk will be merged.
-
-.TP
-\fBF7\fP
-Start search.
-
-.TP
-\fBF17\fP
-Continue search.
-
-.TP
-\fBF10, Esc, q\fP
-Exit from diff viewer.
-
-.TP
-\fBAlt\-s, s\fP
-Toggle show of hunk status.
-
-.TP
-\fBAlt\-n, l\fP
-Toggle show of line numbers.
-
-.TP
-\fBCtrl\-s\fP
-Toggle syntax highlighting. The text of each line is then colored by the
-syntax rules, the way the internal editor colors it, and the state of the line
-is left to the background and to the marker column. Where a skin tells a
-changed word from the rest of its line by the color of the text alone, the word
-is underlined instead. The setting is remembered separately from the editor's
-own.
-
-.TP
-\fBf\fP
-Maximize left panel.
-
-.TP
-\fB=\fP
-Make panels equal in width.
-
-.TP
-\fB>\fP
-Reduce the size of the right panel.
-
-.TP
-\fB<\fP
-Reduce the size of the left panel.
-
-.TP
-\fBc\fP
-Toggle show of trailing carriage return (CR) symbol as ^M.
-
-.TP
-\fB2, 3, 4, 8\fP
-Set tabulation size
-
-.TP
-\fBC\-u\fP
-Swap contents of diff panels.
-
-.TP
-\fBC\-r\fP
-Refresh the screen.
-
-.TP
-\fBC\-o\fP
-Toggle the terminal and show the command screen.
-
-.TP
-\fBEnter, Space, n\fP
-Find next diff hunk.
-
-.TP
-\fBBackspace, p\fP
-Find previous diff hunk.
-
-.TP
-\fBg\fP
-Go to line.
-
-.TP
-\fBDown\fP
-Scroll one line forward.
-
-.TP
-\fBUp\fP
-Scroll one line backward.
-
-.TP
-\fBPageUp\fP
-Move one page up.
-
-.TP
-\fBPageDown\fP
-Moves one page down.
-
-.TP
-\fBHome, A1\fP
-Moves to the line beginning.
-
-.TP
-\fBEnd\fP
-Moves to the line end.
-
-.TP
-\fBC\-Home\fP
-Move to the file beginning.
-
-.TP
-\fBC\-End, C1\fP
-Move to the file end.
-
-
-.SH Internal File Viewer
-.PP
-The internal file viewer provides three display modes: ASCII, hex and
-structured (tree).  To toggle between ASCII and hex, use the F4 key.
-To toggle the structured mode, use Alt\-s or t.
-
-.PP
-The viewer will try to use the best method provided by your system or
-the file type to display the information.
-Some character sequences, which appear most often in preformatted manual
-pages, are displayed bold and underlined, thus making a pretty display
-of your files.
-
-.PP
-In ASCII mode the arrow keys move the view until the reading cursor is
-turned on.  Enter turns it on, and off again; a click and the keys that
-mark turn it on as well.  With the cursor on, the arrow keys walk the
-text and the Shift\-arrow, Shift\-Home, Shift\-End, Shift\-PageUp and
-Shift\-PageDown keys mark it.
-
-.PP
-Drag with the left mouse button to select text.  A double click selects
-a word and a triple click selects a visual line.  A single click only
-places the cursor on a character; it marks the point the shifted keys
-extend the selection from.  When the text scrolls (PageDown, the mouse
-wheel), the cursor stays on the screen in the same row and column.
-Press Ctrl\-Insert or Enter to copy the selection to the clipfile and
-then to the external clipboard; C\-u clears the selection and turns the
-cursor off, and so does copying.  Enter acts as Down where there is no
-cursor to turn on, in hex and tree modes.  Any cursor movement without
-Shift drops the selection and keeps the cursor.  The copied value is the
-displayed text: ANSI and nroff formatting is removed, tabs are expanded
-to spaces, and in filter mode only the visible lines are copied.
-
-.PP
-Since the left button selects text, scrolling by clicking in the upper
-or lower third of the view (see
-\fImouse_move_pages\fP
-in the [Viewer] section) is done with the right or middle mouse button in ASCII mode.
-The mouse wheel scrolls in every mode.
-
-.PP
-When in hex mode, the search function accepts text in quotes and
-constant numbers.  Text in quotes is matched exactly after removing
-the quotes.  Each number matches one byte.  You can mix quoted text
-with constants like this:
-
-.EX
-"String" 34 0xBB 012 "more text"
-
-.EE
-
-.PP
-Numbers are always interpreted in hex. In the example above, "34" is
-interpreted as 0x34. The prefix "0x" isn't really needed: we could type
-"BB" instead of "0xBB". And "012" is interpreted as 0x12, not as an octal
-number.
-
-.PP
-The structured mode renders JSON, YAML and XML files as an
-expandable tree.  Press Alt\-s (or t) on a supported file to enter it;
-if the file cannot be parsed, a diagnostic is shown and the viewer
-stays in ASCII mode.  YAML is handled by a built\-in parser that
-covers the commonly used subset (block mappings and sequences, block
-scalars, quoted scalars, anchors and aliases).  Aliases are expanded
-by copying; a cyclic alias, or expansion beyond an internal node
-budget, is displayed as a *name reference instead of a copy.  Tags and
-flow collections ([] and {}) are not parsed and appear as plain text
-values; documents outside the subset (multi\-line plain scalars, tab
-characters in indentation) are reported and shown as plain text.  Inside the tree F4, Alt\-s and t return to the
-ASCII mode.  The status line shows the content type and the jq\-style
-path of the current node (for example
-\fB\&.spec.containers[0].image\fP).
-The mode also works in the quick view panel (C\-x q), where the tree
-follows the panel cursor.  With the
-\fIstructured_auto\fP
-option of the [Viewer] section enabled supported files open in the tree
-right away.  Keys
-available inside the tree:
-
-.EX
-Enter        expand/collapse the current node; on a leaf show
-             the full value
-Right/Left   expand / collapse (on a collapsed node Left jumps
-             to the parent)
-*            expand the current subtree recursively
-+ / \-        expand / collapse the whole tree
-1 .. 9       expand the whole document to the given depth
-Alt\-Enter    copy the path of the current node to the clipboard
-F7, /        search the whole document, including collapsed
-             nodes; the path to a match is expanded
-F17, n       continue the search
-F6           filter the tree by a pattern
-] / [        go to the next / previous match of the filter
-
-.EE
-
-.PP
-The filter (F6) takes the pattern in the same dialog as the one of the
-ASCII mode, with the same type, case and whole\-word settings, and keeps
-only the nodes whose key or value matches it.  The path down to every
-match stays visible, and so does what is inside a match, so a matched
-node can still be opened and browsed.  The status line counts the
-matches; ] and [ walk them.  An empty pattern clears the filter, and so
-does leaving the tree.  A node matches on the text its row shows, so a
-long value is matched only up to the length the tree keeps for the
-preview (160 characters).
-
-.PP
-Here is a listing of the actions associated with each key that the
-M\-Commander handles in the internal file viewer.
-
-.TP
-\fBF1\fP
-Invoke the built\-in hypertext help viewer.
-
-.TP
-\fBF2\fP
-Toggle the wrap mode.
-
-.TP
-\fBF4\fP
-Toggle the hex mode.
-
-.TP
-\fBAlt\-s, t\fP
-Toggle the structured (tree) mode for JSON, YAML and XML files.
-
-.TP
-\fBF5\fP
-Goto. You can specify a line number, offset or percentage of file size
-of position that you want to view.
-
-.TP
-\fBF7, /, ?\fP
-Start search. These keys call the dialog window that allows you to set up
-the search options. If key is ? the "Backwards" option is on.
-
-.TP
-\fBC\-s\fP
-Continue forward search.
-
-.TP
-\fBC\-r\fP
-Continue reverse search.
-
-.TP
-\fBF17, n\fP
-Continue search in the chosen direction.
-
-.TP
-\fBN\fP
-Temporary change the search direction: backwards if forward search is chosen,
-and vice versa.
-
-.TP
-\fBShift\-F8\fP
-Toggle syntax highlighting: the text is colored by the syntax rules, the same
-ones and the same way the internal editor uses. Above a few megabytes a file
-gets the line\-local rules instead, which color numbers, quoted strings and
-punctuation without having to read everything above the line being shown.
-
-.TP
-\fBShift\-F9\fP
-Toggle interpretation of ANSI color escape sequences found in the text.
-
-.TP
-\fBF8\fP
-Toggle Raw/Parsed mode: This will show the file as found on disk or if
-a processing filter has been specified in the extensions.ini file, then the
-output from the filter. Current mode is always the other than written
-on the button label, since on the button is the mode which you enter
-by that key.
-
-.TP
-\fBF9\fP
-Toggle the format/unformat mode: when format mode is on the viewer
-will interpret some string sequences to show bold and underline with
-different colors. Also, on button label is the other mode than current.
-
-.TP
-\fBF10, Esc.\fP
-Exit the internal file viewer.
-
-.TP
-\fBPageDown, space, C\-v.\fP
-Scroll one page forward.
-
-.TP
-\fBPageUp, Alt\-v, C\-b, Backspace.\fP
-Scroll one page backward.
-
-.TP
-\fBDown, Up\fP
-Move the text cursor one row down or up; on the edge of the view the
-text scrolls by one line.  In hex mode they scroll one line.
-
-.TP
-\fBLeft, Right\fP
-Move the text cursor by one displayed character; at the end of the row
-it goes on to the next one.  In hex mode they move the hex cursor.
-
-.TP
-\fBC\-Left, C\-Right\fP
-Move the text cursor by eight displayed characters.
-
-.TP
-\fBShift\-Left, Shift\-Right, Shift\-Up, Shift\-Down\fP
-Extend the text selection by one displayed character or row.
-
-.TP
-\fBShift\-Home, Shift\-End\fP
-Extend the text selection to the start or end of the visual row.
-
-.TP
-\fBShift\-PageUp, Shift\-PageDown\fP
-Extend the text selection to the first or last visible row.
-
-.TP
-\fBCtrl\-Insert, Enter\fP
-Copy selected text to the clipfile and external clipboard.  With no
-selection, Enter acts as Down.
-
-.TP
-\fBC\-u\fP
-Clear the text selection.
-
-.TP
-\fBC\-l\fP
-Refresh the screen.
-
-.TP
-\fBC\-o\fP
-Toggle the terminal and show the command screen.
-
-.TP
-\fB[n] m\fP
-Set the mark n.
-
-.TP
-\fB[n] r\fP
-Jump to the mark n.
-
-.TP
-\fBC\-f\fP
-Jump to the next file.
-
-.TP
-\fBC\-b\fP
-Jump to the previous file.
-
-.TP
-\fBAlt\-r\fP
-Toggle the ruler.
-
-.TP
-\fBAlt\-e\fP
-to change charset of displayed text may use Alt\-e (M\-e).
-Recoding is made from selected codepage into system codepage. To
-cancel the recoding you may select "<No translation>" in charset
-selection dialog.
-
-.PP
-It's possible to instruct the file viewer how to display a file, look
-at the
-Edit Extension File section
-
 .SH Regex Quick Reference
 .PP
 \fBCommon Tokens\fP
@@ -4169,110 +3762,6 @@ Control verb                        (*THEN)
 .EE
 
 
-.SH Internal File Editor
-.PP
-The internal file editor is a full\-featured full screen editor.  It can
-edit files up to 64 megabytes.  It is possible to edit binary files.
-The internal file editor is invoked using
-\fBF4\fP
-if the
-\fIuse_internal_edit\fP
-option is set in the initialization file.
-
-.PP
-The features it presently supports are: block copy, move, delete, cut,
-paste; key for key undo; pull\-down menus; file insertion; macro
-commands; regular expression search and replace; S\-arrow text highlighting
-(if supported by the terminal); insert\-overwrite toggle; word wrap;
-autoindent; tunable tab size; syntax highlighting for various file
-types; and an option to pipe text blocks through shell commands like
-indent and ispell.
-
-.TP
-Sections:
-Options of editor in ini\-file
-
-.PP
-The editor is very easy to use and requires no tutoring. To see what
-keys do what, just consult the appropriate pull\-down menu. Other keys
-are: Shift movement keys do text highlighting.
-\fBC\-Ins\fP
-copies to the file
-\fBmcedit6.clip\fP
-and
-\fBS\-Ins\fP
-pastes from mcedit6.clip.
-\fBS\-Del\fP
-cuts to
-\fBmcedit6.clip\fP,
-and
-\fBC\-Del\fP
-deletes highlighted text. Mouse highlighting also works, and you
-can override the mouse as usual by holding down the shift key
-while dragging the mouse to let normal terminal mouse highlighting
-work.
-
-.PP
-To define a macro, press
-\fBC\-R\fP
-and then type out the key
-strokes you want to be executed. Press
-\fBC\-R\fP
-again when finished. You can then assign the macro to any key you
-like by pressing that key. The macro is executed when you press
-\fBC\-A\fP
-and then the assigned key. The macro is also executed if
-you press Meta, Ctrl, or Esc and the assigned key, provided that the
-key is not used for any other function. Once defined, the macro
-commands go into the file
-\fB~/.local/share/mc6/mcedit6/mcedit6.macros\fP
-You can delete a macro by deleting the
-appropriate line in this file.
-
-.PP
-To change charset of displayed text may use Alt\-e (M\-e).
-Recoding is made from selected codepage into system codepage. To
-cancel the recoding you may select "<No translation>" in charset
-selection dialog.
-
-.PP
-The
-\fBFilter\fP
-button of the search dialog
-(\fBF7\fP)
-hides every line that does not match the search string, using the same
-type, case and whole\-word settings as the search.  Line numbers keep
-their original values and the line state gutter marks each hidden run.
-The set of hidden lines is fixed at the moment the button is pressed:
-editing never re\-applies the match, so a shown line that is split or
-joined stays shown, and lines typed afterwards stay shown even if they
-do not match.
-\fBM\-s\fP
-lifts the filter; pressed again it puts the last search back on as a
-filter.  "Unfold all" in the Command menu lifts it as well.
-
-.PP
-\fBF19\fP
-will format the currently highlighted block (plain text or C or C++
-code or another). This is controlled by the
-file
-\fB{{pkgdatadir}}/edit.indent.rc\fP
-which is copied to
-\fB~/.local/share/mc6/mcedit6/edit.indent.rc\fP
-in your home directory the first time you use it.
-
-
-.SH Options of editor in ini\-file
-.PP
-Some editor options of ini\-file are described in this section.
-Options are placed in [Midnight\-Commander] section
-
-.TP
-\fIeditor_wordcompletion_collect_entire_file\fP
-Search autocomplete candidates in entire of file or just from
-begin of file to cursor position (0)
-
-
 .SH Screen selector
 .PP
 M\-Commander supports running many internal modules (such as
@@ -4357,196 +3846,56 @@ virtual file system switch allows M\-Commander to manipulate
 files not located on the Unix file system.
 
 .PP
-Currently, M\-Commander is packaged with some Virtual File
-Systems (VFS): the
+Two virtual file systems are built into the program besides the
 \fIlocal\fP
-file system, used for accessing the regular Unix file system; the
-\fIftpfs,\fP
-used to manipulate files on remote systems with the FTP protocol; the
-\fIundelfs,\fP
-used to recover deleted files on ext2 file systems (the default file
-system for Linux systems),
-\fIshell\fP
-(for manipulating files over shell connections such as rsh and ssh).
-If the code was compiled with
-\fIsftpfs\fP
-(for manipulating files over SFTP connections).
-
-.PP
-A generic
-\fIextfs\fP
-(EXTernal virtual File System) is provided in order to easily expand
-VFS capabilities using scripts and external software.
+one, which is the regular Unix file system:
+\fIextfs,\fP
+which turns a file or a system\-wide list into a directory tree with a script
+of its own, and
+\fIsfs,\fP
+which passes a single file through a command and shows what comes out.
+Everything that needs a connection to another machine, and the archives, are
+panel plugins
+now, not file systems of the switch.
 
 .PP
 The VFS switch code will interpret all of the path names used and will
 forward them to the correct file system, the formats used for each one
 of the file systems is described later in their own section.
 
-.SH FTP File System
+.SH Panel plugins
 .PP
-The FTP File System (ftpfs) allows you to manipulate files on remote
-machines.  To actually use it, you can use the
-\fIFTP link\fP
-item in the menu or directly change your current directory using the
-\fIcd\fP
-command to a path name that looks like this:
-
-.PP
-\fIftp://[!][user[:pass]@]machine[:port]/[remote\-dir]\fP
-
-.PP
-The
-\fIuser,\fP
-\fIport\fP
-and
-\fIremote\-dir\fP
-elements are optional.  If you specify the
-\fIuser\fP
-element, M\-Commander will login to the remote machine as that
-user, otherwise it will use anonymous login or the login name from the
-\fI~/.netrc\fP
-file.  The optional
-\fIpass\fP
-element is the password used for the connection.  Using the password in
-the VFS directory name is not recommended, because it can appear on the
-screen in clear text and can be saved to the directory history.
-
-.PP
-To enable using FTP proxy, prepend
-\fB!\fP
-(an exclamation sign) to the hostname.
-
-.PP
-Examples:
+A panel is not bound to a file system: a plugin can fill it with whatever it
+can list. The plugins that come with the program are
 
 .EX
-    ftp://ftp.nuclecu.unam.mx/linux/local
-    ftp://tsx\-11.mit.edu/pub/linux/packages
-    ftp://!behind.firewall.edu/pub
-    ftp://guest@remote\-host.com:40/pub
-    ftp://miguel:xxx@server/pub
+arcmc        archives, and what is inside them
+ftp, sftp    files on another machine
+shell\-link   files on another machine over ssh
+samba        shares of an SMB server
+s3           buckets of an S3 storage
+git          the state of a repository
+docker       containers, images and their logs
+k8s          the objects of a cluster
+mongo        the collections of a database
+sqlite       the tables of a database
+systemd      the units of the system
+panelize     the result of a command as a panel
+mcpeek       a look inside a file
+mcstruct     a binary file as a tree of named fields
+skineditor   the skin of the program
 
 .EE
 
 .PP
-Please check the
-Virtual File System
-dialog box for ftpfs options.
-
-.SH FIle transfer over SHell filesystem
-.PP
-The shell file system is a network based file system that allows you to
-manipulate the files in a remote machine as if they were local. To use
-this, the other side has to have bash\-compatible shell.
-
-.PP
-To connect to a remote machine, you just need to chdir
-into a special directory which name is in the following
-format:
-
-.PP
-\fIsh://[user@]machine[:options]/[remote\-dir]\fP
-
-.PP
-The
-\fIuser,\fP
-\fIoptions\fP
-and
-\fIremote\-dir\fP
-elements are optional.  If you specify the
-\fIuser\fP
-element, M\-Commander will try to login on the remote
-machine as that user, otherwise it will use your login name.
-
-.PP
-The available
-\fIoptions\fP
-are:
-
-.EX
-  'C' \- use compression;
-  'r' \- use rsh instead of ssh;
-  port \- specify the port used by remote server.
-
-.EE
-
-.PP
-If the
-\fIremote\-dir\fP
-element is present, your current directory on the remote machine will be
-set to this one.
-
-.PP
-Examples:
-
-.EX
-    sh://onlyrsh.mx:r/linux/local
-    sh://joe@want.compression.edu:C/private
-    sh://joe@noncompressed.ssh.edu/private
-    sh://joe@somehost.ssh.edu:2222/private
-
-.EE
-
-.SH SFTP (SSH File Transfer Protocol) filesystem
-.PP
-The SFTP file system is a network based file system that allows you to
-manipulate the files in a remote machine as if they were local.
-
-.PP
-To connect to a remote machine, you just need to chdir
-into a special directory which name is in the following
-format:
-
-.PP
-\fIsftp://[user@]machine:[port]/[remote\-dir]\fP
-
-.PP
-The
-\fIuser,\fP
-\fIport\fP
-and
-\fIremote\-dir\fP
-elements are optional.  If you specify the
-\fIuser\fP
-element, M\-Commander will try to login on the remote
-machine as that user, otherwise it will use your login name.
-\fIport\fP
-\- specify the port used by remote server (22 by default).
-If the
-\fIremote\-dir\fP
-element is present, your current directory on the remote machine will be
-set to this one.
-
-.PP
-Examples:
-
-.EX
-    sftp://onlyrsh.mx/linux/local
-    sftp://joe:password@want.compression.edu/private
-    sftp://joe@noncompressed.ssh.edu/private
-    sftp://joe@somehost.ssh.edu:2222/private
-
-.EE
-
-.PP
-When establishing the connection, server key fingerprint is verified using
-the ~/.ssh/known_hosts file. If the host/key pair is not found or the host is found,
-but the key doesn't match, an appropriate message is shown.
-There are three buttons in the message dialog:
-
-.PP
-\fB[Yes]\fP
-add new host/key pair to the ~/.ssh/known_hosts file and continue.
-
-.PP
-\fB[Ignore]\fP
-do not add new host/key pair to the ~/.ssh/known_hosts file, but continue
-nevertheless (at you own risk).
-
-.PP
-\fB[No]\fP
-abort connection.
+Every plugin carries its own help, which
+\fBF1\fP
+opens inside its panel or its dialog. The
+\fBManage plugins\fP
+item of the Options menu lists what is loaded, switches a plugin off and opens
+its settings. A plugin panel is reached from the
+Left and Right menus,
+from the hotlist, or by typing the address of the plugin on the command line.
 
 .SH EXTernal File System
 .PP
@@ -4681,6 +4030,29 @@ section.  Here is an example entry for Debian packages:
 
 .EE
 
+.SH Single File fileSystem
+.PP
+\fBsfs\fP
+passes one file through a command and shows the result as a file of its own,
+which is how a compressed file is read without unpacking it by hand. The name
+of the file system is appended to the name of the file, as with extfs:
+
+.EX
+  cd documents.gz/ugz://
+
+.EE
+
+.PP
+The commands are listed in
+\fB{{sysconfdir}}/mcommander/sfs.ini\fP,
+one to a line: the name of the file system, a slash, the number of the
+command, a tab, and the command itself, where
+\fI%1\fP
+is the file the panel is on and
+\fI%3\fP
+the file to write. The file that comes with the program holds the pairs that
+pack and unpack gz, bz2, lz, lz4, lzma, lzo, xz and zst, and a few more.
+
 
 .SH Colors
 .PP
@@ -4729,49 +4101,30 @@ If your skin contains any true\-color definitions, you should define
 the 'truecolors' key set to TRUE value in [skin] section. If true\-color
 is not used but 256\-color is, you should define '256colors' instead.
 
-.TP
-A skin\-file is searched on the following algorithm (to the first one found):
-.br
+.PP
+A skin\-file is searched on the following algorithm
+(to the first one found):
 
-1) command line option
-\fB\-S <skin>\fP
-or
-\fB\-\-skin=<skin>\fP
-.br
-2) Environment variable
-\fBMC_SKIN\fP
-.br
-3) Parameter
-\fBskin\fP
-in section
-\fB[Midnight\-Commander]\fP
-in config file.
-.br
-4) File
-\fB{{sysconfdir}}/mcommander/skins/default.ini\fP
-.br
-5) File
-\fB{{pkgdatadir}}/skins/default.ini\fP
+.EX
+1) command line option \-S <skin>, \-\-skin=<skin>
+2) environment variable MC_SKIN
+3) parameter skin of the [Midnight\-Commander] section
+4) file {{sysconfdir}}/mcommander/skins/default.ini
+5) file {{pkgdatadir}}/skins/default.ini
+
+.EE
 
 .PP
 Command line option, environment variable and parameter in config file may
 contain the absolute path to the skin\-file (with the extension .ini
 or without it). Search of skin\-file will occur in (to the first one found):
 
-.PP
-.RS
+.EX
+1) ~/.local/share/mc6/skins/
+2) {{sysconfdir}}/mcommander/skins/
+3) {{pkgdatadir}}/skins/
 
-.PP
-1)
-\fB~/.local/share/mc6/skins/\fP
-.br
-2)
-\fB{{sysconfdir}}/mcommander/skins/\fP
-.br
-3)
-\fB{{pkgdatadir}}/skins/\fP
-
-.RE
+.EE
 
 .PP
 The format of skin files is described in
@@ -4855,10 +4208,12 @@ this flag is set to 1, then M\-Commander will ask for confirmation before changi
 the directory if you have files tagged.
 
 .TP
-\fIftpfs_retry_seconds\fP
-This value is the number of seconds M\-Commander will wait
-before attempting to reconnect to an FTP server that has denied the
-login.  If the value is zero, the login will no be retried.
+\fIvfs_timeout\fP
+The lifetime of the cache of a virtual file system, in seconds. After leaving
+an archive or a compressed file, the listing that was read and the temporary
+file that was unpacked are kept for that long, so that going back in is
+immediate, and are released when the time is up. 60 by default; 0 releases them
+at once. The Virtual FS dialog of the Options menu holds the same value.
 
 .TP
 \fIonly_leading_plus_minus\fP
@@ -5222,10 +4577,6 @@ distribution.
 
 
 .SH BUGS
-.PP
-See the file TODO in the distribution for information on what remains to
-be done.
-
 .PP
 If you want to report a problem with the program, please create bugreport at
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

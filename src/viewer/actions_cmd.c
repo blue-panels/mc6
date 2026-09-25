@@ -376,8 +376,11 @@ mcview_load_file_from_history (WView *view)
 static void
 mcview_help (const WView *view)
 {
-    // a script's own help stands in for the viewer's node and links to it
-    ev_help_t event_data = { view->source_spec != NULL ? view->source_spec->help_file : NULL,
+    /* a script's own help stands in for the viewer's node and links to it; without one the
+       help of the viewer itself is named, since its nodes do not live in the core help */
+    ev_help_t event_data = { view->source_spec != NULL && view->source_spec->help_file != NULL
+                                 ? view->source_spec->help_file
+                                 : MCVIEW_HELP_FILE,
                              view->source_spec != NULL && view->source_spec->help_node != NULL
                                  ? view->source_spec->help_node
                                  : "[Internal File Viewer]",

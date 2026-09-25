@@ -1,0 +1,239 @@
+.\" Generated from mcedit6.md by maint/update-man-in.sh. Do not edit.
+.TH MCEDIT6 1 "wrzesień 2026" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NAZWA
+.PP
+mcedit6 \- Wbudowany edytor plików.
+
+
+.SH UŻYTKOWANIE
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] plik
+
+
+.SH Wbudowany edytor plików
+.PP
+Wbudowany edytor plików to pełnoekranowy edytor ze wszystkimi zwykłymi
+możliwościami. Plik większy niż
+\fIeditor_filesize_threshold\fP
+(domyślnie 64 MB) otwiera się po pytaniu. Pliki binarne można edytować.
+Edytor jest wywoływany klawiszem
+\fBF4\fP,
+o ile opcja
+\fIuse_internal_edit\fP
+jest ustawiona w pliku startowym.
+
+.PP
+Obsługiwane możliwości to: kopiowanie, przenoszenie, kasowanie, wycinanie i
+wklejanie bloków; cofanie klawisz po klawiszu; menu rozwijalne; wstawianie
+plików; makra; szukanie i zastępowanie wyrażeniami regularnymi; zaznaczanie
+tekstu strzałkami z Shiftem (jeśli terminal je rozróżnia); przełączanie
+wstawiania i zastępowania; zawijanie wierszy; automatyczne wcięcia;
+ustawialna szerokość tabulacji; podświetlanie składni dla różnych typów
+plików; oraz przepuszczanie bloku tekstu przez polecenie powłoki, takie jak
+indent czy ispell.
+
+.TP
+Rozdziały:
+Opcje edytora
+
+.PP
+Edytor jest bardzo prosty w użyciu i nie wymaga przygotowania. Aby zobaczyć,
+co robią klawisze, wystarczy obejrzeć odpowiednie menu rozwijalne. Poza tym
+strzałki z Shiftem zaznaczają tekst.
+\fBCtrl\-Ins\fP
+kopiuje do pliku wymiany
+\fB~/.local/share/mc6/mcedit/mcedit.clip\fP,
+\fBShift\-Ins\fP
+wkleja z niego,
+\fBShift\-Del\fP
+wycina do niego, a
+\fBCtrl\-Del\fP
+kasuje zaznaczony tekst. Zaznaczanie myszą też działa, a można je przesłonić
+zwykłym zaznaczaniem terminala, trzymając Shift podczas przeciągania.
+
+.PP
+Aby zdefiniować makro, naciśnij
+\fBCtrl\-R\fP,
+a potem te klawisze, które mają zostać wykonane. Naciśnij ponownie
+\fBCtrl\-R\fP,
+kiedy skończysz, i przypisz makro do klawisza, naciskając go. Makro wykonuje
+się tym klawiszem, a także skrótem
+\fBCtrl\-A\fP
+i przypisanym klawiszem. Makra są przechowywane w sekcji
+\fB[editor]\fP
+pliku
+\fB~/.local/share/mc6/macros\fP,
+a kasuje się je, usuwając ich wiersz z tego pliku.
+
+.PP
+Zestaw znaków wyświetlanego tekstu zmienia Alt\-e (M\-e). Przekodowanie idzie z
+wybranej strony kodowej na systemową. Aby je wyłączyć, wybierz
+"<No translation>" w oknie wyboru zestawu znaków.
+
+.PP
+Przycisk
+\fBFiltr\fP
+w oknie szukania
+(\fBF7\fP)
+ukrywa wszystkie wiersze, w których nie ma szukanego tekstu, z tymi samymi
+ustawieniami rodzaju szukania, wielkości liter i całych słów co szukanie.
+Numery wierszy pozostają oryginalne, a kolumna stanu zaznacza każdy ukryty
+fragment. Zbiór ukrytych wierszy ustala się w chwili naciśnięcia przycisku:
+edycja nie sprawdza warunku ponownie, więc widoczny wiersz, który zostanie
+podzielony albo złączony, pozostaje widoczny, a wiersze napisane później też
+pozostają widoczne, nawet jeśli nie pasują do warunku.
+\fBM\-s\fP
+zdejmuje filtr; naciśnięty ponownie zakłada ostatnie szukanie jako filtr.
+Pozycja "Rozwiń wszystko" w menu Polecenia również go zdejmuje.
+
+
+.SH Opcje edytora
+.PP
+Ustawienia
+wbudowanego edytora\&.
+Otwiera je menu
+\fBOpcje\fP
+samego edytora oraz pozycja
+\fBOpcje edytora\fP
+menu Opcje menedżera plików.
+
+.PP
+\fITryb zawijania.\fP
+Wyłączony, bieżące formatowanie akapitu albo zawijanie maszynowe, które łamie
+wiersz na zadanej długości w trakcie pisania.
+
+.PP
+\fIUdawanie połówek tabulacji.\fP
+Między tekstem a lewym marginesem ruch i wcięcie idą o pół tabulacji i
+wypełniane są spacjami; w pozostałych miejscach tabulacja jest zwykła.
+
+.PP
+\fIBackspace przez tabulacje.\fP
+Jedno naciśnięcie Backspace usuwa całe wcięcie do lewego marginesu, gdy między
+kursorem a marginesem nie ma tekstu.
+
+.PP
+\fIWypełnianie tabulacji spacjami.\fP
+Zamiast znaku tabulacji wstawiane są spacje do następnej pozycji tabulacji.
+
+.PP
+\fISzerokość tabulacji.\fP
+Szerokość, którą zajmuje znak tabulacji. Domyślnie 8.
+
+.PP
+\fIEnter robi wcięcie.\fP
+Nowy wiersz zaczyna się z wcięciem wiersza powyżej.
+
+.PP
+\fIPotwierdzanie zapisu.\fP
+Przed zapisaniem pliku program pyta.
+
+.PP
+\fIZapamiętywanie pozycji w pliku.\fP
+Plik otwiera się tam, gdzie go ostatnio zostawiono.
+
+.PP
+\fIPokazywanie spacji na końcu wiersza.\fP
+Spacje na końcu wiersza są oznaczane.
+
+.PP
+\fIPokazywanie tabulacji.\fP
+Znaki tabulacji są oznaczane.
+
+.PP
+\fIPokazywanie znaków sterujących.\fP
+Znaki sterujące tekstu są wypisywane, a nie ukrywane.
+
+.PP
+\fIPodświetlanie składni.\fP
+Tekst jest kolorowany regułami składni dla jego typu pliku.
+
+.PP
+\fIKursor za wstawionym blokiem.\fP
+Po wstawieniu bloku kursor zostaje na jego końcu, a nie na początku.
+
+.PP
+\fITrwałe zaznaczenie.\fP
+Zaznaczenie pozostaje przy ruchu kursora, zamiast znikać.
+
+.PP
+\fIKursor za końcem wiersza.\fP
+Kursor może stać za ostatnim znakiem wiersza.
+
+.PP
+\fICofanie grupowe.\fP
+Jedno cofnięcie przywraca serię zmian tego samego rodzaju, a nie jedno
+naciśnięcie klawisza.
+
+.PP
+\fIDługość wiersza przy zawijaniu.\fP
+Kolumna, na której tryby zawijania łamią wiersz. Domyślnie 72.
+
+
+.SH Zapisz jako
+.PP
+Nazwa, pod którą zapisać plik, i końce wierszy, z którymi go zapisać: takie,
+jakie są w pliku, Unix (LF), Windows i DOS (CR LF) albo Macintosh (CR).
+
+
+.SH Tryb zapisu
+.PP
+Jak zapisywany jest plik:
+
+.TP
+\fBSzybki zapis\fP
+Pisze od razu na pliku. Szybko, a awaria w połowie zostawia plik zapisany do
+połowy.
+
+.TP
+\fBBezpieczny zapis\fP
+Najpierw pisze plik tymczasowy i przemianowuje go na pierwotny, gdy jest
+cały, więc awaria nie narusza oryginału.
+
+.TP
+\fBKopie zapasowe z rozszerzeniem\fP
+Bezpieczny zapis, a oryginał zostaje pod swoją nazwą z dodanym rozszerzeniem
+z linii wejściowej, domyślnie "~".
+
+.TP
+\fBSprawdzanie końca wiersza POSIX\fP
+Pyta o brakujący koniec wiersza na końcu pliku przed zapisem.
+
+
+.SH Przeglądarka makr
+.PP
+Nagrane makra, z klawiszem, na który każde odpowiada, i tym, co robi. Przyciski
+to
+
+.TP
+\fBUruchom\fP
+Odtwarza makro, na którym stoi kursor.
+
+.TP
+\fBUsuń\fP
+Usuwa je po pytaniu.
+
+.TP
+\fBEdytuj plik\fP
+Otwiera plik, w którym mieszkają makra.
+
+
+.SH Otwarte pliki
+.PP
+Pliki otwarte w edytorze, po jednym w wierszu. Enter przechodzi do pliku, na
+którym stoi kursor, Esc zostawia pokazywany.
+
+
+.SH Informacje o wtyczkach
+.PP
+Wtyczki, które edytor wczytał: nazwa, czy jest włączona, co daje i co robi. To
+lista do oglądania; wtyczkę wyłącza się i jej ustawienia otwiera w oknie
+Zarządzanie wtyczkami
+menedżera plików.
+
+
+.SH ZOBACZ TAKŻE
+.PP
+mcommander(1), mview(1).

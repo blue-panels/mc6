@@ -5,6 +5,7 @@ include $(srcdir)/helpers/helpers.mk
 
 shelllinkdir = $(panel_plugins_dir)/shell-link
 shelllink_LTLIBRARIES = mc-panel-shell-link.la
+shelllink_DATA = shell-link_panel.md
 
 # The protocol library. Not installed and not part of the core: it is compiled
 # here and linked into the plugin, so a build without the plugin carries
@@ -27,7 +28,8 @@ nodist_libshfs_la_SOURCES = shelldef.h
 libshfs_la_CPPFLAGS = $(SHFS_CPPFLAGS)
 
 mc_panel_shell_link_la_SOURCES = shell-link.c
-mc_panel_shell_link_la_CPPFLAGS = $(SHFS_CPPFLAGS)
+mc_panel_shell_link_la_CPPFLAGS = $(SHFS_CPPFLAGS) \
+	-DMC_PLUGIN_DIR=\""$(panel_plugins_dir)/shell-link"\"
 mc_panel_shell_link_la_LDFLAGS = -module -avoid-version
 mc_panel_shell_link_la_LIBADD = libshfs.la $(GLIB_LIBS)
 

@@ -232,6 +232,7 @@ edit_options_dialog (void)
             .rect = r,
             .title = _ ("Editor options"),
             .help = "[Editor options]",
+            .help_file = MCEDIT_HELP_FILE,
             .widgets = quick_widgets,
             .callback = NULL,
             .mouse_callback = NULL,

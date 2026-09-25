@@ -144,6 +144,7 @@ ctags_config_dialog (ctags_config_t *cfg)
     dlg = dlg_create (TRUE, (LINES - dlg_h) / 2, (COLS - dlg_w) / 2, dlg_h, dlg_w,
                       WPOS_KEEP_DEFAULT, TRUE, dialog_colors, dlg_default_callback, NULL, "[Ctags]",
                       _ ("Ctags Configuration"));
+    dlg->help_file = "ctags.md";
 
     group_add_widget (GROUP (dlg), label_new (1, 2, _ ("Ctags executable:")));
     inp_cmd = input_new (2, 2, input_colors, inp_w,

@@ -1,0 +1,244 @@
+.\" Generated from mcedit6.md by maint/update-man-in.sh. Do not edit.
+.TH MCEDIT6 1 "2026. szeptember" "MCommander {{MAN_VERSION}}" "M\-Commander"
+
+.SH NÉV
+.PP
+mcedit6 \- Belső fájlszerkesztő.
+
+
+.SH ALKALMAZÁSA
+.PP
+\fBmcedit6\fP
+[\-bcCdfhstVx?] fájl
+
+
+.SH Belső fájlszerkesztő
+.PP
+A belső fájlszerkesztő egy teljes képernyős, minden szokásos eszközzel
+ellátott szerkesztő. Az
+\fIeditor_filesize_threshold\fP
+értéknél (alapértelmezésben 64 MB) nagyobb fájl kérdés után nyílik meg.
+Bináris fájlokat is lehet vele szerkeszteni.
+Az
+\fBF4\fP
+gomb indítja el, ha az inicializáló fájlban be van állítva a
+\fIuse_internal_edit\fP
+opció.
+
+.PP
+A támogatott eszközök: blokk másolása, mozgatása, törlése, kivágása,
+beillesztése; billentyűnkénti visszavonás; legördülő menük; fájl
+beillesztése; makrók; keresés és csere reguláris kifejezéssel; szöveg
+kijelölése Shift\-kurzorral (ha a terminál ismeri); beszúrás\-felülírás
+váltása; sortörés; automatikus behúzás; állítható tabulátorméret;
+szintaxiskiemelés többféle fájltípushoz; és szövegblokk átadása
+shell\-parancsnak, például az indent vagy az ispell programnak.
+
+.TP
+Szakaszok:
+A szerkesztő beállításai
+
+.PP
+A szerkesztő használata nagyon egyszerű és nem igényel magyarázatot. Hogy
+melyik billentyű mit csinál, az a legördülő menükben látszik. Ezenkívül a
+Shift és a kurzorbillentyűk szöveget jelölnek ki. A
+\fBCtrl\-Ins\fP
+a csereállományba másol
+(\fB~/.local/share/mc6/mcedit/mcedit.clip\fP),
+a
+\fBShift\-Ins\fP
+onnan illeszt be, a
+\fBShift\-Del\fP
+oda vág ki, a
+\fBCtrl\-Del\fP
+pedig törli a kijelölt szöveget. Az egérrel való kijelölés is működik, és a
+szokásos módon megkerülhető: a Shift nyomva tartásával a terminál saját
+egérkezelése marad érvényben.
+
+.PP
+Makró megadásához nyomd le a
+\fBCtrl\-R\fP\-t,
+majd üsd le azokat a billentyűket, amelyeknek le kell futniuk. Ha kész vagy,
+nyomd le újra a
+\fBCtrl\-R\fP\-t,
+és rendeld a makrót egy billentyűhöz annak lenyomásával. A makró ezzel a
+billentyűvel, valamint a
+\fBCtrl\-A\fP
+és a hozzárendelt billentyű leütésével fut le. A makrók a
+\fB~/.local/share/mc6/macros\fP
+fájl
+\fB[editor]\fP
+szakaszában vannak, és a hozzájuk tartozó sor törlésével szűnnek meg.
+
+.PP
+A megjelenített szöveg kódlapját az Alt\-e (M\-e) váltja. Az átkódolás a
+választott kódlapról a rendszerére történik. Megszüntetéséhez a
+kódlapválasztó ablakban a "<No translation>" tételt kell választani.
+
+.PP
+A keresőablak
+(\fBF7\fP)
+\fBSzűrő\fP
+gombja elrejti azokat a sorokat, amelyekben nincs benne a keresett szöveg,
+ugyanazokkal a keresési, kis\- és nagybetű, valamint teljes szó
+beállításokkal, mint a keresés. A sorszámok az eredetiek maradnak, az
+állapotoszlop pedig megjelöli minden elrejtett szakasz helyét. Az elrejtett
+sorok köre a gomb megnyomásakor rögzül: a szerkesztés nem alkalmazza újra a
+feltételt, így a kettévágott vagy összevont látható sor látható marad, és az
+utána beírt sorok is láthatóak maradnak, akkor is, ha nem felelnek meg a
+feltételnek. Az
+\fBM\-s\fP
+leveszi a szűrőt; újra megnyomva az utolsó keresést teszi vissza szűrőként. A
+Parancsok menü "Mindent kinyit" tétele szintén leveszi.
+
+
+.SH A szerkesztő beállításai
+.PP
+A
+belső fájlszerkesztő
+beállításai. A szerkesztő saját
+\fBBeállítások\fP
+menüje és a fájlkezelő Beállítások menüjének
+\fBA szerkesztő beállításai\fP
+pontja nyitja meg őket.
+
+.PP
+\fITördelési mód.\fP
+Kikapcsolva, a bekezdés folyamatos formázása, vagy az írógépszerű tördelés,
+amely gépelés közben töri a sort a megadott hossznál.
+
+.PP
+\fIFél tabulátorok utánzása.\fP
+A szöveg és a bal margó között a mozgás és a behúzás fél tabulátorral megy, és
+szóközökkel telik ki; máshol a tabulátor a szokásos.
+
+.PP
+\fIVisszatörlés tabulátorokon át.\fP
+Egyetlen visszatörlés a bal margóig törli a behúzást, ha a kurzor és a margó
+között nincs szöveg.
+
+.PP
+\fITabulátorok kitöltése szóközökkel.\fP
+Tabulátor karakter helyett szóközök kerülnek a következő tabulátorpozícióig.
+
+.PP
+\fITabulátor szélessége.\fP
+Ennyi karakternek felel meg a tabulátor. Alapértelmezés szerint 8.
+
+.PP
+\fIEnter behúzást tart.\fP
+Az új sor a fölötte lévő sor behúzásával kezdődik.
+
+.PP
+\fIMegerősítés mentés előtt.\fP
+A fájl kiírása előtt kérdez.
+
+.PP
+\fIPozíció megjegyzése.\fP
+A fájl ott nyílik meg, ahol legutóbb elhagyták.
+
+.PP
+\fISorvégi szóközök mutatása.\fP
+A sor végén lévő szóközök jelölve lesznek.
+
+.PP
+\fITabulátorok mutatása.\fP
+A tabulátor karakterek jelölve lesznek.
+
+.PP
+\fIVezérlőkarakterek mutatása.\fP
+A szöveg vezérlőkarakterei kiíródnak, nem rejtve maradnak.
+
+.PP
+\fISzintaxiskiemelés.\fP
+A szöveg a fájltípusának szintaxisszabályaival színeződik.
+
+.PP
+\fIKurzor a beszúrt blokk után.\fP
+Blokk beszúrása után a kurzor a végén marad, nem az elején.
+
+.PP
+\fIÁllandó kijelölés.\fP
+A kijelölés a kurzor mozgatásakor megmarad, nem szűnik meg.
+
+.PP
+\fIKurzor a sor vége mögött.\fP
+A kurzor a sor utolsó karaktere mögött is állhat.
+
+.PP
+\fICsoportos visszavonás.\fP
+Egy visszavonás azonos fajtájú változtatások sorát vonja vissza, nem egyetlen
+billentyűt.
+
+.PP
+\fITördelési sorhossz.\fP
+Az az oszlop, amelynél a tördelési módok törik a sort. Alapértelmezés szerint
+72.
+
+
+.SH Mentés másként
+.PP
+A név, amellyel a fájlt kiírjuk, és a sorvégek, amelyekkel kiírjuk: ahogy a
+fájlban vannak, Unix (LF), Windows és DOS (CR LF) vagy Macintosh (CR).
+
+
+.SH Mentési mód
+.PP
+Hogyan íródik ki a fájl:
+
+.TP
+\fBGyors mentés\fP
+Azonnal a fájlra ír. Gyors, és a közben bekövetkező hiba félig kiírt fájlt
+hagy hátra.
+
+.TP
+\fBBiztonságos mentés\fP
+Előbb ideiglenes fájlba ír, és azt nevezi át az eredetire, amikor egészben
+kész, így a hiba nem bántja az eredetit.
+
+.TP
+\fBBiztonsági másolat ezzel a kiterjesztéssel\fP
+Biztonságos mentés, és az eredeti megmarad a saját nevén a beviteli sorban
+megadott kiterjesztéssel, alapértelmezés szerint "~".
+
+.TP
+\fBPOSIX sorvég ellenőrzése\fP
+Kiírás előtt kérdez a fájl végéről hiányzó sorvégről.
+
+
+.SH Makró böngésző
+.PP
+A felvett makrók, azzal a billentyűvel, amelyre mindegyik válaszol, és azzal,
+amit csinál. A gombok:
+
+.TP
+\fBFuttatás\fP
+Lejátssza azt a makrót, amelyen a kurzor áll.
+
+.TP
+\fBTörlés\fP
+Kérdés után eltávolítja.
+
+.TP
+\fBFájl szerkesztése\fP
+Megnyitja azt a fájlt, amelyben a makrók vannak.
+
+
+.SH Megnyitott fájlok
+.PP
+A szerkesztőben megnyitott fájlok, soronként egy. Az Enter arra a fájlra lép,
+amelyen a kurzor áll, az Esc a megjelenítettet hagyja.
+
+
+.SH Bővítmények adatai
+.PP
+A szerkesztő által betöltött bővítmények: a név, be van\-e kapcsolva, mit nyújt
+és mit csinál. Ez néznivaló lista; kikapcsolni és beállítani a bővítményt a
+fájlkezelő
+Bővítmények kezelése
+ablakában lehet.
+
+
+.SH Lásd még...
+.PP
+mcommander(1), mview(1).

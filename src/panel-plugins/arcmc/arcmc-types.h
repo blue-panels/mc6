@@ -179,4 +179,8 @@ extern size_t ext_archivers_count;
 
 void arcmc_entry_free (gpointer p);
 
+/* The help of the plugin, beside the plugin: F1 in its panel and in its dialogs
+   opens that file and not the help of the file manager. */
+const char *arcmc_help_file (void);
+
 #endif /* ARCMC_TYPES_H */

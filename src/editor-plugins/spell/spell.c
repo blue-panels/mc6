@@ -872,6 +872,7 @@ spell_dialog_spell_suggest_show (WEdit *edit, const char *word, char **new_word,
     sug_dlg =
         dlg_create (TRUE, ypos, xpos, sug_dlg_h, sug_dlg_w, WPOS_KEEP_DEFAULT, TRUE, dialog_colors,
                     spell_suggest_dlg_callback, NULL, "[Spell]", _ ("Check word"));
+    sug_dlg->help_file = "spell.md";
     g = GROUP (sug_dlg);
 
     group_add_widget (g, label_new (1, 2, lang_label));
@@ -1759,6 +1760,7 @@ edit_spell_plugin_settings (void)
         .rect = { -1, -1, 0, 0 },
         .title = _ ("Spell plugin settings"),
         .help = "[Spell]",
+        .help_file = "spell.md",
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,

@@ -1662,6 +1662,7 @@ ctags_show_menu (ctags_data_t *d, WEdit *edit)
 
     dlg = dlg_create (TRUE, 0, 0, dlg_h, dlg_w, WPOS_CENTER | WPOS_TRYUP, TRUE, dialog_colors, NULL,
                       NULL, "[Ctags]", _ ("Ctags"));
+    dlg->help_file = "ctags.md";
     list = listbox_new (1, 1, dlg_h - 2, dlg_w - 2, FALSE, NULL);
 
     for (i = 0; i < n; i++)

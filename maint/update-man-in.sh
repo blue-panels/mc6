@@ -61,8 +61,9 @@ for md in "$top"/doc/man/*.md "$top"/doc/man/*/*.md; do
         #    is an empty paragraph
         s/\n\.PP\n\n+(?=\.[SU][HS])/\n/g;
 
-        # 3. a link to a help node has no url to print, only its text
-        s/\n?\\\[la\]#(?:[^\\]|\\.)*?\\\[ra\]//g;
+        # 3. a link to a help node has no url to print, only its text; the node may
+        #    live in the page of another program of the suite
+        s/\n?\\\[la\](?:[A-Za-z0-9_-]+\.md)?#(?:[^\\]|\\.)*?\\\[ra\]//g;
 
         # 4. a link to the outside is clickable where OSC 8 is understood
         s{\n+\\\[la\](\S+)\\\[ra\]}{\n\\X'"'"'tty: link $1'"'"'$1\\X'"'"'tty: link'"'"'}g;

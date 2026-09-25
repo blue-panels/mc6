@@ -2,11 +2,12 @@
 date: September 2026
 ---
 
-# NAME
+<!-- help:topics "Topics:" -->
+# NAME <!-- help:skip -->
 
 mview - Internal file viewer of M-Commander.
 
-# SYNOPSIS
+# SYNOPSIS <!-- help:skip -->
 
 **mview**
 [-bcCdfhstVx?] file
@@ -56,6 +57,346 @@ the system wide terminal database
 : Forces xterm mode.  Used when running on xterm-capable terminals (two
 screen modes, and able to send mouse escape sequences).
 
+# Internal File Viewer
+
+The internal file viewer provides three display modes: ASCII, hex and
+structured (tree).  To toggle between ASCII and hex, use the F4 key.
+To toggle the structured mode, use Alt-s or t.  Inside the ASCII mode F9
+steps through three renderings of the same bytes: plain text, the ANSI
+colors the file carries, and a terminal emulator fed with the file.
+
+The viewer will try to use the best method provided by your system or
+the file type to display the information.
+In the nroff mode, which the
+[extensions file](mcommander.md#edit-extension-file)
+turns on for manual pages, the overstrike sequences of a preformatted page
+are displayed bold and underlined instead of being printed as they stand.
+
+In ASCII mode the arrow keys move the view until the reading cursor is
+turned on.  Enter turns it on, and off again; a click and the keys that
+mark turn it on as well.  With the cursor on, the arrow keys walk the
+text and the Shift-arrow, Shift-Home, Shift-End, Shift-PageUp and
+Shift-PageDown keys mark it.
+
+Drag with the left mouse button to select text.  A double click selects
+a word and a triple click selects a visual line.  A single click only
+places the cursor on a character; it marks the point the shifted keys
+extend the selection from.  When the text scrolls (PageDown, the mouse
+wheel), the cursor stays on the screen in the same row and column.
+Press Ctrl-Insert or Enter to copy the selection to the clipfile and
+then to the external clipboard; C-u clears the selection and turns the
+cursor off, and so does copying.  Enter acts as Down where there is no
+cursor to turn on, in hex and tree modes.  Any cursor movement without
+Shift drops the selection and keeps the cursor.  The copied value is the
+displayed text: ANSI and nroff formatting is removed, tabs are expanded
+to spaces, and in filter mode only the visible lines are copied.
+
+Since the left button selects text, scrolling by clicking in the upper
+or lower third of the view (see
+*mouse_move_pages*
+in the [Viewer] section) is done with the right or middle mouse button in ASCII mode.
+The mouse wheel scrolls two lines at a time, in every mode.
+
+F6 filters the view the way grep does: only the lines that match a pattern
+are shown, and the status line counts them. The dialog takes the pattern and
+the same search type, case and whole word settings the search has; the Check
+button lists the lines the pattern picks before the filter is applied, and F1
+there opens the
+[quick reference of regular expressions](mcommander.md#regex-quick-reference).
+An empty pattern clears the filter, and while nothing matches the view says
+so and stays where it is. The keys ] and [ walk the matches, and
+C-t turns the follow mode on, where the view stays on the last match while
+the file grows, the way tail -f does. A large file is read in the background,
+and the status line says so while it is being read.
+
+When in hex mode, the search function accepts text in quotes and
+constant numbers.  Text in quotes is matched exactly after removing
+the quotes.  Each number matches one byte.  You can mix quoted text
+with constants like this:
+
+```
+"String" 34 0xBB 012 "more text"
+```
+
+Numbers are always interpreted in hex. In the example above, "34" is
+interpreted as 0x34. The prefix "0x" isn't really needed: we could type
+"BB" instead of "0xBB". And "012" is interpreted as 0x12, not as an octal
+number.
+
+The structured mode renders JSON, YAML and XML files as an
+expandable tree; an HTML file is read by the same parser as XML.  The
+format is taken from the name of the file, from what the file command
+says about it, and from the text itself.  Press Alt-s (or t) on a
+supported file to enter it; if the file cannot be parsed, or it is
+larger than the tree view takes, a diagnostic is shown and the viewer
+stays in ASCII mode.  The tree works on local files only, and entering
+it puts the line filter and the terminal mode aside.  YAML is handled by a built-in parser that
+covers the commonly used subset (block mappings and sequences, block
+scalars, quoted scalars, anchors and aliases).  Aliases are expanded
+by copying; a cyclic alias, or expansion beyond an internal node
+budget, is displayed as a \*name reference instead of a copy.  Tags and
+flow collections ([] and {}) are not parsed and appear as plain text
+values; documents outside the subset (multi-line plain scalars, tab
+characters in indentation) are reported and shown as plain text.  Inside the tree F4, Alt-s and t return to the
+ASCII mode.  The status line shows the content type and the jq-style
+path of the current node (for example
+**.spec.containers[0].image**).
+A click moves the cursor of the tree, and a click on the row the cursor
+is on expands or collapses that node.
+The mode also works in the quick view panel (C-x q), where the tree
+follows the panel cursor.  With the
+*structured_auto*
+option of the [Viewer] section enabled supported files open in the tree
+right away.  Keys
+available inside the tree:
+
+```
+Enter        expand/collapse the current node; on a leaf show
+             the full value
+Right/Left   expand / collapse (on a collapsed node Left jumps
+             to the parent)
+*            expand the current subtree recursively
++ / -        expand / collapse the whole tree
+1 .. 9       expand the whole document to the given depth
+Alt-Enter    copy the path of the current node to the clipboard
+F7, /        search the whole document, including collapsed
+             nodes; the path to a match is expanded
+F17, n       continue the search
+F6           filter the tree by a pattern
+] / [        go to the next / previous match of the filter
+```
+
+The filter (F6) takes the pattern in the same dialog as the one of the
+ASCII mode, with the same type, case and whole-word settings, and keeps
+only the nodes whose key or value matches it.  The path down to every
+match stays visible, and so does what is inside a match, so a matched
+node can still be opened and browsed.  The status line counts the
+matches; ] and [ walk them.  An empty pattern clears the filter, and so
+does leaving the tree.  A node matches on the text its row shows, so a
+long value is matched only up to the length the tree keeps for the
+preview (160 characters).
+
+The keys that move in the text move in the tree as well: the arrows and
+h, j, k and l, the page keys, and the ones that go to the beginning and
+the end. Alt-e picks the charset and C-o shows the command screen, as
+they do in the text.
+
+Here is a listing of the actions associated with each key that the
+M-Commander handles in the internal file viewer.
+
+**F1**
+: Invoke the built-in hypertext help viewer.
+
+**F2**
+: Toggle the wrap mode. In hex mode it switches to editing the bytes and back;
+F6 writes the changes to the file.
+
+**F4**
+: Toggle the hex mode.
+
+**Alt-s, t**
+: Toggle the structured (tree) mode for JSON, YAML and XML files.
+
+**F14**
+: Show the file in the structure viewer, the mcstruct plugin, at the byte the
+cursor is on. It works on local files only.
+
+**F6**
+: Filter the view by a pattern. In hex mode, save the changes made to the
+bytes.
+
+**C-t**
+: Toggle the follow mode of the filter.
+
+**], [**
+: Go to the next or the previous match of the filter.
+
+**F5**
+: Goto. The dialog takes a line number, a percentage of the size of the file,
+or an offset written in decimal or in hexadecimal, whichever of the four is
+chosen in it.
+
+**F7, /, ?**
+: Start search. These keys call the dialog window that allows you to set up
+the search options. If key is ? the "Backwards" option is on.
+
+**C-s**
+: Continue forward search.
+
+**C-r**
+: Continue reverse search.
+
+**F17, n**
+: Continue search in the chosen direction.
+
+**N**
+: Temporary change the search direction: backwards if forward search is chosen,
+and vice versa.
+
+**Shift-F8**
+: Toggle syntax highlighting: the text is colored by the syntax rules, the same
+ones and the same way the internal editor uses. Above 4 MB a file gets the
+line-local rules instead, which color numbers, quoted strings and
+punctuation without having to read everything above the line being shown.
+The text keeps its own colors while the ANSI mode, the hex mode or the
+terminal mode is on, and the syntax rules step aside there.
+
+**Shift-F9**
+: Toggle interpretation of ANSI color escape sequences found in the text.
+
+**F8**
+: Toggle Raw/Parsed mode: This will show the file as found on disk or if
+a processing filter has been specified in the extensions.ini file, then the
+output from the filter. Current mode is always the other than written
+on the button label, since on the button is the mode which you enter
+by that key.
+
+**F9**
+: Step through the ways the text is shown: plain, then with the ANSI colors of
+the file, then the terminal mode, where the file is fed to a terminal emulator
+and the screen it draws is what the viewer shows. The button label names the
+mode the key leads to, not the one the viewer is in. The terminal mode is
+built from the stream and not from the lines of the file, so the wrapping,
+the goto, the filter and the search have nothing to work on there, and the
+button bar says so.
+
+**F3, F10, Esc, q**
+: Exit the internal file viewer.
+
+**PageDown, space, f, C-v**
+: Scroll one page forward.
+
+**PageUp, b, Alt-v, Backspace**
+: Scroll one page backward.
+
+**d, u**
+: Scroll half a page forward or backward.
+
+**C-a, C-e**
+: Move to the beginning or the end of the line.
+
+**Home, C-Home, C-PageUp, g**
+: Go to the beginning of the file.
+
+**End, C-End, C-PageDown, G**
+: Go to the end of the file.
+
+**Down, Up**
+: Move the text cursor one row down or up; on the edge of the view the
+text scrolls by one line.  In hex mode they scroll one line.
+
+**Left, Right**
+: Move the text cursor by one displayed character; at the end of the row
+it goes on to the next one.  In hex mode they move the hex cursor.
+
+**h, j, k, l**
+: Move left, down, up and right, as the arrow keys do. The keys Insert and
+Delete, C-p and C-n, and y and e move one row up and down as well.
+
+**Tab**
+: In hex mode, switch between the hex column and the text column.
+
+**C-Left, C-Right**
+: Move the text cursor by eight displayed characters. With the cursor off and
+the lines not wrapped, they scroll the view ten columns sideways.
+
+**Shift-Left, Shift-Right, Shift-Up, Shift-Down**
+: Extend the text selection by one displayed character or row.
+
+**Shift-Home, Shift-End**
+: Extend the text selection to the start or end of the visual row.
+
+**Shift-PageUp, Shift-PageDown**
+: Extend the text selection to the first or last visible row.
+
+**Ctrl-Insert, Enter**
+: Copy selected text to the clipfile and external clipboard.  With no
+selection, Enter acts as Down.
+
+**C-u**
+: Clear the text selection.
+
+**C-l**
+: Refresh the screen.
+
+**C-o**
+: Toggle the terminal and show the command screen.
+
+**[n] m**
+: Set the mark n.
+
+**[n] r**
+: Jump to the mark n.
+
+**C-f**
+: Jump to the next file. Not in the quick view panel, which follows the cursor
+of the other panel.
+
+**C-b**
+: Jump to the previous file. Not in the quick view panel either.
+
+**Alt-r**
+: Step the ruler through the top of the view, the bottom of it, and off.
+
+**Alt-Shift-e**
+: Open the list of the files viewed before and show the one that is chosen.
+
+**Alt-e**
+: to change charset of displayed text may use Alt-e (M-e).
+Recoding is made from selected codepage into system codepage. To
+cancel the recoding you may select "\<No translation>" in charset
+selection dialog.
+
+It's possible to instruct the file viewer how to display a file, look
+at the
+[Edit Extension File section](mcommander.md#edit-extension-file)
+
+# Viewer options
+
+The options of the
+[internal viewer](#internal-file-viewer)
+that hold for every file it opens.
+
+*Wrap long lines.*
+If enabled, a line wider than the screen is continued on the next screen
+line; otherwise it is cut and the view scrolls sideways. Enabled by default.
+
+*Syntax highlighting.*
+If enabled, the viewer colors the text by the syntax rules of the editor.
+A file opened in a mode that brings its own colors, such as a man page or
+rendered Markdown, keeps those colors. Disabled by default.
+
+*Mouse page scrolling.*
+How far a click in the upper or the lower third of the view scrolls: half a
+screen when enabled, one line when disabled. The mouse wheel is not affected,
+it always scrolls two lines. Enabled by default.
+
+*Remember file position.*
+If enabled, the viewer opens a file at the place it was left the last time.
+Disabled by default.
+
+*Tree view of JSON, YAML and XML.*
+If enabled, a file of one of these formats opens as a tree that can be
+folded, instead of plain text. The same view is always available with the
+key that switches the display mode. Disabled by default.
+
+*End of file marker.*
+The text printed after the last line of the file. Empty by default, which
+prints nothing.
+
+*Redraws to skip at most.*
+While a file is still being read, the viewer skips redraws to keep up with
+the data. This is how many it may skip in a row before it draws anyway. The
+default is 10.
+
+*Tree view file limit, MB.*
+The largest file the tree mode parses. A larger one is refused before it is
+read. 64 by default.
+
+*Tree view node limit.*
+The largest tree the mode builds, counted in nodes. A dense document, such as
+XML of small tags, meets this limit before the size one. 10000000 by default.
+
 # FILES
 
 *{{pkgdatadir}}/help/mcommander.md*
@@ -73,7 +414,7 @@ affect all users, whether they have ~/.config/mc6/ini or not.
 : User's own setup.  If this file is present, the setup is loaded from
 here instead of the system-wide startup file.
 
-# LICENSE
+# LICENSE <!-- help:skip -->
 
 This program is distributed under the terms of the GNU General Public
 License as published by the Free Software Foundation.  See the built-in

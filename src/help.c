@@ -63,9 +63,12 @@
 
 /*** file scope macro definitions ****************************************************************/
 
-#define MAXLINKNAME         80
-#define HISTORY_SIZE        20
-#define HELP_WINDOW_WIDTH   MIN (80, COLS - 16)
+#define MAXLINKNAME       80
+#define HISTORY_SIZE      20
+#define HELP_WINDOW_WIDTH MIN (80, COLS - 16)
+
+// the help of the file manager, the file every other one falls back to
+#define HELP_MAIN_FILE      "mcommander.md"
 
 #define STRING_LINK_START   "\01"
 #define STRING_LINK_POINTER "\02"
@@ -89,9 +92,10 @@ static void help_link_script_node (char **filedata, const char *node, const char
 
 /*** file scope variables ************************************************************************/
 
-static char *fdata = NULL;               // The help file shown: script_data or main_data
-static char *script_data = NULL;         // A script's own help file, if one was asked for
-static char *main_data = NULL;           // the help of the program, for a node a script has not
+static char *fdata = NULL;        // The help file shown: script_data or main_data
+static char *shown_name = NULL;   // the name the file shown was opened by, for its English copy
+static char *script_data = NULL;  // A script's own help file, if one was asked for
+static char *main_data = NULL;    // the help of the program, for a node a script has not
 static GHashTable *linked_files = NULL;  // the files links led to, by name
 static int help_lines;                   // Lines in help viewer
 static int history_ptr = 0;              // For the history queue
@@ -118,32 +122,57 @@ static gboolean inside_link_area = FALSE;
 /*** file scope functions ************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
-/** A help file a link leads to, read from where the help of the program lives.
+/** A help file a link leads to, read from where the help of the program lives, in the language
+ * of the user where that file has a translation.
+ * @param quiet no message when the file is not there, for a file that is only probed
  * @return TRUE when the file is the one shown now
  */
 
 static gboolean
-help_open_file (const char *name)
+help_open_file (const char *name, gboolean quiet, gboolean translated)
 {
-    char *path;
+    char *key;
+    char *path = NULL;
     char *filedata;
     char *text;
 
     if (linked_files == NULL)
         linked_files = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-    text = g_hash_table_lookup (linked_files, name);
+    // the file of the language and the English one are two files, and are kept apart
+    key = g_strconcat (translated ? "" : "C/", name, (char *) NULL);
+
+    text = g_hash_table_lookup (linked_files, key);
     if (text != NULL)
     {
+        g_free (key);
         fdata = text;
+        g_free (shown_name);
+        shown_name = g_strdup (name);
         return TRUE;
     }
 
-    path = g_build_filename (mc_global.share_data_dir, MC_HELP_DIR, name, (char *) NULL);
-    if (!g_file_get_contents (path, &filedata, NULL, NULL))
+    if (translated)
     {
-        file_error_message (_ ("Cannot open file\n%s"), path);
+        char *rel;
+
+        rel = g_build_filename (MC_HELP_DIR, name, (char *) NULL);
+        filedata = load_mc_home_file (mc_global.share_data_dir, rel, &path, NULL);
+        g_free (rel);
+    }
+    else
+    {
+        path = g_build_filename (mc_global.share_data_dir, MC_HELP_DIR, name, (char *) NULL);
+        if (!g_file_get_contents (path, &filedata, NULL, NULL))
+            filedata = NULL;
+    }
+
+    if (filedata == NULL)
+    {
+        if (!quiet)
+            file_error_message (_ ("Cannot open file\n%s"), path);
         g_free (path);
+        g_free (key);
         return FALSE;
     }
     g_free (path);
@@ -151,10 +180,15 @@ help_open_file (const char *name)
     text = help_load (filedata);
     g_free (filedata);
     if (text == NULL)
+    {
+        g_free (key);
         return FALSE;
+    }
 
-    g_hash_table_insert (linked_files, g_strdup (name), text);
+    g_hash_table_insert (linked_files, key, text);
     fdata = text;
+    g_free (shown_name);
+    shown_name = g_strdup (name);
 
     return TRUE;
 }
@@ -302,9 +336,39 @@ help_main_data (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** Finds a node in the help file shown; a node a script's help does not have is looked for in
- * the help of the program, which then becomes the file shown.
- * @return the node, or NULL when neither file has it
+/** A node no file of the language has, looked for in English: first in the English copy of the
+ * file shown, then in the English manual of the file manager.  A translation that stops halfway
+ * through then opens the English chapter instead of saying that there is no such node.
+ * @return the node, or NULL when the English files have not got it either
+ */
+
+static const char *
+help_find_english_node (const char *name)
+{
+    char *shown = fdata;
+    char *name_shown;
+    const char *node = NULL;
+
+    name_shown = g_strdup (shown_name);
+
+    if (name_shown != NULL && help_open_file (name_shown, TRUE, FALSE))
+        node = search_node (fdata, name);
+
+    if (node == NULL && help_open_file (HELP_MAIN_FILE, TRUE, FALSE))
+        node = search_node (fdata, name);
+
+    if (node == NULL)
+        fdata = shown;
+
+    g_free (name_shown);
+
+    return node;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/** Finds a node in the help file shown; a node it has not got is looked for in the help of the
+ * program, and then in English, and the file that has it becomes the file shown.
+ * @return the node, or NULL when no file has it
  */
 
 static const char *
@@ -319,6 +383,8 @@ help_find_node (const char *name)
         if (node != NULL)
             fdata = main_data;
     }
+    if (node == NULL)
+        node = help_find_english_node (name);
 
     return node;
 }
@@ -626,7 +692,7 @@ help_follow_link (const char *start, const char *lc_selected_item)
             }
 
             hash[3] = '\0';  // what is left is the name of the file
-            if (!help_open_file (link_name + 1))
+            if (!help_open_file (link_name + 1, FALSE, TRUE))
                 return start;
 
             if (have_node)
@@ -1339,6 +1405,7 @@ interactive_display_finish (void)
         g_hash_table_destroy (linked_files);
         linked_files = NULL;
     }
+    MC_PTR_FREE (shown_name);
     fdata = NULL;
 }
 
@@ -1560,7 +1627,11 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
     if ((event_data->node == NULL) || (*event_data->node == '\0'))
         event_data->node = "[main]";
 
-    if (event_data->filename != NULL)
+    /* A path is a script's own help, read as it stands and grafted onto the help of the
+       program.  A bare name is the help file of another program of the suite, which the
+       dialog that asks for the node names: it is read from where the help lives, in the
+       language of the user. */
+    if (event_data->filename != NULL && strchr (event_data->filename, PATH_SEP) != NULL)
     {
         g_file_get_contents (event_data->filename, &filedata, NULL, NULL);
         if (filedata != NULL)
@@ -1582,9 +1653,13 @@ help_interactive_display (const gchar *event_group_name, const gchar *event_name
             g_free (filedata);
         }
         fdata = main_data;
+
+        // the file of the program the dialog belongs to becomes the one shown
+        if (event_data->filename != NULL)
+            (void) help_open_file (event_data->filename, TRUE, TRUE);
     }
 
-    if (filedata == NULL)
+    if (fdata == NULL)
         file_error_message (_ ("Cannot open file\n%s"),
                             event_data->filename ? event_data->filename : helpfile);
 
