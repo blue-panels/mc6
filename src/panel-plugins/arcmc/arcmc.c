@@ -75,6 +75,18 @@ static gboolean arcmc_ask_password (arcmc_data_t *data);
 static gboolean arcmc_is_supported_archive (const char *filename);
 
 /*** file scope functions (helpers) ***************************************************************/
+/* --------------------------------------------------------------------------------------------- */
+
+const char *
+arcmc_help_file (void)
+{
+    static char *path = NULL;
+
+    if (path == NULL)
+        path = g_build_filename (MC_PLUGIN_DIR, "arcmc_panel.md", (char *) NULL);
+
+    return g_file_test (path, G_FILE_TEST_IS_REGULAR) ? path : NULL;
+}
 
 /* Move a file, falling back to copy+unlink when src and dst are on different filesystems. */
 static gboolean
@@ -171,6 +183,24 @@ arcmc_bulk_cache_cleanup (arcmc_data_t *data)
 
 /*** file scope variables ************************************************************************/
 
+static mc_pp_result_t
+arcmc_get_help_info (void *plugin_data, const char **filename, const char **node)
+{
+    (void) plugin_data;
+
+    if (node != NULL)
+        *node = "[arcmc]";
+
+    if (filename != NULL)
+    {
+        *filename = arcmc_help_file ();
+        if (*filename == NULL)
+            return MC_PPR_NOT_SUPPORTED;
+    }
+
+    return MC_PPR_OK;
+}
+
 static const mc_pp_action_t arcmc_actions[] = {
     { N_ ("Open archive"), arcmc_action_browse },
     { N_ ("Create archive"), arcmc_action_create },
@@ -234,6 +264,7 @@ static const mc_panel_plugin_t arcmc_plugin = {
     .cmd_menu_entry_count = G_N_ELEMENTS (arcmc_cmd_menu),
     .configure = arcmc_configure,
     .shutdown = arcmc_config_free,
+    .get_help_info = arcmc_get_help_info,
 };
 
 /*** file scope functions ************************************************************************/

@@ -326,6 +326,7 @@ ctags_ui_select (const char *title, GPtrArray *entries, const char *initial_filt
     dlg = dlg_create (TRUE, dlg_y, dlg_x, dlg_h, dlg_w, WPOS_KEEP_DEFAULT, TRUE, dialog_colors,
                       ctags_sel_dlg_callback, NULL, "[Ctags]",
                       title != NULL ? title : _ ("Select symbol"));
+    dlg->help_file = "ctags.md";
 
     /* Filter input on row 1.  Clear the "first keystroke" flag so the pre-filled
      * symbol can be appended to (rather than wiped) by the user's next char. */
@@ -460,6 +461,7 @@ ctags_ui_manage_repos (GSList **repos)
     dlg = dlg_create (TRUE, (LINES - dlg_h) / 2, (COLS - dlg_w) / 2, dlg_h, dlg_w,
                       WPOS_KEEP_DEFAULT, TRUE, dialog_colors, dlg_default_callback, NULL, "[Ctags]",
                       _ ("Manage Tag Repositories"));
+    dlg->help_file = "ctags.md";
 
     lst = listbox_new (1, 1, list_h, dlg_w - 2, TRUE, NULL);
 
@@ -733,6 +735,7 @@ ctags_ui_select_refs (const char *title, GPtrArray *entries)
     dlg = dlg_create (TRUE, (LINES - dlg_h) / 2, (COLS - dlg_w) / 2, dlg_h, dlg_w,
                       WPOS_KEEP_DEFAULT, TRUE, dialog_colors, ctags_refs_dlg_callback, NULL,
                       "[Ctags]", title != NULL ? title : _ ("Find References"));
+    dlg->help_file = "ctags.md";
 
     tbl = table_new (1, 2, table_h, table_w, 3, col_defs);
     tbl->scrollbar = TRUE;
@@ -856,6 +859,7 @@ ctags_ui_select_members (const char *scope, GPtrArray *rows)
     dlg =
         dlg_create (TRUE, (LINES - dlg_h) / 2, (COLS - dlg_w) / 2, dlg_h, dlg_w, WPOS_KEEP_DEFAULT,
                     TRUE, dialog_colors, ctags_refs_dlg_callback, NULL, "[Ctags]", _ ("Members"));
+    dlg->help_file = "ctags.md";
 
     group_add_widget (GROUP (dlg), label_new (1, 2, subtitle));
     g_free (subtitle);

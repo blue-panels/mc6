@@ -168,6 +168,9 @@ static mc_pp_result_t shell_get_quick_view (void *plugin_data, const char *fname
                                             const struct stat *st, char **local_path);
 static mc_pp_result_t shell_connection_to_local_copy (const shell_connection_t *conn,
                                                       char **local_path);
+static const char *shell_help_file (void);
+static mc_pp_result_t shell_get_help_info (void *plugin_data, const char **filename,
+                                           const char **node);
 static mc_pp_result_t shell_handle_key (void *plugin_data, int key);
 static void shell_configure (void);
 static shell_connection_t *shell_connection_clone (const shell_connection_t *conn);
@@ -252,6 +255,7 @@ static const mc_panel_plugin_t shell_plugin = {
     .create_item = shell_create_item,
     .configure = shell_configure,
     .get_quick_view = shell_get_quick_view,
+    .get_help_info = shell_get_help_info,
 };
 
 /*** file scope functions ************************************************************************/
@@ -445,6 +449,7 @@ shell_configure (void)
             .rect = r,
             .title = N_ ("Shell link settings"),
             .help = "[shell-link]",
+            .help_file = shell_help_file (),
             .widgets = quick_widgets,
             .callback = NULL,
             .mouse_callback = NULL,
@@ -704,6 +709,7 @@ show_connection_dialog (shell_connection_t *conn)
         .rect = r,
         .title = N_ ("Shell Link Connection"),
         .help = "[Shell Link Plugin]",
+        .help_file = shell_help_file (),
         .widgets = quick_widgets,
         .callback = NULL,
         .mouse_callback = NULL,
@@ -3095,6 +3101,42 @@ shell_clone_connection (shell_data_t *data)
 
     g_ptr_array_add (data->connections, conn);
     save_connections (data->connections_file, data->connections);
+
+    return MC_PPR_OK;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The path of the help file, built once. */
+static const char *
+shell_help_file (void)
+{
+    static char *path = NULL;
+
+    if (path == NULL)
+        path = g_build_filename (MC_PLUGIN_DIR, "shell-link_panel.md", (char *) NULL);
+
+    return g_file_test (path, G_FILE_TEST_IS_REGULAR) ? path : NULL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+/* The help of the plugin lives beside the plugin, so F1 in its panel and in its
+   dialogs opens that file and not the help of the file manager. */
+static mc_pp_result_t
+shell_get_help_info (void *plugin_data, const char **filename, const char **node)
+{
+    (void) plugin_data;
+
+    if (node != NULL)
+        *node = "[Shell Link Plugin]";
+
+    if (filename != NULL)
+    {
+        *filename = shell_help_file ();
+        if (*filename == NULL)
+            return MC_PPR_NOT_SUPPORTED;
+    }
 
     return MC_PPR_OK;
 }

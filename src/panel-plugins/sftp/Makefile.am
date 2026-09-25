@@ -1,7 +1,9 @@
 sftpdir = $(panel_plugins_dir)/sftp
 sftp_LTLIBRARIES = mc-panel-sftp.la
+sftp_DATA = sftp_panel.md
 
 mc_panel_sftp_la_SOURCES = sftp.c
-mc_panel_sftp_la_CPPFLAGS = $(GLIB_CFLAGS) $(LIBSSH2_CFLAGS) -I$(top_srcdir)
+mc_panel_sftp_la_CPPFLAGS = $(GLIB_CFLAGS) $(LIBSSH2_CFLAGS) -I$(top_srcdir) \
+	-DMC_PLUGIN_DIR=\""$(panel_plugins_dir)/sftp"\"
 mc_panel_sftp_la_LDFLAGS = -module -avoid-version
 mc_panel_sftp_la_LIBADD = $(GLIB_LIBS) $(LIBSSH2_LIBS)

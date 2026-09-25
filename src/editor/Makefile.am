@@ -1,5 +1,13 @@
 EXTRA_DIST =
 
+# The help of the editor plugins, installed beside the help of the programs so
+# that a dialog of a plugin can name its own file.
+hlpdir = $(pkgdatadir)/help
+dist_hlp_DATA = \
+	../editor-plugins/ctags/ctags.md \
+	../editor-plugins/etags/etags.md \
+	../editor-plugins/spell/spell.md
+
 if USE_INTERNAL_EDIT
 noinst_LTLIBRARIES = libedit.la
 else

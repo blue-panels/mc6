@@ -446,6 +446,7 @@ arcmc_show_builtin_params_dialog (size_t idx, settings_row_t *row)
             .rect = r,
             .title = f->name,
             .help = "[arcmc]",
+            .help_file = arcmc_help_file (),
             .widgets = quick_widgets,
             .callback = builtin_params_dlg_callback,
             .mouse_callback = NULL,
@@ -563,6 +564,7 @@ arcmc_show_ext_params_dialog (size_t idx)
             .rect = r,
             .title = title,
             .help = "[arcmc]",
+            .help_file = arcmc_help_file (),
             .widgets = quick_widgets,
             .callback = NULL,
             .mouse_callback = NULL,
@@ -727,6 +729,7 @@ arcmc_show_settings_dialog (void)
 
     dlg = dlg_create (TRUE, 0, 0, dlg_height, dlg_width, WPOS_CENTER, TRUE, dialog_colors,
                       settings_dlg_callback, NULL, "[arcmc]", _ ("Archiver settings"));
+    dlg->help_file = arcmc_help_file ();
     g = GROUP (dlg);
 
     y = 1;

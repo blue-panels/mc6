@@ -339,6 +339,7 @@ editcmd_dialog_select_definition_show (WEdit *edit, char *match_expr, GPtrArray 
 
     def_dlg = dlg_create (TRUE, start_y, start_x, def_dlg_h, def_dlg_w, WPOS_KEEP_DEFAULT, TRUE,
                           dialog_colors, NULL, NULL, "[Definitions]", match_expr);
+    def_dlg->help_file = "etags.md";
     def_list = listbox_new (1, 1, def_dlg_h - 2, def_dlg_w - 2, FALSE, NULL);
     group_add_widget_autopos (GROUP (def_dlg), def_list, WPOS_KEEP_ALL, NULL);
 
