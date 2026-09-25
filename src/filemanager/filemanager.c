@@ -348,6 +348,17 @@ create_options_menu (void)
         g_list_prepend (entries, menu_entry_new (_ ("File panel m&odes..."), CK_PanelModesManage));
     entries = g_list_prepend (entries, menu_entry_new (_ ("C&onfirmation..."), CK_OptionsConfirm));
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Appearance..."), CK_OptionsAppearance));
+
+    /* Add options-menu entries published by panel plugins. */
+    {
+        GList *plugin_entries = panel_plugin_collect_menu_entries (MC_PP_MENU_OPTIONS);
+        GList *p;
+
+        for (p = plugin_entries; p != NULL; p = g_list_next (p))
+            entries = g_list_prepend (entries, p->data);
+        g_list_free (plugin_entries);
+    }
+
     entries = g_list_prepend (entries, menu_entry_new (_ ("Learn &keys..."), CK_LearnKeys));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &bindings..."), CK_KeyBindings));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &sniffer..."), CK_KeySniffer));

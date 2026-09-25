@@ -8,7 +8,7 @@ from inside mc and shows the result as it goes.
 Starting it:
 
 ```
-  F9 -> Command -> Skin editor...
+  F9 -> Options -> Skin editor...
   F9 -> Command -> Plugin panel... -> Skin editor
   Manage Plugins -> Skin editor -> Enter
 ```
