@@ -2829,11 +2829,17 @@ Ctrl\-Shift\-l   a képernyő és az egész kimenet törlése
 .PP
 Az Alt\-s és az Alt\-Shift\-s ugyanúgy veszi a mintát, mint a panelekben: a
 képernyő felső sorában gépelődik, a kimenet pedig követi, ahogy nő. A kis\- és
-nagybetű nem számít. A keresés a kurzortól felfelé megy, és a legközelebbi
-találatot jelöli ki; az újabb Alt\-s a fölötte levőt, a legrégebbi sor után
-pedig a keresés a legújabbra fordul. A szűrő csak az illeszkedő sorokat
-mutatja, és a kurzorbillentyűk már gépelés közben közöttük járnak; az újabb
-Alt\-Shift\-s a fölötte levő sorra viszi a kurzort. Begépelt minta nélkül
+nagybetű nem számít. A keresés a kurzortól lefelé megy, és a legközelebbi
+találatot jelöli ki; az újabb Alt\-s az alatta levőt, a legújabb sor után
+pedig a keresés a legrégebbire fordul. Ahol a parancsértelmező gépel, onnan
+még semmit sem olvastak, így a keresés a kimenet legrégebbi sorától indul. A
+szűrő csak az illeszkedő sorokat mutatja, és a kurzorbillentyűk már gépelés
+közben közöttük járnak; az újabb Alt\-Shift\-s az alatta levő sorra viszi a
+kurzort. A
+\fIsearch_direction\fP
+beállítás mindkettőt megfordítja, és a keresés felfelé megy, ahogy a
+\fBless\fP
+keres, és ahogy korábban ment. Begépelt minta nélkül
 megnyomva mindkettő az előző mintát veszi elő. A Backspace egy karaktert
 töröl, az a karakter pedig, amelyre semmi nem illeszkedik, nem kerül be. Az
 Enter befejezi a gépelést és a képet úgy hagyja, ahogy van, az Esc befejezi
@@ -4198,6 +4204,23 @@ tartották (wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
 mcview_remember_file_position, mcview_structured_auto, mcview_eof és
 max_dirt_limit). A program egyszer onnan olvassa be, majd a [Viewer]
 szakaszba írja őket.
+
+.PP
+A panelek mögött a parancsértelmezőt futtató terminál beállításai ugyanennek
+a fájlnak a [Terminal] szakaszában vannak. Nincs párbeszédablak, amely írná
+őket.
+
+.TP
+\fIsearch_direction\fP
+Melyik irányban nézi át
+\fBAlt\-s\fP
+a parancsértelmező kimenetét, és melyik irányban lép
+\fBAlt\-Shift\-s\fP
+a szűrő egyik soráról a következőre: a "down" a kurzortól a legújabb sor felé
+megy, azon túl pedig a legrégebbire fordul, az "up" a legrégebbi sor felé megy
+és a legújabbra fordul, ahogy a
+\fBless\fP
+keres. Alapértelmezés szerint "down".
 
 
 .SH Terminál adatbázisok

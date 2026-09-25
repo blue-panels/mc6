@@ -2506,12 +2506,17 @@ Ctrl-Mayús-l   limpiar la pantalla y toda la salida
 
 Alt-s y Alt-Mayús-s toman el patrón igual que en los paneles: se teclea en la
 fila superior de la pantalla, y la salida lo sigue según crece. Las
-mayúsculas no importan. La búsqueda sube desde el cursor y selecciona la
-coincidencia más cercana; Alt-s otra vez selecciona la de más arriba, y
-pasada la fila más antigua la búsqueda vuelve a la más reciente. El filtro
-muestra solo las filas que coinciden, y las teclas del cursor las recorren
-mientras aún se teclea el patrón; Alt-Mayús-s otra vez lleva el cursor a la
-fila de arriba. Pulsadas sin nada tecleado, ambas teclas recuperan el patrón
+mayúsculas no importan. La búsqueda baja desde el cursor y selecciona la
+coincidencia más cercana; Alt-s otra vez selecciona la de más abajo, y pasada
+la fila más reciente la búsqueda vuelve a la más antigua. Donde teclea el
+intérprete aún no se ha leído nada, y la búsqueda toma la salida desde su
+fila más antigua. El filtro muestra solo las filas que coinciden, y las
+teclas del cursor las recorren mientras aún se teclea el patrón; Alt-Mayús-s
+otra vez lleva el cursor a la fila de abajo. El ajuste
+*search_direction*
+invierte ambas, y la búsqueda sube por la salida como en
+**less**
+y como hacía antes. Pulsadas sin nada tecleado, ambas teclas recuperan el patrón
 anterior. Retroceso quita un carácter, y un carácter con el que no coincide
 nada no se acepta. Intro termina el tecleo y deja la vista como está, Esc lo
 termina y quita el filtro, y cualquier otra tecla termina el tecleo y hace lo
@@ -3953,6 +3958,21 @@ nombres más largos (wrap_mode, viewer_syntax_highlighting,
 mouse_move_pages_viewer, mcview_remember_file_position,
 mcview_structured_auto, mcview_eof y max_dirt_limit). Se leen de allí una vez
 y se escriben en la sección [Viewer].
+
+Los ajustes del terminal que ejecuta el intérprete detrás de los paneles
+están en la sección [Terminal] del mismo archivo. No hay ninguna ventana que
+los escriba.
+
+*search_direction*
+: Hacia dónde recorre
+**Alt-s**
+la salida del intérprete, y hacia dónde pasa
+**Alt-Mayús-s**
+de una fila del filtro a la siguiente: "down" va desde el cursor hacia la
+fila más reciente y tras ella vuelve a la más antigua, "up" va hacia la fila
+más antigua y vuelve a la más reciente, como busca
+**less**
+y como se hacía antes. "down" por omisión.
 
 # Parámetros para editor o visor externo <a id="parameters-for-external-editor-or-viewer"></a>
 

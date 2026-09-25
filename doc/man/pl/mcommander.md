@@ -2252,11 +2252,17 @@ Ctrl-Shift-l   czyści ekran i całe wyjście
 
 Alt-s i Alt-Shift-s biorą wzorzec tak samo jak w panelach: pisze się go w
 górnym wierszu ekranu, a wyjście podąża za nim, w miarę jak rośnie. Wielkość
-liter nie ma znaczenia. Szukanie idzie w górę od kursora i zaznacza
-najbliższe trafienie; kolejne Alt-s zaznacza to wyżej, a za najstarszym
-wierszem szukanie wraca do najnowszego. Filtr pokazuje tylko pasujące
-wiersze, a strzałki chodzą po nich jeszcze w trakcie pisania wzorca; kolejne
-Alt-Shift-s przenosi kursor o wiersz wyżej. Naciśnięte bez wpisanego wzorca,
+liter nie ma znaczenia. Szukanie idzie w dół od kursora i zaznacza
+najbliższe trafienie; kolejne Alt-s zaznacza to niżej, a za najnowszym
+wierszem szukanie wraca do najstarszego. Tam, gdzie pisze powłoka, nic
+jeszcze nie czytano, więc szukanie bierze wyjście od najstarszego wiersza.
+Filtr pokazuje tylko pasujące wiersze, a strzałki chodzą po nich jeszcze w
+trakcie pisania wzorca; kolejne Alt-Shift-s przenosi kursor o wiersz niżej.
+Ustawienie
+*search_direction*
+odwraca oba, i szukanie idzie w górę, tak jak szuka
+**less**
+i tak jak było wcześniej. Naciśnięte bez wpisanego wzorca,
 oba klawisze biorą poprzedni wzorzec. Backspace kasuje znak, a znak, do
 którego nic nie pasuje, nie jest przyjmowany. Enter kończy pisanie i zostawia
 widok taki, jaki jest, Esc kończy je i zdejmuje filtr, a każdy inny klawisz
@@ -3438,6 +3444,20 @@ Starsze wersje trzymały te ustawienia w głównej sekcji pod dłuższymi nazwam
 (wrap_mode, viewer_syntax_highlighting, mouse_move_pages_viewer,
 mcview_remember_file_position, mcview_structured_auto, mcview_eof i
 max_dirt_limit). Są one stamtąd czytane raz i zapisywane do sekcji [Viewer].
+
+Ustawienia terminala, w którym za panelami pracuje powłoka, stoją w sekcji
+[Terminal] tego samego pliku. Nie ma okna, które by je zapisywało.
+
+*search_direction*
+: W którą stronę
+**Alt-s**
+przegląda wyjście powłoki i w którą
+**Alt-Shift-s**
+przechodzi z jednego wiersza filtru do następnego: "down" idzie od kursora ku
+najnowszemu wierszowi, a za nim wraca do najstarszego, "up" idzie ku
+najstarszemu wierszowi i wraca do najnowszego, tak jak szuka
+**less**
+i tak jak było wcześniej. Domyślnie "down".
 
 # Baza danych terminali (Terminal databases) <a id="terminal-databases"></a>
 

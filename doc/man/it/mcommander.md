@@ -2391,12 +2391,17 @@ Ctrl-Maiusc-l  pulisce lo schermo e tutta l'uscita
 
 Alt-s e Alt-Maiusc-s prendono il modello come nei pannelli: lo si scrive
 nella riga in alto dello schermo, e l'uscita lo segue mentre cresce. Le
-maiuscole non contano. La ricerca va verso l'alto dal cursore e seleziona
-l'occorrenza più vicina; un altro Alt-s seleziona quella sopra, e oltre la
-riga più vecchia la ricerca torna alla più recente. Il filtro mostra solo le
-righe che corrispondono, e i tasti freccia le percorrono mentre il modello si
-sta ancora scrivendo; un altro Alt-Maiusc-s porta il cursore alla riga sopra.
-Premuti senza nulla di scritto, entrambi i tasti riprendono il modello
+maiuscole non contano. La ricerca va verso il basso dal cursore e seleziona
+l'occorrenza più vicina; un altro Alt-s seleziona quella sotto, e oltre la
+riga più recente la ricerca torna alla più vecchia. Dove scrive la shell non
+è stato ancora letto nulla, e la ricerca prende l'uscita dalla sua riga più
+vecchia. Il filtro mostra solo le righe che corrispondono, e i tasti freccia
+le percorrono mentre il modello si sta ancora scrivendo; un altro
+Alt-Maiusc-s porta il cursore alla riga sotto. L'impostazione
+*search_direction*
+inverte entrambi, e la ricerca va verso l'alto come in
+**less**
+e come faceva prima. Premuti senza nulla di scritto, entrambi i tasti riprendono il modello
 precedente. Backspace toglie un carattere, e un carattere a cui non
 corrisponde nulla non viene accettato. Invio termina la scrittura e lascia la
 vista com'è, Esc la termina e toglie il filtro, qualsiasi altro tasto la
@@ -3578,6 +3583,20 @@ con nomi più lunghi (wrap_mode, viewer_syntax_highlighting,
 mouse_move_pages_viewer, mcview_remember_file_position,
 mcview_structured_auto, mcview_eof e max_dirt_limit). Vengono lette da lì una
 volta e riscritte nella sezione [Viewer].
+
+Le impostazioni del terminale che esegue la shell dietro i pannelli sono
+nella sezione [Terminal] dello stesso file. Nessuna finestra le scrive.
+
+*search_direction*
+: In quale verso
+**Alt-s**
+percorre l'uscita della shell, e in quale
+**Alt-Maiusc-s**
+passa da una riga del filtro alla successiva: "down" va dal cursore verso la
+riga più recente e oltre di essa torna alla più vecchia, "up" va verso la
+riga più vecchia e torna alla più recente, come cerca
+**less**
+e come si faceva prima. "down" in modo predefinito.
 
 # Database di terminali <a id="terminal-databases"></a>
 
