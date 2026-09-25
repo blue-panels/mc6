@@ -175,7 +175,6 @@ static name_keymap_t command_names[] = {
 #ifdef USE_DIFF_VIEW
     ADD_KEYMAP_NAME_DESC (CompareFiles, N_ ("Compare files (diff)")),
 #endif
-    ADD_KEYMAP_NAME_DESC (OptionsVfs, N_ ("VFS settings")),
     ADD_KEYMAP_NAME_DESC (OptionsConfirm, N_ ("Confirmation settings")),
     ADD_KEYMAP_NAME_DESC (EditExtensionsFile, N_ ("Edit extensions file")),
     ADD_KEYMAP_NAME_DESC (EditFileHighlightFile, N_ ("Edit syntax highlighting")),

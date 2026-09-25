@@ -1566,10 +1566,6 @@ Polecenie
 pokazuje, co terminal wysyła dla naciśniętego klawisza, i działanie, do
 którego ten klawisz jest przypisany.
 
-Polecenie
-[Wirtualny FS](#virtual-fs)
-otwiera okno z ustawieniami dotyczącymi VFS.
-
 Polecenia
 **Opcje podglądu różnic**,
 [Opcje przeglądarki](mview.md#viewer-options)
@@ -1811,18 +1807,6 @@ przycisku.
 
 Stare definicje z sekcji [terminal:TERM] pliku ~/.config/mc6/ini są
 przenoszone same przy pierwszym uruchomieniu.
-
-### Wirtualny system plików (Virtual FS) <a id="virtual-fs"></a>
-
-Ta pozycja steruje ustawieniami
-[wirtualnych systemów plików](#virtual-file-system).
-
-W oknie jest jedno ustawienie,
-*Czas zwalniania VFS,*
-czyli czas życia pamięci podręcznej systemu plików: po wyjściu z archiwum lub
-pliku skompresowanego wczytana lista i rozpakowany plik tymczasowy zostają
-jeszcze przez tyle sekund, żeby ponowne wejście było natychmiastowe, a po
-upływie tego czasu są zwalniane. Domyślnie 60 sekund, a 0 zwalnia je od razu.
 
 ### Zarządzanie wtyczkami <a id="manage-plugins"></a>
 
@@ -3303,7 +3287,6 @@ katalogu.
 wyjściu z archiwum albo pliku skompresowanego wczytana lista i rozpakowany
 plik tymczasowy zostają przez ten czas, żeby ponowne wejście było
 natychmiastowe, a potem są zwalniane. Domyślnie 60; 0 zwalnia je od razu.
-Okno Wirtualny FS z menu Opcje zmienia tę samą wartość.
 
 *only_leading_plus_minus*
 : Traktuje znaki '+', '-' i '\*' w wierszu poleceń osobno (zaznaczanie,

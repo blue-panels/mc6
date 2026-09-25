@@ -335,9 +335,6 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("Learn &keys..."), CK_LearnKeys));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &bindings..."), CK_KeyBindings));
     entries = g_list_prepend (entries, menu_entry_new (_ ("Key &sniffer..."), CK_KeySniffer));
-#ifdef ENABLE_VFS
-    entries = g_list_prepend (entries, menu_entry_new (_ ("&Virtual FS..."), CK_OptionsVfs));
-#endif
     entries = g_list_prepend (entries, menu_separator_new ());
 #ifdef USE_DIFF_VIEW
     entries = g_list_prepend (entries,
@@ -1272,11 +1269,6 @@ midnight_execute_cmd (Widget *sender, long command)
     case CK_Options:
         configure_box ();
         break;
-#ifdef ENABLE_VFS
-    case CK_OptionsVfs:
-        configure_vfs_box ();
-        break;
-#endif
     case CK_OptionsConfirm:
         confirm_box ();
         break;

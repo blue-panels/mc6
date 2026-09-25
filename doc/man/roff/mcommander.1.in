@@ -2156,11 +2156,6 @@ action that key is bound to.
 
 .PP
 The
-Virtual FS
-command pops up a dialog from which you specify some VFS related options.
-
-.PP
-The
 \fBDiff viewer options\fP,
 Viewer options
 and
@@ -2646,20 +2641,6 @@ sequence appears next to the button.
 .PP
 The old terminal key definitions from [terminal:TERM] in
 ~/.config/mc6/ini are migrated automatically on first run.
-
-.SS Virtual FS
-.PP
-This option gives you control over the settings of the
-Virtual File System\&.
-
-.PP
-The dialog holds one setting,
-\fITimeout for freeing VFSs,\fP
-which is the lifetime of the cache of a file system: after leaving an archive
-or a compressed file, the listing that was read and the temporary file that
-was unpacked are kept for that many seconds, so that going back in is
-immediate, and are released when the time is up. The default is 60 seconds,
-and 0 releases them at once.
 
 .SS Manage plugins
 .PP
@@ -4213,7 +4194,7 @@ The lifetime of the cache of a virtual file system, in seconds. After leaving
 an archive or a compressed file, the listing that was read and the temporary
 file that was unpacked are kept for that long, so that going back in is
 immediate, and are released when the time is up. 60 by default; 0 releases them
-at once. The Virtual FS dialog of the Options menu holds the same value.
+at once.
 
 .TP
 \fIonly_leading_plus_minus\fP

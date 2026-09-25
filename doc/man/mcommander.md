@@ -1836,10 +1836,6 @@ command shows what a terminal sends for the key that is pressed, and the
 action that key is bound to.
 
 The
-[Virtual FS](#virtual-fs)
-command pops up a dialog from which you specify some VFS related options.
-
-The
 **Diff viewer options**,
 [Viewer options](mview.md#viewer-options)
 and
@@ -2255,19 +2251,6 @@ sequence appears next to the button.
 
 The old terminal key definitions from [terminal:TERM] in
 ~/.config/mc6/ini are migrated automatically on first run.
-
-### Virtual FS
-
-This option gives you control over the settings of the
-[Virtual File System](#virtual-file-system).
-
-The dialog holds one setting,
-*Timeout for freeing VFSs,*
-which is the lifetime of the cache of a file system: after leaving an archive
-or a compressed file, the listing that was read and the temporary file that
-was unpacked are kept for that many seconds, so that going back in is
-immediate, and are released when the time is up. The default is 60 seconds,
-and 0 releases them at once.
 
 ### Manage plugins <a id="manage-plugins"></a>
 
@@ -3597,7 +3580,7 @@ the directory if you have files tagged.
 an archive or a compressed file, the listing that was read and the temporary
 file that was unpacked are kept for that long, so that going back in is
 immediate, and are released when the time is up. 60 by default; 0 releases them
-at once. The Virtual FS dialog of the Options menu holds the same value.
+at once.
 
 *only_leading_plus_minus*
 : Allow special treatment for '+', '-', '\*' in the command line (select,

@@ -1672,10 +1672,6 @@ A
 megmutatja, mit küld a terminál a leütött billentyűre, és azt a műveletet,
 amelyhez az a billentyű tartozik.
 
-A
-[Csatolt fájlrendszer](#virtual-fs)
-a VFS beállításait nyitja meg.
-
 Az
 **Összehasonlító beállításai**,
 a
@@ -1941,20 +1937,6 @@ szerkesztőben.
 
 A ~/.config/mc6/ini fájl [terminal:TERM] szakaszában levő régi definíciók az
 első indításkor maguktól átkerülnek.
-
-### Csatolt (látszólagos) fájlrendszer <a id="virtual-fs"></a>
-
-Ez a pont a
-[csatolt fájlrendszerek](#virtual-file-system)
-beállításait kezeli.
-
-A párbeszédablakban egy beállítás van,
-*A VFS felszabadításának ideje,*
-és ez a fájlrendszer gyorsítótárának élettartama: egy archívumból vagy
-tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes fájl
-még ennyi másodpercig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60 másodperc, a 0 pedig azonnal
-felszabadítja őket.
 
 ### Bővítmények kezelése <a id="manage-plugins"></a>
 
@@ -3444,8 +3426,7 @@ mielőtt könyvtárat váltana.
 : A virtuális fájlrendszer gyorstárának élettartama másodpercben. Archívumból
 vagy tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes
 fájl ennyi ideig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja. A
-Beállítások menü Csatolt fájlrendszer ablaka ugyanezt az értéket állítja.
+felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja.
 
 *only_leading_plus_minus*
 : A '+', '-' és '\*' karaktert csak akkor kezeli külön a parancssorban

@@ -1656,10 +1656,6 @@ Il comando
 mostra che cosa invia il terminale per il tasto premuto, e l'azione a cui
 quel tasto è associato.
 
-Il comando
-[FS virtuale](#virtual-fs)
-apre una finestra con alcune opzioni relative al VFS.
-
 I comandi
 **Opzioni del confronto**,
 [Opzioni del visualizzatore](mview.md#viewer-options)
@@ -1921,18 +1917,6 @@ imparata compare accanto al pulsante.
 
 Le vecchie definizioni della sezione [terminal:TERM] di ~/.config/mc6/ini
 vengono trasferite da sole al primo avvio.
-
-### FS virtuale <a id="virtual-fs"></a>
-
-Questa voce controlla le impostazioni del
-[file system virtuale](#virtual-file-system).
-
-La finestra ha una sola impostazione,
-*Tempo di rilascio dei VFS,*
-che è il tempo di vita della cache di un file system: uscendo da un archivio o
-da un file compresso, l'elenco letto e il file temporaneo scompattato restano
-per quei secondi, così rientrare è immediato, e vengono rilasciati allo
-scadere. Il valore predefinito è 60 secondi, e 0 li rilascia subito.
 
 ### Gestione dei componenti <a id="manage-plugins"></a>
 
@@ -3432,8 +3416,7 @@ directory quando ci sono file marcati.
 : Il tempo di vita della cache di un filesystem virtuale, in secondi. Uscendo
 da un archivio o da un file compresso, l'elenco letto e il file temporaneo
 scompattato restano per quel tempo, così rientrare è immediato, e poi vengono
-rilasciati. Predefinito 60; 0 li rilascia subito. La finestra FS virtuale del
-menu Opzioni cambia lo stesso valore.
+rilasciati. Predefinito 60; 0 li rilascia subito.
 
 *only_leading_plus_minus*
 : Permette una gestione speciale per '+', '-' e '\*' nella riga di comando

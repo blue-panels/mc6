@@ -2103,12 +2103,6 @@ muestra lo que envía el terminal para la tecla que se pulsa, y la acción a la
 que esa tecla está asignada.
 
 .PP
-En
-Sistema de Archivos Virtual (VFS)
-podemos especificar algunas opciones relacionadas con el VFS (Sistema de
-Archivos Virtual).
-
-.PP
 \fBOpciones del comparador\fP,
 Opciones del visor
 y
@@ -2531,20 +2525,6 @@ aparece junto al botón.
 .PP
 Las definiciones antiguas de la sección [terminal:TERM] de
 ~/.config/mc6/ini se migran automáticamente la primera vez.
-
-.SS Sistema de Archivos Virtual (VFS)
-.PP
-Esta entrada controla la configuración de los
-Sistemas de Archivos Virtuales\&.
-
-.PP
-El diálogo tiene un solo ajuste,
-\fITiempo para liberar VFS,\fP
-que es el tiempo de vida de la caché de un sistema de archivos: al salir de un
-archivo comprimido, la lista que se leyó y el archivo temporal que se
-desempaquetó se guardan durante esos segundos, de modo que volver a entrar es
-inmediato, y se liberan cuando se cumple el plazo. De forma predeterminada son
-60 segundos, y 0 los libera en el acto.
 
 .SS Administrar complementos
 .PP
@@ -4471,8 +4451,7 @@ El tiempo de vida de la caché de un sistema de archivos virtual, en
 segundos. Al salir de un archivo comprimido, la lista que se leyó y el archivo
 temporal que se desempaquetó se guardan durante ese tiempo, de modo que
 volver a entrar es inmediato, y se liberan cuando se cumple. 60 de forma
-predeterminada; 0 los libera en el acto. El diálogo Sistemas de Archivos
-Virtuales del menú Opciones cambia el mismo valor.
+predeterminada; 0 los libera en el acto.
 
 .TP
 \fIonly_leading_plus_minus\fP

@@ -1790,11 +1790,6 @@ reasigna una tecla y el resultado se escribe en el archivo de asignación.
 muestra lo que envía el terminal para la tecla que se pulsa, y la acción a la
 que esa tecla está asignada.
 
-En
-[Sistema de Archivos Virtual (VFS)](#virtual-fs)
-podemos especificar algunas opciones relacionadas con el VFS (Sistema de
-Archivos Virtual).
-
 **Opciones del comparador**,
 [Opciones del visor](mview.md#viewer-options)
 y
@@ -2161,19 +2156,6 @@ aparece junto al botón.
 
 Las definiciones antiguas de la sección [terminal:TERM] de
 ~/.config/mc6/ini se migran automáticamente la primera vez.
-
-### Sistema de Archivos Virtual (VFS) <a id="virtual-fs"></a>
-
-Esta entrada controla la configuración de los
-[Sistemas de Archivos Virtuales](#virtual-file-system).
-
-El diálogo tiene un solo ajuste,
-*Tiempo para liberar VFS,*
-que es el tiempo de vida de la caché de un sistema de archivos: al salir de un
-archivo comprimido, la lista que se leyó y el archivo temporal que se
-desempaquetó se guardan durante esos segundos, de modo que volver a entrar es
-inmediato, y se liberan cuando se cumple el plazo. De forma predeterminada son
-60 segundos, y 0 los libera en el acto.
 
 ### Administrar complementos <a id="manage-plugins"></a>
 
@@ -3804,8 +3786,7 @@ archivos marcados.
 segundos. Al salir de un archivo comprimido, la lista que se leyó y el archivo
 temporal que se desempaquetó se guardan durante ese tiempo, de modo que
 volver a entrar es inmediato, y se liberan cuando se cumple. 60 de forma
-predeterminada; 0 los libera en el acto. El diálogo Sistemas de Archivos
-Virtuales del menú Opciones cambia el mismo valor.
+predeterminada; 0 los libera en el acto.
 
 *only_leading_plus_minus*
 : Produce un tratamiento especial para '+', '-', '\*' en la línea de órdenes (seleccionar,

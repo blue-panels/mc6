@@ -1859,11 +1859,6 @@ pokazuje, co terminal wysyła dla naciśniętego klawisza, i działanie, do
 którego ten klawisz jest przypisany.
 
 .PP
-Polecenie
-Wirtualny FS
-otwiera okno z ustawieniami dotyczącymi VFS.
-
-.PP
 Polecenia
 \fBOpcje podglądu różnic\fP,
 Opcje przeglądarki
@@ -2155,19 +2150,6 @@ przycisku.
 .PP
 Stare definicje z sekcji [terminal:TERM] pliku ~/.config/mc6/ini są
 przenoszone same przy pierwszym uruchomieniu.
-
-.SS Wirtualny system plików (Virtual FS)
-.PP
-Ta pozycja steruje ustawieniami
-wirtualnych systemów plików\&.
-
-.PP
-W oknie jest jedno ustawienie,
-\fICzas zwalniania VFS,\fP
-czyli czas życia pamięci podręcznej systemu plików: po wyjściu z archiwum lub
-pliku skompresowanego wczytana lista i rozpakowany plik tymczasowy zostają
-jeszcze przez tyle sekund, żeby ponowne wejście było natychmiastowe, a po
-upływie tego czasu są zwalniane. Domyślnie 60 sekund, a 0 zwalnia je od razu.
 
 .SS Zarządzanie wtyczkami
 .PP
@@ -3900,7 +3882,6 @@ Czas życia pamięci podręcznej wirtualnego systemu plików w sekundach. Po
 wyjściu z archiwum albo pliku skompresowanego wczytana lista i rozpakowany
 plik tymczasowy zostają przez ten czas, żeby ponowne wejście było
 natychmiastowe, a potem są zwalniane. Domyślnie 60; 0 zwalnia je od razu.
-Okno Wirtualny FS z menu Opcje zmienia tę samą wartość.
 
 .TP
 \fIonly_leading_plus_minus\fP

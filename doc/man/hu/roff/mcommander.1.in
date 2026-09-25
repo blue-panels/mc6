@@ -1961,11 +1961,6 @@ megmutatja, mit küld a terminál a leütött billentyűre, és azt a műveletet
 amelyhez az a billentyű tartozik.
 
 .PP
-A
-Csatolt fájlrendszer
-a VFS beállításait nyitja meg.
-
-.PP
 Az
 \fBÖsszehasonlító beállításai\fP,
 a
@@ -2273,21 +2268,6 @@ szerkesztőben.
 .PP
 A ~/.config/mc6/ini fájl [terminal:TERM] szakaszában levő régi definíciók az
 első indításkor maguktól átkerülnek.
-
-.SS Csatolt (látszólagos) fájlrendszer
-.PP
-Ez a pont a
-csatolt fájlrendszerek
-beállításait kezeli.
-
-.PP
-A párbeszédablakban egy beállítás van,
-\fIA VFS felszabadításának ideje,\fP
-és ez a fájlrendszer gyorsítótárának élettartama: egy archívumból vagy
-tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes fájl
-még ennyi másodpercig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60 másodperc, a 0 pedig azonnal
-felszabadítja őket.
 
 .SS Bővítmények kezelése
 .PP
@@ -4025,8 +4005,7 @@ mielőtt könyvtárat váltana.
 A virtuális fájlrendszer gyorstárának élettartama másodpercben. Archívumból
 vagy tömörített fájlból kilépve a beolvasott lista és a kicsomagolt ideiglenes
 fájl ennyi ideig megmarad, hogy a visszalépés azonnali legyen, azután
-felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja. A
-Beállítások menü Csatolt fájlrendszer ablaka ugyanezt az értéket állítja.
+felszabadul. Alapértelmezés szerint 60; a 0 azonnal felszabadítja.
 
 .TP
 \fIonly_leading_plus_minus\fP
