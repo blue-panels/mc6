@@ -36,10 +36,10 @@ msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
 "POT-Creation-Date: 2026-09-25 20:52+0000\n"
-"PO-Revision-Date: 2026-09-25 22:10+0000\n"
-"Last-Translator: smind <smind@noreply.codeberg.org>\n"
-"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/"
-">\n"
+"PO-Revision-Date: 2026-09-25 22:53+0000\n"
+"Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
+"Language-Team: Russian <https://translate.codeberg.org/projects/mc6/mc6/ru/>"
+"\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -396,15 +396,11 @@ msgstr "Режим отображения панели"
 msgid "Panel options"
 msgstr "Настройки панели"
 
-#, fuzzy
-#| msgid "General options"
 msgid "Viewer options"
-msgstr "Общие настройки"
+msgstr "Настройки просмотрщика"
 
-#, fuzzy
-#| msgid "Diff extra options"
 msgid "Diff viewer options"
-msgstr "Прочие настройки"
+msgstr "Настройки просмотрщика различий"
 
 msgid "Editor options"
 msgstr "Настройки редактора"
@@ -950,10 +946,9 @@ msgstr "Импортировано %s в %s\n"
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr "Предупреждение: импорт %s в %s неполный\n"
 
-#, fuzzy, c-format
-#| msgid "Imported %s to %s\n"
+#, c-format
 msgid "Renamed %s to %s\n"
-msgstr "Импортировано %s в %s\n"
+msgstr "Переименовано %s в %s\n"
 
 msgid "FATAL: not a directory:"
 msgstr "ОШИБКА: не является каталогом:"
@@ -3151,10 +3146,8 @@ msgstr "Прос&тая перестановка"
 msgid "A&uto save panels setup"
 msgstr "&Автосохранять настройки панелей"
 
-#, fuzzy
-#| msgid "directories"
 msgid "Watch &directories"
-msgstr "каталоги"
+msgstr "Отслеживать &каталоги"
 
 msgid "Navigation"
 msgstr "Навигация"
@@ -3201,30 +3194,22 @@ msgstr ""
 "руководство (man)."
 
 msgid "&Wrap long lines"
-msgstr ""
+msgstr "&Переносить длинные строки"
 
-#, fuzzy
-#| msgid "Synta&x highlighting"
 msgid "&Syntax highlighting"
 msgstr "Подс&ветка синтаксиса"
 
-#, fuzzy
-#| msgid "Save file &position"
 msgid "Remember file &position"
 msgstr "Сох&ранять позицию в файле"
 
-#, fuzzy
-#| msgid "Structured view of JSON, YAML and the like"
 msgid "&Tree view of JSON, YAML and XML"
-msgstr "Структурированное представление JSON, YAML и подобных"
+msgstr "&Древовидное представление JSON, YAML и XML"
 
-#, fuzzy
-#| msgid "Enter file name:"
 msgid "End of file marker:"
-msgstr "Введите имя файла:"
+msgstr "Маркер конца файла:"
 
 msgid "Redraws to skip at most:"
-msgstr ""
+msgstr "Максимум пропускаемых перерисовок:"
 
 #, fuzzy
 #| msgid "&Brief file list:"
@@ -4436,20 +4421,14 @@ msgstr "&Привязки клавиш..."
 msgid "Key &sniffer..."
 msgstr "Анализатор &клавиш..."
 
-#, fuzzy
-#| msgid "Diff extra options"
 msgid "&Diff viewer options..."
-msgstr "Прочие настройки"
+msgstr "&Настройки просмотрщика различий…"
 
-#, fuzzy
-#| msgid "&Panel options..."
 msgid "Vie&wer options..."
-msgstr "&Настройки панелей..."
+msgstr "Настройки просмотрщи&ка…"
 
-#, fuzzy
-#| msgid "Editor options"
 msgid "&Editor options..."
-msgstr "Настройки редактора"
+msgstr "&Настройки редактора…"
 
 msgid "&Manage plugins..."
 msgstr "&Управление плагинами..."
@@ -5153,6 +5132,8 @@ msgid ""
 "This panel is not a local filesystem.\n"
 "Every file is deleted here as soon as the plugin says it has it."
 msgstr ""
+"Эта панель не является локальной файловой системой.\n"
+"Каждый файл удаляется здесь, как только плагин сообщает, что получил его."
 
 msgid "This plugin does not support moving files"
 msgstr "Этот плагин не поддерживает перемещение файлов"
@@ -5167,10 +5148,8 @@ msgstr "Перемещение выполнено, но удаление из п
 msgid "%s: the copy does not match the source"
 msgstr "%s: копия не совпадает с источником"
 
-#, fuzzy
-#| msgid "This plugin has no settings."
 msgid "This plugin takes files, not directories"
-msgstr "У этого плагина нет настроек."
+msgstr "Этот плагин принимает файлы, а не каталоги"
 
 msgid "This plugin does not support receiving files"
 msgstr "Этот плагин не поддерживает приём файлов"
@@ -6183,37 +6162,29 @@ msgstr "Прокси"
 msgid "Pass:"
 msgstr "Пароль:"
 
-#, fuzzy
-#| msgid "Connected."
 msgid "Connected"
-msgstr "Подключено."
+msgstr "Подключено"
 
 #, c-format
 msgid "Logging in as %s..."
-msgstr ""
+msgstr "Вход как %s…"
 
-#, fuzzy
-#| msgid "&Listing format..."
 msgid "Asking for TLS..."
-msgstr "Фор&мат списка..."
+msgstr "Запрос TLS…"
 
-#, fuzzy, c-format
-#| msgid "Connecting to %s..."
+#, c-format
 msgid "Opening %s..."
-msgstr "Подключение к %s..."
+msgstr "Открытие %s…"
 
-#, fuzzy, c-format
-#| msgid "Error: %s"
+#, c-format
 msgid "Server: %s"
-msgstr "Ошибка: %s"
+msgstr "Сервер: %s"
 
-#, fuzzy
-#| msgid "ftpfs: logged in"
 msgid "Logged in"
-msgstr "ftpfs: зарегистрирован"
+msgstr "Выполнен вход"
 
 msgid "TLS accepted"
-msgstr ""
+msgstr "TLS принят"
 
 msgid "FTP connection"
 msgstr "Подключение FTP"
@@ -7131,10 +7102,9 @@ msgstr "Имя пользователя (ДОМЕН\\пользователь):"
 msgid "SMB Connection"
 msgstr "Подключение SMB"
 
-#, fuzzy, c-format
-#| msgid "Cannot remove %s"
+#, c-format
 msgid "Cannot resolve %s: %s"
-msgstr "Не удаётся удалить %s"
+msgstr "Не удаётся разрешить %s: %s"
 
 msgid "SFTP connection"
 msgstr "Подключение SFTP"
@@ -9042,15 +9012,13 @@ msgid "Continue from beginning?"
 msgstr "Продолжить с начала?"
 
 msgid "Not found in the text rendered so far."
-msgstr ""
+msgstr "Не найдено в отображённом на данный момент тексте."
 
 msgid "Source spec must set either command or file."
 msgstr "Спецификация источника должна задавать либо команду, либо файл."
 
-#, fuzzy
-#| msgid "Cannot open source."
 msgid "Cannot open source pipe."
-msgstr "Не удаётся открыть источник."
+msgstr "Не удаётся открыть исходный канал."
 
 msgid "Cannot open source process."
 msgstr "Не удаётся открыть процесс-источник."
