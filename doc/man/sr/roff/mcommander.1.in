@@ -4751,10 +4751,6 @@ tcsh(1), zsh(1).
 
 .SH ГРЕШКЕ
 .PP
-Погледајте датотеку TODO из дистрибуције за информације о томе шта остаје да се
-уради.
-
-.PP
 Ако желите да пријавите проблем у вези са програмом, пошаљите пријаву грешке на:
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 

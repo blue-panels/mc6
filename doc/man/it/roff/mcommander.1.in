@@ -4353,10 +4353,6 @@ e Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 .SH BACHI
 .PP
-Vedere il file TODO nella distribuzione per informazioni su
-quello che rimane ancora da fare.
-
-.PP
 Se si vuole fare un rapporto di un problema nel programma, si prega di
 aprire una segnalazione a questo indirizzo:
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

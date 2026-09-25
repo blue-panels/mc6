@@ -4866,9 +4866,6 @@ distribución.
 
 .SH ERRORES
 .PP
-Véase el archivo "TODO" en la distribución para saber qué falta por hacer.
-
-.PP
 Para informar de problemas con el programa, introducir una nueva incidencia en
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 

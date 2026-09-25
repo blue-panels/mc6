@@ -4578,10 +4578,6 @@ distribution.
 
 .SH BUGS
 .PP
-See the file TODO in the distribution for information on what remains to
-be done.
-
-.PP
 If you want to report a problem with the program, please create bugreport at
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .
 

@@ -5269,10 +5269,6 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 .SH Недоработки
 .PP
-Известные авторам недоработки программы перечислены в файле TODO,
-который можно найти в составе поставляемого пакета.
-
-.PP
 Если вы обнаружили в программе какие\-то недостатки или недоработки,
 оформите, пожалуйста, ваши замечания по адресу
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

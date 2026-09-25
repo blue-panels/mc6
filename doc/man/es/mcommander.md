@@ -4142,8 +4142,6 @@ distribución.
 
 # ERRORES <a id="bugs"></a>
 
-Véase el archivo "TODO" en la distribución para saber qué falta por hacer.
-
 Para informar de problemas con el programa, introducir una nueva incidencia en
 <https://github.com/blue-panels/mcommander/issues> .
 

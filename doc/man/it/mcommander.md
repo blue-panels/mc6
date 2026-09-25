@@ -3725,9 +3725,6 @@ e Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 # BACHI <a id="bugs"></a>
 
-Vedere il file TODO nella distribuzione per informazioni su
-quello che rimane ancora da fare.
-
 Se si vuole fare un rapporto di un problema nel programma, si prega di
 aprire una segnalazione a questo indirizzo:
 <https://github.com/blue-panels/mcommander/issues> .

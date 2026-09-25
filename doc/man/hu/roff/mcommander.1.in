@@ -4367,10 +4367,6 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 .SH Hibák bejelentése
 .PP
-Nézd meg a disztribúció TODO fájlát, hogy megtudhasd, milyen teendők
-vannak még vissza.
-
-.PP
 Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
 címre:
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

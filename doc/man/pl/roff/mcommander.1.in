@@ -4230,10 +4230,6 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 .SH BŁĘDY
 .PP
-W pliku TODO dystrybucji znajdziesz informacje na temat tego, co
-pozostało jeszcze do zrobienia.
-
-.PP
 Jeśli chcesz zgłosić kłopoty z programem [błędy w nim],
 zgłoś go [po angielsku] pod adresem
 \X'tty: link https://github.com/blue\-panels/mcommander/issues'https://github.com/blue\-panels/mcommander/issues\X'tty: link' .

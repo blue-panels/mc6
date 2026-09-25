@@ -3741,9 +3741,6 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 # Hibák bejelentése <a id="bugs"></a>
 
-Nézd meg a disztribúció TODO fájlát, hogy megtudhasd, milyen teendők
-vannak még vissza.
-
 Ha a programmal kapcsolatos problémád van, akkor azt küld el az alábbi
 címre: <https://github.com/blue-panels/mcommander/issues> .
 

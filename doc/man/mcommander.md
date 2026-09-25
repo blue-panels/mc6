@@ -3907,9 +3907,6 @@ distribution.
 
 # BUGS
 
-See the file TODO in the distribution for information on what remains to
-be done.
-
 If you want to report a problem with the program, please create bugreport at
 <https://github.com/blue-panels/mcommander/issues> .
 

@@ -3587,9 +3587,6 @@ and Wim Osterholt (wim@djo.wtm.tudelft.nl).
 
 # BŁĘDY <a id="bugs"></a>
 
-W pliku TODO dystrybucji znajdziesz informacje na temat tego, co
-pozostało jeszcze do zrobienia.
-
 Jeśli chcesz zgłosić kłopoty z programem [błędy w nim],
 zgłoś go [po angielsku] pod adresem
 <https://github.com/blue-panels/mcommander/issues> .
