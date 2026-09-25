@@ -1537,13 +1537,6 @@ Búsquedas Externas
 nos permite ejecutar un programa externo, y llevar la salida de ese
 programa al panel actual.
 
-.PP
-Editar el archivo de extensiones
-nos permite especificar los programas a ejecutar para intentar
-ejecutar, ver, editar y realizar un montón de cosas sobre archivos
-con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
-de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
-
 .SS Árbol de Directorios
 .PP
 El comando Árbol de directorios muestra una figura con la estructura de los directorios.
@@ -1808,19 +1801,6 @@ Esto hace más rápido el posicionamiento en los directorios usados
 frecuentemente. Deberíamos considerar también el uso de la variable CDPATH
 tal y como se describe en
 comando cd interno\&.
-
-.SS Editar el Archivo de Extensiones
-.PP
-Abre el archivo
-\fI~/.config/mc6/extensions.ini\fP
-en nuestro editor.
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Trabajos en Segundo Plano
 .PP
@@ -2148,6 +2128,20 @@ en pantalla conserva las que tenía al abrirse.
 .PP
 Administrar complementos
 lista los complementos cargados, permite desactivar uno y abre sus ajustes.
+
+.PP
+Editar el archivo de extensiones
+nos permite especificar los programas a ejecutar para intentar
+ejecutar, ver, editar y realizar un montón de cosas sobre archivos
+con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
+de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
+
+.PP
+La orden
+\fBeditar Grupos de resaltado\fP
+abre el archivo que dice qué nombres y qué tipos de archivo muestra el panel en
+qué color, ver
+Resaltado de nombres\&.
 
 .PP
 Guardar Configuración
@@ -2616,6 +2610,19 @@ abre para la línea donde está el cursor. Enter pone en la línea la entrada
 donde está el cursor, Esc deja la línea como estaba y
 \fBF8, Del\fP
 borra esa entrada de la historia.
+
+.SS Editar el Archivo de Extensiones
+.PP
+Abre el archivo
+\fI~/.config/mc6/extensions.ini\fP
+en nuestro editor.
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Guardar Configuración
 .PP

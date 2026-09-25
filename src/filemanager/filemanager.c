@@ -318,12 +318,6 @@ create_command_menu (void)
 #endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("Screen lis&t"), CK_ScreenList));
     entries = g_list_prepend (entries, menu_separator_new ());
-    entries = g_list_prepend (entries,
-                              menu_entry_new (_ ("Edit &extension file"), CK_EditExtensionsFile));
-    entries = g_list_prepend (
-        entries, menu_entry_new (_ ("Edit hi&ghlighting group file"), CK_EditFileHighlightFile));
-
-    entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("Pl&ugin panel..."), CK_PanelPlugin));
 
     /* Plugin Command-menu entries (plugins with cmd_menu_entries.menu_name
@@ -384,6 +378,10 @@ create_options_menu (void)
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Editor options..."), CK_OptionsEditor));
 #endif
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Manage plugins..."), CK_ManagePlugins));
+    entries = g_list_prepend (entries,
+                              menu_entry_new (_ ("Edit e&xtension file"), CK_EditExtensionsFile));
+    entries = g_list_prepend (
+        entries, menu_entry_new (_ ("Edit hi&ghlighting group file"), CK_EditFileHighlightFile));
     entries = g_list_prepend (entries, menu_separator_new ());
     entries = g_list_prepend (entries, menu_entry_new (_ ("&Save setup"), CK_SaveSetup));
     entries = g_list_prepend (entries, menu_separator_new ());

@@ -1314,11 +1314,6 @@ Komenda panelu zewnętrznego (External panelize) pozwala na wykonywania program�
 zewnętrznych i ustawienia zawartości paneli na to co zwróciła wywołana
 komenda.
 
-.PP
-Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
-programów, które mają być używane do wykonywania plików z podanymi
-rozszerzeniami.
-
 .SS Drzewo katalogów (Directory Tree)
 .PP
 Możesz wybierać katalogi z drzewa katalogów i M\-Commander przejdzie do
@@ -1574,19 +1569,6 @@ Right, Left  wchodzi do grupy i z niej wychodzi
 Dzięki temu przechodzenie do często używanych katalogów jest szybsze. Można
 też skorzystać ze zmiennej CDPATH, opisanej przy
 wewnętrznym poleceniu cd\&.
-
-.SS Edycja rozszerzeń pliów (Edit Extension File)
-.PP
-Ta komenda wywoła twój edytor na plik
-\fI~/.config/mc6/extensions.ini.\fP
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
-PP
 
 .SS Prace w tle (Background jobs)
 .PP
@@ -1902,6 +1884,18 @@ otwarte zostaje przy tych, z którymi je otwarto.
 Polecenie
 Zarządzanie wtyczkami
 wypisuje wczytane wtyczki, wyłącza wybraną i otwiera jej ustawienia.
+
+.PP
+Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
+programów, które mają być używane do wykonywania plików z podanymi
+rozszerzeniami.
+
+.PP
+Komenda
+\fBModyfikuj plik wyróżniania grup\fP
+otwiera plik, który mówi, jakie nazwy i jakie typy plików panel pokazuje jakim
+kolorem, zobacz
+Podświetlanie nazw plików\&.
 
 .PP
 Polecenie
@@ -2387,6 +2381,19 @@ i
 wybrana zaczyna obowiązywać od razu. Budowę skór opisuje dział
 Skins
 podręcznika angielskiego.
+
+.SS Edycja rozszerzeń pliów (Edit Extension File)
+.PP
+Ta komenda wywoła twój edytor na plik
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
+PP
 
 .SS Zapisz ustawienia (Save Setup)
 .PP

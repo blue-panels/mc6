@@ -1376,13 +1376,6 @@ pannellizza comando
 permette di eseguire un coamndo esterno e di mettere il risultato nel pannello
 corrente.
 
-.PP
-Il comando
-modifica file estensioni
-permette di specificare i programmi che devono essere eseguiti quando
-si prova ad eseguire, visualizzare, modificare e un mucchio di altre
-cose, file con una specifica estensione (la fine del nome del file).
-
 .SS Albero directory
 .PP
 Il comando albero directory mostra una rappresentazione ad albero delle
@@ -1645,18 +1638,6 @@ Destra, Sin  entra in un gruppo ed esce da esso
 Questo rende più veloce il cd verso directory usate spesso. Considera l'uso
 della variabile CDPATH come descritto in
 comando cd interno\&.
-
-.SS Modifica file estensioni
-.PP
-Questo comando invocherà l'editor sul file
-\fI~/.config/mc6/extensions.ini.\fP
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Processi in background
 .PP
@@ -1989,6 +1970,20 @@ mantiene quelle con cui è stato aperto.
 Il comando
 gestione dei componenti
 elenca i componenti caricati, ne disattiva uno e ne apre le impostazioni.
+
+.PP
+Il comando
+modifica file estensioni
+permette di specificare i programmi che devono essere eseguiti quando
+si prova ad eseguire, visualizzare, modificare e un mucchio di altre
+cose, file con una specifica estensione (la fine del nome del file).
+
+.PP
+Il comando
+\fBModifica file gruppo di evidenziazione\fP
+apre il file che dice quali nomi e quali tipi di file il pannello mostra con
+quale colore, vedere
+Evidenziazione dei nomi\&.
 
 .PP
 Il comando
@@ -2504,6 +2499,18 @@ quella scelta entra in vigore subito. La struttura delle skin è descritta
 nella sezione
 Skins
 del manuale inglese.
+
+.SS Modifica file estensioni
+.PP
+Questo comando invocherà l'editor sul file
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Salva configurazione
 .PP

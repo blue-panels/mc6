@@ -1180,12 +1180,6 @@ A
 lehetővé teszi számodra külső parancsok futtatását, majd a program
 tartalmát a jellegi panelbe teszi.
 
-A
-[Társítások](#edit-extension-file)
-lehetővé teszik számodra a futtatandó programok meghatározását, a
-kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
-futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni.
 ### Könyvtárfa <a id="directory-tree"></a>
 
 A Könyvtárfa parancs fa formában mutatja meg a könyvtárakat. Ebből a
@@ -1409,19 +1403,6 @@ Ezzel a gyakran használt könyvtárakhoz ugorhatunk. A CDPATH változó
 használatát megtekintheted a
 [A cd belső parancs](#the-cd-internal-command)
 leírásánál.
-
-### Társítások <a id="edit-extension-file"></a>
-
-Ez az
-*~/.config/mc6/extensions.ini*
-szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Háttérmunkák <a id="background-jobs"></a>
 
@@ -1717,6 +1698,19 @@ A
 [Bővítmények kezelése](#panel-plugins)
 felsorolja a betöltött bővítményeket, ki tud kapcsolni egyet, és megnyitja a
 beállításait.
+
+A
+[Társítások](#edit-extension-file)
+lehetővé teszik számodra a futtatandó programok meghatározását, a
+kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
+futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
+szeretnél vele csinálni.
+
+A
+**Fájltípus színkiemelés szerkesztése**
+parancs azt a fájlt nyitja meg, amely megadja, hogy a panel mely neveket és
+mely fájltípusokat milyen színnel mutatja, lásd
+[Fájlnevek kiemelése](#filenames-highlight).
 
 A
 [Beállítások mentése](#save-setup)
@@ -2156,6 +2150,19 @@ amelyek a
 könyvtárban vannak; a kiválasztott azonnal életbe lép. A skinek felépítését az angol kézikönyv
 [Skins](mcommander.md#skins)
 szakasza írja le.
+
+### Társítások <a id="edit-extension-file"></a>
+
+Ez az
+*~/.config/mc6/extensions.ini*
+szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Beállítások mentése <a id="save-setup"></a>
 

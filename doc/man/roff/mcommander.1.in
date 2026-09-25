@@ -1577,13 +1577,6 @@ The
 command shows a dialog window with the list of currently running
 internal editors, viewers and other M\-Commander modules that support this mode.
 
-.PP
-The
-"Edit extension file"
-command allows you to specify programs to executed when you try to
-execute, view, edit and do a bunch of other thing on files
-with certain extensions (filename endings).
-
 .SS Directory Tree
 .PP
 The Directory Tree command shows a tree figure of the directories. You
@@ -1853,18 +1846,6 @@ This makes cd to often used directories faster. You may consider using the
 CDPATH variable as described in
 internal cd command
 description.
-
-.SS Edit Extension File
-.PP
-This will invoke your editor on the file
-\fI~/.config/mc6/extensions.ini.\fP
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Background Jobs
 .PP
@@ -2202,6 +2183,20 @@ The
 Manage plugins
 command lists the plugins that are loaded, switches one off and opens its
 settings.
+
+.PP
+The
+"Edit extension file"
+command allows you to specify programs to executed when you try to
+execute, view, edit and do a bunch of other thing on files
+with certain extensions (filename endings).
+
+.PP
+The
+\fBEdit highlighting group file\fP
+command opens the file that says which names and which file types the panel
+shows in which color, see
+Filenames Highlight\&.
 
 .PP
 The
@@ -2735,6 +2730,18 @@ opens for the line the cursor is in. Enter takes the entry the cursor is on
 into the line, Esc leaves the line as it was, and
 \fBF8, Del\fP
 removes the entry the cursor is on from the history.
+
+.SS Edit Extension File
+.PP
+This will invoke your editor on the file
+\fI~/.config/mc6/extensions.ini.\fP
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Save Setup
 .PP

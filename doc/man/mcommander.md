@@ -1339,12 +1339,6 @@ The
 command shows a dialog window with the list of currently running
 internal editors, viewers and other M-Commander modules that support this mode.
 
-The
-["Edit extension file"](#edit-extension-file)
-command allows you to specify programs to executed when you try to
-execute, view, edit and do a bunch of other thing on files
-with certain extensions (filename endings).
-
 ### Directory Tree
 
 The Directory Tree command shows a tree figure of the directories. You
@@ -1572,18 +1566,6 @@ This makes cd to often used directories faster. You may consider using the
 CDPATH variable as described in
 [internal cd command](#the-cd-internal-command)
 description.
-
-### Edit Extension File
-
-This will invoke your editor on the file
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Background Jobs
 
@@ -1877,6 +1859,18 @@ The
 [Manage plugins](#panel-plugins)
 command lists the plugins that are loaded, switches one off and opens its
 settings.
+
+The
+["Edit extension file"](#edit-extension-file)
+command allows you to specify programs to executed when you try to
+execute, view, edit and do a bunch of other thing on files
+with certain extensions (filename endings).
+
+The
+**Edit highlighting group file**
+command opens the file that says which names and which file types the panel
+shows in which color, see
+[Filenames Highlight](#filenames-highlight).
 
 The
 [Save setup](#save-setup)
@@ -2338,6 +2332,18 @@ opens for the line the cursor is in. Enter takes the entry the cursor is on
 into the line, Esc leaves the line as it was, and
 **F8, Del**
 removes the entry the cursor is on from the history.
+
+### Edit Extension File
+
+This will invoke your editor on the file
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Save Setup
 

@@ -1169,11 +1169,6 @@ Il comando
 permette di eseguire un coamndo esterno e di mettere il risultato nel pannello
 corrente.
 
-Il comando
-[modifica file estensioni](#edit-extension-file)
-permette di specificare i programmi che devono essere eseguiti quando
-si prova ad eseguire, visualizzare, modificare e un mucchio di altre
-cose, file con una specifica estensione (la fine del nome del file).
 ### Albero directory <a id="directory-tree"></a>
 
 Il comando albero directory mostra una rappresentazione ad albero delle
@@ -1394,18 +1389,6 @@ Destra, Sin  entra in un gruppo ed esce da esso
 Questo rende più veloce il cd verso directory usate spesso. Considera l'uso
 della variabile CDPATH come descritto in
 [comando cd interno](#the-cd-internal-command).
-
-### Modifica file estensioni <a id="edit-extension-file"></a>
-
-Questo comando invocherà l'editor sul file
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Processi in background <a id="background-jobs"></a>
 
@@ -1695,6 +1678,18 @@ mantiene quelle con cui è stato aperto.
 Il comando
 [gestione dei componenti](#panel-plugins)
 elenca i componenti caricati, ne disattiva uno e ne apre le impostazioni.
+
+Il comando
+[modifica file estensioni](#edit-extension-file)
+permette di specificare i programmi che devono essere eseguiti quando
+si prova ad eseguire, visualizzare, modificare e un mucchio di altre
+cose, file con una specifica estensione (la fine del nome del file).
+
+Il comando
+**Modifica file gruppo di evidenziazione**
+apre il file che dice quali nomi e quali tipi di file il pannello mostra con
+quale colore, vedere
+[Evidenziazione dei nomi](#filenames-highlight).
 
 Il comando
 [salva configurazione](#save-setup)
@@ -2138,6 +2133,18 @@ quella scelta entra in vigore subito. La struttura delle skin è descritta
 nella sezione
 [Skins](mcommander.md#skins)
 del manuale inglese.
+
+### Modifica file estensioni <a id="edit-extension-file"></a>
+
+Questo comando invocherà l'editor sul file
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Salva configurazione <a id="save-setup"></a>
 

@@ -1305,11 +1305,6 @@ permite acceder con facilidad a directorios y sitios utilizados con frecuencia.
 nos permite ejecutar un programa externo, y llevar la salida de ese
 programa al panel actual.
 
-[Editar el archivo de extensiones](#edit-extension-file)
-nos permite especificar los programas a ejecutar para intentar
-ejecutar, ver, editar y realizar un montón de cosas sobre archivos
-con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
-de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
 ### Árbol de Directorios <a id="directory-tree"></a>
 
 El comando Árbol de directorios muestra una figura con la estructura de los directorios.
@@ -1532,19 +1527,6 @@ Esto hace más rápido el posicionamiento en los directorios usados
 frecuentemente. Deberíamos considerar también el uso de la variable CDPATH
 tal y como se describe en
 [comando cd interno](#the-cd-internal-command).
-
-### Editar el Archivo de Extensiones <a id="edit-extension-file"></a>
-
-Abre el archivo
-*~/.config/mc6/extensions.ini*
-en nuestro editor.
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
 
 ### Trabajos en Segundo Plano <a id="background-jobs"></a>
 
@@ -1828,6 +1810,18 @@ en pantalla conserva las que tenía al abrirse.
 
 [Administrar complementos](#panel-plugins)
 lista los complementos cargados, permite desactivar uno y abre sus ajustes.
+
+[Editar el archivo de extensiones](#edit-extension-file)
+nos permite especificar los programas a ejecutar para intentar
+ejecutar, ver, editar y realizar un montón de cosas sobre archivos
+con ciertas extensiones (terminaciones de archivo). Por ejemplo, asociar la extensión
+de los archivos de audio de SUN (.au) con el programa reproductor adecuado.
+
+La orden
+**editar Grupos de resaltado**
+abre el archivo que dice qué nombres y qué tipos de archivo muestra el panel en
+qué color, ver
+[Resaltado de nombres](#filenames-highlight).
 
 [Guardar Configuración](#save-setup)
 guarda los valores actuales de los menús Izquierdo, Derecho y Opciones.
@@ -2238,6 +2232,19 @@ abre para la línea donde está el cursor. Enter pone en la línea la entrada
 donde está el cursor, Esc deja la línea como estaba y
 **F8, Del**
 borra esa entrada de la historia.
+
+### Editar el Archivo de Extensiones <a id="edit-extension-file"></a>
+
+Abre el archivo
+*~/.config/mc6/extensions.ini*
+en nuestro editor.
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
 
 ### Guardar Configuración <a id="save-setup"></a>
 

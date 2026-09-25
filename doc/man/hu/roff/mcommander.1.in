@@ -1388,14 +1388,6 @@ Parancskimenet panel
 lehetővé teszi számodra külső parancsok futtatását, majd a program
 tartalmát a jellegi panelbe teszi.
 
-.PP
-A
-Társítások
-lehetővé teszik számodra a futtatandó programok meghatározását, a
-kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
-futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
-szeretnél vele csinálni.
-
 .SS Könyvtárfa
 .PP
 A Könyvtárfa parancs fa formában mutatja meg a könyvtárakat. Ebből a
@@ -1661,19 +1653,6 @@ Ezzel a gyakran használt könyvtárakhoz ugorhatunk. A CDPATH változó
 használatát megtekintheted a
 A cd belső parancs
 leírásánál.
-
-.SS Társítások
-.PP
-Ez az
-\fI~/.config/mc6/extensions.ini\fP
-szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
-If this file does not exist and you are not root, it will be copied from
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-If you are root, you can choose the file to edit: user's
-\fI~/.config/mc6/extensions.ini\fP
-or system\-wide
-\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
-The format of this file is described in detail in it.
 
 .SS Háttérmunkák
 .PP
@@ -2013,6 +1992,21 @@ A
 Bővítmények kezelése
 felsorolja a betöltött bővítményeket, ki tud kapcsolni egyet, és megnyitja a
 beállításait.
+
+.PP
+A
+Társítások
+lehetővé teszik számodra a futtatandó programok meghatározását, a
+kiválasztott fájl kiterjesztésének (fájlnév vége) megfelelően akkor, ha
+futtatod, megtekinted a tartalmát, átszerkeszted vagy más egyéb dolgot
+szeretnél vele csinálni.
+
+.PP
+A
+\fBFájltípus színkiemelés szerkesztése\fP
+parancs azt a fájlt nyitja meg, amely megadja, hogy a panel mely neveket és
+mely fájltípusokat milyen színnel mutatja, lásd
+Fájlnevek kiemelése\&.
 
 .PP
 A
@@ -2516,6 +2510,19 @@ amelyek a
 könyvtárban vannak; a kiválasztott azonnal életbe lép. A skinek felépítését az angol kézikönyv
 Skins
 szakasza írja le.
+
+.SS Társítások
+.PP
+Ez az
+\fI~/.config/mc6/extensions.ini\fP
+szerkesztéséhez segítségül fogja hívni a szövegszerkesztődet.
+If this file does not exist and you are not root, it will be copied from
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+If you are root, you can choose the file to edit: user's
+\fI~/.config/mc6/extensions.ini\fP
+or system\-wide
+\fI{{sysconfdir}}/mcommander/extensions.ini.\fP
+The format of this file is described in detail in it.
 
 .SS Beállítások mentése
 .PP

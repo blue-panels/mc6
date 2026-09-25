@@ -1101,10 +1101,6 @@ Komenda panelu zewnętrznego (External panelize) pozwala na wykonywania program�
 zewnętrznych i ustawienia zawartości paneli na to co zwróciła wywołana
 komenda.
 
-Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
-programów, które mają być używane do wykonywania plików z podanymi
-rozszerzeniami.
-
 ### Drzewo katalogów (Directory Tree) <a id="directory-tree"></a>
 
 Możesz wybierać katalogi z drzewa katalogów i M-Commander przejdzie do
@@ -1318,19 +1314,6 @@ Right, Left  wchodzi do grupy i z niej wychodzi
 Dzięki temu przechodzenie do często używanych katalogów jest szybsze. Można
 też skorzystać ze zmiennej CDPATH, opisanej przy
 [wewnętrznym poleceniu cd](#the-cd-internal-command).
-
-### Edycja rozszerzeń pliów (Edit Extension File) <a id="edit-extension-file"></a>
-
-Ta komenda wywoła twój edytor na plik
-*~/.config/mc6/extensions.ini.*
-If this file does not exist and you are not root, it will be copied from
-*{{sysconfdir}}/mcommander/extensions.ini.*
-If you are root, you can choose the file to edit: user's
-*~/.config/mc6/extensions.ini*
-or system-wide
-*{{sysconfdir}}/mcommander/extensions.ini.*
-The format of this file is described in detail in it.
-PP
 
 ### Prace w tle (Background jobs) <a id="background-jobs"></a>
 
@@ -1603,6 +1586,16 @@ otwarte zostaje przy tych, z którymi je otwarto.
 Polecenie
 [Zarządzanie wtyczkami](#panel-plugins)
 wypisuje wczytane wtyczki, wyłącza wybraną i otwiera jej ustawienia.
+
+Komenda edycji rozszerzeń plików (Edit Extension File) pozwala na własny wybór
+programów, które mają być używane do wykonywania plików z podanymi
+rozszerzeniami.
+
+Komenda
+**Modyfikuj plik wyróżniania grup**
+otwiera plik, który mówi, jakie nazwy i jakie typy plików panel pokazuje jakim
+kolorem, zobacz
+[Podświetlanie nazw plików](#filenames-highlight).
 
 Polecenie
 [Zapisz ustawienia](#save-setup)
@@ -2016,6 +2009,19 @@ i
 wybrana zaczyna obowiązywać od razu. Budowę skór opisuje dział
 [Skins](mcommander.md#skins)
 podręcznika angielskiego.
+
+### Edycja rozszerzeń pliów (Edit Extension File) <a id="edit-extension-file"></a>
+
+Ta komenda wywoła twój edytor na plik
+*~/.config/mc6/extensions.ini.*
+If this file does not exist and you are not root, it will be copied from
+*{{sysconfdir}}/mcommander/extensions.ini.*
+If you are root, you can choose the file to edit: user's
+*~/.config/mc6/extensions.ini*
+or system-wide
+*{{sysconfdir}}/mcommander/extensions.ini.*
+The format of this file is described in detail in it.
+PP
 
 ### Zapisz ustawienia (Save Setup) <a id="save-setup"></a>
 
