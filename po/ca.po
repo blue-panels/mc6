@@ -19,11 +19,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:35+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
-"Language-Team: Catalan <https://translate.codeberg.org/projects/mc6/mc6/ca/>"
-"\n"
+"Language-Team: Catalan <https://translate.codeberg.org/projects/mc6/mc6/ca/"
+">\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -437,9 +437,6 @@ msgstr "Compara els directoris"
 msgid "Compare files (diff)"
 msgstr "C&ompara els fitxers"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -513,6 +510,19 @@ msgstr "Usa el pla&fó en el mode ordenació"
 
 msgid "Panel options"
 msgstr "Opcions del plafó"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Opcions del plafó"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Opcions extra de les diferències"
+
+msgid "Editor options"
+msgstr "Opcions de l'editor"
 
 msgid "Quick cd"
 msgstr "Canvia ràpidament de directori"
@@ -1228,6 +1238,11 @@ msgstr ""
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "No s'ha pogut traduir de %s a %s"
+
 msgid "FATAL: not a directory:"
 msgstr "FATAL: no és un directori:"
 
@@ -1910,8 +1925,8 @@ msgid ""
 "as tickets at %s\n"
 msgstr ""
 "\n"
-"Si us plau, envieu qualsevol informe d'error (incloent-hi la sortida de «%s -"
-"V»)\n"
+"Si us plau, envieu qualsevol informe d'error (incloent-hi la sortida de «%s "
+"-V»)\n"
 "com a entrades a %s\n"
 
 msgid "Main options"
@@ -3164,9 +3179,6 @@ msgstr "Desfés en &grup"
 msgid "Word wrap line length:"
 msgstr "Llargada de l'ajust de línia:"
 
-msgid "Editor options"
-msgstr "Opcions de l'editor"
-
 msgid "In se&lection"
 msgstr "A la se&lecció"
 
@@ -3510,6 +3522,11 @@ msgstr "&Intercanvia simple"
 msgid "A&uto save panels setup"
 msgstr "Desa &automàticament la configuració del plafó"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "directoris"
+
 msgid "Navigation"
 msgstr "Navegació"
 
@@ -3555,6 +3572,38 @@ msgstr ""
 "el contingut exacte del directori. En aquest cas,\n"
 "haureu de fer una recàrrega manual del directori.\n"
 "Per als detalls, vegeu la pàgina man."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "Ressaltat de la sinta&xi"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Desa la &posició del fitxer"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Introduïu el nom del fitxer:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "Llistat c&urt de fitxers:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Llistat c&omplet de fitxers"
@@ -3607,12 +3656,6 @@ msgstr "Confirmation|Neteja l'&historial"
 
 msgid "Confirmation"
 msgstr "Confirmació"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Temps d'espera per a alliberar els VFS (seg):"
-
-msgid "Virtual File System Setting"
-msgstr "Arranjament del sistema de fitxers virtual"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Nom del fitxer existent (nom de fitxer on apuntarà l'enllaç):"
@@ -4575,9 +4618,6 @@ msgstr "Vista &filtrada"
 msgid "&Copy"
 msgstr "&Copia"
 
-msgid "C&hmod"
-msgstr "Ca&nvia els permisos"
-
 msgid "&Link"
 msgstr "En&llaça"
 
@@ -4589,15 +4629,6 @@ msgstr "Enllaç sim&bòlic relatiu"
 
 msgid "Edit s&ymlink"
 msgstr "Edi&ta l'enllaç simbòlic"
-
-msgid "Ch&own"
-msgstr "Can&via el propietari"
-
-msgid "&Advanced chown"
-msgstr "C&anvi avançat del propietari"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Reanomena/Mou"
@@ -4619,6 +4650,26 @@ msgstr "&Inverteix la selecció"
 
 msgid "E&xit"
 msgstr "S&urt"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "Ca&nvia els permisos"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Can&via el propietari"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "C&anvi avançat del propietari"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "Menú d'&usuari"
@@ -4668,15 +4719,6 @@ msgstr "Tasques en se&gon pla"
 msgid "Screen lis&t"
 msgstr "Llis&ta les pantalles"
 
-msgid "Edit &extension file"
-msgstr "Edita el fitxer d'&extensions"
-
-msgid "Edit &menu file"
-msgstr "Edita el fitxer de &menús"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Edita el fitxer dels grups de &ressaltat"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4709,12 +4751,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Opcions extra de les diferències"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Opcions del &plafó..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Opcions de l'editor"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Opcions del &plafó..."
 
-msgid "&Virtual FS..."
-msgstr "Sistema de fitxers &virtual..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Edita el fitxer d'&extensions"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Edita el fitxer dels grups de &ressaltat"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Atributs: %s"
 
 msgid "Panels:"
 msgstr "Plafons:"
@@ -5124,11 +5191,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|Menú"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Cerca"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "La shell ja està executant una ordre"
@@ -5449,6 +5511,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5462,6 +5529,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5817,30 +5887,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Ha fallat la lectura"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "Scripts i connectors VFS:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "S'ha produït un error desconegut en el procés fill"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Estableix"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Ha fallat la lectura"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6645,23 +6725,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Contrasenya:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Confirmació"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "Format del &llistat..."
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Codificació..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "S'ha produït un error"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "FTPFS: connectat"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-#, fuzzy
-#| msgid "shell: Reading directory %s..."
-msgid "Authenticating and probing directory..."
-msgstr "intèrpret d'ordres: S'està llegint el directori %s..."
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6679,10 +6779,18 @@ msgstr "Contrasenya:"
 msgid "Retrying with password..."
 msgstr "intèrpret d'ordres: S'està enviant la contrasenya..."
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Ha fallat la lectura"
+#| msgid ""
+#| "Cannot change directory to\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr ""
+"No s'ha pogut canviar el directori a\n"
+"%s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7729,19 +7837,19 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
+msgstr ""
+"No s'ha pogut eliminar el fitxer\n"
+"%s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP amb la màquina"
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Cannot change directory to\n"
-#| "%s"
-msgid "Cannot connect to %s:%d"
-msgstr ""
-"No s'ha pogut canviar el directori a\n"
-"%s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7783,10 +7891,6 @@ msgstr "intèrpret d'ordres: S'està enviant la contrasenya..."
 msgid "SFTP password"
 msgstr "Contrasenya:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7800,9 +7904,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7843,6 +7944,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Permisos"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9216,8 +9320,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Ski&n editor..."
+msgstr "Amb editor integrat"
 
 #, fuzzy
 #| msgid "With builtin editor"
@@ -9919,15 +10025,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -10043,8 +10149,20 @@ msgstr "Cerca finalitzada"
 msgid "Continue from beginning?"
 msgstr "Voleu continuar des del començament?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open %s archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"No s'ha pogut obrir l'arxiu %s\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -10122,6 +10240,33 @@ msgstr "No s'ha pogut inserir el fitxer"
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
 "No s'ha pogut obtenir una còpia local de /ftp://algun.amfitrió/editam.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Temps d'espera per a alliberar els VFS (seg):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Arranjament del sistema de fitxers virtual"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Edita el fitxer de &menús"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Sistema de fitxers &virtual..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Cerca"
+
+#, fuzzy
+#~| msgid "shell: Reading directory %s..."
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "intèrpret d'ordres: S'està llegint el directori %s..."
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Ha fallat la lectura"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Habilita el suport de subintèrprets (per defecte)"
@@ -10564,9 +10709,6 @@ msgstr ""
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "FTPFS: enviant compte d'usuari"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "FTPFS: connectat"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

@@ -17,11 +17,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:56+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
-"Language-Team: Japanese <https://translate.codeberg.org/projects/mc6/mc6/ja/>"
-"\n"
+"Language-Team: Japanese <https://translate.codeberg.org/projects/mc6/mc6/ja/"
+">\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -419,9 +419,6 @@ msgstr "ディレクトリーの比較"
 msgid "Compare files (diff)"
 msgstr "ファイルの比較(&O)"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -493,6 +490,19 @@ msgstr "パネルの並び替えモードを使う(&D)"
 
 msgid "Panel options"
 msgstr "パネル オプション"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "パネル オプション"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Diff viewer options"
+msgstr "パネル オプション"
+
+msgid "Editor options"
+msgstr "編集のオプション"
 
 msgid "Quick cd"
 msgstr "クイックcd"
@@ -1168,13 +1178,19 @@ msgstr ""
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "%s から %s へ変換することが出来ません"
+
 msgid "FATAL: not a directory:"
 msgstr "致命的なエラー:ディレクトリではありません:"
 
 msgid ""
 "Number out of range (should be in byte range, 0 <= n <= 0xFF, expressed in "
 "hex)"
-msgstr "範囲外の数（バイト範囲、0 <= n <= 0xff、16進数で表される必要があります）"
+msgstr ""
+"範囲外の数（バイト範囲、0 <= n <= 0xff、16進数で表される必要があります）"
 
 msgid "Invalid character"
 msgstr "不正な文字"
@@ -3018,9 +3034,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr ""
 
-msgid "Editor options"
-msgstr "編集のオプション"
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3347,6 +3360,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "ディレクトリ"
+
 msgid "Navigation"
 msgstr "ナビゲーション"
 
@@ -3387,6 +3405,36 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "文法ハイライト(&S)"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "ファイルの位置の保存(&P)"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "ファイル名の入力:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3440,12 +3488,6 @@ msgstr ""
 
 msgid "Confirmation"
 msgstr "確認"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
-msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "存在するファイル名(リンクのポイント先):"
@@ -4353,9 +4395,6 @@ msgstr ""
 msgid "&Copy"
 msgstr "コピー(&C)"
 
-msgid "C&hmod"
-msgstr "パーミッション設定(&H)"
-
 msgid "&Link"
 msgstr "リンク(&L)"
 
@@ -4367,15 +4406,6 @@ msgstr ""
 
 msgid "Edit s&ymlink"
 msgstr "シンボリックリンクの編集(&Y)"
-
-msgid "Ch&own"
-msgstr "所有者変更(&O)"
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "Cha&ttr"
-msgstr ""
 
 msgid "&Rename/Move"
 msgstr "名称変更/移動(&R)"
@@ -4397,6 +4427,24 @@ msgstr "選択の反転(&I)"
 
 msgid "E&xit"
 msgstr "終了(&X)"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "パーミッション設定(&H)"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "所有者変更(&O)"
+
+#, fuzzy
+#| msgid "&Cancel"
+msgid "&Advanced chown..."
+msgstr "キャンセル(&C)"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr "ユーザーのメニュー(&U)"
@@ -4446,15 +4494,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr "画面の一覧(&T)"
 
-msgid "Edit &extension file"
-msgstr "拡張ファイルを編集(&E)"
-
-msgid "Edit &menu file"
-msgstr "メニューファイル編集(&M)"
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4488,11 +4527,36 @@ msgstr ""
 
 #, fuzzy
 #| msgid "&Panel options..."
+msgid "&Diff viewer options..."
+msgstr "パネルのオプション(&P)"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "パネルのオプション(&P)"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "編集のオプション"
+
+#, fuzzy
+#| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "パネルのオプション(&P)"
 
-msgid "&Virtual FS..."
-msgstr "仮想FS(&V)..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "拡張ファイルを編集(&E)"
+
+msgid "Edit hi&ghlighting group file"
+msgstr ""
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "属性: %s"
 
 msgid "Panels:"
 msgstr "パネル:"
@@ -4896,11 +4960,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ボタンバー | プルダウン "
 
 #, fuzzy
-#| msgid "ButtonBar|Mark"
-msgid "ButtonBar|Clear"
-msgstr "ボタンバー|マーク"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "シェルはすでにコマンドを実行しています"
@@ -5212,6 +5271,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5225,6 +5289,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5568,19 +5635,13 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-msgid "Lua action failed"
+msgid "Lua"
 msgstr ""
 
 #, fuzzy
@@ -5588,7 +5649,21 @@ msgstr ""
 msgid "Unknown error"
 msgstr "<不明なユーザ>"
 
-msgid "Lua"
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "設定(&S)"
+
+msgid "Lua action failed"
 msgstr ""
 
 msgid "The selected script has no runnable actions."
@@ -6365,21 +6440,41 @@ msgstr ""
 msgid "Pass:"
 msgstr "パスワード:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "確認"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+msgid "Asking for TLS..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "エンコード(&E)..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "エラー"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: ログインしました"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6395,8 +6490,15 @@ msgid "Retrying with password..."
 msgstr ""
 
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot chattr\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr "%s への chattr ができません"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7423,17 +7525,17 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot create link\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
+msgstr "link %s を作成できません"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "機器とのSFTP"
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Cannot chattr\n"
-#| "%s"
-msgid "Cannot connect to %s:%d"
-msgstr "%s への chattr ができません"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7470,10 +7572,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "パスワード:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7482,9 +7580,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7523,6 +7618,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "アクセス権"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8777,8 +8875,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Ski&n editor..."
+msgstr "組込エディタを使用"
 
 #, fuzzy
 #| msgid "With builtin editor"
@@ -9446,15 +9546,15 @@ msgid "ButtonBar|Format"
 msgstr ""
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9565,8 +9665,20 @@ msgstr "検索終了"
 msgid "Continue from beginning?"
 msgstr "初めから続けますか?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"cpio アーカイブを開けません\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9649,6 +9761,17 @@ msgstr "ファイルの挿入ができません"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#~ msgid "Edit &menu file"
+#~ msgstr "メニューファイル編集(&M)"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "仮想FS(&V)..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Mark"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ボタンバー|マーク"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "サブシェルのサポート (デフォルト)"
@@ -9888,9 +10011,6 @@ msgstr ""
 
 #~ msgid "Account:"
 #~ msgstr "アカウント:"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: ログインしました"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

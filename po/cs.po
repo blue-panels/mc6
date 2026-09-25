@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:36+0000\n"
 "Last-Translator: Betacart <betacart@noreply.codeberg.org>\n"
 "Language-Team: Czech <https://translate.codeberg.org/projects/mc6/mc6/cs/>\n"
@@ -328,9 +328,6 @@ msgstr "Porovnat složky"
 msgid "Compare files (diff)"
 msgstr "Porovnat soubory (diff)"
 
-msgid "VFS settings"
-msgstr "Nastavení VFS"
-
 msgid "Confirmation settings"
 msgstr "Nastavení potvrzování"
 
@@ -381,6 +378,19 @@ msgstr "Režim výpisu panelu"
 
 msgid "Panel options"
 msgstr "Volby panelu"
+
+#, fuzzy
+#| msgid "General options"
+msgid "Viewer options"
+msgstr "Obecné volby"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Další nastavení nástroje diff"
+
+msgid "Editor options"
+msgstr "Nastavení editoru"
 
 msgid "Quick cd"
 msgstr "Rychlé \"cd\""
@@ -1064,6 +1074,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Nebylo možné převést z %s na %s"
 
 msgid "FATAL: not a directory:"
 msgstr "FATÁLNÍ: není složkou:"
@@ -3019,9 +3034,6 @@ msgstr "&Skupinové vzetí zpět"
 msgid "Word wrap line length:"
 msgstr "Délka řádku pro zalomení slova:"
 
-msgid "Editor options"
-msgstr "Nastavení editoru"
-
 msgid "In se&lection"
 msgstr "&Ve výběru"
 
@@ -3365,6 +3377,11 @@ msgstr "&Jednoduché prohození"
 msgid "A&uto save panels setup"
 msgstr "A&utomatické ukládání nastavení panelů"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "složek"
+
 msgid "Navigation"
 msgstr "Navigace"
 
@@ -3410,6 +3427,38 @@ msgstr ""
 "složky přesně odpovídat obsahu panelu. V tom případě\n"
 "použijte ruční načtení obsahu složky.\n"
 "Podrobnosti se dozvíte v manuálové stránce."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "Zvýraznění synta&xe"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Uložit &pozici v souboru"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Zadejte název souboru:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Stručný seznam souborů:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Ú&plný seznam souborů"
@@ -3462,12 +3511,6 @@ msgstr "Confirmation|Smazání &historie"
 
 msgid "Confirmation"
 msgstr "Potvrzování"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Časový limit pro uvolnění VFS souborových systémů (sec):"
-
-msgid "Virtual File System Setting"
-msgstr "Nastavení virtuálního systému souborů"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Existující soubor (na který bude symb. odkaz mířit):"
@@ -4507,9 +4550,6 @@ msgstr "&Filtrovaný pohled"
 msgid "&Copy"
 msgstr "&Kopírovat"
 
-msgid "C&hmod"
-msgstr "&Změna práv"
-
 msgid "&Link"
 msgstr "O&dkaz"
 
@@ -4521,15 +4561,6 @@ msgstr "Relativní symbolic&ký odkaz"
 
 msgid "Edit s&ymlink"
 msgstr "Upravit s&ymbolický odkaz"
-
-msgid "Ch&own"
-msgstr "Změna &vlastníka"
-
-msgid "&Advanced chown"
-msgstr "Rozšířená změn&a práv/vlastníka"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "Přej&menovat/přesunout"
@@ -4551,6 +4582,26 @@ msgstr "Převrát&it výběr"
 
 msgid "E&xit"
 msgstr "Ukonč&it"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "&Změna práv"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Změna &vlastníka"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Rozšířená změn&a práv/vlastníka"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "&Uživatelská nabídka"
@@ -4600,15 +4651,6 @@ msgstr "Úlohy na po&zadí"
 msgid "Screen lis&t"
 msgstr "Seznam obrazove&k"
 
-msgid "Edit &extension file"
-msgstr "Upravit akc&e k příponám"
-
-msgid "Edit &menu file"
-msgstr "Upravit uživatelskou &nabídku"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Upravit z&výrazňování skupin"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4641,12 +4683,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Další nastavení nástroje diff"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Nastavení &panelu…"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Nastavení editoru"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Nastavení &panelu…"
 
-msgid "&Virtual FS..."
-msgstr "&Virtuální souborový systém…"
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Upravit akc&e k příponám"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Upravit z&výrazňování skupin"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Atributy: %s"
 
 msgid "Panels:"
 msgstr "Panely:"
@@ -5064,11 +5131,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|Hl. nabíd"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Hledat"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "V shellu je už spuštěný příkaz"
@@ -5389,6 +5451,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5402,6 +5469,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5768,30 +5838,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Čtení se nezdařilo"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "VFS zásuvné moduly a skripty:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Neznámá chyba v podřízeném procesu"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "VFS settings"
+msgid "&Settings"
+msgstr "Nastavení VFS"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Čtení se nezdařilo"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6596,23 +6676,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Heslo:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Potvrzování"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Formát výpisu…"
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Kódování…"
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Chyba"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: přihlášeni"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-#, fuzzy
-#| msgid "shell: Reading directory %s..."
-msgid "Authenticating and probing directory..."
-msgstr "shell: Načítání složky %s…"
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6630,10 +6730,18 @@ msgstr "Heslo:"
 msgid "Retrying with password..."
 msgstr "shell: Odesílání hesla…"
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Čtení se nezdařilo"
+#| msgid ""
+#| "Cannot change directory to\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr ""
+"Nebylo možné přejít do složky\n"
+"%s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7689,19 +7797,19 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
+msgstr ""
+"Nebylo možné odebrat soubor\n"
+"%s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP spojení na počítač"
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Cannot change directory to\n"
-#| "%s"
-msgid "Cannot connect to %s:%d"
-msgstr ""
-"Nebylo možné přejít do složky\n"
-"%s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7743,10 +7851,6 @@ msgstr "shell: Odesílání hesla…"
 msgid "SFTP password"
 msgstr "Heslo:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7760,9 +7864,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7803,6 +7904,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Právo"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9186,8 +9290,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Ski&n editor..."
+msgstr "S vestavěným editorem"
 
 #, fuzzy
 #| msgid "With builtin editor"
@@ -9891,15 +9997,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Formát"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -10018,8 +10124,20 @@ msgstr "Hledání dokončeno"
 msgid "Continue from beginning?"
 msgstr "Pokračovat od začátku?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Nebylo možné otevřít zdrojový soubor\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -10100,6 +10218,33 @@ msgstr "Chyba při vkládání souboru"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Nedaří získat místní kopii souboru /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Časový limit pro uvolnění VFS souborových systémů (sec):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Nastavení virtuálního systému souborů"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Upravit uživatelskou &nabídku"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtuální souborový systém…"
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Hledat"
+
+#, fuzzy
+#~| msgid "shell: Reading directory %s..."
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "shell: Načítání složky %s…"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Čtení se nezdařilo"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Zapíná podporu podřízeného shellu (výchozí)"
@@ -10556,9 +10701,6 @@ msgstr "Nedaří získat místní kopii souboru /ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: odesílá se uživatelský účet"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: přihlášeni"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

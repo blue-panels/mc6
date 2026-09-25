@@ -21,7 +21,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:21+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Chinese (Simplified Han script) <https://"
@@ -435,9 +435,6 @@ msgstr "比较目录"
 msgid "Compare files (diff)"
 msgstr "比较文件(&O)"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -511,6 +508,19 @@ msgstr "使用面板排序模式(&D)"
 
 msgid "Panel options"
 msgstr "面板选项"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "面板选项"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff 其它选项"
+
+msgid "Editor options"
+msgstr "编辑器选项"
 
 msgid "Quick cd"
 msgstr "快速切换目录"
@@ -1217,6 +1227,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "无法从 %s 翻译到 %s"
 
 msgid "FATAL: not a directory:"
 msgstr "严重错误: 不是一个目录: "
@@ -3104,9 +3119,6 @@ msgstr "组撤消(&G)"
 msgid "Word wrap line length:"
 msgstr "换行位置: "
 
-msgid "Editor options"
-msgstr "编辑器选项"
-
 msgid "In se&lection"
 msgstr "在选择区域(&L)"
 
@@ -3438,6 +3450,11 @@ msgstr "简单交换(&W)"
 msgid "A&uto save panels setup"
 msgstr "自动保存面板设置(&U)"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "目录"
+
 msgid "Navigation"
 msgstr "导航"
 
@@ -3482,6 +3499,38 @@ msgstr ""
 "使用快速重载选项可能无法反映目录的真实内容。\n"
 "在这种情况下，您需要手工刷新目录的内容。\n"
 "请参考手册获得详细的信息。"
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "语法突出显示(&X)"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "保存文件位置(&P)"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "输入文件名: "
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "简明文件列表(&B):"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "完整文件列表(&F)"
@@ -3534,12 +3583,6 @@ msgstr "Confirmation|清除历史(&H)"
 
 msgid "Confirmation"
 msgstr "确认"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "释放 VFS 超时(秒): "
-
-msgid "Virtual File System Setting"
-msgstr "虚拟文件系统设置"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "已存在文件名(文件名符号链接指向): "
@@ -4464,9 +4507,6 @@ msgstr "过滤视图(&F)"
 msgid "&Copy"
 msgstr "复制(&C)"
 
-msgid "C&hmod"
-msgstr "更改文件权限(&H)"
-
 msgid "&Link"
 msgstr "链接(&L)"
 
@@ -4478,15 +4518,6 @@ msgstr "相关符号链接(&K)"
 
 msgid "Edit s&ymlink"
 msgstr "编辑符号链接(&Y)"
-
-msgid "Ch&own"
-msgstr "更改文件所有者(&O)"
-
-msgid "&Advanced chown"
-msgstr "高级 chown (&A)"
-
-msgid "Cha&ttr"
-msgstr ""
 
 msgid "&Rename/Move"
 msgstr "更名/移动(&R)"
@@ -4508,6 +4539,24 @@ msgstr "反选(&I)"
 
 msgid "E&xit"
 msgstr "退出(&X)"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "更改文件权限(&H)"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "更改文件所有者(&O)"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "高级 chown (&A)"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr "用户菜单(&U)"
@@ -4557,15 +4606,6 @@ msgstr "后台任务(&B)"
 msgid "Screen lis&t"
 msgstr "屏幕列表(&T)"
 
-msgid "Edit &extension file"
-msgstr "扩展文件编辑(&E)"
-
-msgid "Edit &menu file"
-msgstr "菜单文件编辑(&M)"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "编辑突出显示组文件(&G)"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4598,12 +4638,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff 其它选项"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "面板选项(&P)..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "编辑器选项"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "面板选项(&P)..."
 
-msgid "&Virtual FS..."
-msgstr "虚拟文件系统(&V)..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "扩展文件编辑(&E)"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "编辑突出显示组文件(&G)"
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Attributes"
+msgstr "仅文件(&F)"
 
 msgid "Panels:"
 msgstr "面板: "
@@ -5009,11 +5074,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|菜单"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|搜索"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "Shell 正在运行一个命令"
@@ -5327,6 +5387,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5340,6 +5405,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5685,30 +5753,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "读失败"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "VFS 插件和脚本: "
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "子进程未知错误"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "设置(&S)"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "读失败"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6492,21 +6570,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "密码: "
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "确认"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "列表格式(&L)…"
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "编码(&E)..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "错误"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: 已登录"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6522,10 +6622,14 @@ msgstr "密码: "
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "读失败"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "无法打开文件 %s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7553,15 +7657,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "无法打开文件 %s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP 到主机"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "无法打开文件 %s"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7596,10 +7700,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "密码: "
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7613,9 +7713,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7656,6 +7753,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "权限"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8911,8 +9011,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "菜单编辑"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9591,15 +9693,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|格式化"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9715,8 +9817,20 @@ msgstr "搜索完成"
 msgid "Continue from beginning?"
 msgstr "从头继续搜索?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"无法打开 cpio 档案\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9789,6 +9903,28 @@ msgstr "无法插入文件"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "释放 VFS 超时(秒): "
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "虚拟文件系统设置"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "菜单文件编辑(&M)"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "虚拟文件系统(&V)..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|搜索"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "读失败"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "启用子 shell 支持(默认)"
@@ -10144,9 +10280,6 @@ msgstr "无法获取 /ftp://some.host/editme.txt 的本地副本"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: 正在发送用户账户"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: 已登录"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

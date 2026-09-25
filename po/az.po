@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:31+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Azerbaijani <https://translate.codeberg.org/projects/mc6/mc6/"
@@ -360,9 +360,6 @@ msgstr ""
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confir&m before saving"
 msgid "Confirmation settings"
@@ -425,6 +422,19 @@ msgid "Panel listing mode"
 msgstr ""
 
 msgid "Panel options"
+msgstr ""
+
+#, fuzzy
+#| msgid "Configure options"
+msgid "Viewer options"
+msgstr "Seçənəkləri quraşdır"
+
+#, fuzzy
+#| msgid "Configure options"
+msgid "Diff viewer options"
+msgstr "Seçənəkləri quraşdır"
+
+msgid "Editor options"
 msgstr ""
 
 msgid "Quick cd"
@@ -1005,6 +1015,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "%s %s olaraq çevrilə bilmir"
 
 msgid "FATAL: not a directory:"
 msgstr ""
@@ -2799,9 +2814,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr ""
 
-msgid "Editor options"
-msgstr ""
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3126,6 +3138,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "qovluqlar"
+
 msgid "Navigation"
 msgstr ""
 
@@ -3166,6 +3183,32 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "sinta&X seçilməsi"
+
+msgid "Remember file &position"
+msgstr ""
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+msgid "End of file marker:"
+msgstr ""
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3218,12 +3261,6 @@ msgid "Confirmation|&History cleanup"
 msgstr ""
 
 msgid "Confirmation"
-msgstr ""
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
 msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
@@ -4125,9 +4162,6 @@ msgstr ""
 msgid "&Copy"
 msgstr ""
 
-msgid "C&hmod"
-msgstr ""
-
 msgid "&Link"
 msgstr ""
 
@@ -4138,15 +4172,6 @@ msgid "Relative symlin&k"
 msgstr ""
 
 msgid "Edit s&ymlink"
-msgstr ""
-
-msgid "Ch&own"
-msgstr ""
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "Cha&ttr"
 msgstr ""
 
 msgid "&Rename/Move"
@@ -4168,6 +4193,20 @@ msgid "&Invert selection"
 msgstr ""
 
 msgid "E&xit"
+msgstr ""
+
+msgid "C&hmod..."
+msgstr ""
+
+msgid "Ch&own..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Cancel"
+msgid "&Advanced chown..."
+msgstr "&Ləğv Et"
+
+msgid "Cha&ttr flags..."
 msgstr ""
 
 msgid "&User menu"
@@ -4214,15 +4253,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr ""
 
-msgid "Edit &extension file"
-msgstr "Fayl suf&fikslərini dəyişdir"
-
-msgid "Edit &menu file"
-msgstr "&Menyunu dəyişdir"
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4250,11 +4280,32 @@ msgstr ""
 msgid "Key &sniffer..."
 msgstr ""
 
+msgid "&Diff viewer options..."
+msgstr ""
+
+#, fuzzy
+#| msgid "Configure options"
+msgid "Vie&wer options..."
+msgstr "Seçənəkləri quraşdır"
+
+msgid "&Editor options..."
+msgstr ""
+
 msgid "&Manage plugins..."
 msgstr ""
 
-msgid "&Virtual FS..."
-msgstr "&Virtual DYS (VFS) ..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Fayl suf&fikslərini dəyişdir"
+
+msgid "Edit hi&ghlighting group file"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Size only"
+msgid "&Attributes"
+msgstr "&Böyüklüyünə görə"
 
 msgid "Panels:"
 msgstr ""
@@ -4645,9 +4696,6 @@ msgstr ""
 msgid "ButtonBar|ClrAll"
 msgstr ""
 
-msgid "ButtonBar|Clear"
-msgstr ""
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -4948,6 +4996,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -4961,6 +5014,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5273,19 +5329,13 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-msgid "Lua action failed"
+msgid "Lua"
 msgstr ""
 
 #, fuzzy
@@ -5293,7 +5343,21 @@ msgstr ""
 msgid "Unknown error"
 msgstr "<Namə'lum istifadəçi>"
 
-msgid "Lua"
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Seç"
+
+msgid "Lua action failed"
 msgstr ""
 
 msgid "The selected script has no runnable actions."
@@ -6023,21 +6087,39 @@ msgstr ""
 msgid "Pass:"
 msgstr "Parol :"
 
+msgid "Connected"
+msgstr ""
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+msgid "Asking for TLS..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "&Open file..."
+msgid "Opening %s..."
+msgstr "Fayl &aç..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "XƏTA"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs : girildi "
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6053,8 +6135,13 @@ msgid "Retrying with password..."
 msgstr ""
 
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot open named pipe %s\n"
+msgid "Cannot connect to %s:%d"
+msgstr "%s deyə adlandırılmış borunu aça bilmirəm\n"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -6997,13 +7084,13 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot parse:"
+msgid "Cannot resolve %s: %s"
+msgstr "Daraya bilmədim :"
+
 msgid "SFTP connection"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "Cannot open named pipe %s\n"
-msgid "Cannot connect to %s:%d"
-msgstr "%s deyə adlandırılmış borunu aça bilmirəm\n"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7037,10 +7124,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Parol :"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7049,9 +7132,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 msgid "&Connection"
@@ -7084,6 +7164,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "İstifadəhaqları"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8227,7 +8310,7 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr ""
 
 msgid "Skin editor"
@@ -8871,15 +8954,15 @@ msgid "ButtonBar|Format"
 msgstr ""
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -8980,8 +9063,20 @@ msgstr ""
 msgid "Continue from beginning?"
 msgstr ""
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"%s\n"
+"cpio arxivini aça bilmədim"
 
 #, fuzzy
 #| msgid ""
@@ -9044,6 +9139,12 @@ msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#~ msgid "Edit &menu file"
+#~ msgstr "&Menyunu dəyişdir"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Virtual DYS (VFS) ..."
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Subshell dəstəyini fəallaşdırar (əsas)"
@@ -9150,9 +9251,6 @@ msgstr ""
 
 #~ msgid "ftpfs: sending user password"
 #~ msgstr "ftpfs : istifadəçi parolu göndərilir"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs : girildi "
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

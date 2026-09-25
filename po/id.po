@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:53+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Indonesian <https://translate.codeberg.org/projects/mc6/mc6/"
@@ -355,9 +355,6 @@ msgstr ""
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 msgid "Confirmation settings"
 msgstr ""
 
@@ -413,6 +410,19 @@ msgid "Panel listing mode"
 msgstr ""
 
 msgid "Panel options"
+msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Viewer options"
+msgstr "Opsi terminal"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Opsi tambahan Diff"
+
+msgid "Editor options"
 msgstr ""
 
 msgid "Quick cd"
@@ -991,6 +1001,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Tak bisa menerjemahkan dari %s ke %s"
 
 msgid "FATAL: not a directory:"
 msgstr "FATAL: bukan sebuah direktori:"
@@ -1574,7 +1589,8 @@ msgid "Print configure options"
 msgstr "Cetak opsi konfigurasi"
 
 msgid "Print last working directory to specified file"
-msgstr "Cetak working directory yang terakhir digunakan ke file yang ditentukan"
+msgstr ""
+"Cetak working directory yang terakhir digunakan ke file yang ditentukan"
 
 msgid "<file>"
 msgstr ""
@@ -2791,9 +2807,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr ""
 
-msgid "Editor options"
-msgstr ""
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3119,6 +3132,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "Cannot create %s directory"
+msgid "Watch &directories"
+msgstr "Tidak bisa membuat direktori %s"
+
 msgid "Navigation"
 msgstr ""
 
@@ -3157,6 +3175,32 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Choose syntax highlighting"
+msgid "&Syntax highlighting"
+msgstr "Pilih syntax highlighting"
+
+msgid "Remember file &position"
+msgstr ""
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+msgid "End of file marker:"
+msgstr ""
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3209,12 +3253,6 @@ msgid "Confirmation|&History cleanup"
 msgstr ""
 
 msgid "Confirmation"
-msgstr ""
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
 msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
@@ -4118,9 +4156,6 @@ msgstr ""
 msgid "&Copy"
 msgstr ""
 
-msgid "C&hmod"
-msgstr ""
-
 msgid "&Link"
 msgstr ""
 
@@ -4131,15 +4166,6 @@ msgid "Relative symlin&k"
 msgstr ""
 
 msgid "Edit s&ymlink"
-msgstr ""
-
-msgid "Ch&own"
-msgstr ""
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "Cha&ttr"
 msgstr ""
 
 msgid "&Rename/Move"
@@ -4161,6 +4187,20 @@ msgid "&Invert selection"
 msgstr ""
 
 msgid "E&xit"
+msgstr ""
+
+msgid "C&hmod..."
+msgstr ""
+
+msgid "Ch&own..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Cancel"
+msgid "&Advanced chown..."
+msgstr "&Cancel"
+
+msgid "Cha&ttr flags..."
 msgstr ""
 
 msgid "&User menu"
@@ -4207,15 +4247,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr ""
 
-msgid "Edit &extension file"
-msgstr ""
-
-msgid "Edit &menu file"
-msgstr ""
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4243,10 +4274,33 @@ msgstr ""
 msgid "Key &sniffer..."
 msgstr ""
 
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Opsi tambahan Diff"
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Vie&wer options..."
+msgstr "Opsi terminal"
+
+#, fuzzy
+#| msgid "Color options"
+msgid "&Editor options..."
+msgstr "Opsi warna"
+
 msgid "&Manage plugins..."
 msgstr ""
 
-msgid "&Virtual FS..."
+#, fuzzy
+#| msgid "Edit is disabled"
+msgid "Edit e&xtension file"
+msgstr "Menyunting dinon aktifkan"
+
+msgid "Edit hi&ghlighting group file"
+msgstr ""
+
+msgid "&Attributes"
 msgstr ""
 
 msgid "Panels:"
@@ -4634,11 +4688,6 @@ msgstr "ButtonBar|Menyunting"
 msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|Bantuan"
 
-#, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Cari"
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -4931,6 +4980,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -4942,6 +4996,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5255,30 +5312,36 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgid "Lua"
 msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-#, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Kesalahan membaca"
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Error yang tidak dikenal di dalam child"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+msgid "&Settings"
+msgstr ""
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Kesalahan membaca"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -5988,21 +6051,36 @@ msgstr ""
 msgid "Pass:"
 msgstr "Password:"
 
+msgid "Connected"
+msgstr ""
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+msgid "Asking for TLS..."
+msgstr ""
+
+#, c-format
+msgid "Opening %s..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Error"
+
+msgid "Logged in"
+msgstr ""
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6017,10 +6095,13 @@ msgstr "Password:"
 msgid "Retrying with password..."
 msgstr ""
 
-#, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Kesalahan membaca"
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
+#, c-format
+msgid "Cannot connect to %s:%d"
+msgstr ""
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -6951,11 +7032,12 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
-msgid "SFTP connection"
-msgstr ""
+#, fuzzy, c-format
+#| msgid "Cannot parse:"
+msgid "Cannot resolve %s: %s"
+msgstr "Gagal mengurai:"
 
-#, c-format
-msgid "Cannot connect to %s:%d"
+msgid "SFTP connection"
 msgstr ""
 
 #, c-format
@@ -6990,10 +7072,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Password:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7002,9 +7080,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 msgid "&Connection"
@@ -7032,6 +7107,9 @@ msgid "SSH &Keepalive"
 msgstr ""
 
 msgid "IP version"
+msgstr ""
+
+msgid "SFTP"
 msgstr ""
 
 msgid "Abort current transfer?"
@@ -8152,7 +8230,7 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr ""
 
 msgid "Skin editor"
@@ -8777,15 +8855,15 @@ msgid "ButtonBar|Format"
 msgstr ""
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 msgid "Quick view"
@@ -8891,8 +8969,20 @@ msgstr ""
 msgid "Continue from beginning?"
 msgstr ""
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Tak bisa membuka arsip cpio\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -8967,6 +9057,16 @@ msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Cari"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Kesalahan membaca"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Perbolehkan subshell (default)"

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:57+0000\n"
 "Last-Translator: Anonymous <anonymous@noreply.codeberg.org>\n"
 "Language-Team: Kazakh <https://translate.codeberg.org/projects/mc6/mc6/kk/>\n"
@@ -318,9 +318,6 @@ msgstr "Бумаларды салыстыру"
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 msgid "Confirmation settings"
 msgstr ""
 
@@ -371,6 +368,19 @@ msgstr ""
 
 msgid "Panel options"
 msgstr "Панель опциялары"
+
+#, fuzzy
+#| msgid "Other options"
+msgid "Viewer options"
+msgstr "Басқа опциялар"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff қосымша опциялары"
+
+msgid "Editor options"
+msgstr "Түзеткіш опциялары"
 
 msgid "Quick cd"
 msgstr "Жылдам cd"
@@ -911,6 +921,10 @@ msgstr ""
 
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
+msgstr ""
+
+#, c-format
+msgid "Renamed %s to %s\n"
 msgstr ""
 
 msgid "FATAL: not a directory:"
@@ -2739,9 +2753,6 @@ msgstr "&Топтық болдырмау"
 msgid "Word wrap line length:"
 msgstr "Тасымалдау жолының ұзындығы:"
 
-msgid "Editor options"
-msgstr "Түзеткіш опциялары"
-
 msgid "In se&lection"
 msgstr "&Белгіленгенде"
 
@@ -3079,6 +3090,11 @@ msgstr "Қарапайым &алмастыру"
 msgid "A&uto save panels setup"
 msgstr "Панельдер баптауын &автосақтау"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "бумалар"
+
 msgid "Navigation"
 msgstr "Навигация"
 
@@ -3121,6 +3137,38 @@ msgstr ""
 "Жылдам қайта жүктеу опциясын қолдану бума мазмұнын дәл көрсетпеуі мүмкін. "
 "Бұл жағдайда буманы қолмен қайта жүктеу керек болады. Толығырақ man "
 "парақшасынан қараңыз."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "Синтаксисті &түрлі-түсті ету"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Файл &позициясын сақтау"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Файл атын енгізіңіз:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "Файлдардың &қысқа тізімі:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Файлдардың &толық тізімі"
@@ -3173,12 +3221,6 @@ msgstr "Confirmation|&Тарихты тазалау"
 
 msgid "Confirmation"
 msgstr "Растау"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "VFS-терді босату күту уақыты (сек):"
-
-msgid "Virtual File System Setting"
-msgstr "Виртуалды файлдық жүйе баптауы"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Бар файл аты (символдық сілтеме нұсқайтын файл):"
@@ -4193,9 +4235,6 @@ msgstr "&Сүзілген көрініс"
 msgid "&Copy"
 msgstr "&Көшіру"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Сілтеме"
 
@@ -4207,15 +4246,6 @@ msgstr "Салыстырмалы &символдық сілтеме"
 
 msgid "Edit s&ymlink"
 msgstr "&Символдық сілтемені түзету"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "&Кеңейтілген chown"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "Атын &өзгерту/Жылжыту"
@@ -4237,6 +4267,26 @@ msgstr "Белгілеуді &ауыстыру"
 
 msgid "E&xit"
 msgstr "&Шығу"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "&Кеңейтілген chown"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "&Пайдаланушы мәзірі"
@@ -4280,15 +4330,6 @@ msgstr "&Фондық тапсырмалар"
 msgid "Screen lis&t"
 msgstr "Экрандар &тізімі"
 
-msgid "Edit &extension file"
-msgstr "&Кеңейтулер файлын түзету"
-
-msgid "Edit &menu file"
-msgstr "&Мәзір файлын түзету"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Түрлі-түсті &ету файлын түзету"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4316,11 +4357,36 @@ msgstr ""
 msgid "Key &sniffer..."
 msgstr ""
 
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff қосымша опциялары"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "&Панель опциялары..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Түзеткіш опциялары"
+
 msgid "&Manage plugins..."
 msgstr ""
 
-msgid "&Virtual FS..."
-msgstr "&Виртуалды ФЖ..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "&Кеңейтулер файлын түзету"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Түрлі-түсті &ету файлын түзету"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Атрибуттар: %s"
 
 msgid "Panels:"
 msgstr "Панельдер:"
@@ -4705,9 +4771,6 @@ msgstr ""
 msgid "ButtonBar|ClrAll"
 msgstr ""
 
-msgid "ButtonBar|Clear"
-msgstr ""
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -4861,7 +4924,8 @@ msgid "Cannot read directory contents"
 msgstr "Бума мазмұнын оқу мүмкін емес"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Пайдаланушы берген пішім жарамсыз сияқты, бастапқы нұсқаға қайтарылады."
+msgstr ""
+"Пайдаланушы берген пішім жарамсыз сияқты, бастапқы нұсқаға қайтарылады."
 
 msgid "Column types must not be empty."
 msgstr ""
@@ -4992,6 +5056,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5003,6 +5072,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5304,25 +5376,33 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-msgid "Lua action failed"
+msgid "Lua"
 msgstr ""
 
 msgid "Unknown error"
 msgstr ""
 
-msgid "Lua"
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Орнату"
+
+msgid "Lua action failed"
 msgstr ""
 
 msgid "The selected script has no runnable actions."
@@ -5986,21 +6066,38 @@ msgstr ""
 msgid "Pass:"
 msgstr ""
 
+msgid "Connected"
+msgstr ""
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Тізімдеу пішімі..."
+
+#, fuzzy, c-format
+#| msgid "&Open file..."
+msgid "Opening %s..."
+msgstr "Файлды &ашу..."
+
+#, c-format
+msgid "Server: %s"
+msgstr ""
+
+msgid "Logged in"
+msgstr ""
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6014,7 +6111,11 @@ msgid "Retrying with password..."
 msgstr ""
 
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
+#, c-format
+msgid "Cannot connect to %s:%d"
 msgstr ""
 
 msgid "Connection successful, loading entries..."
@@ -6893,11 +6994,16 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
-msgid "SFTP connection"
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot save file %s:\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
 msgstr ""
+"%s файлын сақтау мүмкін емес:\n"
+"%s"
 
-#, c-format
-msgid "Cannot connect to %s:%d"
+msgid "SFTP connection"
 msgstr ""
 
 #, c-format
@@ -6930,10 +7036,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr ""
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -6942,9 +7044,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 msgid "&Connection"
@@ -6972,6 +7071,9 @@ msgid "SSH &Keepalive"
 msgstr ""
 
 msgid "IP version"
+msgstr ""
+
+msgid "SFTP"
 msgstr ""
 
 msgid "Abort current transfer?"
@@ -8016,7 +8118,7 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr ""
 
 msgid "Skin editor"
@@ -8637,15 +8739,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Пішім"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 msgid "Quick view"
@@ -8740,8 +8842,20 @@ msgstr "Іздеу аяқталды"
 msgid "Continue from beginning?"
 msgstr "Басынан бастап жалғастыру керек пе?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Бастапқы файлды ашу мүмкін емес\n"
+"%s"
 
 msgid "Cannot open source process."
 msgstr ""
@@ -8792,3 +8906,15 @@ msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "/ftp://some.host/editme.txt жергілікті көшірмесін алу мүмкін емес"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "VFS-терді босату күту уақыты (сек):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Виртуалды файлдық жүйе баптауы"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "&Мәзір файлын түзету"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&Виртуалды ФЖ..."

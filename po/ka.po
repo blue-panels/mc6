@@ -14,11 +14,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:57+0000\n"
 "Last-Translator: EkaterinePapava <ekaterinepapava@noreply.codeberg.org>\n"
-"Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/>"
-"\n"
+"Language-Team: Georgian <https://translate.codeberg.org/projects/mc6/mc6/ka/"
+">\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -364,9 +364,6 @@ msgstr "საქაღალდეების შედარება"
 msgid "Compare files (diff)"
 msgstr "ფა&ილების შედარება"
 
-msgid "VFS settings"
-msgstr ""
-
 msgid "Confirmation settings"
 msgstr "დადასტურების პარამეტრები"
 
@@ -431,6 +428,19 @@ msgstr "პანელის დალაგების რეჟიმის 
 
 msgid "Panel options"
 msgstr "პანელის მორგება"
+
+#, fuzzy
+#| msgid "General options"
+msgid "Viewer options"
+msgstr "ზოგადი პარამეტრები"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "განსხვავების დამატებითი მორგება"
+
+msgid "Editor options"
+msgstr "რედაქტორის მორგება"
 
 msgid "Quick cd"
 msgstr "სწრაფი cd"
@@ -1074,6 +1084,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "%s-დან %s-ზე თარგმნა შეუძლებელია"
 
 msgid "FATAL: not a directory:"
 msgstr "შეცდომა: არ წარმოადგენს საქაღალდეს:"
@@ -2861,9 +2876,6 @@ msgstr "ჯგუფური გაუქმება"
 msgid "Word wrap line length:"
 msgstr "სიტყვების გადატანის სიგრძე:"
 
-msgid "Editor options"
-msgstr "რედაქტორის მორგება"
-
 msgid "In se&lection"
 msgstr "მონიშნულში"
 
@@ -3189,6 +3201,11 @@ msgstr "უბრალოდ შეცვლა"
 msgid "A&uto save panels setup"
 msgstr "პანელების მორგების ავტომატური შენახვა"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "საქაღალდეები"
+
 msgid "Navigation"
 msgstr "ნავიგაცია"
 
@@ -3227,6 +3244,38 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "&სინტაქსის განათება"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "ფაილის მდებარეობის შენახვა"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "შეიყვანეთ ფაილის სახელი:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&მოკლე ფაილების სია:"
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3280,12 +3329,6 @@ msgstr "დასტური|&ისტორიის გაწმენდა
 
 msgid "Confirmation"
 msgstr "დასტური"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
-msgstr "ვირტუალური ფაილური სისტემის პარამეტრები"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
@@ -4190,9 +4233,6 @@ msgstr "გა&ფილტრული ხედი"
 msgid "&Copy"
 msgstr "&კოპირება"
 
-msgid "C&hmod"
-msgstr "რეჯიმი"
-
 msgid "&Link"
 msgstr "&ბმული"
 
@@ -4204,15 +4244,6 @@ msgstr "დამოკიდებული სიმბმული"
 
 msgid "Edit s&ymlink"
 msgstr "სიმბმულის ჩასწორება"
-
-msgid "Ch&own"
-msgstr "რეჟიმი"
-
-msgid "&Advanced chown"
-msgstr "რეჟიმის დამატებითი პარამეტრები"
-
-msgid "Cha&ttr"
-msgstr "ატრიბუტები"
 
 msgid "&Rename/Move"
 msgstr "გადარქმევა/გადატანა"
@@ -4234,6 +4265,26 @@ msgstr "მონიშვნის ინვერსია"
 
 msgid "E&xit"
 msgstr "&გამოსვლა"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "რეჯიმი"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "რეჟიმი"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "რეჟიმის დამატებითი პარამეტრები"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "ატრიბუტები"
 
 msgid "&User menu"
 msgstr "&მომხმარებლის მენიუ"
@@ -4277,15 +4328,6 @@ msgstr "ფონური ამოცანები"
 msgid "Screen lis&t"
 msgstr "ეკრანის სია"
 
-msgid "Edit &extension file"
-msgstr "გაფართოების ფაილის ჩასწორება"
-
-msgid "Edit &menu file"
-msgstr "მენიუს ფაილის ჩასწორება"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "გამოკვეთის ჯგუფის ფაილის ჩასწორება"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4315,11 +4357,36 @@ msgstr "კლავიატურის &მალსახმობები.
 msgid "Key &sniffer..."
 msgstr ""
 
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "განსხვავების დამატებითი მორგება"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "პანელის მორგება..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "რედაქტორის მორგება"
+
 msgid "&Manage plugins..."
 msgstr "დამატებების &მართვა..."
 
-msgid "&Virtual FS..."
-msgstr "&ვირტუალური FS..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "გაფართოების ფაილის ჩასწორება"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "გამოკვეთის ჯგუფის ფაილის ჩასწორება"
+
+#, fuzzy
+#| msgid "Attributes:"
+msgid "&Attributes"
+msgstr "ატრიბუტები:"
 
 msgid "Panels:"
 msgstr "პანელები:"
@@ -4706,9 +4773,6 @@ msgstr "ღილაკებისპანელი|ფლტგასუფ�
 msgid "ButtonBar|ClrAll"
 msgstr "ღილაკებისპანელი|ყვგასუფთ"
 
-msgid "ButtonBar|Clear"
-msgstr "ღილაკებისპანელი|გასუფთავება"
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -4998,6 +5062,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5009,6 +5078,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5305,28 +5377,38 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+#, fuzzy
+#| msgid "Lua scripts:"
+msgid "Lua scripts"
+msgstr "Lua-ის სკრიპტები:"
+
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "Lua"
+msgstr ""
+
+msgid "Unknown error"
+msgstr "უცნობი შეცდომა"
+
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
 msgstr ""
 
 msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
 msgstr ""
 
-msgid "&Run"
-msgstr ""
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "და&ყენება"
 
 #, fuzzy
 #| msgid "Reading failed"
 msgid "Lua action failed"
 msgstr "წაკითხვა ვერ მოხერხდა"
-
-msgid "Unknown error"
-msgstr "უცნობი შეცდომა"
-
-msgid "Lua"
-msgstr ""
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6009,21 +6091,41 @@ msgstr ""
 msgid "Pass:"
 msgstr "პაროლი:"
 
+#, fuzzy
+#| msgid "Connection"
+msgid "Connected"
+msgstr "კავშირი"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&სიის ფორმატი..."
+
+#, fuzzy, c-format
+#| msgid "Key &bindings..."
+msgid "Opening %s..."
+msgstr "კლავიატურის &მალსახმობები..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "შეცდომა"
+
+msgid "Logged in"
+msgstr ""
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6036,10 +6138,14 @@ msgstr "FTP-ის პაროლი"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "წაკითხვა ვერ მოხერხდა"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "%s ფაილის გახსნა ვერ მოხერხდა"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -6981,15 +7087,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "%s ფაილის გახსნა ვერ მოხერხდა"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP მანქანამდე"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "%s ფაილის გახსნა ვერ მოხერხდა"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7023,10 +7129,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "პაროლი:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7035,9 +7137,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 msgid "&Connection"
@@ -7074,6 +7173,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "წვდომა"
+
+msgid "SFTP"
+msgstr ""
 
 msgid "Abort current transfer?"
 msgstr ""
@@ -8264,8 +8366,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "მენიუს რედაქტირება"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -8895,15 +8999,15 @@ msgid "ButtonBar|Format"
 msgstr "ფორმატი"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 msgid "Quick view"
@@ -8999,8 +9103,16 @@ msgstr "ძებნა დასრულდა"
 msgid "Continue from beginning?"
 msgstr "თავიდან დავიწყო?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid "Cannot open file %s"
+msgid "Cannot open source pipe."
+msgstr "%s ფაილის გახსნა ვერ მოხერხდა"
 
 #, fuzzy
 #| msgid "Cannot open file %s"
@@ -9065,6 +9177,23 @@ msgstr "ფაილის ჩასმა ვერ მოხერხდა"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "ვირტუალური ფაილური სისტემის პარამეტრები"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "მენიუს ფაილის ჩასწორება"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "&ვირტუალური FS..."
+
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ღილაკებისპანელი|გასუფთავება"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "წაკითხვა ვერ მოხერხდა"
 
 #~ msgid "Specifies a color configuration"
 #~ msgstr "ფერების კონფიგურაციის მითითება"

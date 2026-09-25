@@ -14,11 +14,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:45+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
-"Language-Team: Persian <https://translate.codeberg.org/projects/mc6/mc6/fa/>"
-"\n"
+"Language-Team: Persian <https://translate.codeberg.org/projects/mc6/mc6/fa/"
+">\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -370,9 +370,6 @@ msgstr "مقایسه پوشه‌ها"
 msgid "Compare files (diff)"
 msgstr ""
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -436,6 +433,19 @@ msgstr "جداسازی قاب"
 
 msgid "Panel options"
 msgstr "تنظیمات قاب"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "تنظیمات قاب"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Diff viewer options"
+msgstr "تنظیمات قاب"
+
+msgid "Editor options"
+msgstr "تنظیمات ویرایشگر"
 
 msgid "Quick cd"
 msgstr ""
@@ -1031,6 +1041,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "امکان ترجمه از %s به %s وجود ندارد"
 
 msgid "FATAL: not a directory:"
 msgstr ""
@@ -2833,9 +2848,6 @@ msgstr ""
 msgid "Word wrap line length:"
 msgstr ""
 
-msgid "Editor options"
-msgstr "تنظیمات ویرایشگر"
-
 msgid "In se&lection"
 msgstr ""
 
@@ -3160,6 +3172,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "پوشه‌ها"
+
 msgid "Navigation"
 msgstr "جهت یابی"
 
@@ -3200,6 +3217,34 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+msgid "&Syntax highlighting"
+msgstr ""
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "ذخیره‌ی آخرین مکان ویرایش فایل"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "نام فایل را وارد کنید:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+msgid "Tree view file limit, MB:"
+msgstr ""
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3253,12 +3298,6 @@ msgstr ""
 
 msgid "Confirmation"
 msgstr "تایید"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr ""
-
-msgid "Virtual File System Setting"
-msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
@@ -4163,9 +4202,6 @@ msgstr ""
 msgid "&Copy"
 msgstr ""
 
-msgid "C&hmod"
-msgstr ""
-
 msgid "&Link"
 msgstr "پیوند"
 
@@ -4176,15 +4212,6 @@ msgid "Relative symlin&k"
 msgstr ""
 
 msgid "Edit s&ymlink"
-msgstr ""
-
-msgid "Ch&own"
-msgstr ""
-
-msgid "&Advanced chown"
-msgstr ""
-
-msgid "Cha&ttr"
 msgstr ""
 
 msgid "&Rename/Move"
@@ -4207,6 +4234,20 @@ msgstr ""
 
 msgid "E&xit"
 msgstr "خروج"
+
+msgid "C&hmod..."
+msgstr ""
+
+msgid "Ch&own..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Cancel"
+msgid "&Advanced chown..."
+msgstr "لغو"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr ""
@@ -4252,15 +4293,6 @@ msgstr ""
 msgid "Screen lis&t"
 msgstr ""
 
-msgid "Edit &extension file"
-msgstr ""
-
-msgid "Edit &menu file"
-msgstr ""
-
-msgid "Edit hi&ghlighting group file"
-msgstr ""
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4290,11 +4322,36 @@ msgstr ""
 
 #, fuzzy
 #| msgid "&Panel options..."
+msgid "&Diff viewer options..."
+msgstr "تنظیمات قاب"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "تنظیمات قاب"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "تنظیمات ویرایشگر"
+
+#, fuzzy
+#| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "تنظیمات قاب"
 
-msgid "&Virtual FS..."
+#, fuzzy
+#| msgid "Edit is disabled"
+msgid "Edit e&xtension file"
+msgstr "ویرایش غیرفعال است"
+
+msgid "Edit hi&ghlighting group file"
 msgstr ""
+
+#, fuzzy
+#| msgid "&Size only"
+msgid "&Attributes"
+msgstr "فقط با اندازه"
 
 msgid "Panels:"
 msgstr "قاب‌ها:"
@@ -4686,9 +4743,6 @@ msgstr ""
 msgid "ButtonBar|ClrAll"
 msgstr ""
 
-msgid "ButtonBar|Clear"
-msgstr ""
-
 #, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
@@ -4987,6 +5041,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -4998,6 +5057,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5318,19 +5380,13 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
+msgid "Lua scripts"
 msgstr ""
 
-msgid "No global or user Lua editor scripts were found."
+msgid "This script has no entry file."
 msgstr ""
 
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
-msgid "Lua action failed"
+msgid "Lua"
 msgstr ""
 
 #, fuzzy
@@ -5338,7 +5394,21 @@ msgstr ""
 msgid "Unknown error"
 msgstr "خطای نامعلوم در فرزند"
 
-msgid "Lua"
+msgid "This script has no settings."
+msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "Time: %s"
+msgid "&Settings"
+msgstr "زمان: %s"
+
+msgid "Lua action failed"
 msgstr ""
 
 msgid "The selected script has no runnable actions."
@@ -6054,21 +6124,39 @@ msgstr ""
 msgid "Pass:"
 msgstr "رمز عبور:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "تایید"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+msgid "Asking for TLS..."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "&Open file..."
+msgid "Opening %s..."
+msgstr "باز کردن فایل..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "خطا"
+
+msgid "Logged in"
+msgstr ""
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, c-format
@@ -6084,8 +6172,13 @@ msgid "Retrying with password..."
 msgstr ""
 
 #, c-format
-msgid "Retry failed: %s"
+msgid "Authentication with %s:%d failed"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "ftpfs: making connection to %s"
+msgid "Cannot connect to %s:%d"
+msgstr "ftpfs: برقراری ارتباط با %s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7020,13 +7113,13 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot save file"
+msgid "Cannot resolve %s: %s"
+msgstr "نمی‌توان فایل را ذخیره کرد"
+
 msgid "SFTP connection"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "ftpfs: making connection to %s"
-msgid "Cannot connect to %s:%d"
-msgstr "ftpfs: برقراری ارتباط با %s"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7060,10 +7153,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "رمز عبور:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7072,9 +7161,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7109,6 +7195,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "اجازه"
+
+msgid "SFTP"
+msgstr ""
 
 msgid "Abort current transfer?"
 msgstr ""
@@ -8260,7 +8349,7 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
+msgid "Ski&n editor..."
 msgstr ""
 
 msgid "Skin editor"
@@ -8895,15 +8984,15 @@ msgid "ButtonBar|Format"
 msgstr ""
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9002,8 +9091,16 @@ msgstr ""
 msgid "Continue from beginning?"
 msgstr ""
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid "Cannot execute sort command"
+msgid "Cannot open source pipe."
+msgstr "فرمان مرتب‌سازی قابل اجرا نیست"
 
 msgid "Cannot open source process."
 msgstr ""

@@ -21,19 +21,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:17+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
-"Language-Team: Ukrainian <https://translate.codeberg.org/projects/mc6/mc6/"
-"uk/>\n"
+"Language-Team: Ukrainian <https://translate.codeberg.org/projects/mc6/mc6/uk/"
+">\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 "
-"? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > "
-"14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % "
-"100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
+"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
+"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
+"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 "X-Generator: Weblate 2026.9.1\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -438,9 +438,6 @@ msgstr "Порівняти каталоги"
 msgid "Compare files (diff)"
 msgstr "П&орівняти файли"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -514,6 +511,19 @@ msgstr "Використовувати режи&м сортування пане
 
 msgid "Panel options"
 msgstr "Параметри панелі"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Параметри панелі"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Інші різницеві параметри"
+
+msgid "Editor options"
+msgstr "Параметри редактора"
 
 msgid "Quick cd"
 msgstr "Швидка зміна каталогу"
@@ -1220,6 +1230,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Не вдалося перетворити із %s на %s"
 
 msgid "FATAL: not a directory:"
 msgstr "Сталася помилка. Не є каталогом:"
@@ -3118,9 +3133,6 @@ msgstr "&Групове повернення"
 msgid "Word wrap line length:"
 msgstr "Переносити після досягнення довжини:"
 
-msgid "Editor options"
-msgstr "Параметри редактора"
-
 msgid "In se&lection"
 msgstr "У вид&іленні"
 
@@ -3452,6 +3464,11 @@ msgstr "Простий о&бмін"
 msgid "A&uto save panels setup"
 msgstr "&Автозбереження параметрів панелей"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "каталоги"
+
 msgid "Navigation"
 msgstr "Навігація"
 
@@ -3496,6 +3513,38 @@ msgstr ""
 "Використання параметру швидкого перезавантаження може не відображати точний "
 "поточний вміст каталога. У такому випадку необхідно вручну перезавантажити "
 "каталог. Щоб отримати докладніші відомості, див. посібник (man mc)."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "&Підсвітка синтаксису"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Зберегти &позицію в файлі"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Введіть назву файлу:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "&Короткий список файлів:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "&Повний"
@@ -3548,12 +3597,6 @@ msgstr "Confirmation|&Очищення історії"
 
 msgid "Confirmation"
 msgstr "Підтвердження"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Затримка для звільнення VFSs (сек):"
-
-msgid "Virtual File System Setting"
-msgstr "Параметри віртуальної файлової системи"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "Назва наявного файлу (для посилання на нього):"
@@ -4479,9 +4522,6 @@ msgstr "Фі&льтрований перегляд"
 msgid "&Copy"
 msgstr "С&копіювати"
 
-msgid "C&hmod"
-msgstr "З&міна прав"
-
 msgid "&Link"
 msgstr "&Посилання"
 
@@ -4493,15 +4533,6 @@ msgstr "Від&носне символьне посилання"
 
 msgid "Edit s&ymlink"
 msgstr "Ред&агувати символьне посилання"
-
-msgid "Ch&own"
-msgstr "Зміна &власника"
-
-msgid "&Advanced chown"
-msgstr "Права (р&озширені)    "
-
-msgid "Cha&ttr"
-msgstr "Зміна а&трибутів"
 
 msgid "&Rename/Move"
 msgstr "Пере&йменувати/перемістити"
@@ -4523,6 +4554,26 @@ msgstr "&Інвертувати виділення"
 
 msgid "E&xit"
 msgstr "Ви&хід"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "З&міна прав"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Зміна &власника"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Права (р&озширені)    "
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Зміна а&трибутів"
 
 msgid "&User menu"
 msgstr "&Меню користувача"
@@ -4572,15 +4623,6 @@ msgstr "Фонові завдання"
 msgid "Screen lis&t"
 msgstr "Список екранів"
 
-msgid "Edit &extension file"
-msgstr "Редагувати файл роз&ширень"
-
-msgid "Edit &menu file"
-msgstr "Редагувати файл &меню"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Редагувати файл підсвітки груп"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4613,12 +4655,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Інші різницеві параметри"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Параметри панелі…"
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Параметри редактора"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Параметри панелі…"
 
-msgid "&Virtual FS..."
-msgstr "Віртуальні &ФС…"
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Редагувати файл роз&ширень"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Редагувати файл підсвітки груп"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Атрибути: %s"
 
 msgid "Panels:"
 msgstr "Панелі:"
@@ -5036,11 +5103,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|Меню"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Пошук"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "Інтерпретатор вже виконує команду"
@@ -5199,7 +5261,8 @@ msgid "Cannot read directory contents"
 msgstr "Не вдалося отримати зміст каталога"
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Формат користувача виглядає неправильним, використовується стандартний."
+msgstr ""
+"Формат користувача виглядає неправильним, використовується стандартний."
 
 msgid "Column types must not be empty."
 msgstr ""
@@ -5357,6 +5420,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5370,6 +5438,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5715,30 +5786,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Сталася помилка зчитування"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "Плагіни та скрипти VFS:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Сталася невідома помилка у нащадку"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "Вст&aновити"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Сталася помилка зчитування"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6528,21 +6609,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Пароль:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Підтвердження"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Формат списку"
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "Кодування…"
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Помилка"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: зареєстровано"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6558,10 +6661,14 @@ msgstr "Пароль:"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Сталася помилка зчитування"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "Не вдалося відкрити файл %s "
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7589,15 +7696,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "Не вдалося відкрити файл %s "
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "З’єднання по SFTP"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "Не вдалося відкрити файл %s "
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7637,10 +7744,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Пароль:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7654,9 +7757,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7697,6 +7797,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Дозвіл"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9020,8 +9123,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "Редагувати меню "
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9709,15 +9814,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Формат."
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9833,8 +9938,20 @@ msgstr "Пошук завершено"
 msgid "Continue from beginning?"
 msgstr "Почати спочатку?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Не вдалося відкрити архів cpio\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9907,6 +10024,28 @@ msgstr "Не вдалося вставити файл"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Не вдалося отримати локальну копію /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Затримка для звільнення VFSs (сек):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Параметри віртуальної файлової системи"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Редагувати файл &меню"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Віртуальні &ФС…"
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Пошук"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Сталася помилка зчитування"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Вмикає підтримку вкладеної оболонки (стандартно)"
@@ -10292,9 +10431,6 @@ msgstr "Не вдалося отримати локальну копію /ftp://
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: триває надсилання облікового запису користувача"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: зареєстровано"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

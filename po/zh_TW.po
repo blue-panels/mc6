@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:21+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Chinese (Traditional Han script) <https://"
@@ -417,9 +417,6 @@ msgstr ""
 msgid "Compare files (diff)"
 msgstr "比較檔案"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -489,6 +486,19 @@ msgstr ""
 
 msgid "Panel options"
 msgstr ""
+
+#, fuzzy
+#| msgid "Terminal options"
+msgid "Viewer options"
+msgstr "終端機選項"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff 額外選項"
+
+msgid "Editor options"
+msgstr "編輯器選項"
 
 msgid "Quick cd"
 msgstr "快速改變目錄"
@@ -1145,6 +1155,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "無法由 %s 轉換到 %s"
 
 msgid "FATAL: not a directory:"
 msgstr "錯誤: 不是一個目錄"
@@ -2996,9 +3011,6 @@ msgstr "復原群組"
 msgid "Word wrap line length:"
 msgstr "文字換行行高:"
 
-msgid "Editor options"
-msgstr "編輯器選項"
-
 msgid "In se&lection"
 msgstr "在選擇中"
 
@@ -3324,6 +3336,11 @@ msgstr ""
 msgid "A&uto save panels setup"
 msgstr ""
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "目錄"
+
 msgid "Navigation"
 msgstr ""
 
@@ -3364,6 +3381,36 @@ msgid ""
 "directory contents. In this case you'll need to do a\n"
 "manual reload of the directory. See the man page for\n"
 "the details."
+msgstr ""
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "依語法改變顏色"
+
+msgid "Remember file &position"
+msgstr ""
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "輸入檔案名稱:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "簡要檔案列表 (&B)"
+
+msgid "Tree view node limit:"
 msgstr ""
 
 msgid "&Full file list"
@@ -3417,12 +3464,6 @@ msgstr "確認並清除歷史紀錄"
 
 msgid "Confirmation"
 msgstr "確認"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "釋放各個 VFSs 檔案系統逾時(秒):"
-
-msgid "Virtual File System Setting"
-msgstr ""
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr "既有的檔案名稱 (符號連結指向的檔案)："
@@ -4332,9 +4373,6 @@ msgstr "檢視已過濾"
 msgid "&Copy"
 msgstr "複製"
 
-msgid "C&hmod"
-msgstr "Chmod"
-
 msgid "&Link"
 msgstr "連結"
 
@@ -4346,15 +4384,6 @@ msgstr "相對符號連結"
 
 msgid "Edit s&ymlink"
 msgstr "編輯軟連結"
-
-msgid "Ch&own"
-msgstr "Chown"
-
-msgid "&Advanced chown"
-msgstr "進階 chown (&A)"
-
-msgid "Cha&ttr"
-msgstr "聊天室"
 
 msgid "&Rename/Move"
 msgstr "重新命名/移動"
@@ -4376,6 +4405,26 @@ msgstr "反向選取"
 
 msgid "E&xit"
 msgstr "離開"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "Chmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Chown"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "進階 chown (&A)"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "聊天室"
 
 msgid "&User menu"
 msgstr "使用者選單"
@@ -4425,15 +4474,6 @@ msgstr "背景工作"
 msgid "Screen lis&t"
 msgstr "畫面列表"
 
-msgid "Edit &extension file"
-msgstr "編輯擴充檔"
-
-msgid "Edit &menu file"
-msgstr "編輯選單檔"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "編輯高亮群組檔案"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4464,12 +4504,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff 額外選項"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "面板選項..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "編輯器選項"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "面板選項..."
 
-msgid "&Virtual FS..."
-msgstr "虛擬檔案系統..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "編輯擴充檔"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "編輯高亮群組檔案"
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Attributes"
+msgstr "僅允許檔案"
 
 msgid "Panels:"
 msgstr "面板:"
@@ -4873,11 +4938,6 @@ msgstr "按鈕列 | 編輯"
 msgid "ButtonBar|ClrAll"
 msgstr "按鈕列 | 下拉選單"
 
-#, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "按鈕列 | 搜尋"
-
 msgid "The terminal is already running a command"
 msgstr ""
 
@@ -5188,6 +5248,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5201,6 +5266,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5535,30 +5603,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "讀取失敗"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "VFS 外掛和腳本:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "子程序發生未知的錯誤"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "設定"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "讀取失敗"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6329,21 +6407,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "密碼："
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "確認"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "列表格式... (&L)"
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "編碼... (&E)"
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "錯誤"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: 登入"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6359,10 +6459,14 @@ msgstr "密碼："
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "讀取失敗"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "無法開啟檔案 %s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7368,15 +7472,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "無法開啟檔案 %s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP 到機器"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "無法開啟檔案 %s"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7411,10 +7515,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "密碼："
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7423,9 +7523,6 @@ msgid "Cannot start the SFTP session with %s:%d"
 msgstr ""
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7464,6 +7561,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "權限"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8735,8 +8835,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "選單編輯"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9415,15 +9517,15 @@ msgid "ButtonBar|Format"
 msgstr "按鈕列 | 格式"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9539,8 +9641,20 @@ msgstr "搜尋完畢"
 msgid "Continue from beginning?"
 msgstr "從頭開始?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"無法開啟 cpio 檔案集\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9613,6 +9727,25 @@ msgstr "無法插入檔案"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "無法取得本地的副本在 ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "釋放各個 VFSs 檔案系統逾時(秒):"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "編輯選單檔"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "虛擬檔案系統..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "按鈕列 | 搜尋"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "讀取失敗"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "支援使用次殼層 (預設值)"
@@ -9833,9 +9966,6 @@ msgstr "無法取得本地的副本在 ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: 傳送使用者帳號"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: 登入"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

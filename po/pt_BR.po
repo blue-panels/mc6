@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 22:08+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Portuguese (Brazil) <https://translate.codeberg.org/projects/"
@@ -439,9 +439,6 @@ msgstr "Comparar os diretórios"
 msgid "Compare files (diff)"
 msgstr "C&omparar arquivos"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -519,6 +516,19 @@ msgstr "Utilizar o mo&do de ordenação do painel"
 
 msgid "Panel options"
 msgstr "Opções do painel"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Opções do painel"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Mais opções das diferenças"
+
+msgid "Editor options"
+msgstr "Opções do editor"
 
 msgid "Quick cd"
 msgstr " Cd rápido "
@@ -1234,6 +1244,11 @@ msgstr ""
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Não é possível traduzir de ‘%s’ para ‘%s’"
+
 msgid "FATAL: not a directory:"
 msgstr "Ocorreu um ERRO FATAL porque não é um diretório:"
 
@@ -1688,8 +1703,8 @@ msgid ""
 "Cannot configure read end of SIGWINCH pipe: %s (%d)\n"
 msgstr ""
 "\n"
-"Não foi possível configurar o final da leitura do canal do SIGWINCH: %s (%d)"
-"\n"
+"Não foi possível configurar o final da leitura do canal do SIGWINCH: %s "
+"(%d)\n"
 
 #, c-format
 msgid ""
@@ -1979,8 +1994,8 @@ msgstr "Nenhum argumento foi passado para o visualizador"
 
 msgid "Two files are required to invoke the diffviewer."
 msgstr ""
-"Dois arquivos são necessários para invocar o visualizador de diferenças ‘"
-"diffviewer’."
+"Dois arquivos são necessários para invocar o visualizador de diferenças "
+"‘diffviewer’."
 
 msgid "Background protocol error"
 msgstr "Ocorreu um erro no protocolo que está sendo executado em segundo plano"
@@ -3207,9 +3222,6 @@ msgstr "&Desfazer o grupo"
 msgid "Word wrap line length:"
 msgstr "Comprimento da linha de quebra de linha:"
 
-msgid "Editor options"
-msgstr "Opções do editor"
-
 msgid "In se&lection"
 msgstr "Na se&leção"
 
@@ -3557,6 +3569,11 @@ msgstr "Troca si&mples"
 msgid "A&uto save panels setup"
 msgstr "Configurações de salvamento a&utomática dos painéis"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "diretórios"
+
 msgid "Navigation"
 msgstr "Navegação"
 
@@ -3604,6 +3621,38 @@ msgstr ""
 "recarregamento manual do conteúdo do diretório.\n"
 "Por favor, consulte a página do manual para obter\n"
 "mais informações."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "Selecionar a sinta&xe"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Salvar a &posição do arquivo"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Insira o nome do arquivo:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "Lista &resumida dos arquivos:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Lista &completa dos arquivos"
@@ -3656,12 +3705,6 @@ msgstr "Confirmation|&Limpar o Histórico"
 
 msgid "Confirmation"
 msgstr "Confirmação"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "Tempo limite para liberar o VFSs (seg):"
-
-msgid "Virtual File System Setting"
-msgstr "Configurações do Sistema de Arquivos Virtuais"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
@@ -4709,9 +4752,6 @@ msgstr "Visualização &filtrada"
 msgid "&Copy"
 msgstr "&Copiar"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Vínculo"
 
@@ -4723,15 +4763,6 @@ msgstr "Vínculo simbólico &relativo"
 
 msgid "Edit s&ymlink"
 msgstr "Editar o vínculo s&imbólico"
-
-msgid "Ch&own"
-msgstr "Ch&own"
-
-msgid "&Advanced chown"
-msgstr "Chown &avançado"
-
-msgid "Cha&ttr"
-msgstr "Cha&ttr"
 
 msgid "&Rename/Move"
 msgstr "&Renomear/Mover"
@@ -4753,6 +4784,26 @@ msgstr "&Inverter a seleção"
 
 msgid "E&xit"
 msgstr "&Sair"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "Ch&own"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Chown &avançado"
+
+#, fuzzy
+#| msgid "Cha&ttr"
+msgid "Cha&ttr flags..."
+msgstr "Cha&ttr"
 
 msgid "&User menu"
 msgstr "Menu do &usuário"
@@ -4802,15 +4853,6 @@ msgstr "&Trabalhos em segundo plano"
 msgid "Screen lis&t"
 msgstr "Lis&ta de telas"
 
-msgid "Edit &extension file"
-msgstr "Editar a &extensão do arquivo"
-
-msgid "Edit &menu file"
-msgstr "Editar o &menu do arquivo"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Editar o arquivo da sele&ção do grupo"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4843,12 +4885,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Mais opções das diferenças"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "Opções do &painel..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Opções do editor"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "Opções do &painel..."
 
-msgid "&Virtual FS..."
-msgstr "Sistema de Arquivos &Virtual..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Editar a &extensão do arquivo"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Editar o arquivo da sele&ção do grupo"
+
+#, fuzzy
+#| msgid "Attributes: %s"
+msgid "&Attributes"
+msgstr "Atributos: %s"
 
 msgid "Panels:"
 msgstr "Painéis:"
@@ -5264,11 +5331,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "ButtonBar|Puxar Para Baixo"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "ButtonBar|Pesquisar"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "O interpretador de comandos (shell) já está executando um comando"
@@ -5590,6 +5652,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5603,6 +5670,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5971,30 +6041,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Ocorreu uma falha na leitura"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "Extensões e códigos de programação do VFS:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Ocorreu um erro desconhecido no ‘child’"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Configurar"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Ocorreu uma falha na leitura"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6799,23 +6879,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Senha:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Confirmação"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "Formato da &listagem..."
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Codificação..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Erro"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "O ‘ftpfs’ está autenticado"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-#, fuzzy
-#| msgid "shell: Reading directory %s..."
-msgid "Authenticating and probing directory..."
-msgstr "O interpretador de comandos (shell) está lendo o diretório ‘%s’..."
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6833,10 +6933,18 @@ msgstr "Senha:"
 msgid "Retrying with password..."
 msgstr "O interpretador de comandos (shell) está enviando a senha..."
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Ocorreu uma falha na leitura"
+#| msgid ""
+#| "Cannot change directory to\n"
+#| "%s"
+msgid "Cannot connect to %s:%d"
+msgstr ""
+"Não foi possível alterar o diretório para\n"
+"%s"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7892,19 +8000,19 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid ""
+#| "Cannot remove file\n"
+#| "%s"
+msgid "Cannot resolve %s: %s"
+msgstr ""
+"Não foi possível remover o arquivo\n"
+"%s"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "O SFTP para a máquina"
-
-#, fuzzy, c-format
-#| msgid ""
-#| "Cannot change directory to\n"
-#| "%s"
-msgid "Cannot connect to %s:%d"
-msgstr ""
-"Não foi possível alterar o diretório para\n"
-"%s"
 
 #, fuzzy, c-format
 #| msgid ""
@@ -7946,10 +8054,6 @@ msgstr "O interpretador de comandos (shell) está enviando a senha..."
 msgid "SFTP password"
 msgstr "Senha:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7963,9 +8067,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -8006,6 +8107,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Permissão"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -9395,8 +9499,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "With builtin editor"
+msgid "Ski&n editor..."
+msgstr "Com editor integrado"
 
 #, fuzzy
 #| msgid "With builtin editor"
@@ -10110,15 +10216,15 @@ msgid "ButtonBar|Format"
 msgstr "ButtonBar|Formatar"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -10237,8 +10343,20 @@ msgstr "A pesquisa foi concluída com sucesso"
 msgid "Continue from beginning?"
 msgstr "Você quer continuar a partir do início?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open source file\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"Não foi possível abrir o arquivo da origem\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -10319,6 +10437,33 @@ msgstr "Não foi possível inserir o arquivo"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Não foi possível obter uma cópia local do /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "Tempo limite para liberar o VFSs (seg):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Configurações do Sistema de Arquivos Virtuais"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Editar o &menu do arquivo"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Sistema de Arquivos &Virtual..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "ButtonBar|Pesquisar"
+
+#, fuzzy
+#~| msgid "shell: Reading directory %s..."
+#~ msgid "Authenticating and probing directory..."
+#~ msgstr "O interpretador de comandos (shell) está lendo o diretório ‘%s’..."
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Ocorreu uma falha na leitura"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Ativar o suporte ao sub interpretador de comandos padrão (subshell)"
@@ -10793,9 +10938,6 @@ msgstr "Não foi possível obter uma cópia local do /ftp://some.host/editme.txt
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "O ‘ftpfs’ está enviando a conta do usuário"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "O ‘ftpfs’ está autenticado"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "

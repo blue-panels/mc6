@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: https://github.com/blue-panels/mcommander/issues\n"
-"POT-Creation-Date: 2026-09-12 14:55+0200\n"
+"POT-Creation-Date: 2026-09-25 20:52+0000\n"
 "PO-Revision-Date: 2026-09-25 21:44+0000\n"
 "Last-Translator: GitHub webhook <noreply-webhook-github@weblate.org>\n"
 "Language-Team: Basque <https://translate.codeberg.org/projects/mc6/mc6/eu/>\n"
@@ -425,9 +425,6 @@ msgstr "Konparatu direktorioak"
 msgid "Compare files (diff)"
 msgstr "Fitxategiak al&deratu"
 
-msgid "VFS settings"
-msgstr ""
-
 #, fuzzy
 #| msgid "Confirmation"
 msgid "Confirmation settings"
@@ -501,6 +498,19 @@ msgstr "Erabili panela sailkatzeko mo&dua"
 
 msgid "Panel options"
 msgstr "Panelek aukerak"
+
+#, fuzzy
+#| msgid "Panel options"
+msgid "Viewer options"
+msgstr "Panelek aukerak"
+
+#, fuzzy
+#| msgid "Diff extra options"
+msgid "Diff viewer options"
+msgstr "Diff-en aparteko aukerak"
+
+msgid "Editor options"
+msgstr "Editorearen aukerak"
 
 msgid "Quick cd"
 msgstr "cd bizkorra"
@@ -1207,6 +1217,11 @@ msgstr ""
 #, c-format
 msgid "Warning: import of %s to %s is incomplete\n"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Cannot translate from %s to %s"
+msgid "Renamed %s to %s\n"
+msgstr "Ezin itzuli %s(e)tik %s(e)ra"
 
 msgid "FATAL: not a directory:"
 msgstr "LARRIA: ez da direktorioa:"
@@ -3096,9 +3111,6 @@ msgstr "&Taldeka desegin"
 msgid "Word wrap line length:"
 msgstr "Itzulbiratutako lerroaren luzeera:"
 
-msgid "Editor options"
-msgstr "Editorearen aukerak"
-
 msgid "In se&lection"
 msgstr "&Hautapenean"
 
@@ -3424,6 +3436,11 @@ msgstr "&Trukatze arrunta"
 msgid "A&uto save panels setup"
 msgstr "A&uto gorde panelen ezarpena"
 
+#, fuzzy
+#| msgid "directories"
+msgid "Watch &directories"
+msgstr "direktorioak"
+
 msgid "Navigation"
 msgstr "Nabigazioa"
 
@@ -3469,6 +3486,38 @@ msgstr ""
 "eduki zehatza ez islatzea. Kasu honetan direktorioaren\n"
 "birzamaketa eskuz egin beharko duzu. Begiratu eskuliburu\n"
 "(\"man\") orrialdea xehetasun bila."
+
+msgid "&Wrap long lines"
+msgstr ""
+
+#, fuzzy
+#| msgid "Synta&x highlighting"
+msgid "&Syntax highlighting"
+msgstr "sinta&xi nabarmentzea"
+
+#, fuzzy
+#| msgid "Save file &position"
+msgid "Remember file &position"
+msgstr "Gorde fitxategi &kokapena"
+
+msgid "&Tree view of JSON, YAML and XML"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter file name:"
+msgid "End of file marker:"
+msgstr "Sartu fitxategi izena:"
+
+msgid "Redraws to skip at most:"
+msgstr ""
+
+#, fuzzy
+#| msgid "&Brief file list:"
+msgid "Tree view file limit, MB:"
+msgstr "Fitxategien zerrenda laburra:"
+
+msgid "Tree view node limit:"
+msgstr ""
 
 msgid "&Full file list"
 msgstr "Fitxategien zerrenda &osoa"
@@ -3521,12 +3570,6 @@ msgstr "&Historia garbitu"
 
 msgid "Confirmation"
 msgstr "Berrespena"
-
-msgid "Timeout for freeing VFSs (sec):"
-msgstr "VFS-ak husteko denbora muga (s):"
-
-msgid "Virtual File System Setting"
-msgstr "Alegiazko fitxategi sistemaren (VFS) ezarpena"
 
 msgid "Existing filename (filename symlink will point to):"
 msgstr ""
@@ -4454,9 +4497,6 @@ msgstr "I&ragazitako ikuspegia"
 msgid "&Copy"
 msgstr "&Kopiatu"
 
-msgid "C&hmod"
-msgstr "C&hmod"
-
 msgid "&Link"
 msgstr "&Esteka"
 
@@ -4468,15 +4508,6 @@ msgstr "Es&teka sinboliko erlatiboa"
 
 msgid "Edit s&ymlink"
 msgstr "E&ditatu esteka sinbolikoa"
-
-msgid "Ch&own"
-msgstr "&Chown"
-
-msgid "&Advanced chown"
-msgstr "Ch&own aurreratua"
-
-msgid "Cha&ttr"
-msgstr ""
 
 msgid "&Rename/Move"
 msgstr "Berrizendatu/Mu&gitu"
@@ -4498,6 +4529,24 @@ msgstr "&Alderantzikatu hautapena"
 
 msgid "E&xit"
 msgstr "Irte&n"
+
+#, fuzzy
+#| msgid "C&hmod"
+msgid "C&hmod..."
+msgstr "C&hmod"
+
+#, fuzzy
+#| msgid "Ch&own"
+msgid "Ch&own..."
+msgstr "&Chown"
+
+#, fuzzy
+#| msgid "&Advanced chown"
+msgid "&Advanced chown..."
+msgstr "Ch&own aurreratua"
+
+msgid "Cha&ttr flags..."
+msgstr ""
 
 msgid "&User menu"
 msgstr "&Erabiltzailearen menua"
@@ -4547,15 +4596,6 @@ msgstr "&Hondoko lanak"
 msgid "Screen lis&t"
 msgstr "Pantaila &zerrenda"
 
-msgid "Edit &extension file"
-msgstr "Editatu &luzapen fitxategia"
-
-msgid "Edit &menu file"
-msgstr "Editat&u menu fitxategia"
-
-msgid "Edit hi&ghlighting group file"
-msgstr "Editatu nabarmentzeko taldeen &fitxategia"
-
 msgid "Pl&ugin panel..."
 msgstr ""
 
@@ -4588,12 +4628,37 @@ msgid "Key &sniffer..."
 msgstr ""
 
 #, fuzzy
+#| msgid "Diff extra options"
+msgid "&Diff viewer options..."
+msgstr "Diff-en aparteko aukerak"
+
+#, fuzzy
+#| msgid "&Panel options..."
+msgid "Vie&wer options..."
+msgstr "&Panelen aukerak..."
+
+#, fuzzy
+#| msgid "Editor options"
+msgid "&Editor options..."
+msgstr "Editorearen aukerak"
+
+#, fuzzy
 #| msgid "&Panel options..."
 msgid "&Manage plugins..."
 msgstr "&Panelen aukerak..."
 
-msgid "&Virtual FS..."
-msgstr "Alegiazko &FS..."
+#, fuzzy
+#| msgid "Edit &extension file"
+msgid "Edit e&xtension file"
+msgstr "Editatu &luzapen fitxategia"
+
+msgid "Edit hi&ghlighting group file"
+msgstr "Editatu nabarmentzeko taldeen &fitxategia"
+
+#, fuzzy
+#| msgid "&Files only"
+msgid "&Attributes"
+msgstr "&Fitxategiak soilik"
 
 msgid "Panels:"
 msgstr "Panelak:"
@@ -5003,11 +5068,6 @@ msgid "ButtonBar|ClrAll"
 msgstr "Jaitsi"
 
 #, fuzzy
-#| msgid "ButtonBar|Search"
-msgid "ButtonBar|Clear"
-msgstr "Bilatu"
-
-#, fuzzy
 #| msgid "The shell is already running a command"
 msgid "The terminal is already running a command"
 msgstr "Shell-a dagoeneko komando bat exekutate ari da"
@@ -5322,6 +5382,11 @@ msgstr ""
 msgid "Copy tagged files to plugin panel?"
 msgstr ""
 
+msgid ""
+"This panel is not a local filesystem.\n"
+"Every file is deleted here as soon as the plugin says it has it."
+msgstr ""
+
 msgid "This plugin does not support moving files"
 msgstr ""
 
@@ -5335,6 +5400,9 @@ msgstr ""
 
 #, c-format
 msgid "%s: the copy does not match the source"
+msgstr ""
+
+msgid "This plugin takes files, not directories"
 msgstr ""
 
 msgid "This plugin does not support receiving files"
@@ -5680,30 +5748,40 @@ msgstr ""
 msgid "unspecified"
 msgstr ""
 
-msgid "Lua editor scripts"
-msgstr ""
-
-msgid "No global or user Lua editor scripts were found."
-msgstr ""
-
-msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
-msgstr ""
-
-msgid "&Run"
-msgstr ""
-
 #, fuzzy
-#| msgid "Reading failed"
-msgid "Lua action failed"
-msgstr "Irakurtzeak huts egin du"
+#| msgid "VFS plugins and scripts:"
+msgid "Lua scripts"
+msgstr "VFS pluginak eta script-ak:"
+
+msgid "This script has no entry file."
+msgstr ""
+
+msgid "Lua"
+msgstr ""
 
 #, fuzzy
 #| msgid "Unknown error in child"
 msgid "Unknown error"
 msgstr "Akats ezezaguna umean"
 
-msgid "Lua"
+msgid "This script has no settings."
 msgstr ""
+
+msgid "No global or user Lua scripts were found."
+msgstr ""
+
+msgid "Lua runtime is disabled. Enable Lua engine and restart MC."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Set"
+msgid "&Settings"
+msgstr "&Ezarri"
+
+#, fuzzy
+#| msgid "Reading failed"
+msgid "Lua action failed"
+msgstr "Irakurtzeak huts egin du"
 
 msgid "The selected script has no runnable actions."
 msgstr ""
@@ -6487,21 +6565,43 @@ msgstr ""
 msgid "Pass:"
 msgstr "Pasahitza:"
 
+#, fuzzy
+#| msgid "Confirmation"
+msgid "Connected"
+msgstr "Berrespena"
+
+#, c-format
+msgid "Logging in as %s..."
+msgstr ""
+
+#, fuzzy
+#| msgid "&Listing format..."
+msgid "Asking for TLS..."
+msgstr "&Zerrenda formatua"
+
+#, fuzzy, c-format
+#| msgid "&Encoding..."
+msgid "Opening %s..."
+msgstr "&Kodeketa..."
+
+#, fuzzy, c-format
+#| msgid "Error"
+msgid "Server: %s"
+msgstr "Errorea"
+
+#, fuzzy
+#| msgid "ftpfs: logged in"
+msgid "Logged in"
+msgstr "ftpfs: saio hasita"
+
+msgid "TLS accepted"
+msgstr ""
+
 msgid "FTP connection"
 msgstr ""
 
 #, c-format
 msgid "Connecting to %s:%d..."
-msgstr ""
-
-msgid "Initializing network session..."
-msgstr ""
-
-msgid "Authenticating and probing directory..."
-msgstr ""
-
-#, c-format
-msgid "Initial attempt failed: %s"
 msgstr ""
 
 #, fuzzy, c-format
@@ -6517,10 +6617,14 @@ msgstr "Pasahitza:"
 msgid "Retrying with password..."
 msgstr ""
 
+#, c-format
+msgid "Authentication with %s:%d failed"
+msgstr ""
+
 #, fuzzy, c-format
-#| msgid "Reading failed"
-msgid "Retry failed: %s"
-msgstr "Irakurtzeak huts egin du"
+#| msgid "Cannot open file %s"
+msgid "Cannot connect to %s:%d"
+msgstr "%s fitxategia ezin ireki"
 
 msgid "Connection successful, loading entries..."
 msgstr ""
@@ -7548,15 +7652,15 @@ msgstr ""
 msgid "SMB Connection"
 msgstr ""
 
+#, fuzzy, c-format
+#| msgid "Cannot open file %s"
+msgid "Cannot resolve %s: %s"
+msgstr "%s fitxategia ezin ireki"
+
 #, fuzzy
 #| msgid "SFTP to machine"
 msgid "SFTP connection"
 msgstr "SFTP makinara"
-
-#, fuzzy, c-format
-#| msgid "Cannot open file %s"
-msgid "Cannot connect to %s:%d"
-msgstr "%s fitxategia ezin ireki"
 
 #, c-format
 msgid "Cannot create an SSH session for %s:%d"
@@ -7591,10 +7695,6 @@ msgstr ""
 msgid "SFTP password"
 msgstr "Pasahitza:"
 
-#, c-format
-msgid "Authentication with %s:%d failed"
-msgstr ""
-
 msgid "Initializing SFTP session..."
 msgstr ""
 
@@ -7608,9 +7708,6 @@ msgstr ""
 "%s"
 
 msgid "Connected."
-msgstr ""
-
-msgid "SFTP"
 msgstr ""
 
 #, fuzzy
@@ -7651,6 +7748,9 @@ msgstr ""
 #| msgid "Permission"
 msgid "IP version"
 msgstr "Baimena"
+
+msgid "SFTP"
+msgstr ""
 
 #, fuzzy
 #| msgid "Aborting transfer..."
@@ -8906,8 +9006,10 @@ msgstr ""
 msgid "Skin &editor"
 msgstr ""
 
-msgid "S&kin editor..."
-msgstr ""
+#, fuzzy
+#| msgid "Menu edit"
+msgid "Ski&n editor..."
+msgstr "Menua editatu"
 
 #, fuzzy
 #| msgid "Menu edit"
@@ -9586,15 +9688,15 @@ msgid "ButtonBar|Format"
 msgstr "Format"
 
 #, c-format
+msgid "Filter: %s  %u matches"
+msgstr ""
+
+#, c-format
 msgid "Filter: %s  %u matches  scanning..."
 msgstr ""
 
 #, c-format
 msgid "Filter: %s  %u matches  FOLLOW"
-msgstr ""
-
-#, c-format
-msgid "Filter: %s  %u matches"
 msgstr ""
 
 #, fuzzy
@@ -9710,8 +9812,20 @@ msgstr "Bilaketa eginda"
 msgid "Continue from beginning?"
 msgstr "Hasieratik jarraitu?"
 
+msgid "Not found in the text rendered so far."
+msgstr ""
+
 msgid "Source spec must set either command or file."
 msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "Cannot open cpio archive\n"
+#| "%s"
+msgid "Cannot open source pipe."
+msgstr ""
+"cpio artxiboa ezin ireki\n"
+"%s"
 
 #, fuzzy
 #| msgid ""
@@ -9783,7 +9897,30 @@ msgid "Cannot build structured view"
 msgstr "Fitxategia ezin txertatu"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
-msgstr "Ezin eskuratu ondokoaren bertako kopia bat: /ftp://some.host/editme.txt"
+msgstr ""
+"Ezin eskuratu ondokoaren bertako kopia bat: /ftp://some.host/editme.txt"
+
+#~ msgid "Timeout for freeing VFSs (sec):"
+#~ msgstr "VFS-ak husteko denbora muga (s):"
+
+#~ msgid "Virtual File System Setting"
+#~ msgstr "Alegiazko fitxategi sistemaren (VFS) ezarpena"
+
+#~ msgid "Edit &menu file"
+#~ msgstr "Editat&u menu fitxategia"
+
+#~ msgid "&Virtual FS..."
+#~ msgstr "Alegiazko &FS..."
+
+#, fuzzy
+#~| msgid "ButtonBar|Search"
+#~ msgid "ButtonBar|Clear"
+#~ msgstr "Bilatu"
+
+#, fuzzy, c-format
+#~| msgid "Reading failed"
+#~ msgid "Retry failed: %s"
+#~ msgstr "Irakurtzeak huts egin du"
 
 #~ msgid "Enables subshell support (default)"
 #~ msgstr "Subshell euskarria (lehenetsia) gaitzen du"
@@ -10142,9 +10279,6 @@ msgstr "Ezin eskuratu ondokoaren bertako kopia bat: /ftp://some.host/editme.txt"
 
 #~ msgid "ftpfs: sending user account"
 #~ msgstr "ftpfs: erabiltzailearen kontua bidaltzen"
-
-#~ msgid "ftpfs: logged in"
-#~ msgstr "ftpfs: saio hasita"
 
 #, c-format
 #~ msgid "ftpfs: Login incorrect for user %s "
