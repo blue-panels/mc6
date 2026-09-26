@@ -368,7 +368,7 @@ jobs:
           # still exits 0, which would pass on nothing at all.
           mcommander --version | grep -q "v${VERSION}"
           mcedit6 --version | grep -q "v${VERSION}"
-          test -d /usr/lib64/mc/panel-plugins
+          test -d /usr/lib64/mcommander/panel-plugins
 
   debian-install:
     needs: [archive, debian]
@@ -466,7 +466,7 @@ jobs:
 
           # A runner has no TERM, and mc sets up its terminal before it gets to
           # printing a version.
-          TERM=xterm ./src/mc --version
+          TERM=xterm ./src/mcommander --version
 
       - name: Keep the configure log of a failed build
         if: failure()
