@@ -461,7 +461,7 @@ jobs:
           tar -xf "dist/mcommander-$VERSION.tar.gz"
           cd "mcommander-$VERSION"
           ./configure --prefix="$brew_prefix" --disable-static \
-              --with-screen=slang --enable-mcterm=yes
+              --with-screen=slang
           make -j"$(sysctl -n hw.ncpu)"
 
           # A runner has no TERM, and mc sets up its terminal before it gets to
@@ -534,7 +534,7 @@ jobs:
           # Keep the package out of Homebrew's prefixes on both architectures.
           # DESTDIR stages the tree; pkgbuild puts stage/opt/mcommander at /opt/mcommander.
           ./configure --prefix=/opt/mcommander --disable-static \
-              --with-screen=slang --enable-mcterm=yes \
+              --with-screen=slang \
               --enable-mctree-magic=yes \
               --enable-panel-plugin-samba=yes \
               --enable-panel-plugin-mongo=yes \
