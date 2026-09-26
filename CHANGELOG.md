@@ -2,6 +2,63 @@
 
 The releases of this fork, newest first.
 
+## 6.1.0 - 2026-09-26
+
+- The program is now M-Commander: the main binary is mcommander, the editor,
+  viewer and diff viewer are mcedit6, mview and mdiff, and the packages are
+  mcommander, mcommander-plugins and mcommander-lua, so it installs beside
+  GNU Midnight Commander. User settings stay where they were.
+- Packaging recipes for Debian are ready: the package builds clean with
+  lintian, carries autopkgtest tests and follows the releases through
+  debian/watch.
+- The viewer renders Markdown: headings, lists, tables, links, footnotes and
+  code blocks with the editor's syntax colors; a large file shows its first
+  screen at once and the rest follows.
+- Mermaid flowcharts, sequence and class diagrams and display math are drawn
+  in the terminal.
+- The viewer has a reading cursor; text can be selected with the keyboard or
+  the mouse and copied to the clipboard.
+- Syntax highlighting works in the viewer and in the diff viewer, with the
+  same rules as the editor.
+- lua-pdf shows PDF pages as searchable text with the pictures, drawn with
+  sixel where the terminal has it and with Chafa elsewhere.
+- The nroff mode understands SGR colors, OSC 8 links and overstrike glyphs,
+  and follows the charset of the locale.
+- Viewer settings have their own dialog in the Options menu.
+- F6 in the structured view keeps only the nodes whose key or value matches.
+- The editor can show control characters in caret notation or hide them.
+- The editor clipboard remembers the codeset, and pasting into a file with
+  another codeset recodes the text.
+- In the terminal, the shell input line stays on the command line row, and
+  Ctrl-Insert and Shift-Insert work whoever owns the command line.
+- Alt-S searches the terminal output and Alt+Shift+S filters it, with the
+  pattern typed in place.
+- With the panels hidden, F1, F7 and Shift-F4 work in the terminal, and F8 no
+  longer deletes the file under the hidden panel.
+- The Hotlist keeps plugin locations such as Git, Docker, Kubernetes and
+  archives, and its dialog can be searched.
+- The User Menu can be edited in place: entries and submenus can be added,
+  changed, moved and deleted.
+- Local panels follow changes on disk through inotify; the Watch directories
+  option turns it on.
+- Marking many files at once takes a fraction of a second.
+- File attributes have their own Attributes menu, and the files to edit by
+  hand are in the Options menu.
+- Help and manual pages are written in Markdown, each program has its own help
+  file, and mctree and mcstruct have manual pages.
+- The new mcpeek plugin opens .NET assemblies as trees and shows decompiled C#
+  or IL.
+- The skin editor changes a skin inside the program; all skins cover the
+  terminal, mctree and mcstruct, and Mashdark and Tokyo Night are new.
+- Lua scripts can use the syntax engine through mc.syntax.scan() and add a
+  settings dialog through mc.settings().
+- Ctrl-Space in an archive shows the size of a directory.
+- DBF files show as tables in the Quick View.
+- The viewer no longer hangs on a PDF page with a picture when the window is
+  resized.
+- SFTP keeps the error window open and says why the connection failed.
+- Shell links send current helper scripts to a host that has none installed.
+
 ## 6.0.4 - 2026-09-01
 
 - In line drawing mode the editor widens a table: Space on a frame character
